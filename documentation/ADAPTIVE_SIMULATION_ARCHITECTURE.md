@@ -250,7 +250,7 @@ Use [`OnDatapackSyncEvent`](https://github.com/neoforged/NeoForge/blob/1.21.1/sr
 
 ### 2.9 Create integration boundary
 
-The workspace does not yet contain a Create dependency. Keep integration behind one adapter so the scientific engine and most game code do not depend on Create internals.
+Create is now a required, pinned development/runtime dependency, but integration still belongs behind one adapter so the scientific engine and most game code do not depend on Create internals. The equipment taxonomy and target code boundaries are maintained in [the equipment code architecture](./CODE_ARCHITECTURE_AND_ROADMAP.md).
 
 Create's 1.21.1 branch exposes NeoForge fluid capabilities in its tank code, making the capability boundary preferable to direct tank manipulation. See Create's [SmartFluidTankBehaviour](https://github.com/Creators-of-Create/Create/blob/mc1.21.1/dev/src/main/java/com/simibubi/create/foundation/blockEntity/behaviour/fluid/SmartFluidTankBehaviour.java).
 
@@ -283,7 +283,7 @@ client draft
     → GUI result and server-console report
 ```
 
-This fixture exercises component loading, dense IDs, petroleum pseudocut data, Peng–Robinson flashes and fugacity, phase enthalpy, a steady MESH column, total-condenser and partial-reboiler boundaries, direct liquid side draws, persistence, networking, bounded asynchronous work, unload, and stale-result rejection. It has no physical inventory, fluid transfer, per-tick solve, automatic cadence, Create kinetic demand, side strippers, pumparounds, or hydraulics. Its complete degrees of freedom, GUI/output contract, logging policy, gates, and acceptance criteria are fixed in [the milestone plan](./MILESTONE_1_CRUDE_DISTILLATION_POC.md).
+The current executable fixture exercises the pre-filled GUI, bounded inputs/results, server authority, validation, deterministic component-conservative dummy allocation, result tables, configurable console reporting, and a small persistence shell. It does **not yet** exercise petroleum property loading, Peng–Robinson, phase enthalpy, MESH equations, the bounded worker, full canonical persistence, unload cancellation, or stale-result rejection. Those remain acceptance gates before the dummy can be replaced. The target calculator has no physical inventory, fluid transfer, per-tick solve, automatic cadence, Create kinetic demand, side strippers, pumparounds, or hydraulics. Its complete degrees of freedom, GUI/output contract, logging policy, gates, and acceptance criteria are fixed in [the milestone plan](./MILESTONE_1_CRUDE_DISTILLATION_POC.md).
 
 The earlier liquid and compressor fixtures remain valuable after this calculator establishes the scientific and lifecycle core. A later continuous-process foundation should use:
 

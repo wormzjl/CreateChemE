@@ -1,0 +1,23 @@
+# Gradle outputs and caches
+.gradle/
+build/
+out/
+*.class
+
+# NeoForge development runs
+run/
+runs/
+
+# Local IDE metadata
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Local scratch output
+.science-compile/
+src/generated/resources/.cache/
+*.log

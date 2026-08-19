@@ -1,0 +1,6 @@
+{
+  "block.createcheme.column_calculator": "Column Calculator",
+  "gui.createcheme.column_calculator.calculate": "Calculate",
+  "gui.createcheme.column_calculator.placeholder": "Crude distillation proof of concept",
+  "gui.createcheme.column_calculator.no_result": "Configure the column, then calculate."
+}
