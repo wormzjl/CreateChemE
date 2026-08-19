@@ -2,7 +2,7 @@
 
 **Target:** Minecraft 1.21.1, NeoForge, Java 21<br>
 **Dependencies:** Create, JEI, KubeJS<br>
-**Status:** implementation plan, 2026-08-19
+**Status:** implementation in progress, 2026-08-19. The bounded asynchronous server execution path is implemented; the scientific result remains the labelled dummy and full structured input/result NBT persistence remains pending.
 
 This milestone implements the first executable vertical slice of CreateChemE: one placeholder block with a GUI that solves a steady crude-distillation column only when the player presses **Calculate**. It is a scientific calculator embedded in Minecraft, not yet a continuously operating process machine.
 
@@ -131,7 +131,7 @@ client draft
     → console report + result S2C payload
 ```
 
-Only the server may calculate or commit an authoritative result. One block may have at most one in-flight request. Milestone 1 uses one FIFO worker and an `ArrayBlockingQueue` with configurable capacity, initially eight jobs per server. Queue overflow is rejected immediately as `BUSY_QUEUE_FULL`; jobs are never run on the caller thread, and a queued request exceeding its configured wait limit expires visibly. The worker never reads a `Level`, block entity, capability, registry, menu, packet, or Create object. A result commits only if the block identity, input revision, dataset revision, and job token still match. A rejected, timed-out, failed, unloaded, destroyed, replaced, or stale job leaves the previous valid result intact and visibly stale.
+Only the server may calculate or commit an authoritative result. One block may have at most one in-flight request. Milestone 1 initially uses one worker, a configurable server-thread-confined bounded FIFO ready queue (capacity eight), direct executor handoff, and a separately bounded worker-to-server completion queue. Queue overflow is rejected immediately as `BUSY_QUEUE_FULL`; jobs are never run on the caller thread, and a queued request exceeding its configured wait limit expires visibly. Deadlines and interruption are cooperative, so production numerical loops must poll the token at bounded intervals and keep hard iteration/evaluation caps. The worker never reads a `Level`, block entity, capability, registry, menu, packet, or Create object. A result commits only if the block identity, input revision, dataset revision, and job token still match. A rejected, timed-out, failed, unloaded, destroyed, replaced, or stale job leaves the previous valid result intact and visibly stale.
 
 The block entity persists the last accepted canonical input, input hash/revision, dataset fingerprint, solver version, last successful deterministic scientific result, and result-input hash. It does not persist request IDs, host timings, executor telemetry, futures, worker state, dense internal indices, or `CALCULATING`; interrupted work becomes idle after reload.
 

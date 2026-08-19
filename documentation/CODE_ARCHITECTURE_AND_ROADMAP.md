@@ -142,12 +142,12 @@ Create integration is an adapter. It samples speed/stress/heat on the logical se
 
 ## 6. Calculation execution and logging
 
-CPU-bound property, reactor, and column work uses one server-owned coordinator and an owned platform-thread executor. The coordinator owns an `ArrayBlockingQueue` of eight admitted jobs; the executor has one named worker initially and direct handoff with no second hidden scheduling backlog. Admission fails fast when the ready queue is full, and each equipment or plant has at most one in-flight job. Two workers are allowed only after dedicated-server profiling. Do not use the common pool, virtual threads, `CallerRunsPolicy`, an unbounded queue, or one executor per block.
+CPU-bound property, reactor, and column work uses one server-owned coordinator and an owned platform-thread executor. The coordinator owns a server-thread-confined, manually bounded FIFO ready queue of eight admitted jobs; the executor has one named worker initially and direct handoff with no second hidden scheduling backlog. A separately bounded completion queue is the only queue that transfers results from workers to the server thread. Admission fails fast when the ready queue is full, and each equipment or plant has at most one in-flight job. Two workers are allowed only after dedicated-server profiling. Do not use the common pool, virtual threads, `CallerRunsPolicy`, an unbounded queue, or one executor per block.
 
 The lifecycle is:
 
 1. On the logical server thread, authorize the request, validate bounds, and deep-snapshot immutable inputs with server epoch, block/plant identity, input revision, topology revision, dataset revision, and job token.
-2. On a worker, run pure arithmetic only. Iterative kernels check a deadline/interruption flag at bounded intervals.
+2. On a worker, run pure arithmetic only. Deadlines and interruption are cooperative: every iterative/property kernel must check the token at bounded intervals and retain hard iteration/evaluation caps. The current dummy is short-lived; a future monolithic solver that does not poll the token is not eligible to replace it.
 3. Return an immutable candidate result to a bounded completion path.
 4. On the logical server thread, validate scientific invariants and commit atomically only if every identity/revision/token still matches.
 5. On unload, replacement, reload, or stop, invalidate the token. On server stop, stop admission, cancel jobs, interrupt owned workers, wait for a bounded interval, and discard server references.
@@ -170,8 +170,8 @@ This review used the installed Effective Java core and concurrency guidance. The
 |---|---|---|
 | Fixed now | `RefluxMode.ordinal()` was sent on the wire | Protocol 3 uses an explicit append-only serialized name and rejects unknown names |
 | Fixed now | A reply exception after success could mark the committed block failed | Delivery is isolated after commit; a delivery error is logged without changing committed state |
-| High, before real solver | `ColumnNetwork` calculates synchronously in the payload handler | Replace with the bounded per-server coordinator above before connecting PR/MESH |
-| High, before real solver | Block persistence stores only status/revisions/short digest | Persist canonical accepted input and the full last valid bounded result; reload an interrupted job as idle/dirty |
+| Fixed now | `ColumnNetwork` calculated synchronously in the payload handler | Protocol requests now enter one bounded per-server service; immutable arithmetic runs on its owned worker and revision-checked completion commits on the post-tick server thread |
+| High, next focused slice | Block persistence stores only status/revisions/short digest | Accepted input and the full result are retained in memory, but structured bounded NBT still must persist both; digest-only reloads are explicitly marked dirty |
 | High | `ColumnSimulation` combines assumptions, assay, validation, dummy allocation, digest and all DTOs | Extract behavior-preservingly as the real property/column APIs land; retain a thin compatibility facade during migration |
 | High | `ColumnNetwork` combines authority, solve orchestration, mapping, logging, payloads and codecs | First extract calculation service/coordinator; then view mapper/reporter when another equipment UI reuses them |
 | High | Public result constructors admit inconsistent/non-finite scientific states | Add solver-owned factories and one invariant validator before publication/commit |
@@ -202,8 +202,8 @@ For every crude-distillation benchmark, report the paper model and in-game model
 ### Gate A — stabilize the working calculator
 
 - Preserve the current pre-filled, table-based GUI and structured logs.
-- Complete canonical input/result persistence.
-- Move Calculate behind the bounded server-owned worker with revision-checked commit.
+- Complete canonical input/result persistence. **Remaining:** the bounded structured NBT codec and reload tests.
+- Move Calculate behind the bounded server-owned worker with revision-checked commit. **Implemented:** lifecycle, admission, deadlines, cancellation, shutdown, timing logs, and stale-result protection.
 - Add codec compatibility, malformed packet, queue-full, cancellation, unload and stale-result tests.
 
 ### Gate B — common scientific foundation

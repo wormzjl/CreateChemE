@@ -6,28 +6,41 @@ import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnDiagnostic;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnInput;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnResult;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnSolveOutcome;
+import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnValidationResult;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ComponentFraction;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ProductStream;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.RefluxCondition;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.RefluxMode;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.SideDrawSpec;
+import com.wormzjl.createcheme.runtime.BoundedCpuSolveService;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices.AdmissionResult;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices.ColumnCompletion;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices.ColumnRequest;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices.ColumnTarget;
+import com.wormzjl.createcheme.runtime.ProcessSolveServices.Diagnostics;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorMenu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorBlockEntity;
+import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorBlockEntity.CalculationTicket;
 import io.netty.handler.codec.DecoderException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.StringJoiner;
 import java.util.Objects;
@@ -56,7 +69,7 @@ public final class ColumnNetwork {
     }
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION);
+        PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION).executesOn(HandlerThread.MAIN);
         registrar.playToServer(CalculatePayload.TYPE, CalculatePayload.STREAM_CODEC, ColumnNetwork::handleCalculate);
         registrar.playToClient(ResultPayload.TYPE, ResultPayload.STREAM_CODEC, ColumnNetwork::handleResult);
     }
@@ -82,110 +95,447 @@ public final class ColumnNetwork {
                 || !menu.stillValid(player)
                 || !(player.serverLevel().getBlockEntity(payload.blockPos())
                         instanceof ColumnCalculatorBlockEntity calculator)) {
-            replyRejected(context, payload.blockPos(), requestId, payload.clientRequestId(), "REJECTED_CONTEXT",
-                    List.of("Calculator menu or block is no longer valid"));
-            if (CreateChemE.calculationLoggingEnabled()) {
-                CreateChemE.LOGGER.info(
-                        "column_calc request={} status=REJECTED_CONTEXT wall_ms={}",
-                        requestId,
-                        elapsedMilliseconds(startedAt));
-            }
-            return;
-        }
-        if (!calculator.tryBeginCalculation(player.serverLevel().getGameTime())) {
-            replyRejected(context, payload.blockPos(), requestId, payload.clientRequestId(), "RATE_LIMITED",
-                    List.of("Wait briefly before calculating this block again"));
-            if (CreateChemE.calculationLoggingEnabled()) {
-                CreateChemE.LOGGER.info(
-                        "column_calc request={} column={} status=RATE_LIMITED wall_ms={}",
-                        requestId,
-                        opaqueColumnId(payload.blockPos()),
-                        elapsedMilliseconds(startedAt));
-            }
-            return;
-        }
-
-        boolean committedResult = false;
-        try {
-            if (CreateChemE.calculationLoggingEnabled()) {
-                logInput(requestId, opaqueColumnId(payload.blockPos()), payload.input());
-            }
-            ColumnSolveOutcome outcome = ColumnSimulation.calculate(payload.input());
-            if (!outcome.hasResult()) {
-                List<String> lines = diagnosticLines(outcome.diagnostics());
-                calculator.failCalculation();
-                replyRejected(
-                        context,
-                        payload.blockPos(),
-                        requestId,
-                        payload.clientRequestId(),
-                        outcome.status().name(),
-                        lines);
-                if (CreateChemE.calculationLoggingEnabled()) {
-                    CreateChemE.LOGGER.info(
-                            "column_calc request={} column={} status={} model={} data={} stages={} comps={} dof=unknown "
-                                    + "wall_ms={} faults={}",
-                            requestId,
-                            opaqueColumnId(payload.blockPos()),
-                            outcome.status(),
-                            ColumnSimulation.DUMMY_SOLVER_REVISION,
-                            payload.input().assayId(),
-                            payload.input().stageCount(),
-                            12,
-                            elapsedMilliseconds(startedAt),
-                            diagnosticCodes(outcome.diagnostics()));
-                }
-                return;
-            }
-
-            ColumnResult result = outcome.result().orElseThrow();
-            ResultView resultView = resultView(outcome, result);
-            calculator.commitDummyResult(result.resultDigest());
-            committedResult = true;
-            if (CreateChemE.calculationLoggingEnabled()) {
-                logResult(requestId, payload.input(), result, outcome, startedAt, opaqueColumnId(payload.blockPos()));
-            }
-            replyCommittedResult(
+            replyRejectedSafely(
                     context,
-                    new ResultPayload(payload.blockPos(), requestId, payload.clientRequestId(), resultView),
+                    payload.blockPos(),
+                    requestId,
+                    payload.clientRequestId(),
+                    "REJECTED_CONTEXT",
+                    List.of("Calculator menu or block is no longer valid"));
+            logImmediateTerminal(
                     requestId,
                     opaqueColumnId(payload.blockPos()),
-                    startedAt);
-        } catch (RuntimeException exception) {
-            if (!committedResult) {
-                calculator.failCalculation();
-                replyRejected(context, payload.blockPos(), requestId, payload.clientRequestId(), "INTERNAL_ERROR",
-                        List.of("Unexpected server error; see console request " + requestId));
-            }
-            CreateChemE.LOGGER.error(
-                    "column_calc request={} column={} status={} committed={} wall_ms={}",
-                    requestId,
-                    opaqueColumnId(payload.blockPos()),
-                    committedResult ? "POST_COMMIT_ERROR" : "INTERNAL_ERROR",
-                    committedResult,
-                    elapsedMilliseconds(startedAt),
-                    exception);
+                    "REJECTED_CONTEXT",
+                    startedAt,
+                    Diagnostics.EMPTY,
+                    "context_invalid");
+            return;
         }
-    }
 
-    private static void replyCommittedResult(
-            IPayloadContext context,
-            ResultPayload payload,
-            long requestId,
-            long columnId,
-            long startedAt
-    ) {
+        long columnId = opaqueColumnId(
+                new ColumnTarget(player.serverLevel().dimension(), payload.blockPos()));
+        if (CreateChemE.calculationLoggingEnabled()) {
+            logInput(requestId, columnId, payload.input());
+        }
+        ColumnValidationResult validation = ColumnSimulation.validate(payload.input());
+        if (!validation.isValid()) {
+            replyRejectedSafely(
+                    context,
+                    payload.blockPos(),
+                    requestId,
+                    payload.clientRequestId(),
+                    "REJECTED_INPUT",
+                    diagnosticLines(validation.diagnostics()));
+            logImmediateTerminal(
+                    requestId,
+                    columnId,
+                    "REJECTED_INPUT",
+                    startedAt,
+                    Diagnostics.EMPTY,
+                    "faults=" + diagnosticCodes(validation.diagnostics()));
+            return;
+        }
+
+        Optional<CalculationTicket> ticket =
+                calculator.tryBeginCalculation(player.serverLevel().getGameTime(), payload.input());
+        if (ticket.isEmpty()) {
+            replyRejectedSafely(
+                    context,
+                    payload.blockPos(),
+                    requestId,
+                    payload.clientRequestId(),
+                    "RATE_LIMITED",
+                    List.of("Wait briefly before calculating this block again"));
+            logImmediateTerminal(
+                    requestId,
+                    columnId,
+                    "RATE_LIMITED",
+                    startedAt,
+                    Diagnostics.EMPTY,
+                    "block_busy_or_throttled");
+            return;
+        }
+
+        CalculationTicket calculationTicket = ticket.orElseThrow();
+        AdmissionResult admission;
         try {
-            context.reply(payload);
+            admission = ProcessSolveServices.submitColumn(
+                    player.getServer(),
+                    new ColumnRequest(
+                            requestId,
+                            payload.clientRequestId(),
+                            menu.containerId,
+                            player.getUUID(),
+                            new ColumnTarget(player.serverLevel().dimension(), payload.blockPos()),
+                            calculationTicket,
+                            startedAt));
         } catch (RuntimeException exception) {
-            // The authoritative result is already committed. A transport failure must not rewrite it as FAILED.
+            calculator.failCalculation(calculationTicket);
+            replyRejectedSafely(
+                    context,
+                    payload.blockPos(),
+                    requestId,
+                    payload.clientRequestId(),
+                    "INTERNAL_ERROR",
+                    List.of("Unexpected server error; see console request " + requestId));
             CreateChemE.LOGGER.error(
-                    "column_calc request={} column={} status=RESULT_DELIVERY_ERROR committed=true wall_ms={}",
+                    "column_calc request={} column={} status=INTERNAL_ERROR queue_ms=0.000 worker_ms=0.000 "
+                            + "wall_ms={} active_at_admission=0 ready_at_admission=0 outstanding_at_admission=0",
                     requestId,
                     columnId,
                     elapsedMilliseconds(startedAt),
                     exception);
+            return;
         }
+
+        if (!admission.accepted()) {
+            calculator.failCalculation(calculationTicket);
+            String status = admissionStatus(admission.admission());
+            replyRejectedSafely(
+                    context,
+                    payload.blockPos(),
+                    requestId,
+                    payload.clientRequestId(),
+                    status,
+                    List.of(admissionMessage(admission.admission())));
+            logImmediateTerminal(
+                    requestId,
+                    columnId,
+                    status,
+                    startedAt,
+                    admission.diagnostics(),
+                    admission.admission().name());
+        }
+    }
+
+    /** Called from the pinned logical-server post-tick event. */
+    public static void drainCompletedCalculations(MinecraftServer server) {
+        List<ColumnCompletion> completions = ProcessSolveServices.drainColumnCompletions(
+                server, ProcessSolveServices.MAXIMUM_COMPLETIONS_PER_TICK);
+        for (ColumnCompletion completion : completions) {
+            handleCompletedCalculation(server, completion);
+        }
+    }
+
+    /** Called from both stopping and stopped lifecycle events; the underlying stop is one-shot. */
+    public static void stopCalculations(MinecraftServer server) {
+        ProcessSolveServices.StopResult stop = ProcessSolveServices.stopServer(server);
+        for (ColumnCompletion completion : stop.completions()) {
+            handleCompletedCalculation(server, completion);
+        }
+        for (ColumnRequest abandoned : stop.abandonedRequests()) {
+            handleAbandonedCalculation(server, abandoned);
+        }
+        if (!stop.shutdownPerformed()) {
+            return;
+        }
+        var report = stop.shutdownReport();
+        if (!report.terminated() || report.callerInterrupted() || !stop.abandonedRequests().isEmpty()) {
+            CreateChemE.LOGGER.error(
+                    "process_solver lifecycle=STOPPED_WITH_FAULT terminated={} forced={} interrupted={} "
+                            + "never_started={} completions={} abandoned={}",
+                    report.terminated(),
+                    report.forced(),
+                    report.callerInterrupted(),
+                    report.neverStartedExecutorTasks(),
+                    stop.completions().size(),
+                    stop.abandonedRequests().size());
+        } else if (CreateChemE.calculationLoggingEnabled()) {
+            CreateChemE.LOGGER.info(
+                    "process_solver lifecycle=STOPPING terminated={} forced={} never_started={} "
+                            + "terminal_completions={}",
+                    report.terminated(),
+                    report.forced(),
+                    report.neverStartedExecutorTasks(),
+                    stop.completions().size());
+        }
+    }
+
+    private static void handleCompletedCalculation(MinecraftServer server, ColumnCompletion job) {
+        ColumnRequest request = job.request();
+        ResolvedColumn resolved = resolveColumn(server, request);
+        boolean terminalLogged = false;
+        try {
+            if (job.completion().status() != BoundedCpuSolveService.TerminalStatus.SUCCESS) {
+                String status = failTicketStatus(resolved.calculator(), request.ticket(),
+                        terminalStatus(job.completion().status()));
+                List<String> messages = completionMessages(job);
+                boolean unexpected = job.completion().status() == BoundedCpuSolveService.TerminalStatus.FAILED;
+                logCompletionTerminal(job, status, messages.toString(), unexpected);
+                terminalLogged = true;
+                sendIfCalculatorOpen(resolved, request, rejectedResultView(status, messages));
+                return;
+            }
+
+            ColumnSolveOutcome outcome = job.completion().result().orElseThrow();
+            if (!outcome.hasResult()) {
+                String status = failTicketStatus(
+                        resolved.calculator(), request.ticket(), outcome.status().name());
+                List<String> messages = diagnosticLines(outcome.diagnostics());
+                logCompletionTerminal(
+                        job, status, "faults=" + diagnosticCodes(outcome.diagnostics()), false);
+                terminalLogged = true;
+                sendIfCalculatorOpen(resolved, request, rejectedResultView(status, messages));
+                return;
+            }
+
+            ColumnResult result = outcome.result().orElseThrow();
+            if (!result.datasetRevision().equals(job.completion().stamp().datasetRevision())) {
+                String status = failTicketStatus(
+                        resolved.calculator(), request.ticket(), "STALE_DATASET");
+                logCompletionTerminal(job, status, "dataset_revision_changed", false);
+                terminalLogged = true;
+                sendIfCalculatorOpen(
+                        resolved,
+                        request,
+                        rejectedResultView(status, List.of("Scientific dataset changed while solving")));
+                return;
+            }
+
+            ResultView view = resultView(outcome, result);
+            if (resolved.calculator() == null) {
+                logCompletionTerminal(job, "STALE_TARGET", "block_missing_or_unloaded", false);
+                terminalLogged = true;
+                sendIfCalculatorOpen(
+                        resolved,
+                        request,
+                        rejectedResultView("STALE_TARGET", List.of("Calculator block is no longer available")));
+                return;
+            }
+            if (!resolved.calculator().commitCalculation(request.ticket(), result)) {
+                logCompletionTerminal(job, "STALE_RESULT", "ticket_mismatch", false);
+                terminalLogged = true;
+                sendIfCalculatorOpen(
+                        resolved,
+                        request,
+                        rejectedResultView("STALE_RESULT", List.of("A newer calculator input replaced this result")));
+                return;
+            }
+
+            // From this point onward the scientific result is authoritative. Reporting or delivery failures
+            // must never transition the matching block back to FAILED.
+            terminalLogged = true;
+            if (CreateChemE.calculationLoggingEnabled()) {
+                try {
+                    logResult(
+                            request.requestId(),
+                            request.ticket().input(),
+                            result,
+                            outcome,
+                            job,
+                            opaqueColumnId(request.target()));
+                } catch (RuntimeException exception) {
+                    CreateChemE.LOGGER.error(
+                            "column_calc request={} column={} status=POST_COMMIT_LOG_ERROR committed=true",
+                            request.requestId(),
+                            opaqueColumnId(request.target()),
+                            exception);
+                }
+            }
+            sendIfCalculatorOpen(resolved, request, view);
+        } catch (RuntimeException exception) {
+            if (terminalLogged) {
+                CreateChemE.LOGGER.error(
+                        "column_post_terminal_error request={} column={}",
+                        request.requestId(),
+                        opaqueColumnId(request.target()),
+                        exception);
+                return;
+            }
+            if (resolved.calculator() != null) {
+                resolved.calculator().failCalculation(request.ticket());
+            }
+            sendIfCalculatorOpen(
+                    resolved,
+                    request,
+                    rejectedResultView(
+                            "INTERNAL_ERROR",
+                            List.of("Unexpected server error; see console request " + request.requestId())));
+            logCompletionException(job, exception);
+        }
+    }
+
+    private static void handleAbandonedCalculation(MinecraftServer server, ColumnRequest request) {
+        ResolvedColumn resolved = resolveColumn(server, request);
+        String status = failTicketStatus(
+                resolved.calculator(), request.ticket(), "SHUTDOWN_UNTERMINATED");
+        sendIfCalculatorOpen(
+                resolved,
+                request,
+                rejectedResultView(status, List.of("Server stopped before the solver worker terminated")));
+        CreateChemE.LOGGER.error(
+                "column_calc request={} column={} status={} queue_ms=NA worker_ms=NA wall_ms={} "
+                        + "active_at_admission=NA ready_at_admission=NA outstanding_at_admission=NA "
+                        + "detail=worker_did_not_terminate",
+                request.requestId(),
+                opaqueColumnId(request.target()),
+                status,
+                elapsedMilliseconds(request.receivedNanos()));
+    }
+
+    private static ResolvedColumn resolveColumn(MinecraftServer server, ColumnRequest request) {
+        ServerLevel level = server.getLevel(request.target().dimension());
+        ColumnCalculatorBlockEntity calculator = level != null
+                        && level.isLoaded(request.target().blockPos())
+                        && level.getBlockEntity(request.target().blockPos())
+                                instanceof ColumnCalculatorBlockEntity found
+                ? found
+                : null;
+        ServerPlayer player = server.getPlayerList().getPlayer(request.playerId());
+        ColumnCalculatorMenu menu = player != null
+                        && player.serverLevel().dimension().equals(request.target().dimension())
+                        && player.containerMenu instanceof ColumnCalculatorMenu openMenu
+                        && openMenu.containerId == request.containerId()
+                        && openMenu.blockPos().equals(request.target().blockPos())
+                        && openMenu.stillValid(player)
+                ? openMenu
+                : null;
+        return new ResolvedColumn(calculator, player, menu);
+    }
+
+    private static void sendIfCalculatorOpen(
+            ResolvedColumn resolved, ColumnRequest request, ResultView result) {
+        if (resolved.player() == null || resolved.menu() == null) {
+            return;
+        }
+        try {
+            PacketDistributor.sendToPlayer(
+                    resolved.player(),
+                    new ResultPayload(
+                            request.target().blockPos(),
+                            request.requestId(),
+                            request.clientRequestId(),
+                            result));
+        } catch (RuntimeException exception) {
+            CreateChemE.LOGGER.error(
+                    "column_delivery_error request={} column={} phase=ASYNC_RESULT",
+                    request.requestId(),
+                    opaqueColumnId(request.target()),
+                    exception);
+        }
+    }
+
+    private static String failTicketStatus(
+            ColumnCalculatorBlockEntity calculator,
+            CalculationTicket ticket,
+            String matchedStatus) {
+        if (calculator == null) {
+            return "STALE_TARGET";
+        }
+        return calculator.failCalculation(ticket) ? matchedStatus : "STALE_RESULT";
+    }
+
+    private static String terminalStatus(BoundedCpuSolveService.TerminalStatus status) {
+        return switch (status) {
+            case SUCCESS -> throw new IllegalArgumentException("Success is handled separately");
+            case FAILED -> "SOLVER_FAILURE";
+            case CANCELLED -> "CANCELLED";
+            case DEADLINE_EXCEEDED -> "DEADLINE_EXCEEDED";
+            case SHUTDOWN -> "SERVER_SHUTDOWN";
+        };
+    }
+
+    private static List<String> completionMessages(ColumnCompletion job) {
+        if (job.completion().failure().isPresent()) {
+            BoundedCpuSolveService.Failure failure = job.completion().failure().orElseThrow();
+            return List.of(bounded(
+                    "Solver failure: " + failure.type() + ": " + failure.message(),
+                    MAX_MESSAGE_LENGTH));
+        }
+        String detail = job.completion().detail();
+        return List.of(detail.isBlank() ? terminalStatus(job.completion().status()) : bounded(detail, MAX_MESSAGE_LENGTH));
+    }
+
+    private static void logCompletionTerminal(
+            ColumnCompletion job, String status, String detail, boolean unexpected) {
+        if (!unexpected && !CreateChemE.calculationLoggingEnabled()) {
+            return;
+        }
+        String template = "column_calc request={} column={} status={} queue_ms={} worker_ms={} wall_ms={} "
+                + "active_at_admission={} ready_at_admission={} outstanding_at_admission={} detail={}";
+        Object[] arguments = {
+            job.request().requestId(),
+            opaqueColumnId(job.request().target()),
+            status,
+            fixed(job.queueMilliseconds()),
+            fixed(job.workerMilliseconds()),
+            fixed(job.wallMilliseconds(System.nanoTime())),
+            job.admissionDiagnostics().activeWorkers(),
+            job.admissionDiagnostics().readyJobs(),
+            job.admissionDiagnostics().outstandingJobs(),
+            bounded(detail, MAX_MESSAGE_LENGTH)
+        };
+        if (unexpected) {
+            CreateChemE.LOGGER.error(template, arguments);
+            job.completion().failure().ifPresent(failure -> CreateChemE.LOGGER.error(
+                    "column_solver_failure request={} type={} message={} stack={}",
+                    job.request().requestId(),
+                    failure.type(),
+                    failure.message(),
+                    failure.stackTrace()));
+        } else {
+            CreateChemE.LOGGER.info(template, arguments);
+        }
+    }
+
+    private static void logCompletionException(ColumnCompletion job, RuntimeException exception) {
+        CreateChemE.LOGGER.error(
+                "column_calc request={} column={} status=INTERNAL_ERROR queue_ms={} worker_ms={} wall_ms={} "
+                        + "active_at_admission={} ready_at_admission={} outstanding_at_admission={}",
+                job.request().requestId(),
+                opaqueColumnId(job.request().target()),
+                fixed(job.queueMilliseconds()),
+                fixed(job.workerMilliseconds()),
+                fixed(job.wallMilliseconds(System.nanoTime())),
+                job.admissionDiagnostics().activeWorkers(),
+                job.admissionDiagnostics().readyJobs(),
+                job.admissionDiagnostics().outstandingJobs(),
+                exception);
+    }
+
+    private static String admissionStatus(ProcessSolveServices.Admission admission) {
+        return switch (admission) {
+            case ACCEPTED -> throw new IllegalArgumentException("Accepted admission is not a rejection");
+            case OWNER_BUSY -> "BUSY";
+            case QUEUE_FULL -> "OVERLOADED";
+            case STALE_EPOCH -> "STALE_SERVER";
+            case STOPPING -> "SERVICE_STOPPING";
+            case SERVICE_UNAVAILABLE -> "SERVICE_UNAVAILABLE";
+        };
+    }
+
+    private static String admissionMessage(ProcessSolveServices.Admission admission) {
+        return switch (admission) {
+            case ACCEPTED -> throw new IllegalArgumentException("Accepted admission has no rejection message");
+            case OWNER_BUSY -> "This calculator already has an outstanding calculation";
+            case QUEUE_FULL -> "The process solver is overloaded; try again later";
+            case STALE_EPOCH -> "The server solver lifecycle changed; try again";
+            case STOPPING -> "The process solver is stopping";
+            case SERVICE_UNAVAILABLE -> "The process solver is not available";
+        };
+    }
+
+    private static void logImmediateTerminal(
+            long requestId,
+            long columnId,
+            String status,
+            long startedAt,
+            Diagnostics diagnostics,
+            String detail) {
+        if (!CreateChemE.calculationLoggingEnabled()) {
+            return;
+        }
+        CreateChemE.LOGGER.info(
+                "column_calc request={} column={} status={} queue_ms=0.000 worker_ms=0.000 wall_ms={} "
+                        + "active_at_admission={} ready_at_admission={} outstanding_at_admission={} detail={}",
+                requestId,
+                columnId,
+                status,
+                elapsedMilliseconds(startedAt),
+                diagnostics.activeWorkers(),
+                diagnostics.readyJobs(),
+                diagnostics.outstandingJobs(),
+                bounded(detail, MAX_MESSAGE_LENGTH));
     }
 
     private static void handleResult(ResultPayload payload, IPayloadContext context) {
@@ -203,6 +553,25 @@ public final class ColumnNetwork {
     ) {
         context.reply(new ResultPayload(
                 blockPos, requestId, clientRequestId, rejectedResultView(status, lines)));
+    }
+
+    private static void replyRejectedSafely(
+            IPayloadContext context,
+            BlockPos blockPos,
+            long requestId,
+            long clientRequestId,
+            String status,
+            List<String> lines) {
+        try {
+            replyRejected(context, blockPos, requestId, clientRequestId, status, lines);
+        } catch (RuntimeException exception) {
+            CreateChemE.LOGGER.error(
+                    "column_delivery_error request={} column={} phase=IMMEDIATE_REJECTION status={}",
+                    requestId,
+                    opaqueColumnId(blockPos),
+                    status,
+                    exception);
+        }
     }
 
     private static ResultView resultView(ColumnSolveOutcome outcome, ColumnResult result) {
@@ -276,7 +645,7 @@ public final class ColumnNetwork {
             ColumnInput input,
             ColumnResult result,
             ColumnSolveOutcome outcome,
-            long startedAt,
+            ColumnCompletion job,
             long columnId
     ) {
         var diagnostics = result.diagnostics();
@@ -294,7 +663,8 @@ public final class ColumnNetwork {
 
         CreateChemE.LOGGER.info(
                 "column_calc request={} column={} status={} model={} data={} input={} stages={} comps={} dof={} init={} "
-                        + "iter={} property_evals={} wall_ms={} component_mb={} overall_mb={} energy={} vle={} "
+                        + "iter={} property_evals={} queue_ms={} worker_ms={} wall_ms={} active_at_admission={} "
+                        + "ready_at_admission={} outstanding_at_admission={} component_mb={} overall_mb={} energy={} vle={} "
                         + "sum_x={} top_mol_s={} bottom_mol_s={} qcond_kW={} Tmin_K={} Tmax_K={} result={} warnings={}",
                 requestId,
                 columnId,
@@ -308,7 +678,12 @@ public final class ColumnNetwork {
                 diagnostics.initializationMode(),
                 diagnostics.iterations(),
                 diagnostics.propertyEvaluations(),
-                elapsedMilliseconds(startedAt),
+                fixed(job.queueMilliseconds()),
+                fixed(job.workerMilliseconds()),
+                fixed(job.wallMilliseconds(System.nanoTime())),
+                job.admissionDiagnostics().activeWorkers(),
+                job.admissionDiagnostics().readyJobs(),
+                job.admissionDiagnostics().outstandingJobs(),
                 optionalNumber(residuals.maximumComponentMaterialResidual()),
                 optionalNumber(residuals.overallMaterialResidual()),
                 optionalNumber(residuals.relativeEnergyResidual()),
@@ -402,7 +777,15 @@ public final class ColumnNetwork {
     }
 
     private static long opaqueColumnId(BlockPos pos) {
-        long value = pos.asLong();
+        return mixOpaqueId(pos.asLong());
+    }
+
+    private static long opaqueColumnId(ColumnTarget target) {
+        long dimensionHash = Integer.toUnsignedLong(target.dimension().location().hashCode());
+        return mixOpaqueId(target.blockPos().asLong() ^ Long.rotateLeft(dimensionHash, 29));
+    }
+
+    private static long mixOpaqueId(long value) {
         value ^= value >>> 33;
         value *= 0xff51afd7ed558ccdl;
         value ^= value >>> 33;
@@ -798,6 +1181,11 @@ public final class ColumnNetwork {
         String safe = sanitized.toString();
         return safe.length() <= maximumLength ? safe : safe.substring(0, maximumLength);
     }
+
+    private record ResolvedColumn(
+            ColumnCalculatorBlockEntity calculator,
+            ServerPlayer player,
+            ColumnCalculatorMenu menu) {}
 
     @FunctionalInterface
     public interface ClientResultConsumer {
