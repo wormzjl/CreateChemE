@@ -21,3 +21,6 @@ bin/
 .science-compile/
 src/generated/resources/.cache/
 *.log
+
+# Local design and research notes
+documentation/

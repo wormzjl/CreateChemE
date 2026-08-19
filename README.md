@@ -1,34 +1,17 @@
 # CreateChemE
 
-CreateChemE is a Minecraft 1.21.1 NeoForge mod for gameplay-oriented chemical-process simulation. It targets lightweight but internally conservative thermodynamics, multicomponent and multiphase fluids, process equipment, and integration with Create, JEI, and KubeJS.
+## Intent
 
-The NeoForge project and the first calculator-block vertical slice now compile and launch. Its current numerical result is an explicitly labelled, component-conservative placeholder used to exercise the GUI, validation, networking, persistence, and logging path; it is not yet the Peng-Robinson/MESH crude-column solver.
+CreateChemE is a Minecraft 1.21.1 NeoForge addon for Create that aims to turn chemical and petroleum processing into playable factory systems. Its scientific model is intended to be lightweight enough for real-time game simulation while retaining consistent component, mass, element, phase, and energy balances.
 
-## Current milestone
+The planned material system combines real chemical species with petroleum pseudocomponents, phase equilibrium, heat transfer, fluid transport, reaction kinetics, catalyst state, and conservative coupling between reaction and separation processes. Public thermodynamic and process data will provide the scientific basis, with clearly identified gameplay approximations where industrial data are unavailable.
 
-The first executable milestone is a [single-block crude-distillation calculator](./documentation/MILESTONE_1_CRUDE_DISTILLATION_POC.md). A player enters a named crude feed and column operating conditions, presses **Calculate**, and receives server-authoritative product compositions in both the GUI and server console. It is an on-demand steady solver, not yet a continuously operating multiblock.
+Planned equipment includes storage drums, pumps, compressors, heat exchangers, boilers, furnaces, generic reactors, gas-liquid separators, three-phase separators, air coolers, distillation columns, pressure-swing adsorption units, and stirred-tank reactors. Create will provide the physical factory and power systems, while JEI and KubeJS will support discovery and configurable content.
 
-A fresh calculator screen is pre-filled with a Tia Juana Light test case (2610.7 kmol/h, 365 °C, 30 theoretical stages, feed stage 24, 8 MW reboiler duty, reflux ratio 4.17, and three direct side draws), so the request/result path can be exercised immediately.
+## Current status
 
-Calculation logging is enabled by default. Set `enableCalculationLogging = false` in `run/config/createcheme-common.toml` during development, or in the instance's `config/createcheme-common.toml`, to suppress routine input/result/composition records. Unexpected internal errors are always logged.
+The mod is in an early proof-of-concept stage. The NeoForge 1.21.1 project loads with Create, JEI, and KubeJS, and currently provides one placeholder crude-distillation calculator block.
 
-## Development
+The calculator has a pre-filled GUI for column inputs, server-authoritative calculation requests, tabular stream and composition results, console reporting, bounded asynchronous execution, and stale-result protection. Its current calculation is an explicitly labelled deterministic placeholder that conserves the twelve pseudocut component flows; it is not yet a Peng-Robinson flash or MESH distillation solver.
 
-Java 21 is required. The tested dependency set is pinned in `gradle.properties`.
-
-```text
-gradlew.bat test
-gradlew.bat build
-gradlew.bat runClient
-```
-
-## Design documents
-
-- [Equipment code architecture and delivery roadmap](./documentation/CODE_ARCHITECTURE_AND_ROADMAP.md)
-- [Gameplay thermodynamics and transport model](./documentation/SCIENTIFIC_MODEL.md)
-- [NeoForge and adaptive simulation architecture](./documentation/ADAPTIVE_SIMULATION_ARCHITECTURE.md)
-- [Atmospheric crude-distillation benchmark](./documentation/CRUDE_DISTILLATION_BENCHMARK.md)
-- [Crude-to-ethylene-glycol worked example](./documentation/CRUDE_TO_ETHYLENE_GLYCOL_EXAMPLE.md)
-- [Milestone-1 crude-distillation calculator plan](./documentation/MILESTONE_1_CRUDE_DISTILLATION_POC.md)
-
-The dependency-free Java file under [`benchmarks`](./benchmarks/) is a property-kernel microbenchmark, not a complete column solver or mod implementation.
+The custom multicomponent fluid system, real crude-column thermodynamics, connected plant simulation, reaction models, continuous equipment operation, and final multiblock structures are not implemented yet.
