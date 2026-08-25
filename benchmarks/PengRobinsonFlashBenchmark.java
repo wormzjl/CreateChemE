@@ -1,3 +1,4 @@
+import com.wormzjl.createcheme.science.column.EquilibriumStageSolver;
 import com.wormzjl.createcheme.science.thermo.FlashResult;
 import com.wormzjl.createcheme.science.thermo.IdealGasHeatCapacity;
 import com.wormzjl.createcheme.science.thermo.PengRobinson78;
@@ -76,6 +77,20 @@ public final class PengRobinsonFlashBenchmark {
         double targetEnthalpy =
                 crudeTpCaloric.solve(487.3, 190_000.0, crudeFeed).enthalpyJoulesPerMol();
         runPh(crudePhSolver, crudeFeed, 190_000.0, targetEnthalpy);
+
+        var stageSolver = new EquilibriumStageSolver(crudePhSolver);
+        double inletEnthalpy =
+                crudeTpCaloric.solve(420.0, 190_000.0, crudeFeed).enthalpyJoulesPerMol();
+        double stageTargetEnthalpy =
+                crudeTpCaloric.solve(520.0, 190_000.0, crudeFeed).enthalpyJoulesPerMol();
+        double stageFlow = 100.0;
+        List<EquilibriumStageSolver.Inlet> stageInlets = List.of(
+                new EquilibriumStageSolver.Inlet(stageFlow, inletEnthalpy, crudeFeed));
+        runStage(
+                stageSolver,
+                stageInlets,
+                190_000.0,
+                stageFlow * (stageTargetEnthalpy - inletEnthalpy));
         System.out.printf("blackhole=%.9g%n", blackhole);
     }
 
@@ -145,6 +160,36 @@ public final class PengRobinsonFlashBenchmark {
                 percentile(samplesMicroseconds, 0.99));
     }
 
+    private static void runStage(
+            EquilibriumStageSolver solver,
+            List<EquilibriumStageSolver.Inlet> inlets,
+            double pressurePascal,
+            double heatDutyWatts) {
+        long warmupDeadline = System.nanoTime() + 2_000_000_000L;
+        int warmupSolves = 0;
+        while (System.nanoTime() < warmupDeadline) {
+            consume(solver.solve(pressurePascal, inlets, heatDutyWatts, 350.0, 650.0));
+            warmupSolves++;
+        }
+
+        double[] samplesMicroseconds = new double[5_000];
+        for (int sample = 0; sample < samplesMicroseconds.length; sample++) {
+            long start = System.nanoTime();
+            EquilibriumStageSolver.Result result =
+                    solver.solve(pressurePascal, inlets, heatDutyWatts, 350.0, 650.0);
+            samplesMicroseconds[sample] = (System.nanoTime() - start) / 1_000.0;
+            consume(result);
+        }
+        Arrays.sort(samplesMicroseconds);
+
+        System.out.println("\nequilibrium-stage Tia Juana Light 12-cut proxy");
+        System.out.printf("  components=%d warmupSolves=%d samples=%d%n",
+                inlets.getFirst().componentCount(), warmupSolves, samplesMicroseconds.length);
+        System.out.printf("  p50=%.3f us p95=%.3f us p99=%.3f us%n",
+                percentile(samplesMicroseconds, 0.50),
+                percentile(samplesMicroseconds, 0.95),
+                percentile(samplesMicroseconds, 0.99));
+    }
     private static PengRobinson78 crudeEquationOfState() {
         int count = CRUDE_BOILING_POINTS_KELVIN.length;
         List<ThermoComponent> components = new ArrayList<>(count);
@@ -205,6 +250,12 @@ public final class PengRobinsonFlashBenchmark {
                 + result.flashResult().equilibrium().vaporFraction();
     }
 
+    private static void consume(EquilibriumStageSolver.Result result) {
+        blackhole += result.liquidMolarFlowMolPerSecond()
+                + result.vaporMolarFlowMolPerSecond()
+                + result.energyResidualWatts()
+                + result.maximumComponentResidualMolPerSecond();
+    }
     private static double percentile(double[] sorted, double probability) {
         int nearestRank = (int) Math.ceil(probability * sorted.length);
         return sorted[Math.max(0, Math.min(sorted.length - 1, nearestRank - 1))];
