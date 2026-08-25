@@ -24,6 +24,7 @@ class PengRobinson78Test {
 
         assertEquals(0.9018307109528809, properties.compressibilityFactor(), 1.0e-12);
         assertEquals(-0.10383585031450415, properties.logFugacityCoefficient(0), 1.0e-12);
+        assertEquals(-902.3534536795481, properties.residualEnthalpyJoulesPerMol(), 1.0e-9);
     }
 
     @Test
@@ -50,6 +51,59 @@ class PengRobinson78Test {
         assertEquals(1.0, properties.compressibilityFactor(), 1.0e-7);
         assertEquals(0.0, properties.logFugacityCoefficient(0), 1.0e-7);
         assertEquals(0.0, properties.logFugacityCoefficient(1), 1.0e-7);
+    }
+
+    @Test
+    void mixtureResidualEnthalpyMatchesFugacityTemperatureDerivative() {
+        PengRobinson78 model = new PengRobinson78(
+                List.of(METHANE, N_BUTANE),
+                new double[][] {{0.0, 0.03}, {0.03, 0.0}});
+        double temperature = 350.0;
+        double pressure = 3_000_000.0;
+        double temperatureStep = 0.01;
+        double[] composition = {0.4, 0.6};
+
+        PhaseProperties properties = model.evaluate(
+                temperature, pressure, composition, PhaseRoot.VAPOR);
+        PhaseProperties above = model.evaluate(
+                temperature + temperatureStep, pressure, composition, PhaseRoot.VAPOR);
+        PhaseProperties below = model.evaluate(
+                temperature - temperatureStep, pressure, composition, PhaseRoot.VAPOR);
+        double weightedLogPhiDerivative = 0.0;
+        for (int i = 0; i < composition.length; i++) {
+            weightedLogPhiDerivative += composition[i]
+                    * (above.logFugacityCoefficient(i) - below.logFugacityCoefficient(i))
+                    / (2.0 * temperatureStep);
+        }
+        double numericalResidualEnthalpy = -PengRobinson78.GAS_CONSTANT * temperature * temperature
+                * weightedLogPhiDerivative;
+
+        assertEquals(
+                numericalResidualEnthalpy,
+                properties.residualEnthalpyJoulesPerMol(),
+                1.0e-4);
+    }
+
+    @Test
+    void residualEnthalpyApproachesZeroAtLowPressure() {
+        PengRobinson78 model = PengRobinson78.withoutBinaryInteractions(List.of(METHANE, N_BUTANE));
+
+        PhaseProperties properties = model.evaluate(
+                500.0, 1.0, new double[] {0.7, 0.3}, PhaseRoot.VAPOR);
+
+        assertEquals(0.0, properties.residualEnthalpyJoulesPerMol(), 1.0e-3);
+    }
+
+    @Test
+    void propaneLiquidResidualEnthalpyIsMoreNegativeThanVapor() {
+        PengRobinson78 model = PengRobinson78.withoutBinaryInteractions(List.of(PROPANE));
+
+        PhaseProperties liquid = model.evaluate(
+                300.0, 1_000_000.0, new double[] {1.0}, PhaseRoot.LIQUID);
+        PhaseProperties vapor = model.evaluate(
+                300.0, 1_000_000.0, new double[] {1.0}, PhaseRoot.VAPOR);
+
+        assertTrue(liquid.residualEnthalpyJoulesPerMol() < vapor.residualEnthalpyJoulesPerMol());
     }
 
     @Test

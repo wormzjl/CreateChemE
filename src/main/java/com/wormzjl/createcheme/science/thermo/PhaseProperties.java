@@ -6,10 +6,15 @@ import java.util.Arrays;
 public final class PhaseProperties {
     private final double compressibilityFactor;
     private final double[] logFugacityCoefficients;
+    private final double residualEnthalpyJoulesPerMol;
 
-    PhaseProperties(double compressibilityFactor, double[] logFugacityCoefficients) {
+    PhaseProperties(
+            double compressibilityFactor,
+            double[] logFugacityCoefficients,
+            double residualEnthalpyJoulesPerMol) {
         this.compressibilityFactor = compressibilityFactor;
         this.logFugacityCoefficients = logFugacityCoefficients.clone();
+        this.residualEnthalpyJoulesPerMol = residualEnthalpyJoulesPerMol;
     }
 
     public double compressibilityFactor() {
@@ -28,9 +33,14 @@ public final class PhaseProperties {
         return logFugacityCoefficients.clone();
     }
 
+    public double residualEnthalpyJoulesPerMol() {
+        return residualEnthalpyJoulesPerMol;
+    }
+
     @Override
     public String toString() {
         return "PhaseProperties[z=" + compressibilityFactor
-                + ", logPhi=" + Arrays.toString(logFugacityCoefficients) + ']';
+                + ", logPhi=" + Arrays.toString(logFugacityCoefficients)
+                + ", residualEnthalpyJoulesPerMol=" + residualEnthalpyJoulesPerMol + ']';
     }
 }

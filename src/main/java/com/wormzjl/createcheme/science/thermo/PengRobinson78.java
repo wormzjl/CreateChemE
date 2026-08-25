@@ -85,33 +85,41 @@ public final class PengRobinson78 {
         int count = components.size();
 
         double[] a = new double[count];
+        double[] daDt = new double[count];
         double[] sumA = new double[count];
         double bMix = 0.0;
         for (int i = 0; i < count; i++) {
             ThermoComponent component = components.get(i);
             double sqrtReducedTemperature = Math.sqrt(
                     temperatureKelvin / component.criticalTemperatureKelvin());
-            double alpha = square(1.0 + kappas[i] * (1.0 - sqrtReducedTemperature));
-            a[i] = criticalA[i] * alpha;
+            double alphaTerm = 1.0 + kappas[i] * (1.0 - sqrtReducedTemperature);
+            a[i] = criticalA[i] * square(alphaTerm);
+            daDt[i] = -criticalA[i] * kappas[i] * alphaTerm
+                    / Math.sqrt(temperatureKelvin * component.criticalTemperatureKelvin());
             bMix += composition[i] * coVolumes[i];
         }
 
         double aMix = 0.0;
+        double daMixDt = 0.0;
         for (int i = 0; i < count; i++) {
             double row = 0.0;
+            double derivativeRow = 0.0;
             for (int j = 0; j < count; j++) {
-                row += composition[j] * Math.sqrt(a[i] * a[j])
-                        * (1.0 - binaryInteractions[i][j]);
+                double aij = Math.sqrt(a[i] * a[j]) * (1.0 - binaryInteractions[i][j]);
+                row += composition[j] * aij;
+                derivativeRow += composition[j] * 0.5 * aij
+                        * (daDt[i] / a[i] + daDt[j] / a[j]);
             }
             sumA[i] = row;
             aMix += composition[i] * row;
+            daMixDt += composition[i] * derivativeRow;
         }
 
         double reducedA = aMix * pressurePascal
                 / (square(GAS_CONSTANT) * square(temperatureKelvin));
         double reducedB = bMix * pressurePascal / (GAS_CONSTANT * temperatureKelvin);
         if (Math.abs(reducedA) < 1.0e-14 && Math.abs(reducedB) < 1.0e-14) {
-            return new PhaseProperties(1.0, new double[count]);
+            return new PhaseProperties(1.0, new double[count], 0.0);
         }
 
         double compressibility = selectRoot(reducedA, reducedB, phaseRoot);
@@ -127,7 +135,10 @@ public final class PengRobinson78 {
                     - Math.log(compressibility - reducedB)
                     - attraction * attractionRatio * logRatio;
         }
-        return new PhaseProperties(compressibility, logFugacity);
+        double residualEnthalpy = GAS_CONSTANT * temperatureKelvin * (compressibility - 1.0)
+                + (temperatureKelvin * daMixDt - aMix)
+                        / (2.0 * SQRT_TWO * bMix) * logRatio;
+        return new PhaseProperties(compressibility, logFugacity, residualEnthalpy);
     }
 
     private double[] normalizedComposition(double[] moleFractions) {
