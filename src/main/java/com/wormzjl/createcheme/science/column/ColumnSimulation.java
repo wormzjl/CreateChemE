@@ -303,11 +303,11 @@ public final class ColumnSimulation {
                 baseResiduals.maximumCompositionSummationResidual());
         List<ColumnDiagnostic> messages = List.of(ColumnDiagnostic.warning(
                 ColumnFaultCode.APPROXIMATE_ENERGY_MODEL,
-                "Peng-Robinson phase equilibrium and material balances are active; column energy "
+                "Peng-Robinson phase equilibrium, feed-quality traffic, and material balances are active; full column energy "
                         + "balances and petroleum critical-property fitting remain approximate"));
         SolverDiagnostics solverDiagnostics = new SolverDiagnostics(
                 validation.degreesOfFreedom(),
-                "isobaric_fixed_traffic",
+                "isobaric_feed_quality_traffic",
                 cascade.sweeps(),
                 cascade.propertyEvaluations(),
                 residuals,
@@ -444,10 +444,14 @@ public final class ColumnSimulation {
     private static List<StageState> stageProfile(CounterCurrentColumnSolver.Result cascade) {
         double[] temperatures = cascade.temperatures();
         double[] liquidFlows = cascade.liquidFlows();
+        double[] vaporFlows = cascade.vaporFlows();
         List<StageState> stages = new ArrayList<>(temperatures.length);
         for (int stage = 0; stage < temperatures.length; stage++) {
             stages.add(new StageState(
-                    stage + 1, temperatures[stage], liquidFlows[stage], cascade.vaporFlow()));
+                    stage + 1,
+                    temperatures[stage],
+                    liquidFlows[stage],
+                    vaporFlows[stage]));
         }
         return stages;
     }
