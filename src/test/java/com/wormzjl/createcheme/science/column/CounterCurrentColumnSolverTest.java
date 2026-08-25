@@ -20,7 +20,7 @@ class CounterCurrentColumnSolverTest {
         assertEquals(input.sideDraws().size() + 2, result.productFlows().length);
         assertTrue(result.maximumEquilibriumResidual() <= 1.0e-8);
         assertTrue(result.maximumVaporFractionResidual() <= 1.0e-6);
-        assertTrue(result.maximumStageComponentResidualMolPerSecond()
+        assertTrue(result.maximumRelativeStageComponentResidual()
                 <= CounterCurrentColumnSolver.STAGE_COMPONENT_TOLERANCE);
         assertTrue(result.propertyEvaluations() < 100_000);
 
@@ -52,6 +52,34 @@ class CounterCurrentColumnSolverTest {
                 result, feed.length - 1, result.productFlows().length - 1);
         assertTrue(topLightFraction > bottomLightFraction);
         assertTrue(bottomHeavyFraction > topHeavyFraction);
+    }
+
+
+    @Test
+    void inGameCrudeCaseConvergesWithinTheWorkerDeadlineBudget() {
+        ColumnSimulation.ColumnInput input = new ColumnSimulation.ColumnInput(
+                INPUT_SCHEMA_VERSION,
+                TiaJuanaLight12PropertyPackage.ASSAY_ID,
+                2610.7 * 1000.0 / 3600.0,
+                365.0 + 273.15,
+                30,
+                24,
+                8.0e6,
+                4.17,
+                ColumnSimulation.RefluxCondition.saturatedLiquid(),
+                List.of(
+                        new ColumnSimulation.SideDrawSpec(8, 496.0 * 1000.0 / 3600.0),
+                        new ColumnSimulation.SideDrawSpec(15, 653.0 * 1000.0 / 3600.0),
+                        new ColumnSimulation.SideDrawSpec(22, 149.0 * 1000.0 / 3600.0)));
+
+        long started = System.nanoTime();
+        CounterCurrentColumnSolver.Result result = new CounterCurrentColumnSolver().solve(input);
+        long elapsedMilliseconds = (System.nanoTime() - started) / 1_000_000L;
+
+        assertTrue(result.converged());
+        assertTrue(result.maximumRelativeStageComponentResidual()
+                <= CounterCurrentColumnSolver.STAGE_COMPONENT_TOLERANCE);
+        assertTrue(elapsedMilliseconds < 5_000L);
     }
 
     @Test
@@ -95,4 +123,3 @@ class CounterCurrentColumnSolverTest {
                         new ColumnSimulation.SideDrawSpec(22, 8.0)));
     }
 }
-

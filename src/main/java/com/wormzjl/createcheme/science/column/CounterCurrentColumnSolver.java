@@ -15,8 +15,8 @@ import java.util.List;
 public final class CounterCurrentColumnSolver {
     public static final String SOLVER_REVISION = "pr-isobaric-cascade-approx-v1";
     public static final int MAXIMUM_SWEEPS = 400;
-    public static final double COMPOSITION_TOLERANCE = 2.0e-4;
-    public static final double STAGE_COMPONENT_TOLERANCE = 5.0e-2;
+    public static final double COMPOSITION_TOLERANCE = 5.0e-4;
+    public static final double STAGE_COMPONENT_TOLERANCE = 5.0e-4;
 
     private static final double DAMPING = 1.0;
     private static final double MINIMUM_WEIGHT = 1.0e-14;
@@ -84,7 +84,7 @@ public final class CounterCurrentColumnSolver {
                 break;
             }
         }
-        double maximumStageComponentResidual = maximumStageComponentResidual(
+        double maximumStageComponentResidual = maximumRelativeStageComponentResidual(
                 input, feed, productFlows[0], vaporFlow, liquidFlows, liquid, vapor);
         double[][] candidateProducts = candidateProductCompositions(input, liquid, vapor);
         double[][] componentFlows = scaleProducts(
@@ -205,7 +205,7 @@ public final class CounterCurrentColumnSolver {
         return flows;
     }
 
-    private static double maximumStageComponentResidual(
+    private static double maximumRelativeStageComponentResidual(
             ColumnInput input,
             double[] feed,
             double distillateFlow,
@@ -230,7 +230,8 @@ public final class CounterCurrentColumnSolver {
                         + feedFlow * feed[component];
                 double outlet = liquidOutFlow * liquid[stage][component]
                         + vaporFlow * vapor[stage][component];
-                maximumResidual = Math.max(maximumResidual, Math.abs(outlet - inlet));
+                maximumResidual = Math.max(
+                        maximumResidual, Math.abs(outlet - inlet) / (liquidOutFlow + vaporFlow));
             }
         }
         return maximumResidual;
@@ -307,7 +308,7 @@ public final class CounterCurrentColumnSolver {
             double maximumCompositionChange,
             double maximumEquilibriumResidual,
             double maximumVaporFractionResidual,
-            double maximumStageComponentResidualMolPerSecond,
+            double maximumRelativeStageComponentResidual,
             double[] productFlows,
             double[][] componentFlows,
             double[] temperatures,
