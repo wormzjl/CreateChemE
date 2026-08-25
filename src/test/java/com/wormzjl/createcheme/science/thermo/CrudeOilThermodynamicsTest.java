@@ -49,6 +49,28 @@ class CrudeOilThermodynamicsTest {
         }
     }
 
+    @Test
+    void crudePressureEnthalpyFlashRecoversAColumnTemperature() {
+        PengRobinson78 equationOfState = TiaJuanaLightCrudeFixture.equationOfState();
+        PengRobinsonCaloricModel caloricModel =
+                TiaJuanaLightCrudeFixture.caloricModel(equationOfState);
+        TpCaloricFlashSolver tpFlash = new TpCaloricFlashSolver(
+                new TpFlashSolver(equationOfState), caloricModel);
+        PhFlashSolver phFlash = new PhFlashSolver(tpFlash);
+        double[] feed = TiaJuanaLightCrudeFixture.feedMoleFractions();
+        double pressure = 190_000.0;
+        double targetEnthalpy = tpFlash.solve(487.3, pressure, feed).enthalpyJoulesPerMol();
+
+        PhFlashResult result = phFlash.solve(
+                pressure, feed, targetEnthalpy, 350.0, 650.0);
+
+        assertTrue(result.converged());
+        assertTrue(result.iterations() > 1 && result.iterations() <= 8);
+        assertEquals(487.3, result.temperatureKelvin(), 1.0e-5);
+        assertEquals(0.0, result.enthalpyResidualJoulesPerMol(), 1.0e-3);
+        assertEquals(FlashResult.PhaseState.TWO_PHASE, result.flashResult().equilibrium().phaseState());
+    }
+
     private static void assertMaterialBalance(double[] feed, FlashResult result) {
         double[] liquid = result.liquidMoleFractions();
         double[] vapor = result.vaporMoleFractions();

@@ -1,12 +1,17 @@
 import com.wormzjl.createcheme.science.thermo.FlashResult;
+import com.wormzjl.createcheme.science.thermo.IdealGasHeatCapacity;
 import com.wormzjl.createcheme.science.thermo.PengRobinson78;
+import com.wormzjl.createcheme.science.thermo.PengRobinsonCaloricModel;
+import com.wormzjl.createcheme.science.thermo.PhFlashResult;
+import com.wormzjl.createcheme.science.thermo.PhFlashSolver;
 import com.wormzjl.createcheme.science.thermo.ThermoComponent;
+import com.wormzjl.createcheme.science.thermo.TpCaloricFlashSolver;
 import com.wormzjl.createcheme.science.thermo.TpFlashSolver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Simple warmed benchmark for the Peng-Robinson TP-flash implementation. */
+/** Simple warmed benchmark for the Peng-Robinson flash implementations. */
 public final class PengRobinsonFlashBenchmark {
     private static final double[] CRUDE_BOILING_POINTS_KELVIN = {
         295.45, 348.65, 384.15, 422.15, 460.15, 496.95,
@@ -34,7 +39,9 @@ public final class PengRobinsonFlashBenchmark {
         var nButane = new ThermoComponent("n_butane", 425.12, 3_796_000.0, 0.2002, 0.058124);
         var lightSolver = new TpFlashSolver(
                 PengRobinson78.withoutBinaryInteractions(List.of(methane, nButane)));
-        var crudeSolver = new TpFlashSolver(crudeEquationOfState());
+        PengRobinson78 crudeEquationOfState = crudeEquationOfState();
+        var crudeSolver = new TpFlashSolver(crudeEquationOfState);
+        double[] crudeFeed = normalized(CRUDE_FEED);
         Case[] cases = {
             new Case(
                     "two-phase methane/n-butane",
@@ -53,18 +60,26 @@ public final class PengRobinsonFlashBenchmark {
                     crudeSolver,
                     500.0,
                     190_000.0,
-                    normalized(CRUDE_FEED))
+                    crudeFeed)
         };
 
         System.out.printf("java=%s logicalProcessors=%d%n",
                 System.getProperty("java.version"), Runtime.getRuntime().availableProcessors());
         for (Case benchmarkCase : cases) {
-            run(benchmarkCase);
+            runTp(benchmarkCase);
         }
+
+        var crudeCaloricModel =
+                new PengRobinsonCaloricModel(crudeEquationOfState, crudeHeatCapacities());
+        var crudeTpCaloric = new TpCaloricFlashSolver(crudeSolver, crudeCaloricModel);
+        var crudePhSolver = new PhFlashSolver(crudeTpCaloric);
+        double targetEnthalpy =
+                crudeTpCaloric.solve(487.3, 190_000.0, crudeFeed).enthalpyJoulesPerMol();
+        runPh(crudePhSolver, crudeFeed, 190_000.0, targetEnthalpy);
         System.out.printf("blackhole=%.9g%n", blackhole);
     }
 
-    private static void run(Case benchmarkCase) {
+    private static void runTp(Case benchmarkCase) {
         long warmupDeadline = System.nanoTime() + 2_000_000_000L;
         int warmupSolves = 0;
         while (System.nanoTime() < warmupDeadline) {
@@ -96,6 +111,40 @@ public final class PengRobinsonFlashBenchmark {
                 percentile(samplesMicroseconds, 0.99));
     }
 
+    private static void runPh(
+            PhFlashSolver solver,
+            double[] feed,
+            double pressurePascal,
+            double targetEnthalpyJoulesPerMol) {
+        long warmupDeadline = System.nanoTime() + 2_000_000_000L;
+        int warmupSolves = 0;
+        while (System.nanoTime() < warmupDeadline) {
+            consume(solver.solve(
+                    pressurePascal, feed, targetEnthalpyJoulesPerMol, 350.0, 650.0));
+            warmupSolves++;
+        }
+
+        double[] samplesMicroseconds = new double[5_000];
+        for (int sample = 0; sample < samplesMicroseconds.length; sample++) {
+            long start = System.nanoTime();
+            PhFlashResult result = solver.solve(
+                    pressurePascal, feed, targetEnthalpyJoulesPerMol, 350.0, 650.0);
+            samplesMicroseconds[sample] = (System.nanoTime() - start) / 1_000.0;
+            consume(result);
+        }
+        Arrays.sort(samplesMicroseconds);
+
+        System.out.println("\npressure-enthalpy Tia Juana Light 12-cut proxy");
+        PhFlashResult probe = solver.solve(
+                pressurePascal, feed, targetEnthalpyJoulesPerMol, 350.0, 650.0);
+        System.out.printf("  components=%d iterations=%d warmupSolves=%d samples=%d%n",
+                feed.length, probe.iterations(), warmupSolves, samplesMicroseconds.length);
+        System.out.printf("  p50=%.3f us p95=%.3f us p99=%.3f us%n",
+                percentile(samplesMicroseconds, 0.50),
+                percentile(samplesMicroseconds, 0.95),
+                percentile(samplesMicroseconds, 0.99));
+    }
+
     private static PengRobinson78 crudeEquationOfState() {
         int count = CRUDE_BOILING_POINTS_KELVIN.length;
         List<ThermoComponent> components = new ArrayList<>(count);
@@ -115,6 +164,22 @@ public final class PengRobinsonFlashBenchmark {
         return new PengRobinson78(components, interactions);
     }
 
+    private static List<IdealGasHeatCapacity> crudeHeatCapacities() {
+        List<IdealGasHeatCapacity> heatCapacities =
+                new ArrayList<>(CRUDE_BOILING_POINTS_KELVIN.length);
+        for (int i = 0; i < CRUDE_BOILING_POINTS_KELVIN.length; i++) {
+            double cutPosition = i / (double) (CRUDE_BOILING_POINTS_KELVIN.length - 1);
+            heatCapacities.add(new IdealGasHeatCapacity(
+                    298.15,
+                    0.0,
+                    80.0 + 330.0 * cutPosition,
+                    0.10 + 0.22 * cutPosition,
+                    0.0,
+                    0.0));
+        }
+        return heatCapacities;
+    }
+
     private static double[] normalized(double[] values) {
         double[] result = values.clone();
         double sum = 0.0;
@@ -132,6 +197,12 @@ public final class PengRobinsonFlashBenchmark {
                 + result.maximumLogFugacityResidual()
                 + result.liquidMoleFractions()[0]
                 + result.vaporMoleFractions()[0];
+    }
+
+    private static void consume(PhFlashResult result) {
+        blackhole += result.temperatureKelvin()
+                + result.enthalpyResidualJoulesPerMol()
+                + result.flashResult().equilibrium().vaporFraction();
     }
 
     private static double percentile(double[] sorted, double probability) {
