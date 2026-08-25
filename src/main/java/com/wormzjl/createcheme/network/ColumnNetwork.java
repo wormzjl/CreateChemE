@@ -631,7 +631,7 @@ public final class ColumnNetwork {
     private static ResultView rejectedResultView(String status, List<String> messages) {
         return new ResultView(
                 status,
-                ColumnSimulation.DUMMY_SOLVER_REVISION,
+                ColumnSimulation.THERMODYNAMIC_SOLVER_REVISION,
                 "",
                 "",
                 false,

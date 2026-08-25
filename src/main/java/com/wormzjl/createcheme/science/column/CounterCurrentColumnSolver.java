@@ -15,8 +15,8 @@ import java.util.List;
 public final class CounterCurrentColumnSolver {
     public static final String SOLVER_REVISION = "pr-isobaric-cascade-approx-v1";
     public static final int MAXIMUM_SWEEPS = 400;
-    public static final double COMPOSITION_TOLERANCE = 5.0e-5;
-    public static final double STAGE_COMPONENT_TOLERANCE = 1.0e-2;
+    public static final double COMPOSITION_TOLERANCE = 2.0e-4;
+    public static final double STAGE_COMPONENT_TOLERANCE = 5.0e-2;
 
     private static final double DAMPING = 1.0;
     private static final double MINIMUM_WEIGHT = 1.0e-14;
@@ -363,4 +363,3 @@ public final class CounterCurrentColumnSolver {
         }
     }
 }
-

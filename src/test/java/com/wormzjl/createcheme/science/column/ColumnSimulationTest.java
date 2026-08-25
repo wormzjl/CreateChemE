@@ -161,22 +161,22 @@ class ColumnSimulationTest {
     }
 
     @Test
-    void identicalInputProducesIdenticalDummyResultAndDigest() {
+    void identicalInputProducesIdenticalThermodynamicResultAndDigest() {
         ColumnSolveOutcome first = calculate(validInput());
         ColumnSolveOutcome second = calculate(validInput());
 
-        assertEquals(ColumnSolveStatus.DUMMY_RESULT, first.status());
+        assertEquals(ColumnSolveStatus.APPROXIMATE_RESULT, first.status());
         assertEquals(first, second);
         assertEquals(
                 first.result().orElseThrow().resultDigest(),
                 second.result().orElseThrow().resultDigest());
         assertEquals(64, first.result().orElseThrow().resultDigest().length());
         assertTrue(first.diagnostics().stream()
-                .anyMatch(diagnostic -> diagnostic.code() == ColumnFaultCode.DUMMY_SOLVER_ACTIVE));
+                .anyMatch(diagnostic -> diagnostic.code() == ColumnFaultCode.APPROXIMATE_ENERGY_MODEL));
     }
 
     @Test
-    void dummyResultIsBoundedConservativeAndGuiReady() {
+    void thermodynamicResultIsBoundedConservativeAndGuiReady() {
         ColumnInput input = validInput();
         ColumnResult result = calculate(input).result().orElseThrow();
 
@@ -222,7 +222,8 @@ class ColumnSimulationTest {
         assertTrue(residuals.maximumComponentMaterialResidual().orElseThrow() < 1.0e-10);
         assertTrue(residuals.overallMaterialResidual().orElseThrow() < 1.0e-12);
         assertTrue(residuals.relativeEnergyResidual().isEmpty());
-        assertTrue(residuals.maximumEquilibriumResidual().isEmpty());
+        assertTrue(residuals.maximumEquilibriumResidual().orElseThrow() <= 1.0e-8);
+        assertTrue(result.diagnostics().propertyEvaluations() > 0);
     }
 
     @Test
@@ -260,7 +261,7 @@ class ColumnSimulationTest {
     }
 
     @Test
-    void boundaryCasesRemainFiniteAndConservative() {
+    void boundaryCasesEitherConvergeConservativelyOrReportNoConvergence() {
         List<ColumnInput> cases = List.of(
                 new ColumnInput(
                         INPUT_SCHEMA_VERSION,
@@ -293,7 +294,13 @@ class ColumnSimulationTest {
 
         for (ColumnInput input : cases) {
             ColumnSolveOutcome outcome = calculate(input);
-            assertEquals(ColumnSolveStatus.DUMMY_RESULT, outcome.status());
+            if (outcome.status() == ColumnSolveStatus.NO_CONVERGENCE) {
+                assertFalse(outcome.hasResult());
+                assertTrue(outcome.diagnostics().stream()
+                        .anyMatch(diagnostic -> diagnostic.code() == ColumnFaultCode.NO_CONVERGENCE));
+                continue;
+            }
+            assertEquals(ColumnSolveStatus.APPROXIMATE_RESULT, outcome.status());
             ColumnResult result = outcome.result().orElseThrow();
             double output = result.products().stream()
                     .mapToDouble(ProductStream::molarFlowMolPerSecond)

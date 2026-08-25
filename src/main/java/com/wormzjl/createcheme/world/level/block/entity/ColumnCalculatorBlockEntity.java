@@ -5,6 +5,7 @@ import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.runtime.BoundedCpuSolveService;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
 import com.wormzjl.createcheme.science.column.ColumnSimulation;
+import com.wormzjl.createcheme.science.column.TiaJuanaLight12PropertyPackage;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnInput;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnResult;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorMenu;
@@ -129,7 +130,7 @@ public final class ColumnCalculatorBlockEntity extends BlockEntity implements Me
             return false;
         }
         requireValidResult(result);
-        String expectedDataset = "dummy:" + ticket.input().assayId() + "@v1";
+        String expectedDataset = TiaJuanaLight12PropertyPackage.DATASET_REVISION;
         if (!expectedDataset.equals(result.datasetRevision())) {
             throw new IllegalArgumentException("Result dataset does not match the active calculation ticket");
         }

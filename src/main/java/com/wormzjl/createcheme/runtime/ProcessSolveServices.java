@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.runtime;
 
 import com.wormzjl.createcheme.science.column.ColumnSimulation;
+import com.wormzjl.createcheme.science.column.TiaJuanaLight12PropertyPackage;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnInput;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnSolveOutcome;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorBlockEntity.CalculationTicket;
@@ -200,7 +201,7 @@ public final class ProcessSolveServices {
     }
 
     private static String expectedDatasetRevision(ColumnInput input) {
-        return "dummy:" + input.assayId() + "@v1";
+        return TiaJuanaLight12PropertyPackage.DATASET_REVISION;
     }
 
     private static void requireServerThread(MinecraftServer server) {

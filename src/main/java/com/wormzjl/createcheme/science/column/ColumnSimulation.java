@@ -15,12 +15,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Minecraft-independent Milestone-1 column contract, validation, and deterministic GUI dummy.
- * The dummy conserves component molar flows but is explicitly not a PR/MESH calculation.
+ * Minecraft-independent column contract, validation, and thermodynamic calculation entry point.
  */
 public final class ColumnSimulation {
     public static final int INPUT_SCHEMA_VERSION = 1;
     public static final String DUMMY_SOLVER_REVISION = "dummy-column-v1";
+    public static final String THERMODYNAMIC_SOLVER_REVISION =
+            CounterCurrentColumnSolver.SOLVER_REVISION;
 
     public static final ColumnAssumptions MILESTONE_1 = new ColumnAssumptions(
             "milestone-1-bare-column-v1",
@@ -257,41 +258,64 @@ public final class ColumnSimulation {
     }
 
     /**
-     * Returns a deterministic, conservative placeholder result for GUI plumbing. It never reports
-     * thermodynamic convergence and always uses {@link ColumnSolveStatus#DUMMY_RESULT} on success.
+     * Runs the first Peng-Robinson crude-column model. The cascade closes component balances and
+     * phase equilibrium at fixed pressure and internal traffic, but intentionally leaves the energy
+     * equations unsolved and therefore reports an approximate result.
      */
     public static ColumnSolveOutcome calculate(ColumnInput input) {
         ColumnValidationResult validation = validate(input);
         if (!validation.isValid()) {
             return ColumnSolveOutcome.rejected(validation.diagnostics());
         }
+        if (!TiaJuanaLight12PropertyPackage.ASSAY_ID.equals(input.assayId())) {
+            return ColumnSolveOutcome.rejected(List.of(ColumnDiagnostic.error(
+                    ColumnFaultCode.UNSUPPORTED_ASSAY,
+                    "assayId",
+                    "No thermodynamic property package is registered for " + input.assayId())));
+        }
+
+        CounterCurrentColumnSolver.Result cascade = new CounterCurrentColumnSolver().solve(input);
+        if (!cascade.converged()) {
+            List<ColumnDiagnostic> messages = List.of(ColumnDiagnostic.error(
+                    ColumnFaultCode.NO_CONVERGENCE,
+                    "solver",
+                    "Thermodynamic cascade did not stabilize within "
+                            + CounterCurrentColumnSolver.MAXIMUM_SWEEPS + " sweeps"));
+            return new ColumnSolveOutcome(
+                    ColumnSolveStatus.NO_CONVERGENCE, Optional.empty(), messages);
+        }
 
         String inputDigest = inputDigest(input);
-        double[] feedFractions = normalizedFeedFractions();
-        double[] streamFlows = productFlows(input);
-        double[] targetCutIndices = targetCutIndices(input);
-        double[][] componentFlows = allocateConservatively(
-                input.feedMolarFlowMolPerSecond(), feedFractions, streamFlows, targetCutIndices);
-        List<StageState> stages = stageProfile(input);
+        double[] feedFractions = TiaJuanaLight12PropertyPackage.feedMoleFractions();
+        double[] streamFlows = cascade.productFlows();
+        double[][] componentFlows = cascade.componentFlows();
+        List<StageState> stages = stageProfile(cascade);
         List<ProductStream> products = products(input, streamFlows, componentFlows, stages);
         double condenserDuty = -Math.max(
                 0.0, 0.90 * input.reboilerDutyWatts() + streamFlows[0] * 30_000.0);
 
-        ColumnResiduals residuals = residuals(input, feedFractions, products);
+        ColumnResiduals baseResiduals = residuals(input, feedFractions, products);
+        ColumnResiduals residuals = new ColumnResiduals(
+                baseResiduals.maximumComponentMaterialResidual(),
+                baseResiduals.overallMaterialResidual(),
+                OptionalDouble.empty(),
+                OptionalDouble.of(cascade.maximumEquilibriumResidual()),
+                baseResiduals.maximumCompositionSummationResidual());
         List<ColumnDiagnostic> messages = List.of(ColumnDiagnostic.warning(
-                ColumnFaultCode.DUMMY_SOLVER_ACTIVE,
-                "Placeholder allocation only; energy and equilibrium residuals were not evaluated"));
+                ColumnFaultCode.APPROXIMATE_ENERGY_MODEL,
+                "Peng-Robinson phase equilibrium and material balances are active; column energy "
+                        + "balances and petroleum critical-property fitting remain approximate"));
         SolverDiagnostics solverDiagnostics = new SolverDiagnostics(
                 validation.degreesOfFreedom(),
-                "deterministic_dummy",
-                0,
-                0,
+                "isobaric_fixed_traffic",
+                cascade.sweeps(),
+                cascade.propertyEvaluations(),
                 residuals,
                 messages);
-        String datasetRevision = "dummy:" + input.assayId() + "@v1";
+        String datasetRevision = TiaJuanaLight12PropertyPackage.DATASET_REVISION;
         String resultDigest = resultDigest(
                 inputDigest,
-                DUMMY_SOLVER_REVISION,
+                THERMODYNAMIC_SOLVER_REVISION,
                 datasetRevision,
                 MILESTONE_1.revision(),
                 condenserDuty,
@@ -300,7 +324,7 @@ public final class ColumnSimulation {
                 solverDiagnostics);
         ColumnResult result = new ColumnResult(
                 RESULT_SCHEMA_VERSION,
-                DUMMY_SOLVER_REVISION,
+                THERMODYNAMIC_SOLVER_REVISION,
                 datasetRevision,
                 MILESTONE_1.revision(),
                 inputDigest,
@@ -309,7 +333,7 @@ public final class ColumnSimulation {
                 stages,
                 condenserDuty,
                 solverDiagnostics);
-        return ColumnSolveOutcome.dummy(result, messages);
+        return ColumnSolveOutcome.approximate(result, messages);
     }
 
     private static void validateAssayId(String assayId, List<ColumnDiagnostic> diagnostics) {
@@ -417,6 +441,16 @@ public final class ColumnSimulation {
         return allocation;
     }
 
+    private static List<StageState> stageProfile(CounterCurrentColumnSolver.Result cascade) {
+        double[] temperatures = cascade.temperatures();
+        double[] liquidFlows = cascade.liquidFlows();
+        List<StageState> stages = new ArrayList<>(temperatures.length);
+        for (int stage = 0; stage < temperatures.length; stage++) {
+            stages.add(new StageState(
+                    stage + 1, temperatures[stage], liquidFlows[stage], cascade.vaporFlow()));
+        }
+        return stages;
+    }
     private static List<StageState> stageProfile(ColumnInput input) {
         double refluxTemperature = input.refluxCondition()
                 .temperatureKelvin()
@@ -736,6 +770,7 @@ public final class ColumnSimulation {
     public enum ColumnSolveStatus {
         CONVERGED,
         DUMMY_RESULT,
+        APPROXIMATE_RESULT,
         REJECTED_INPUT,
         INFEASIBLE,
         NO_CONVERGENCE,
@@ -749,6 +784,7 @@ public final class ColumnSimulation {
         UNSUPPORTED_SCHEMA_VERSION("column.input.schema_unsupported"),
         ASSAY_ID_REQUIRED("column.input.assay_required"),
         ASSAY_ID_INVALID("column.input.assay_invalid"),
+        UNSUPPORTED_ASSAY("column.input.assay_unsupported"),
         NON_FINITE_VALUE("column.input.non_finite"),
         VALUE_OUT_OF_RANGE("column.input.out_of_range"),
         INVALID_STAGE_COUNT("column.input.stage_count_invalid"),
@@ -769,6 +805,7 @@ public final class ColumnSimulation {
         INFEASIBLE_FLOW("column.solve.infeasible_flow"),
         NO_CONVERGENCE("column.solve.no_convergence"),
         DUMMY_SOLVER_ACTIVE("column.solve.dummy_active"),
+        APPROXIMATE_ENERGY_MODEL("column.solve.approximate_energy"),
         INTERNAL_INVARIANT("column.solve.internal_invariant");
 
         private final String wireCode;
@@ -1044,7 +1081,8 @@ public final class ColumnSimulation {
             Objects.requireNonNull(result, "result");
             diagnostics = List.copyOf(diagnostics);
             boolean successful = status == ColumnSolveStatus.CONVERGED
-                    || status == ColumnSolveStatus.DUMMY_RESULT;
+                    || status == ColumnSolveStatus.DUMMY_RESULT
+                    || status == ColumnSolveStatus.APPROXIMATE_RESULT;
             if (successful != result.isPresent()) {
                 throw new IllegalArgumentException("Successful statuses require exactly one result");
             }
@@ -1059,6 +1097,12 @@ public final class ColumnSimulation {
                 ColumnResult result, List<ColumnDiagnostic> diagnostics) {
             return new ColumnSolveOutcome(
                     ColumnSolveStatus.DUMMY_RESULT, Optional.of(result), diagnostics);
+        }
+
+        public static ColumnSolveOutcome approximate(
+                ColumnResult result, List<ColumnDiagnostic> diagnostics) {
+            return new ColumnSolveOutcome(
+                    ColumnSolveStatus.APPROXIMATE_RESULT, Optional.of(result), diagnostics);
         }
 
         public boolean hasResult() {
