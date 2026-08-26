@@ -72,7 +72,7 @@ public record V3ColumnStreamProperties(
         thermo = Objects.requireNonNull(thermo, "thermo");
         V3ColumnTopology topology = problem.topology();
         if (!topology.hasLiquidPhase(topology.condenserNode())) {
-            throw new IllegalArgumentException("V3 presentation streams require the accepted two-phase condenser branch");
+            throw new IllegalArgumentException("V3 presentation streams require a liquid-bearing condenser branch");
         }
         double reflux = specification(problem.input(), V3ColumnSpecification.OrganicRefluxRatio.class).ratio();
         double liquidProductScale = 1.0 / (1.0 + reflux);
@@ -80,8 +80,10 @@ public record V3ColumnStreamProperties(
             throw new IllegalArgumentException("V3 reflux ratio cannot form a finite liquid product scale");
         }
         List<V3ColumnStreamProperties> streams = new ArrayList<>(MAX_STREAMS);
-        streams.add(stream(problem, state, thermo, topology.condenserNode(), false, 1.0,
-                "overhead_vapor", "Overhead vapor", "VAPOR"));
+        if (topology.hasVaporPhase(topology.condenserNode())) {
+            streams.add(stream(problem, state, thermo, topology.condenserNode(), false, 1.0,
+                    "overhead_vapor", "Overhead vapor", "VAPOR"));
+        }
         streams.add(stream(problem, state, thermo, topology.condenserNode(), true, liquidProductScale,
                 "distillate_liquid", "Liquid distillate", "LIQUID"));
         streams.add(stream(problem, state, thermo, topology.reboilerNode(), true, 1.0,
