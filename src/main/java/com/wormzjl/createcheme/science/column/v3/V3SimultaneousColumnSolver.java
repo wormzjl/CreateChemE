@@ -16,6 +16,8 @@ final class V3SimultaneousColumnSolver {
     private static final double FALLBACK_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 10.0;
     private static final double INITIAL_GAUSS_NEWTON_DAMPING = 1.0e-8;
     private static final int MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS = 8;
+    private static final String NEWTON_OFF_BAND_MESSAGE =
+            "V3 Newton Jacobian contains an unexpected off-band coupling";
     private static final String DAMPED_NORMAL_OFF_BAND_MESSAGE =
             "V3 damped normal matrix contains an unexpected off-band coupling";
 
@@ -79,8 +81,16 @@ final class V3SimultaneousColumnSolver {
             }
             V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
                     evaluator, coordinates, state, workspaceFactory, differenceScale);
-            V3BandedPivotedSolver.Result linearResult = V3BandedPivotedSolver.solve(
-                    toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
+            V3BandedPivotedSolver.Result linearResult;
+            try {
+                linearResult = V3BandedPivotedSolver.solve(
+                        toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
+            } catch (IllegalStateException unavailable) {
+                if (!NEWTON_OFF_BAND_MESSAGE.equals(unavailable.getMessage())) throw unavailable;
+                return new Attempt.Failure("JACOBIAN_BAND_STRUCTURE", state,
+                        new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, unavailable.getMessage(),
+                                lastConvergenceEvidence));
+            }
             if (!(linearResult instanceof V3BandedPivotedSolver.Result.Success linearSuccess)) {
                 V3BandedPivotedSolver.Result.Failure failure = (V3BandedPivotedSolver.Result.Failure) linearResult;
                 double[] baseCoordinates = coordinates.encode(state);
@@ -138,7 +148,7 @@ final class V3SimultaneousColumnSolver {
 
     private static V3BandedMatrix toBandedMatrix(
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3StageBlockLayout layout) {
-        return stageBandedMatrix(jacobian.values(), layout, 1, "V3 Newton Jacobian contains an unexpected off-band coupling");
+        return stageBandedMatrix(jacobian.values(), layout, 1, NEWTON_OFF_BAND_MESSAGE);
     }
 
     private static V3BandedMatrix stageBandedMatrix(

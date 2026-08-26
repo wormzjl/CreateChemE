@@ -116,7 +116,9 @@ public final class V3ColumnCalculator {
     }
 
     private static V3SolverFailureCode failureCode(String code) {
-        if (code.startsWith("LINEAR_")) return V3SolverFailureCode.LINEAR_SOLVE_FAILURE;
+        if (code.startsWith("LINEAR_") || code.startsWith("JACOBIAN_")) {
+            return V3SolverFailureCode.LINEAR_SOLVE_FAILURE;
+        }
         if (code.startsWith("MAX_ITERATIONS") || code.startsWith("LINE_SEARCH")
                 || code.startsWith("CONVERGENCE_EVIDENCE")) return V3SolverFailureCode.NONCONVERGENCE;
         return V3SolverFailureCode.INTERNAL_ERROR;
