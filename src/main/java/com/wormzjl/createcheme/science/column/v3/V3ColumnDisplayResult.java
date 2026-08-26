@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -16,7 +17,8 @@ public record V3ColumnDisplayResult(
         String datasetRevision,
         int newtonIterations,
         double maximumScaledResidual,
-        int acceptanceCheckCount) {
+        int acceptanceCheckCount,
+        List<V3ColumnStreamProperties> streams) {
     public V3ColumnDisplayResult {
         inputDigest = boundedDigest(inputDigest);
         formulationRevision = boundedRevision(formulationRevision, "formulationRevision");
@@ -25,6 +27,10 @@ public record V3ColumnDisplayResult(
         if (newtonIterations < 0 || !Double.isFinite(maximumScaledResidual) || maximumScaledResidual < 0.0
                 || acceptanceCheckCount < 1 || acceptanceCheckCount > 64) {
             throw new IllegalArgumentException("Invalid compact V3 display certificate");
+        }
+        streams = List.copyOf(Objects.requireNonNull(streams, "streams"));
+        if (streams.size() > V3ColumnStreamProperties.MAX_STREAMS) {
+            throw new IllegalArgumentException("V3 display certificate has too many product streams");
         }
     }
 
@@ -39,7 +45,8 @@ public record V3ColumnDisplayResult(
                 V3PengRobinsonThermo.fromRegisteredPackage(result.problem().input().packageId()).datasetRevision(),
                 success.diagnostics().newtonIterations(),
                 success.diagnostics().maximumScaledResidual(),
-                result.acceptanceAudit().checks().size());
+                result.acceptanceAudit().checks().size(),
+                result.streams());
     }
 
     private static String boundedDigest(String value) {

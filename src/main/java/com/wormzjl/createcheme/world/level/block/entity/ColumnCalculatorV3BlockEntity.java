@@ -6,9 +6,11 @@ import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 1;
+    public static final int DATA_VERSION = 2;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
     private static final int DEFAULT_STAGE_COUNT = 30;
     private static final int DEFAULT_FEED_STAGE = 24;
@@ -184,7 +186,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             detail = "Persisted V3 state requires a newer data version";
             return;
         }
-        if (dataVersion != DATA_VERSION || !tag.contains(TAG_INPUT, Tag.TAG_COMPOUND)) {
+        if (dataVersion < 1 || !tag.contains(TAG_INPUT, Tag.TAG_COMPOUND)) {
             status = V3Status.DIRTY;
             detail = "CORRUPT_PERSISTED_STATE";
             return;
@@ -300,14 +302,18 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
 
     private static V3ColumnInput defaultInput() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PILOT_PACKAGE);
-        double[] feedFlows = new double[thermo.componentBasis().componentCount()];
-        feedFlows[6] = 50.0;
-        feedFlows[13] = 50.0;
-        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, thermo.packageId(), "test:registered-pr-binary",
-                thermo.componentBasis(), feedFlows, 550.0, DEFAULT_STAGE_COUNT, DEFAULT_FEED_STAGE, 250_000.0, 750.0, List.of(
-                        new V3ColumnSpecification.CondenserOutletTemperature(300.0),
-                        new V3ColumnSpecification.OrganicRefluxRatio(2.0),
-                        new V3ColumnSpecification.ReboilerDuty(0.0)));
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] feedFlows = crude.moleFractions();
+        double totalFlowMolPerSecond = 2_610.7 * 1_000.0 / 3_600.0;
+        for (int component = 0; component < feedFlows.length; component++) {
+            feedFlows[component] *= totalFlowMolPerSecond;
+        }
+        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
+                crude.componentBasis(), feedFlows, 365.0 + 273.15, DEFAULT_STAGE_COUNT, DEFAULT_FEED_STAGE,
+                250_000.0, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(332.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(4.17),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
     }
 
     private static CompoundTag writeInput(V3ColumnInput input) {
@@ -374,14 +380,56 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         tag.putInt("NewtonIterations", result.newtonIterations());
         tag.putDouble("MaximumResidual", result.maximumScaledResidual());
         tag.putInt("AcceptanceChecks", result.acceptanceCheckCount());
+        ListTag streams = new ListTag();
+        for (V3ColumnStreamProperties stream : result.streams()) {
+            CompoundTag streamTag = new CompoundTag();
+            streamTag.putString("Id", stream.streamId());
+            streamTag.putString("Name", stream.displayName());
+            streamTag.putString("Phase", stream.phase());
+            streamTag.putDouble("Flow", stream.molarFlowMolPerSecond());
+            streamTag.putDouble("Temperature", stream.temperatureKelvin());
+            streamTag.putDouble("Pressure", stream.pressurePascal());
+            ListTag composition = new ListTag();
+            for (V3ColumnStreamProperties.ComponentFraction fraction : stream.moleFractions()) {
+                CompoundTag fractionTag = new CompoundTag();
+                fractionTag.putString("Component", fraction.componentId());
+                fractionTag.putDouble("Fraction", fraction.moleFraction());
+                composition.add(fractionTag);
+            }
+            streamTag.put("Composition", composition);
+            streams.add(streamTag);
+        }
+        tag.put("Streams", streams);
         return tag;
     }
 
     private static V3ColumnDisplayResult readDisplayResult(CompoundTag tag) {
+        ListTag streamTags = tag.getList("Streams", Tag.TAG_COMPOUND);
+        if (streamTags.size() > V3ColumnStreamProperties.MAX_STREAMS) {
+            throw new IllegalArgumentException("Persisted V3 stream count exceeds the display contract");
+        }
+        List<V3ColumnStreamProperties> streams = new ArrayList<>(streamTags.size());
+        for (int streamIndex = 0; streamIndex < streamTags.size(); streamIndex++) {
+            CompoundTag streamTag = streamTags.getCompound(streamIndex);
+            ListTag fractionTags = streamTag.getList("Composition", Tag.TAG_COMPOUND);
+            if (fractionTags.isEmpty() || fractionTags.size() > V3ColumnStreamProperties.MAX_COMPONENTS) {
+                throw new IllegalArgumentException("Persisted V3 stream composition exceeds the display contract");
+            }
+            List<V3ColumnStreamProperties.ComponentFraction> fractions = new ArrayList<>(fractionTags.size());
+            for (int fractionIndex = 0; fractionIndex < fractionTags.size(); fractionIndex++) {
+                CompoundTag fractionTag = fractionTags.getCompound(fractionIndex);
+                fractions.add(new V3ColumnStreamProperties.ComponentFraction(
+                        fractionTag.getString("Component"), fractionTag.getDouble("Fraction")));
+            }
+            streams.add(new V3ColumnStreamProperties(
+                    streamTag.getString("Id"), streamTag.getString("Name"), streamTag.getString("Phase"),
+                    streamTag.getDouble("Flow"), streamTag.getDouble("Temperature"), streamTag.getDouble("Pressure"),
+                    fractions));
+        }
         return new V3ColumnDisplayResult(
                 tag.getString("Digest"), tag.getString("Formulation"), tag.getString("Assumptions"),
                 tag.getString("Dataset"), tag.getInt("NewtonIterations"), tag.getDouble("MaximumResidual"),
-                tag.getInt("AcceptanceChecks"));
+                tag.getInt("AcceptanceChecks"), streams);
     }
 
     private static V3ColumnSpecification specification(V3ControlledQuantity quantity, double value) {

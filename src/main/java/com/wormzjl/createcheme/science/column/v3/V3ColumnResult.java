@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import java.util.Objects;
+import java.util.List;
 
 /** Minimal immutable accepted-result envelope; physical profiles are added with the MESH solver. */
 public final class V3ColumnResult {
@@ -8,14 +9,19 @@ public final class V3ColumnResult {
     private final V3InputDigest inputDigest;
     private final V3AcceptanceAudit acceptanceAudit;
     private final V3ConvergenceEvidence convergenceEvidence;
+    private final List<V3ColumnStreamProperties> streams;
 
     private V3ColumnResult(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
-            V3ConvergenceEvidence convergenceEvidence) {
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams) {
         this.problem = Objects.requireNonNull(problem, "problem");
         this.inputDigest = Objects.requireNonNull(inputDigest, "inputDigest");
         this.acceptanceAudit = Objects.requireNonNull(acceptanceAudit, "acceptanceAudit");
         this.convergenceEvidence = Objects.requireNonNull(convergenceEvidence, "convergenceEvidence");
+        this.streams = List.copyOf(Objects.requireNonNull(streams, "streams"));
+        if (this.streams.size() > V3ColumnStreamProperties.MAX_STREAMS) {
+            throw new IllegalArgumentException("V3 result exceeds the bounded accepted stream contract");
+        }
         if (!acceptanceAudit.accepted() || !convergenceEvidence.satisfiesGates()) {
             throw new IllegalArgumentException("A V3 result requires a passing acceptance audit and convergence evidence");
         }
@@ -25,7 +31,15 @@ public final class V3ColumnResult {
     static V3ColumnResult accepted(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence) {
-        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence);
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence, List.of());
+    }
+
+    /** Extracts product properties only from the rigorously accepted final MESH state. */
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
+                V3ColumnStreamProperties.fromAccepted(problem, state));
     }
 
     public V3ColumnProblem problem() {
@@ -42,5 +56,9 @@ public final class V3ColumnResult {
 
     public V3ConvergenceEvidence convergenceEvidence() {
         return convergenceEvidence;
+    }
+
+    public List<V3ColumnStreamProperties> streams() {
+        return streams;
     }
 }

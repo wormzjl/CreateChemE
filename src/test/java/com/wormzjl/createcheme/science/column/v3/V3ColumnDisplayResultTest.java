@@ -28,5 +28,7 @@ class V3ColumnDisplayResultTest {
         assertEquals(success.diagnostics().newtonIterations(), view.newtonIterations());
         assertEquals(success.diagnostics().maximumScaledResidual(), view.maximumScaledResidual());
         assertTrue(view.acceptanceCheckCount() > 0);
+        assertEquals(success.result().streams(), view.streams());
+        assertEquals(3, view.streams().size());
     }
 }

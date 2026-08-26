@@ -10,6 +10,7 @@ import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
@@ -44,13 +45,15 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 1;
+    public static final int WIRE_SCHEMA_VERSION = 2;
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
     private static final int MAX_DIAGNOSTICS = 32;
     private static final int MAX_DIAGNOSTIC_LENGTH = 256;
     private static final int MAX_REVISION_LENGTH = 128;
+    private static final int MAX_STREAM_LABEL_LENGTH = 48;
+    private static final int MAX_PHASE_LENGTH = 16;
     private static final int MAX_REJECTION_LENGTH = 128;
     private static final AtomicLong CLIENT_NONCE_SEQUENCE = new AtomicLong();
     private static volatile ClientStateConsumer clientStateConsumer = (pos, state) -> {};
@@ -531,14 +534,53 @@ public final class ColumnV3Network {
         buffer.writeVarInt(result.newtonIterations());
         buffer.writeDouble(result.maximumScaledResidual());
         buffer.writeVarInt(result.acceptanceCheckCount());
+        buffer.writeVarInt(result.streams().size());
+        for (V3ColumnStreamProperties stream : result.streams()) {
+            buffer.writeUtf(stream.streamId(), MAX_COMPONENT_IDENTIFIER_LENGTH);
+            buffer.writeUtf(stream.displayName(), MAX_STREAM_LABEL_LENGTH);
+            buffer.writeUtf(stream.phase(), MAX_PHASE_LENGTH);
+            buffer.writeDouble(stream.molarFlowMolPerSecond());
+            buffer.writeDouble(stream.temperatureKelvin());
+            buffer.writeDouble(stream.pressurePascal());
+            buffer.writeVarInt(stream.moleFractions().size());
+            for (V3ColumnStreamProperties.ComponentFraction fraction : stream.moleFractions()) {
+                buffer.writeUtf(fraction.componentId(), MAX_COMPONENT_IDENTIFIER_LENGTH);
+                buffer.writeDouble(fraction.moleFraction());
+            }
+        }
     }
 
     private static V3ColumnDisplayResult readDisplayResult(RegistryFriendlyByteBuf buffer) {
         try {
+            String digest = buffer.readUtf(64);
+            String formulation = buffer.readUtf(MAX_REVISION_LENGTH);
+            String assumptions = buffer.readUtf(MAX_REVISION_LENGTH);
+            String dataset = buffer.readUtf(MAX_REVISION_LENGTH);
+            int iterations = buffer.readVarInt();
+            double residual = finite(buffer.readDouble(), "maximum residual");
+            int acceptanceChecks = buffer.readVarInt();
+            int streamCount = readCount(buffer, V3ColumnStreamProperties.MAX_STREAMS, "stream");
+            List<V3ColumnStreamProperties> streams = new ArrayList<>(streamCount);
+            for (int streamIndex = 0; streamIndex < streamCount; streamIndex++) {
+                String streamId = buffer.readUtf(MAX_COMPONENT_IDENTIFIER_LENGTH);
+                String displayName = buffer.readUtf(MAX_STREAM_LABEL_LENGTH);
+                String phase = buffer.readUtf(MAX_PHASE_LENGTH);
+                double flow = finite(buffer.readDouble(), "stream flow");
+                double temperature = finite(buffer.readDouble(), "stream temperature");
+                double pressure = finite(buffer.readDouble(), "stream pressure");
+                int fractionCount = readCount(buffer, V3ColumnStreamProperties.MAX_COMPONENTS, "stream component");
+                if (fractionCount < 1) throw new DecoderException("V3 stream composition is empty");
+                List<V3ColumnStreamProperties.ComponentFraction> fractions = new ArrayList<>(fractionCount);
+                for (int fractionIndex = 0; fractionIndex < fractionCount; fractionIndex++) {
+                    fractions.add(new V3ColumnStreamProperties.ComponentFraction(
+                            buffer.readUtf(MAX_COMPONENT_IDENTIFIER_LENGTH),
+                            finite(buffer.readDouble(), "stream component fraction")));
+                }
+                streams.add(new V3ColumnStreamProperties(
+                        streamId, displayName, phase, flow, temperature, pressure, fractions));
+            }
             return new V3ColumnDisplayResult(
-                    buffer.readUtf(64), buffer.readUtf(MAX_REVISION_LENGTH), buffer.readUtf(MAX_REVISION_LENGTH),
-                    buffer.readUtf(MAX_REVISION_LENGTH), buffer.readVarInt(), finite(buffer.readDouble(), "maximum residual"),
-                    buffer.readVarInt());
+                    digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 display result", invalid);
         }
