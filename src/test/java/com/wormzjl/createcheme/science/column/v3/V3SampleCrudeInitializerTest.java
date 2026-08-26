@@ -13,8 +13,10 @@ class V3SampleCrudeInitializerTest {
     void registeredTiaJuanaCrudeFlashesAndBuildsAnExactZeroAwareFiniteSeed() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] feedFlows = crude.moleFractions();
+        for (int component = 0; component < feedFlows.length; component++) feedFlows[component] *= 100.0;
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
-                crude.componentBasis(), crude.moleFractions(), 638.15, 4, 2, 266_500.0, 750.0, List.of(
+                crude.componentBasis(), feedFlows, 638.15, 4, 2, 266_500.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(332.15),
                         new V3ColumnSpecification.OrganicRefluxRatio(4.17),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));

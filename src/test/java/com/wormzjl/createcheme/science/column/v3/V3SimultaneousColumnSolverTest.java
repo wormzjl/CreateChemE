@@ -63,7 +63,7 @@ class V3SimultaneousColumnSolverTest {
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                 problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
         V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
-                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 8, 1.0e-8);
+                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 32, 1.0e-8);
 
         System.out.println("V3 real crude Newton outcome: " + attempt);
         assertTrue(Double.isFinite(attempt.evidence().maximumScaledResidual()));
@@ -90,8 +90,10 @@ class V3SimultaneousColumnSolverTest {
     }
 
     private static V3ColumnInput realCrudeInput(V3CrudeFeed crude) {
+        double[] feedFlows = crude.moleFractions();
+        for (int component = 0; component < feedFlows.length; component++) feedFlows[component] *= 100.0;
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
-                crude.componentBasis(), crude.moleFractions(), 638.15, 4, 2, 266_500.0, 750.0, List.of(
+                crude.componentBasis(), feedFlows, 638.15, 4, 2, 266_500.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(332.15),
                         new V3ColumnSpecification.OrganicRefluxRatio(4.17),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
