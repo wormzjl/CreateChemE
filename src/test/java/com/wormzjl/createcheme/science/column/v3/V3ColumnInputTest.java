@@ -75,11 +75,19 @@ class V3ColumnInputTest {
     void outcomeContractNeverPermitsAFailedAcceptanceAuditToPublishSuccess() {
         V3AcceptanceAudit failed = new V3AcceptanceAudit(List.of(
                 V3AcceptanceAudit.Check.fail("EQUILIBRIUM", 1.0, 1.0e-8, "fixture failure")));
-        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 1, 0, 1.0, 1.0, "fixture", List.of(), failed);
+        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(
+                0, 0, 1, 0, 1.0, 1.0, "fixture", List.of(), failed, V3ConvergenceEvidence.unavailable());
 
         assertFalse(failed.accepted());
         assertThrows(IllegalArgumentException.class,
-                () -> V3ColumnResult.accepted(inputProblem(), new V3InputDigest("0".repeat(64)), failed));
+                () -> V3ColumnResult.accepted(
+                        inputProblem(), new V3InputDigest("0".repeat(64)), failed, V3ConvergenceEvidence.unavailable()));
+        V3AcceptanceAudit passed = new V3AcceptanceAudit(List.of(
+                V3AcceptanceAudit.Check.pass("EQUILIBRIUM", 0.0, 1.0e-8, "fixture pass")));
+        V3ConvergenceEvidence oversizedFinalStep = new V3ConvergenceEvidence(true, 1.0e-13, 1.0e-7, 0.0, 0.0);
+        assertThrows(IllegalArgumentException.class,
+                () -> V3ColumnResult.accepted(
+                        inputProblem(), new V3InputDigest("0".repeat(64)), passed, oversizedFinalStep));
         V3ColumnOutcome.Failure failure = new V3ColumnOutcome.Failure(
                 V3SolverFailureCode.DOF_MISMATCH, "fixture failure", diagnostics);
         assertFalse(failure.isSuccess());

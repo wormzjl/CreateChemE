@@ -2,6 +2,7 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.linalg.V3BandedMatrix;
 import com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolver;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import java.util.Objects;
 
@@ -28,16 +29,19 @@ final class V3SimultaneousColumnSolver {
         V3StageBlockLayout layout = new V3StageBlockLayout(problem);
         V3DryMeshState state = initialState;
         double lastMerit = Double.NaN;
+        V3ConvergenceEvidence lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
         for (int iteration = 0; iteration <= maximumIterations; iteration++) {
             V3MeshResidual residual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
             double maximumResidual = residual.maximumAbsoluteScaledResidual();
             double merit = scaledSquaredNorm(residual);
-            if (maximumResidual <= scaledTolerance) {
-                return new Attempt.Converged(state, new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, "residual tolerance"));
+            if (maximumResidual <= scaledTolerance && lastConvergenceEvidence.satisfiesGates()) {
+                return new Attempt.Converged(state, new Evidence(iteration, maximumResidual, merit, 0.0, 0.0,
+                        "residual and final-step tolerances", lastConvergenceEvidence));
             }
             if (iteration == maximumIterations) {
                 return new Attempt.Failure("MAX_ITERATIONS", state,
-                        new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, "iteration budget exhausted"));
+                        new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, "iteration budget exhausted",
+                                lastConvergenceEvidence));
             }
             V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
                     evaluator, coordinates, state, workspaceFactory);
@@ -46,7 +50,8 @@ final class V3SimultaneousColumnSolver {
             if (!(linearResult instanceof V3BandedPivotedSolver.Result.Success linearSuccess)) {
                 V3BandedPivotedSolver.Result.Failure failure = (V3BandedPivotedSolver.Result.Failure) linearResult;
                 return new Attempt.Failure("LINEAR_" + failure.code(), state,
-                        new Evidence(iteration, maximumResidual, merit, 0.0, failure.pivotGrowth(), failure.detail()));
+                        new Evidence(iteration, maximumResidual, merit, 0.0, failure.pivotGrowth(), failure.detail(),
+                                lastConvergenceEvidence));
             }
             double[] baseCoordinates = coordinates.encode(state);
             boolean accepted = false;
@@ -54,29 +59,32 @@ final class V3SimultaneousColumnSolver {
             for (int lineSearch = 0; lineSearch < MAXIMUM_LINE_SEARCH_STEPS; lineSearch++) {
                 double step = Math.scalb(1.0, -lineSearch);
                 try {
-                    V3DryMeshState candidate = coordinates.decode(addScaled(baseCoordinates, linearSuccess.solution(), step));
+                    double[] candidateCoordinates = addScaled(baseCoordinates, linearSuccess.solution(), step);
+                    V3DryMeshState candidate = coordinates.decode(candidateCoordinates);
                     V3MeshResidual candidateResidual = evaluator.evaluate(candidate, workspaceFactory.newWorkspace());
                     double candidateMerit = scaledSquaredNorm(candidateResidual);
                     if (candidateMerit <= merit * (1.0 - ARMIJO_COEFFICIENT * step)) {
                         state = candidate;
                         lastMerit = candidateMerit;
+                        lastConvergenceEvidence = convergenceEvidence(
+                                coordinates, baseCoordinates, candidateCoordinates, linearSuccess.backwardError());
                         acceptedStep = step;
                         accepted = true;
                         break;
                     }
-                } catch (IllegalArgumentException ignored) {
-                    // A coordinate decoded outside the hard state domain is an ordinary rejected trial.
+                } catch (IllegalArgumentException | V3ThermoException ignored) {
+                    // An inadmissible coordinate or PR-domain trial is an ordinary rejected Newton trial.
                 }
             }
             if (!accepted) {
                 return new Attempt.Failure("LINE_SEARCH_EXHAUSTED", state,
                         new Evidence(iteration, maximumResidual, merit, 0.0, linearSuccess.pivotGrowth(),
-                                "no admissible Armijo-reducing Newton step"));
+                                "no admissible Armijo-reducing Newton step", lastConvergenceEvidence));
             }
             if (!Double.isFinite(lastMerit)) {
                 return new Attempt.Failure("INTERNAL_INVARIANT", state,
                         new Evidence(iteration, maximumResidual, merit, acceptedStep, linearSuccess.pivotGrowth(),
-                                "accepted Newton merit is not finite"));
+                                "accepted Newton merit is not finite", lastConvergenceEvidence));
             }
         }
         throw new IllegalStateException("V3 Newton solve escaped its bounded iteration loop");
@@ -134,6 +142,27 @@ final class V3SimultaneousColumnSolver {
         return candidate;
     }
 
+    private static V3ConvergenceEvidence convergenceEvidence(
+            V3DryMeshCoordinateMap coordinates, double[] baseCoordinates, double[] candidateCoordinates,
+            double backwardError) {
+        double maximumLogFlowChange = 0.0;
+        double maximumTemperatureChange = 0.0;
+        double maximumTemperatureStepRatio = 0.0;
+        for (int index = 0; index < candidateCoordinates.length; index++) {
+            double change = Math.abs(candidateCoordinates[index] - baseCoordinates[index]);
+            V3DegreeOfFreedomLedger.UnknownFamily family = coordinates.unknowns().get(index).id().family();
+            if (family == V3DegreeOfFreedomLedger.UnknownFamily.TEMPERATURE) {
+                maximumTemperatureChange = Math.max(maximumTemperatureChange, change);
+                double limit = 1.0e-6 + 1.0e-9 * candidateCoordinates[index];
+                maximumTemperatureStepRatio = Math.max(maximumTemperatureStepRatio, change / limit);
+            } else {
+                maximumLogFlowChange = Math.max(maximumLogFlowChange, change);
+            }
+        }
+        return new V3ConvergenceEvidence(true, backwardError, maximumLogFlowChange, maximumTemperatureChange,
+                maximumTemperatureStepRatio);
+    }
+
     sealed interface Attempt permits Attempt.Converged, Attempt.Failure {
         V3DryMeshState state();
         Evidence evidence();
@@ -156,12 +185,13 @@ final class V3SimultaneousColumnSolver {
 
     record Evidence(
             int iterations, double maximumScaledResidual, double scaledMerit, double acceptedStep,
-            double pivotGrowth, String termination) {
+            double pivotGrowth, String termination, V3ConvergenceEvidence convergenceEvidence) {
         Evidence {
             if (iterations < 0 || !Double.isFinite(maximumScaledResidual) || maximumScaledResidual < 0.0
                     || !Double.isFinite(scaledMerit) || scaledMerit < 0.0 || !Double.isFinite(acceptedStep)
                     || acceptedStep < 0.0 || !Double.isFinite(pivotGrowth) || pivotGrowth < 0.0
-                    || termination == null || termination.isBlank() || termination.length() > 256) {
+                    || termination == null || termination.isBlank() || termination.length() > 256
+                    || convergenceEvidence == null) {
                 throw new IllegalArgumentException("V3 Newton evidence is invalid");
             }
         }

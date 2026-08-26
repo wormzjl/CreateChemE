@@ -1,10 +1,14 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
@@ -13,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 class V3SimultaneousColumnSolverTest {
     @Test
-    void dampedBandedNewtonRecoversTheManufacturedFullMeshStateWithoutPublishingAResult() {
+    void dampedBandedNewtonRecoversTheManufacturedFullMeshStateOnlyThroughBothAcceptanceGates() {
         V3ColumnProblem problem = problem();
         NewtonManufacturedThermo thermo = new NewtonManufacturedThermo();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
@@ -28,14 +32,51 @@ class V3SimultaneousColumnSolverTest {
         V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
                 problem, evaluator, coordinates, perturbed, thermo::newWorkspace, 16, 1.0e-9);
 
+        assertTrue(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged, attempt::toString);
         V3SimultaneousColumnSolver.Attempt.Converged converged = assertInstanceOf(
                 V3SimultaneousColumnSolver.Attempt.Converged.class, attempt);
         assertTrue(converged.evidence().iterations() > 0);
         assertTrue(converged.evidence().maximumScaledResidual() <= 1.0e-9);
+        assertTrue(converged.evidence().convergenceEvidence().satisfiesGates());
         V3MeshResidual finalResidual = evaluator.evaluate(converged.state(), thermo.newWorkspace());
         assertTrue(finalResidual.maximumAbsoluteScaledResidual() <= 1.0e-9);
         V3AcceptanceAudit audit = new V3AcceptanceAuditor(problem, thermo, 0.0).audit(converged.state(), thermo.newWorkspace());
         assertTrue(audit.accepted());
+        V3ConvergenceEvidence convergenceEvidence = converged.evidence().convergenceEvidence();
+        V3ColumnResult result = V3ColumnResult.accepted(
+                problem, new V3InputDigest("0".repeat(64)), audit, convergenceEvidence);
+        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(
+                0, converged.evidence().iterations(), 1, 1, converged.evidence().maximumScaledResidual(), 0.0,
+                "manufactured-newton", List.of(), audit, convergenceEvidence);
+        V3ColumnOutcome.Success success = new V3ColumnOutcome.Success(result, diagnostics);
+        assertEquals(convergenceEvidence, success.result().convergenceEvidence());
+    }
+
+    @Test
+    void registeredTiaJuanaPrNewtonAttemptIsBoundedAndRecordsItsActualConvergenceState() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(realCrudeInput(crude), V3CondenserPhaseBranch.TWO_PHASE);
+        V3FlashResult feedFlash = thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                problem.nodePressurePascal(problem.topology().feedTrayNumber()), crude.moleFractions(), thermo.newWorkspace());
+        V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace());
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
+                problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
+        V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
+                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 8, 1.0e-8);
+
+        System.out.println("V3 real crude Newton outcome: " + attempt);
+        assertTrue(Double.isFinite(attempt.evidence().maximumScaledResidual()));
+        assertTrue(Double.isFinite(attempt.evidence().scaledMerit()));
+        if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged) {
+            assertTrue(converged.evidence().convergenceEvidence().satisfiesGates());
+            assertTrue(new V3AcceptanceAuditor(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol())
+                    .audit(converged.state(), thermo.newWorkspace()).accepted());
+        } else {
+            V3SimultaneousColumnSolver.Attempt.Failure failure = assertInstanceOf(
+                    V3SimultaneousColumnSolver.Attempt.Failure.class, attempt);
+            assertFalse(failure.code().isBlank());
+        }
     }
 
     private static V3ColumnProblem problem() {
@@ -46,6 +87,14 @@ class V3SimultaneousColumnSolverTest {
                         new V3ColumnSpecification.OrganicRefluxRatio(1.0),
                         new V3ColumnSpecification.ReboilerDuty(0.0)));
         return V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+    }
+
+    private static V3ColumnInput realCrudeInput(V3CrudeFeed crude) {
+        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
+                crude.componentBasis(), crude.moleFractions(), 638.15, 4, 2, 266_500.0, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(332.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(4.17),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
     }
 
     private static V3DryMeshState exactState(V3ColumnTopology topology) {

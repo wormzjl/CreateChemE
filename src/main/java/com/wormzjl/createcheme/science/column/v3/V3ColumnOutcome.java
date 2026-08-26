@@ -15,8 +15,11 @@ public sealed interface V3ColumnOutcome permits V3ColumnOutcome.Success, V3Colum
             result = Objects.requireNonNull(result, "result");
             diagnostics = Objects.requireNonNull(diagnostics, "diagnostics");
             if (!result.acceptanceAudit().accepted() || !diagnostics.acceptanceAudit().accepted()
-                    || !result.acceptanceAudit().equals(diagnostics.acceptanceAudit())) {
-                throw new IllegalArgumentException("A V3 success requires the matching passing acceptance audit");
+                    || !result.acceptanceAudit().equals(diagnostics.acceptanceAudit())
+                    || !result.convergenceEvidence().satisfiesGates()
+                    || !diagnostics.convergenceEvidence().satisfiesGates()
+                    || !result.convergenceEvidence().equals(diagnostics.convergenceEvidence())) {
+                throw new IllegalArgumentException("A V3 success requires matching passing acceptance and convergence evidence");
             }
         }
     }

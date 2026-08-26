@@ -13,7 +13,8 @@ public record V3SolverDiagnostics(
         double finalStepNorm,
         String solvePath,
         List<String> events,
-        V3AcceptanceAudit acceptanceAudit) {
+        V3AcceptanceAudit acceptanceAudit,
+        V3ConvergenceEvidence convergenceEvidence) {
     public static final int MAX_EVENTS = 32;
 
     public V3SolverDiagnostics {
@@ -30,6 +31,7 @@ public record V3SolverDiagnostics(
             throw new IllegalArgumentException("V3 diagnostic events exceed the bounded contract");
         }
         acceptanceAudit = Objects.requireNonNull(acceptanceAudit, "acceptanceAudit");
+        convergenceEvidence = Objects.requireNonNull(convergenceEvidence, "convergenceEvidence");
     }
 
     private static String bounded(String value, String name, int maximumLength) {
