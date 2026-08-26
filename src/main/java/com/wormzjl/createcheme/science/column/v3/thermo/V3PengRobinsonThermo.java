@@ -5,15 +5,15 @@ import java.util.Objects;
 
 /** Immutable V3 hydrocarbon PR78 façade backed by a solve-local one-way property-session adapter. */
 public final class V3PengRobinsonThermo implements V3ThermoModel {
-    private final V3NextgenPrSession session;
+    private final V3PengRobinsonSession session;
 
-    private V3PengRobinsonThermo(V3NextgenPrSession session) {
+    private V3PengRobinsonThermo(V3PengRobinsonSession session) {
         this.session = Objects.requireNonNull(session, "session");
     }
 
     /** Resolves one registered hydrocarbon package while preserving its declared public component order. */
     public static V3PengRobinsonThermo fromRegisteredPackage(String packageId) {
-        return new V3PengRobinsonThermo(V3NextgenPrSession.registeredPackage(packageId));
+        return new V3PengRobinsonThermo(V3PengRobinsonSession.registeredPackage(packageId));
     }
 
     public String packageId() {
@@ -24,7 +24,7 @@ public final class V3PengRobinsonThermo implements V3ThermoModel {
         return session.datasetRevision();
     }
 
-    /** Resolves the registered dry-hydrocarbon assay without exposing the legacy feed object. */
+    /** Resolves the registered dry-hydrocarbon assay without exposing mutable property-package data. */
     public V3CrudeFeed crudeFeed(String assayId) {
         return session.crudeFeed(assayId);
     }

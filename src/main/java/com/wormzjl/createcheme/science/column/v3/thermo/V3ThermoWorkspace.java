@@ -5,8 +5,8 @@ import java.util.Objects;
 
 /** Caller-owned mutable scratch storage for exactly one V3 thermodynamic model and solve. */
 public final class V3ThermoWorkspace {
-    private final V3NextgenPrSession owner;
-    final V3NextgenPrSession.Session prSession;
+    private final V3PengRobinsonSession owner;
+    final V3PengRobinsonSession.Session prSession;
     final double[] normalizedOverall;
     final double[] wilsonK;
     final double[] logK;
@@ -19,11 +19,11 @@ public final class V3ThermoWorkspace {
         this(null, componentCount);
     }
 
-    V3ThermoWorkspace(V3NextgenPrSession owner) {
+    V3ThermoWorkspace(V3PengRobinsonSession owner) {
         this(Objects.requireNonNull(owner, "owner"), owner.componentCount());
     }
 
-    private V3ThermoWorkspace(V3NextgenPrSession owner, int componentCount) {
+    private V3ThermoWorkspace(V3PengRobinsonSession owner, int componentCount) {
         if (componentCount < 1) throw new IllegalArgumentException("V3 thermodynamic workspace needs a positive component count");
         this.owner = owner;
         this.prSession = owner == null ? null : owner.newSession();
@@ -50,7 +50,7 @@ public final class V3ThermoWorkspace {
         if (prSession != null) prSession.clear();
     }
 
-    void requireOwner(V3NextgenPrSession candidate) {
+    void requireOwner(V3PengRobinsonSession candidate) {
         if (owner != candidate) throw new IllegalArgumentException("V3 thermodynamic workspace belongs to another model");
     }
 }
