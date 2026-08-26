@@ -13,6 +13,8 @@ final class V3SimultaneousColumnSolver {
     private static final int MAXIMUM_LINE_SEARCH_STEPS = 20;
     private static final double FALLBACK_MAXIMUM_LOG_FLOW_CHANGE = 0.25;
     private static final double FALLBACK_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 10.0;
+    private static final double INITIAL_GAUSS_NEWTON_DAMPING = 1.0e-8;
+    private static final int MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS = 8;
 
     private V3SimultaneousColumnSolver() {}
 
@@ -51,17 +53,34 @@ final class V3SimultaneousColumnSolver {
                     toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
             if (!(linearResult instanceof V3BandedPivotedSolver.Result.Success linearSuccess)) {
                 V3BandedPivotedSolver.Result.Failure failure = (V3BandedPivotedSolver.Result.Failure) linearResult;
-                return new Attempt.Failure("LINEAR_" + failure.code(), state,
-                        new Evidence(iteration, maximumResidual, merit, 0.0, failure.pivotGrowth(), failure.detail(),
-                                lastConvergenceEvidence));
+                double[] baseCoordinates = coordinates.encode(state);
+                AcceptedTrial descentTrial = dampedGaussNewtonTrial(
+                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory);
+                if (descentTrial == null) {
+                    descentTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
+                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory);
+                }
+                if (descentTrial == null) {
+                    return new Attempt.Failure("LINEAR_" + failure.code(), state,
+                            new Evidence(iteration, maximumResidual, merit, 0.0, failure.pivotGrowth(), failure.detail(),
+                                    lastConvergenceEvidence));
+                }
+                state = descentTrial.state();
+                lastMerit = descentTrial.merit();
+                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+                continue;
             }
             double[] baseCoordinates = coordinates.encode(state);
             AcceptedTrial acceptedTrial = armijoTrial(
                     evaluator, coordinates, baseCoordinates, linearSuccess.solution(), merit, workspaceFactory);
             boolean usedDescentFallback = acceptedTrial == null;
             if (usedDescentFallback) {
-                acceptedTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
-                        normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory);
+                acceptedTrial = dampedGaussNewtonTrial(
+                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory);
+                if (acceptedTrial == null) {
+                    acceptedTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
+                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory);
+                }
             }
             if (acceptedTrial == null) {
                 return new Attempt.Failure("LINE_SEARCH_EXHAUSTED", state,
@@ -84,7 +103,11 @@ final class V3SimultaneousColumnSolver {
 
     private static V3BandedMatrix toBandedMatrix(
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3StageBlockLayout layout) {
-        double[][] values = jacobian.values();
+        return stageBandedMatrix(jacobian.values(), layout, 1, "V3 Newton Jacobian contains an unexpected off-band coupling");
+    }
+
+    private static V3BandedMatrix stageBandedMatrix(
+            double[][] values, V3StageBlockLayout layout, int maximumNodeSpan, String offBandMessage) {
         int lowerBandwidth = 0;
         int upperBandwidth = 0;
         for (int row = 0; row < values.length; row++) {
@@ -92,8 +115,8 @@ final class V3SimultaneousColumnSolver {
             for (int column = 0; column < values.length; column++) {
                 double value = values[row][column];
                 int columnNode = nodeFor(column, layout);
-                if (Math.abs(columnNode - rowNode) > 1 && Math.abs(value) > OFF_BAND_TOLERANCE) {
-                    throw new IllegalStateException("V3 Newton Jacobian contains an unexpected off-band coupling");
+                if (Math.abs(columnNode - rowNode) > maximumNodeSpan && Math.abs(value) > OFF_BAND_TOLERANCE) {
+                    throw new IllegalStateException(offBandMessage);
                 }
                 if (Math.abs(value) <= OFF_BAND_TOLERANCE) continue;
                 if (row >= column) lowerBandwidth = Math.max(lowerBandwidth, row - column);
@@ -180,6 +203,50 @@ final class V3SimultaneousColumnSolver {
             }
         }
         return direction;
+    }
+
+    private static AcceptedTrial dampedGaussNewtonTrial(
+            V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
+            V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double merit,
+            V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory) {
+        double damping = INITIAL_GAUSS_NEWTON_DAMPING;
+        for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
+            V3BandedPivotedSolver.Result result = V3BandedPivotedSolver.solve(
+                    dampedNormalMatrix(jacobian, layout, damping), negativeGradient(residual, jacobian));
+            if (result instanceof V3BandedPivotedSolver.Result.Success success) {
+                AcceptedTrial trial = armijoTrial(
+                        evaluator, coordinates, baseCoordinates, success.solution(), merit, workspaceFactory);
+                if (trial != null) return trial;
+            }
+            damping *= 10.0;
+        }
+        return null;
+    }
+
+    private static V3BandedMatrix dampedNormalMatrix(
+            V3FiniteDifferenceJacobian.Jacobian jacobian, V3StageBlockLayout layout, double damping) {
+        double[][] values = jacobian.values();
+        double[][] normal = new double[values.length][values.length];
+        for (int row = 0; row < normal.length; row++) {
+            for (int column = row; column < normal.length; column++) {
+                double value = 0.0;
+                for (double[] jacobianRow : values) value += jacobianRow[row] * jacobianRow[column];
+                normal[row][column] = value;
+                normal[column][row] = value;
+            }
+            normal[row][row] += damping * Math.max(1.0, normal[row][row]);
+        }
+        return stageBandedMatrix(normal, layout, 2, "V3 damped normal matrix contains an unexpected off-band coupling");
+    }
+
+    private static double[] negativeGradient(V3MeshResidual residual, V3FiniteDifferenceJacobian.Jacobian jacobian) {
+        double[][] values = jacobian.values();
+        double[] gradient = new double[values[0].length];
+        for (int row = 0; row < values.length; row++) {
+            double scaledResidual = residual.rows().get(row).scaledValue();
+            for (int column = 0; column < gradient.length; column++) gradient[column] -= values[row][column] * scaledResidual;
+        }
+        return gradient;
     }
 
     private static V3ConvergenceEvidence convergenceEvidence(

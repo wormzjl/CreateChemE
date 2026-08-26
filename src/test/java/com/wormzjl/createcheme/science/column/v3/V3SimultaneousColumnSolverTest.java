@@ -81,6 +81,33 @@ class V3SimultaneousColumnSolverTest {
         }
     }
 
+    @Test
+    void registeredPrBinaryColdStartConvergesAndPassesBothPublicationGates() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(binaryInput(thermo), V3CondenserPhaseBranch.TWO_PHASE);
+        V3FlashResult feedFlash = thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                problem.nodePressurePascal(problem.topology().feedTrayNumber()),
+                problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
+        V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace());
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
+                problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
+        V3SimultaneousColumnSolver.Attempt.Converged converged = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class, V3SimultaneousColumnSolver.solve(
+                        problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 128, 1.0e-8));
+        V3ConvergenceEvidence convergenceEvidence = converged.evidence().convergenceEvidence();
+        V3AcceptanceAudit audit = new V3AcceptanceAuditor(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol())
+                .audit(converged.state(), thermo.newWorkspace());
+
+        assertTrue(convergenceEvidence.satisfiesGates());
+        assertTrue(audit.accepted());
+        V3ColumnResult result = V3ColumnResult.accepted(
+                problem, new V3InputDigest("1".repeat(64)), audit, convergenceEvidence);
+        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(
+                0, converged.evidence().iterations(), 1, 1, converged.evidence().maximumScaledResidual(), 0.0,
+                "registered-pr-binary", List.of(), audit, convergenceEvidence);
+        assertTrue(new V3ColumnOutcome.Success(result, diagnostics).isSuccess());
+    }
+
     private static V3ColumnProblem problem() {
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:newton", "test:binary",
                 new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30.0, 60.0}, 400.0,
@@ -99,6 +126,17 @@ class V3SimultaneousColumnSolverTest {
                         new V3ColumnSpecification.CondenserOutletTemperature(332.15),
                         new V3ColumnSpecification.OrganicRefluxRatio(4.17),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
+    }
+
+    private static V3ColumnInput binaryInput(V3PengRobinsonThermo thermo) {
+        double[] feedFlows = new double[thermo.componentBasis().componentCount()];
+        feedFlows[6] = 50.0; // PC03
+        feedFlows[13] = 50.0; // PC10
+        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, thermo.packageId(), "test:registered-pr-binary",
+                thermo.componentBasis(), feedFlows, 550.0, 2, 1, 250_000.0, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(300.0),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
     }
 
     private static String maximumResidualsByFamily(V3MeshResidual residual) {

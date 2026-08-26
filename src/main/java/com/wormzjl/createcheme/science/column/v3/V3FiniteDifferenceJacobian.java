@@ -1,10 +1,11 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/** Whole-system central finite-difference Jacobian used to verify future block Jacobian assembly. */
+/** Whole-system finite-difference Jacobian with one-sided PR-domain handling for future block-Jacobian verification. */
 final class V3FiniteDifferenceJacobian {
     private V3FiniteDifferenceJacobian() {}
 
@@ -26,15 +27,21 @@ final class V3FiniteDifferenceJacobian {
             double[] lower = base.clone();
             higher[column] += step;
             lower[column] -= step;
-            V3MeshResidual higherResidual = evaluator.evaluate(coordinates.decode(higher), workspaceFactory.newWorkspace());
-            V3MeshResidual lowerResidual = evaluator.evaluate(coordinates.decode(lower), workspaceFactory.newWorkspace());
+            V3MeshResidual higherResidual = feasibleResidual(evaluator, coordinates, higher, workspaceFactory);
+            V3MeshResidual lowerResidual = feasibleResidual(evaluator, coordinates, lower, workspaceFactory);
+            if (higherResidual == null && lowerResidual == null) {
+                throw new IllegalStateException("V3 MESH finite difference has no admissible perturbation");
+            }
             for (int row = 0; row < rows; row++) {
-                if (!baseResidual.rows().get(row).equation().equals(higherResidual.rows().get(row).equation())
-                        || !baseResidual.rows().get(row).equation().equals(lowerResidual.rows().get(row).equation())) {
+                if ((higherResidual != null && !baseResidual.rows().get(row).equation().equals(higherResidual.rows().get(row).equation()))
+                        || (lowerResidual != null && !baseResidual.rows().get(row).equation().equals(lowerResidual.rows().get(row).equation()))) {
                     throw new IllegalStateException("V3 MESH residual ordering changed during finite differentiation");
                 }
-                values[row][column] = (higherResidual.rows().get(row).scaledValue()
-                        - lowerResidual.rows().get(row).scaledValue()) / (2.0 * step);
+                values[row][column] = higherResidual != null && lowerResidual != null
+                        ? (higherResidual.rows().get(row).scaledValue() - lowerResidual.rows().get(row).scaledValue()) / (2.0 * step)
+                        : higherResidual != null
+                                ? (higherResidual.rows().get(row).scaledValue() - baseResidual.rows().get(row).scaledValue()) / step
+                                : (baseResidual.rows().get(row).scaledValue() - lowerResidual.rows().get(row).scaledValue()) / step;
                 if (!Double.isFinite(values[row][column])) {
                     throw new IllegalStateException("V3 MESH finite-difference Jacobian contains a non-finite entry");
                 }
@@ -43,6 +50,16 @@ final class V3FiniteDifferenceJacobian {
         List<V3DegreeOfFreedomLedger.EquationId> equations = new ArrayList<>(rows);
         for (V3MeshResidual.Row row : baseResidual.rows()) equations.add(row.equation());
         return new Jacobian(equations, coordinates.unknowns().stream().map(V3DegreeOfFreedomLedger.Unknown::id).toList(), values);
+    }
+
+    private static V3MeshResidual feasibleResidual(
+            V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] candidate,
+            V3ThermoWorkspaceFactory workspaceFactory) {
+        try {
+            return evaluator.evaluate(coordinates.decode(candidate), workspaceFactory.newWorkspace());
+        } catch (IllegalArgumentException | V3ThermoException ignored) {
+            return null;
+        }
     }
 
     private static double step(double coordinate, V3DegreeOfFreedomLedger.UnknownFamily family) {
