@@ -28,7 +28,15 @@ final class V3SimultaneousColumnSolver {
             V3DryMeshState initialState, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             int maximumIterations, double scaledTolerance) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
-                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE);
+                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE, V3SolveControl.UNBOUNDED);
+    }
+
+    static Attempt solve(
+            V3ColumnProblem problem, V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumIterations, double scaledTolerance, V3SolveControl control) {
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
+                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE, control);
     }
 
     static Attempt solve(
@@ -42,7 +50,7 @@ final class V3SimultaneousColumnSolver {
         workspaceFactory = Objects.requireNonNull(workspaceFactory, "workspaceFactory");
         initialConvergenceEvidence = Objects.requireNonNull(initialConvergenceEvidence, "initialConvergenceEvidence");
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, initialConvergenceEvidence,
-                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE);
+                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE, V3SolveControl.UNBOUNDED);
     }
 
     static Attempt solve(
@@ -50,6 +58,21 @@ final class V3SimultaneousColumnSolver {
             V3DryMeshState initialState, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             V3ConvergenceEvidence initialConvergenceEvidence, int maximumIterations, double scaledTolerance,
             V3FiniteDifferenceJacobian.DifferenceScale differenceScale) {
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, initialConvergenceEvidence,
+                maximumIterations, scaledTolerance, differenceScale, V3SolveControl.UNBOUNDED);
+    }
+
+    static Attempt solve(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3ConvergenceEvidence initialConvergenceEvidence,
+            int maximumIterations,
+            double scaledTolerance,
+            V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
+            V3SolveControl control) {
         problem = Objects.requireNonNull(problem, "problem");
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
@@ -57,6 +80,7 @@ final class V3SimultaneousColumnSolver {
         workspaceFactory = Objects.requireNonNull(workspaceFactory, "workspaceFactory");
         initialConvergenceEvidence = Objects.requireNonNull(initialConvergenceEvidence, "initialConvergenceEvidence");
         differenceScale = Objects.requireNonNull(differenceScale, "differenceScale");
+        control = Objects.requireNonNull(control, "control");
         if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0) {
             throw new IllegalArgumentException("V3 Newton solve limits are invalid");
         }
@@ -67,7 +91,9 @@ final class V3SimultaneousColumnSolver {
         double lastMerit = Double.NaN;
         V3ConvergenceEvidence lastConvergenceEvidence = initialConvergenceEvidence;
         for (int iteration = 0; iteration <= maximumIterations; iteration++) {
+            control.checkpoint();
             V3MeshResidual residual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
+            control.checkpoint();
             double maximumResidual = residual.maximumAbsoluteScaledResidual();
             double merit = scaledSquaredNorm(residual);
             if (maximumResidual <= scaledTolerance && lastConvergenceEvidence.satisfiesGates()) {
@@ -80,7 +106,7 @@ final class V3SimultaneousColumnSolver {
                                 lastConvergenceEvidence));
             }
             V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
-                    evaluator, coordinates, state, workspaceFactory, differenceScale);
+                    evaluator, coordinates, state, workspaceFactory, differenceScale, control);
             V3BandedPivotedSolver.Result linearResult;
             try {
                 linearResult = V3BandedPivotedSolver.solve(
@@ -96,11 +122,11 @@ final class V3SimultaneousColumnSolver {
                 double[] baseCoordinates = coordinates.encode(state);
                 AcceptedTrial descentTrial = dampedGaussNewtonTrial(
                         evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory,
-                        maximumLineSearchSteps);
+                        maximumLineSearchSteps, control);
                 if (descentTrial == null) {
                     descentTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
                             normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory,
-                            maximumLineSearchSteps);
+                            maximumLineSearchSteps, control);
                 }
                 if (descentTrial == null) {
                     return new Attempt.Failure("LINEAR_" + failure.code(), state,
@@ -115,16 +141,16 @@ final class V3SimultaneousColumnSolver {
             double[] baseCoordinates = coordinates.encode(state);
             AcceptedTrial acceptedTrial = armijoTrial(
                     evaluator, coordinates, baseCoordinates, linearSuccess.solution(), merit, workspaceFactory,
-                    maximumLineSearchSteps);
+                    maximumLineSearchSteps, control);
             boolean usedDescentFallback = acceptedTrial == null;
             if (usedDescentFallback) {
                 acceptedTrial = dampedGaussNewtonTrial(
                         evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory,
-                        maximumLineSearchSteps);
+                        maximumLineSearchSteps, control);
                 if (acceptedTrial == null) {
                     acceptedTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
                             normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory,
-                            maximumLineSearchSteps);
+                            maximumLineSearchSteps, control);
                 }
             }
             if (acceptedTrial == null) {
@@ -205,8 +231,9 @@ final class V3SimultaneousColumnSolver {
     private static AcceptedTrial armijoTrial(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
             double[] direction, double merit, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
-            int maximumLineSearchSteps) {
+            int maximumLineSearchSteps, V3SolveControl control) {
         for (int lineSearch = 0; lineSearch < maximumLineSearchSteps; lineSearch++) {
+            control.checkpoint();
             double step = Math.scalb(1.0, -lineSearch);
             try {
                 double[] candidateCoordinates = addScaled(baseCoordinates, direction, step);
@@ -255,13 +282,14 @@ final class V3SimultaneousColumnSolver {
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double merit,
             V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
-            int maximumLineSearchSteps) {
+            int maximumLineSearchSteps, V3SolveControl control) {
         double damping = INITIAL_GAUSS_NEWTON_DAMPING;
         for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
+            control.checkpoint();
             V3BandedPivotedSolver.Result result;
             try {
                 result = V3BandedPivotedSolver.solve(
-                        dampedNormalMatrix(jacobian, layout, damping), negativeGradient(residual, jacobian));
+                        dampedNormalMatrix(jacobian, layout, damping, control), negativeGradient(residual, jacobian));
             } catch (IllegalStateException unavailable) {
                 if (!DAMPED_NORMAL_OFF_BAND_MESSAGE.equals(unavailable.getMessage())) throw unavailable;
                 // The normal-equation fallback is optional. Its finite-difference off-band noise must not turn a
@@ -271,7 +299,7 @@ final class V3SimultaneousColumnSolver {
             if (result instanceof V3BandedPivotedSolver.Result.Success success) {
                 AcceptedTrial trial = armijoTrial(
                         evaluator, coordinates, baseCoordinates, success.solution(), merit, workspaceFactory,
-                        maximumLineSearchSteps);
+                        maximumLineSearchSteps, control);
                 if (trial != null) return trial;
             }
             damping *= 10.0;
@@ -280,10 +308,14 @@ final class V3SimultaneousColumnSolver {
     }
 
     private static V3BandedMatrix dampedNormalMatrix(
-            V3FiniteDifferenceJacobian.Jacobian jacobian, V3StageBlockLayout layout, double damping) {
+            V3FiniteDifferenceJacobian.Jacobian jacobian,
+            V3StageBlockLayout layout,
+            double damping,
+            V3SolveControl control) {
         double[][] values = jacobian.values();
         double[][] normal = new double[values.length][values.length];
         for (int row = 0; row < normal.length; row++) {
+            control.checkpoint();
             for (int column = row; column < normal.length; column++) {
                 double value = 0.0;
                 for (double[] jacobianRow : values) value += jacobianRow[row] * jacobianRow[column];

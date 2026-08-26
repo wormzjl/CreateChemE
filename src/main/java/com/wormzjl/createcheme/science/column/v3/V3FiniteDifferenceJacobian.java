@@ -18,24 +18,37 @@ final class V3FiniteDifferenceJacobian {
     static Jacobian evaluate(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, V3DryMeshState state,
             V3ThermoWorkspaceFactory workspaceFactory, DifferenceScale differenceScale) {
+        return evaluate(evaluator, coordinates, state, workspaceFactory, differenceScale, V3SolveControl.UNBOUNDED);
+    }
+
+    static Jacobian evaluate(
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState state,
+            V3ThermoWorkspaceFactory workspaceFactory,
+            DifferenceScale differenceScale,
+            V3SolveControl control) {
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
         state = Objects.requireNonNull(state, "state");
         workspaceFactory = Objects.requireNonNull(workspaceFactory, "workspaceFactory");
         differenceScale = Objects.requireNonNull(differenceScale, "differenceScale");
+        control = Objects.requireNonNull(control, "control");
+        control.checkpoint();
         double[] base = coordinates.encode(state);
         V3MeshResidual baseResidual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
         int rows = baseResidual.rows().size();
         if (rows != base.length) throw new IllegalArgumentException("V3 MESH Jacobian requires a square residual/coordinate map");
         double[][] values = new double[rows][base.length];
         for (int column = 0; column < base.length; column++) {
+            control.checkpoint();
             double step = step(base[column], coordinates.unknowns().get(column).id().family(), differenceScale);
             double[] higher = base.clone();
             double[] lower = base.clone();
             higher[column] += step;
             lower[column] -= step;
-            V3MeshResidual higherResidual = feasibleResidual(evaluator, coordinates, higher, workspaceFactory);
-            V3MeshResidual lowerResidual = feasibleResidual(evaluator, coordinates, lower, workspaceFactory);
+            V3MeshResidual higherResidual = feasibleResidual(evaluator, coordinates, higher, workspaceFactory, control);
+            V3MeshResidual lowerResidual = feasibleResidual(evaluator, coordinates, lower, workspaceFactory, control);
             if (higherResidual == null && lowerResidual == null) {
                 throw new IllegalStateException("V3 MESH finite difference has no admissible perturbation");
             }
@@ -61,8 +74,9 @@ final class V3FiniteDifferenceJacobian {
 
     private static V3MeshResidual feasibleResidual(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] candidate,
-            V3ThermoWorkspaceFactory workspaceFactory) {
+            V3ThermoWorkspaceFactory workspaceFactory, V3SolveControl control) {
         try {
+            control.checkpoint();
             return evaluator.evaluate(coordinates.decode(candidate), workspaceFactory.newWorkspace());
         } catch (IllegalArgumentException | V3ThermoException ignored) {
             return null;

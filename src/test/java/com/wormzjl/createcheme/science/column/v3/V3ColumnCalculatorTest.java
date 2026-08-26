@@ -2,10 +2,13 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 class V3ColumnCalculatorTest {
@@ -35,6 +38,19 @@ class V3ColumnCalculatorTest {
 
         assertEquals(V3SolverFailureCode.INVALID_INPUT, failure.code());
         assertTrue(failure.diagnostics().acceptanceAudit().checks().stream().noneMatch(V3AcceptanceAudit.Check::passed));
+    }
+
+    @Test
+    void cooperativeCancellationEscapesInsteadOfBecomingAScientificFailure() {
+        AtomicInteger checkpoints = new AtomicInteger();
+
+        assertThrows(CancellationException.class, () -> V3ColumnCalculator.calculate(registeredBinaryPilot(), () -> {
+            if (checkpoints.incrementAndGet() >= 6) {
+                throw new CancellationException("test cancellation");
+            }
+        }));
+
+        assertTrue(checkpoints.get() >= 6);
     }
 
     private static V3ColumnInput registeredBinaryPilot() {

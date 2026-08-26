@@ -24,10 +24,17 @@ final class V3AcceptanceAuditor {
     }
 
     V3AcceptanceAudit audit(V3DryMeshState state, V3ThermoWorkspace workspace) {
+        return audit(state, workspace, V3SolveControl.UNBOUNDED);
+    }
+
+    V3AcceptanceAudit audit(V3DryMeshState state, V3ThermoWorkspace workspace, V3SolveControl control) {
         state = Objects.requireNonNull(state, "state");
         workspace = Objects.requireNonNull(workspace, "workspace");
+        control = Objects.requireNonNull(control, "control");
+        control.checkpoint();
         V3MeshResidual residual = new V3MeshResidualEvaluator(problem, thermo, feedMolarEnthalpyJoulesPerMol)
                 .evaluate(state, workspace);
+        control.checkpoint();
         List<V3AcceptanceAudit.Check> checks = new ArrayList<>();
         checks.add(finitenessAndTopology(state));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE,

@@ -447,7 +447,7 @@ public final class ProcessSolveServices {
         @Override
         public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken) {
             cancellationToken.throwIfCancellationRequested();
-            V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
+            V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, cancellationToken::throwIfCancellationRequested);
             cancellationToken.throwIfCancellationRequested();
             return new V3ColumnSolveResult(outcome);
         }

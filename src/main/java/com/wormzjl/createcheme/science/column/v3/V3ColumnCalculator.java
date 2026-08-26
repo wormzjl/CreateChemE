@@ -5,6 +5,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CancellationException;
 
 /**
  * Stateless dry-V3 calculation façade for a fully immutable input snapshot.
@@ -23,8 +24,21 @@ public final class V3ColumnCalculator {
 
     /** Calculates one dry two-phase-condenser V3 problem without sharing mutable numerical state across callers. */
     public static V3ColumnOutcome calculate(V3ColumnInput input) {
+        return calculate(input, V3SolveControl.UNBOUNDED);
+    }
+
+    /**
+     * Calculates one dry V3 problem with caller-owned cooperative cancellation.
+     *
+     * <p>A cancellation exception from {@code control} intentionally escapes unchanged so an outer service can
+     * publish its own typed deadline or cancellation completion. Direct callers that do not need cancellation use
+     * {@link #calculate(V3ColumnInput)}.</p>
+     */
+    public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control) {
         input = Objects.requireNonNull(input, "input");
+        control = Objects.requireNonNull(control, "control");
         try {
+            control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
             V3InputDigest digest = V3InputDigest.of(
@@ -32,22 +46,27 @@ public final class V3ColumnCalculator {
             V3FlashResult feedFlash = thermo.flashTP(input.feedTemperatureKelvin(),
                     problem.nodePressurePascal(problem.topology().feedTrayNumber()),
                     input.feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
+            control.checkpoint();
             V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace());
+            control.checkpoint();
             V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                     problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
             V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
                     problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
-                    MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE);
-            V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state());
+                    MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE, control);
+            control.checkpoint();
+            V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state(), control);
             String solvePath = "cold/fine-fd";
             if (!publishesSuccess(attempt, audit)) {
                 try {
+                    control.checkpoint();
                     V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
                             problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
                             V3ConvergenceEvidence.unavailable(), MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE,
-                            V3FiniteDifferenceJacobian.DifferenceScale.COARSE);
+                            V3FiniteDifferenceJacobian.DifferenceScale.COARSE, control);
+                    control.checkpoint();
                     V3AcceptanceAudit coarseAudit = audit(
-                            problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), coarseAttempt.state());
+                            problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), coarseAttempt.state(), control);
                     if (publishesSuccess(coarseAttempt, coarseAudit)
                             || coarseAttempt.evidence().maximumScaledResidual() < attempt.evidence().maximumScaledResidual()) {
                         attempt = coarseAttempt;
@@ -70,6 +89,8 @@ public final class V3ColumnCalculator {
             }
             return new V3ColumnOutcome.Failure(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE,
                     "The fresh V3 acceptance audit rejected the converged candidate", diagnostics);
+        } catch (CancellationException cancelled) {
+            throw cancelled;
         } catch (V3ThermoException thermoFailure) {
             return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property");
         } catch (IllegalArgumentException invalid) {
@@ -80,9 +101,13 @@ public final class V3ColumnCalculator {
     }
 
     private static V3AcceptanceAudit audit(
-            V3ColumnProblem problem, V3PengRobinsonThermo thermo, double feedMolarEnthalpy, V3DryMeshState state) {
+            V3ColumnProblem problem,
+            V3PengRobinsonThermo thermo,
+            double feedMolarEnthalpy,
+            V3DryMeshState state,
+            V3SolveControl control) {
         try {
-            return new V3AcceptanceAuditor(problem, thermo, feedMolarEnthalpy).audit(state, thermo.newWorkspace());
+            return new V3AcceptanceAuditor(problem, thermo, feedMolarEnthalpy).audit(state, thermo.newWorkspace(), control);
         } catch (RuntimeException unavailable) {
             return failedAudit("UNAVAILABLE", unavailable.getMessage());
         }
