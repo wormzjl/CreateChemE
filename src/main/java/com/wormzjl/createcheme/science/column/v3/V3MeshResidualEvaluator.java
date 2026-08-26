@@ -41,13 +41,14 @@ final class V3MeshResidualEvaluator {
                 || state.componentCount() != activeComponentBasis.componentCount()) {
             throw new IllegalArgumentException("V3 MESH state does not match the resolved problem");
         }
+        NodeProperties[] properties = nodeProperties(state, workspace);
         List<V3MeshResidual.Row> rows = new ArrayList<>(problem.degreeOfFreedomLedger().equationCount());
         for (V3DegreeOfFreedomLedger.Equation equation : problem.degreeOfFreedomLedger().equations()) {
             V3DegreeOfFreedomLedger.EquationId id = equation.id();
             double physicalValue = switch (id.family()) {
                 case COMPONENT_MATERIAL_BALANCE -> materialResidual(state, id.node(), id.component());
-                case VAPOR_LIQUID_EQUILIBRIUM -> equilibriumResidual(state, id.node(), id.component(), workspace);
-                case ENERGY_BALANCE -> energyResidual(state, id.node(), workspace);
+                case VAPOR_LIQUID_EQUILIBRIUM -> equilibriumResidual(id.node(), id.component(), properties[id.node()]);
+                case ENERGY_BALANCE -> energyResidual(state, id.node(), properties);
             };
             rows.add(new V3MeshResidual.Row(id, physicalValue, scale(id)));
         }
@@ -71,38 +72,54 @@ final class V3MeshResidualEvaluator {
         return state.liquidFlow(node - 1, component) - state.liquidFlow(node, component) - state.vaporFlow(node, component);
     }
 
-    private double equilibriumResidual(V3DryMeshState state, int node, int component, V3ThermoWorkspace workspace) {
-        double[] liquid = normalizedPublicPhaseComposition(state, node, true);
-        double[] vapor = normalizedPublicPhaseComposition(state, node, false);
-        double temperature = state.temperatureKelvin(node);
-        double pressure = problem.nodePressurePascal(node);
-        V3FugacityResult liquidResult = thermo.fugacity(temperature, pressure, liquid, V3Phase.LIQUID, workspace);
-        V3FugacityResult vaporResult = thermo.fugacity(temperature, pressure, vapor, V3Phase.VAPOR, workspace);
+    private double equilibriumResidual(int node, int component, NodeProperties properties) {
         int publicComponent = activeComponentBasis.publicIndex(component);
-        return Math.log(vapor[publicComponent]) + vaporResult.logFugacityCoefficient(publicComponent)
-                - Math.log(liquid[publicComponent]) - liquidResult.logFugacityCoefficient(publicComponent);
+        return Math.log(properties.vaporComposition()[publicComponent])
+                + properties.vaporResult().logFugacityCoefficient(publicComponent)
+                - Math.log(properties.liquidComposition()[publicComponent])
+                - properties.liquidResult().logFugacityCoefficient(publicComponent);
     }
 
-    private double energyResidual(V3DryMeshState state, int node, V3ThermoWorkspace workspace) {
+    private double energyResidual(V3DryMeshState state, int node, NodeProperties[] properties) {
         V3ColumnTopology topology = problem.topology();
         if (node <= topology.trayCount()) {
             double liquidIn = node == 1
-                    ? (topology.hasLiquidPhase(0) ? organicRefluxFraction() * phaseEnergy(state, 0, true, workspace) : 0.0)
-                    : phaseEnergy(state, node - 1, true, workspace);
-            double vaporIn = phaseEnergy(state, node + 1, false, workspace);
+                    ? (topology.hasLiquidPhase(0) ? organicRefluxFraction() * phaseEnergy(state, 0, true, properties) : 0.0)
+                    : phaseEnergy(state, node - 1, true, properties);
+            double vaporIn = phaseEnergy(state, node + 1, false, properties);
             double feed = node == topology.feedTrayNumber() ? totalFeedFlow * feedMolarEnthalpyJoulesPerMol : 0.0;
-            return liquidIn + vaporIn + feed - phaseEnergy(state, node, true, workspace)
-                    - phaseEnergy(state, node, false, workspace);
+            return liquidIn + vaporIn + feed - phaseEnergy(state, node, true, properties)
+                    - phaseEnergy(state, node, false, properties);
         }
-        return phaseEnergy(state, node - 1, true, workspace) + reboilerDutyWatts
-                - phaseEnergy(state, node, true, workspace) - phaseEnergy(state, node, false, workspace);
+        return phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
+                - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
     }
 
-    private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, V3ThermoWorkspace workspace) {
+    private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties[] properties) {
         double totalFlow = phaseTotal(state, node, liquid);
         if (totalFlow == 0.0) return 0.0;
-        return totalFlow * thermo.molarEnthalpy(state.temperatureKelvin(node), problem.nodePressurePascal(node),
-                normalizedPublicPhaseComposition(state, node, liquid), liquid ? V3Phase.LIQUID : V3Phase.VAPOR, workspace);
+        return totalFlow * (liquid ? properties[node].liquidResult().molarEnthalpyJoulesPerMol()
+                : properties[node].vaporResult().molarEnthalpyJoulesPerMol());
+    }
+
+    /** Builds immutable per-node property snapshots once per residual evaluation. */
+    private NodeProperties[] nodeProperties(V3DryMeshState state, V3ThermoWorkspace workspace) {
+        NodeProperties[] properties = new NodeProperties[state.nodeCount()];
+        for (int node = 0; node < properties.length; node++) {
+            double[] vaporComposition = normalizedPublicPhaseComposition(state, node, false);
+            double temperature = state.temperatureKelvin(node);
+            double pressure = problem.nodePressurePascal(node);
+            V3FugacityResult vaporResult = thermo.fugacity(
+                    temperature, pressure, vaporComposition, V3Phase.VAPOR, workspace);
+            double[] liquidComposition = null;
+            V3FugacityResult liquidResult = null;
+            if (problem.topology().hasLiquidPhase(node)) {
+                liquidComposition = normalizedPublicPhaseComposition(state, node, true);
+                liquidResult = thermo.fugacity(temperature, pressure, liquidComposition, V3Phase.LIQUID, workspace);
+            }
+            properties[node] = new NodeProperties(liquidComposition, vaporComposition, liquidResult, vaporResult);
+        }
+        return properties;
     }
 
     private double[] normalizedPublicPhaseComposition(V3DryMeshState state, int node, boolean liquid) {
@@ -145,9 +162,9 @@ final class V3MeshResidualEvaluator {
                 .orElseThrow(() -> new IllegalArgumentException("V3 MESH problem is missing " + type.getSimpleName()));
     }
 
-    private static double sum(double[] values) {
-        double total = 0.0;
-        for (double value : values) total += value;
-        return total;
-    }
+    private record NodeProperties(
+            double[] liquidComposition,
+            double[] vaporComposition,
+            V3FugacityResult liquidResult,
+            V3FugacityResult vaporResult) {}
 }

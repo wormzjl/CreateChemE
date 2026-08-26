@@ -35,8 +35,15 @@ public final class V3ColumnCalculator {
      * {@link #calculate(V3ColumnInput)}.</p>
      */
     public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control) {
+        return calculate(input, control, V3ColumnInitializer.Mode.MATERIAL_CLOSED);
+    }
+
+    /** Package-private cold-start qualifier for reviewed initializer modes; production uses the material-closed mode. */
+    static V3ColumnOutcome calculate(
+            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode) {
         input = Objects.requireNonNull(input, "input");
         control = Objects.requireNonNull(control, "control");
+        initializerMode = Objects.requireNonNull(initializerMode, "initializerMode");
         try {
             control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
@@ -47,7 +54,8 @@ public final class V3ColumnCalculator {
                     problem.nodePressurePascal(problem.topology().feedTrayNumber()),
                     input.feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
             control.checkpoint();
-            V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace());
+            V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(
+                    problem, thermo, thermo.newWorkspace(), initializerMode);
             control.checkpoint();
             V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                     problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());

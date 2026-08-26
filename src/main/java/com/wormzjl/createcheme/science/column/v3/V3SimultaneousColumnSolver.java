@@ -100,6 +100,15 @@ final class V3SimultaneousColumnSolver {
                 return new Attempt.Converged(state, new Evidence(iteration, maximumResidual, merit, 0.0, 0.0,
                         "residual and final-step tolerances", lastConvergenceEvidence));
             }
+            if (maximumResidual <= scaledTolerance) {
+                VerifiedFinalNewton verified = verifyFinalNewtonCorrection(
+                        evaluator, coordinates, state, residual, merit, workspaceFactory, layout, control, scaledTolerance);
+                if (verified != null) {
+                    return new Attempt.Converged(verified.state(), new Evidence(iteration,
+                            verified.maximumScaledResidual(), verified.merit(), verified.step(),
+                            verified.backwardError(), "verified final Newton correction", verified.evidence()));
+                }
+            }
             if (iteration == maximumIterations) {
                 return new Attempt.Failure("MAX_ITERATIONS", state,
                         new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, "iteration budget exhausted",
@@ -170,6 +179,71 @@ final class V3SimultaneousColumnSolver {
             }
         }
         throw new IllegalStateException("V3 Newton solve escaped its bounded iteration loop");
+    }
+
+    /**
+     * Produces the required final Newton certificate when a fallback step reaches the residual gate but has no
+     * Newton-step evidence of its own. The candidate is decoded, independently re-evaluated, and accepted only when
+     * the actual final correction satisfies the unchanged step/backward-error gates.
+     */
+    private static VerifiedFinalNewton verifyFinalNewtonCorrection(
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState state,
+            V3MeshResidual residual,
+            double merit,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3StageBlockLayout layout,
+            V3SolveControl control,
+            double scaledTolerance) {
+        try {
+            control.checkpoint();
+            V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
+                    evaluator, coordinates, state, workspaceFactory, V3FiniteDifferenceJacobian.DifferenceScale.FINE, control);
+            V3BandedPivotedSolver.Result linear = V3BandedPivotedSolver.solve(
+                    toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
+            if (linear instanceof V3BandedPivotedSolver.Result.Success success) {
+                VerifiedFinalNewton direct = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
+                        scaledTolerance, merit, success.solution(), success.backwardError());
+                if (direct != null) return direct;
+            }
+            double damping = INITIAL_GAUSS_NEWTON_DAMPING;
+            for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
+                control.checkpoint();
+                V3BandedPivotedSolver.Result regularized = V3BandedPivotedSolver.solve(
+                        dampedNormalMatrix(jacobian, layout, damping, control), negativeGradient(residual, jacobian));
+                if (regularized instanceof V3BandedPivotedSolver.Result.Success success) {
+                    VerifiedFinalNewton verified = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
+                            scaledTolerance, merit, success.solution(), success.backwardError());
+                    if (verified != null) return verified;
+                }
+                damping *= 10.0;
+            }
+            return null;
+        } catch (IllegalArgumentException | V3ThermoException unavailable) {
+            return null;
+        }
+    }
+
+    private static VerifiedFinalNewton verifiedCandidate(
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState state,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            double scaledTolerance,
+            double merit,
+            double[] correction,
+            double backwardError) {
+        double[] baseCoordinates = coordinates.encode(state);
+        double[] candidateCoordinates = addScaled(baseCoordinates, correction, 1.0);
+        V3DryMeshState candidate = coordinates.decode(candidateCoordinates);
+        V3MeshResidual candidateResidual = evaluator.evaluate(candidate, workspaceFactory.newWorkspace());
+        double maximumResidual = candidateResidual.maximumAbsoluteScaledResidual();
+        double candidateMerit = scaledSquaredNorm(candidateResidual);
+        V3ConvergenceEvidence evidence = convergenceEvidence(
+                coordinates, baseCoordinates, candidateCoordinates, backwardError);
+        if (maximumResidual > scaledTolerance || candidateMerit > merit || !evidence.satisfiesGates()) return null;
+        return new VerifiedFinalNewton(candidate, maximumResidual, candidateMerit, 1.0, backwardError, evidence);
     }
 
     private static V3BandedMatrix toBandedMatrix(
@@ -359,6 +433,14 @@ final class V3SimultaneousColumnSolver {
     }
 
     private record AcceptedTrial(V3DryMeshState state, double[] coordinates, double merit, double step) {}
+
+    private record VerifiedFinalNewton(
+            V3DryMeshState state,
+            double maximumScaledResidual,
+            double merit,
+            double step,
+            double backwardError,
+            V3ConvergenceEvidence evidence) {}
 
     sealed interface Attempt permits Attempt.Converged, Attempt.Failure {
         V3DryMeshState state();
