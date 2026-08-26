@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.client;
 import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.client.gui.screens.inventory.ColumnCalculatorScreen;
 import com.wormzjl.createcheme.client.gui.screens.inventory.ColumnCalculatorNextScreen;
+import com.wormzjl.createcheme.client.gui.screens.inventory.ColumnCalculatorV3Screen;
 import com.wormzjl.createcheme.network.ColumnNetwork;
 import com.wormzjl.createcheme.network.ColumnNextNetwork;
 import com.wormzjl.createcheme.network.ColumnNetwork.ResultView;
@@ -23,6 +24,7 @@ public final class CreateChemEClient {
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.COLUMN_CALCULATOR.get(), ColumnCalculatorScreen::new);
         event.register(ModMenus.COLUMN_CALCULATOR_NEXT.get(), ColumnCalculatorNextScreen::new);
+        event.register(ModMenus.COLUMN_CALCULATOR_V3.get(), ColumnCalculatorV3Screen::new);
         ColumnNetwork.setClientResultConsumer(CreateChemEClient::acceptResult);
         ColumnNextNetwork.setClientStateConsumer(CreateChemEClient::acceptNextState);
     }

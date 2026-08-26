@@ -36,6 +36,7 @@ public final class CreateChemE {
     private static final ModConfigSpec.IntValue SOLVER_DEADLINE_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
+    private static final ModConfigSpec.EnumValue<V3Rollout> COLUMN_V3_ROLLOUT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -58,6 +59,11 @@ public final class CreateChemE {
         SOLVER_FORCED_SHUTDOWN_MILLISECONDS = builder
                 .comment("Bounded wait after solver-worker interruption, in milliseconds.")
                 .defineInRange("forcedShutdownMilliseconds", 1_000, 0, 10_000);
+        builder.pop();
+        builder.push("columnV3");
+        COLUMN_V3_ROLLOUT = builder
+                .comment("V3 calculator product rollout. DISABLED hides normal discovery; EXPERIMENTAL exposes the creative item.")
+                .defineEnum("rollout", V3Rollout.DISABLED);
         builder.pop();
         CONFIG_SPEC = builder.build();
     }
@@ -83,10 +89,15 @@ public final class CreateChemE {
         return CALCULATION_LOGGING.getAsBoolean();
     }
 
+    public static V3Rollout columnV3Rollout() {
+        return COLUMN_V3_ROLLOUT.get();
+    }
+
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.COLUMN_CALCULATOR.get());
             event.accept(ModItems.COLUMN_CALCULATOR_NEXT.get());
+            if (columnV3Rollout() != V3Rollout.DISABLED) event.accept(ModItems.COLUMN_CALCULATOR_V3.get());
         }
     }
 
@@ -155,5 +166,12 @@ public final class CreateChemE {
                 Duration.ofMillis(SOLVER_DEADLINE_MILLISECONDS.getAsInt()),
                 Duration.ofMillis(SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS.getAsInt()),
                 Duration.ofMillis(SOLVER_FORCED_SHUTDOWN_MILLISECONDS.getAsInt()));
+    }
+
+    /** Server-start rollout mode for the additive V3 product family. */
+    public enum V3Rollout {
+        DISABLED,
+        EXPERIMENTAL,
+        ENABLED
     }
 }

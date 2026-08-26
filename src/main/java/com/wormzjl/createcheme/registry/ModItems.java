@@ -19,6 +19,11 @@ public final class ModItems {
             ModBlocks.COLUMN_CALCULATOR_NEXT
     );
 
+    public static final DeferredItem<BlockItem> COLUMN_CALCULATOR_V3 = ITEMS.registerSimpleBlockItem(
+            "column_calculator_v3",
+            ModBlocks.COLUMN_CALCULATOR_V3
+    );
+
     private ModItems() {
     }
 

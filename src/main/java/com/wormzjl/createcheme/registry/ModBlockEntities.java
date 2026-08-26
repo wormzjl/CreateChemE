@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.registry;
 import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorBlockEntity;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorNextBlockEntity;
+import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -28,6 +29,15 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             ColumnCalculatorNextBlockEntity::new,
                             ModBlocks.COLUMN_CALCULATOR_NEXT.get()
+                    ).build(null)
+            );
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ColumnCalculatorV3BlockEntity>>
+            COLUMN_CALCULATOR_V3 = BLOCK_ENTITY_TYPES.register(
+                    "column_calculator_v3",
+                    () -> BlockEntityType.Builder.of(
+                            ColumnCalculatorV3BlockEntity::new,
+                            ModBlocks.COLUMN_CALCULATOR_V3.get()
                     ).build(null)
             );
 

@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.registry;
 import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.world.level.block.ColumnCalculatorBlock;
 import com.wormzjl.createcheme.world.level.block.ColumnCalculatorNextBlock;
+import com.wormzjl.createcheme.world.level.block.ColumnCalculatorV3Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -28,6 +29,16 @@ public final class ModBlocks {
             ColumnCalculatorNextBlock::new,
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_LIGHT_BLUE)
+                    .strength(3.5F)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+    );
+
+    public static final DeferredBlock<ColumnCalculatorV3Block> COLUMN_CALCULATOR_V3 = BLOCKS.registerBlock(
+            "column_calculator_v3",
+            ColumnCalculatorV3Block::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_PURPLE)
                     .strength(3.5F)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
