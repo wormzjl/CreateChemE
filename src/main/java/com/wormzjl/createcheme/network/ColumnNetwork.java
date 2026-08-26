@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /** All Milestone-1 wire formats, handlers, formatting, and logging live in this one utility. */
 public final class ColumnNetwork {
-    private static final String PROTOCOL_VERSION = "3";
+    private static final String PROTOCOL_VERSION = "4";
     private static final int MAX_ASSAY_ID_LENGTH = 96;
     private static final int MAX_SIDE_DRAWS = 6;
     private static final int MAX_RESULT_PRODUCTS = 8;
@@ -71,7 +71,6 @@ public final class ColumnNetwork {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION).executesOn(HandlerThread.MAIN);
         registrar.playToServer(CalculatePayload.TYPE, CalculatePayload.STREAM_CODEC, ColumnNetwork::handleCalculate);
         registrar.playToClient(ResultPayload.TYPE, ResultPayload.STREAM_CODEC, ColumnNetwork::handleResult);
-        ColumnNextNetwork.register(registrar);
         ColumnV3Network.register(registrar);
     }
 

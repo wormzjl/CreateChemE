@@ -1,8 +1,6 @@
 {
   "block.createcheme.column_calculator": "Column Calculator",
-  "block.createcheme.column_calculator_next": "Column Calculator Next (Experimental)",
   "block.createcheme.column_calculator_v3": "Column Calculator V3 (Experimental)",
-  "gui.createcheme.column_calculator_next.solver_unavailable": "Next solver is not yet available.",
   "gui.createcheme.column_calculator.calculate": "Calculate",
   "gui.createcheme.column_calculator.placeholder": "Crude distillation proof of concept",
   "gui.createcheme.column_calculator.no_result": "Configure the column, then calculate."

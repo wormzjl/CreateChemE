@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "bottom": "minecraft:block/deepslate_tiles",
-    "side": "minecraft:block/light_blue_concrete",
-    "top": "minecraft:block/diamond_block"
-  }
-}

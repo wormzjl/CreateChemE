@@ -96,7 +96,6 @@ public final class CreateChemE {
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.COLUMN_CALCULATOR.get());
-            event.accept(ModItems.COLUMN_CALCULATOR_NEXT.get());
             if (columnV3Rollout() != V3Rollout.DISABLED) event.accept(ModItems.COLUMN_CALCULATOR_V3.get());
         }
     }

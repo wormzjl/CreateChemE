@@ -2,7 +2,6 @@ package com.wormzjl.createcheme.registry;
 
 import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorMenu;
-import com.wormzjl.createcheme.world.inventory.ColumnCalculatorNextMenu;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -19,12 +18,6 @@ public final class ModMenus {
             MENU_TYPES.register(
                     "column_calculator",
                     () -> IMenuTypeExtension.create(ColumnCalculatorMenu::new)
-            );
-
-    public static final DeferredHolder<MenuType<?>, MenuType<ColumnCalculatorNextMenu>> COLUMN_CALCULATOR_NEXT =
-            MENU_TYPES.register(
-                    "column_calculator_next",
-                    () -> IMenuTypeExtension.create(ColumnCalculatorNextMenu::new)
             );
 
     public static final DeferredHolder<MenuType<?>, MenuType<ColumnCalculatorV3Menu>> COLUMN_CALCULATOR_V3 =

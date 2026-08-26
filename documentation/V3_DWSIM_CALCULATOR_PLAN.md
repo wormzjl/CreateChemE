@@ -8,7 +8,7 @@
 
 ## 1. Executive decision
 
-V3 should be a clean, isolated calculator rather than another patch to the legacy or `nextgen` solver. Its numerical strategy will follow the successful division of responsibilities visible in DWSIM:
+V3 should be a clean, isolated calculator rather than another patch to the legacy or retired V2 solver. Its numerical strategy will follow the successful division of responsibilities visible in DWSIM:
 
 1. validate the physical problem and its degrees of freedom;
 2. construct a physically plausible column state with a modified Wang–Henke-style initializer;
@@ -40,7 +40,7 @@ V3 will also be a new product surface: a new block ID, menu, screen, network pro
 
 - rate-based mass transfer, tray hydraulics, predicted pressure drop, reactions, electrolytes, solids, or a generic three-phase flash model;
 - copying DWSIM implementation code or attempting feature parity with DWSIM;
-- silently interpreting legacy or `nextgen` saved data as V3 data;
+- silently interpreting legacy or retired V2 saved data as V3 data;
 - using a second publishable solver as a fallback;
 - declaring success from iteration count, step size, temperature stability, or a plausible-looking product split;
 - optimizing throughput before the scientific acceptance suite passes.
@@ -76,14 +76,14 @@ The older online API descriptions must not override the pinned source. In partic
 
 ### 3.1 Assessment of the current implementation strategy
 
-The current `nextgen` work contains several boundaries worth retaining, but its numerical core is not an adequate V3 base. The distinction matters because a green fail-closed suite is not evidence that a real column has been solved.
+The retired V2 work contained several useful historical boundaries, but its numerical core was not an adequate V3 base. The distinction matters because a green fail-closed suite is not evidence that a real column has been solved.
 
 | Current area | Assessment | V3 action |
 | --- | --- | --- |
-| Immutable problem/outcome concepts and strict [`DryAcceptanceAudit`](../src/main/java/com/wormzjl/createcheme/science/column/nextgen/DryAcceptanceAudit.java) | Strong direction | Recreate as V3-owned contracts and make audit the only success factory |
+| Historical V2 immutable problem/outcome concepts and strict acceptance audit | Strong direction | Recreate as V3-owned contracts and make audit the only success factory |
 | Property dataset, component basis, PR and IF97 work | Valuable, subject to parity tests | Reuse through one-way package-private adapters first; extract neutral code only after both suites pass |
-| [`DryInsideOutColumnSolver`](../src/main/java/com/wormzjl/createcheme/science/column/nextgen/DryInsideOutColumnSolver.java) Sum-Rates/inside-out iteration | The present default fails closed and there is no production nominal-success test | Replace, not subclass: modified Wang–Henke seed plus simultaneous block Newton |
-| [`ColumnTopology`](../src/main/java/com/wormzjl/createcheme/science/column/nextgen/ColumnTopology.java) equation/unknown counts | Equal expressions do not prove an independent square model | Replace with separately enumerated unknown, equation, specification, structural-rank ledgers |
+| Historical V2 Sum-Rates/inside-out iteration | The former default failed closed and had no production nominal-success test | Replace, not subclass: modified Wang–Henke seed plus simultaneous block Newton |
+| Historical V2 equation/unknown counts | Equal expressions do not prove an independent square model | Replace with separately enumerated unknown, equation, specification, structural-rank ledgers |
 | Current feed flash | Two-phase-bracket behavior does not cover valid single-phase feeds | Implement explicit liquid/two-phase/vapor outcomes |
 | Current phase-stability repair | Candidate compositions can overwrite conserved flows | TPD may classify/seed only; raw balances remain authoritative |
 | Component/tridiagonal tests | Useful for individual material rows | Retain as algebra evidence, but add a genuinely independent full-MESH dense oracle |
@@ -210,7 +210,7 @@ Create `src/main/java/com/wormzjl/createcheme/science/column/v3/` with these res
 
 Keep linear algebra in `science.column.v3.linalg` and thermodynamics in `science.column.v3.thermo` once either area exceeds a few classes. Do not make public utility classes prematurely; expose one package-level solver façade.
 
-V3 core must not import legacy solver types or V2 input/outcome/warm-state/cache types. Initial reuse of immutable property data and proven PR/IF97 arithmetic occurs through a one-way package-private adapter from V3 to a solve-local thermo session; V2 never imports V3. Extract shared neutral thermodynamics only after both suites pass unchanged.
+V3 core must not import legacy solver types or retired V2 input/outcome/warm-state/cache types. Its immutable property data and proven PR arithmetic now live in the V3-owned solve-local thermo package; no retired V2 code remains in the runtime dependency graph.
 
 ### 5.2 API rules
 
@@ -483,7 +483,7 @@ Register the block family and assets unconditionally so worlds remain loadable, 
 
 ### 11.2 Input and state contract
 
-V3 owns its schema; it does not reuse or extend `ColumnNextInput`. The conceptual input is:
+V3 owns its schema; it does not reuse or extend the retired V2 calculator input. The conceptual input is:
 
 ```text
 schemaVersion, packageId, assayId
@@ -514,7 +514,7 @@ Use versioned immutable messages:
 
 The server revalidates position, loaded chunk, menu ownership/distance, expected revision, numeric ranges, component/model IDs, payload sizes, and rate limits. Client values never choose a class name or bypass the model registry. `wireSchemaVersion` versions framing/codecs; `V3ColumnInput.schemaVersion` versions the scientific input and can change independently. Codecs put the wire version first, serialize stable enum names rather than ordinals, reject lengths before allocation, use presence flags rather than NaNs, cross-check every vector against the server component axis, and enforce a 64 KiB wire/decoded-view bound before allocation.
 
-Do not broadcast full stage profiles on every state transition. Fetch them in bounded pages—eight stages is the starting limit—and discard any page whose revision/digest no longer matches. Compact persisted stale results do not promise profiles; the Profiles tab says recalculation is required until a current in-memory accepted full result exists. Bump the mod protocol version once while leaving every existing legacy/Next payload ID and byte layout unchanged.
+Do not broadcast full stage profiles on every state transition. Fetch them in bounded pages—eight stages is the starting limit—and discard any page whose revision/digest no longer matches. Compact persisted stale results do not promise profiles; the Profiles tab says recalculation is required until a current in-memory accepted full result exists. Bump the mod protocol version when V2 payloads are retired so incompatible clients cannot silently exchange a mismatched payload set.
 
 ### 11.4 UX contract
 
@@ -532,7 +532,7 @@ The Run action is disabled while local validation fails. Running requests can be
 
 Persist a versioned `V3DataVersion`, accepted input, input/result/state revisions, and a bounded last accepted display result with digest, audit certificate, and model provenance. Never persist live status, operation IDs, futures, queue state, client/viewer data, timing, warm states, caches, or mutable numerical workspaces. On load, derive `IDLE` when no accepted input exists, `STALE` when compact old result data exists, and `DIRTY` otherwise; an in-flight operation is never inferred or resurrected. Initially treat even a validated persisted result as presentation-only stale data until a separately reviewed restoration gate proves its complete certificate compatible with current revisions.
 
-NBT has separately measured encoded-size and collection limits rather than relying on the wire buffer's 64 KiB check. Decode into local candidates, enforce all bounds/finiteness, and publish atomically only after whole-object validation. Unknown future schema becomes `INCOMPATIBLE` and preserves a bounded opaque original tag unchanged for explicit export/reset/downgrade; corrupt or oversized data becomes `DIRTY` with `CORRUPT_PERSISTED_STATE`, never a second undocumented `INVALID` status and never partial normalization. Legacy `column_calculator` and `column_calculator_next` NBT remain owned by their existing block entities. Any future conversion is an explicit input-only import into a new V3 draft or a separately tested data migration; it never imports a result/warm state or silently reinterprets a placed block.
+NBT has separately measured encoded-size and collection limits rather than relying on the wire buffer's 64 KiB check. Decode into local candidates, enforce all bounds/finiteness, and publish atomically only after whole-object validation. Unknown future schema becomes `INCOMPATIBLE` and preserves a bounded opaque original tag unchanged for explicit export/reset/downgrade; corrupt or oversized data becomes `DIRTY` with `CORRUPT_PERSISTED_STATE`, never a second undocumented `INVALID` status and never partial normalization. The legacy `column_calculator` NBT remains owned by its existing block entity. V2 `column_calculator_next` content is retired without a mapping or migration, so worlds with it must be backed up before upgrade. Any future conversion is an explicit input-only import into a new V3 draft or a separately tested data migration; it never imports a result/warm state or silently reinterprets a placed block.
 
 ### 11.6 Provenance and observability
 
@@ -670,7 +670,7 @@ Use small reviewable commits on `codex/v3-dwsim-calculator-test`:
 14. `feat: add V3 calculator screen and assets`
 15. `test: harden V3 oracle, concurrency, performance, and lifecycle paths`
 
-Each scientific commit includes its tests. Do not mix legacy/`nextgen` cleanup into these commits. The branch was created while unrelated solver work was present in the working tree; that work must remain unstaged unless separately reviewed and intentionally committed.
+Each scientific commit includes its tests. V2 retirement is isolated in its own backup-backed checkpoint, rather than being mixed into numerical solver changes.
 
 ## 15. Risk register
 
@@ -722,7 +722,7 @@ Before numerical implementation, record answers to these questions in an ADR:
 6. Are exact-zero components eliminated through a declared active basis while every positive trace component uses a scaled log coordinate with no additive balance floor?
 7. Which exact DWSIM comparison tolerances are frozen after property identity, repeatability, and conditioning evidence?
 8. Confirm the five-second absolute deadline, proposed V3 admission cap, worker concurrency, cache size, 64 KiB wire-view bound, and separate measured NBT budget.
-9. Does V3 remain a separate advanced block permanently, or is it intended to replace `column_calculator_next` after M12?
+9. Confirm V3 remains the separate advanced calculator after the complete retirement of V2 `column_calculator_next`.
 
 No question above justifies an ambiguous implementation default. M0 exists to turn each answer into executable validation and a versioned contract.
 
@@ -730,12 +730,12 @@ No question above justifies an ambiguous implementation default. M0 exists to tu
 
 The current repository already has valuable boundaries and failure-oriented work:
 
-- immutable problem/result concepts in [`science/column/nextgen`](../src/main/java/com/wormzjl/createcheme/science/column/nextgen/);
-- strict result checking in [`DryAcceptanceAudit`](../src/main/java/com/wormzjl/createcheme/science/column/nextgen/DryAcceptanceAudit.java);
+- V3-owned immutable property data and Peng–Robinson arithmetic in [`science/column/v3/thermo`](../src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/);
+- V3 acceptance and convergence diagnostics;
 - typed solve outcomes and diagnostics;
 - the bounded runtime and server-authoritative completion flow;
 - exact-input digest/cache concepts;
-- the optimization findings in [`DISTILLATION_COLUMN_OPTIMIZATION_HANDOFF.md`](DISTILLATION_COLUMN_OPTIMIZATION_HANDOFF.md).
+- archived V2 optimization findings in [`DISTILLATION_COLUMN_OPTIMIZATION_HANDOFF.md`](DISTILLATION_COLUMN_OPTIMIZATION_HANDOFF.md).
 
 Reuse means preserving proven contracts or porting small ideas with new V3 tests. It does not mean subclassing the current solver, sharing mutable workspaces, importing current assumptions, or accepting the current default case as scientifically solved. Known issues—including tautological equation/unknown counts, a hard-coded hydrocarbon basis, two-phase-only feed assumptions, and phase-repair mutation of conserved flows—must become regression tests before any related V3 code is written.
 

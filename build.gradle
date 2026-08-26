@@ -195,20 +195,6 @@ tasks.register('legacyColumnBenchmarkHarnessTest', JavaExec) {
     args '--self-test'
 }
 
-tasks.register('nextColumnBenchmark', JavaExec) {
-    group = 'verification'
-    description = 'Measures the direct experimental next-column core and records typed non-success outcomes.'
-    classpath = sourceSets.benchmark.runtimeClasspath
-    mainClass = 'com.wormzjl.createcheme.benchmarks.NextColumnBenchmark'
-    args '--samples=' + providers.gradleProperty('nextBenchmarkSamples').getOrElse('3')
-    args '--warmup=' + providers.gradleProperty('nextBenchmarkWarmup').getOrElse('1')
-    def benchmarkReport = providers.gradleProperty('nextBenchmarkReport').getOrElse(
-            layout.buildDirectory.file('reports/benchmarks/next-column-report.json').get().asFile.absolutePath)
-    args '--report=' + benchmarkReport
-    outputs.file(benchmarkReport)
-    outputs.upToDateWhen { false }
-}
-
 tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }

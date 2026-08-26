@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "createcheme:column_calculator",
-    "createcheme:column_calculator_next"
+    "createcheme:column_calculator"
   ]
 }
