@@ -106,6 +106,15 @@ class V3SimultaneousColumnSolverTest {
                 0, converged.evidence().iterations(), 1, 1, converged.evidence().maximumScaledResidual(), 0.0,
                 "registered-pr-binary", List.of(), audit, convergenceEvidence);
         assertTrue(new V3ColumnOutcome.Success(result, diagnostics).isSuccess());
+
+        V3SimultaneousColumnSolver.Attempt.Converged warmConverged = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class, V3SimultaneousColumnSolver.solve(
+                        problem, evaluator, new V3DryMeshCoordinateMap(problem), converged.state(), thermo::newWorkspace,
+                        convergenceEvidence, 128, 1.0e-8));
+        assertEquals(0, warmConverged.evidence().iterations());
+        assertTrue(warmConverged.evidence().convergenceEvidence().satisfiesGates());
+        assertTrue(new V3AcceptanceAuditor(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol())
+                .audit(warmConverged.state(), thermo.newWorkspace()).accepted());
     }
 
     private static V3ColumnProblem problem() {

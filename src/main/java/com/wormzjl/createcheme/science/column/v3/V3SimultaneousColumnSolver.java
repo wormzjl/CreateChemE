@@ -22,18 +22,27 @@ final class V3SimultaneousColumnSolver {
             V3ColumnProblem problem, V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates,
             V3DryMeshState initialState, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             int maximumIterations, double scaledTolerance) {
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
+                maximumIterations, scaledTolerance);
+    }
+
+    static Attempt solve(
+            V3ColumnProblem problem, V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3ConvergenceEvidence initialConvergenceEvidence, int maximumIterations, double scaledTolerance) {
         problem = Objects.requireNonNull(problem, "problem");
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
         initialState = Objects.requireNonNull(initialState, "initialState");
         workspaceFactory = Objects.requireNonNull(workspaceFactory, "workspaceFactory");
+        initialConvergenceEvidence = Objects.requireNonNull(initialConvergenceEvidence, "initialConvergenceEvidence");
         if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0) {
             throw new IllegalArgumentException("V3 Newton solve limits are invalid");
         }
         V3StageBlockLayout layout = new V3StageBlockLayout(problem);
         V3DryMeshState state = initialState;
         double lastMerit = Double.NaN;
-        V3ConvergenceEvidence lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+        V3ConvergenceEvidence lastConvergenceEvidence = initialConvergenceEvidence;
         for (int iteration = 0; iteration <= maximumIterations; iteration++) {
             V3MeshResidual residual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
             double maximumResidual = residual.maximumAbsoluteScaledResidual();
