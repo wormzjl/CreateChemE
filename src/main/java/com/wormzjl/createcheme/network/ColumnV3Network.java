@@ -257,8 +257,36 @@ public final class ColumnV3Network {
 
     private static void logTerminal(V3ColumnCompletion job, String status, String detail) {
         if (!CreateChemE.calculationLoggingEnabled() && !"FAILED".equals(status) && !"STALE_TARGET".equals(status)) return;
-        CreateChemE.LOGGER.info("column_v3 request={} status={} input_revision={} detail={}",
-                job.request().requestId(), status, job.request().inputRevision(), detail);
+        V3ColumnInput input = job.request().operation().input();
+        CreateChemE.LOGGER.info(
+                "column_v3 request={} status={} input_revision={} stages={} feed_stage={} feed_mol_s={} feed_k={} "
+                        + "top_kpa={} drop_kpa={} condenser_k={} reflux={} reboiler_mw={} detail={}",
+                job.request().requestId(),
+                status,
+                job.request().inputRevision(),
+                input.stageCount(),
+                input.feedStageNumber(),
+                totalFeedFlow(input),
+                input.feedTemperatureKelvin(),
+                input.topPressurePascal() / 1_000.0,
+                input.stagePressureDropPascal() / 1_000.0,
+                specifiedValue(input, V3ControlledQuantity.CONDENSER_OUTLET_TEMPERATURE),
+                specifiedValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO),
+                specifiedValue(input, V3ControlledQuantity.REBOILER_DUTY) / 1_000_000.0,
+                detail);
+    }
+
+    private static double totalFeedFlow(V3ColumnInput input) {
+        double total = 0.0;
+        for (double flow : input.feedComponentMolarFlowsMolPerSecond()) total += flow;
+        return total;
+    }
+
+    private static double specifiedValue(V3ColumnInput input, V3ControlledQuantity wanted) {
+        for (V3ColumnSpecification specification : input.specifications()) {
+            if (specification.controlledQuantity() == wanted) return specificationValue(specification);
+        }
+        throw new IllegalArgumentException("V3 input is missing required control " + wanted);
     }
 
     private static String bounded(String value) {

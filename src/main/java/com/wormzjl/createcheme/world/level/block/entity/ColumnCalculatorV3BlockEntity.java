@@ -42,6 +42,8 @@ import org.jetbrains.annotations.Nullable;
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
     public static final int DATA_VERSION = 1;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
+    private static final int DEFAULT_STAGE_COUNT = 30;
+    private static final int DEFAULT_FEED_STAGE = 24;
 
     private static final String TAG_DATA_VERSION = "V3DataVersion";
     private static final String TAG_INPUT_REVISION = "InputRevision";
@@ -302,7 +304,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         feedFlows[6] = 50.0;
         feedFlows[13] = 50.0;
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, thermo.packageId(), "test:registered-pr-binary",
-                thermo.componentBasis(), feedFlows, 550.0, 2, 1, 250_000.0, 750.0, List.of(
+                thermo.componentBasis(), feedFlows, 550.0, DEFAULT_STAGE_COUNT, DEFAULT_FEED_STAGE, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
                         new V3ColumnSpecification.ReboilerDuty(0.0)));

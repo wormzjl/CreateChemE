@@ -16,6 +16,8 @@ final class V3SimultaneousColumnSolver {
     private static final double FALLBACK_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 10.0;
     private static final double INITIAL_GAUSS_NEWTON_DAMPING = 1.0e-8;
     private static final int MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS = 8;
+    private static final String DAMPED_NORMAL_OFF_BAND_MESSAGE =
+            "V3 damped normal matrix contains an unexpected off-band coupling";
 
     private V3SimultaneousColumnSolver() {}
 
@@ -246,8 +248,16 @@ final class V3SimultaneousColumnSolver {
             int maximumLineSearchSteps) {
         double damping = INITIAL_GAUSS_NEWTON_DAMPING;
         for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
-            V3BandedPivotedSolver.Result result = V3BandedPivotedSolver.solve(
-                    dampedNormalMatrix(jacobian, layout, damping), negativeGradient(residual, jacobian));
+            V3BandedPivotedSolver.Result result;
+            try {
+                result = V3BandedPivotedSolver.solve(
+                        dampedNormalMatrix(jacobian, layout, damping), negativeGradient(residual, jacobian));
+            } catch (IllegalStateException unavailable) {
+                if (!DAMPED_NORMAL_OFF_BAND_MESSAGE.equals(unavailable.getMessage())) throw unavailable;
+                // The normal-equation fallback is optional. Its finite-difference off-band noise must not turn a
+                // primary Newton failure into an INTERNAL_ERROR; the caller will still try gradient descent.
+                return null;
+            }
             if (result instanceof V3BandedPivotedSolver.Result.Success success) {
                 AcceptedTrial trial = armijoTrial(
                         evaluator, coordinates, baseCoordinates, success.solution(), merit, workspaceFactory,
@@ -272,7 +282,7 @@ final class V3SimultaneousColumnSolver {
             }
             normal[row][row] += damping * Math.max(1.0, normal[row][row]);
         }
-        return stageBandedMatrix(normal, layout, 2, "V3 damped normal matrix contains an unexpected off-band coupling");
+        return stageBandedMatrix(normal, layout, 2, DAMPED_NORMAL_OFF_BAND_MESSAGE);
     }
 
     private static double[] negativeGradient(V3MeshResidual residual, V3FiniteDifferenceJacobian.Jacobian jacobian) {
