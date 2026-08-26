@@ -39,7 +39,27 @@ public final class V3ColumnCalculator {
                     problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
                     MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE);
             V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state());
-            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, "cold");
+            String solvePath = "cold/fine-fd";
+            if (!publishesSuccess(attempt, audit)) {
+                try {
+                    V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
+                            problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
+                            V3ConvergenceEvidence.unavailable(), MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE,
+                            V3FiniteDifferenceJacobian.DifferenceScale.COARSE);
+                    V3AcceptanceAudit coarseAudit = audit(
+                            problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), coarseAttempt.state());
+                    if (publishesSuccess(coarseAttempt, coarseAudit)
+                            || coarseAttempt.evidence().maximumScaledResidual() < attempt.evidence().maximumScaledResidual()) {
+                        attempt = coarseAttempt;
+                        audit = coarseAudit;
+                        solvePath = "cold/coarse-fd-recovery";
+                    }
+                } catch (IllegalStateException unavailableRecovery) {
+                    // The primary fine attempt remains a complete typed result when this optional stencil violates
+                    // the band-structure guard because of finite-difference noise.
+                }
+            }
+            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath);
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()) {
                 V3ColumnResult result = V3ColumnResult.accepted(
                         problem, digest, audit, converged.evidence().convergenceEvidence());
@@ -66,6 +86,11 @@ public final class V3ColumnCalculator {
         } catch (RuntimeException unavailable) {
             return failedAudit("UNAVAILABLE", unavailable.getMessage());
         }
+    }
+
+    private static boolean publishesSuccess(V3SimultaneousColumnSolver.Attempt attempt, V3AcceptanceAudit audit) {
+        return attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged
+                && converged.evidence().convergenceEvidence().satisfiesGates() && audit.accepted();
     }
 
     private static V3SolverDiagnostics diagnostics(

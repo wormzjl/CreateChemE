@@ -21,8 +21,11 @@ class V3ExactWarmStartSweepTest {
     @Test
     void coldQualifiedMatrixPointsAlsoPassFreshExactInputHotStarts() {
         for (V3ColumnInput input : List.of(
+                binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 0.0),
+                binaryInput(100.0, 551.0, 250_000.0, 750.0, 300.0, 2.0, 0.0),
                 binaryInput(100.0, 550.0, 250_000.0, 0.0, 300.0, 2.0, 0.0),
-                binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 20_000.0))) {
+                binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 20_000.0),
+                binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 50_000.0))) {
             ColdAttempt cold = coldAttempt(input);
             V3SimultaneousColumnSolver.Attempt.Converged coldConverged = assertInstanceOf(
                     V3SimultaneousColumnSolver.Attempt.Converged.class, cold.attempt());
@@ -66,8 +69,22 @@ class V3ExactWarmStartSweepTest {
         V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace());
         V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
                 problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 128, 1.0e-8);
-        return new ColdAttempt(attempt, new V3AcceptanceAuditor(problem, thermo, flash.molarEnthalpyJoulesPerMol())
-                .audit(attempt.state(), thermo.newWorkspace()));
+        V3AcceptanceAuditor auditor = new V3AcceptanceAuditor(problem, thermo, flash.molarEnthalpyJoulesPerMol());
+        V3AcceptanceAudit audit = auditor.audit(attempt.state(), thermo.newWorkspace());
+        if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged
+                && converged.evidence().convergenceEvidence().satisfiesGates() && audit.accepted())) {
+            V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
+                    problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
+                    V3ConvergenceEvidence.unavailable(), 128, 1.0e-8,
+                    V3FiniteDifferenceJacobian.DifferenceScale.COARSE);
+            V3AcceptanceAudit coarseAudit = auditor.audit(coarseAttempt.state(), thermo.newWorkspace());
+            if (coarseAttempt instanceof V3SimultaneousColumnSolver.Attempt.Converged coarseConverged
+                    && coarseConverged.evidence().convergenceEvidence().satisfiesGates() && coarseAudit.accepted()) {
+                attempt = coarseAttempt;
+                audit = coarseAudit;
+            }
+        }
+        return new ColdAttempt(attempt, audit);
     }
 
     private static V3ColumnInput binaryInput(

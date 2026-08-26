@@ -41,7 +41,7 @@ class V3ColdStartSweepTest {
         report.append("accepted=").append(accepted).append(" / ").append(matrix.size()).append('\n');
         System.out.println(report);
         assertTrue(outcomes.get("nominal") instanceof V3ColumnOutcome.Success, report::toString);
-        assertTrue(accepted >= 3L, report::toString);
+        assertTrue(accepted >= 5L, report::toString);
         assertEquals(matrix.size(), outcomes.size(), "Every cold-sweep case must have a unique stable name");
     }
 

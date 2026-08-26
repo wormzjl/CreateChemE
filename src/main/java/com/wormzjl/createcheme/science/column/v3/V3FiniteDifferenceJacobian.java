@@ -12,17 +12,24 @@ final class V3FiniteDifferenceJacobian {
     static Jacobian evaluate(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, V3DryMeshState state,
             V3ThermoWorkspaceFactory workspaceFactory) {
+        return evaluate(evaluator, coordinates, state, workspaceFactory, DifferenceScale.FINE);
+    }
+
+    static Jacobian evaluate(
+            V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, V3DryMeshState state,
+            V3ThermoWorkspaceFactory workspaceFactory, DifferenceScale differenceScale) {
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
         state = Objects.requireNonNull(state, "state");
         workspaceFactory = Objects.requireNonNull(workspaceFactory, "workspaceFactory");
+        differenceScale = Objects.requireNonNull(differenceScale, "differenceScale");
         double[] base = coordinates.encode(state);
         V3MeshResidual baseResidual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
         int rows = baseResidual.rows().size();
         if (rows != base.length) throw new IllegalArgumentException("V3 MESH Jacobian requires a square residual/coordinate map");
         double[][] values = new double[rows][base.length];
         for (int column = 0; column < base.length; column++) {
-            double step = step(base[column], coordinates.unknowns().get(column).id().family());
+            double step = step(base[column], coordinates.unknowns().get(column).id().family(), differenceScale);
             double[] higher = base.clone();
             double[] lower = base.clone();
             higher[column] += step;
@@ -62,9 +69,28 @@ final class V3FiniteDifferenceJacobian {
         }
     }
 
-    private static double step(double coordinate, V3DegreeOfFreedomLedger.UnknownFamily family) {
+    private static double step(
+            double coordinate, V3DegreeOfFreedomLedger.UnknownFamily family, DifferenceScale differenceScale) {
         return family == V3DegreeOfFreedomLedger.UnknownFamily.TEMPERATURE
-                ? Math.max(1.0e-4, Math.abs(coordinate) * 1.0e-6) : 1.0e-6;
+                ? Math.max(differenceScale.minimumTemperatureStepKelvin,
+                        Math.abs(coordinate) * differenceScale.relativeTemperatureStep)
+                : differenceScale.logFlowStep;
+    }
+
+    /** Bounded central-difference resolutions used only as distinct cold-start Newton recovery attempts. */
+    enum DifferenceScale {
+        FINE(1.0e-4, 1.0e-6, 1.0e-6),
+        COARSE(1.0e-3, 1.0e-5, 1.0e-5);
+
+        private final double minimumTemperatureStepKelvin;
+        private final double relativeTemperatureStep;
+        private final double logFlowStep;
+
+        DifferenceScale(double minimumTemperatureStepKelvin, double relativeTemperatureStep, double logFlowStep) {
+            this.minimumTemperatureStepKelvin = minimumTemperatureStepKelvin;
+            this.relativeTemperatureStep = relativeTemperatureStep;
+            this.logFlowStep = logFlowStep;
+        }
     }
 
     interface V3ThermoWorkspaceFactory {

@@ -10,7 +10,8 @@ import java.util.Objects;
 final class V3SimultaneousColumnSolver {
     private static final double OFF_BAND_TOLERANCE = 1.0e-10;
     private static final double ARMIJO_COEFFICIENT = 1.0e-4;
-    private static final int MAXIMUM_LINE_SEARCH_STEPS = 20;
+    private static final int FINE_MAXIMUM_LINE_SEARCH_STEPS = 20;
+    private static final int COARSE_RECOVERY_MAXIMUM_LINE_SEARCH_STEPS = 40;
     private static final double FALLBACK_MAXIMUM_LOG_FLOW_CHANGE = 0.25;
     private static final double FALLBACK_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 10.0;
     private static final double INITIAL_GAUSS_NEWTON_DAMPING = 1.0e-8;
@@ -23,7 +24,7 @@ final class V3SimultaneousColumnSolver {
             V3DryMeshState initialState, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             int maximumIterations, double scaledTolerance) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
-                maximumIterations, scaledTolerance);
+                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE);
     }
 
     static Attempt solve(
@@ -36,10 +37,28 @@ final class V3SimultaneousColumnSolver {
         initialState = Objects.requireNonNull(initialState, "initialState");
         workspaceFactory = Objects.requireNonNull(workspaceFactory, "workspaceFactory");
         initialConvergenceEvidence = Objects.requireNonNull(initialConvergenceEvidence, "initialConvergenceEvidence");
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, initialConvergenceEvidence,
+                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE);
+    }
+
+    static Attempt solve(
+            V3ColumnProblem problem, V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3ConvergenceEvidence initialConvergenceEvidence, int maximumIterations, double scaledTolerance,
+            V3FiniteDifferenceJacobian.DifferenceScale differenceScale) {
+        problem = Objects.requireNonNull(problem, "problem");
+        evaluator = Objects.requireNonNull(evaluator, "evaluator");
+        coordinates = Objects.requireNonNull(coordinates, "coordinates");
+        initialState = Objects.requireNonNull(initialState, "initialState");
+        workspaceFactory = Objects.requireNonNull(workspaceFactory, "workspaceFactory");
+        initialConvergenceEvidence = Objects.requireNonNull(initialConvergenceEvidence, "initialConvergenceEvidence");
+        differenceScale = Objects.requireNonNull(differenceScale, "differenceScale");
         if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0) {
             throw new IllegalArgumentException("V3 Newton solve limits are invalid");
         }
         V3StageBlockLayout layout = new V3StageBlockLayout(problem);
+        int maximumLineSearchSteps = differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.COARSE
+                ? COARSE_RECOVERY_MAXIMUM_LINE_SEARCH_STEPS : FINE_MAXIMUM_LINE_SEARCH_STEPS;
         V3DryMeshState state = initialState;
         double lastMerit = Double.NaN;
         V3ConvergenceEvidence lastConvergenceEvidence = initialConvergenceEvidence;
@@ -57,17 +76,19 @@ final class V3SimultaneousColumnSolver {
                                 lastConvergenceEvidence));
             }
             V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
-                    evaluator, coordinates, state, workspaceFactory);
+                    evaluator, coordinates, state, workspaceFactory, differenceScale);
             V3BandedPivotedSolver.Result linearResult = V3BandedPivotedSolver.solve(
                     toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
             if (!(linearResult instanceof V3BandedPivotedSolver.Result.Success linearSuccess)) {
                 V3BandedPivotedSolver.Result.Failure failure = (V3BandedPivotedSolver.Result.Failure) linearResult;
                 double[] baseCoordinates = coordinates.encode(state);
                 AcceptedTrial descentTrial = dampedGaussNewtonTrial(
-                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory);
+                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory,
+                        maximumLineSearchSteps);
                 if (descentTrial == null) {
                     descentTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
-                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory);
+                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory,
+                            maximumLineSearchSteps);
                 }
                 if (descentTrial == null) {
                     return new Attempt.Failure("LINEAR_" + failure.code(), state,
@@ -81,14 +102,17 @@ final class V3SimultaneousColumnSolver {
             }
             double[] baseCoordinates = coordinates.encode(state);
             AcceptedTrial acceptedTrial = armijoTrial(
-                    evaluator, coordinates, baseCoordinates, linearSuccess.solution(), merit, workspaceFactory);
+                    evaluator, coordinates, baseCoordinates, linearSuccess.solution(), merit, workspaceFactory,
+                    maximumLineSearchSteps);
             boolean usedDescentFallback = acceptedTrial == null;
             if (usedDescentFallback) {
                 acceptedTrial = dampedGaussNewtonTrial(
-                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory);
+                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory,
+                        maximumLineSearchSteps);
                 if (acceptedTrial == null) {
                     acceptedTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
-                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory);
+                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory,
+                            maximumLineSearchSteps);
                 }
             }
             if (acceptedTrial == null) {
@@ -168,8 +192,9 @@ final class V3SimultaneousColumnSolver {
 
     private static AcceptedTrial armijoTrial(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
-            double[] direction, double merit, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory) {
-        for (int lineSearch = 0; lineSearch < MAXIMUM_LINE_SEARCH_STEPS; lineSearch++) {
+            double[] direction, double merit, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumLineSearchSteps) {
+        for (int lineSearch = 0; lineSearch < maximumLineSearchSteps; lineSearch++) {
             double step = Math.scalb(1.0, -lineSearch);
             try {
                 double[] candidateCoordinates = addScaled(baseCoordinates, direction, step);
@@ -217,14 +242,16 @@ final class V3SimultaneousColumnSolver {
     private static AcceptedTrial dampedGaussNewtonTrial(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double merit,
-            V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory) {
+            V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumLineSearchSteps) {
         double damping = INITIAL_GAUSS_NEWTON_DAMPING;
         for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
             V3BandedPivotedSolver.Result result = V3BandedPivotedSolver.solve(
                     dampedNormalMatrix(jacobian, layout, damping), negativeGradient(residual, jacobian));
             if (result instanceof V3BandedPivotedSolver.Result.Success success) {
                 AcceptedTrial trial = armijoTrial(
-                        evaluator, coordinates, baseCoordinates, success.solution(), merit, workspaceFactory);
+                        evaluator, coordinates, baseCoordinates, success.solution(), merit, workspaceFactory,
+                        maximumLineSearchSteps);
                 if (trial != null) return trial;
             }
             damping *= 10.0;
