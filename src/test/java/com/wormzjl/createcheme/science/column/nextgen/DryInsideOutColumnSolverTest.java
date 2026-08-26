@@ -23,12 +23,31 @@ class DryInsideOutColumnSolverTest {
     }
 
     @Test
-    void defaultPathDoesNotRejectEveryEnergyBacktrack() {
+    void defaultFixtureFailsClosedWithBoundedJointMeritEvidence() {
         DryColumnOutcome outcome = new DryInsideOutColumnSolver().solve(ColumnProblem.resolve(ColumnNextInput.defaults()));
-        if (outcome instanceof DryColumnOutcome.Failure failure) {
-            assertFalse(failure.diagnostics().events().stream()
-                    .anyMatch(event -> event.startsWith("ENERGY_BACKTRACK_REJECTED")), failure::summary);
-        }
+        DryColumnOutcome.Failure failure = assertInstanceOf(DryColumnOutcome.Failure.class, outcome);
+
+        assertEquals(DrySolverFailureCode.CONTINUATION_FAILURE, failure.code());
+        assertTrue(failure.summary().contains("cause=ENERGY_BALANCE_FAILURE"), failure::summary);
+        assertTrue(failure.diagnostics().events().stream()
+                .anyMatch(event -> event.startsWith("CHEAP_STAGNATION")), failure::summary);
+        assertTrue(failure.diagnostics().events().stream()
+                .anyMatch(event -> event.startsWith("COLD_TRAFFIC_SEARCH")), failure::summary);
+        assertFalse(failure.diagnostics().iterationEvidence().isEmpty(), failure::summary);
+        assertTrue(failure.diagnostics().iterationEvidence().size() <= DrySolverDiagnostics.MAX_INNER_HISTORY);
+        DryIterationEvidence finalEvidence = failure.diagnostics().iterationEvidence().getLast();
+        assertTrue(Double.isFinite(finalEvidence.sumRatesResidual()));
+        assertTrue(Double.isFinite(finalEvidence.energyResidual()));
+    }
+
+    @Test
+    void zeroRampFixtureFailsClosedWithTheBoundedEnergyCause() {
+        ColumnNextInput zeroRamp = DryInsideOutColumnSolver.continuationInput(ColumnNextInput.defaults(), 0.0);
+        DryColumnOutcome outcome = new DryInsideOutColumnSolver().solve(ColumnProblem.resolve(zeroRamp));
+
+        DryColumnOutcome.Failure failure = assertInstanceOf(DryColumnOutcome.Failure.class, outcome);
+        assertEquals(DrySolverFailureCode.CONTINUATION_FAILURE, failure.code());
+        assertTrue(failure.summary().contains("cause=ENERGY_BALANCE_FAILURE"), failure::summary);
     }
 
     @Test

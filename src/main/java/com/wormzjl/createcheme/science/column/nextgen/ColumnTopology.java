@@ -34,9 +34,23 @@ public final class ColumnTopology {
     public int nodeCount() { return stageCount + 2; }
     public int feedStage() { return feedStage; }
     public boolean vaporOnlyOverhead() { return vaporOnlyOverhead; }
-    /** R=0 removes the 16 identically absent HC-condensate unknowns and their matching condenser equations. */
-    public int equationCount() { return 35 * nodeCount() - (vaporOnlyOverhead ? 16 : 0); }
-    public int unknownCount() { return 35 * nodeCount() - (vaporOnlyOverhead ? 16 : 0); }
+    /** Independent physical unknown tally; R=0 omits the identically absent 16 condenser-liquid components. */
+    public int unknownCount() {
+        int hydrocarbonPhaseFlows = 2 * 16 * nodeCount() - (vaporOnlyOverhead ? 16 : 0);
+        int temperatures = nodeCount();
+        int immiscibleWaterPhaseFlows = 2 * nodeCount();
+        return hydrocarbonPhaseFlows + temperatures + immiscibleWaterPhaseFlows;
+    }
+
+    /** Independent equation tally for the same dry/water model families. */
+    public int equationCount() {
+        int componentMaterialRows = 16 * nodeCount();
+        int hydrocarbonEquilibriumRows = 16 * nodeCount() - (vaporOnlyOverhead ? 16 : 0);
+        int energyRows = nodeCount();
+        int waterBalanceAndComplementarityRows = 2 * nodeCount();
+        return componentMaterialRows + hydrocarbonEquilibriumRows + energyRows + waterBalanceAndComplementarityRows;
+    }
+
     public boolean hasSquareDegreesOfFreedom() { return equationCount() == unknownCount(); }
     public double molarSideDrawAtStage(int stage) { return molarSideDrawByStage[stage]; }
     public ColumnNextInput.SideDrawInput[] authoredSideDraws() { return authoredSideDraws.clone(); }

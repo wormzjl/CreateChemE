@@ -25,7 +25,8 @@ public record ComponentDescriptor(
                 || !Double.isFinite(normalBoilingPointKelvin) || !Double.isFinite(criticalTemperatureKelvin)
                 || !Double.isFinite(criticalPressurePascal) || criticalPressurePascal <= 0.0
                 || !Double.isFinite(acentricFactor) || !Double.isFinite(standardLiquidDensityKgPerCubicMetre)
-                || standardLiquidDensityKgPerCubicMetre <= 0.0) {
+                || standardLiquidDensityKgPerCubicMetre <= 0.0 || !Double.isFinite(cpA) || !Double.isFinite(cpB)
+                || !Double.isFinite(cpC) || !Double.isFinite(cpD)) {
             throw new IllegalArgumentException("Invalid component descriptor: " + id);
         }
     }

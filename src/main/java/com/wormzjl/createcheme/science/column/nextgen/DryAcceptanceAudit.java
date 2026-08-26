@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.nextgen;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -12,15 +13,27 @@ import java.util.Optional;
  * a small aggregate residual from concealing a failed material, energy, phase, or state check.</p>
  */
 public record DryAcceptanceAudit(List<Check> checks) {
+    private static final EnumSet<DryResidualFamily> REQUIRED_SUCCESS_FAMILIES = EnumSet.complementOf(
+            EnumSet.of(DryResidualFamily.INPUT_VALIDITY, DryResidualFamily.CANCELLATION));
+
     public DryAcceptanceAudit {
         checks = List.copyOf(checks);
         if (checks.isEmpty()) {
             throw new IllegalArgumentException("An acceptance audit must contain checks");
         }
+        EnumSet<DryResidualFamily> observed = EnumSet.noneOf(DryResidualFamily.class);
+        for (Check check : checks) {
+            if (!observed.add(check.family())) {
+                throw new IllegalArgumentException("An acceptance audit cannot contain duplicate " + check.family() + " checks");
+            }
+        }
     }
 
     public boolean accepted() {
-        return checks.stream().allMatch(Check::passed);
+        if (!checks.stream().allMatch(Check::passed)) return false;
+        EnumSet<DryResidualFamily> observed = EnumSet.noneOf(DryResidualFamily.class);
+        for (Check check : checks) observed.add(check.family());
+        return observed.equals(REQUIRED_SUCCESS_FAMILIES);
     }
 
     public Optional<Check> firstFailure() {
@@ -49,6 +62,9 @@ public record DryAcceptanceAudit(List<Check> checks) {
             Objects.requireNonNull(detail, "detail");
             if (!Double.isFinite(value) || !Double.isFinite(limit) || limit < 0.0) {
                 throw new IllegalArgumentException("Acceptance check must have finite nonnegative values");
+            }
+            if (passed && value > limit) {
+                throw new IllegalArgumentException("A passing acceptance check must meet its limit");
             }
         }
 

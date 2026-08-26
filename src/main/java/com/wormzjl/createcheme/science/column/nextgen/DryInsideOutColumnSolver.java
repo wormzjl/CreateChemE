@@ -18,9 +18,10 @@ public final class DryInsideOutColumnSolver {
     public static final String SOLVER_REVISION = "next-inside-out-sum-rates-r2-water-active-set";
     private static final int HYDROCARBON_COMPONENTS = 16;
     private static final double FLOW_FLOOR = 1.0e-18;
-    private static final double NEGATIVE_FLOW_TOLERANCE = 1.0e-12;
     private static final double MAXIMUM_LOG_K = 40.0;
     private static final double MINIMUM_CP = 1.0;
+    private static final double MAXIMUM_K_SECANT_COMPOSITION_CHANGE = 1.0e-4;
+    private static final int COLD_TRAFFIC_GRID_DIVISIONS = 8;
     private static final double PR_DEPARTURE_CP_STEP_KELVIN = 0.25;
     private static final double[] BACKTRACK_FACTORS = {1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125};
     private static final double[] CONTINUATION_TARGETS = {0.25, 0.50, 0.75, 1.0};
@@ -171,17 +172,23 @@ public final class DryInsideOutColumnSolver {
 
     private static DryColumnOutcome continuationFailure(Attempt attempt, double lambda, String detail) {
         DrySolverDiagnostics previous = attempt.outcome().diagnostics();
+        String underlying = attempt.code() + ": " + (attempt.outcome() instanceof DryColumnOutcome.Failure failure
+                ? failure.summary() : "no typed failure detail");
+        String eventCause = underlying.length() <= 128 ? underlying : underlying.substring(0, 128);
         List<String> events = new ArrayList<>(previous.events());
         if (events.size() < DrySolverDiagnostics.MAX_EVENTS) {
-            events.add("CONTINUATION_FAILURE lambda=" + compactDiagnosticNumber(lambda) + ": " + detail);
+            events.add("CONTINUATION_FAILURE lambda=" + compactDiagnosticNumber(lambda) + ": " + detail
+                    + " cause=" + eventCause);
         }
         DrySolverDiagnostics diagnostics = new DrySolverDiagnostics(previous.outerIterations(), previous.innerIterations(),
                 previous.thomasSolves(), previous.energyThomasSolves(), previous.propertyPhaseEvaluations(),
                 previous.maximumThomasBackwardError(), previous.maximumInnerSumRatesResidual(),
                 previous.maximumInnerEnergyResidual(), previous.finalFlowStateChange(),
-                previous.finalTemperatureStateChangeKelvin(), "CONTINUATION", events, previous.acceptanceAudit());
+                previous.finalTemperatureStateChangeKelvin(), "CONTINUATION", events,
+                previous.iterationEvidence(), previous.acceptanceAudit());
         return new DryColumnOutcome.Failure(DrySolverFailureCode.CONTINUATION_FAILURE,
-                "Continuation failed at lambda=" + compactDiagnosticNumber(lambda) + ": " + detail, diagnostics);
+                "Continuation failed at lambda=" + compactDiagnosticNumber(lambda) + ": " + detail
+                        + "; cause=" + boundedMessage(new IllegalStateException(underlying)), diagnostics);
     }
 
     private Attempt attempt(
@@ -201,41 +208,62 @@ public final class DryInsideOutColumnSolver {
             for (int outer = 1; outer <= limits.maximumOuterIterations(); outer++) {
                 workspace.outerIterations = outer;
                 checkpoint(control, workspace);
+                refreshCheapBaseline(workspace);
                 double innerTolerance = adaptiveInnerTolerance(previousOuterMetric);
                 boolean innerConverged = false;
+                boolean innerStagnated = false;
+                boolean innerRefreshReady = false;
+                double initialInnerMerit = Double.NaN;
                 for (int inner = 1; inner <= limits.maximumInnerIterations(); inner++) {
                     workspace.innerIterations++;
+                    workspace.currentInnerIteration = inner;
                     if (inner % limits.checkpointStride() == 0) checkpoint(control, workspace);
-                    updateMassBasisSideDrawRates(workspace, damping);
-                    refreshLocalK(workspace);
-                    solveHydrocarbonBalances(workspace, damping);
-                    solveWaterBalances(workspace);
-                    double energyRatio = assembleEnergyResidualAndCorrection(
-                            workspace, damping, temperatureTrustRegion);
-                    workspace.currentInnerEnergyResidual = energyRatio;
+                    if (!advanceCheapModel(workspace, damping, temperatureTrustRegion)) {
+                        innerStagnated = true;
+                        break;
+                    }
                     // Snapshot only after the accepted energy step; otherwise a temperature correction could be
                     // hidden from the independent final state-change audit.
                     updateStateChange(workspace);
-                    workspace.maximumInnerEnergyResidual = Math.max(workspace.maximumInnerEnergyResidual, energyRatio);
+                    workspace.maximumInnerEnergyResidual = Math.max(workspace.maximumInnerEnergyResidual,
+                            workspace.currentInnerEnergyResidual);
                     workspace.maximumInnerSumRatesResidual = Math.max(
                             workspace.maximumInnerSumRatesResidual, workspace.currentSumRatesResidual);
+                    recordInnerEvidence(workspace);
+                    double currentInnerMerit = cheapMerit(workspace);
+                    if (!Double.isFinite(initialInnerMerit)) initialInnerMerit = currentInnerMerit;
                     if (workspace.currentSumRatesResidual <= innerTolerance
-                            && energyRatio <= innerTolerance
+                            && workspace.currentInnerEnergyResidual <= innerTolerance
                             && workspace.currentFlowStateChange <= Math.max(1.0e-8, innerTolerance)
                             && workspace.currentTemperatureStateChange <= 1.0e-5) {
                         innerConverged = true;
                         break;
                     }
+                    boolean residualTailIsReadyForRigorousRefresh = workspace.currentSumRatesResidual <= innerTolerance
+                            && workspace.currentInnerEnergyResidual <= innerTolerance
+                            && workspace.currentFlowStateChange <= Math.max(1.0e-8, innerTolerance);
+                    boolean trustLimitedMeritReduction = currentInnerMerit <= 0.25 * initialInnerMerit
+                            && workspace.currentTemperatureStateChange >= 0.99 * temperatureTrustRegion;
+                    if (inner >= limits.checkpointStride() * 2
+                            && (residualTailIsReadyForRigorousRefresh || trustLimitedMeritReduction)) {
+                        innerRefreshReady = true;
+                        if (workspace.events.stream().noneMatch(event -> event.startsWith("INEXACT_INNER_REFRESH"))) {
+                            addEvent(workspace, "INEXACT_INNER_REFRESH merit="
+                                    + compactDiagnosticNumber(currentInnerMerit));
+                        }
+                        break;
+                    }
                 }
-                if (!innerConverged) {
+                if (!innerConverged && !innerStagnated && !innerRefreshReady) {
                     boolean energyLimited = workspace.currentInnerEnergyResidual > workspace.currentSumRatesResidual;
                     throw abort(DrySolverFailureCode.INNER_NONCONVERGENCE,
                             energyLimited ? DryResidualFamily.ENERGY_BALANCE : DryResidualFamily.SUM_RATES,
                             energyLimited ? workspace.currentInnerEnergyResidual : workspace.currentSumRatesResidual,
-                            innerTolerance, -1, -1,
+                            innerTolerance, energyLimited ? -1 : workspace.limitingSumRatesNode, -1,
                             "Inner forcing tolerance was not reached: sumRates="
                                     + compactDiagnosticNumber(workspace.currentSumRatesResidual)
                                     + " energy=" + compactDiagnosticNumber(workspace.currentInnerEnergyResidual)
+                                    + " limitingPhase=" + workspace.limitingSumRatesPhase
                                     + " flowChange=" + compactDiagnosticNumber(workspace.currentFlowStateChange)
                                     + " temperatureChange=" + compactDiagnosticNumber(workspace.currentTemperatureStateChange)
                                     + " maximumTemperature=" + compactDiagnosticNumber(maximum(workspace.temperatures)));
@@ -266,7 +294,7 @@ public final class DryInsideOutColumnSolver {
             DryAcceptanceAudit audit = lastAudit;
             DryAcceptanceAudit.Check failure = audit.firstFailure().orElseThrow();
             throw abort(codeFor(failure.family()), failure.family(), failure.value(), failure.limit(),
-                    failure.node(), failure.component(), "Outer iteration cap reached: " + failure.detail());
+                    failure.node(), failure.component(), "Outer iteration cap reached: " + failure.detail(), audit);
         } catch (Abort abort) {
             addEvent(workspace, abort.code() + ": " + abort.detail());
             DryAcceptanceAudit audit = abort.audit() == null ? failedAudit(abort) : abort.audit();
@@ -316,14 +344,6 @@ public final class DryInsideOutColumnSolver {
         }
 
         double remaining = w.feedFlow - sideTotal;
-        double externalLiquid = w.vaporOnlyOverhead ? 0.0 : 0.20 * remaining;
-        double condensate = w.vaporOnlyOverhead ? 0.0 : externalLiquid / (1.0 - w.betaReflux);
-        double overheadVapor = (w.vaporOnlyOverhead ? 0.30 : 0.12) * remaining;
-        double bottoms = remaining - externalLiquid - overheadVapor;
-        if (!(bottoms > FLOW_FLOOR) || !Double.isFinite(condensate) || !Double.isFinite(overheadVapor)) {
-            throw abort(DrySolverFailureCode.INITIALIZATION_FAILURE, DryResidualFamily.PHASE_VALIDITY,
-                    1.0, 0.0, -1, -1, "Initial product traffic is not positive");
-        }
 
         double topTemperature = input.condenserOutletTemperatureKelvin();
         double bottomTemperature = clamp(
@@ -337,40 +357,12 @@ public final class DryInsideOutColumnSolver {
         }
         w.temperatures[0] = topTemperature;
 
-        w.liquidTotals[0] = condensate;
-        w.vaporTotals[0] = overheadVapor;
-        double refluxFlow = w.betaReflux * condensate;
-        double cumulativeDraw = 0.0;
-        for (int stage = 1; stage <= w.stages; stage++) {
-            cumulativeDraw += w.sideDrawMolarRates[stage];
-            double feedContribution = stage >= w.topology.feedStage() ? 0.72 * w.feedFlow : 0.0;
-            w.liquidTotals[stage] = Math.max(FLOW_FLOOR, refluxFlow + feedContribution - cumulativeDraw + 0.05 * w.feedFlow);
-            w.vaporTotals[stage] = Math.max(FLOW_FLOOR, overheadVapor + 0.35 * w.feedFlow);
-        }
-        w.liquidTotals[w.nodes - 1] = bottoms;
-        w.vaporTotals[w.nodes - 1] = Math.max(FLOW_FLOOR, 0.18 * w.feedFlow);
-        if (w.vaporOnlyOverhead) w.liquidTotals[0] = 0.0;
-
-        for (int node = 0; node < w.nodes; node++) {
-            int offset = node * HYDROCARBON_COMPONENTS;
-            for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
-                w.liquidComponentFlows[offset + component] = w.liquidTotals[node] * w.feedFractions[component];
-                w.vaporComponentFlows[offset + component] = w.vaporTotals[node] * w.feedFractions[component];
-            }
-            w.rawLiquidTotals[node] = w.liquidTotals[node];
-            w.rawVaporTotals[node] = w.vaporTotals[node];
-        }
-        if (w.vaporOnlyOverhead) {
-            copyNode(w.vaporComponentFlows, 1, w.vaporComponentFlows, 0);
-            w.rawVaporTotals[0] = w.rawVaporTotals[1];
-            w.vaporTotals[0] = w.vaporTotals[1];
-        }
+        w.feedEnthalpy = feedEnthalpy(w);
+        initializeColdTraffic(w, remaining);
         if (w.warmStart != null) {
             restoreWarmProfiles(w);
             addEvent(w, "WARM_START");
         }
-        System.arraycopy(w.liquidComponentFlows, 0, w.previousLiquidComponentFlows, 0, w.liquidComponentFlows.length);
-        System.arraycopy(w.vaporComponentFlows, 0, w.previousVaporComponentFlows, 0, w.vaporComponentFlows.length);
 
         w.waterFeeds = WaterFeedProfile.resolve(input, w.basis, w.problem.feed(), w.pressures);
         System.arraycopy(w.waterFeeds.molarFeedByNode(), 0, w.waterFeedMolarByNode, 0, w.nodes);
@@ -388,6 +380,8 @@ public final class DryInsideOutColumnSolver {
                         * descriptor.criticalTemperatureKelvin();
             }
         }
+        System.arraycopy(w.liquidComponentFlows, 0, w.previousLiquidComponentFlows, 0, w.liquidComponentFlows.length);
+        System.arraycopy(w.vaporComponentFlows, 0, w.previousVaporComponentFlows, 0, w.vaporComponentFlows.length);
         for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
             if (w.basis.hydrocarbon(component).estimatedHeavyResidue()
                     && w.feedFractions[component] > 0.0) {
@@ -395,6 +389,219 @@ public final class DryInsideOutColumnSolver {
                 break;
             }
         }
+    }
+
+    /**
+     * Selects a positive, balance-closed cold traffic state from the canonical dry material rows.
+     * This is a bounded initialization calculation in the same inside-out formulation, not a
+     * second column solver: candidates use the production PR kernel, tridiagonal rows, and Thomas
+     * implementation, and only the lowest physical Sum-Rates mismatch seeds the first inner pass.
+     */
+    private void initializeColdTraffic(Workspace w, double remainingProductFlow) {
+        if (w.vaporOnlyOverhead) {
+            initializeVaporOnlyColdTraffic(w, remainingProductFlow);
+            return;
+        }
+        initializeColdRigorousK(w);
+        double bestMerit = Double.POSITIVE_INFINITY;
+        int bestLiquidProductStep = -1;
+        int bestVaporProductStep = -1;
+        for (int liquidProductStep = 1; liquidProductStep < COLD_TRAFFIC_GRID_DIVISIONS; liquidProductStep++) {
+            for (int vaporProductStep = 1;
+                 liquidProductStep + vaporProductStep < COLD_TRAFFIC_GRID_DIVISIONS; vaporProductStep++) {
+                double liquidProductFraction = liquidProductStep / (double) COLD_TRAFFIC_GRID_DIVISIONS;
+                double vaporProductFraction = vaporProductStep / (double) COLD_TRAFFIC_GRID_DIVISIONS;
+                double merit = evaluateColdTrafficCandidate(w, remainingProductFlow,
+                        liquidProductFraction, vaporProductFraction);
+                if (merit < bestMerit) {
+                    bestMerit = merit;
+                    bestLiquidProductStep = liquidProductStep;
+                    bestVaporProductStep = vaporProductStep;
+                    copy(w.snapshotLiquidTotals, w.liquidTotals);
+                    copy(w.snapshotVaporTotals, w.vaporTotals);
+                    copy(w.snapshotRawLiquidTotals, w.rawLiquidTotals);
+                    copy(w.snapshotRawVaporTotals, w.rawVaporTotals);
+                    copy(w.snapshotLiquidComponentFlows, w.liquidComponentFlows);
+                    copy(w.snapshotVaporComponentFlows, w.vaporComponentFlows);
+                }
+            }
+        }
+        if (!Double.isFinite(bestMerit)) {
+            throw abort(DrySolverFailureCode.INITIALIZATION_FAILURE, DryResidualFamily.PHASE_VALIDITY,
+                    Double.MAX_VALUE, 0.0, -1, -1,
+                    "No positive cold traffic candidate satisfies the canonical material rows");
+        }
+        addEvent(w, "COLD_TRAFFIC_SEARCH d=" + bestLiquidProductStep + "/" + COLD_TRAFFIC_GRID_DIVISIONS
+                + " g=" + bestVaporProductStep + "/" + COLD_TRAFFIC_GRID_DIVISIONS
+                + " merit=" + compactDiagnosticNumber(bestMerit));
+    }
+
+    private void initializeVaporOnlyColdTraffic(Workspace w, double remainingProductFlow) {
+        double overheadVapor = w.feedVaporFraction * remainingProductFlow;
+        double bottoms = remainingProductFlow - overheadVapor;
+        if (!(bottoms > FLOW_FLOOR)) {
+            throw abort(DrySolverFailureCode.INITIALIZATION_FAILURE, DryResidualFamily.PHASE_VALIDITY,
+                    Math.max(0.0, FLOW_FLOOR - bottoms), 0.0, -1, -1,
+                    "Vapor-only cold traffic cannot retain a positive bottoms phase");
+        }
+        w.liquidTotals[0] = 0.0;
+        w.vaporTotals[0] = overheadVapor;
+        double incomingLiquid = 0.0;
+        double upwardVapor = overheadVapor;
+        for (int stage = 1; stage <= w.stages; stage++) {
+            double liquidFeed = stage == w.topology.feedStage()
+                    ? (1.0 - w.feedVaporFraction) * w.feedFlow : 0.0;
+            double vaporFeed = stage == w.topology.feedStage() ? w.feedVaporFraction * w.feedFlow : 0.0;
+            double liquidOut = incomingLiquid - w.sideDrawMolarRates[stage] + liquidFeed;
+            if (!(liquidOut > FLOW_FLOOR) || !(upwardVapor > FLOW_FLOOR)) {
+                throw abort(DrySolverFailureCode.INITIALIZATION_FAILURE, DryResidualFamily.PHASE_VALIDITY,
+                        Math.max(0.0, FLOW_FLOOR - Math.min(liquidOut, upwardVapor)), 0.0, stage, -1,
+                        "Vapor-only cold traffic cannot retain positive tray phases");
+            }
+            w.liquidTotals[stage] = liquidOut;
+            w.vaporTotals[stage] = upwardVapor;
+            incomingLiquid = liquidOut;
+            upwardVapor -= vaporFeed;
+        }
+        double balanceClosedBottoms = incomingLiquid - upwardVapor;
+        if (!(balanceClosedBottoms > FLOW_FLOOR) || !(upwardVapor > FLOW_FLOOR)) {
+            throw abort(DrySolverFailureCode.INITIALIZATION_FAILURE, DryResidualFamily.PHASE_VALIDITY,
+                    Math.max(0.0, FLOW_FLOOR - Math.min(balanceClosedBottoms, upwardVapor)), 0.0, w.nodes - 1, -1,
+                    "Vapor-only cold traffic cannot close the reboiler");
+        }
+        w.liquidTotals[w.nodes - 1] = balanceClosedBottoms;
+        w.vaporTotals[w.nodes - 1] = upwardVapor;
+        for (int node = 1; node < w.nodes; node++) {
+            int offset = node * HYDROCARBON_COMPONENTS;
+            for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
+                w.liquidComponentFlows[offset + component] = w.liquidTotals[node] * w.feedLiquidComposition[component];
+                w.vaporComponentFlows[offset + component] = w.vaporTotals[node] * w.feedVaporComposition[component];
+            }
+            w.rawLiquidTotals[node] = w.liquidTotals[node];
+            w.rawVaporTotals[node] = w.vaporTotals[node];
+        }
+        copyNode(w.vaporComponentFlows, 1, w.vaporComponentFlows, 0);
+        w.rawVaporTotals[0] = w.rawVaporTotals[1];
+        w.vaporTotals[0] = w.vaporTotals[1];
+    }
+
+    private void initializeColdRigorousK(Workspace w) {
+        for (int node = 0; node < w.nodes; node++) {
+            try {
+                w.kernel.evaluatePair(w.temperatures[node], w.hydrocarbonPartialPressures[node],
+                        w.feedLiquidComposition, w.feedVaporComposition, w.prWorkspace,
+                        w.liquidEvaluation, w.vaporEvaluation);
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                throw abort(DrySolverFailureCode.EOS_ROOT_FAILURE, DryResidualFamily.PHASE_VALIDITY,
+                        1.0, 0.0, node, -1, "Cold traffic PR initialization failed: " + boundedMessage(exception));
+            }
+            w.propertyPhaseEvaluations += 2;
+            for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
+                double logK = w.liquidEvaluation.logFugacityCoefficient(component)
+                        - w.vaporEvaluation.logFugacityCoefficient(component);
+                if (!Double.isFinite(logK)) {
+                    throw abort(DrySolverFailureCode.EOS_ROOT_FAILURE, DryResidualFamily.EQUILIBRIUM,
+                            Double.MAX_VALUE, 0.0, node, component, "Cold traffic PR K value is non-finite");
+                }
+                w.localK[node * HYDROCARBON_COMPONENTS + component] = Math.exp(clamp(logK, -MAXIMUM_LOG_K, MAXIMUM_LOG_K));
+            }
+        }
+    }
+
+    private double evaluateColdTrafficCandidate(
+            Workspace w, double remainingProductFlow, double liquidProductFraction, double vaporProductFraction) {
+        if (!buildColdTrafficTotals(w, remainingProductFlow, liquidProductFraction, vaporProductFraction,
+                w.snapshotLiquidTotals, w.snapshotVaporTotals)) {
+            return Double.POSITIVE_INFINITY;
+        }
+        Arrays.fill(w.snapshotLiquidComponentFlows, 0.0);
+        Arrays.fill(w.snapshotVaporComponentFlows, 0.0);
+        Arrays.fill(w.snapshotRawLiquidTotals, 0.0);
+        Arrays.fill(w.snapshotRawVaporTotals, 0.0);
+        double maximumBackwardError = 0.0;
+        for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
+            for (int node = 0; node < w.nodes; node++) {
+                w.componentKByNode[node] = w.localK[node * HYDROCARBON_COMPONENTS + component];
+            }
+            w.topology.assembleHydrocarbonRows(w.componentKByNode, w.snapshotLiquidTotals, w.snapshotVaporTotals,
+                    w.snapshotLiquidTotals[0], w.snapshotLiquidTotals[w.nodes - 1], w.betaReflux,
+                    w.sideDrawMolarRates, w.feedComponentFlows[component], w.lower, w.diagonal, w.upper, w.rhs);
+            scaleNormalMaterialUnknowns(w.lower, w.diagonal, w.upper, w.snapshotLiquidTotals);
+            ColumnTridiagonalCertificate.Result certificate = ColumnTridiagonalCertificate.certify(
+                    w.lower, w.diagonal, w.upper, w.rhs);
+            if (!certificate.accepted()) return Double.POSITIVE_INFINITY;
+            double error;
+            try {
+                error = ThomasTridiagonalSolver.solve(w.lower, w.diagonal, w.upper, w.rhs, w.solution,
+                        w.cPrime, w.dPrime);
+            } catch (IllegalArgumentException | IllegalStateException exception) {
+                return Double.POSITIVE_INFINITY;
+            }
+            w.thomasSolves++;
+            maximumBackwardError = Math.max(maximumBackwardError, error);
+            for (int node = 0; node < w.nodes; node++) {
+                double liquid = w.solution[node] * w.snapshotLiquidTotals[node];
+                if (w.feedComponentFlows[component] == 0.0 && Math.abs(liquid) <= 1.0e-24) liquid = 0.0;
+                if (!(liquid >= 0.0) || !Double.isFinite(liquid)) return Double.POSITIVE_INFINITY;
+                w.snapshotLiquidComponentFlows[node * HYDROCARBON_COMPONENTS + component] = liquid;
+            }
+        }
+        double maximumMismatch = 0.0;
+        for (int node = 0; node < w.nodes; node++) {
+            int offset = node * HYDROCARBON_COMPONENTS;
+            double rawLiquid = 0.0;
+            double rawVapor = 0.0;
+            for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
+                double liquid = w.snapshotLiquidComponentFlows[offset + component];
+                double vapor = w.localK[offset + component] * w.snapshotVaporTotals[node]
+                        / w.snapshotLiquidTotals[node] * liquid;
+                if (w.feedComponentFlows[component] == 0.0 && Math.abs(vapor) <= 1.0e-24) vapor = 0.0;
+                if (!(vapor >= 0.0) || !Double.isFinite(vapor)) return Double.POSITIVE_INFINITY;
+                w.snapshotVaporComponentFlows[offset + component] = vapor;
+                rawLiquid += liquid;
+                rawVapor += vapor;
+            }
+            if (!(rawLiquid > FLOW_FLOOR) || !(rawVapor > FLOW_FLOOR)) return Double.POSITIVE_INFINITY;
+            w.snapshotRawLiquidTotals[node] = rawLiquid;
+            w.snapshotRawVaporTotals[node] = rawVapor;
+            maximumMismatch = Math.max(maximumMismatch,
+                    Math.abs(Math.log(rawLiquid / w.snapshotLiquidTotals[node])));
+            maximumMismatch = Math.max(maximumMismatch,
+                    Math.abs(Math.log(rawVapor / w.snapshotVaporTotals[node])));
+        }
+        w.maximumThomasBackwardError = Math.max(w.maximumThomasBackwardError, maximumBackwardError);
+        return maximumMismatch;
+    }
+
+    private static boolean buildColdTrafficTotals(
+            Workspace w, double remainingProductFlow, double liquidProductFraction, double vaporProductFraction,
+            double[] liquidTotals, double[] vaporTotals) {
+        double liquidProduct = liquidProductFraction * remainingProductFlow;
+        double overheadVapor = vaporProductFraction * remainingProductFlow;
+        double bottoms = remainingProductFlow - liquidProduct - overheadVapor;
+        if (!(liquidProduct > FLOW_FLOOR) || !(overheadVapor > FLOW_FLOOR) || !(bottoms > FLOW_FLOOR)) return false;
+        double condensate = liquidProduct / (1.0 - w.betaReflux);
+        if (!(condensate > FLOW_FLOOR) || !Double.isFinite(condensate)) return false;
+        liquidTotals[0] = condensate;
+        vaporTotals[0] = overheadVapor;
+        double incomingLiquid = w.betaReflux * condensate;
+        double upwardVapor = condensate + overheadVapor;
+        for (int stage = 1; stage <= w.stages; stage++) {
+            double liquidFeed = stage == w.topology.feedStage() ? (1.0 - w.feedVaporFraction) * w.feedFlow : 0.0;
+            double vaporFeed = stage == w.topology.feedStage() ? w.feedVaporFraction * w.feedFlow : 0.0;
+            double liquidOut = incomingLiquid - w.sideDrawMolarRates[stage] + liquidFeed;
+            if (!(liquidOut > FLOW_FLOOR) || !(upwardVapor > FLOW_FLOOR)) return false;
+            liquidTotals[stage] = liquidOut;
+            vaporTotals[stage] = upwardVapor;
+            incomingLiquid = liquidOut;
+            upwardVapor -= vaporFeed;
+        }
+        double balanceClosedBottoms = incomingLiquid - upwardVapor;
+        if (!(balanceClosedBottoms > FLOW_FLOOR) || !(upwardVapor > FLOW_FLOOR)
+                || Math.abs(balanceClosedBottoms - bottoms) > 1.0e-10 * Math.max(1.0, w.feedFlow)) return false;
+        liquidTotals[w.nodes - 1] = balanceClosedBottoms;
+        vaporTotals[w.nodes - 1] = upwardVapor;
+        return true;
     }
 
     private void initializeSideDrawRates(Workspace w) {
@@ -465,26 +672,30 @@ public final class DryInsideOutColumnSolver {
     }
 
     private double feedEnthalpy(Workspace w) {
+        if (w.feedStateResolved) return w.feedEnthalpy;
         try {
-            w.kernel.evaluate(w.problem.input().crudeFeed().temperatureKelvin(),
-                    w.hydrocarbonPartialPressures[w.topology.feedStage()], w.feedFractions,
-                    NextPengRobinsonKernel.Root.LIQUID, w.prWorkspace, w.feedLiquidEvaluation);
-            w.kernel.evaluate(w.problem.input().crudeFeed().temperatureKelvin(),
-                    w.hydrocarbonPartialPressures[w.topology.feedStage()], w.feedFractions,
-                    NextPengRobinsonKernel.Root.VAPOR, w.prWorkspace, w.feedVaporEvaluation);
-            w.propertyPhaseEvaluations += 2;
-            double liquidPotential = phasePotential(w.feedFractions, w.feedLiquidEvaluation);
-            double vaporPotential = phasePotential(w.feedFractions, w.feedVaporEvaluation);
-            if (!Double.isFinite(liquidPotential) || !Double.isFinite(vaporPotential)) {
+            double temperature = w.problem.input().crudeFeed().temperatureKelvin();
+            double pressure = w.pressures[w.topology.feedStage()];
+            NextFeedFlash.Result flash = NextFeedFlash.resolve(w.kernel, temperature, pressure,
+                    w.feedFractions, w.feedFlashWorkspace);
+            w.propertyPhaseEvaluations += 2 * flash.iterations();
+            if (!flash.converged()) {
                 throw abort(DrySolverFailureCode.PHASE_REGIME_MISMATCH, DryResidualFamily.PHASE_VALIDITY,
                         Double.MAX_VALUE, 0.0, w.topology.feedStage(), -1,
-                        "Connected-stage feed PR phase comparison is non-finite");
+                        "Bounded TP feed flash failed: " + flash.detail());
             }
-            NextPengRobinsonKernel.Evaluation selected = liquidPotential <= vaporPotential
-                    ? w.feedLiquidEvaluation : w.feedVaporEvaluation;
-            addEvent(w, liquidPotential <= vaporPotential ? "FEED_PHASE=LIQUID_OR_MERGED" : "FEED_PHASE=VAPOR");
-            return mixtureIdealEnthalpy(w, w.feedFractions, w.problem.input().crudeFeed().temperatureKelvin())
-                    + selected.residualEnthalpyJoulesPerMol();
+            System.arraycopy(w.feedFlashWorkspace.liquidComposition, 0, w.feedLiquidComposition, 0,
+                    HYDROCARBON_COMPONENTS);
+            System.arraycopy(w.feedFlashWorkspace.vaporComposition, 0, w.feedVaporComposition, 0,
+                    HYDROCARBON_COMPONENTS);
+            w.feedVaporFraction = flash.vaporFraction();
+            w.feedStateResolved = true;
+            addEvent(w, "FEED_FLASH beta=" + compactDiagnosticNumber(w.feedVaporFraction)
+                    + " it=" + flash.iterations());
+            return (1.0 - w.feedVaporFraction)
+                    * (mixtureIdealEnthalpy(w, w.feedLiquidComposition, temperature) + flash.liquidResidualEnthalpy())
+                    + w.feedVaporFraction
+                    * (mixtureIdealEnthalpy(w, w.feedVaporComposition, temperature) + flash.vaporResidualEnthalpy());
         } catch (IllegalArgumentException | IllegalStateException exception) {
             throw abort(DrySolverFailureCode.PROPERTY_OUT_OF_RANGE, DryResidualFamily.PHASE_VALIDITY,
                     1.0, 0.0, w.topology.feedStage(), -1,
@@ -492,16 +703,9 @@ public final class DryInsideOutColumnSolver {
         }
     }
 
-    private static double phasePotential(double[] composition, NextPengRobinsonKernel.Evaluation evaluation) {
-        double potential = 0.0;
-        double[] logPhi = evaluation.logFugacityCoefficients();
-        for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
-            potential += composition[component] * logPhi[component];
-        }
-        return potential;
-    }
-
     private void refreshRigorousModels(Workspace w, DrySolveControl control) {
+        w.mergedRootNodes = 0;
+        w.minimumRootSeparation = Double.POSITIVE_INFINITY;
         for (int node = 0; node < w.nodes; node++) {
             checkpoint(control, w);
             int offset = node * HYDROCARBON_COMPONENTS;
@@ -521,6 +725,7 @@ public final class DryInsideOutColumnSolver {
                         1.0, 0.0, node, -1, "PR refresh failed: " + boundedMessage(exception));
             }
             w.propertyPhaseEvaluations += 2;
+            resolveAmbiguousPhaseRegime(w, node, offset);
             w.rigorousLiquidEnthalpy[node] = mixtureIdealEnthalpy(w, w.liquidCompositionScratch, w.temperatures[node])
                     + w.liquidEvaluation.residualEnthalpyJoulesPerMol();
             w.rigorousVaporEnthalpy[node] = mixtureIdealEnthalpy(w, w.vaporCompositionScratch, w.temperatures[node])
@@ -530,29 +735,110 @@ public final class DryInsideOutColumnSolver {
             refreshCaloricSlopes(w, node);
             w.liquidCompressibility[node] = w.liquidEvaluation.compressibility();
             w.vaporCompressibility[node] = w.vaporEvaluation.compressibility();
+            double rootSeparation = Math.abs(w.liquidCompressibility[node] - w.vaporCompressibility[node]);
+            w.minimumRootSeparation = Math.min(w.minimumRootSeparation, rootSeparation);
+            if (rootSeparation < 1.0e-8) w.mergedRootNodes++;
 
             double oldTemperature = w.kReferenceTemperatures[node];
             double inverseTemperatureChange = 1.0 / w.temperatures[node] - 1.0 / oldTemperature;
+            int rootSignature = 10 * w.liquidEvaluation.physicalRootCount() + w.vaporEvaluation.physicalRootCount();
+            double compositionChange = compositionChange(w, offset);
+            boolean rootSignatureChanged = w.hasRigorousModel[node] && rootSignature != w.rootSignatures[node];
             for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
                 int index = offset + component;
-                double logK = w.liquidEvaluation.logFugacityCoefficients()[component]
-                        - w.vaporEvaluation.logFugacityCoefficients()[component];
+                double logK = w.liquidEvaluation.logFugacityCoefficient(component)
+                        - w.vaporEvaluation.logFugacityCoefficient(component);
                 if (!Double.isFinite(logK)) {
                     throw abort(DrySolverFailureCode.EOS_ROOT_FAILURE, DryResidualFamily.EQUILIBRIUM,
                             Double.MAX_VALUE, 1.0e-8, node, component, "Non-finite rigorous log K");
                 }
                 if (w.hasRigorousModel[node] && Math.abs(inverseTemperatureChange) > 1.0e-10) {
                     double secant = (logK - w.lnKReference[index]) / inverseTemperatureChange;
-                    if (Double.isFinite(secant) && Math.abs(secant) <= 100_000.0) {
+                    if (!rootSignatureChanged && compositionChange <= MAXIMUM_K_SECANT_COMPOSITION_CHANGE
+                            && Double.isFinite(secant) && Math.abs(secant) <= 100_000.0) {
                         w.lnKSlope[index] = secant;
                     }
                 }
                 w.rigorousLnK[index] = logK;
                 w.lnKReference[index] = logK;
             }
+            if (w.hasRigorousModel[node] && (rootSignatureChanged
+                    || compositionChange > MAXIMUM_K_SECANT_COMPOSITION_CHANGE)
+                    && w.events.stream().noneMatch(event -> event.startsWith("K_SECANT_REJECTED"))) {
+                addEvent(w, "K_SECANT_REJECTED node=" + node + " dx=" + compactDiagnosticNumber(compositionChange)
+                        + " roots=" + w.rootSignatures[node] + "->" + rootSignature);
+            }
+            System.arraycopy(w.liquidCompositionScratch, 0, w.previousLiquidCompositions, offset,
+                    HYDROCARBON_COMPONENTS);
+            System.arraycopy(w.vaporCompositionScratch, 0, w.previousVaporCompositions, offset,
+                    HYDROCARBON_COMPONENTS);
+            w.rootSignatures[node] = rootSignature;
             w.kReferenceTemperatures[node] = w.temperatures[node];
             w.hasRigorousModel[node] = true;
         }
+    }
+
+    /**
+     * Selects a distinct branch for an ambiguous same-root PR evaluation.  This is property-model
+     * work only: component flows remain owned by the canonical material rows and are never
+     * rewritten by a stability probe.
+     */
+    private void resolveAmbiguousPhaseRegime(Workspace w, int node, int offset) {
+        double rootSeparation = Math.abs(w.liquidEvaluation.compressibility() - w.vaporEvaluation.compressibility());
+        if (rootSeparation >= 1.0e-8) return;
+        boolean needsStability = !w.hasStabilityPhaseModel[node]
+                || (w.hasRigorousModel[node]
+                && compositionChange(w, offset) > MAXIMUM_K_SECANT_COMPOSITION_CHANGE);
+        if (needsStability) {
+            double total = w.rawLiquidTotals[node] + w.rawVaporTotals[node];
+            for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
+                w.overallCompositionScratch[component] = (w.liquidComponentFlows[offset + component]
+                        + w.vaporComponentFlows[offset + component]) / total;
+            }
+            NextPhaseStability.Result stability = NextPhaseStability.assess(w.kernel, w.temperatures[node],
+                    w.hydrocarbonPartialPressures[node], w.overallCompositionScratch, w.stabilityWorkspace);
+            w.propertyPhaseEvaluations += stability.phaseEvaluations();
+            if (!stability.converged() || !stability.unstable()) {
+                throw abort(DrySolverFailureCode.PHASE_REGIME_MISMATCH, DryResidualFamily.PHASE_VALIDITY,
+                        Math.abs(stability.minimumTangentPlaneDistance()), 0.0, node, -1,
+                        "Merged PR roots have no bounded instability proof: " + stability.detail());
+            }
+            System.arraycopy(w.stabilityWorkspace.liquidCandidate, 0, w.stabilityLiquidCompositions, offset,
+                    HYDROCARBON_COMPONENTS);
+            System.arraycopy(w.stabilityWorkspace.vaporCandidate, 0, w.stabilityVaporCompositions, offset,
+                    HYDROCARBON_COMPONENTS);
+            w.hasStabilityPhaseModel[node] = true;
+            addEvent(w, "PHASE_REGIME_REPAIRED node=" + node + " tpd="
+                    + compactDiagnosticNumber(stability.minimumTangentPlaneDistance()));
+        }
+        System.arraycopy(w.stabilityLiquidCompositions, offset, w.liquidCompositionScratch, 0,
+                HYDROCARBON_COMPONENTS);
+        System.arraycopy(w.stabilityVaporCompositions, offset, w.vaporCompositionScratch, 0,
+                HYDROCARBON_COMPONENTS);
+        try {
+            w.kernel.evaluatePair(w.temperatures[node], w.hydrocarbonPartialPressures[node], w.liquidCompositionScratch,
+                    w.vaporCompositionScratch, w.prWorkspace, w.liquidEvaluation, w.vaporEvaluation);
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            throw abort(DrySolverFailureCode.EOS_ROOT_FAILURE, DryResidualFamily.PHASE_VALIDITY,
+                    1.0, 0.0, node, -1, "PR regime repair failed: " + boundedMessage(exception));
+        }
+        w.propertyPhaseEvaluations += 2;
+        if (Math.abs(w.liquidEvaluation.compressibility() - w.vaporEvaluation.compressibility()) < 1.0e-8) {
+            throw abort(DrySolverFailureCode.PHASE_REGIME_MISMATCH, DryResidualFamily.PHASE_VALIDITY,
+                    1.0, 0.0, node, -1, "Instability probe did not yield distinct PR phase roots");
+        }
+    }
+
+    private static double compositionChange(Workspace w, int offset) {
+        if (!w.hasRigorousModel[offset / HYDROCARBON_COMPONENTS]) return 0.0;
+        double maximum = 0.0;
+        for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
+            maximum = Math.max(maximum, Math.abs(w.liquidCompositionScratch[component]
+                    - w.previousLiquidCompositions[offset + component]));
+            maximum = Math.max(maximum, Math.abs(w.vaporCompositionScratch[component]
+                    - w.previousVaporCompositions[offset + component]));
+        }
+        return maximum;
     }
 
     /**
@@ -615,6 +901,8 @@ public final class DryInsideOutColumnSolver {
     }
 
     private void refreshLocalK(Workspace w) {
+        w.minimumLocalK = Double.POSITIVE_INFINITY;
+        w.maximumLocalK = 0.0;
         for (int node = 0; node < w.nodes; node++) {
             if (w.vaporOnlyOverhead && node == 0) continue;
             double deltaInverseTemperature = 1.0 / w.temperatures[node] - 1.0 / w.kReferenceTemperatures[node];
@@ -623,7 +911,13 @@ public final class DryInsideOutColumnSolver {
                 double logK = clamp(w.lnKReference[offset + component]
                         + w.lnKSlope[offset + component] * deltaInverseTemperature, -MAXIMUM_LOG_K, MAXIMUM_LOG_K);
                 w.localK[offset + component] = Math.exp(logK);
+                w.minimumLocalK = Math.min(w.minimumLocalK, w.localK[offset + component]);
+                w.maximumLocalK = Math.max(w.maximumLocalK, w.localK[offset + component]);
             }
+        }
+        if (!Double.isFinite(w.minimumLocalK)) {
+            w.minimumLocalK = 0.0;
+            w.maximumLocalK = 0.0;
         }
     }
 
@@ -663,6 +957,9 @@ public final class DryInsideOutColumnSolver {
 
     private void solveHydrocarbonBalances(Workspace w, double damping) {
         double maximumBackwardError = 0.0;
+        w.minimumPositivePivot = Double.POSITIVE_INFINITY;
+        w.pivotComponent = -1;
+        w.pivotRow = -1;
         for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
             for (int node = 0; node < w.nodes; node++) {
                 w.componentKByNode[node] = w.localK[node * HYDROCARBON_COMPONENTS + component];
@@ -673,23 +970,29 @@ public final class DryInsideOutColumnSolver {
                     w.topology.assembleVaporOnlyHydrocarbonRows(w.componentKByNode, w.liquidTotals, w.vaporTotals,
                             w.liquidTotals[w.nodes - 1], w.sideDrawMolarRates, w.feedComponentFlows[component],
                             w.vaporOnlyLower, w.vaporOnlyDiagonal, w.vaporOnlyUpper, w.vaporOnlyRhs);
+                    scaleVaporOnlyMaterialUnknowns(w.vaporOnlyLower, w.vaporOnlyDiagonal, w.vaporOnlyUpper, w.liquidTotals);
+                    certifyColumnPivots(w, component, 1, w.vaporOnlyLower, w.vaporOnlyDiagonal,
+                            w.vaporOnlyUpper, w.vaporOnlyRhs);
                     error = ThomasTridiagonalSolver.solve(w.vaporOnlyLower, w.vaporOnlyDiagonal, w.vaporOnlyUpper,
                             w.vaporOnlyRhs, w.vaporOnlySolution, w.vaporOnlyCPrime, w.vaporOnlyDPrime);
                     w.liquidComponentFlows[component] = 0.0;
                     for (int stage = 1; stage <= w.stages; stage++) {
                         w.liquidComponentFlows[stage * HYDROCARBON_COMPONENTS + component]
-                                = w.vaporOnlySolution[stage - 1];
+                                = w.vaporOnlySolution[stage - 1] * w.liquidTotals[stage];
                     }
                     w.liquidComponentFlows[(w.nodes - 1) * HYDROCARBON_COMPONENTS + component]
-                            = w.vaporOnlySolution[w.vaporOnlySolution.length - 1];
+                            = w.vaporOnlySolution[w.vaporOnlySolution.length - 1] * w.liquidTotals[w.nodes - 1];
                 } else {
                     w.topology.assembleHydrocarbonRows(w.componentKByNode, w.liquidTotals, w.vaporTotals,
                             w.liquidTotals[0], w.liquidTotals[w.nodes - 1], w.betaReflux, w.sideDrawMolarRates,
                             w.feedComponentFlows[component], w.lower, w.diagonal, w.upper, w.rhs);
+                    scaleNormalMaterialUnknowns(w.lower, w.diagonal, w.upper, w.liquidTotals);
+                    certifyColumnPivots(w, component, 0, w.lower, w.diagonal, w.upper, w.rhs);
                     error = ThomasTridiagonalSolver.solve(w.lower, w.diagonal, w.upper, w.rhs, w.solution,
                             w.cPrime, w.dPrime);
                     for (int node = 0; node < w.nodes; node++) {
-                        w.liquidComponentFlows[node * HYDROCARBON_COMPONENTS + component] = w.solution[node];
+                        w.liquidComponentFlows[node * HYDROCARBON_COMPONENTS + component]
+                                = w.solution[node] * w.liquidTotals[node];
                     }
                 }
             } catch (IllegalArgumentException | IllegalStateException exception) {
@@ -707,6 +1010,164 @@ public final class DryInsideOutColumnSolver {
         w.maximumThomasBackwardError = Math.max(w.maximumThomasBackwardError, maximumBackwardError);
         deriveRawVaporFlowsAndTotals(w);
         relaxTrialTotals(w, damping);
+    }
+
+    /**
+     * Accepts only a jointly improving cheap-model step.  Each trial is the same canonical material,
+     * Sum-Rates, water, and energy model; backtracking changes its global step size and restores all
+     * mutable physical state before trying again.
+     */
+    private boolean advanceCheapModel(Workspace w, double damping, double temperatureTrustRegion) {
+        snapshotCheapState(w);
+        Abort rejected = null;
+        for (double factor : BACKTRACK_FACTORS) {
+            restoreCheapState(w);
+            try {
+                double step = damping * factor;
+                updateMassBasisSideDrawRates(w, step);
+                refreshLocalK(w);
+                solveHydrocarbonBalances(w, step);
+                solveWaterBalances(w);
+                assembleEnergyResidualAndCorrection(w, step, temperatureTrustRegion);
+                // The temperature proposal is only a candidate until the same cheap local model has
+                // recomputed K, component flows, Sum-Rates, water, and actual energy at that state.
+                refreshLocalK(w);
+                solveHydrocarbonBalances(w, step);
+                solveWaterBalances(w);
+                w.currentInnerEnergyResidual = computeLocalEnergyResiduals(w);
+                double merit = cheapMerit(w);
+                if (cheapCandidateIsValid(w) && merit < w.previousCheapMerit) {
+                    w.previousCheapMerit = merit;
+                    if (factor < 1.0 && w.events.stream().noneMatch(event -> event.startsWith("CHEAP_BACKTRACK"))) {
+                        addEvent(w, "CHEAP_BACKTRACK factor=" + compactDiagnosticNumber(factor));
+                    }
+                    return true;
+                }
+            } catch (Abort abort) {
+                rejected = abort;
+            }
+        }
+        recordInnerEvidence(w);
+        restoreCheapState(w);
+        if (w.events.stream().noneMatch(event -> event.startsWith("CHEAP_STAGNATION"))) {
+            String rejectedDetail = rejected == null ? "no joint-merit reduction" : rejected.detail();
+            addEvent(w, "CHEAP_STAGNATION: " + rejectedDetail);
+        }
+        return false;
+    }
+
+    private static double cheapMerit(Workspace w) {
+        return w.currentSumRatesResidual * w.currentSumRatesResidual
+                + w.currentInnerEnergyResidual * w.currentInnerEnergyResidual;
+    }
+
+    private void refreshCheapBaseline(Workspace w) {
+        measureSumRatesResidual(w);
+        w.currentInnerEnergyResidual = computeLocalEnergyResiduals(w);
+        w.previousCheapMerit = cheapMerit(w);
+    }
+
+    private static boolean cheapCandidateIsValid(Workspace w) {
+        return Double.isFinite(w.currentSumRatesResidual) && Double.isFinite(w.currentInnerEnergyResidual)
+                && w.mergedRootNodes == 0 && w.minimumRootSeparation >= 1.0e-8
+                && minimum(w.rawVaporTotals) > FLOW_FLOOR
+                && (w.vaporOnlyOverhead || minimum(w.rawLiquidTotals) > FLOW_FLOOR)
+                && minimum(w.temperatures) >= w.problem.propertyPackage().minimumTemperatureKelvin()
+                && maximum(w.temperatures) <= w.problem.propertyPackage().maximumTemperatureKelvin()
+                && materialCandidateBalancesClose(w);
+    }
+
+    /**
+     * The cheap merit may be inexact, but a candidate is never allowed to carry a component-flow
+     * profile that has already lost the independent material equations.  These are the same
+     * physical scales used by the final audit, evaluated without allocating an audit object.
+     */
+    private static boolean materialCandidateBalancesClose(Workspace w) {
+        double fAbs = 1.0e-12 * w.feedFlow;
+        double totalFeed = 0.0;
+        double totalProducts = 0.0;
+        for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
+            for (int node = 0; node < w.nodes; node++) {
+                int offset = node * HYDROCARBON_COMPONENTS + component;
+                double residual;
+                if (node == 0) {
+                    residual = w.vaporOnlyOverhead
+                            ? w.vaporComponentFlows[component] - w.vaporComponentFlows[HYDROCARBON_COMPONENTS + component]
+                            : w.liquidComponentFlows[component] + w.vaporComponentFlows[component]
+                                    - w.vaporComponentFlows[HYDROCARBON_COMPONENTS + component];
+                } else if (node == w.nodes - 1) {
+                    residual = w.liquidComponentFlows[w.stages * HYDROCARBON_COMPONENTS + component]
+                            - w.liquidComponentFlows[offset] - w.vaporComponentFlows[offset];
+                } else {
+                    double liquidIn = node == 1
+                            ? (w.vaporOnlyOverhead ? 0.0 : w.betaReflux * w.liquidComponentFlows[component])
+                            : w.liquidComponentFlows[(node - 1) * HYDROCARBON_COMPONENTS + component];
+                    double feed = node == w.topology.feedStage() ? w.feedComponentFlows[component] : 0.0;
+                    residual = liquidIn + w.vaporComponentFlows[(node + 1) * HYDROCARBON_COMPONENTS + component] + feed
+                            - w.liquidComponentFlows[offset] - w.sideDrawComponentFlows[offset]
+                            - w.vaporComponentFlows[offset];
+                }
+                double limit = fAbs + 1.0e-9 * localMaterialScale(w, component, node);
+                if (Math.abs(residual) > limit) return false;
+            }
+            double overhead = w.vaporComponentFlows[component]
+                    + (w.vaporOnlyOverhead ? 0.0 : (1.0 - w.betaReflux) * w.liquidComponentFlows[component]);
+            double side = sumComponentSideDraws(w, component);
+            double bottoms = w.liquidComponentFlows[(w.nodes - 1) * HYDROCARBON_COMPONENTS + component];
+            double feed = w.feedComponentFlows[component];
+            if (Math.abs(feed - overhead - side - bottoms)
+                    > fAbs + 1.0e-9 * (Math.abs(feed) + Math.abs(overhead) + Math.abs(side) + Math.abs(bottoms))) {
+                return false;
+            }
+            totalFeed += feed;
+            totalProducts += overhead + side + bottoms;
+        }
+        return Math.abs(totalFeed - totalProducts)
+                <= fAbs + 1.0e-9 * (Math.abs(totalFeed) + Math.abs(totalProducts));
+    }
+
+    private static void snapshotCheapState(Workspace w) {
+        copy(w.liquidTotals, w.snapshotLiquidTotals);
+        copy(w.vaporTotals, w.snapshotVaporTotals);
+        copy(w.rawLiquidTotals, w.snapshotRawLiquidTotals);
+        copy(w.rawVaporTotals, w.snapshotRawVaporTotals);
+        copy(w.liquidComponentFlows, w.snapshotLiquidComponentFlows);
+        copy(w.vaporComponentFlows, w.snapshotVaporComponentFlows);
+        copy(w.sideDrawComponentFlows, w.snapshotSideDrawComponentFlows);
+        copy(w.sideDrawMolarRates, w.snapshotSideDrawMolarRates);
+        copy(w.previousSideDrawMolarRates, w.snapshotPreviousSideDrawMolarRates);
+        copy(w.temperatures, w.snapshotTemperatures);
+        copy(w.hydrocarbonPartialPressures, w.snapshotHydrocarbonPartialPressures);
+        copy(w.waterVaporFlows, w.snapshotWaterVaporFlows);
+        copy(w.aqueousWaterFlows, w.snapshotAqueousWaterFlows);
+        System.arraycopy(w.wetWaterMask, 0, w.snapshotWetWaterMask, 0, w.nodes);
+        copy(w.waterPartialPressures, w.snapshotWaterPartialPressures);
+        copy(w.waterVaporEnthalpies, w.snapshotWaterVaporEnthalpies);
+        copy(w.aqueousWaterEnthalpies, w.snapshotAqueousWaterEnthalpies);
+        copy(w.waterVaporHeatCapacities, w.snapshotWaterVaporHeatCapacities);
+        copy(w.aqueousWaterHeatCapacities, w.snapshotAqueousWaterHeatCapacities);
+    }
+
+    private static void restoreCheapState(Workspace w) {
+        copy(w.snapshotLiquidTotals, w.liquidTotals);
+        copy(w.snapshotVaporTotals, w.vaporTotals);
+        copy(w.snapshotRawLiquidTotals, w.rawLiquidTotals);
+        copy(w.snapshotRawVaporTotals, w.rawVaporTotals);
+        copy(w.snapshotLiquidComponentFlows, w.liquidComponentFlows);
+        copy(w.snapshotVaporComponentFlows, w.vaporComponentFlows);
+        copy(w.snapshotSideDrawComponentFlows, w.sideDrawComponentFlows);
+        copy(w.snapshotSideDrawMolarRates, w.sideDrawMolarRates);
+        copy(w.snapshotPreviousSideDrawMolarRates, w.previousSideDrawMolarRates);
+        copy(w.snapshotTemperatures, w.temperatures);
+        copy(w.snapshotHydrocarbonPartialPressures, w.hydrocarbonPartialPressures);
+        copy(w.snapshotWaterVaporFlows, w.waterVaporFlows);
+        copy(w.snapshotAqueousWaterFlows, w.aqueousWaterFlows);
+        System.arraycopy(w.snapshotWetWaterMask, 0, w.wetWaterMask, 0, w.nodes);
+        copy(w.snapshotWaterPartialPressures, w.waterPartialPressures);
+        copy(w.snapshotWaterVaporEnthalpies, w.waterVaporEnthalpies);
+        copy(w.snapshotAqueousWaterEnthalpies, w.aqueousWaterEnthalpies);
+        copy(w.snapshotWaterVaporHeatCapacities, w.waterVaporHeatCapacities);
+        copy(w.snapshotAqueousWaterHeatCapacities, w.aqueousWaterHeatCapacities);
     }
 
     /** Solves water separately from the PR basis, then publishes only its Dalton hydrocarbon partial pressure. */
@@ -822,19 +1283,59 @@ public final class DryInsideOutColumnSolver {
 
     private void relaxTrialTotals(Workspace w, double damping) {
         double maximum = 0.0;
+        w.limitingSumRatesNode = -1;
+        w.limitingSumRatesPhase = "NONE";
         for (int node = 0; node < w.nodes; node++) {
             if (!(w.vaporOnlyOverhead && node == 0)) {
-                double newLiquid = geometricRelax(w.liquidTotals[node], w.rawLiquidTotals[node], damping, node);
-                maximum = Math.max(maximum, Math.abs(Math.log(w.rawLiquidTotals[node] / newLiquid)));
+                w.limitingSumRatesNode = node;
+                w.limitingSumRatesPhase = "LIQUID";
+                double newLiquid = geometricRelax(w, w.liquidTotals[node], w.rawLiquidTotals[node], damping, node);
+                double liquidMismatch = Math.abs(Math.log(w.rawLiquidTotals[node] / newLiquid));
+                if (liquidMismatch > maximum) {
+                    maximum = liquidMismatch;
+                    w.limitingSumRatesNode = node;
+                    w.limitingSumRatesPhase = "LIQUID";
+                }
                 w.liquidTotals[node] = newLiquid;
             } else {
                 w.liquidTotals[node] = 0.0;
             }
-            double newVapor = geometricRelax(w.vaporTotals[node], w.rawVaporTotals[node], damping, node);
-            maximum = Math.max(maximum, Math.abs(Math.log(w.rawVaporTotals[node] / newVapor)));
+            w.limitingSumRatesNode = node;
+            w.limitingSumRatesPhase = "VAPOR";
+            double newVapor = geometricRelax(w, w.vaporTotals[node], w.rawVaporTotals[node], damping, node);
+            double vaporMismatch = Math.abs(Math.log(w.rawVaporTotals[node] / newVapor));
+            if (vaporMismatch > maximum) {
+                maximum = vaporMismatch;
+                w.limitingSumRatesNode = node;
+                w.limitingSumRatesPhase = "VAPOR";
+            }
             w.vaporTotals[node] = newVapor;
         }
         if (w.vaporOnlyOverhead) w.vaporTotals[0] = w.vaporTotals[1];
+        w.currentSumRatesResidual = maximum;
+    }
+
+    /** Measures the current raw/trial Sum-Rates mismatch without changing either traffic profile. */
+    private static void measureSumRatesResidual(Workspace w) {
+        double maximum = 0.0;
+        w.limitingSumRatesNode = -1;
+        w.limitingSumRatesPhase = "NONE";
+        for (int node = 0; node < w.nodes; node++) {
+            if (!(w.vaporOnlyOverhead && node == 0)) {
+                double liquid = Math.abs(Math.log(w.rawLiquidTotals[node] / w.liquidTotals[node]));
+                if (liquid > maximum) {
+                    maximum = liquid;
+                    w.limitingSumRatesNode = node;
+                    w.limitingSumRatesPhase = "LIQUID";
+                }
+            }
+            double vapor = Math.abs(Math.log(w.rawVaporTotals[node] / w.vaporTotals[node]));
+            if (vapor > maximum) {
+                maximum = vapor;
+                w.limitingSumRatesNode = node;
+                w.limitingSumRatesPhase = "VAPOR";
+            }
+        }
         w.currentSumRatesResidual = maximum;
     }
 
@@ -909,6 +1410,7 @@ public final class DryInsideOutColumnSolver {
                         + " best=" + compactDiagnosticNumber(bestCandidateMerit));
             }
         }
+        w.acceptedEnergyFactor = acceptedFactor;
         return accepted ? predictedMaximumInnerEnergyRatio(w, acceptedFactor) : energyRatio;
     }
 
@@ -973,6 +1475,12 @@ public final class DryInsideOutColumnSolver {
         double maximumGlobalValue = 0.0;
         double maximumGlobalLimit = fAbs;
         int limitingGlobalComponent = -1;
+        double limitingGlobalFeed = 0.0;
+        double limitingGlobalOverhead = 0.0;
+        double limitingGlobalSide = 0.0;
+        double limitingGlobalBottoms = 0.0;
+        double limitingGlobalCondenserLiquid = 0.0;
+        double limitingGlobalCondenserVapor = 0.0;
         double totalFeed = 0.0;
         double totalProducts = 0.0;
         for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
@@ -1013,6 +1521,12 @@ public final class DryInsideOutColumnSolver {
                 maximumGlobalValue = value;
                 maximumGlobalLimit = limit;
                 limitingGlobalComponent = component;
+                limitingGlobalFeed = w.feedComponentFlows[component];
+                limitingGlobalOverhead = overhead;
+                limitingGlobalSide = side;
+                limitingGlobalBottoms = bottoms;
+                limitingGlobalCondenserLiquid = w.liquidComponentFlows[component];
+                limitingGlobalCondenserVapor = w.vaporComponentFlows[component];
             }
             totalFeed += w.feedComponentFlows[component];
             totalProducts += overhead + side + bottoms;
@@ -1020,7 +1534,15 @@ public final class DryInsideOutColumnSolver {
         builder.add(DryResidualFamily.LOCAL_COMPONENT_BALANCE, maximumLocalValue, maximumLocalLimit,
                 limitingLocalNode, limitingLocalComponent, "maximum node/component hydrocarbon balance residual");
         builder.add(DryResidualFamily.GLOBAL_COMPONENT_BALANCE, maximumGlobalValue, maximumGlobalLimit,
-                -1, limitingGlobalComponent, "maximum external component balance residual");
+                -1, limitingGlobalComponent, "maximum external component balance residual feed="
+                        + compactDiagnosticNumber(limitingGlobalFeed) + " overhead="
+                        + compactDiagnosticNumber(limitingGlobalOverhead) + " side="
+                        + compactDiagnosticNumber(limitingGlobalSide) + " bottoms="
+                        + compactDiagnosticNumber(limitingGlobalBottoms) + " beta="
+                        + compactDiagnosticNumber(w.betaReflux) + " condenserL="
+                        + compactDiagnosticNumber(limitingGlobalCondenserLiquid) + " condenserV="
+                        + compactDiagnosticNumber(limitingGlobalCondenserVapor) + " feedStage="
+                        + w.topology.feedStage());
         double totalValue = Math.abs(totalFeed - totalProducts);
         double totalLimit = fAbs + 1.0e-9 * (Math.abs(totalFeed) + Math.abs(totalProducts));
         builder.add(DryResidualFamily.TOTAL_HYDROCARBON_BALANCE, totalValue, totalLimit, -1, -1,
@@ -1102,8 +1624,8 @@ public final class DryInsideOutColumnSolver {
             for (int component = 0; component < HYDROCARBON_COMPONENTS; component++) {
                 double liquid = w.liquidComponentFlows[offset + component];
                 double vapor = w.vaporComponentFlows[offset + component];
-                if (liquid <= FLOW_FLOOR && vapor <= FLOW_FLOOR) continue;
-                if (!(liquid > FLOW_FLOOR) || !(vapor > FLOW_FLOOR)) {
+                if (liquid == 0.0 && vapor == 0.0) continue;
+                if (!(liquid > 0.0) || !(vapor > 0.0)) {
                     maximumEquilibrium = Double.MAX_VALUE;
                     equilibriumNode = node;
                     equilibriumComponent = component;
@@ -1279,7 +1801,82 @@ public final class DryInsideOutColumnSolver {
         return new DrySolverDiagnostics(w.outerIterations, w.innerIterations, w.thomasSolves, w.energyThomasSolves,
                 w.propertyPhaseEvaluations, w.maximumThomasBackwardError, w.maximumInnerSumRatesResidual,
                 w.maximumInnerEnergyResidual, w.currentFlowStateChange, w.currentTemperatureStateChange,
-                w.recoveryPath, List.copyOf(w.events), audit);
+                w.recoveryPath, List.copyOf(w.events), List.copyOf(w.iterationEvidence), audit);
+    }
+
+    private static void certifyColumnPivots(
+            Workspace w, int component, int nodeOffset, double[] lower, double[] diagonal, double[] upper,
+            double[] rightHandSide) {
+        ColumnTridiagonalCertificate.Result certificate = ColumnTridiagonalCertificate.certify(
+                lower, diagonal, upper, rightHandSide);
+        if (!certificate.accepted()) {
+            w.minimumPositivePivot = certificate.minimumPositivePivot();
+            w.pivotComponent = component;
+            w.pivotRow = certificate.row() < 0 ? -1 : nodeOffset + certificate.row();
+            int node = w.pivotRow;
+            throw abort(DrySolverFailureCode.TRIDIAGONAL_BREAKDOWN, DryResidualFamily.THOMAS_BACKWARD_ERROR,
+                    Math.abs(certificate.pivot()), 0.0, node, component,
+                    "Column M-matrix certificate failed at pivot=" + compactDiagnosticNumber(certificate.pivot())
+                            + " reason=" + certificate.detail());
+        }
+        if (certificate.minimumPositivePivot() < w.minimumPositivePivot) {
+            w.minimumPositivePivot = certificate.minimumPositivePivot();
+            w.pivotComponent = component;
+            w.pivotRow = nodeOffset + certificate.minimumPositivePivotRow();
+        }
+    }
+
+    /** Solves for liquid component fractions scaled by positive trial totals; {@code x = D*z}. */
+    private static void scaleNormalMaterialUnknowns(
+            double[] lower, double[] diagonal, double[] upper, double[] liquidTotals) {
+        for (int row = 0; row < diagonal.length; row++) {
+            diagonal[row] *= liquidTotals[row];
+            if (row > 0) lower[row] *= liquidTotals[row - 1];
+            if (row + 1 < diagonal.length) upper[row] *= liquidTotals[row + 1];
+        }
+    }
+
+    /** Same positive unknown scaling for the reduced {@code [l1,...,lS,b]} branch. */
+    private static void scaleVaporOnlyMaterialUnknowns(
+            double[] lower, double[] diagonal, double[] upper, double[] liquidTotals) {
+        for (int row = 0; row < diagonal.length; row++) {
+            int node = row + 1;
+            diagonal[row] *= liquidTotals[node];
+            if (row > 0) lower[row] *= liquidTotals[node - 1];
+            if (row + 1 < diagonal.length) upper[row] *= liquidTotals[node + 1];
+        }
+    }
+
+    private static void recordInnerEvidence(Workspace w) {
+        int node = w.limitingSumRatesNode;
+        double trialLiquid = node >= 0 ? w.liquidTotals[node] : 0.0;
+        double trialVapor = node >= 0 ? w.vaporTotals[node] : 0.0;
+        double rawLiquid = node >= 0 ? w.rawLiquidTotals[node] : 0.0;
+        double rawVapor = node >= 0 ? w.rawVaporTotals[node] : 0.0;
+        double minimumComponentFlow = Double.POSITIVE_INFINITY;
+        int minimumComponentNode = -1;
+        int minimumComponent = -1;
+        for (int profile = 0; profile < w.liquidComponentFlows.length; profile++) {
+            double liquid = w.liquidComponentFlows[profile];
+            if (liquid < minimumComponentFlow) {
+                minimumComponentFlow = liquid;
+                minimumComponentNode = profile / HYDROCARBON_COMPONENTS;
+                minimumComponent = profile % HYDROCARBON_COMPONENTS;
+            }
+            double vapor = w.vaporComponentFlows[profile];
+            if (vapor < minimumComponentFlow) {
+                minimumComponentFlow = vapor;
+                minimumComponentNode = profile / HYDROCARBON_COMPONENTS;
+                minimumComponent = profile % HYDROCARBON_COMPONENTS;
+            }
+        }
+        if (w.iterationEvidence.size() == DrySolverDiagnostics.MAX_INNER_HISTORY) w.iterationEvidence.remove(0);
+        w.iterationEvidence.add(new DryIterationEvidence(
+                w.outerIterations, w.currentInnerIteration, w.currentSumRatesResidual, node, w.limitingSumRatesPhase,
+                trialLiquid, trialVapor, rawLiquid, rawVapor, minimumComponentFlow, minimumComponentNode,
+                minimumComponent, minimum(w.temperatures), maximum(w.temperatures), w.mergedRootNodes,
+                w.minimumRootSeparation, w.minimumLocalK, w.maximumLocalK, w.pivotComponent, w.pivotRow,
+                w.minimumPositivePivot, w.currentInnerEnergyResidual, w.acceptedEnergyFactor));
     }
 
     private static boolean recoverable(DrySolverFailureCode code) {
@@ -1302,11 +1899,11 @@ public final class DryInsideOutColumnSolver {
     }
 
     private static double requireNonnegative(double value, Workspace w, int node, int component) {
-        if (!Double.isFinite(value) || value < -NEGATIVE_FLOW_TOLERANCE * Math.max(1.0, w.feedFlow)) {
+        if (!Double.isFinite(value) || value < 0.0) {
             throw abort(DrySolverFailureCode.NEGATIVE_PHASE_FLOW, DryResidualFamily.PHASE_VALIDITY,
                     Math.abs(value), 0.0, node, component, "Thomas material solve produced a negative/non-finite phase flow");
         }
-        return value < 0.0 ? 0.0 : value;
+        return value;
     }
 
     private static void requireActiveTwoHydrocarbonPhases(Workspace w, int node) {
@@ -1427,8 +2024,9 @@ public final class DryInsideOutColumnSolver {
         }
         double liquidIn = node == 1 ? w.betaReflux * w.liquidComponentFlows[component]
                 : w.liquidComponentFlows[(node - 1) * HYDROCARBON_COMPONENTS + component];
+        double feed = node == w.topology.feedStage() ? Math.abs(w.feedComponentFlows[component]) : 0.0;
         return Math.abs(liquidIn) + Math.abs(w.vaporComponentFlows[(node + 1) * HYDROCARBON_COMPONENTS + component])
-                + Math.abs(w.feedComponentFlows[component]) + Math.abs(w.liquidComponentFlows[offset + component])
+                + feed + Math.abs(w.liquidComponentFlows[offset + component])
                 + Math.abs(w.vaporComponentFlows[offset + component])
                 + Math.abs(w.sideDrawComponentFlows[offset + component]);
     }
@@ -1496,10 +2094,15 @@ public final class DryInsideOutColumnSolver {
         return total;
     }
 
-    private static double geometricRelax(double previous, double target, double damping, int node) {
-        if (!(previous > FLOW_FLOOR) || !(target > FLOW_FLOOR) || !Double.isFinite(previous) || !Double.isFinite(target)) {
+    private static double geometricRelax(Workspace w, double previous, double target, double damping, int node) {
+        if (!Double.isFinite(previous) || !Double.isFinite(target) || previous < 0.0 || target < 0.0) {
             throw abort(DrySolverFailureCode.NEGATIVE_PHASE_FLOW, DryResidualFamily.SUM_RATES,
                     Math.abs(target), FLOW_FLOOR, node, -1, "Sum-Rates update requires positive finite raw and trial totals");
+        }
+        if (!(previous > FLOW_FLOOR) || !(target > FLOW_FLOOR)) {
+            throw abort(DrySolverFailureCode.PHASE_REGIME_MISMATCH, DryResidualFamily.PHASE_VALIDITY,
+                    Math.max(0.0, FLOW_FLOOR - target), 0.0, node, -1,
+                    "A required hydrocarbon phase disappeared below the flow floor");
         }
         return Math.exp(Math.log(previous) + damping * (Math.log(target) - Math.log(previous)));
     }
@@ -1529,6 +2132,12 @@ public final class DryInsideOutColumnSolver {
         return maximum;
     }
 
+    private static double minimum(double[] values) {
+        double minimum = Double.POSITIVE_INFINITY;
+        for (double value : values) minimum = Math.min(minimum, value);
+        return minimum;
+    }
+
     private static double clamp(double value, double minimum, double maximum) {
         return Math.max(minimum, Math.min(maximum, value));
     }
@@ -1536,6 +2145,10 @@ public final class DryInsideOutColumnSolver {
     private static void copyNode(double[] source, int sourceNode, double[] target, int targetNode) {
         System.arraycopy(source, sourceNode * HYDROCARBON_COMPONENTS, target, targetNode * HYDROCARBON_COMPONENTS,
                 HYDROCARBON_COMPONENTS);
+    }
+
+    private static void copy(double[] source, double[] target) {
+        System.arraycopy(source, 0, target, 0, source.length);
     }
 
     private static double[][] unpackNodeMajor(double[] source, int rows) {
@@ -1599,7 +2212,12 @@ public final class DryInsideOutColumnSolver {
 
     private static Abort abort(DrySolverFailureCode code, DryResidualFamily family, double value, double limit,
                                int node, int component, String detail) {
-        return new Abort(code, family, value, limit, node, component, detail);
+        return new Abort(code, family, value, limit, node, component, detail, null);
+    }
+
+    private static Abort abort(DrySolverFailureCode code, DryResidualFamily family, double value, double limit,
+                               int node, int component, String detail, DryAcceptanceAudit audit) {
+        return new Abort(code, family, value, limit, node, component, detail, audit);
     }
 
     private static void addEvent(Workspace workspace, String event) {
@@ -1634,9 +2252,10 @@ public final class DryInsideOutColumnSolver {
         private final int node;
         private final int component;
         private final String detail;
+        private final DryAcceptanceAudit audit;
 
         Abort(DrySolverFailureCode code, DryResidualFamily family, double value, double limit,
-              int node, int component, String detail) {
+              int node, int component, String detail, DryAcceptanceAudit audit) {
             super(null, null, false, false);
             this.code = Objects.requireNonNull(code, "code");
             this.family = Objects.requireNonNull(family, "family");
@@ -1646,6 +2265,7 @@ public final class DryInsideOutColumnSolver {
             this.component = component;
             this.detail = boundedMessage(detail == null ? new IllegalStateException("Missing solver detail")
                     : new IllegalStateException(detail));
+            this.audit = audit;
         }
 
         DrySolverFailureCode code() { return code; }
@@ -1655,7 +2275,7 @@ public final class DryInsideOutColumnSolver {
         int node() { return node; }
         int component() { return component; }
         String detail() { return detail; }
-        DryAcceptanceAudit audit() { return null; }
+        DryAcceptanceAudit audit() { return audit; }
     }
 
     /** One caller-owned primitive workspace per submitted attempt; no cell objects are allocated in inner loops. */
@@ -1669,10 +2289,10 @@ public final class DryInsideOutColumnSolver {
         final double[] hydrocarbonPartialPressures;
         final NextPengRobinsonKernel kernel;
         final NextPengRobinsonKernel.Workspace prWorkspace;
+        final NextPhaseStability.Workspace stabilityWorkspace;
         final NextPengRobinsonKernel.Evaluation liquidEvaluation;
         final NextPengRobinsonKernel.Evaluation vaporEvaluation;
-        final NextPengRobinsonKernel.Evaluation feedLiquidEvaluation;
-        final NextPengRobinsonKernel.Evaluation feedVaporEvaluation;
+        final NextFeedFlash.Workspace feedFlashWorkspace;
         final NextPengRobinsonKernel.Evaluation lowerLiquidDerivativeEvaluation;
         final NextPengRobinsonKernel.Evaluation lowerVaporDerivativeEvaluation;
         final NextPengRobinsonKernel.Evaluation upperLiquidDerivativeEvaluation;
@@ -1680,6 +2300,7 @@ public final class DryInsideOutColumnSolver {
         final String recoveryPath;
         final NextWarmState warmStart;
         final List<String> events = new ArrayList<>();
+        final List<DryIterationEvidence> iterationEvidence = new ArrayList<>();
 
         final double[] temperatures;
         final double[] previousTemperatures;
@@ -1687,21 +2308,38 @@ public final class DryInsideOutColumnSolver {
         final double[] vaporTotals;
         final double[] rawLiquidTotals;
         final double[] rawVaporTotals;
+        final double[] snapshotLiquidTotals;
+        final double[] snapshotVaporTotals;
+        final double[] snapshotRawLiquidTotals;
+        final double[] snapshotRawVaporTotals;
         final double[] liquidComponentFlows;
         final double[] vaporComponentFlows;
+        final double[] snapshotLiquidComponentFlows;
+        final double[] snapshotVaporComponentFlows;
+        final double[] previousLiquidCompositions;
+        final double[] previousVaporCompositions;
         final double[] previousLiquidComponentFlows;
         final double[] previousVaporComponentFlows;
         final double[] sideDrawComponentFlows;
         final double[] sideDrawMolarRates;
         final double[] previousSideDrawMolarRates;
+        final double[] snapshotSideDrawComponentFlows;
+        final double[] snapshotSideDrawMolarRates;
+        final double[] snapshotPreviousSideDrawMolarRates;
         final double[] feedFractions = new double[HYDROCARBON_COMPONENTS];
         final double[] feedComponentFlows = new double[HYDROCARBON_COMPONENTS];
+        final double[] feedLiquidComposition = new double[HYDROCARBON_COMPONENTS];
+        final double[] feedVaporComposition = new double[HYDROCARBON_COMPONENTS];
         final double[] localK;
         final double[] lnKReference;
         final double[] lnKSlope;
         final double[] rigorousLnK;
+        final double[] stabilityLiquidCompositions;
+        final double[] stabilityVaporCompositions;
         final double[] kReferenceTemperatures;
         final boolean[] hasRigorousModel;
+        final boolean[] hasStabilityPhaseModel;
+        final int[] rootSignatures;
         final double[] liquidEnthalpyReference;
         final double[] vaporEnthalpyReference;
         final double[] rigorousLiquidEnthalpy;
@@ -1719,10 +2357,20 @@ public final class DryInsideOutColumnSolver {
         final double[] aqueousWaterFlows;
         final boolean[] wetWaterMask;
         final double[] waterPartialPressures;
+        final double[] snapshotWaterVaporFlows;
+        final double[] snapshotAqueousWaterFlows;
+        final boolean[] snapshotWetWaterMask;
+        final double[] snapshotWaterPartialPressures;
         final double[] waterVaporEnthalpies;
         final double[] aqueousWaterEnthalpies;
         final double[] waterVaporHeatCapacities;
         final double[] aqueousWaterHeatCapacities;
+        final double[] snapshotWaterVaporEnthalpies;
+        final double[] snapshotAqueousWaterEnthalpies;
+        final double[] snapshotWaterVaporHeatCapacities;
+        final double[] snapshotAqueousWaterHeatCapacities;
+        final double[] snapshotTemperatures;
+        final double[] snapshotHydrocarbonPartialPressures;
 
         final double[] lower;
         final double[] diagonal;
@@ -1748,6 +2396,7 @@ public final class DryInsideOutColumnSolver {
         final double[] componentScratch = new double[HYDROCARBON_COMPONENTS];
         final double[] liquidCompositionScratch = new double[HYDROCARBON_COMPONENTS];
         final double[] vaporCompositionScratch = new double[HYDROCARBON_COMPONENTS];
+        final double[] overallCompositionScratch = new double[HYDROCARBON_COMPONENTS];
         final double[] componentKByNode;
         final double[] componentLiquidScratch;
         final double[] componentVaporScratch;
@@ -1758,6 +2407,8 @@ public final class DryInsideOutColumnSolver {
         double betaReflux;
         double feedFlow;
         double feedEnthalpy;
+        double feedVaporFraction;
+        boolean feedStateResolved;
         WaterFeedProfile waterFeeds;
         int outerIterations;
         int innerIterations;
@@ -1773,6 +2424,18 @@ public final class DryInsideOutColumnSolver {
         double currentTemperatureStateChange;
         double maximumWaterBalanceResidual;
         double maximumWaterComplementarityResidual;
+        double previousCheapMerit;
+        int currentInnerIteration;
+        int limitingSumRatesNode = -1;
+        String limitingSumRatesPhase = "NONE";
+        int mergedRootNodes;
+        double minimumRootSeparation = Double.POSITIVE_INFINITY;
+        double minimumLocalK = 1.0;
+        double maximumLocalK = 1.0;
+        int pivotComponent = -1;
+        int pivotRow = -1;
+        double minimumPositivePivot = Double.NaN;
+        double acceptedEnergyFactor;
 
         Workspace(ColumnProblem problem, String recoveryPath, NextWarmState warmStart) {
             this.problem = problem;
@@ -1785,10 +2448,10 @@ public final class DryInsideOutColumnSolver {
             hydrocarbonPartialPressures = pressures.clone();
             kernel = new NextPengRobinsonKernel(problem.propertyPackage());
             prWorkspace = kernel.newWorkspace();
+            stabilityWorkspace = new NextPhaseStability.Workspace(kernel);
             liquidEvaluation = kernel.newEvaluation();
             vaporEvaluation = kernel.newEvaluation();
-            feedLiquidEvaluation = kernel.newEvaluation();
-            feedVaporEvaluation = kernel.newEvaluation();
+            feedFlashWorkspace = new NextFeedFlash.Workspace(kernel);
             lowerLiquidDerivativeEvaluation = kernel.newEvaluation();
             lowerVaporDerivativeEvaluation = kernel.newEvaluation();
             upperLiquidDerivativeEvaluation = kernel.newEvaluation();
@@ -1801,20 +2464,35 @@ public final class DryInsideOutColumnSolver {
             vaporTotals = new double[nodes];
             rawLiquidTotals = new double[nodes];
             rawVaporTotals = new double[nodes];
+            snapshotLiquidTotals = new double[nodes];
+            snapshotVaporTotals = new double[nodes];
+            snapshotRawLiquidTotals = new double[nodes];
+            snapshotRawVaporTotals = new double[nodes];
             int profileLength = nodes * HYDROCARBON_COMPONENTS;
             liquidComponentFlows = new double[profileLength];
             vaporComponentFlows = new double[profileLength];
+            snapshotLiquidComponentFlows = new double[profileLength];
+            snapshotVaporComponentFlows = new double[profileLength];
+            previousLiquidCompositions = new double[profileLength];
+            previousVaporCompositions = new double[profileLength];
             previousLiquidComponentFlows = new double[profileLength];
             previousVaporComponentFlows = new double[profileLength];
             sideDrawComponentFlows = new double[(stages + 1) * HYDROCARBON_COMPONENTS];
             sideDrawMolarRates = new double[stages + 1];
             previousSideDrawMolarRates = new double[stages + 1];
+            snapshotSideDrawComponentFlows = new double[(stages + 1) * HYDROCARBON_COMPONENTS];
+            snapshotSideDrawMolarRates = new double[stages + 1];
+            snapshotPreviousSideDrawMolarRates = new double[stages + 1];
             localK = new double[profileLength];
             lnKReference = new double[profileLength];
             lnKSlope = new double[profileLength];
             rigorousLnK = new double[profileLength];
+            stabilityLiquidCompositions = new double[profileLength];
+            stabilityVaporCompositions = new double[profileLength];
             kReferenceTemperatures = new double[nodes];
             hasRigorousModel = new boolean[nodes];
+            hasStabilityPhaseModel = new boolean[nodes];
+            rootSignatures = new int[nodes];
             liquidEnthalpyReference = new double[nodes];
             vaporEnthalpyReference = new double[nodes];
             rigorousLiquidEnthalpy = new double[nodes];
@@ -1832,10 +2510,20 @@ public final class DryInsideOutColumnSolver {
             aqueousWaterFlows = new double[nodes];
             wetWaterMask = new boolean[nodes];
             waterPartialPressures = new double[nodes];
+            snapshotWaterVaporFlows = new double[nodes];
+            snapshotAqueousWaterFlows = new double[nodes];
+            snapshotWetWaterMask = new boolean[nodes];
+            snapshotWaterPartialPressures = new double[nodes];
             waterVaporEnthalpies = new double[nodes];
             aqueousWaterEnthalpies = new double[nodes];
             waterVaporHeatCapacities = new double[nodes];
             aqueousWaterHeatCapacities = new double[nodes];
+            snapshotWaterVaporEnthalpies = new double[nodes];
+            snapshotAqueousWaterEnthalpies = new double[nodes];
+            snapshotWaterVaporHeatCapacities = new double[nodes];
+            snapshotAqueousWaterHeatCapacities = new double[nodes];
+            snapshotTemperatures = new double[nodes];
+            snapshotHydrocarbonPartialPressures = new double[nodes];
             lower = new double[nodes];
             diagonal = new double[nodes];
             upper = new double[nodes];

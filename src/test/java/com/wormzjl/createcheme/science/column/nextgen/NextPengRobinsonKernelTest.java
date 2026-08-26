@@ -34,8 +34,8 @@ class NextPengRobinsonKernelTest {
         assertEquals(expectedLiquid.compressibilityFactor(), liquid.compressibility(), 1e-11);
         assertEquals(expectedVapor.compressibilityFactor(), vapor.compressibility(), 1e-11);
         for (int index = 0; index < 16; index++) {
-            assertEquals(expectedLiquid.logFugacityCoefficients()[index], liquid.logFugacityCoefficients()[index], 1e-10);
-            assertEquals(expectedVapor.logFugacityCoefficients()[index], vapor.logFugacityCoefficients()[index], 1e-10);
+            assertEquals(expectedLiquid.logFugacityCoefficients()[index], liquid.logFugacityCoefficient(index), 1e-10);
+            assertEquals(expectedVapor.logFugacityCoefficients()[index], vapor.logFugacityCoefficient(index), 1e-10);
         }
     }
 
@@ -60,5 +60,21 @@ class NextPengRobinsonKernelTest {
         NextPengRobinsonKernel kernel = new NextPengRobinsonKernel(Cdu17TiaJuanaPackage.INSTANCE);
         assertThrows(IllegalArgumentException.class, () -> kernel.wilsonK(901.0, 250_000.0, new double[16]));
         assertThrows(IllegalArgumentException.class, () -> kernel.wilsonK(500.0, 2_100_000.0, new double[16]));
+    }
+
+    @Test
+    void evaluationDoesNotExposeMutableFugacityWorkspace() {
+        NextPengRobinsonKernel kernel = new NextPengRobinsonKernel(Cdu17TiaJuanaPackage.INSTANCE);
+        double[] composition = new double[16];
+        composition[1] = 0.4;
+        composition[10] = 0.6;
+        NextPengRobinsonKernel.Evaluation evaluation = kernel.newEvaluation();
+        kernel.evaluate(450.0, 300_000.0, composition, NextPengRobinsonKernel.Root.LIQUID,
+                kernel.newWorkspace(), evaluation);
+
+        double original = evaluation.logFugacityCoefficient(1);
+        double[] copy = evaluation.logFugacityCoefficients();
+        copy[1] = Double.NaN;
+        assertEquals(original, evaluation.logFugacityCoefficient(1), 0.0);
     }
 }

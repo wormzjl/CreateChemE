@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.client.gui.screens.inventory;
 import com.wormzjl.createcheme.network.ColumnNextNetwork;
 import com.wormzjl.createcheme.network.ColumnNextNetwork.StateView;
 import com.wormzjl.createcheme.science.column.nextgen.ColumnModelRegistry;
+import com.wormzjl.createcheme.science.column.nextgen.ColumnNextAuthoring;
 import com.wormzjl.createcheme.science.column.nextgen.ColumnNextInput;
 import com.wormzjl.createcheme.science.column.nextgen.NextColumnResultView;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorNextMenu;
@@ -19,6 +20,10 @@ import net.minecraft.world.entity.player.Inventory;
 public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<ColumnCalculatorNextMenu> {
     private static final int STREAM_COLUMNS_PER_PAGE = 3;
     private static final int ROW_HEIGHT = 11;
+    private static final int CORE_EDITOR_COUNT = 9;
+    private static final int EDITOR_COUNT = 11;
+    private static final int SIDE_DRAWS_EDITOR = 9;
+    private static final int UTILITIES_EDITOR = 10;
 
     private final List<EditBox> editors = new ArrayList<>();
     private long stateNonce;
@@ -27,6 +32,7 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
     private String status = "Loading accepted state…";
     private ColumnNextInput acceptedInput = ColumnNextInput.defaults();
     private NextColumnResultView acceptedResult;
+    private boolean acceptedResultStale;
     private Page page = Page.SETUP;
     private int streamPage;
     private int streamScroll;
@@ -47,7 +53,9 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
 
     @Override
     protected void init() {
+        String[] draft = editorDraft();
         super.init();
+        editors.clear();
         stateNonce = ColumnNextNetwork.sendStateRequest(menu.blockPos());
         setup = addRenderableWidget(Button.builder(Component.literal("Setup"), button -> selectPage(Page.SETUP))
                 .bounds(leftPos + 8, topPos + 6, 64, 20).build());
@@ -63,13 +71,29 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
                 }).bounds(leftPos + imageWidth - 82, topPos + 6, 28, 20).build());
         nextStreams = addRenderableWidget(Button.builder(Component.literal(">"), button -> streamPage++)
                 .bounds(leftPos + imageWidth - 50, topPos + 6, 28, 20).build());
-        basis = addRenderableWidget(Button.builder(Component.literal("mol%"), button -> {
+        basis = addRenderableWidget(Button.builder(Component.literal(massBasis ? "mass%" : "mol%"), button -> {
                     massBasis = !massBasis;
                     button.setMessage(Component.literal(massBasis ? "mass%" : "mol%"));
                 }).bounds(leftPos + 154, topPos + 6, 62, 20).build());
         buildEditors();
-        syncEditors();
+        if (draft == null) syncEditors();
+        else restoreEditorDraft(draft);
         refreshControls();
+    }
+
+    private String[] editorDraft() {
+        if (editors.size() != EDITOR_COUNT) return null;
+        String[] draft = new String[editors.size()];
+        for (int index = 0; index < draft.length; index++) draft[index] = editors.get(index).getValue();
+        return draft;
+    }
+
+    private void restoreEditorDraft(String[] draft) {
+        if (draft.length != editors.size()) {
+            syncEditors();
+            return;
+        }
+        for (int index = 0; index < draft.length; index++) editors.get(index).setValue(draft[index]);
     }
 
     private void buildEditors() {
@@ -83,6 +107,14 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
             editor.setMaxLength(20);
             editors.add(addRenderableWidget(editor));
         }
+        EditBox sideDraws = new EditBox(font, leftPos + 10, topPos + 216, 188, 18,
+                Component.literal("stage,m|kg,rate;…"));
+        sideDraws.setMaxLength(180);
+        editors.add(addRenderableWidget(sideDraws));
+        EditBox utilities = new EditBox(font, leftPos + 207, topPos + 216, 193, 18,
+                Component.literal("water|steam,stage,mol/s,K,kPa;…"));
+        utilities.setMaxLength(220);
+        editors.add(addRenderableWidget(utilities));
     }
 
     private void selectPage(Page target) {
@@ -99,8 +131,15 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
             syncEditors();
         }
         if (state.acceptedResultPresent()) acceptedResult = state.acceptedResult();
-        status = state.status() + (state.diagnostics().isEmpty() ? "" : ": " + state.diagnostics().getFirst());
+        acceptedResultStale = state.acceptedResultPresent() && state.resultRevision() != state.inputRevision();
+        status = state.status() + (state.diagnostics().isEmpty() ? "" : ": " + statusDetail(state.diagnostics()));
         refreshControls();
+    }
+
+    private static String statusDetail(List<String> diagnostics) {
+        String detail = diagnostics.getLast();
+        int cause = detail.indexOf("; cause=");
+        return cause >= 0 ? detail.substring(cause + "; cause=".length()) + " (continuation)" : detail;
     }
 
     private void refreshControls() {
@@ -130,7 +169,7 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
     }
 
     private void syncEditors() {
-        if (editors.size() != 9) return;
+        if (editors.size() != EDITOR_COUNT) return;
         editors.get(0).setValue(number(acceptedInput.crudeFeed().molarFlowMolPerSecond()));
         editors.get(1).setValue(number(acceptedInput.crudeFeed().temperatureKelvin()));
         editors.get(2).setValue(Integer.toString(acceptedInput.stageCount()));
@@ -140,6 +179,8 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
         editors.get(6).setValue(number(acceptedInput.condenserOutletTemperatureKelvin()));
         editors.get(7).setValue(number(acceptedInput.organicRefluxRatio()));
         editors.get(8).setValue(number(acceptedInput.reboilerDutyWatts() / 1_000_000.0));
+        editors.get(SIDE_DRAWS_EDITOR).setValue(formatSideDraws(acceptedInput.sideDraws()));
+        editors.get(UTILITIES_EDITOR).setValue(formatUtilities(acceptedInput.utilityFeeds()));
     }
 
     private void sendEditedInput() {
@@ -147,10 +188,11 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
             ColumnNextInput input = new ColumnNextInput(acceptedInput.schemaVersion(), acceptedInput.packageId(),
                     acceptedInput.assayId(), new ColumnNextInput.CrudeFeedInput(number(0), number(1)), integer(2), integer(3),
                     number(4) * 1_000.0, number(5) * 1_000.0, number(6), number(8) * 1_000_000.0, number(7),
-                    acceptedInput.sideDraws(), acceptedInput.utilityFeeds());
+                    ColumnNextAuthoring.parseSideDraws(editors.get(SIDE_DRAWS_EDITOR).getValue()),
+                    ColumnNextAuthoring.parseUtilities(editors.get(UTILITIES_EDITOR).getValue()));
             ColumnNextNetwork.sendCalculate(menu.blockPos(), stateNonce, input);
-        } catch (NumberFormatException invalid) {
-            status = "REJECTED_INPUT: enter finite numeric values";
+        } catch (IllegalArgumentException invalid) {
+            status = "REJECTED_INPUT: " + abbreviate(invalid.getMessage(), 48);
         }
     }
 
@@ -162,6 +204,30 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
 
     private int integer(int editor) {
         return Integer.parseInt(editors.get(editor).getValue());
+    }
+
+    private static String formatSideDraws(List<ColumnNextInput.SideDrawInput> draws) {
+        StringBuilder result = new StringBuilder();
+        for (ColumnNextInput.SideDrawInput draw : draws) {
+            if (!result.isEmpty()) result.append(';');
+            result.append(draw.stageNumber()).append(',')
+                    .append(draw.basis() == ColumnNextInput.AuthoredBasis.MOLAR ? 'm' : "kg")
+                    .append(',').append(number(draw.authoredRate()));
+        }
+        return result.toString();
+    }
+
+    private static String formatUtilities(List<ColumnNextInput.WaterSteamFeedInput> utilities) {
+        StringBuilder result = new StringBuilder();
+        for (ColumnNextInput.WaterSteamFeedInput utility : utilities) {
+            if (!result.isEmpty()) result.append(';');
+            result.append(utility.mode() == ColumnNextInput.UtilityFeedMode.WATER ? "water" : "steam")
+                    .append(',').append(utility.stageNumber()).append(',')
+                    .append(number(utility.molarFlowMolPerSecond())).append(',')
+                    .append(number(utility.temperatureKelvin())).append(',')
+                    .append(number(utility.upstreamPressurePascal() / 1_000.0));
+        }
+        return result.toString();
     }
 
     @Override
@@ -181,23 +247,23 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
         graphics.drawString(font, "Column Calculator Next (Experimental)", leftPos + 224, topPos + 12, 0xFFE6EDF3, false);
         if (page == Page.SETUP) renderSetup(graphics);
         else renderStreams(graphics);
-        graphics.drawString(font, status, leftPos + 164, topPos + imageHeight - 20, 0xFFFFCC66, false);
+        graphics.drawString(font, abbreviate(status, 36), leftPos + 164, topPos + imageHeight - 20, 0xFFFFCC66, false);
     }
 
     private void renderSetup(GuiGraphics graphics) {
         graphics.drawString(font, "Setup", leftPos + 10, topPos + 39, 0xFFE6EDF3, false);
         String[] labels = {"Feed mol/s", "Feed K", "Stages", "Feed stage", "Top kPa", "Drop kPa/stage",
                 "Condenser K", "Reflux", "Reboiler MW"};
-        for (int index = 0; index < labels.length; index++) {
+        for (int index = 0; index < CORE_EDITOR_COUNT; index++) {
             int column = index / 5;
             int row = index % 5;
             graphics.drawString(font, labels[index], leftPos + 10 + column * 198, topPos + 47 + row * 30,
                     0xFF9AA6B2, false);
         }
-        graphics.drawString(font, "Package: " + acceptedInput.packageId(), leftPos + 10, topPos + 215, 0xFF9AA6B2, false);
-        graphics.drawString(font, "Assay: " + acceptedInput.assayId(), leftPos + 10, topPos + 227, 0xFF9AA6B2, false);
-        graphics.drawString(font, "Side draws: " + acceptedInput.sideDraws().size() + "  Utilities: "
-                + acceptedInput.utilityFeeds().size(), leftPos + 10, topPos + 239, 0xFF9AA6B2, false);
+        graphics.drawString(font, "Side draws (stage,m|kg,rate)", leftPos + 10, topPos + 204, 0xFF9AA6B2, false);
+        graphics.drawString(font, "Utilities (mode,stage,mol/s,K,kPa)", leftPos + 207, topPos + 204, 0xFF9AA6B2, false);
+        graphics.drawString(font, "Package: " + acceptedInput.packageId() + "  Assay: " + acceptedInput.assayId(),
+                leftPos + 10, topPos + 239, 0xFF9AA6B2, false);
         graphics.drawString(font, "Total drop: " + number(acceptedInput.totalPressureDropPascal() / 1_000.0)
                 + " kPa  Bottom: " + number(acceptedInput.bottomPressurePascal() / 100_000.0) + " bar",
                 leftPos + 10, topPos + 251, 0xFF9AA6B2, false);
@@ -208,23 +274,28 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
             graphics.drawString(font, "No accepted stream result yet.", leftPos + 10, topPos + 50, 0xFF9AA6B2, false);
             return;
         }
+        if (acceptedResultStale) {
+            graphics.drawString(font, "Stale result: it belongs to an earlier accepted input revision.",
+                    leftPos + 10, topPos + 41, 0xFFFFCC66, false);
+        }
         int first = streamPage * STREAM_COLUMNS_PER_PAGE;
         int last = Math.min(first + STREAM_COLUMNS_PER_PAGE, acceptedResult.streams().size());
         graphics.drawString(font, "Streams " + (first + 1) + "-" + last + " of " + acceptedResult.streams().size(),
-                leftPos + 10, topPos + 41, 0xFFE6EDF3, false);
+                leftPos + 10, acceptedResultStale ? topPos + 53 : topPos + 41, 0xFFE6EDF3, false);
         int columnWidth = 112;
         for (int index = first; index < last; index++) {
             NextColumnResultView.Stream stream = acceptedResult.streams().get(index);
             int x = leftPos + 108 + (index - first) * columnWidth;
-            graphics.fill(x - 2, topPos + 50, x + columnWidth - 4, topPos + 250, 0xFF29313A);
-            graphics.drawString(font, abbreviate(stream.label(), 16), x, topPos + 54, 0xFFE6EDF3, false);
-            graphics.drawString(font, stream.role().name() + " " + stream.phase(), x, topPos + 65, 0xFF9AA6B2, false);
+            int yOffset = acceptedResultStale ? 12 : 0;
+            graphics.fill(x - 2, topPos + 50 + yOffset, x + columnWidth - 4, topPos + 250, 0xFF29313A);
+            graphics.drawString(font, abbreviate(stream.label(), 16), x, topPos + 54 + yOffset, 0xFFE6EDF3, false);
+            graphics.drawString(font, stream.role().name() + " " + stream.phase(), x, topPos + 65 + yOffset, 0xFF9AA6B2, false);
         }
         List<Row> rows = streamRows();
         int visible = Math.min(15, rows.size() - streamScroll);
         for (int index = 0; index < visible; index++) {
             Row row = rows.get(streamScroll + index);
-            int y = topPos + 79 + index * ROW_HEIGHT;
+            int y = topPos + 79 + (acceptedResultStale ? 12 : 0) + index * ROW_HEIGHT;
             graphics.drawString(font, row.label(), leftPos + 10, y, row.component() >= 0 ? 0xFFD5E5F2 : 0xFF9AA6B2, false);
             for (int streamIndex = first; streamIndex < last; streamIndex++) {
                 NextColumnResultView.Stream stream = acceptedResult.streams().get(streamIndex);
@@ -266,6 +337,7 @@ public final class ColumnCalculatorNextScreen extends AbstractContainerScreen<Co
         double numerator = flows[component];
         double denominator = stream.molarFlowMolPerSecond();
         if (massBasis) {
+            if (acceptedResultStale) return "—";
             var basis = ColumnModelRegistry.require(acceptedInput.packageId()).basis();
             numerator *= basis.components().get(component).molecularWeightKgPerMol();
             denominator = stream.massFlowKilogramPerSecond(basis);

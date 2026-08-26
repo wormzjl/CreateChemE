@@ -17,6 +17,9 @@ public sealed interface DryColumnOutcome permits DryColumnOutcome.Success, DryCo
             if (!diagnostics.acceptanceAudit().accepted()) {
                 throw new IllegalArgumentException("A successful outcome requires a passing acceptance audit");
             }
+            if (result.acceptanceAudit() != diagnostics.acceptanceAudit()) {
+                throw new IllegalArgumentException("A successful outcome requires identical result and diagnostic audits");
+            }
         }
     }
 

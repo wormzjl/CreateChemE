@@ -155,7 +155,8 @@ public final class NextPengRobinsonKernel {
         }
         double reducedA = aMix * pressurePascal / (GAS_CONSTANT * GAS_CONSTANT * temperatureKelvin * temperatureKelvin);
         double reducedB = bMix * pressurePascal / (GAS_CONSTANT * temperatureKelvin);
-        double z = selectRoot(reducedA, reducedB, root);
+        RootSelection rootSelection = selectRoot(reducedA, reducedB, root);
+        double z = rootSelection.selectedCompressibility();
         double logRatio = Math.log((z + (1.0 + SQRT_TWO) * reducedB) / (z + (1.0 - SQRT_TWO) * reducedB));
         double attraction = reducedA / (2.0 * SQRT_TWO * Math.max(reducedB, 1.0e-300));
         for (int i = 0; i < count; i++) {
@@ -169,9 +170,11 @@ public final class NextPengRobinsonKernel {
                 + (temperatureKelvin * daMixDt - aMix) / (2.0 * SQRT_TWO * bMix) * logRatio;
         output.aMix = aMix;
         output.bMix = bMix;
+        output.physicalRootCount = rootSelection.physicalRootCount();
+        output.rootSeparation = rootSelection.rootSeparation();
     }
 
-    private static double selectRoot(double reducedA, double reducedB, Root root) {
+    private static RootSelection selectRoot(double reducedA, double reducedB, Root root) {
         double c2 = -(1.0 - reducedB);
         double c1 = reducedA - 3.0 * reducedB * reducedB - 2.0 * reducedB;
         double c0 = -(reducedA * reducedB - reducedB * reducedB - reducedB * reducedB * reducedB);
@@ -181,6 +184,7 @@ public final class NextPengRobinsonKernel {
         double offset = c2 / 3.0;
         double largest;
         double smallestPhysical;
+        int physicalRootCount = 1;
         if (discriminant >= -1.0e-16) {
             double sqrt = Math.sqrt(Math.max(0.0, discriminant));
             largest = Math.cbrt(-q / 2.0 + sqrt) + Math.cbrt(-q / 2.0 - sqrt) - offset;
@@ -193,16 +197,29 @@ public final class NextPengRobinsonKernel {
             double r2 = radius * Math.cos(angle - 4.0 * Math.PI / 3.0) - offset;
             largest = Math.max(r0, Math.max(r1, r2));
             smallestPhysical = Double.POSITIVE_INFINITY;
-            if (r0 > reducedB + ROOT_EPSILON) smallestPhysical = r0;
-            if (r1 > reducedB + ROOT_EPSILON) smallestPhysical = Math.min(smallestPhysical, r1);
-            if (r2 > reducedB + ROOT_EPSILON) smallestPhysical = Math.min(smallestPhysical, r2);
-            if (!Double.isFinite(smallestPhysical)) smallestPhysical = largest;
+            physicalRootCount = 0;
+            if (r0 > reducedB + ROOT_EPSILON) {
+                smallestPhysical = r0;
+                physicalRootCount++;
+            }
+            if (r1 > reducedB + ROOT_EPSILON) {
+                smallestPhysical = Math.min(smallestPhysical, r1);
+                physicalRootCount++;
+            }
+            if (r2 > reducedB + ROOT_EPSILON) {
+                smallestPhysical = Math.min(smallestPhysical, r2);
+                physicalRootCount++;
+            }
+            if (!Double.isFinite(smallestPhysical)) {
+                smallestPhysical = largest;
+                physicalRootCount = 1;
+            }
         }
         double selected = root == Root.VAPOR ? largest : smallestPhysical;
         if (!Double.isFinite(selected) || selected <= reducedB) {
             throw new IllegalStateException("Peng-Robinson equation has no physical " + root + " root");
         }
-        return selected;
+        return new RootSelection(selected, physicalRootCount, Math.max(0.0, largest - smallestPhysical));
     }
 
     private static void normalizeInto(double[] source, double[] target) {
@@ -267,12 +284,21 @@ public final class NextPengRobinsonKernel {
         private double residualEnthalpyJoulesPerMol;
         private double aMix;
         private double bMix;
+        private int physicalRootCount;
+        private double rootSeparation;
 
         private Evaluation(int count) { logFugacityCoefficients = new double[count]; }
-        public double[] logFugacityCoefficients() { return logFugacityCoefficients; }
+        /** Defensive copy for external callers; solver internals use the package-private scalar accessor. */
+        public double[] logFugacityCoefficients() { return logFugacityCoefficients.clone(); }
+        public double logFugacityCoefficient(int component) { return logFugacityCoefficients[component]; }
         public double compressibility() { return compressibility; }
         public double residualEnthalpyJoulesPerMol() { return residualEnthalpyJoulesPerMol; }
         public double aMix() { return aMix; }
         public double bMix() { return bMix; }
+        public int physicalRootCount() { return physicalRootCount; }
+        public double rootSeparation() { return rootSeparation; }
+        double[] logFugacityCoefficientsUnsafe() { return logFugacityCoefficients; }
     }
+
+    private record RootSelection(double selectedCompressibility, int physicalRootCount, double rootSeparation) {}
 }

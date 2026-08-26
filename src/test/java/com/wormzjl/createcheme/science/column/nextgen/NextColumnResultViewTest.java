@@ -16,9 +16,7 @@ class NextColumnResultViewTest {
                 2, 1, defaults.topPressurePascal(), defaults.stagePressureDropPascal(),
                 defaults.condenserOutletTemperatureKelvin(), defaults.reboilerDutyWatts(), 1.0, List.of(), List.of());
         ColumnProblem problem = ColumnProblem.resolve(input);
-        DryAcceptanceAudit audit = new DryAcceptanceAudit(List.of(
-                DryAcceptanceAudit.Check.pass(DryResidualFamily.LOCAL_COMPONENT_BALANCE, 0.0, 1.0e-9,
-                        -1, -1, "fixture accepted")));
+        DryAcceptanceAudit audit = acceptedAudit();
         double[][] liquid = profile(4, 2.0);
         double[][] vapor = profile(4, 1.0);
         double[][] sideDraws = new double[3][16];
@@ -58,5 +56,14 @@ class NextColumnResultViewTest {
         double[] result = new double[16];
         result[4] = flow;
         return result;
+    }
+
+    private static DryAcceptanceAudit acceptedAudit() {
+        java.util.ArrayList<DryAcceptanceAudit.Check> checks = new java.util.ArrayList<>();
+        for (DryResidualFamily family : DryResidualFamily.values()) {
+            if (family == DryResidualFamily.INPUT_VALIDITY || family == DryResidualFamily.CANCELLATION) continue;
+            checks.add(DryAcceptanceAudit.Check.pass(family, 0.0, 0.0, -1, -1, "fixture accepted"));
+        }
+        return new DryAcceptanceAudit(checks);
     }
 }

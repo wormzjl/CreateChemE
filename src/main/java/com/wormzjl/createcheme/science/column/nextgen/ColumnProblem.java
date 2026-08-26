@@ -24,6 +24,19 @@ public final class ColumnProblem {
         if (!validation.isValid()) throw new IllegalArgumentException("Invalid next-column input: " + validation.diagnostics());
         ColumnThermoPackage propertyPackage = ColumnModelRegistry.require(input.packageId());
         CharacterizedFeed feed = propertyPackage.feedForAssay(input.assayId());
+        ComponentBasis basis = propertyPackage.basis();
+        if (basis.hydrocarbonCount() != 16 || basis.waterIndex() != 16 || basis.components().size() != 17
+                || feed.moleFractions().length != basis.components().size()) {
+            throw new IllegalArgumentException("Selected package must expose the fixed 16-hydrocarbon plus water axis");
+        }
+        for (int component = 0; component < basis.hydrocarbonCount(); component++) {
+            ComponentDescriptor descriptor = basis.hydrocarbon(component);
+            double minimumCp = descriptor.idealGasHeatCapacity(propertyPackage.minimumTemperatureKelvin());
+            double maximumCp = descriptor.idealGasHeatCapacity(propertyPackage.maximumTemperatureKelvin());
+            if (!(minimumCp > 0.0) || !(maximumCp > 0.0) || !Double.isFinite(minimumCp) || !Double.isFinite(maximumCp)) {
+                throw new IllegalArgumentException("Selected package has an invalid hydrocarbon caloric invariant");
+            }
+        }
         if (input.crudeFeed().temperatureKelvin() < propertyPackage.minimumTemperatureKelvin()
                 || input.crudeFeed().temperatureKelvin() > propertyPackage.maximumTemperatureKelvin()
                 || input.condenserOutletTemperatureKelvin() < propertyPackage.minimumTemperatureKelvin()
@@ -34,6 +47,11 @@ public final class ColumnProblem {
             if (utility.temperatureKelvin() < propertyPackage.minimumTemperatureKelvin()
                     || utility.temperatureKelvin() > propertyPackage.maximumTemperatureKelvin()) {
                 throw new IllegalArgumentException("Selected package does not support a utility-feed temperature");
+            }
+            String requiredMaterial = utility.mode() == ColumnNextInput.UtilityFeedMode.WATER
+                    ? "minecraft:water" : "createcheme:steam";
+            if (!propertyPackage.supportedMaterials().contains(requiredMaterial)) {
+                throw new IllegalArgumentException("Selected package does not support " + utility.mode() + " utility material");
             }
         }
         ColumnTopology topology = ColumnTopology.create(input);
