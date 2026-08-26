@@ -52,7 +52,7 @@ public final class CreateChemE {
                 .defineInRange("readyQueueCapacity", 8, 1, 32);
         SOLVER_DEADLINE_MILLISECONDS = builder
                 .comment("Cooperative wall-clock deadline for one process solve, in milliseconds; iterative kernels poll it.")
-                .defineInRange("deadlineMilliseconds", 15_000, 100, 60_000);
+                .defineInRange("deadlineMilliseconds", 45_000, 100, 60_000);
         SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS = builder
                 .comment("Server-stop grace period before interrupting solver workers, in milliseconds.")
                 .defineInRange("gracefulShutdownMilliseconds", 1_000, 0, 10_000);
