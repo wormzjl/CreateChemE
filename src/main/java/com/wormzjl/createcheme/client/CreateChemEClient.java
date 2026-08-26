@@ -2,7 +2,9 @@ package com.wormzjl.createcheme.client;
 
 import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.client.gui.screens.inventory.ColumnCalculatorScreen;
+import com.wormzjl.createcheme.client.gui.screens.inventory.ColumnCalculatorNextScreen;
 import com.wormzjl.createcheme.network.ColumnNetwork;
+import com.wormzjl.createcheme.network.ColumnNextNetwork;
 import com.wormzjl.createcheme.network.ColumnNetwork.ResultView;
 import com.wormzjl.createcheme.registry.ModMenus;
 import net.minecraft.client.Minecraft;
@@ -20,7 +22,9 @@ public final class CreateChemEClient {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.COLUMN_CALCULATOR.get(), ColumnCalculatorScreen::new);
+        event.register(ModMenus.COLUMN_CALCULATOR_NEXT.get(), ColumnCalculatorNextScreen::new);
         ColumnNetwork.setClientResultConsumer(CreateChemEClient::acceptResult);
+        ColumnNextNetwork.setClientStateConsumer(CreateChemEClient::acceptNextState);
     }
 
     private static void acceptResult(
@@ -31,6 +35,13 @@ public final class CreateChemEClient {
         if (Minecraft.getInstance().screen instanceof ColumnCalculatorScreen screen
                 && screen.getMenu().blockPos().equals(blockPos)) {
             screen.acceptResult(clientRequestId, result);
+        }
+    }
+
+    private static void acceptNextState(BlockPos blockPos, ColumnNextNetwork.StateView state) {
+        if (Minecraft.getInstance().screen instanceof ColumnCalculatorNextScreen screen
+                && screen.getMenu().blockPos().equals(blockPos)) {
+            screen.acceptState(state);
         }
     }
 }

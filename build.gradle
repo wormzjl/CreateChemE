@@ -23,6 +23,16 @@ sourceSets.main.resources {
     exclude 'src/generated/**/.cache'
 }
 
+sourceSets {
+    // Benchmarks remain outside main and test source sets: they are runnable diagnostics,
+    // never production dependencies and never timing assertions in CI.
+    benchmark {
+        java.srcDir 'benchmarks'
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
 repositories {
     mavenCentral()
     maven { url = 'https://maven.createmod.net' }
@@ -151,6 +161,38 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
+}
+
+tasks.register('legacyColumnBenchmark', JavaExec) {
+    group = 'verification'
+    description = 'Measures legacy column scopes and writes a durable diagnostic report.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.benchmarks.LegacyColumnBenchmark'
+    args '--samples=' + providers.gradleProperty('benchmarkSamples').getOrElse('7')
+    args '--warmup=' + providers.gradleProperty('benchmarkWarmup').getOrElse('1')
+    def benchmarkStages = providers.gradleProperty('benchmarkStages').getOrElse('all')
+    if (benchmarkStages != 'all') {
+        args '--stages=' + benchmarkStages
+    }
+    def benchmarkReport = providers.gradleProperty('benchmarkReport').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/legacy-column-report.json').get().asFile.absolutePath)
+    args '--report=' + benchmarkReport
+    outputs.file(benchmarkReport)
+    outputs.upToDateWhen { false }
+    if (providers.gradleProperty('benchmarkJfr').isPresent()) {
+        def jfrFile = layout.buildDirectory.file('reports/benchmarks/legacy-column.jfr').get().asFile
+        jfrFile.parentFile.mkdirs()
+        jvmArgs "-XX:StartFlightRecording=filename=${jfrFile.absolutePath},settings=profile,dumponexit=true"
+        args '--jfr=' + jfrFile.absolutePath
+    }
+}
+
+tasks.register('legacyColumnBenchmarkHarnessTest', JavaExec) {
+    group = 'verification'
+    description = 'Checks legacy-column benchmark argument parsing and nonconvergence report serialization.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.benchmarks.LegacyColumnBenchmark'
+    args '--self-test'
 }
 
 tasks.named('wrapper', Wrapper).configure {

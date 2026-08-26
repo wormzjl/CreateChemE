@@ -2,6 +2,7 @@ package com.wormzjl.createcheme;
 
 import com.mojang.logging.LogUtils;
 import com.wormzjl.createcheme.network.ColumnNetwork;
+import com.wormzjl.createcheme.network.ProcessSolveCoordinator;
 import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.registry.ModBlocks;
 import com.wormzjl.createcheme.registry.ModItems;
@@ -85,6 +86,7 @@ public final class CreateChemE {
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.COLUMN_CALCULATOR.get());
+            event.accept(ModItems.COLUMN_CALCULATOR_NEXT.get());
         }
     }
 
@@ -112,7 +114,7 @@ public final class CreateChemE {
 
     private static void onServerTickPost(ServerTickEvent.Post event) {
         try {
-            ColumnNetwork.drainCompletedCalculations(event.getServer());
+            ProcessSolveCoordinator.drainCompletedCalculations(event.getServer());
         } catch (RuntimeException exception) {
             LOGGER.error("process_solver lifecycle=DRAIN_FAILED", exception);
             throw exception;
@@ -121,7 +123,7 @@ public final class CreateChemE {
 
     private static void onServerStopping(ServerStoppingEvent event) {
         try {
-            ColumnNetwork.stopCalculations(event.getServer());
+            ProcessSolveCoordinator.stopCalculations(event.getServer());
         } catch (RuntimeException exception) {
             LOGGER.error("process_solver lifecycle=STOP_FAILED", exception);
             throw exception;
@@ -131,7 +133,7 @@ public final class CreateChemE {
     private static void onServerStopped(ServerStoppedEvent event) {
         try {
             // ServerStopped can still fire after an abnormal lifecycle path that skipped ServerStopping.
-            ColumnNetwork.stopCalculations(event.getServer());
+            ProcessSolveCoordinator.stopCalculations(event.getServer());
             int remainingContexts = ProcessSolveServices.removeStoppedServer(event.getServer());
             if (remainingContexts != 0) {
                 LOGGER.error(

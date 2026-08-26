@@ -62,7 +62,6 @@ public final class ColumnNetwork {
     private static final int MAX_LABEL_LENGTH = 128;
     private static final int MAX_ENUM_NAME_LENGTH = 48;
     private static final int MAX_REFLUX_MODE_LENGTH = 32;
-    private static final AtomicLong SERVER_REQUEST_SEQUENCE = new AtomicLong();
     private static final AtomicLong CLIENT_REQUEST_SEQUENCE = new AtomicLong();
     private static volatile ClientResultConsumer clientResultConsumer = (pos, request, result) -> {};
     private ColumnNetwork() {
@@ -72,6 +71,7 @@ public final class ColumnNetwork {
         PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION).executesOn(HandlerThread.MAIN);
         registrar.playToServer(CalculatePayload.TYPE, CalculatePayload.STREAM_CODEC, ColumnNetwork::handleCalculate);
         registrar.playToClient(ResultPayload.TYPE, ResultPayload.STREAM_CODEC, ColumnNetwork::handleResult);
+        ColumnNextNetwork.register(registrar);
     }
 
     /** Client-only call site used by the screen. */
@@ -87,7 +87,7 @@ public final class ColumnNetwork {
     }
 
     private static void handleCalculate(CalculatePayload payload, IPayloadContext context) {
-        long requestId = SERVER_REQUEST_SEQUENCE.incrementAndGet();
+        long requestId = ProcessSolveServices.nextRequestId();
         long startedAt = System.nanoTime();
         if (!(context.player() instanceof ServerPlayer player)
                 || !(player.containerMenu instanceof ColumnCalculatorMenu menu)
@@ -208,50 +208,22 @@ public final class ColumnNetwork {
         }
     }
 
-    /** Called from the pinned logical-server post-tick event. */
+    /**
+     * Compatibility facade for older lifecycle call sites. The central coordinator owns the actual shared drain.
+     */
+    @Deprecated(forRemoval = false)
     public static void drainCompletedCalculations(MinecraftServer server) {
-        List<ColumnCompletion> completions = ProcessSolveServices.drainColumnCompletions(
-                server, ProcessSolveServices.MAXIMUM_COMPLETIONS_PER_TICK);
-        for (ColumnCompletion completion : completions) {
-            handleCompletedCalculation(server, completion);
-        }
+        ProcessSolveCoordinator.drainCompletedCalculations(server);
     }
 
-    /** Called from both stopping and stopped lifecycle events; the underlying stop is one-shot. */
+    /** Compatibility facade for older lifecycle call sites; shutdown routing is centralized. */
+    @Deprecated(forRemoval = false)
     public static void stopCalculations(MinecraftServer server) {
-        ProcessSolveServices.StopResult stop = ProcessSolveServices.stopServer(server);
-        for (ColumnCompletion completion : stop.completions()) {
-            handleCompletedCalculation(server, completion);
-        }
-        for (ColumnRequest abandoned : stop.abandonedRequests()) {
-            handleAbandonedCalculation(server, abandoned);
-        }
-        if (!stop.shutdownPerformed()) {
-            return;
-        }
-        var report = stop.shutdownReport();
-        if (!report.terminated() || report.callerInterrupted() || !stop.abandonedRequests().isEmpty()) {
-            CreateChemE.LOGGER.error(
-                    "process_solver lifecycle=STOPPED_WITH_FAULT terminated={} forced={} interrupted={} "
-                            + "never_started={} completions={} abandoned={}",
-                    report.terminated(),
-                    report.forced(),
-                    report.callerInterrupted(),
-                    report.neverStartedExecutorTasks(),
-                    stop.completions().size(),
-                    stop.abandonedRequests().size());
-        } else if (CreateChemE.calculationLoggingEnabled()) {
-            CreateChemE.LOGGER.info(
-                    "process_solver lifecycle=STOPPING terminated={} forced={} never_started={} "
-                            + "terminal_completions={}",
-                    report.terminated(),
-                    report.forced(),
-                    report.neverStartedExecutorTasks(),
-                    stop.completions().size());
-        }
+        ProcessSolveCoordinator.stopCalculations(server);
     }
 
-    private static void handleCompletedCalculation(MinecraftServer server, ColumnCompletion job) {
+    /** Routed by {@link ProcessSolveCoordinator}; legacy payload/result behavior remains unchanged. */
+    static void handleRoutedCompletion(MinecraftServer server, ColumnCompletion job) {
         ColumnRequest request = job.request();
         ResolvedColumn resolved = resolveColumn(server, request);
         boolean terminalLogged = false;
@@ -355,7 +327,8 @@ public final class ColumnNetwork {
         }
     }
 
-    private static void handleAbandonedCalculation(MinecraftServer server, ColumnRequest request) {
+    /** Routed by {@link ProcessSolveCoordinator} after a bounded shutdown that leaves work abandoned. */
+    static void handleRoutedAbandoned(MinecraftServer server, ColumnRequest request) {
         ResolvedColumn resolved = resolveColumn(server, request);
         String status = failTicketStatus(
                 resolved.calculator(), request.ticket(), "SHUTDOWN_UNTERMINATED");
