@@ -21,7 +21,8 @@ class V3NearbyInputRecoveryTest {
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
                         new V3ColumnSpecification.ReboilerDuty(0.0)));
 
-        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, V3ColumnCalculator.calculate(input));
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
 
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());

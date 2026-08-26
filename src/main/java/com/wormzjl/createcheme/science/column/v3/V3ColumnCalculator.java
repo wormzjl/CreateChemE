@@ -76,10 +76,8 @@ public final class V3ColumnCalculator {
                     control.checkpoint();
                     V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                             problem, thermo, pass.feedMolarEnthalpyJoulesPerMol());
-                    V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(
-                            problem, thermo, thermo.newWorkspace(), initializerMode);
                     V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
-                            problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
+                            problem, evaluator, new V3DryMeshCoordinateMap(problem), pass.recoverySeed(), thermo::newWorkspace,
                             V3ConvergenceEvidence.unavailable(), MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE,
                             V3FiniteDifferenceJacobian.DifferenceScale.COARSE, control);
                     control.checkpoint();
@@ -152,13 +150,14 @@ public final class V3ColumnCalculator {
                     seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd");
             if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
                 return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                        "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount, stageCount, false);
+                        "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount,
+                        lastPass.recoverySeed(), stageCount, false);
             }
             previousState = lastPass.attempt().state();
         }
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
         return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                lastPass.solvePath(), lastPass.terminalStageCount(), true);
+                lastPass.solvePath(), lastPass.recoverySeed(), lastPass.terminalStageCount(), true);
     }
 
     private static V3SolvePass solveSingleProblem(
@@ -179,7 +178,7 @@ public final class V3ColumnCalculator {
         control.checkpoint();
         V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state(), control);
         return new V3SolvePass(attempt, audit, feedFlash.molarEnthalpyJoulesPerMol(), solvePath,
-                problem.input().stageCount(), true);
+                seed, problem.input().stageCount(), true);
     }
 
     private static List<Integer> dwsimStageCounts(int requestedStageCount) {
@@ -299,11 +298,13 @@ public final class V3ColumnCalculator {
             V3AcceptanceAudit audit,
             double feedMolarEnthalpyJoulesPerMol,
             String solvePath,
+            V3DryMeshState recoverySeed,
             int terminalStageCount,
             boolean reachedRequestedProblem) {
         private V3SolvePass {
             attempt = Objects.requireNonNull(attempt, "attempt");
             audit = Objects.requireNonNull(audit, "audit");
+            recoverySeed = Objects.requireNonNull(recoverySeed, "recoverySeed");
             if (!Double.isFinite(feedMolarEnthalpyJoulesPerMol) || solvePath == null || solvePath.isBlank()
                     || terminalStageCount < V3ColumnInput.MIN_STAGE_COUNT) {
                 throw new IllegalArgumentException("V3 solve pass evidence is invalid");
