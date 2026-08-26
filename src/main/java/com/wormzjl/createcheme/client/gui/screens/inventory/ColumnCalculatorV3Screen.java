@@ -115,7 +115,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private void buildEditors(String[] scalarDraft, String[] sideStageDrafts, String[] sideRateDrafts) {
         int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
-        String[] defaults = {"2610.7", "365", "30", "24", "8", "4.17"};
+        String[] defaults = {"2610.7", "365", "30", "24", "8", "2"};
         for (int index = 0; index < CORE_EDITOR_COUNT; index++) {
             int column = index % 3;
             int row = index / 3;
@@ -132,9 +132,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             int groupX = leftPos + 10 + index * scalarColumnWidth;
             int stageWidth = Math.max(28, Math.min(44, scalarColumnWidth / 3));
             int rateWidth = Math.max(42, Math.min(78, scalarColumnWidth - stageWidth - 14));
-            EditBox stage = new EditBox(font, groupX, sideY, stageWidth, 20, Component.literal("V1 side stage"));
+            EditBox stage = new EditBox(font, groupX, sideY, stageWidth, 20, Component.literal("Reference side stage"));
             EditBox rate = new EditBox(font, groupX + stageWidth + 6, sideY, rateWidth, 20,
-                    Component.literal("V1 side rate"));
+                    Component.literal("Reference side rate"));
             stage.setValue(sideStageDrafts[index]);
             rate.setValue(sideRateDrafts[index]);
             stage.setEditable(false);
@@ -225,7 +225,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         if (serverState == null) {
             validation = "Waiting for server-owned V3 state...";
         } else if (draftInput() != null) {
-            validation = "V1-unit draft is valid; Run V3 performs authoritative validation and solving.";
+            validation = "Gameplay-unit draft is valid; Run V3 performs authoritative DWSIM-path solving.";
         } else {
             validation = "Enter finite V1-unit values within V3 dry-input bounds.";
         }
@@ -313,7 +313,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             return;
         }
         V3ColumnInput input = serverState.input();
-        graphics.drawString(font, "V1 side draws are reference-only: the current V3 dry MESH contract has no side-draw equations.",
+        graphics.drawString(font, "Reference side draws are display-only: the current V3 dry MESH contract has no side-draw equations.",
                 10, CONTENT_TOP + 133, NOTICE, false);
         graphics.drawString(font, "V3 conditions retained from server: top " + compact(input.topPressurePascal() * PASCAL_TO_BAR)
                         + " bar | drop " + compact(input.stagePressureDropPascal() * PASCAL_TO_BAR)

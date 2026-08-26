@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -53,6 +54,21 @@ class V3ColumnCalculatorTest {
         assertTrue(checkpoints.get() >= 6);
     }
 
+    @Test
+    void productionCalculatorUsesTheCertifiedDwsimStageContinuationForThirtyStageRealCrude() {
+        long started = System.nanoTime();
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class,
+                V3ColumnCalculator.calculate(registeredRealCrudeThirtyStagePilot(), () -> {
+                    if (System.nanoTime() - started >= 60_000_000_000L) {
+                        throw new AssertionError("production 30-stage DWSIM continuation exceeded its cold-test budget");
+                    }
+                }));
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.result().convergenceEvidence().satisfiesGates());
+        assertTrue(success.diagnostics().solvePath().contains("dwsim-sequential/4-8-15-30"));
+    }
+
     private static V3ColumnInput registeredBinaryPilot() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
         double[] feedFlows = new double[thermo.componentBasis().componentCount()];
@@ -63,5 +79,18 @@ class V3ColumnCalculatorTest {
                         new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
                         new V3ColumnSpecification.ReboilerDuty(0.0)));
+    }
+
+    private static V3ColumnInput registeredRealCrudeThirtyStagePilot() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] feedFlows = crude.moleFractions();
+        double totalFlow = 2_610.7 * 1_000.0 / 3_600.0;
+        for (int component = 0; component < feedFlows.length; component++) feedFlows[component] *= totalFlow;
+        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(), crude.componentBasis(),
+                feedFlows, 638.15, 30, 24, 250_000.0, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(400.0),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
     }
 }

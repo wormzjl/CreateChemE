@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 2;
+    public static final int DATA_VERSION = 3;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
     private static final int DEFAULT_STAGE_COUNT = 30;
     private static final int DEFAULT_FEED_STAGE = 24;
@@ -198,6 +198,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                     ? tag.getLong(TAG_RESULT_REVISION) : -1L;
             if (resultRevision < -1L) throw new IllegalArgumentException("Invalid V3 result revision");
             stateRevision = nonNegative(tag.getLong(TAG_STATE_REVISION));
+            if (dataVersion < DATA_VERSION && currentInput.equals(priorUnqualifiedDefaultInput())) {
+                currentInput = defaultInput();
+                displayResult = null;
+                resultRevision = -1L;
+                status = V3Status.DIRTY;
+                detail = "Updated untouched V3 draft to the DWSIM-qualified 30-stage default";
+                return;
+            }
             if (tag.contains(TAG_RESULT, Tag.TAG_COMPOUND)) {
                 displayResult = readDisplayResult(tag.getCompound(TAG_RESULT));
                 if (resultRevision < 0L) throw new IllegalArgumentException("V3 result lacks revision");
@@ -301,6 +309,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     }
 
     private static V3ColumnInput defaultInput() {
+        return defaultInput(400.0, 2.0);
+    }
+
+    private static V3ColumnInput priorUnqualifiedDefaultInput() {
+        return defaultInput(332.15, 4.17);
+    }
+
+    private static V3ColumnInput defaultInput(double condenserTemperatureKelvin, double refluxRatio) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PILOT_PACKAGE);
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
         double[] feedFlows = crude.moleFractions();
@@ -311,8 +327,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
                 crude.componentBasis(), feedFlows, 365.0 + 273.15, DEFAULT_STAGE_COUNT, DEFAULT_FEED_STAGE,
                 250_000.0, 750.0, List.of(
-                        new V3ColumnSpecification.CondenserOutletTemperature(332.15),
-                        new V3ColumnSpecification.OrganicRefluxRatio(4.17),
+                        new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperatureKelvin),
+                        new V3ColumnSpecification.OrganicRefluxRatio(refluxRatio),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
     }
 

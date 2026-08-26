@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 /** Qualifies deterministic internal stage continuation without using a persisted or cross-request warm state. */
 class V3DwsimStageContinuationTest {
     private static final long TARGET_BUDGET_NANOS = 15_000_000_000L;
+    private static final long FIFTEEN_STAGE_BUDGET_NANOS = 30_000_000_000L;
+    private static final long THIRTY_STAGE_BUDGET_NANOS = 60_000_000_000L;
 
     @Test
     void acceptedFourStageRealCrudeProfileCanSeedAFreshEightStageCorrection() {
@@ -43,6 +45,66 @@ class V3DwsimStageContinuationTest {
         assertTrue(audit.accepted());
     }
 
+    @Test
+    void certifiedEightStageRealCrudeProfileCanSeedAFreshFifteenStageCorrection() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        V3ColumnProblem fourStage = V3ColumnProblemResolver.resolve(input(crude, 4, 3), V3CondenserPhaseBranch.TWO_PHASE);
+        V3SimultaneousColumnSolver.Attempt.Converged convergedFourStage = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class, solve(thermo, fourStage,
+                        V3ColumnInitializer.initialize(fourStage, thermo, thermo.newWorkspace(),
+                                V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state(), V3SolveControl.UNBOUNDED));
+
+        V3ColumnProblem eightStage = V3ColumnProblemResolver.resolve(input(crude, 8, 6), V3CondenserPhaseBranch.TWO_PHASE);
+        V3SimultaneousColumnSolver.Attempt.Converged convergedEightStage = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                solveWithin(thermo, eightStage, interpolate(convergedFourStage.state(), eightStage), TARGET_BUDGET_NANOS));
+
+        V3ColumnProblem fifteenStage = V3ColumnProblemResolver.resolve(input(crude, 15, 12), V3CondenserPhaseBranch.TWO_PHASE);
+        V3SimultaneousColumnSolver.Attempt.Converged convergedFifteenStage = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                solveWithin(thermo, fifteenStage, interpolate(convergedEightStage.state(), fifteenStage),
+                        FIFTEEN_STAGE_BUDGET_NANOS));
+        V3FlashResult fifteenFeedFlash = feedFlash(thermo, fifteenStage);
+        V3AcceptanceAudit audit = new V3AcceptanceAuditor(fifteenStage, thermo,
+                fifteenFeedFlash.molarEnthalpyJoulesPerMol()).audit(convergedFifteenStage.state(), thermo.newWorkspace());
+        System.out.println("V3 DWSIM continuation 4->8->15: " + convergedFifteenStage + "; audit=" + audit);
+        assertTrue(convergedFifteenStage.evidence().convergenceEvidence().satisfiesGates());
+        assertTrue(audit.accepted());
+    }
+
+    @Test
+    void certifiedFifteenStageRealCrudeProfileCanSeedAFreshThirtyStageCorrection() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        V3ColumnProblem fourStage = V3ColumnProblemResolver.resolve(input(crude, 4, 3), V3CondenserPhaseBranch.TWO_PHASE);
+        V3SimultaneousColumnSolver.Attempt.Converged convergedFourStage = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class, solve(thermo, fourStage,
+                        V3ColumnInitializer.initialize(fourStage, thermo, thermo.newWorkspace(),
+                                V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state(), V3SolveControl.UNBOUNDED));
+        V3ColumnProblem eightStage = V3ColumnProblemResolver.resolve(input(crude, 8, 6), V3CondenserPhaseBranch.TWO_PHASE);
+        V3SimultaneousColumnSolver.Attempt.Converged convergedEightStage = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                solveWithin(thermo, eightStage, interpolate(convergedFourStage.state(), eightStage), TARGET_BUDGET_NANOS));
+        V3ColumnProblem fifteenStage = V3ColumnProblemResolver.resolve(input(crude, 15, 12), V3CondenserPhaseBranch.TWO_PHASE);
+        V3SimultaneousColumnSolver.Attempt.Converged convergedFifteenStage = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                solveWithin(thermo, fifteenStage, interpolate(convergedEightStage.state(), fifteenStage),
+                        FIFTEEN_STAGE_BUDGET_NANOS));
+
+        V3ColumnProblem thirtyStage = V3ColumnProblemResolver.resolve(input(crude, 30, 24), V3CondenserPhaseBranch.TWO_PHASE);
+        V3SimultaneousColumnSolver.Attempt.Converged convergedThirtyStage = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                solveWithin(thermo, thirtyStage, interpolate(convergedFifteenStage.state(), thirtyStage),
+                        THIRTY_STAGE_BUDGET_NANOS));
+        V3FlashResult thirtyFeedFlash = feedFlash(thermo, thirtyStage);
+        V3AcceptanceAudit audit = new V3AcceptanceAuditor(thirtyStage, thermo,
+                thirtyFeedFlash.molarEnthalpyJoulesPerMol()).audit(convergedThirtyStage.state(), thermo.newWorkspace());
+        System.out.println("V3 DWSIM continuation 4->8->15->30: " + convergedThirtyStage + "; audit=" + audit);
+        assertTrue(convergedThirtyStage.evidence().convergenceEvidence().satisfiesGates());
+        assertTrue(audit.accepted());
+    }
+
     private static V3SimultaneousColumnSolver.Attempt solve(
             V3PengRobinsonThermo thermo, V3ColumnProblem problem, V3DryMeshState seed, V3SolveControl control) {
         V3FlashResult feedFlash = feedFlash(thermo, problem);
@@ -51,6 +113,16 @@ class V3DwsimStageContinuationTest {
         return V3SimultaneousColumnSolver.solve(problem, evaluator, new V3DryMeshCoordinateMap(problem), seed,
                 thermo::newWorkspace, V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS,
                 V3ColumnCalculator.SCALED_RESIDUAL_TOLERANCE, control);
+    }
+
+    private static V3SimultaneousColumnSolver.Attempt solveWithin(
+            V3PengRobinsonThermo thermo, V3ColumnProblem problem, V3DryMeshState seed, long budgetNanos) {
+        long started = System.nanoTime();
+        return solve(thermo, problem, seed, () -> {
+            if (System.nanoTime() - started >= budgetNanos) {
+                throw new AssertionError("DWSIM stage continuation exceeded its cold-test budget");
+            }
+        });
     }
 
     private static V3FlashResult feedFlash(V3PengRobinsonThermo thermo, V3ColumnProblem problem) {
