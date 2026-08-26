@@ -13,7 +13,7 @@ public final class V3FlashResult {
     private final double molarEnthalpyJoulesPerMol;
     private final String detail;
 
-    V3FlashResult(
+    public V3FlashResult(
             V3FeedPhase phase, int iterations, double vaporFraction, double[] liquidComposition,
             double[] vaporComposition, double molarEnthalpyJoulesPerMol, String detail) {
         this.phase = Objects.requireNonNull(phase, "phase");
