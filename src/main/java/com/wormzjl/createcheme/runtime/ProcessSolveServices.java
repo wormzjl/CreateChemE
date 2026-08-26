@@ -11,8 +11,12 @@ import com.wormzjl.createcheme.science.column.nextgen.DrySolveControl;
 import com.wormzjl.createcheme.science.column.nextgen.ExactResultCache;
 import com.wormzjl.createcheme.science.column.nextgen.NextInputDigest;
 import com.wormzjl.createcheme.science.column.nextgen.NextWarmState;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorBlockEntity.CalculationTicket;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorNextBlockEntity.Operation;
+import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Operation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -110,6 +114,13 @@ public final class ProcessSolveServices {
         Objects.requireNonNull(request, "request");
         return submit(server, request, new NextColumnCommand(request.problem(), request.warmStart().orElse(null)),
                 request.problem().propertyPackage().datasetRevision());
+    }
+
+    /** Admits one immutable V3 input through the existing shared bounded service. */
+    public static AdmissionResult submitV3Column(MinecraftServer server, V3ColumnRequest request) {
+        requireServerThread(server);
+        Objects.requireNonNull(request, "request");
+        return submit(server, request, new V3ColumnCommand(request.operation().input()), request.operation().input().packageId());
     }
 
     /**
@@ -297,6 +308,8 @@ public final class ProcessSolveServices {
             } else if (context.request() instanceof NextColumnRequest nextRequest) {
                 result.add(new NextColumnCompletion(
                         nextRequest, context.admissionDiagnostics(), nextCompletion(completion)));
+            } else if (context.request() instanceof V3ColumnRequest v3Request) {
+                result.add(new V3ColumnCompletion(v3Request, context.admissionDiagnostics(), v3Completion(completion)));
             } else {
                 throw new IllegalStateException("Unknown process-solve request family");
             }
@@ -334,6 +347,19 @@ public final class ProcessSolveServices {
                 completion.enqueuedNanos(), completion.startedNanos(), completion.completedNanos());
     }
 
+    private static BoundedCpuSolveService.Completion<ColumnTarget, V3ColumnOutcome> v3Completion(
+            BoundedCpuSolveService.Completion<ColumnTarget, ProcessSolveResult> completion) {
+        Optional<V3ColumnOutcome> outcome = completion.result().map(result -> {
+            if (!(result instanceof V3ColumnSolveResult v3)) {
+                throw new IllegalStateException("V3 request completed with a non-V3 process result");
+            }
+            return v3.outcome();
+        });
+        return new BoundedCpuSolveService.Completion<>(
+                completion.stamp(), completion.status(), outcome, completion.failure(), completion.detail(),
+                completion.enqueuedNanos(), completion.startedNanos(), completion.completedNanos());
+    }
+
     private static void requireServerThread(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
         if (!server.isSameThread()) {
@@ -361,12 +387,12 @@ public final class ProcessSolveServices {
     }
 
     /** Immutable worker envelope. Adding a job family extends this sealed protocol, never the executor count. */
-    public sealed interface ProcessSolveCommand permits LegacyColumnCommand, NextColumnCommand {
+    public sealed interface ProcessSolveCommand permits LegacyColumnCommand, NextColumnCommand, V3ColumnCommand {
         ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken);
     }
 
     /** Immutable worker result envelope routed only after main-thread completion draining. */
-    public sealed interface ProcessSolveResult permits LegacyColumnSolveResult, NextColumnSolveResult {}
+    public sealed interface ProcessSolveResult permits LegacyColumnSolveResult, NextColumnSolveResult, V3ColumnSolveResult {}
 
     private record LegacyColumnCommand(ColumnInput input) implements ProcessSolveCommand {
         private LegacyColumnCommand {
@@ -413,6 +439,26 @@ public final class ProcessSolveServices {
         }
     }
 
+    private record V3ColumnCommand(V3ColumnInput input) implements ProcessSolveCommand {
+        private V3ColumnCommand {
+            Objects.requireNonNull(input, "input");
+        }
+
+        @Override
+        public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken) {
+            cancellationToken.throwIfCancellationRequested();
+            V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
+            cancellationToken.throwIfCancellationRequested();
+            return new V3ColumnSolveResult(outcome);
+        }
+    }
+
+    private record V3ColumnSolveResult(V3ColumnOutcome outcome) implements ProcessSolveResult {
+        private V3ColumnSolveResult {
+            Objects.requireNonNull(outcome, "outcome");
+        }
+    }
+
     /** Stable block identity; no loaded level or block entity is retained. */
     public record ColumnTarget(ResourceKey<Level> dimension, BlockPos blockPos) {
         public ColumnTarget {
@@ -422,7 +468,7 @@ public final class ProcessSolveServices {
     }
 
     /** Immutable server-thread request context retained until exactly one terminal completion is drained. */
-    public sealed interface ProcessSolveRequest permits ColumnRequest, NextColumnRequest {
+    public sealed interface ProcessSolveRequest permits ColumnRequest, NextColumnRequest, V3ColumnRequest {
         long requestId();
 
         ColumnTarget target();
@@ -480,6 +526,26 @@ public final class ProcessSolveServices {
             }
             if (warmStart.isPresent() && !warmStart.orElseThrow().isCompatibleWith(problem)) {
                 throw new IllegalArgumentException("Next request warm state is not structurally compatible");
+            }
+        }
+
+        @Override
+        public long inputRevision() {
+            return operation.inputRevision();
+        }
+    }
+
+    /** Immutable V3 pilot metadata retained only on the server thread until worker completion drains. */
+    public record V3ColumnRequest(
+            long requestId, ColumnTarget target, V3Operation operation, long receivedNanos) implements ProcessSolveRequest {
+        public V3ColumnRequest {
+            if (requestId <= 0L || receivedNanos <= 0L) {
+                throw new IllegalArgumentException("V3 request identifiers must be positive");
+            }
+            Objects.requireNonNull(target, "target");
+            Objects.requireNonNull(operation, "operation");
+            if (requestId != operation.operationId()) {
+                throw new IllegalArgumentException("V3 request identity disagrees with its operation");
             }
         }
 
@@ -561,8 +627,26 @@ public final class ProcessSolveServices {
         }
     }
 
+    /** One V3 completion joined to immutable server-thread metadata for stale-operation rejection. */
+    public record V3ColumnCompletion(
+            V3ColumnRequest request,
+            Diagnostics admissionDiagnostics,
+            BoundedCpuSolveService.Completion<ColumnTarget, V3ColumnOutcome> completion)
+            implements ProcessSolveCompletion {
+        public V3ColumnCompletion {
+            Objects.requireNonNull(request, "request");
+            Objects.requireNonNull(admissionDiagnostics, "admissionDiagnostics");
+            Objects.requireNonNull(completion, "completion");
+            if (request.requestId() != completion.stamp().sequence()
+                    || !request.target().equals(completion.stamp().owner())
+                    || request.inputRevision() != completion.stamp().inputRevision()) {
+                throw new IllegalArgumentException("Completion stamp does not match V3 request context");
+            }
+        }
+    }
+
     /** Marker for the central router; only it may drain the shared completion queue. */
-    public sealed interface ProcessSolveCompletion permits ColumnCompletion, NextColumnCompletion {}
+    public sealed interface ProcessSolveCompletion permits ColumnCompletion, NextColumnCompletion, V3ColumnCompletion {}
 
     public record AdmissionResult(Admission admission, Diagnostics diagnostics) {
         public AdmissionResult {

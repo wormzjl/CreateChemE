@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.client.gui.screens.inventory;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -54,9 +55,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 .bounds(leftPos + 8, topPos + 6, 64, 20).build());
         convergence = addRenderableWidget(Button.builder(Component.literal("Convergence"), button -> selectPage(Page.CONVERGENCE))
                 .bounds(leftPos + 76, topPos + 6, 96, 20).build());
-        run = addRenderableWidget(Button.builder(Component.literal("Run (server pending)"), button -> {})
+        run = addRenderableWidget(Button.builder(Component.literal("Run pilot"), button -> requestPilotRun())
                 .bounds(leftPos + 8, topPos + imageHeight - 26, 132, 20).build());
-        run.active = false;
         buildEditors();
         if (draft == null) loadPilotFixture();
         else restoreEditorDraft(draft);
@@ -108,11 +108,24 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         boolean showSetup = page == Page.SETUP;
         for (EditBox editor : editors) {
             editor.visible = showSetup;
-            editor.active = showSetup;
+            editor.active = false;
         }
         setup.active = !showSetup;
         convergence.active = showSetup;
         run.visible = showSetup;
+        run.active = showSetup && menu.statusCode() != 1;
+        validation = "Server state: " + statusName(menu.statusCode());
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        refreshControls();
+    }
+
+    private void requestPilotRun() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 0);
     }
 
     private void validateDraft() {
@@ -168,25 +181,35 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             graphics.drawString(font, labels[index], leftPos + 12 + column * FIELD_COLUMN_WIDTH,
                     topPos + FIELD_LABEL_Y + row * FIELD_ROW_SPACING, MUTED, false);
         }
-        graphics.drawString(font, "Pilot feed: registered PR binary", leftPos + 12, topPos + 258, TEXT, false);
+        graphics.drawString(font, "Server-owned pilot feed: registered PR binary", leftPos + 12, topPos + 258, TEXT, false);
         graphics.drawString(font, "PC03 = 50 mol/s; PC10 = 50 mol/s.", leftPos + 12, topPos + 271, MUTED, false);
         graphics.drawString(font, "All other public-axis components are exact zero.", leftPos + 12, topPos + 284, MUTED, false);
-        graphics.drawString(font, "Side draws and water/steam await V3 contracts.", leftPos + 12, topPos + 300, NOTICE, false);
+        graphics.drawString(font, "Draft editing, side draws, and water/steam await the V3 packet contract.", leftPos + 12, topPos + 300, NOTICE, false);
     }
 
     private void renderConvergence(GuiGraphics graphics) {
         graphics.drawString(font, "Convergence & provenance", leftPos + 12, topPos + 51, TEXT, false);
-        graphics.drawString(font, "No authoritative V3 server state is attached to this block yet.", leftPos + 12, topPos + 78, MUTED, false);
+        graphics.drawString(font, "Pilot status: " + statusName(menu.statusCode()), leftPos + 12, topPos + 78, MUTED, false);
         graphics.drawString(font, "Scientific Success requires a fresh acceptance audit plus", leftPos + 12, topPos + 105, MUTED, false);
         graphics.drawString(font, "immutable final-step convergence evidence.", leftPos + 12, topPos + 118, MUTED, false);
         graphics.drawString(font, "The server protocol will report residuals, iterations,", leftPos + 12, topPos + 145, MUTED, false);
         graphics.drawString(font, "digests, thermodynamic data, and solver provenance here.", leftPos + 12, topPos + 158, MUTED, false);
-        graphics.drawString(font, "Run remains unavailable in this UI-only checkpoint.", leftPos + 12, topPos + 194, NOTICE, false);
+        graphics.drawString(font, "Run executes the server-owned registered binary pilot only.", leftPos + 12, topPos + 194, NOTICE, false);
         graphics.drawString(font, "Block: " + menu.blockPos().toShortString(), leftPos + 12, topPos + 222, MUTED, false);
     }
 
     private static String abbreviate(String value, int maximum) {
         return value.length() <= maximum ? value : value.substring(0, Math.max(1, maximum - 1)) + "…";
+    }
+
+    private static String statusName(int statusCode) {
+        return switch (statusCode) {
+            case 0 -> "IDLE";
+            case 1 -> "CALCULATING";
+            case 2 -> "SUCCESS";
+            case 3 -> "FAILED";
+            default -> "UNKNOWN";
+        };
     }
 
     private enum Page {
