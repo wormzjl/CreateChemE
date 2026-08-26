@@ -10,7 +10,6 @@ import com.wormzjl.createcheme.runtime.ProcessSolveServices.ProcessSolveCompleti
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.ProcessSolveRequest;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnCompletion;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnRequest;
-import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.List;
@@ -73,7 +72,7 @@ public final class ProcessSolveCoordinator {
             } else if (completion instanceof NextColumnCompletion next) {
                 ColumnNextNetwork.handleRoutedCompletion(server, next);
             } else if (completion instanceof V3ColumnCompletion v3) {
-                ColumnCalculatorV3BlockEntity.handleRoutedCompletion(server, v3);
+                ColumnV3Network.handleRoutedCompletion(server, v3);
             } else {
                 throw new IllegalStateException("Unknown process-solve completion family");
             }
@@ -86,7 +85,7 @@ public final class ProcessSolveCoordinator {
         } else if (request instanceof NextColumnRequest next) {
             ColumnNextNetwork.handleRoutedAbandoned(server, next);
         } else if (request instanceof V3ColumnRequest v3) {
-            ColumnCalculatorV3BlockEntity.handleRoutedAbandoned(server, v3);
+            ColumnV3Network.handleRoutedAbandoned(server, v3);
         } else {
             throw new IllegalStateException("Unknown process-solve request family");
         }

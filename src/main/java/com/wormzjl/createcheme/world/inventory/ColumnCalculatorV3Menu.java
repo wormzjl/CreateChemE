@@ -54,13 +54,6 @@ public final class ColumnCalculatorV3Menu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean clickMenuButton(Player player, int id) {
-        if (id != 0) return false;
-        return access.evaluate((level, pos) -> level.getBlockEntity(pos) instanceof ColumnCalculatorV3BlockEntity calculator
-                && calculator.startPilot(), false);
-    }
-
-    @Override
     public boolean stillValid(Player player) {
         return stillValid(access, player, ModBlocks.COLUMN_CALCULATOR_V3.get());
     }

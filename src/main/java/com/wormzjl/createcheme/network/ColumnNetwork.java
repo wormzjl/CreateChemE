@@ -72,6 +72,7 @@ public final class ColumnNetwork {
         registrar.playToServer(CalculatePayload.TYPE, CalculatePayload.STREAM_CODEC, ColumnNetwork::handleCalculate);
         registrar.playToClient(ResultPayload.TYPE, ResultPayload.STREAM_CODEC, ColumnNetwork::handleResult);
         ColumnNextNetwork.register(registrar);
+        ColumnV3Network.register(registrar);
     }
 
     /** Client-only call site used by the screen. */
