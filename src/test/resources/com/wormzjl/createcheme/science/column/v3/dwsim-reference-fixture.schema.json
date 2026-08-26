@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://createcheme.example/schema/v3/dwsim-reference-fixture-1.json",
+  "title": "CreateChemE V3 DWSIM reference fixture",
+  "description": "Versioned interchange contract for reviewed DWSIM exports; no fixture is a V3 success authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "fixtureId", "dwsimRevision", "referenceStatus", "input", "observables"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "fixtureId": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]{0,127}$" },
+    "dwsimRevision": { "type": "string", "pattern": "^[0-9a-f]{7,64}$" },
+    "referenceStatus": {
+      "enum": ["REFERENCE_ACCEPTED", "REFERENCE_NONCONVERGED", "REFERENCE_AUDIT_FAILED", "MODEL_MISMATCH", "CONFIGURATION_FAILURE"]
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["componentIds", "feedMolarFlowsMolPerSecond", "feedTemperatureKelvin", "topPressurePascal", "stagePressureDropPascal", "stageCount", "feedStageNumber", "condenserOutletTemperatureKelvin", "organicRefluxRatio", "reboilerDutyWatts"],
+      "properties": {
+        "componentIds": { "type": "array", "minItems": 1, "maxItems": 64, "items": { "type": "string" } },
+        "feedMolarFlowsMolPerSecond": { "type": "array", "minItems": 1, "maxItems": 64, "items": { "type": "number", "minimum": 0 } },
+        "feedTemperatureKelvin": { "type": "number", "exclusiveMinimum": 0 },
+        "topPressurePascal": { "type": "number", "exclusiveMinimum": 0 },
+        "stagePressureDropPascal": { "type": "number", "minimum": 0 },
+        "stageCount": { "type": "integer", "minimum": 2, "maximum": 64 },
+        "feedStageNumber": { "type": "integer", "minimum": 1 },
+        "condenserOutletTemperatureKelvin": { "type": "number", "exclusiveMinimum": 0 },
+        "organicRefluxRatio": { "type": "number", "minimum": 0 },
+        "reboilerDutyWatts": { "type": "number", "minimum": 0 }
+      }
+    },
+    "observables": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodePressuresPascal", "nodeTemperaturesKelvin", "liquidComponentFlowsMolPerSecond", "vaporComponentFlowsMolPerSecond", "condenserDutyWatts", "reboilerDutyWatts"],
+      "properties": {
+        "nodePressuresPascal": { "type": "array", "items": { "type": "number", "exclusiveMinimum": 0 } },
+        "nodeTemperaturesKelvin": { "type": "array", "items": { "type": "number", "exclusiveMinimum": 0 } },
+        "liquidComponentFlowsMolPerSecond": { "type": "array" },
+        "vaporComponentFlowsMolPerSecond": { "type": "array" },
+        "condenserDutyWatts": { "type": "number" },
+        "reboilerDutyWatts": { "type": "number" }
+      }
+    },
+    "notes": { "type": "string", "maxLength": 4096 }
+  }
+}

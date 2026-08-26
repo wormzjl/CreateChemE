@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "manufactured-two-component-four-tray",
+  "authority": "MANUFACTURED_IDEAL_MESH",
+  "description": "A full MESH state with stage-local reference K values, explicit K temperature slopes, and identical affine liquid/vapor component enthalpies. Feed and reboiler duty are derived from the listed state; it is not a DWSIM fixture.",
+  "componentIds": ["component-a", "component-b"],
+  "stageCount": 4,
+  "feedStageNumber": 2,
+  "organicRefluxRatio": 1.0,
+  "condenserTemperatureKelvin": 400.0,
+  "feedTemperatureKelvin": 400.0,
+  "feedComponentFlowsMolPerSecond": [30.0, 60.0],
+  "componentHeatCapacitiesJPerMolKelvin": [30.0, 40.0],
+  "equilibriumRatios": [
+    [1.6, 0.4], [1.2, 0.8], [1.7142857142857142, 0.6153846153846154],
+    [1.7142857142857142, 0.6153846153846154], [1.7142857142857142, 0.6153846153846154], [2.4705882352941178, 0.5283018867924528]
+  ],
+  "equilibriumTemperatureSlopesPerKelvin": [0.002, -0.001],
+  "reboilerDutyWatts": 0.0,
+  "liquidComponentFlowsMolPerSecond": [
+    [10.0, 10.0], [5.0, 5.0], [35.0, 65.0], [35.0, 65.0], [35.0, 65.0], [17.0, 53.0]
+  ],
+  "vaporComponentFlowsMolPerSecond": [
+    [8.0, 2.0], [18.0, 12.0], [18.0, 12.0], [18.0, 12.0], [18.0, 12.0], [18.0, 12.0]
+  ],
+  "temperaturesKelvin": [400.0, 400.0, 400.0, 400.0, 400.0, 400.0]
+}
