@@ -63,9 +63,11 @@ class V3SimultaneousColumnSolverTest {
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                 problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
         V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
-                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 32, 1.0e-8);
+                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 128, 1.0e-8);
 
-        System.out.println("V3 real crude Newton outcome: " + attempt);
+        V3MeshResidual terminalResidual = evaluator.evaluate(attempt.state(), thermo.newWorkspace());
+        System.out.println("V3 real crude Newton outcome: " + attempt + "; residual families="
+                + maximumResidualsByFamily(terminalResidual));
         assertTrue(Double.isFinite(attempt.evidence().maximumScaledResidual()));
         assertTrue(Double.isFinite(attempt.evidence().scaledMerit()));
         if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged) {
@@ -97,6 +99,19 @@ class V3SimultaneousColumnSolverTest {
                         new V3ColumnSpecification.CondenserOutletTemperature(332.15),
                         new V3ColumnSpecification.OrganicRefluxRatio(4.17),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
+    }
+
+    private static String maximumResidualsByFamily(V3MeshResidual residual) {
+        StringBuilder summary = new StringBuilder();
+        for (V3DegreeOfFreedomLedger.EquationFamily family : V3DegreeOfFreedomLedger.EquationFamily.values()) {
+            double maximum = 0.0;
+            for (V3MeshResidual.Row row : residual.rows()) {
+                if (row.equation().family() == family) maximum = Math.max(maximum, Math.abs(row.scaledValue()));
+            }
+            if (!summary.isEmpty()) summary.append(", ");
+            summary.append(family).append('=').append(maximum);
+        }
+        return summary.toString();
     }
 
     private static V3DryMeshState exactState(V3ColumnTopology topology) {
