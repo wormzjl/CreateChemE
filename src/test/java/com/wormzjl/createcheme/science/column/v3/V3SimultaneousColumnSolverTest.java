@@ -34,6 +34,8 @@ class V3SimultaneousColumnSolverTest {
         assertTrue(converged.evidence().maximumScaledResidual() <= 1.0e-9);
         V3MeshResidual finalResidual = evaluator.evaluate(converged.state(), thermo.newWorkspace());
         assertTrue(finalResidual.maximumAbsoluteScaledResidual() <= 1.0e-9);
+        V3AcceptanceAudit audit = new V3AcceptanceAuditor(problem, thermo, 0.0).audit(converged.state(), thermo.newWorkspace());
+        assertTrue(audit.accepted());
     }
 
     private static V3ColumnProblem problem() {
