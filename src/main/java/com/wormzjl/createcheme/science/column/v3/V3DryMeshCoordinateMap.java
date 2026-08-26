@@ -13,12 +13,10 @@ final class V3DryMeshCoordinateMap {
     V3DryMeshCoordinateMap(V3ColumnProblem problem) {
         this.problem = Objects.requireNonNull(problem, "problem");
         this.unknowns = problem.degreeOfFreedomLedger().unknowns();
-        int componentCount = problem.input().componentBasis().componentCount();
+        int componentCount = problem.activeComponentBasis().componentCount();
         this.componentFlowScales = new double[componentCount];
-        double totalFeedFlow = sum(problem.input().feedComponentMolarFlowsMolPerSecond());
         for (int component = 0; component < componentCount; component++) {
-            componentFlowScales[component] = Math.max(problem.input().feedComponentMolarFlowsMolPerSecond()[component],
-                    totalFeedFlow * 1.0e-12);
+            componentFlowScales[component] = problem.activeComponentBasis().flowScale(component);
         }
         this.condenserTemperatureKelvin = specification(V3ColumnSpecification.CondenserOutletTemperature.class).kelvin();
     }

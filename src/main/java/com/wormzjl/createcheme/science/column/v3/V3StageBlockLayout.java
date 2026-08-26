@@ -19,8 +19,8 @@ final class V3StageBlockLayout {
         int offset = 0;
         for (int node = 0; node < topology.nodeCount(); node++) {
             starts[node] = offset;
-            int expected = 2 * problem.input().componentBasis().componentCount() + (topology.hasTemperatureUnknown(node) ? 1 : 0)
-                    - (topology.hasLiquidPhase(node) ? 0 : problem.input().componentBasis().componentCount());
+            int expected = 2 * problem.activeComponentBasis().componentCount() + (topology.hasTemperatureUnknown(node) ? 1 : 0)
+                    - (topology.hasLiquidPhase(node) ? 0 : problem.activeComponentBasis().componentCount());
             if (expected <= 0 || offset + expected > unknowns.size()) {
                 throw new IllegalArgumentException("V3 MESH ledger block size is invalid");
             }

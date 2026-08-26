@@ -49,11 +49,14 @@ class V3ColumnInitializerTest {
     }
 
     @Test
-    void exactZeroFeedComponentIsRejectedUntilTheActiveBasisMapCanRepresentItExactly() {
+    void exactZeroFeedComponentIsEliminatedFromTheSeedWithoutAFloor() {
         V3ColumnProblem problem = problem(1.0, V3CondenserPhaseBranch.TWO_PHASE, new double[] {30.0, 0.0});
 
-        assertThrows(IllegalArgumentException.class,
-                () -> V3ColumnInitializer.initialize(problem, new MaterialOnlyThermo(), new V3ThermoWorkspace(2)));
+        V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, new MaterialOnlyThermo(), new V3ThermoWorkspace(2));
+
+        assertEquals(1, problem.activeComponentBasis().componentCount());
+        assertEquals(1, seed.state().componentCount());
+        assertEquals(0, problem.activeComponentBasis().publicIndex(0));
     }
 
     private static V3ColumnProblem problem(double refluxRatio, V3CondenserPhaseBranch branch, double[] feed) {

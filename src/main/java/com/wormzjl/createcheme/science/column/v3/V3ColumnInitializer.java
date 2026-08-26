@@ -21,17 +21,12 @@ final class V3ColumnInitializer {
         if (!problem.input().componentBasis().equals(thermo.componentBasis())) {
             throw new IllegalArgumentException("V3 initializer thermodynamic basis differs from the resolved problem basis");
         }
-        int components = problem.input().componentBasis().componentCount();
-        double[] feed = problem.input().feedComponentMolarFlowsMolPerSecond();
+        int components = problem.activeComponentBasis().componentCount();
+        double[] publicFeed = problem.input().feedComponentMolarFlowsMolPerSecond();
         double totalFeed = 0.0;
-        for (double flow : feed) {
-            if (flow <= 0.0) {
-                throw new IllegalArgumentException("V3 initializer requires an active-basis map before it can seed an exact-zero feed component");
-            }
-            totalFeed += flow;
-        }
-        double[] feedComposition = new double[components];
-        for (int component = 0; component < components; component++) feedComposition[component] = feed[component] / totalFeed;
+        for (double flow : publicFeed) totalFeed += flow;
+        double[] feedComposition = new double[publicFeed.length];
+        for (int component = 0; component < publicFeed.length; component++) feedComposition[component] = publicFeed[component] / totalFeed;
         int feedNode = problem.topology().feedTrayNumber();
         V3FlashResult feedFlash = thermo.flashTP(problem.input().feedTemperatureKelvin(), problem.nodePressurePascal(feedNode),
                 feedComposition, workspace);
@@ -43,18 +38,19 @@ final class V3ColumnInitializer {
         double[] temperatures = temperatures(problem, nodes);
 
         for (int component = 0; component < components; component++) {
-            double externalLiquid = topology.hasLiquidPhase(0) ? TWO_PHASE_EXTERNAL_LIQUID_FRACTION * feed[component] : 0.0;
+            double feed = problem.activeComponentBasis().feedFlowMolPerSecond(component);
+            double externalLiquid = topology.hasLiquidPhase(0) ? TWO_PHASE_EXTERNAL_LIQUID_FRACTION * feed : 0.0;
             double externalVapor = (topology.hasLiquidPhase(0) ? TWO_PHASE_EXTERNAL_VAPOR_FRACTION
-                    : VAPOR_ONLY_EXTERNAL_VAPOR_FRACTION) * feed[component];
+                    : VAPOR_ONLY_EXTERNAL_VAPOR_FRACTION) * feed;
             if (topology.hasLiquidPhase(0)) liquid[0][component] = (1.0 + refluxRatio) * externalLiquid;
             vapor[0][component] = externalVapor;
             vapor[1][component] = vapor[0][component] + liquid[0][component];
 
             double reflux = refluxRatio * externalLiquid;
-            double traffic = refluxRatio > 0.0 ? reflux : ZERO_REFLUX_TRAFFIC_FRACTION * feed[component];
+            double traffic = refluxRatio > 0.0 ? reflux : ZERO_REFLUX_TRAFFIC_FRACTION * feed;
             double previousLiquid = traffic;
             for (int tray = 1; tray <= topology.trayCount(); tray++) {
-                double feedAtTray = tray == topology.feedTrayNumber() ? feed[component] : 0.0;
+                double feedAtTray = tray == topology.feedTrayNumber() ? feed : 0.0;
                 liquid[tray][component] = previousLiquid + feedAtTray;
                 double liquidIn = tray == 1 ? reflux : previousLiquid;
                 vapor[tray + 1][component] = liquid[tray][component] + vapor[tray][component] - liquidIn - feedAtTray;

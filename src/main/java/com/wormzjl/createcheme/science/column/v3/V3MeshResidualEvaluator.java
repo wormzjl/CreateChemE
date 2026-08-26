@@ -16,6 +16,7 @@ final class V3MeshResidualEvaluator {
     private final double organicRefluxRatio;
     private final double reboilerDutyWatts;
     private final double totalFeedFlow;
+    private final V3ActiveComponentBasis activeComponentBasis;
 
     V3MeshResidualEvaluator(V3ColumnProblem problem, V3ThermoModel thermo, double feedMolarEnthalpyJoulesPerMol) {
         this.problem = Objects.requireNonNull(problem, "problem");
@@ -29,14 +30,15 @@ final class V3MeshResidualEvaluator {
         this.feedMolarEnthalpyJoulesPerMol = feedMolarEnthalpyJoulesPerMol;
         this.organicRefluxRatio = specification(V3ColumnSpecification.OrganicRefluxRatio.class).ratio();
         this.reboilerDutyWatts = specification(V3ColumnSpecification.ReboilerDuty.class).watts();
-        this.totalFeedFlow = sum(problem.input().feedComponentMolarFlowsMolPerSecond());
+        this.activeComponentBasis = problem.activeComponentBasis();
+        this.totalFeedFlow = activeComponentBasis.totalFeedFlowMolPerSecond();
     }
 
     V3MeshResidual evaluate(V3DryMeshState state, V3ThermoWorkspace workspace) {
         state = Objects.requireNonNull(state, "state");
         workspace = Objects.requireNonNull(workspace, "workspace");
         if (state.nodeCount() != problem.topology().nodeCount()
-                || state.componentCount() != problem.input().componentBasis().componentCount()) {
+                || state.componentCount() != activeComponentBasis.componentCount()) {
             throw new IllegalArgumentException("V3 MESH state does not match the resolved problem");
         }
         List<V3MeshResidual.Row> rows = new ArrayList<>(problem.degreeOfFreedomLedger().equationCount());
@@ -62,8 +64,7 @@ final class V3MeshResidualEvaluator {
             double liquidIn = node == 1
                     ? (topology.hasLiquidPhase(0) ? organicRefluxFraction() * state.liquidFlow(0, component) : 0.0)
                     : state.liquidFlow(node - 1, component);
-            double feed = node == topology.feedTrayNumber()
-                    ? problem.input().feedComponentMolarFlowsMolPerSecond()[component] : 0.0;
+            double feed = node == topology.feedTrayNumber() ? activeComponentBasis.feedFlowMolPerSecond(component) : 0.0;
             return liquidIn + state.vaporFlow(node + 1, component) + feed - state.liquidFlow(node, component)
                     - state.vaporFlow(node, component);
         }
@@ -71,14 +72,15 @@ final class V3MeshResidualEvaluator {
     }
 
     private double equilibriumResidual(V3DryMeshState state, int node, int component, V3ThermoWorkspace workspace) {
-        double[] liquid = normalizedPhaseComposition(state, node, true);
-        double[] vapor = normalizedPhaseComposition(state, node, false);
+        double[] liquid = normalizedPublicPhaseComposition(state, node, true);
+        double[] vapor = normalizedPublicPhaseComposition(state, node, false);
         double temperature = state.temperatureKelvin(node);
         double pressure = problem.nodePressurePascal(node);
         V3FugacityResult liquidResult = thermo.fugacity(temperature, pressure, liquid, V3Phase.LIQUID, workspace);
         V3FugacityResult vaporResult = thermo.fugacity(temperature, pressure, vapor, V3Phase.VAPOR, workspace);
-        return Math.log(vapor[component]) + vaporResult.logFugacityCoefficient(component)
-                - Math.log(liquid[component]) - liquidResult.logFugacityCoefficient(component);
+        int publicComponent = activeComponentBasis.publicIndex(component);
+        return Math.log(vapor[publicComponent]) + vaporResult.logFugacityCoefficient(publicComponent)
+                - Math.log(liquid[publicComponent]) - liquidResult.logFugacityCoefficient(publicComponent);
     }
 
     private double energyResidual(V3DryMeshState state, int node, V3ThermoWorkspace workspace) {
@@ -100,19 +102,19 @@ final class V3MeshResidualEvaluator {
         double totalFlow = phaseTotal(state, node, liquid);
         if (totalFlow == 0.0) return 0.0;
         return totalFlow * thermo.molarEnthalpy(state.temperatureKelvin(node), problem.nodePressurePascal(node),
-                normalizedPhaseComposition(state, node, liquid), liquid ? V3Phase.LIQUID : V3Phase.VAPOR, workspace);
+                normalizedPublicPhaseComposition(state, node, liquid), liquid ? V3Phase.LIQUID : V3Phase.VAPOR, workspace);
     }
 
-    private double[] normalizedPhaseComposition(V3DryMeshState state, int node, boolean liquid) {
+    private double[] normalizedPublicPhaseComposition(V3DryMeshState state, int node, boolean liquid) {
         double total = phaseTotal(state, node, liquid);
         if (!Double.isFinite(total) || total <= 0.0) {
             throw new IllegalArgumentException("V3 MESH equilibrium phase has no positive hydrocarbon flow");
         }
-        double[] composition = new double[state.componentCount()];
-        for (int component = 0; component < composition.length; component++) {
+        double[] composition = new double[problem.input().componentBasis().componentCount()];
+        for (int component = 0; component < state.componentCount(); component++) {
             double flow = liquid ? state.liquidFlow(node, component) : state.vaporFlow(node, component);
             if (flow <= 0.0) throw new IllegalArgumentException("V3 MESH active component flow must be positive for logarithmic VLE");
-            composition[component] = flow / total;
+            composition[activeComponentBasis.publicIndex(component)] = flow / total;
         }
         return composition;
     }
@@ -128,7 +130,7 @@ final class V3MeshResidualEvaluator {
     private double scale(V3DegreeOfFreedomLedger.EquationId equation) {
         return switch (equation.family()) {
             case COMPONENT_MATERIAL_BALANCE -> Math.max(
-                    Math.abs(problem.input().feedComponentMolarFlowsMolPerSecond()[equation.component()]), totalFeedFlow * 1.0e-12);
+                    Math.abs(activeComponentBasis.feedFlowMolPerSecond(equation.component())), totalFeedFlow * 1.0e-12);
             case VAPOR_LIQUID_EQUILIBRIUM -> 1.0;
             case ENERGY_BALANCE -> Math.max(1.0, totalFeedFlow * 100_000.0);
         };

@@ -6,14 +6,16 @@ import java.util.Objects;
 public final class V3ColumnProblem {
     private final V3ColumnInput input;
     private final V3ColumnTopology topology;
+    private final V3ActiveComponentBasis activeComponentBasis;
     private final double[] nodePressuresPascal;
     private final V3DegreeOfFreedomLedger degreeOfFreedomLedger;
 
     V3ColumnProblem(
-            V3ColumnInput input, V3ColumnTopology topology, double[] nodePressuresPascal,
+            V3ColumnInput input, V3ColumnTopology topology, V3ActiveComponentBasis activeComponentBasis, double[] nodePressuresPascal,
             V3DegreeOfFreedomLedger degreeOfFreedomLedger) {
         this.input = Objects.requireNonNull(input, "input");
         this.topology = Objects.requireNonNull(topology, "topology");
+        this.activeComponentBasis = Objects.requireNonNull(activeComponentBasis, "activeComponentBasis");
         this.nodePressuresPascal = Objects.requireNonNull(nodePressuresPascal, "nodePressuresPascal").clone();
         this.degreeOfFreedomLedger = Objects.requireNonNull(degreeOfFreedomLedger, "degreeOfFreedomLedger");
         if (this.nodePressuresPascal.length != topology.nodeCount()) {
@@ -25,7 +27,7 @@ public final class V3ColumnProblem {
             }
         }
         if (!degreeOfFreedomLedger.topology().equals(topology)
-                || degreeOfFreedomLedger.componentCount() != input.componentBasis().componentCount()
+                || degreeOfFreedomLedger.componentCount() != activeComponentBasis.componentCount()
                 || !degreeOfFreedomLedger.specifications().equals(input.specifications())) {
             throw new IllegalArgumentException("V3 degree-of-freedom ledger does not describe this resolved problem");
         }
@@ -37,6 +39,10 @@ public final class V3ColumnProblem {
 
     public V3ColumnTopology topology() {
         return topology;
+    }
+
+    V3ActiveComponentBasis activeComponentBasis() {
+        return activeComponentBasis;
     }
 
     public double[] nodePressuresPascal() {
