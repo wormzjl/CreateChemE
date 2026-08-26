@@ -18,6 +18,11 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<ColumnCalculatorV3Menu> {
     private static final int CORE_EDITOR_COUNT = 9;
+    private static final int FIELD_COLUMN_WIDTH = 206;
+    private static final int FIELD_INPUT_WIDTH = 170;
+    private static final int FIELD_LABEL_Y = 49;
+    private static final int FIELD_INPUT_Y = 61;
+    private static final int FIELD_ROW_SPACING = 41;
     private static final int BACKGROUND = 0xFF20252B;
     private static final int DIVIDER = 0xFF59636E;
     private static final int TEXT = 0xFFE6EDF3;
@@ -33,19 +38,22 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     public ColumnCalculatorV3Screen(ColumnCalculatorV3Menu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 410;
-        imageHeight = 280;
+        imageWidth = 440;
+        imageHeight = 345;
     }
 
     @Override
     protected void init() {
         String[] draft = editorDraft();
         super.init();
+        titleLabelX = 192;
+        titleLabelY = 11;
+        inventoryLabelY = -1000;
         editors.clear();
         setup = addRenderableWidget(Button.builder(Component.literal("Setup"), button -> selectPage(Page.SETUP))
                 .bounds(leftPos + 8, topPos + 6, 64, 20).build());
         convergence = addRenderableWidget(Button.builder(Component.literal("Convergence"), button -> selectPage(Page.CONVERGENCE))
-                .bounds(leftPos + 76, topPos + 6, 90, 20).build());
+                .bounds(leftPos + 76, topPos + 6, 96, 20).build());
         run = addRenderableWidget(Button.builder(Component.literal("Run (server pending)"), button -> {})
                 .bounds(leftPos + 8, topPos + imageHeight - 26, 132, 20).build());
         run.active = false;
@@ -62,7 +70,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         for (int index = 0; index < labels.length; index++) {
             int column = index / 5;
             int row = index % 5;
-            EditBox editor = new EditBox(font, leftPos + 10 + column * 198, topPos + 59 + row * 30, 114, 18,
+            EditBox editor = new EditBox(font, leftPos + 12 + column * FIELD_COLUMN_WIDTH,
+                    topPos + FIELD_INPUT_Y + row * FIELD_ROW_SPACING, FIELD_INPUT_WIDTH, 20,
                     Component.literal(labels[index]));
             editor.setMaxLength(20);
             editor.setResponder(value -> validateDraft());
@@ -146,36 +155,34 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         graphics.fill(leftPos, topPos + 31, leftPos + imageWidth, topPos + 32, DIVIDER);
         if (page == Page.SETUP) renderSetup(graphics);
         else renderConvergence(graphics);
-        graphics.drawString(font, abbreviate(validation, 47), leftPos + 148, topPos + imageHeight - 20, NOTICE, false);
+        graphics.drawString(font, abbreviate(validation, 34), leftPos + 148, topPos + imageHeight - 20, NOTICE, false);
     }
 
     private void renderSetup(GuiGraphics graphics) {
-        graphics.drawString(font, "Column Calculator V3 (Experimental)", leftPos + 224, topPos + 12, TEXT, false);
-        graphics.drawString(font, "Setup", leftPos + 10, topPos + 39, TEXT, false);
+        graphics.drawString(font, "Dry baseline setup", leftPos + 12, topPos + 39, TEXT, false);
         String[] labels = {"Feed mol/s", "Feed K", "Stages", "Feed stage", "Top kPa", "Drop kPa/stage",
                 "Condenser K", "Reflux", "Reboiler MW"};
         for (int index = 0; index < labels.length; index++) {
             int column = index / 5;
             int row = index % 5;
-            graphics.drawString(font, labels[index], leftPos + 10 + column * 198, topPos + 47 + row * 30, MUTED, false);
+            graphics.drawString(font, labels[index], leftPos + 12 + column * FIELD_COLUMN_WIDTH,
+                    topPos + FIELD_LABEL_Y + row * FIELD_ROW_SPACING, MUTED, false);
         }
-        graphics.drawString(font, "Pilot composition: registered PR package, PC03 = 50 mol/s, PC10 = 50 mol/s.",
-                leftPos + 10, topPos + 214, MUTED, false);
-        graphics.drawString(font, "Exact-zero public components remain present in the V3 scientific input axis.",
-                leftPos + 10, topPos + 226, MUTED, false);
-        graphics.drawString(font, "Side draws and water/steam are not exposed until their V3 scientific contracts exist.",
-                leftPos + 10, topPos + 250, NOTICE, false);
+        graphics.drawString(font, "Pilot feed: registered PR binary", leftPos + 12, topPos + 258, TEXT, false);
+        graphics.drawString(font, "PC03 = 50 mol/s; PC10 = 50 mol/s.", leftPos + 12, topPos + 271, MUTED, false);
+        graphics.drawString(font, "All other public-axis components are exact zero.", leftPos + 12, topPos + 284, MUTED, false);
+        graphics.drawString(font, "Side draws and water/steam await V3 contracts.", leftPos + 12, topPos + 300, NOTICE, false);
     }
 
     private void renderConvergence(GuiGraphics graphics) {
-        graphics.drawString(font, "V3 Convergence & Provenance", leftPos + 184, topPos + 12, TEXT, false);
-        graphics.drawString(font, "No authoritative V3 state has been received for this block.", leftPos + 10, topPos + 51, TEXT, false);
-        graphics.drawString(font, "The installed science core requires a fresh acceptance audit and immutable", leftPos + 10, topPos + 78, MUTED, false);
-        graphics.drawString(font, "final-step convergence evidence before it can publish Success.", leftPos + 10, topPos + 90, MUTED, false);
-        graphics.drawString(font, "The forthcoming server protocol will report residual families, iterations,", leftPos + 10, topPos + 117, MUTED, false);
-        graphics.drawString(font, "globalization path, input digest, thermo dataset, and acceptance profile here.", leftPos + 10, topPos + 129, MUTED, false);
-        graphics.drawString(font, "Run is deliberately unavailable in this UI-only checkpoint.", leftPos + 10, topPos + 163, NOTICE, false);
-        graphics.drawString(font, "Block: " + menu.blockPos().toShortString(), leftPos + 10, topPos + 189, MUTED, false);
+        graphics.drawString(font, "Convergence & provenance", leftPos + 12, topPos + 51, TEXT, false);
+        graphics.drawString(font, "No authoritative V3 server state is attached to this block yet.", leftPos + 12, topPos + 78, MUTED, false);
+        graphics.drawString(font, "Scientific Success requires a fresh acceptance audit plus", leftPos + 12, topPos + 105, MUTED, false);
+        graphics.drawString(font, "immutable final-step convergence evidence.", leftPos + 12, topPos + 118, MUTED, false);
+        graphics.drawString(font, "The server protocol will report residuals, iterations,", leftPos + 12, topPos + 145, MUTED, false);
+        graphics.drawString(font, "digests, thermodynamic data, and solver provenance here.", leftPos + 12, topPos + 158, MUTED, false);
+        graphics.drawString(font, "Run remains unavailable in this UI-only checkpoint.", leftPos + 12, topPos + 194, NOTICE, false);
+        graphics.drawString(font, "Block: " + menu.blockPos().toShortString(), leftPos + 12, topPos + 222, MUTED, false);
     }
 
     private static String abbreviate(String value, int maximum) {
