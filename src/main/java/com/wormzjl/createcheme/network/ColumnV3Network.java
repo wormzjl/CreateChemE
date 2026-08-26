@@ -155,18 +155,25 @@ public final class ColumnV3Network {
         }
         boolean transitioned;
         BoundedCpuSolveService.Completion<ColumnTarget, V3ColumnOutcome> completion = job.completion();
+        String terminalStatus;
+        String terminalDetail;
         if (completion.status() == BoundedCpuSolveService.TerminalStatus.SUCCESS) {
-            transitioned = calculator.finishOperation(
-                    job.request().operation(), completion.result().orElse(null), completionDetail(completion));
+            V3ColumnOutcome outcome = completion.result().orElse(null);
+            terminalStatus = outcome instanceof V3ColumnOutcome.Success ? "SUCCESS"
+                    : outcome instanceof V3ColumnOutcome.Failure failure ? failure.code().name() : "MISSING_OUTCOME";
+            terminalDetail = outcome instanceof V3ColumnOutcome.Failure failure
+                    ? bounded(failure.summary()) : completionDetail(completion);
+            transitioned = calculator.finishOperation(job.request().operation(), outcome, terminalDetail);
         } else {
-            transitioned = calculator.failOperation(
-                    job.request().operation(), terminalStatus(completion.status()) + ": " + completionDetail(completion));
+            terminalStatus = terminalStatus(completion.status());
+            terminalDetail = completionDetail(completion);
+            transitioned = calculator.failOperation(job.request().operation(), terminalStatus + ": " + terminalDetail);
         }
         if (!transitioned) {
             logTerminal(job, "STALE_RESULT", "operation_mismatch");
             return;
         }
-        logTerminal(job, completion.status().name(), completionDetail(completion));
+        logTerminal(job, terminalStatus, terminalDetail);
         pushToViewers(server, job.request().target(), calculator.state(0L));
     }
 
