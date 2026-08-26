@@ -12,7 +12,7 @@ public final class V3FugacityResult {
     private final int physicalRootCount;
     private final double rootSeparation;
 
-    V3FugacityResult(
+    public V3FugacityResult(
             V3Phase phase, double[] logFugacityCoefficients, double compressibilityFactor,
             double molarEnthalpyJoulesPerMol, int physicalRootCount, double rootSeparation) {
         this.phase = Objects.requireNonNull(phase, "phase");

@@ -14,10 +14,19 @@ public final class V3ThermoWorkspace {
     final double[] liquidComposition;
     final double[] vaporComposition;
 
+    /** Creates generic caller-owned scratch for a non-PR test or alternate V3 thermodynamic model. */
+    public V3ThermoWorkspace(int componentCount) {
+        this(null, componentCount);
+    }
+
     V3ThermoWorkspace(V3NextgenPrSession owner) {
-        this.owner = Objects.requireNonNull(owner, "owner");
-        this.prSession = owner.newSession();
-        int componentCount = owner.componentCount();
+        this(Objects.requireNonNull(owner, "owner"), owner.componentCount());
+    }
+
+    private V3ThermoWorkspace(V3NextgenPrSession owner, int componentCount) {
+        if (componentCount < 1) throw new IllegalArgumentException("V3 thermodynamic workspace needs a positive component count");
+        this.owner = owner;
+        this.prSession = owner == null ? null : owner.newSession();
         this.normalizedOverall = new double[componentCount];
         this.wilsonK = new double[componentCount];
         this.logK = new double[componentCount];
@@ -38,7 +47,7 @@ public final class V3ThermoWorkspace {
         Arrays.fill(nextLogK, 0.0);
         Arrays.fill(liquidComposition, 0.0);
         Arrays.fill(vaporComposition, 0.0);
-        prSession.clear();
+        if (prSession != null) prSession.clear();
     }
 
     void requireOwner(V3NextgenPrSession candidate) {
