@@ -73,6 +73,22 @@ final class V3SimultaneousColumnSolver {
             double scaledTolerance,
             V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
             V3SolveControl control) {
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, initialConvergenceEvidence,
+                maximumIterations, scaledTolerance, differenceScale, control, V3NewtonTrace.NONE);
+    }
+
+    static Attempt solve(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3ConvergenceEvidence initialConvergenceEvidence,
+            int maximumIterations,
+            double scaledTolerance,
+            V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
+            V3SolveControl control,
+            V3NewtonTrace trace) {
         problem = Objects.requireNonNull(problem, "problem");
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
@@ -81,6 +97,7 @@ final class V3SimultaneousColumnSolver {
         initialConvergenceEvidence = Objects.requireNonNull(initialConvergenceEvidence, "initialConvergenceEvidence");
         differenceScale = Objects.requireNonNull(differenceScale, "differenceScale");
         control = Objects.requireNonNull(control, "control");
+        trace = Objects.requireNonNull(trace, "trace");
         if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0) {
             throw new IllegalArgumentException("V3 Newton solve limits are invalid");
         }
@@ -96,6 +113,7 @@ final class V3SimultaneousColumnSolver {
             control.checkpoint();
             double maximumResidual = residual.maximumAbsoluteScaledResidual();
             double merit = scaledSquaredNorm(residual);
+            trace.sampledIteration(iteration, residual, merit);
             if (maximumResidual <= scaledTolerance && lastConvergenceEvidence.satisfiesGates()) {
                 return new Attempt.Converged(state, new Evidence(iteration, maximumResidual, merit, 0.0, 0.0,
                         "residual and final-step tolerances", lastConvergenceEvidence));

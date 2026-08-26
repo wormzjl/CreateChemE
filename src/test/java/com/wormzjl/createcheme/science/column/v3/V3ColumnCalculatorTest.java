@@ -69,6 +69,22 @@ class V3ColumnCalculatorTest {
         assertTrue(success.diagnostics().solvePath().contains("dwsim-sequential/4-8-15-30"));
     }
 
+    @Test
+    void lowCondenserContinuationFailureReturnsTheFourStageEvidenceWithoutSpendingTheFullServiceDeadline() {
+        long started = System.nanoTime();
+        V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class,
+                V3ColumnCalculator.calculate(lowCondenserRealCrudePilot(), () -> {
+                    if (System.nanoTime() - started >= 45_000_000_000L) {
+                        throw new AssertionError("low-condenser diagnostic did not return its intermediate-stage evidence");
+                    }
+                }));
+
+        assertEquals(V3SolverFailureCode.NONCONVERGENCE, failure.code());
+        assertTrue(failure.summary().contains("stalled at 4 stages"));
+        assertTrue(failure.diagnostics().solvePath().contains("failed-stage-4"));
+        assertTrue((System.nanoTime() - started) < 45_000_000_000L);
+    }
+
     private static V3ColumnInput registeredBinaryPilot() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
         double[] feedFlows = new double[thermo.componentBasis().componentCount()];
@@ -91,6 +107,19 @@ class V3ColumnCalculatorTest {
                 feedFlows, 638.15, 30, 24, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
+    }
+
+    private static V3ColumnInput lowCondenserRealCrudePilot() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] feedFlows = crude.moleFractions();
+        double totalFlow = 2_610.7 * 1_000.0 / 3_600.0;
+        for (int component = 0; component < feedFlows.length; component++) feedFlows[component] *= totalFlow;
+        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(), crude.componentBasis(),
+                feedFlows, 673.15, 30, 24, 250_000.0, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(323.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(4.0),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
     }
 }

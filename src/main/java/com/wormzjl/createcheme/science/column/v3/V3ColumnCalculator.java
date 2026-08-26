@@ -53,7 +53,8 @@ public final class V3ColumnCalculator {
             V3SolvePass pass;
             if (initializerMode == V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
                 pass = solveDwsimStageContinuation(input, thermo, control);
-                if (!publishesSuccess(pass.attempt(), pass.audit())) {
+                if (!publishesSuccess(pass.attempt(), pass.audit())
+                        && pass.terminalStageCount() >= input.stageCount()) {
                     // The sequential material/VLE preconditioner is deliberately optional. It must not turn an
                     // otherwise solvable MESH problem into a failure; this is a fresh V3 material-closed seed,
                     // never a V1 approximation or a retained warm state.
@@ -105,7 +106,12 @@ public final class V3ColumnCalculator {
                 return new V3ColumnOutcome.Success(result, diagnostics);
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
-                return new V3ColumnOutcome.Failure(failureCode(failure.code()), failure.evidence().termination(), diagnostics);
+                String detail = pass.terminalStageCount() < input.stageCount()
+                        ? "DWSIM continuation stalled at " + pass.terminalStageCount() + " stages after "
+                        + failure.evidence().iterations() + " Newton iterations; maximum scaled residual "
+                        + failure.evidence().maximumScaledResidual() + ": " + failure.evidence().termination()
+                        : failure.evidence().termination();
+                return new V3ColumnOutcome.Failure(failureCode(failure.code()), detail, diagnostics);
             }
             return new V3ColumnOutcome.Failure(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE,
                     "The fresh V3 acceptance audit rejected the converged candidate", diagnostics);
@@ -146,13 +152,13 @@ public final class V3ColumnCalculator {
                     seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd");
             if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
                 return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                        "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount, false);
+                        "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount, stageCount, false);
             }
             previousState = lastPass.attempt().state();
         }
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
         return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                lastPass.solvePath(), true);
+                lastPass.solvePath(), lastPass.terminalStageCount(), true);
     }
 
     private static V3SolvePass solveSingleProblem(
@@ -172,7 +178,8 @@ public final class V3ColumnCalculator {
                 MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE, control);
         control.checkpoint();
         V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state(), control);
-        return new V3SolvePass(attempt, audit, feedFlash.molarEnthalpyJoulesPerMol(), solvePath, true);
+        return new V3SolvePass(attempt, audit, feedFlash.molarEnthalpyJoulesPerMol(), solvePath,
+                problem.input().stageCount(), true);
     }
 
     private static List<Integer> dwsimStageCounts(int requestedStageCount) {
@@ -292,11 +299,13 @@ public final class V3ColumnCalculator {
             V3AcceptanceAudit audit,
             double feedMolarEnthalpyJoulesPerMol,
             String solvePath,
+            int terminalStageCount,
             boolean reachedRequestedProblem) {
         private V3SolvePass {
             attempt = Objects.requireNonNull(attempt, "attempt");
             audit = Objects.requireNonNull(audit, "audit");
-            if (!Double.isFinite(feedMolarEnthalpyJoulesPerMol) || solvePath == null || solvePath.isBlank()) {
+            if (!Double.isFinite(feedMolarEnthalpyJoulesPerMol) || solvePath == null || solvePath.isBlank()
+                    || terminalStageCount < V3ColumnInput.MIN_STAGE_COUNT) {
                 throw new IllegalArgumentException("V3 solve pass evidence is invalid");
             }
         }

@@ -13,6 +13,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 class V3SimultaneousColumnSolverTest {
@@ -28,11 +29,15 @@ class V3SimultaneousColumnSolverTest {
             perturbedCoordinates[index] += index < 24 ? ((index % 5) - 2) * 0.02 : (index % 2 == 0 ? 0.5 : -0.5);
         }
         V3DryMeshState perturbed = coordinates.decode(perturbedCoordinates);
+        AtomicInteger traceSamples = new AtomicInteger();
 
         V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
-                problem, evaluator, coordinates, perturbed, thermo::newWorkspace, 16, 1.0e-9);
+                problem, evaluator, coordinates, perturbed, thermo::newWorkspace, V3ConvergenceEvidence.unavailable(),
+                16, 1.0e-9, V3FiniteDifferenceJacobian.DifferenceScale.FINE, V3SolveControl.UNBOUNDED,
+                (iteration, residual, merit) -> traceSamples.incrementAndGet());
 
         assertTrue(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged, attempt::toString);
+        assertTrue(traceSamples.get() > 0);
         V3SimultaneousColumnSolver.Attempt.Converged converged = assertInstanceOf(
                 V3SimultaneousColumnSolver.Attempt.Converged.class, attempt);
         assertTrue(converged.evidence().iterations() > 0);
