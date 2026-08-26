@@ -41,6 +41,12 @@ final class V3NextgenPrSession {
     String datasetRevision() { return propertyPackage.datasetRevision(); }
     V3ComponentBasis componentBasis() { return componentBasis; }
     int componentCount() { return kernel.componentCount(); }
+    double componentMolecularWeightKgPerMol(int publicComponent) {
+        if (publicComponent < 0 || publicComponent >= componentBasis.componentCount()) {
+            throw new IllegalArgumentException("V3 component molecular-weight index is outside the public basis");
+        }
+        return propertyPackage.basis().hydrocarbon(publicComponent).molecularWeightKgPerMol();
+    }
     Session newSession() { return new Session(kernel); }
 
     V3CrudeFeed crudeFeed(String assayId) {

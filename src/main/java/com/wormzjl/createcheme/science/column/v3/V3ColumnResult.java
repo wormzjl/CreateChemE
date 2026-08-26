@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.Objects;
 import java.util.List;
 
@@ -37,9 +38,9 @@ public final class V3ColumnResult {
     /** Extracts product properties only from the rigorously accepted final MESH state. */
     static V3ColumnResult accepted(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
-            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state) {
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo) {
         return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
-                V3ColumnStreamProperties.fromAccepted(problem, state));
+                V3ColumnStreamProperties.fromAccepted(problem, state, thermo));
     }
 
     public V3ColumnProblem problem() {

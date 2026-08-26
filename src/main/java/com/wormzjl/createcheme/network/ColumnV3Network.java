@@ -45,7 +45,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 2;
+    public static final int WIRE_SCHEMA_VERSION = 3;
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -540,12 +540,15 @@ public final class ColumnV3Network {
             buffer.writeUtf(stream.displayName(), MAX_STREAM_LABEL_LENGTH);
             buffer.writeUtf(stream.phase(), MAX_PHASE_LENGTH);
             buffer.writeDouble(stream.molarFlowMolPerSecond());
+            buffer.writeDouble(stream.massFlowKgPerSecond());
             buffer.writeDouble(stream.temperatureKelvin());
             buffer.writeDouble(stream.pressurePascal());
+            buffer.writeDouble(stream.vaporMoleFraction());
             buffer.writeVarInt(stream.moleFractions().size());
             for (V3ColumnStreamProperties.ComponentFraction fraction : stream.moleFractions()) {
                 buffer.writeUtf(fraction.componentId(), MAX_COMPONENT_IDENTIFIER_LENGTH);
                 buffer.writeDouble(fraction.moleFraction());
+                buffer.writeDouble(fraction.massFraction());
             }
         }
     }
@@ -566,18 +569,21 @@ public final class ColumnV3Network {
                 String displayName = buffer.readUtf(MAX_STREAM_LABEL_LENGTH);
                 String phase = buffer.readUtf(MAX_PHASE_LENGTH);
                 double flow = finite(buffer.readDouble(), "stream flow");
+                double massFlow = finite(buffer.readDouble(), "stream mass flow");
                 double temperature = finite(buffer.readDouble(), "stream temperature");
                 double pressure = finite(buffer.readDouble(), "stream pressure");
+                double vaporMoleFraction = finite(buffer.readDouble(), "stream vapor fraction");
                 int fractionCount = readCount(buffer, V3ColumnStreamProperties.MAX_COMPONENTS, "stream component");
                 if (fractionCount < 1) throw new DecoderException("V3 stream composition is empty");
                 List<V3ColumnStreamProperties.ComponentFraction> fractions = new ArrayList<>(fractionCount);
                 for (int fractionIndex = 0; fractionIndex < fractionCount; fractionIndex++) {
                     fractions.add(new V3ColumnStreamProperties.ComponentFraction(
                             buffer.readUtf(MAX_COMPONENT_IDENTIFIER_LENGTH),
-                            finite(buffer.readDouble(), "stream component fraction")));
+                            finite(buffer.readDouble(), "stream component mole fraction"),
+                            finite(buffer.readDouble(), "stream component mass fraction")));
                 }
                 streams.add(new V3ColumnStreamProperties(
-                        streamId, displayName, phase, flow, temperature, pressure, fractions));
+                        streamId, displayName, phase, flow, massFlow, temperature, pressure, vaporMoleFraction, fractions));
             }
             return new V3ColumnDisplayResult(
                     digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams);

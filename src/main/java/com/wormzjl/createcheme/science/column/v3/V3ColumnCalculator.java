@@ -101,7 +101,7 @@ public final class V3ColumnCalculator {
             if (pass.reachedRequestedProblem()
                     && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()) {
                 V3ColumnResult result = V3ColumnResult.accepted(
-                        problem, digest, audit, converged.evidence().convergenceEvidence(), converged.state());
+                        problem, digest, audit, converged.evidence().convergenceEvidence(), converged.state(), thermo);
                 return new V3ColumnOutcome.Success(result, diagnostics);
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {

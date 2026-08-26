@@ -29,6 +29,11 @@ public final class V3PengRobinsonThermo implements V3ThermoModel {
         return session.crudeFeed(assayId);
     }
 
+    /** Returns the registered public-axis molecular weight used for accepted mass-composition reporting. */
+    public double componentMolecularWeightKgPerMol(int publicComponent) {
+        return session.componentMolecularWeightKgPerMol(publicComponent);
+    }
+
     @Override
     public V3ComponentBasis componentBasis() {
         return session.componentBasis();

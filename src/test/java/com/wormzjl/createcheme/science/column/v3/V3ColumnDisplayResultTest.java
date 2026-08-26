@@ -30,5 +30,14 @@ class V3ColumnDisplayResultTest {
         assertTrue(view.acceptanceCheckCount() > 0);
         assertEquals(success.result().streams(), view.streams());
         assertEquals(3, view.streams().size());
+        for (V3ColumnStreamProperties stream : view.streams()) {
+            assertTrue(stream.molarFlowMolPerSecond() > 0.0);
+            assertTrue(stream.massFlowKgPerSecond() > 0.0);
+            assertEquals("VAPOR".equals(stream.phase()) ? 1.0 : 0.0, stream.vaporMoleFraction());
+            assertEquals(1.0, stream.moleFractions().stream()
+                    .mapToDouble(V3ColumnStreamProperties.ComponentFraction::moleFraction).sum(), 1.0e-8);
+            assertEquals(1.0, stream.moleFractions().stream()
+                    .mapToDouble(V3ColumnStreamProperties.ComponentFraction::massFraction).sum(), 1.0e-8);
+        }
     }
 }

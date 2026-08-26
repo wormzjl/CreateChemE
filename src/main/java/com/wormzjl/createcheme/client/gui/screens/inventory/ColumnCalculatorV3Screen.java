@@ -10,7 +10,6 @@ import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3State;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Status;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,12 +22,11 @@ import net.minecraft.world.entity.player.Inventory;
 /**
  * Revisioned V3 editor and accepted-stream viewer.
  *
- * <p>The editable scalar controls intentionally use the V1 calculator's units and defaults. V3 retains its own
- * registered property package, pressure boundary, and condenser specification server-side; those values are shown
- * but never silently rewritten by a V1-shaped client form.</p>
+ * <p>The editor uses gameplay-friendly units while preserving the immutable, server-authoritative V3 scientific
+ * input. Every displayed stream row originates from an accepted MESH state, never from an in-progress candidate.</p>
  */
 public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<ColumnCalculatorV3Menu> {
-    private static final int CORE_EDITOR_COUNT = 6;
+    private static final int CORE_EDITOR_COUNT = 9;
     private static final int SIDE_DRAW_COUNT = 3;
     private static final int MAX_PANEL_WIDTH = 620;
     private static final int MAX_PANEL_HEIGHT = 360;
@@ -115,7 +113,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private void buildEditors(String[] scalarDraft, String[] sideStageDrafts, String[] sideRateDrafts) {
         int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
-        String[] defaults = {"2610.7", "365", "30", "24", "8", "2"};
+        String[] defaults = {"2610.7", "365", "30", "24", "126.85", "8", "2", "2.5", "0.75"};
         for (int index = 0; index < CORE_EDITOR_COUNT; index++) {
             int column = index % 3;
             int row = index / 3;
@@ -127,7 +125,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             editor.setResponder(value -> validateDraft());
             coreEditors.add(addRenderableWidget(editor));
         }
-        int sideY = topPos + CONTENT_TOP + 102;
+        int sideY = topPos + CONTENT_TOP + 128;
         for (int index = 0; index < SIDE_DRAW_COUNT; index++) {
             int groupX = leftPos + 10 + index * scalarColumnWidth;
             int stageWidth = Math.max(28, Math.min(44, scalarColumnWidth / 3));
@@ -178,8 +176,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 compactDraft(input.feedTemperatureKelvin() - CELSIUS_TO_KELVIN),
                 Integer.toString(input.stageCount()),
                 Integer.toString(input.feedStageNumber()),
+                compactDraft(specificationValue(input, V3ControlledQuantity.CONDENSER_OUTLET_TEMPERATURE)
+                        - CELSIUS_TO_KELVIN),
                 compactDraft(specificationValue(input, V3ControlledQuantity.REBOILER_DUTY) / 1_000_000.0),
-                compactDraft(specificationValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO))
+                compactDraft(specificationValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO)),
+                compactDraft(input.topPressurePascal() * PASCAL_TO_BAR),
+                compactDraft(input.stagePressureDropPascal() / 1_000.0)
         };
         if (coreEditors.size() == CORE_EDITOR_COUNT) {
             for (int index = 0; index < values.length; index++) coreEditors.get(index).setValue(values[index]);
@@ -225,7 +227,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         if (serverState == null) {
             validation = "Waiting for server-owned V3 state...";
         } else if (draftInput() != null) {
-            validation = "Gameplay-unit draft is valid; Run V3 performs authoritative DWSIM-path solving.";
+            validation = "Scientific draft is valid; Run V3 performs authoritative DWSIM-path solving.";
         } else {
             validation = "Enter finite V1-unit values within V3 dry-input bounds.";
         }
@@ -238,11 +240,15 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             double feedTemperature = decimal(1) + CELSIUS_TO_KELVIN;
             int stages = integer(2);
             int feedStage = integer(3);
-            double reboilerDuty = decimal(4) * 1_000_000.0;
-            double reflux = decimal(5);
+            double condenserTemperature = decimal(4) + CELSIUS_TO_KELVIN;
+            double reboilerDuty = decimal(5) * 1_000_000.0;
+            double reflux = decimal(6);
+            double topPressure = decimal(7) / PASCAL_TO_BAR;
+            double pressureDrop = decimal(8) * 1_000.0;
             if (totalFlow <= 0.0 || feedTemperature <= 0.0 || stages < V3ColumnInput.MIN_STAGE_COUNT
                     || stages > V3ColumnInput.MAX_STAGE_COUNT || feedStage < 1 || feedStage > stages
-                    || reboilerDuty < 0.0 || reflux < 0.0) {
+                    || condenserTemperature <= 0.0 || reboilerDuty < 0.0 || reflux < 0.0
+                    || topPressure <= 0.0 || pressureDrop < 0.0) {
                 return null;
             }
             V3ColumnInput base = serverState.input();
@@ -255,9 +261,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             for (int index = 0; index < scaledFlows.length; index++) scaledFlows[index] = existingFlows[index] * scale;
             return new V3ColumnInput(
                     V3ColumnInput.SCHEMA_VERSION, base.packageId(), base.assayId(), base.componentBasis(), scaledFlows,
-                    feedTemperature, stages, feedStage, base.topPressurePascal(), base.stagePressureDropPascal(), List.of(
-                            new V3ColumnSpecification.CondenserOutletTemperature(
-                                    specificationValue(base, V3ControlledQuantity.CONDENSER_OUTLET_TEMPERATURE)),
+                    feedTemperature, stages, feedStage, topPressure, pressureDrop, List.of(
+                            new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
                             new V3ColumnSpecification.OrganicRefluxRatio(reflux),
                             new V3ColumnSpecification.ReboilerDuty(reboilerDuty)));
         } catch (IllegalArgumentException invalid) {
@@ -295,7 +300,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private void renderInputs(GuiGraphics graphics) {
         String[] labels = {
                 "Feed (kmol/h)", "Feed temp (C)", "Theor. stages",
-                "Feed stage", "Reboiler (MW)", "Reflux L/D"
+                "Feed stage", "Condenser (C)", "Reboiler (MW)",
+                "Reflux L/D", "Top P (bar)", "Drop (kPa/stage)"
         };
         int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
         for (int index = 0; index < labels.length; index++) {
@@ -306,30 +312,26 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         }
         for (int index = 0; index < SIDE_DRAW_COUNT; index++) {
             graphics.drawString(font, "Side " + (index + 1) + "  stage / kmol/h", 10 + index * scalarColumnWidth,
-                    CONTENT_TOP + 88, MUTED, false);
+                    CONTENT_TOP + 114, MUTED, false);
         }
         if (serverState == null) {
-            graphics.drawString(font, "Waiting for server V3 calculator state.", 10, CONTENT_TOP + 133, NOTICE, false);
+            graphics.drawString(font, "Waiting for server V3 calculator state.", 10, CONTENT_TOP + 159, NOTICE, false);
             return;
         }
         V3ColumnInput input = serverState.input();
         graphics.drawString(font, "Reference side draws are display-only: the current V3 dry MESH contract has no side-draw equations.",
-                10, CONTENT_TOP + 133, NOTICE, false);
-        graphics.drawString(font, "V3 conditions retained from server: top " + compact(input.topPressurePascal() * PASCAL_TO_BAR)
-                        + " bar | drop " + compact(input.stagePressureDropPascal() * PASCAL_TO_BAR)
-                        + " bar/stage | condenser "
-                        + compact(specificationValue(input, V3ControlledQuantity.CONDENSER_OUTLET_TEMPERATURE)
-                        - CELSIUS_TO_KELVIN) + " C",
-                10, CONTENT_TOP + 147, MUTED, false);
+                10, CONTENT_TOP + 159, NOTICE, false);
+        graphics.drawString(font, "All nine scientific inputs are editable; server validation owns the accepted snapshot.",
+                10, CONTENT_TOP + 173, MUTED, false);
         graphics.drawString(font, "Input revision " + serverState.inputRevision() + " • state " + serverState.stateRevision()
                         + " • V3 assay " + input.assayId(),
-                10, CONTENT_TOP + 161, MUTED, false);
+                10, CONTENT_TOP + 187, MUTED, false);
         int statusColor = run != null && run.active ? SUCCESS : NOTICE;
         graphics.drawString(font, abbreviate(validation, 82), 101, imageHeight - 24, statusColor, false);
     }
 
     private void renderStreams(GuiGraphics graphics) {
-        graphics.drawString(font, "Accepted output stream properties", 10, CONTENT_TOP, TEXT, false);
+        graphics.drawString(font, "Accepted phase stream properties and compositions", 10, CONTENT_TOP, TEXT, false);
         if (serverState == null || serverState.displayResult().isEmpty() || serverState.displayResult().orElseThrow().streams().isEmpty()) {
             graphics.drawString(font, "No accepted V3 stream properties are available.", 10, CONTENT_TOP + 29, NOTICE, false);
             graphics.drawString(font, "Failed, calculating, and legacy presentation results never fabricate product streams.",
@@ -341,25 +343,33 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 : "retained accepted result (current draft is " + serverState.status().serializedName() + ")";
         graphics.drawString(font, "Result revision " + serverState.resultRevision() + " • " + resultState,
                 10, CONTENT_TOP + 14, serverState.status() == V3Status.SUCCESS ? SUCCESS : NOTICE, false);
-
-        int tableY = CONTENT_TOP + 31;
-        int tableWidth = imageWidth - 20;
-        int[] widths = distributedWidths(tableWidth, new double[] {0.24, 0.11, 0.15, 0.14, 0.12, 0.24});
-        drawTableRow(graphics, 10, tableY, 18, widths,
-                new String[] {"Stream", "Phase", "kmol/h", "C", "bar", "Largest components (mol %)"}, true);
         List<V3ColumnStreamProperties> streams = result.streams();
+        int streamWidth = Math.max(1, (imageWidth - 20) / streams.size());
         for (int index = 0; index < streams.size(); index++) {
-            V3ColumnStreamProperties stream = streams.get(index);
-            drawTableRow(graphics, 10, tableY + 18 * (index + 1), 18, widths, new String[] {
-                    stream.displayName(), stream.phase(), compact(stream.molarFlowMolPerSecond() * MOL_PER_SECOND_TO_KMOL_PER_HOUR),
-                    compact(stream.temperatureKelvin() - CELSIUS_TO_KELVIN), compact(stream.pressurePascal() * PASCAL_TO_BAR),
-                    topComposition(stream)
+            renderStreamReport(graphics, 10 + index * streamWidth, streamWidth, CONTENT_TOP + 29, streams.get(index));
+        }
+    }
+
+    private void renderStreamReport(
+            GuiGraphics graphics, int x, int width, int y, V3ColumnStreamProperties stream) {
+        graphics.drawString(font, abbreviateToWidth(stream.displayName() + " • " + stream.phase(), width - 2), x, y, TEXT, false);
+        graphics.drawString(font, "F " + compact(stream.molarFlowMolPerSecond() * MOL_PER_SECOND_TO_KMOL_PER_HOUR)
+                        + " kmol/h | " + compact(stream.massFlowKgPerSecond() * 3_600.0) + " kg/h",
+                x, y + 12, MUTED, false);
+        graphics.drawString(font, "T " + compact(stream.temperatureKelvin() - CELSIUS_TO_KELVIN) + " C | P "
+                        + compact(stream.pressurePascal() * PASCAL_TO_BAR) + " bar | V/F "
+                        + compact(stream.vaporMoleFraction()),
+                x, y + 23, MUTED, false);
+        int[] widths = distributedWidths(width, new double[] {0.42, 0.29, 0.29});
+        int tableY = y + 35;
+        drawTableRow(graphics, x, tableY, 12, widths, new String[] {"Component", "mol %", "wt %"}, true);
+        List<V3ColumnStreamProperties.ComponentFraction> fractions = stream.moleFractions();
+        for (int index = 0; index < fractions.size(); index++) {
+            V3ColumnStreamProperties.ComponentFraction fraction = fractions.get(index);
+            drawTableRow(graphics, x, tableY + 12 * (index + 1), 12, widths, new String[] {
+                    fraction.componentId(), compact(fraction.moleFraction() * 100.0), compact(fraction.massFraction() * 100.0)
             }, false);
         }
-        graphics.drawString(font, "Values are extracted from the final accepted MESH state on the public V3 component axis.",
-                10, tableY + 18 * (streams.size() + 2) + 12, MUTED, false);
-        graphics.drawString(font, "Mass rates and boiling-range cuts are not published here because dry V3 does not calculate them yet.",
-                10, tableY + 18 * (streams.size() + 2) + 26, MUTED, false);
     }
 
     private void renderConvergence(GuiGraphics graphics) {
@@ -398,22 +408,13 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         int cellX = x;
         for (int index = 0; index < widths.length; index++) {
             graphics.fill(cellX, y, cellX + 1, y + rowHeight, TABLE_GRID);
-            graphics.drawString(font, abbreviateToWidth(cells[index], Math.max(1, widths[index] - 6)), cellX + 3, y + 5,
+            graphics.drawString(font, abbreviateToWidth(cells[index], Math.max(1, widths[index] - 6)), cellX + 3,
+                    y + Math.max(1, (rowHeight - 9) / 2),
                     header ? TEXT : MUTED, false);
             cellX += widths[index];
         }
         graphics.fill(x + sum(widths) - 1, y, x + sum(widths), y + rowHeight, TABLE_GRID);
         graphics.fill(x, y + rowHeight - 1, x + sum(widths), y + rowHeight, TABLE_GRID);
-    }
-
-    private String topComposition(V3ColumnStreamProperties stream) {
-        return stream.moleFractions().stream()
-                .filter(fraction -> fraction.moleFraction() > 0.0)
-                .sorted(Comparator.comparingDouble(V3ColumnStreamProperties.ComponentFraction::moleFraction).reversed())
-                .limit(3)
-                .map(fraction -> fraction.componentId() + " " + compact(fraction.moleFraction() * 100.0))
-                .reduce((first, second) -> first + ", " + second)
-                .orElse("--");
     }
 
     private static int[] distributedWidths(int totalWidth, double[] shares) {

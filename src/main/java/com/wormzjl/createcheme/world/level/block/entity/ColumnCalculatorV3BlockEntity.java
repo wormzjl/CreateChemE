@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 3;
+    public static final int DATA_VERSION = 4;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
     private static final int DEFAULT_STAGE_COUNT = 30;
     private static final int DEFAULT_FEED_STAGE = 24;
@@ -204,6 +204,13 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 resultRevision = -1L;
                 status = V3Status.DIRTY;
                 detail = "Updated untouched V3 draft to the DWSIM-qualified 30-stage default";
+                return;
+            }
+            if (dataVersion < 4 && tag.contains(TAG_RESULT, Tag.TAG_COMPOUND)) {
+                displayResult = null;
+                resultRevision = -1L;
+                status = V3Status.DIRTY;
+                detail = "Persisted V3 result predates phase composition reporting; recalculate";
                 return;
             }
             if (tag.contains(TAG_RESULT, Tag.TAG_COMPOUND)) {
@@ -403,13 +410,16 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             streamTag.putString("Name", stream.displayName());
             streamTag.putString("Phase", stream.phase());
             streamTag.putDouble("Flow", stream.molarFlowMolPerSecond());
+            streamTag.putDouble("MassFlow", stream.massFlowKgPerSecond());
             streamTag.putDouble("Temperature", stream.temperatureKelvin());
             streamTag.putDouble("Pressure", stream.pressurePascal());
+            streamTag.putDouble("VaporMoleFraction", stream.vaporMoleFraction());
             ListTag composition = new ListTag();
             for (V3ColumnStreamProperties.ComponentFraction fraction : stream.moleFractions()) {
                 CompoundTag fractionTag = new CompoundTag();
                 fractionTag.putString("Component", fraction.componentId());
                 fractionTag.putDouble("Fraction", fraction.moleFraction());
+                fractionTag.putDouble("MassFraction", fraction.massFraction());
                 composition.add(fractionTag);
             }
             streamTag.put("Composition", composition);
@@ -435,12 +445,13 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             for (int fractionIndex = 0; fractionIndex < fractionTags.size(); fractionIndex++) {
                 CompoundTag fractionTag = fractionTags.getCompound(fractionIndex);
                 fractions.add(new V3ColumnStreamProperties.ComponentFraction(
-                        fractionTag.getString("Component"), fractionTag.getDouble("Fraction")));
+                        fractionTag.getString("Component"), fractionTag.getDouble("Fraction"),
+                        fractionTag.getDouble("MassFraction")));
             }
             streams.add(new V3ColumnStreamProperties(
                     streamTag.getString("Id"), streamTag.getString("Name"), streamTag.getString("Phase"),
-                    streamTag.getDouble("Flow"), streamTag.getDouble("Temperature"), streamTag.getDouble("Pressure"),
-                    fractions));
+                    streamTag.getDouble("Flow"), streamTag.getDouble("MassFlow"), streamTag.getDouble("Temperature"),
+                    streamTag.getDouble("Pressure"), streamTag.getDouble("VaporMoleFraction"), fractions));
         }
         return new V3ColumnDisplayResult(
                 tag.getString("Digest"), tag.getString("Formulation"), tag.getString("Assumptions"),
