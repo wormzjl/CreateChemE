@@ -150,7 +150,7 @@ final class V3ColumnInitializer {
         return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures);
     }
 
-    private static void solveMaterialBalances(
+    static void solveMaterialBalances(
             V3ColumnProblem problem, double[][] phaseRatios, double[][] liquid, double[][] vapor) {
         V3ColumnTopology topology = problem.topology();
         for (int component = 0; component < liquid[0].length; component++) {
@@ -644,7 +644,7 @@ final class V3ColumnInitializer {
         return total;
     }
 
-    private static double[][] phaseRatios(
+    static double[][] phaseRatios(
             V3ColumnProblem problem,
             V3ThermoModel thermo,
             V3ThermoWorkspace workspace,
@@ -753,7 +753,7 @@ final class V3ColumnInitializer {
         return solution;
     }
 
-    private static double[][] flows(V3DryMeshState state, boolean liquid) {
+    static double[][] flows(V3DryMeshState state, boolean liquid) {
         double[][] result = new double[state.nodeCount()][state.componentCount()];
         for (int node = 0; node < result.length; node++) {
             for (int component = 0; component < result[node].length; component++) {
@@ -780,7 +780,7 @@ final class V3ColumnInitializer {
         return composition;
     }
 
-    private static double[] temperatures(V3DryMeshState state) {
+    static double[] temperatures(V3DryMeshState state) {
         double[] values = new double[state.nodeCount()];
         for (int node = 0; node < values.length; node++) values[node] = state.temperatureKelvin(node);
         return values;
