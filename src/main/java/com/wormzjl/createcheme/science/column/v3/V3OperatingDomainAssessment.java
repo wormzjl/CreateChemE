@@ -17,11 +17,13 @@ sealed interface V3OperatingDomainAssessment
 
     /** A resolved profile that is entirely inside the selected package's pressure envelope. */
     record Eligible(
+            V3HybridOperatingLane lane,
             double minimumNodePressurePascal,
             double maximumNodePressurePascal,
             double packageMinimumPressurePascal,
             double packageMaximumPressurePascal) implements V3OperatingDomainAssessment {
         public Eligible {
+            lane = java.util.Objects.requireNonNull(lane, "lane");
             requireFiniteRange(minimumNodePressurePascal, maximumNodePressurePascal,
                     packageMinimumPressurePascal, packageMaximumPressurePascal);
             if (minimumNodePressurePascal < packageMinimumPressurePascal

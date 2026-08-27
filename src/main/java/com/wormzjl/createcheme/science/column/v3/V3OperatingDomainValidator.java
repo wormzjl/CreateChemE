@@ -5,6 +5,8 @@ import java.util.Objects;
 
 /** Checks the complete resolved dry-column pressure profile before any thermodynamic or numerical work begins. */
 final class V3OperatingDomainValidator {
+    private static final double LOW_PRESSURE_HYBRID_LIMIT_PASCAL = 100_000.0;
+
     private V3OperatingDomainValidator() {}
 
     static V3OperatingDomainAssessment assess(V3ColumnProblem problem, V3PengRobinsonThermo thermo) {
@@ -35,6 +37,8 @@ final class V3OperatingDomainValidator {
                     V3OperatingDomainAssessment.Reason.ABOVE_PACKAGE_PRESSURE,
                     minimum, maximum, packageMinimum, packageMaximum);
         }
-        return new V3OperatingDomainAssessment.Eligible(minimum, maximum, packageMinimum, packageMaximum);
+        V3HybridOperatingLane lane = minimum < LOW_PRESSURE_HYBRID_LIMIT_PASCAL
+                ? V3HybridOperatingLane.LOW_PRESSURE_HYBRID : V3HybridOperatingLane.NORMAL_CDU;
+        return new V3OperatingDomainAssessment.Eligible(lane, minimum, maximum, packageMinimum, packageMaximum);
     }
 }

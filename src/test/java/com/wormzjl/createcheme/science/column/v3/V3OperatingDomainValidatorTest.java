@@ -16,6 +16,7 @@ class V3OperatingDomainValidatorTest {
         V3OperatingDomainAssessment.Eligible eligible = assertInstanceOf(
                 V3OperatingDomainAssessment.Eligible.class, assess(50_000.0, 750.0));
 
+        assertEquals(V3HybridOperatingLane.LOW_PRESSURE_HYBRID, eligible.lane());
         assertEquals(50_000.0, eligible.minimumNodePressurePascal());
         assertEquals(71_750.0, eligible.maximumNodePressurePascal());
         assertEquals(50_000.0, eligible.packageMinimumPressurePascal());
@@ -49,6 +50,14 @@ class V3OperatingDomainValidatorTest {
         assertEquals(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, failure.code());
         assertEquals("admission", failure.diagnostics().solvePath());
         assertTrue(failure.summary().contains("VDU_REQUIRED"));
+    }
+
+    @Test
+    void hundredKilopascalAndAboveRemainInTheNormalDryCduLane() {
+        V3OperatingDomainAssessment.Eligible eligible = assertInstanceOf(
+                V3OperatingDomainAssessment.Eligible.class, assess(100_000.0, 750.0));
+
+        assertEquals(V3HybridOperatingLane.NORMAL_CDU, eligible.lane());
     }
 
     private static V3OperatingDomainAssessment assess(double topPressurePascal, double stageDropPascal) {
