@@ -22,12 +22,14 @@ public final class V3ColumnProblemResolver {
                 ? V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber())
                 : V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
         V3ActiveComponentBasis activeComponentBasis = V3ActiveComponentBasis.from(input);
+        V3CondenserComponentPhases condenserComponentPhases = V3CondenserComponentPhases.from(activeComponentBasis);
         V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(
-                topology, activeComponentBasis.componentCount(), input.specifications());
+                topology, activeComponentBasis.componentCount(), input.specifications(), condenserComponentPhases);
         if (!ledger.isValid()) {
             throw new IllegalArgumentException("Invalid V3 degree-of-freedom contract: " + ledger.humanReadableDiagnostic());
         }
-        return new V3ColumnProblem(input, topology, activeComponentBasis, pressureProfile(input, topology), ledger);
+        return new V3ColumnProblem(input, topology, activeComponentBasis, condenserComponentPhases,
+                pressureProfile(input, topology), ledger);
     }
 
     private static void validateInput(V3ColumnInput input) {

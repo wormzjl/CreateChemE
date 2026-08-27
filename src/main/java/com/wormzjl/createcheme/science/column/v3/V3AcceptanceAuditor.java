@@ -52,7 +52,7 @@ final class V3AcceptanceAuditor {
             valid &= Double.isFinite(state.temperatureKelvin(node)) && state.temperatureKelvin(node) > 0.0;
             for (int component = 0; component < state.componentCount(); component++) {
                 valid &= Double.isFinite(state.vaporFlow(node, component)) && state.vaporFlow(node, component) > 0.0;
-                if (problem.topology().hasLiquidPhase(node)) {
+                if (problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component)) {
                     valid &= Double.isFinite(state.liquidFlow(node, component)) && state.liquidFlow(node, component) > 0.0;
                 } else {
                     valid &= state.liquidFlow(node, component) == 0.0;

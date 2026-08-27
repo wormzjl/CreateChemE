@@ -43,7 +43,17 @@ public final class V3DegreeOfFreedomLedger {
 
     public static V3DegreeOfFreedomLedger create(
             V3ColumnTopology topology, int componentCount, List<V3ColumnSpecification> specifications) {
+        V3CondenserComponentPhases phases = V3CondenserComponentPhases.allLiquid(componentCount);
+        return create(topology, componentCount, specifications, phases);
+    }
+
+    static V3DegreeOfFreedomLedger create(
+            V3ColumnTopology topology,
+            int componentCount,
+            List<V3ColumnSpecification> specifications,
+            V3CondenserComponentPhases condenserComponentPhases) {
         topology = Objects.requireNonNull(topology, "topology");
+        condenserComponentPhases = Objects.requireNonNull(condenserComponentPhases, "condenserComponentPhases");
         if (componentCount < 1 || componentCount > V3ComponentBasis.MAX_COMPONENTS) {
             throw new IllegalArgumentException("V3 component count is outside the supported contract range");
         }
@@ -53,8 +63,9 @@ public final class V3DegreeOfFreedomLedger {
         }
 
         List<V3ContractDiagnostic> diagnostics = specificationDiagnostics(topology, specifications);
-        List<Unknown> unknowns = enumerateUnknowns(topology, componentCount);
-        List<Equation> equations = enumerateEquations(topology, componentCount, unknowns, diagnostics);
+        List<Unknown> unknowns = enumerateUnknowns(topology, componentCount, condenserComponentPhases);
+        List<Equation> equations = enumerateEquations(topology, componentCount, unknowns, diagnostics,
+                condenserComponentPhases);
         int structuralRank = maximumBipartiteMatching(equations, unknowns);
         if (unknowns.size() != equations.size()) {
             diagnostics.add(new V3ContractDiagnostic("DOF_COUNT_MISMATCH", "V3 unknown and equation counts differ"));
@@ -152,11 +163,12 @@ public final class V3DegreeOfFreedomLedger {
         return diagnostics;
     }
 
-    private static List<Unknown> enumerateUnknowns(V3ColumnTopology topology, int componentCount) {
+    private static List<Unknown> enumerateUnknowns(
+            V3ColumnTopology topology, int componentCount, V3CondenserComponentPhases condenserComponentPhases) {
         List<Unknown> unknowns = new ArrayList<>();
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < componentCount; component++) {
-                if (topology.hasLiquidPhase(node)) {
+                if (condenserComponentPhases.hasLiquid(topology, node, component)) {
                     unknowns.add(new Unknown(new UnknownId(UnknownFamily.LIQUID_COMPONENT_FLOW, node, component)));
                 }
                 unknowns.add(new Unknown(new UnknownId(UnknownFamily.VAPOR_COMPONENT_FLOW, node, component)));
@@ -170,14 +182,14 @@ public final class V3DegreeOfFreedomLedger {
 
     private static List<Equation> enumerateEquations(
             V3ColumnTopology topology, int componentCount, List<Unknown> unknowns,
-            List<V3ContractDiagnostic> diagnostics) {
+            List<V3ContractDiagnostic> diagnostics, V3CondenserComponentPhases condenserComponentPhases) {
         Set<UnknownId> activeUnknowns = new HashSet<>(unknowns.stream().map(Unknown::id).toList());
         List<Equation> equations = new ArrayList<>();
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < componentCount; component++) {
                 equations.add(new Equation(new EquationId(EquationFamily.COMPONENT_MATERIAL_BALANCE, node, component),
                         materialReferences(topology, node, component, activeUnknowns)));
-                if (topology.hasVaporLiquidEquilibriumEquation(node)) {
+                if (condenserComponentPhases.hasVaporLiquidEquilibrium(topology, node, component)) {
                     equations.add(new Equation(new EquationId(EquationFamily.VAPOR_LIQUID_EQUILIBRIUM, node, component),
                             equilibriumReferences(topology, node, component, componentCount, activeUnknowns)));
                 }

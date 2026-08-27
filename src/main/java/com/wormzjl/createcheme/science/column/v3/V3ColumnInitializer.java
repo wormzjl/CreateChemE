@@ -23,11 +23,15 @@ final class V3ColumnInitializer {
     private static final double ZERO_REFLUX_TRAFFIC_FRACTION = 0.10;
     private static final int COLD_TRAFFIC_GRID_DIVISIONS = 8;
     private static final int MAXIMUM_COLD_TRAFFIC_SWEEPS = 20;
+    private static final int MAXIMUM_PARTIAL_CONDENSER_TEAR_SWEEPS = 100;
     private static final double MINIMUM_PHASE_RATIO = 1.0e-12;
     private static final double MAXIMUM_PHASE_RATIO = 1.0e12;
     private static final double COLD_TRAFFIC_DAMPING = 0.5;
     private static final double PHASE_AWARE_VAPOR_DAMPING = 0.25;
     private static final int PHASE_AWARE_SWEEPS = 3;
+    private static final double BUBBLE_POINT_DIFFERENCE_KELVIN = 1.0;
+    private static final double BUBBLE_POINT_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 5.0;
+    private static final double BUBBLE_POINT_DAMPING = 0.5;
 
     private V3ColumnInitializer() {}
 
@@ -63,14 +67,15 @@ final class V3ColumnInitializer {
 
         for (int component = 0; component < components; component++) {
             double feed = problem.activeComponentBasis().feedFlowMolPerSecond(component);
-            double externalLiquid = topology.hasLiquidPhase(0) ? TWO_PHASE_EXTERNAL_LIQUID_FRACTION * feed : 0.0;
+            boolean condenserLiquidComponent = problem.condenserComponentPhases().hasLiquid(topology, 0, component);
+            double externalLiquid = condenserLiquidComponent ? TWO_PHASE_EXTERNAL_LIQUID_FRACTION * feed : 0.0;
             double externalVapor = (topology.hasLiquidPhase(0) ? TWO_PHASE_EXTERNAL_VAPOR_FRACTION
                     : VAPOR_ONLY_EXTERNAL_VAPOR_FRACTION) * feed;
-            if (topology.hasLiquidPhase(0)) liquid[0][component] = (1.0 + refluxRatio) * externalLiquid;
+            if (condenserLiquidComponent) liquid[0][component] = (1.0 + refluxRatio) * externalLiquid;
             vapor[0][component] = externalVapor;
             vapor[1][component] = vapor[0][component] + liquid[0][component];
 
-            double reflux = refluxRatio * externalLiquid;
+            double reflux = condenserLiquidComponent ? refluxRatio * externalLiquid : 0.0;
             double traffic = refluxRatio > 0.0 ? reflux : ZERO_REFLUX_TRAFFIC_FRACTION * feed;
             double previousLiquid = traffic;
             for (int tray = 1; tray <= topology.trayCount(); tray++) {
@@ -99,7 +104,8 @@ final class V3ColumnInitializer {
                 state = phaseAwareTrafficSeed(problem, thermo, workspace, materialClosed);
                 trafficPolicy = "PR phase-aware fixed-traffic seed";
             } else if (mode == Mode.SEQUENTIAL_MATERIAL_VLE) {
-                state = sequentialModularSeed(problem, thermo, workspace, materialClosed, feedFlash.vaporFraction());
+                state = sequentialModularSeed(problem, thermo, workspace, materialClosed, feedFlash.vaporFraction(),
+                        feedFlash.molarEnthalpyJoulesPerMol());
                 trafficPolicy = "sequential-modular PR material/VLE seed";
             }
         } catch (V3ThermoException | IllegalArgumentException unavailablePreconditioner) {
@@ -149,12 +155,14 @@ final class V3ColumnInitializer {
             V3ThermoModel thermo,
             V3ThermoWorkspace workspace,
             V3DryMeshState materialClosed,
-            double feedVaporFraction) {
+            double feedVaporFraction,
+            double feedMolarEnthalpyJoulesPerMol) {
         V3ColumnTopology topology = problem.topology();
         if (!topology.hasLiquidPhase(topology.condenserNode())) return materialClosed;
         double feedFlow = problem.activeComponentBasis().totalFeedFlowMolPerSecond();
+        double[] temperatures = temperatures(materialClosed);
         double[][] kValues = phaseRatios(problem, thermo, workspace, flows(materialClosed, true), flows(materialClosed, false),
-                temperatures(materialClosed));
+                temperatures);
         ColdTrafficCandidate best = null;
         for (int liquidProductStep = 1; liquidProductStep < COLD_TRAFFIC_GRID_DIVISIONS; liquidProductStep++) {
             for (int vaporProductStep = 1;
@@ -172,37 +180,266 @@ final class V3ColumnInitializer {
         if (best == null) {
             throw new IllegalArgumentException("V3 sequential modular initializer found no positive cold traffic candidate");
         }
-        double liquidProductFraction = best.liquidProductFraction();
-        double vaporProductFraction = best.vaporProductFraction();
-        for (int sweep = 0; sweep < MAXIMUM_COLD_TRAFFIC_SWEEPS; sweep++) {
-            ColdTrafficCandidate candidate = coldTrafficCandidate(
-                    problem, kValues, feedFlow, feedVaporFraction, liquidProductFraction, vaporProductFraction);
-            if (candidate == null) break;
-            if (candidate.sumRatesMismatch() < best.sumRatesMismatch()) best = candidate;
-            double actualLiquidProductFraction = (1.0 - organicRefluxFraction(problem))
-                    * sum(candidate.liquidFlows()[topology.condenserNode()]) / feedFlow;
-            double actualVaporProductFraction = sum(candidate.vaporFlows()[topology.condenserNode()]) / feedFlow;
-            if (!(actualLiquidProductFraction > 0.0) || !(actualVaporProductFraction > 0.0)
-                    || actualLiquidProductFraction + actualVaporProductFraction >= 1.0) break;
-            double trafficChange = Math.max(Math.abs(actualLiquidProductFraction - liquidProductFraction),
-                    Math.abs(actualVaporProductFraction - vaporProductFraction));
-            liquidProductFraction += COLD_TRAFFIC_DAMPING * (actualLiquidProductFraction - liquidProductFraction);
-            vaporProductFraction += COLD_TRAFFIC_DAMPING * (actualVaporProductFraction - vaporProductFraction);
-            double[][] updatedK = phaseRatios(problem, thermo, workspace, candidate.liquidFlows(), candidate.vaporFlows(),
-                    temperatures(materialClosed));
-            double maximumLogKChange = 0.0;
-            for (int node = 0; node < kValues.length; node++) {
-                for (int component = 0; component < kValues[node].length; component++) {
-                    maximumLogKChange = Math.max(maximumLogKChange,
-                            Math.abs(Math.log(updatedK[node][component]) - Math.log(kValues[node][component])));
-                    kValues[node][component] = Math.exp((1.0 - COLD_TRAFFIC_DAMPING) * Math.log(kValues[node][component])
-                            + COLD_TRAFFIC_DAMPING * Math.log(updatedK[node][component]));
-                }
+        ColdTrafficCandidate refreshed = refinePartialCondenserTraffic(
+                problem, thermo, workspace, kValues, feedFlow, feedVaporFraction, feedMolarEnthalpyJoulesPerMol,
+                best, temperatures);
+        return new V3DryMeshState(topology, materialClosed.componentCount(), refreshed.liquidFlows(), refreshed.vaporFlows(),
+                temperatures);
+    }
+
+    /** Applies a bounded bubble-point Newton correction on every non-condenser equilibrium node. */
+    private static double updateBubblePointTemperatures(
+            V3ColumnProblem problem,
+            V3ThermoModel thermo,
+            V3ThermoWorkspace workspace,
+            ColdTrafficCandidate candidate,
+            double[] temperatures) {
+        V3ColumnTopology topology = problem.topology();
+        V3ActiveComponentBasis active = problem.activeComponentBasis();
+        double maximumChange = 0.0;
+        for (int node = 1; node <= topology.reboilerNode(); node++) {
+            double temperature = temperatures[node];
+            double residual = bubblePointResidual(problem, thermo, workspace, active,
+                    candidate.liquidFlows()[node], candidate.vaporFlows()[node], node, temperature);
+            double upperResidual = bubblePointResidual(problem, thermo, workspace, active,
+                    candidate.liquidFlows()[node], candidate.vaporFlows()[node], node,
+                    temperature + BUBBLE_POINT_DIFFERENCE_KELVIN);
+            double lowerResidual = bubblePointResidual(problem, thermo, workspace, active,
+                    candidate.liquidFlows()[node], candidate.vaporFlows()[node], node,
+                    temperature - BUBBLE_POINT_DIFFERENCE_KELVIN);
+            double derivative = (upperResidual - lowerResidual) / (2.0 * BUBBLE_POINT_DIFFERENCE_KELVIN);
+            if (!Double.isFinite(residual) || !Double.isFinite(derivative) || Math.abs(derivative) <= 1.0e-12) continue;
+            double correction = Math.clamp(-residual / derivative,
+                    -BUBBLE_POINT_MAXIMUM_TEMPERATURE_CHANGE_KELVIN,
+                    BUBBLE_POINT_MAXIMUM_TEMPERATURE_CHANGE_KELVIN);
+            double updated = temperature + BUBBLE_POINT_DAMPING * correction;
+            if (Double.isFinite(updated) && updated > 0.0) {
+                temperatures[node] = updated;
+                maximumChange = Math.max(maximumChange, Math.abs(updated - temperature));
             }
-            if (trafficChange <= 1.0e-6 && maximumLogKChange <= 1.0e-5) break;
         }
-        return new V3DryMeshState(topology, materialClosed.componentCount(), best.liquidFlows(), best.vaporFlows(),
-                temperatures(materialClosed));
+        return maximumChange;
+    }
+
+    private static double bubblePointResidual(
+            V3ColumnProblem problem,
+            V3ThermoModel thermo,
+            V3ThermoWorkspace workspace,
+            V3ActiveComponentBasis active,
+            double[] liquidFlows,
+            double[] vaporFlows,
+            int node,
+            double temperatureKelvin) {
+        if (!Double.isFinite(temperatureKelvin) || temperatureKelvin <= 0.0) return Double.NaN;
+        double[] liquidComposition = publicComposition(active, liquidFlows);
+        double[] vaporComposition = publicComposition(active, vaporFlows);
+        double pressure = problem.nodePressurePascal(node);
+        V3FugacityResult liquid = thermo.fugacity(
+                temperatureKelvin, pressure, liquidComposition, V3Phase.LIQUID, workspace);
+        V3FugacityResult vapor = thermo.fugacity(
+                temperatureKelvin, pressure, vaporComposition, V3Phase.VAPOR, workspace);
+        double sum = 0.0;
+        for (int component = 0; component < active.componentCount(); component++) {
+            int publicComponent = active.publicIndex(component);
+            sum += liquidComposition[publicComponent] * Math.exp(
+                    liquid.logFugacityCoefficient(publicComponent) - vapor.logFugacityCoefficient(publicComponent));
+        }
+        return sum - 1.0;
+    }
+
+    /**
+     * DWSIM-style partial-condenser traffic tear. It retains both condenser phases: only the liquid node is split
+     * into reflux and liquid distillate, while the independently solved vapor product carries non-condensables.
+     */
+    private static ColdTrafficCandidate refinePartialCondenserTraffic(
+            V3ColumnProblem problem,
+            V3ThermoModel thermo,
+            V3ThermoWorkspace workspace,
+            double[][] kValues,
+            double feedFlow,
+            double feedVaporFraction,
+            double feedMolarEnthalpyJoulesPerMol,
+            ColdTrafficCandidate initial,
+            double[] temperatures) {
+        ColdTrafficCandidate current = initial;
+        double liquidProductFraction = initial.liquidProductFraction();
+        for (int sweep = 0; sweep < MAXIMUM_PARTIAL_CONDENSER_TEAR_SWEEPS; sweep++) {
+            double maximumTemperatureChange = updateBubblePointTemperatures(
+                    problem, thermo, workspace, current, temperatures);
+            double[][] currentK = phaseRatios(
+                    problem, thermo, workspace, current.liquidFlows(), current.vaporFlows(), temperatures);
+            double currentKChange = blendLogPhaseRatios(kValues, currentK, COLD_TRAFFIC_DAMPING);
+            EnergyProperties enthalpies = energyProperties(problem, thermo, workspace, current, temperatures);
+            if (enthalpies == null) break;
+            ColdTrafficCandidate energyRefreshed = selectPartialCondenserEnergyCandidate(
+                    problem, kValues, feedFlow, feedVaporFraction, liquidProductFraction, enthalpies,
+                    feedMolarEnthalpyJoulesPerMol);
+            if (energyRefreshed == null) break;
+            double actualLiquidProductFraction = (1.0 - organicRefluxFraction(problem))
+                    * sum(energyRefreshed.liquidFlows()[problem.topology().condenserNode()]) / feedFlow;
+            if (!(actualLiquidProductFraction > 0.0) || actualLiquidProductFraction >= 1.0) break;
+            double trafficChange = Math.abs(actualLiquidProductFraction - liquidProductFraction);
+            liquidProductFraction += COLD_TRAFFIC_DAMPING
+                    * (actualLiquidProductFraction - liquidProductFraction);
+            double[][] refreshedK = phaseRatios(problem, thermo, workspace,
+                    energyRefreshed.liquidFlows(), energyRefreshed.vaporFlows(), temperatures);
+            double refreshedKChange = blendLogPhaseRatios(kValues, refreshedK, COLD_TRAFFIC_DAMPING);
+            current = energyRefreshed;
+            if (trafficChange <= 1.0e-6 && Math.max(currentKChange, refreshedKChange) <= 1.0e-5
+                    && maximumTemperatureChange <= 1.0e-5) break;
+        }
+        return current;
+    }
+
+    private static double blendLogPhaseRatios(double[][] current, double[][] target, double damping) {
+        double maximumLogChange = 0.0;
+        for (int node = 0; node < current.length; node++) {
+            for (int component = 0; component < current[node].length; component++) {
+                maximumLogChange = Math.max(maximumLogChange,
+                        Math.abs(Math.log(target[node][component]) - Math.log(current[node][component])));
+                current[node][component] = Math.exp((1.0 - damping) * Math.log(current[node][component])
+                        + damping * Math.log(target[node][component]));
+            }
+        }
+        return maximumLogChange;
+    }
+
+    private static ColdTrafficCandidate partialCondenserEnergyCandidate(
+            V3ColumnProblem problem,
+            double[][] kValues,
+            double feedFlow,
+            double feedVaporFraction,
+            double liquidProductFraction,
+            EnergyProperties enthalpies,
+            double feedMolarEnthalpyJoulesPerMol) {
+        double liquidProduct = liquidProductFraction * feedFlow;
+        if (!(liquidProduct > 0.0) || liquidProduct >= feedFlow) return null;
+        double vaporProbe = Math.max(feedFlow * 0.1, 1.0e-6);
+        double zeroMismatch = reboilerTrafficMismatch(
+                problem, enthalpies, feedFlow, liquidProduct, 0.0, feedMolarEnthalpyJoulesPerMol);
+        double probeMismatch = reboilerTrafficMismatch(
+                problem, enthalpies, feedFlow, liquidProduct, vaporProbe, feedMolarEnthalpyJoulesPerMol);
+        double slope = (probeMismatch - zeroMismatch) / vaporProbe;
+        if (!Double.isFinite(zeroMismatch) || !Double.isFinite(slope) || Math.abs(slope) <= 1.0e-12) return null;
+        double vaporProduct = -zeroMismatch / slope;
+        if (!(vaporProduct > 0.0) || liquidProduct + vaporProduct >= feedFlow) return null;
+        TrafficTotals traffic = partialCondenserEnergyTrafficTotals(
+                problem, enthalpies, feedFlow, liquidProduct, vaporProduct, feedMolarEnthalpyJoulesPerMol);
+        if (traffic == null || !positiveFiniteTraffic(traffic)) return null;
+        return coldTrafficCandidate(problem, kValues, feedFlow, feedVaporFraction,
+                traffic.liquidTotals(), traffic.vaporTotals(), liquidProductFraction, vaporProduct / feedFlow);
+    }
+
+    private static ColdTrafficCandidate selectPartialCondenserEnergyCandidate(
+            V3ColumnProblem problem,
+            double[][] kValues,
+            double feedFlow,
+            double feedVaporFraction,
+            double preferredLiquidProductFraction,
+            EnergyProperties enthalpies,
+            double feedMolarEnthalpyJoulesPerMol) {
+        ColdTrafficCandidate best = partialCondenserEnergyCandidate(
+                problem, kValues, feedFlow, feedVaporFraction, preferredLiquidProductFraction, enthalpies,
+                feedMolarEnthalpyJoulesPerMol);
+        for (int step = 1; step < 32; step++) {
+            ColdTrafficCandidate candidate = partialCondenserEnergyCandidate(
+                    problem, kValues, feedFlow, feedVaporFraction, step / 32.0, enthalpies,
+                    feedMolarEnthalpyJoulesPerMol);
+            if (candidate != null && (best == null || candidate.sumRatesMismatch() < best.sumRatesMismatch())) {
+                best = candidate;
+            }
+        }
+        return best;
+    }
+
+    private static EnergyProperties energyProperties(
+            V3ColumnProblem problem,
+            V3ThermoModel thermo,
+            V3ThermoWorkspace workspace,
+            ColdTrafficCandidate reference,
+            double[] temperatures) {
+        int nodes = problem.topology().nodeCount();
+        double[] liquidEnthalpy = new double[nodes];
+        double[] vaporEnthalpy = new double[nodes];
+        V3ActiveComponentBasis active = problem.activeComponentBasis();
+        for (int node = 0; node < nodes; node++) {
+            try {
+                double pressure = problem.nodePressurePascal(node);
+                liquidEnthalpy[node] = thermo.molarEnthalpy(temperatures[node], pressure,
+                        publicComposition(active, reference.liquidFlows()[node]), V3Phase.LIQUID, workspace);
+                vaporEnthalpy[node] = thermo.molarEnthalpy(temperatures[node], pressure,
+                        publicComposition(active, reference.vaporFlows()[node]), V3Phase.VAPOR, workspace);
+            } catch (V3ThermoException | IllegalArgumentException unavailable) {
+                return null;
+            }
+            if (!Double.isFinite(liquidEnthalpy[node]) || !Double.isFinite(vaporEnthalpy[node])) return null;
+        }
+        return new EnergyProperties(liquidEnthalpy, vaporEnthalpy);
+    }
+
+    private static double reboilerTrafficMismatch(
+            V3ColumnProblem problem,
+            EnergyProperties enthalpies,
+            double feedFlow,
+            double liquidProduct,
+            double vaporProduct,
+            double feedMolarEnthalpyJoulesPerMol) {
+        TrafficTotals traffic = partialCondenserEnergyTrafficTotals(
+                problem, enthalpies, feedFlow, liquidProduct, vaporProduct, feedMolarEnthalpyJoulesPerMol);
+        if (traffic == null) return Double.NaN;
+        return traffic.trayPredictedReboilerVapor() - traffic.vaporTotals()[problem.topology().reboilerNode()];
+    }
+
+    private static TrafficTotals partialCondenserEnergyTrafficTotals(
+            V3ColumnProblem problem,
+            EnergyProperties enthalpies,
+            double feedFlow,
+            double liquidProduct,
+            double vaporProduct,
+            double feedMolarEnthalpyJoulesPerMol) {
+        V3ColumnTopology topology = problem.topology();
+        int reboiler = topology.reboilerNode();
+        double bottoms = feedFlow - liquidProduct - vaporProduct;
+        if (!Double.isFinite(bottoms)) return null;
+        double[] liquid = new double[reboiler + 1];
+        double[] vapor = new double[reboiler + 1];
+        double refluxRatio = specification(problem, V3ColumnSpecification.OrganicRefluxRatio.class).ratio();
+        liquid[0] = (1.0 + refluxRatio) * liquidProduct;
+        vapor[0] = vaporProduct;
+        vapor[1] = liquid[0] + vapor[0];
+        double feedBefore = 0.0;
+        for (int tray = 1; tray <= topology.trayCount(); tray++) {
+            double feedAtTray = tray == topology.feedTrayNumber() ? feedFlow : 0.0;
+            double alpha = enthalpies.liquid()[tray - 1] - enthalpies.vapor()[tray];
+            double beta = enthalpies.vapor()[tray + 1] - enthalpies.liquid()[tray];
+            double gamma = (feedBefore - liquidProduct - vaporProduct)
+                    * (enthalpies.liquid()[tray] - enthalpies.liquid()[tray - 1])
+                    + feedAtTray * (enthalpies.liquid()[tray] - feedMolarEnthalpyJoulesPerMol);
+            if (!Double.isFinite(alpha) || !Double.isFinite(beta) || !Double.isFinite(gamma)
+                    || Math.abs(beta) <= 1.0e-12) return null;
+            double nextVapor = (gamma - alpha * vapor[tray]) / beta;
+            if (tray < topology.trayCount()) {
+                vapor[tray + 1] = nextVapor;
+                feedBefore += feedAtTray;
+                continue;
+            }
+            double reboilerDuty = specification(problem, V3ColumnSpecification.ReboilerDuty.class).watts();
+            double reboilerVapor = (bottoms * (enthalpies.liquid()[reboiler]
+                    - enthalpies.liquid()[topology.trayCount()]) - reboilerDuty)
+                    / (enthalpies.liquid()[topology.trayCount()] - enthalpies.vapor()[reboiler]);
+            if (!Double.isFinite(nextVapor) || !Double.isFinite(reboilerVapor)) return null;
+            vapor[reboiler] = reboilerVapor;
+            double cumulativeFeed = 0.0;
+            for (int liquidTray = 1; liquidTray <= topology.trayCount(); liquidTray++) {
+                if (liquidTray == topology.feedTrayNumber()) cumulativeFeed += feedFlow;
+                liquid[liquidTray] = vapor[liquidTray + 1] + cumulativeFeed - liquidProduct - vaporProduct;
+                if (!Double.isFinite(liquid[liquidTray])) return null;
+            }
+            liquid[reboiler] = bottoms;
+            if (!Double.isFinite(liquid[reboiler])) return null;
+            return new TrafficTotals(liquid, vapor, nextVapor);
+        }
+        throw new IllegalStateException("V3 partial-condenser energy recurrence did not reach the reboiler");
     }
 
     private static ColdTrafficCandidate coldTrafficCandidate(
@@ -221,6 +458,24 @@ final class V3ColumnInitializer {
                 liquidTotals, vaporTotals)) {
             return null;
         }
+        return coldTrafficCandidate(problem, kValues, feedFlow, feedVaporFraction,
+                liquidTotals, vaporTotals, liquidProductFraction, vaporProductFraction);
+    }
+
+    private static ColdTrafficCandidate coldTrafficCandidate(
+            V3ColumnProblem problem,
+            double[][] kValues,
+            double feedFlow,
+            double feedVaporFraction,
+            double[] liquidTotals,
+            double[] vaporTotals,
+            double liquidProductFraction,
+            double vaporProductFraction) {
+        int nodes = problem.topology().nodeCount();
+        int components = problem.activeComponentBasis().componentCount();
+        if (liquidTotals.length != nodes || vaporTotals.length != nodes) {
+            throw new IllegalArgumentException("V3 partial-condenser traffic dimensions disagree");
+        }
         double[][] liquid = new double[nodes][components];
         double[][] vapor = new double[nodes][components];
         for (int component = 0; component < components; component++) {
@@ -231,19 +486,34 @@ final class V3ColumnInitializer {
             }
             double[] componentLiquid;
             try {
-                componentLiquid = solveComponentMaterialBalance(
-                        problem, component, componentPhaseRatios, organicRefluxFraction(problem));
+                componentLiquid = problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
+                        ? solveVaporOnlyCondenserComponentMaterialBalance(problem, component, componentPhaseRatios)
+                        : solveComponentMaterialBalance(
+                                problem, component, componentPhaseRatios, organicRefluxFraction(problem));
             } catch (IllegalArgumentException singularOrNegative) {
                 return null;
             }
             for (int node = 0; node < nodes; node++) {
                 liquid[node][component] = componentLiquid[node];
-                vapor[node][component] = componentPhaseRatios[node] * componentLiquid[node];
+                vapor[node][component] = node == 0 && problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
+                        ? componentPhaseRatios[1] * componentLiquid[1]
+                        : componentPhaseRatios[node] * componentLiquid[node];
             }
         }
         double mismatch = sumRatesMismatch(liquid, vapor, liquidTotals, vaporTotals);
         return Double.isFinite(mismatch)
                 ? new ColdTrafficCandidate(liquid, vapor, mismatch, liquidProductFraction, vaporProductFraction) : null;
+    }
+
+    private static boolean positiveFiniteTraffic(TrafficTotals traffic) {
+        double[] liquid = traffic.liquidTotals();
+        double[] vapor = traffic.vaporTotals();
+        if (liquid.length != vapor.length) return false;
+        for (int node = 0; node < liquid.length; node++) {
+            if (!(liquid[node] > 0.0) || !(vapor[node] > 0.0)
+                    || !Double.isFinite(liquid[node]) || !Double.isFinite(vapor[node])) return false;
+        }
+        return true;
     }
 
     private static boolean buildColdTrafficTotals(
@@ -358,6 +628,32 @@ final class V3ColumnInitializer {
         return solveTridiagonal(lower, diagonal, upper, rightHandSide);
     }
 
+    /** Solves a vapor-only condenser component with V1=V0 and no liquid reflux or condenser VLE row. */
+    private static double[] solveVaporOnlyCondenserComponentMaterialBalance(
+            V3ColumnProblem problem, int component, double[] phaseRatios) {
+        V3ColumnTopology topology = problem.topology();
+        int reboiler = topology.reboilerNode();
+        double[] lower = new double[reboiler];
+        double[] diagonal = new double[reboiler];
+        double[] upper = new double[reboiler];
+        double[] rightHandSide = new double[reboiler];
+        for (int tray = 1; tray <= topology.trayCount(); tray++) {
+            int row = tray - 1;
+            lower[row] = tray == 1 ? 0.0 : 1.0;
+            diagonal[row] = -(1.0 + phaseRatios[tray]);
+            upper[row] = phaseRatios[tray + 1];
+            rightHandSide[row] = tray == topology.feedTrayNumber()
+                    ? -problem.activeComponentBasis().feedFlowMolPerSecond(component) : 0.0;
+        }
+        int reboilerRow = reboiler - 1;
+        lower[reboilerRow] = 1.0;
+        diagonal[reboilerRow] = -(1.0 + phaseRatios[reboiler]);
+        double[] reducedSolution = solveTridiagonal(lower, diagonal, upper, rightHandSide);
+        double[] liquid = new double[reboiler + 1];
+        System.arraycopy(reducedSolution, 0, liquid, 1, reducedSolution.length);
+        return liquid;
+    }
+
     private static double[] solveTridiagonal(
             double[] lower, double[] diagonal, double[] upper, double[] rightHandSide) {
         int size = diagonal.length;
@@ -409,10 +705,10 @@ final class V3ColumnInitializer {
         double[] composition = new double[active.publicBasis().componentCount()];
         for (int component = 0; component < componentFlows.length; component++) {
             double flow = componentFlows[component];
-            if (!Double.isFinite(flow) || flow <= 0.0) {
-                throw new IllegalArgumentException("V3 sequential material preconditioner generated a nonpositive component flow");
+            if (!Double.isFinite(flow) || flow < 0.0) {
+                throw new IllegalArgumentException("V3 sequential material preconditioner generated an invalid component flow");
             }
-            composition[active.publicIndex(component)] = flow / total;
+            composition[active.publicIndex(component)] = flow == 0.0 ? 0.0 : flow / total;
         }
         return composition;
     }
@@ -461,6 +757,26 @@ final class V3ColumnInitializer {
             state = Objects.requireNonNull(state, "state");
             evidence = Objects.requireNonNull(evidence, "evidence");
         }
+    }
+
+    private record EnergyProperties(double[] liquid, double[] vapor) {
+        private EnergyProperties {
+            liquid = liquid.clone();
+            vapor = vapor.clone();
+        }
+
+        @Override public double[] liquid() { return liquid.clone(); }
+        @Override public double[] vapor() { return vapor.clone(); }
+    }
+
+    private record TrafficTotals(double[] liquidTotals, double[] vaporTotals, double trayPredictedReboilerVapor) {
+        private TrafficTotals {
+            liquidTotals = liquidTotals.clone();
+            vaporTotals = vaporTotals.clone();
+        }
+
+        @Override public double[] liquidTotals() { return liquidTotals.clone(); }
+        @Override public double[] vaporTotals() { return vaporTotals.clone(); }
     }
 
     private record ColdTrafficCandidate(

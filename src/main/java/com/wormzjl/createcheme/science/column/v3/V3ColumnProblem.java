@@ -7,15 +7,18 @@ public final class V3ColumnProblem {
     private final V3ColumnInput input;
     private final V3ColumnTopology topology;
     private final V3ActiveComponentBasis activeComponentBasis;
+    private final V3CondenserComponentPhases condenserComponentPhases;
     private final double[] nodePressuresPascal;
     private final V3DegreeOfFreedomLedger degreeOfFreedomLedger;
 
     V3ColumnProblem(
-            V3ColumnInput input, V3ColumnTopology topology, V3ActiveComponentBasis activeComponentBasis, double[] nodePressuresPascal,
+            V3ColumnInput input, V3ColumnTopology topology, V3ActiveComponentBasis activeComponentBasis,
+            V3CondenserComponentPhases condenserComponentPhases, double[] nodePressuresPascal,
             V3DegreeOfFreedomLedger degreeOfFreedomLedger) {
         this.input = Objects.requireNonNull(input, "input");
         this.topology = Objects.requireNonNull(topology, "topology");
         this.activeComponentBasis = Objects.requireNonNull(activeComponentBasis, "activeComponentBasis");
+        this.condenserComponentPhases = Objects.requireNonNull(condenserComponentPhases, "condenserComponentPhases");
         this.nodePressuresPascal = Objects.requireNonNull(nodePressuresPascal, "nodePressuresPascal").clone();
         this.degreeOfFreedomLedger = Objects.requireNonNull(degreeOfFreedomLedger, "degreeOfFreedomLedger");
         if (this.nodePressuresPascal.length != topology.nodeCount()) {
@@ -43,6 +46,10 @@ public final class V3ColumnProblem {
 
     V3ActiveComponentBasis activeComponentBasis() {
         return activeComponentBasis;
+    }
+
+    V3CondenserComponentPhases condenserComponentPhases() {
+        return condenserComponentPhases;
     }
 
     public double[] nodePressuresPascal() {

@@ -59,11 +59,13 @@ final class V3MeshResidualEvaluator {
         V3ColumnTopology topology = problem.topology();
         if (node == topology.condenserNode()) {
             return state.vaporFlow(1, component) - state.vaporFlow(0, component)
-                    - (topology.hasLiquidPhase(0) ? state.liquidFlow(0, component) : 0.0);
+                    - (problem.condenserComponentPhases().hasLiquid(topology, 0, component)
+                    ? state.liquidFlow(0, component) : 0.0);
         }
         if (node <= topology.trayCount()) {
             double liquidIn = node == 1
-                    ? (topology.hasLiquidPhase(0) ? organicRefluxFraction() * state.liquidFlow(0, component) : 0.0)
+                    ? (problem.condenserComponentPhases().hasLiquid(topology, 0, component)
+                    ? organicRefluxFraction() * state.liquidFlow(0, component) : 0.0)
                     : state.liquidFlow(node - 1, component);
             double feed = node == topology.feedTrayNumber() ? activeComponentBasis.feedFlowMolPerSecond(component) : 0.0;
             return liquidIn + state.vaporFlow(node + 1, component) + feed - state.liquidFlow(node, component)
@@ -130,6 +132,9 @@ final class V3MeshResidualEvaluator {
         double[] composition = new double[problem.input().componentBasis().componentCount()];
         for (int component = 0; component < state.componentCount(); component++) {
             double flow = liquid ? state.liquidFlow(node, component) : state.vaporFlow(node, component);
+            if (flow == 0.0 && liquid && !problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component)) {
+                continue;
+            }
             if (flow <= 0.0) throw new IllegalArgumentException("V3 MESH active component flow must be positive for logarithmic VLE");
             composition[activeComponentBasis.publicIndex(component)] = flow / total;
         }

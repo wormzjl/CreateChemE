@@ -19,14 +19,17 @@ final class V3StageBlockLayout {
         int offset = 0;
         for (int node = 0; node < topology.nodeCount(); node++) {
             starts[node] = offset;
-            int expected = 2 * problem.activeComponentBasis().componentCount() + (topology.hasTemperatureUnknown(node) ? 1 : 0)
-                    - (topology.hasLiquidPhase(node) ? 0 : problem.activeComponentBasis().componentCount());
+            int expected = topology.hasTemperatureUnknown(node) ? 1 : 0;
+            for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
+                expected++;
+                if (problem.condenserComponentPhases().hasLiquid(topology, node, component)) expected++;
+            }
             if (expected <= 0 || offset + expected > unknowns.size()) {
                 throw new IllegalArgumentException("V3 MESH ledger block size is invalid");
             }
             sizes[node] = expected;
-            validateUnknownBlock(unknowns, topology, node, offset, expected);
-            validateEquationBlock(equations, topology, node, offset, expected);
+            validateUnknownBlock(unknowns, problem, node, offset, expected);
+            validateEquationBlock(equations, problem, node, offset, expected);
             offset += expected;
         }
         if (offset != unknowns.size()) throw new IllegalArgumentException("V3 MESH ledger has trailing non-stage variables or equations");
@@ -37,29 +40,43 @@ final class V3StageBlockLayout {
     int size(int node) { requireNode(node); return sizes[node]; }
 
     private static void validateUnknownBlock(
-            List<V3DegreeOfFreedomLedger.Unknown> unknowns, V3ColumnTopology topology, int node, int start, int size) {
+            List<V3DegreeOfFreedomLedger.Unknown> unknowns, V3ColumnProblem problem, int node, int start, int size) {
+        V3ColumnTopology topology = problem.topology();
         for (int index = start; index < start + size; index++) {
             if (unknowns.get(index).id().node() != node) {
                 throw new IllegalArgumentException("V3 MESH unknown ledger is not contiguous by node");
             }
         }
-        boolean expectedLiquid = topology.hasLiquidPhase(node);
-        long liquids = unknowns.subList(start, start + size).stream().filter(unknown -> unknown.id().family()
-                == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW).count();
-        if ((liquids > 0) != expectedLiquid) throw new IllegalArgumentException("V3 MESH unknown ledger phase map disagrees with topology");
+        for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
+            int activeComponent = component;
+            boolean expectedLiquid = problem.condenserComponentPhases().hasLiquid(topology, node, component);
+            boolean foundLiquid = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
+                    == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW
+                    && unknown.id().component() == activeComponent);
+            if (foundLiquid != expectedLiquid) {
+                throw new IllegalArgumentException("V3 MESH unknown ledger component phase map disagrees with topology");
+            }
+        }
     }
 
     private static void validateEquationBlock(
-            List<V3DegreeOfFreedomLedger.Equation> equations, V3ColumnTopology topology, int node, int start, int size) {
+            List<V3DegreeOfFreedomLedger.Equation> equations, V3ColumnProblem problem, int node, int start, int size) {
+        V3ColumnTopology topology = problem.topology();
         for (int index = start; index < start + size; index++) {
             if (equations.get(index).id().node() != node) {
                 throw new IllegalArgumentException("V3 MESH equation ledger is not contiguous by node");
             }
         }
-        boolean expectedVle = topology.hasVaporLiquidEquilibriumEquation(node);
-        long equilibrium = equations.subList(start, start + size).stream().filter(equation -> equation.id().family()
-                == V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM).count();
-        if ((equilibrium > 0) != expectedVle) throw new IllegalArgumentException("V3 MESH equation ledger phase map disagrees with topology");
+        for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
+            int activeComponent = component;
+            boolean expectedVle = problem.condenserComponentPhases().hasVaporLiquidEquilibrium(topology, node, component);
+            boolean foundVle = equations.subList(start, start + size).stream().anyMatch(equation -> equation.id().family()
+                    == V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM
+                    && equation.id().component() == activeComponent);
+            if (foundVle != expectedVle) {
+                throw new IllegalArgumentException("V3 MESH equation ledger component phase map disagrees with topology");
+            }
+        }
     }
 
     private void requireNode(int node) {
