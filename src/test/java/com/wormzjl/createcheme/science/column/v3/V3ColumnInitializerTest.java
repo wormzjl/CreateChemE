@@ -15,6 +15,20 @@ import org.junit.jupiter.api.Test;
 
 class V3ColumnInitializerTest {
     @Test
+    void materialPhaseFlowRatiosIncludeThePriorStageTotalVaporToLiquidRatio() {
+        double[][] equilibriumConstants = {{2.0, 0.5}, {3.0, 0.25}};
+        double[][] liquid = {{4.0, 6.0}, {3.0, 7.0}};
+        double[][] vapor = {{6.0, 14.0}, {1.5, 3.5}};
+
+        double[][] ratios = V3ColumnInitializer.phaseFlowRatios(equilibriumConstants, liquid, vapor);
+
+        assertEquals(4.0, ratios[0][0]);
+        assertEquals(1.0, ratios[0][1]);
+        assertEquals(1.5, ratios[1][0]);
+        assertEquals(0.125, ratios[1][1]);
+    }
+
+    @Test
     void positiveRefluxSeedIsFinitePositiveAndClosesEveryComponentMaterialRowWithoutPublishingSuccess() {
         V3ColumnProblem problem = problem(1.0, V3CondenserPhaseBranch.TWO_PHASE, new double[] {30.0, 60.0});
         MaterialOnlyThermo thermo = new MaterialOnlyThermo();

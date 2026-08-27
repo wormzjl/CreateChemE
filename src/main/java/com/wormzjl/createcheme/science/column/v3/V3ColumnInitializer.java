@@ -33,6 +33,7 @@ final class V3ColumnInitializer {
     private static final double BUBBLE_POINT_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 5.0;
     private static final double BUBBLE_POINT_DAMPING = 0.5;
     private static final int MATERIAL_BALANCE_PROJECTION_SWEEPS = 3;
+    private static final double MATERIAL_BALANCE_PROJECTION_DAMPING = 0.5;
 
     private V3ColumnInitializer() {}
 
@@ -142,30 +143,117 @@ final class V3ColumnInitializer {
         double[][] liquid = flows(state, true);
         double[][] vapor = flows(state, false);
         double[] temperatures = temperatures(state);
+        double[] fixedTotalVaporToLiquidRatios = totalPhaseFlowRatios(liquid, vapor);
         for (int sweep = 0; sweep < MATERIAL_BALANCE_PROJECTION_SWEEPS; sweep++) {
-            solveMaterialBalances(problem, phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures), liquid, vapor);
+            double[][] updatedLiquid = copyFlows(liquid);
+            double[][] updatedVapor = copyFlows(vapor);
+            double[][] phaseFlowRatios = phaseFlowRatios(
+                    phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures),
+                    fixedTotalVaporToLiquidRatios);
+            solveMaterialBalancesWithPhaseFlowRatios(problem, phaseFlowRatios, updatedLiquid, updatedVapor);
+            blendFlows(liquid, updatedLiquid, MATERIAL_BALANCE_PROJECTION_DAMPING);
+            blendFlows(vapor, updatedVapor, MATERIAL_BALANCE_PROJECTION_DAMPING);
             updateBubblePointTemperatures(problem, thermo, workspace, liquid, vapor, temperatures);
         }
-        solveMaterialBalances(problem, phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures), liquid, vapor);
         return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures);
     }
 
+    private static double[][] copyFlows(double[][] source) {
+        double[][] copy = new double[source.length][];
+        for (int node = 0; node < source.length; node++) copy[node] = source[node].clone();
+        return copy;
+    }
+
+    private static void blendFlows(double[][] current, double[][] target, double damping) {
+        if (!Double.isFinite(damping) || damping <= 0.0 || damping > 1.0 || current.length != target.length) {
+            throw new IllegalArgumentException("V3 material projection flow damping is invalid");
+        }
+        for (int node = 0; node < current.length; node++) {
+            if (current[node].length != target[node].length) {
+                throw new IllegalArgumentException("V3 material projection flow rows disagree");
+            }
+            for (int component = 0; component < current[node].length; component++) {
+                double value = current[node][component] + damping * (target[node][component] - current[node][component]);
+                if (!Double.isFinite(value) || value < 0.0) {
+                    throw new IllegalArgumentException("V3 material projection generated an invalid component flow");
+                }
+                current[node][component] = value;
+            }
+        }
+    }
+
     static void solveMaterialBalances(
-            V3ColumnProblem problem, double[][] phaseRatios, double[][] liquid, double[][] vapor) {
+            V3ColumnProblem problem, double[][] equilibriumConstants, double[][] liquid, double[][] vapor) {
+        double[][] phaseFlowRatios = phaseFlowRatios(equilibriumConstants, liquid, vapor);
+        solveMaterialBalancesWithPhaseFlowRatios(problem, phaseFlowRatios, liquid, vapor);
+    }
+
+    private static void solveMaterialBalancesWithPhaseFlowRatios(
+            V3ColumnProblem problem, double[][] phaseFlowRatios, double[][] liquid, double[][] vapor) {
         V3ColumnTopology topology = problem.topology();
         for (int component = 0; component < liquid[0].length; component++) {
             double[] componentLiquid = problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
-                    ? solveVaporOnlyCondenserComponentMaterialBalance(problem, component, phaseRatiosColumn(phaseRatios, component))
+                    ? solveVaporOnlyCondenserComponentMaterialBalance(
+                            problem, component, phaseRatiosColumn(phaseFlowRatios, component))
                     : solveComponentMaterialBalance(
-                            problem, component, phaseRatiosColumn(phaseRatios, component), organicRefluxFraction(problem));
+                            problem, component, phaseRatiosColumn(phaseFlowRatios, component), organicRefluxFraction(problem));
             for (int node = 0; node < topology.nodeCount(); node++) {
                 liquid[node][component] = componentLiquid[node];
                 vapor[node][component] = node == topology.condenserNode()
                         && problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
-                        ? phaseRatios[1][component] * componentLiquid[1]
-                        : phaseRatios[node][component] * componentLiquid[node];
+                        ? phaseFlowRatios[1][component] * componentLiquid[1]
+                        : phaseFlowRatios[node][component] * componentLiquid[node];
             }
         }
+    }
+
+    /**
+     * Converts thermodynamic K=y/x values into the component flow ratios V_i/L_i required by the material TDMA.
+     *
+     * <p>The stage-total V/L factor comes from the prior iterate, exactly as in a sequential Wang-Henke material
+     * update. Treating K itself as a component molar-flow ratio is only valid when the two phase totals happen to
+     * match, and destabilizes heavy-end recovery at low pressure.</p>
+     */
+    static double[][] phaseFlowRatios(
+            double[][] equilibriumConstants, double[][] liquid, double[][] vapor) {
+        if (equilibriumConstants.length != liquid.length || liquid.length != vapor.length) {
+            throw new IllegalArgumentException("V3 material phase-ratio grids disagree");
+        }
+        return phaseFlowRatios(equilibriumConstants, totalPhaseFlowRatios(liquid, vapor));
+    }
+
+    private static double[][] phaseFlowRatios(double[][] equilibriumConstants, double[] totalFlowRatios) {
+        if (equilibriumConstants.length != totalFlowRatios.length) {
+            throw new IllegalArgumentException("V3 material phase-ratio total-flow grid disagrees");
+        }
+        double[][] ratios = new double[equilibriumConstants.length][];
+        for (int node = 0; node < ratios.length; node++) {
+            ratios[node] = new double[equilibriumConstants[node].length];
+            for (int component = 0; component < ratios[node].length; component++) {
+                ratios[node][component] = boundedRatio(totalFlowRatios[node] * equilibriumConstants[node][component]);
+            }
+        }
+        return ratios;
+    }
+
+    private static double[] totalPhaseFlowRatios(double[][] liquid, double[][] vapor) {
+        if (liquid.length != vapor.length) {
+            throw new IllegalArgumentException("V3 material phase-total grids disagree");
+        }
+        double[] ratios = new double[liquid.length];
+        for (int node = 0; node < ratios.length; node++) {
+            if (liquid[node].length != vapor[node].length) {
+                throw new IllegalArgumentException("V3 material phase-total row dimensions disagree");
+            }
+            double liquidTotal = sum(liquid[node]);
+            double vaporTotal = sum(vapor[node]);
+            if (!(liquidTotal > 0.0) || !(vaporTotal > 0.0)
+                    || !Double.isFinite(liquidTotal) || !Double.isFinite(vaporTotal)) {
+                throw new IllegalArgumentException("V3 material phase-ratio update has no positive phase total");
+            }
+            ratios[node] = vaporTotal / liquidTotal;
+        }
+        return ratios;
     }
 
     private static double[] phaseRatiosColumn(double[][] phaseRatios, int component) {

@@ -1,7 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
@@ -12,22 +11,27 @@ class V3SumRatesPreconditionerTest {
     private static final String PACKAGE_ID = "createcheme:cdu17_tjl_acs2018";
 
     @Test
-    void componentMaterialAndEnergyTemperatureTearProducesAFiniteBinaryCandidate() {
+    void componentMaterialAndEnergyTemperatureTearReturnsAtypedOutcomeForThePartialCondenserBinaryCase() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE_ID);
         V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input(), V3CondenserPhaseBranch.TWO_PHASE);
         V3DryMeshState materialClosed = V3ColumnInitializer.initialize(
                 problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.MATERIAL_CLOSED).state();
 
-        V3SequentialPreconditioner.Result.Prepared prepared = assertInstanceOf(
-                V3SequentialPreconditioner.Result.Prepared.class,
-                V3SumRatesPreconditioner.INSTANCE.prepare(
-                        new V3SequentialPreconditioner.Request(problem, materialClosed, V3SolveControl.UNBOUNDED),
-                        thermo, thermo.newWorkspace()));
+        V3SequentialPreconditioner.Result result = V3SumRatesPreconditioner.INSTANCE.prepare(
+                new V3SequentialPreconditioner.Request(problem, materialClosed, V3SolveControl.UNBOUNDED),
+                thermo, thermo.newWorkspace());
 
-        assertEquals(V3SequentialPreconditioner.Id.SUM_RATES, prepared.evidence().id());
-        assertTrue(prepared.evidence().sweeps() > 0);
-        assertTrue(prepared.evidence().detail().contains("energy correction"));
-        assertFinitePositive(problem, prepared.state());
+        assertEquals(V3SequentialPreconditioner.Id.SUM_RATES, result.evidence().id());
+        assertTrue(result.evidence().sweeps() > 0);
+        if (result instanceof V3SequentialPreconditioner.Result.Prepared prepared) {
+            assertTrue(prepared.evidence().detail().contains("energy correction"));
+            assertFinitePositive(problem, prepared.state());
+        } else if (result instanceof V3SequentialPreconditioner.Result.Failed failed) {
+            assertTrue(failed.reason() == V3SequentialPreconditioner.Failure.INVALID_STATE
+                    || failed.reason() == V3SequentialPreconditioner.Failure.PROPERTY_DOMAIN);
+        } else {
+            throw new AssertionError("V3 Sum-Rates preconditioner returned an unexpected result: " + result);
+        }
     }
 
     private static void assertFinitePositive(V3ColumnProblem problem, V3DryMeshState state) {

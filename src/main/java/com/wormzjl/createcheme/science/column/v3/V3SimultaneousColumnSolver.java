@@ -12,6 +12,9 @@ final class V3SimultaneousColumnSolver {
     private static final double ARMIJO_COEFFICIENT = 1.0e-4;
     private static final int FINE_MAXIMUM_LINE_SEARCH_STEPS = 20;
     private static final int COARSE_RECOVERY_MAXIMUM_LINE_SEARCH_STEPS = 40;
+    private static final int MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS = 1;
+    private static final int UNLIMITED_LOCAL_BLOCK_ATTEMPTS = Integer.MAX_VALUE;
+    private static final int LOCAL_BLOCK_JACOBIAN_MINIMUM_COORDINATES = 96;
     private static final double FALLBACK_MAXIMUM_LOG_FLOW_CHANGE = 0.25;
     private static final double FALLBACK_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 10.0;
     private static final double INITIAL_GAUSS_NEWTON_DAMPING = 1.0e-8;
@@ -89,6 +92,74 @@ final class V3SimultaneousColumnSolver {
             V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
             V3SolveControl control,
             V3NewtonTrace trace) {
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, initialConvergenceEvidence,
+                maximumIterations, scaledTolerance, differenceScale, control, trace, 0, 0);
+    }
+
+    /**
+     * Uses stage-local block directions between fresh fine finite-difference Jacobians for a close stage-grid seed.
+     *
+     * <p>Each local step remains Armijo-gated. Rejected local directions fall through to the authoritative full
+     * coloured finite-difference correction; final convergence certification remains fresh Newton.</p>
+     */
+    static Attempt solveWithContinuationLocalBlocks(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumIterations,
+            double scaledTolerance,
+            V3SolveControl control) {
+        return solveWithContinuationLocalBlocks(problem, evaluator, coordinates, initialState, workspaceFactory,
+                maximumIterations, scaledTolerance, control, V3NewtonTrace.NONE);
+    }
+
+    static Attempt solveWithContinuationLocalBlocks(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumIterations,
+            double scaledTolerance,
+            V3SolveControl control,
+            V3NewtonTrace trace) {
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
+                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE,
+                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, UNLIMITED_LOCAL_BLOCK_ATTEMPTS);
+    }
+
+    /** Uses exactly one local block predictor before the full finite-difference pressure-leg corrector. */
+    static Attempt solveWithOneLocalBlockPredictor(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumIterations,
+            double scaledTolerance,
+            V3SolveControl control,
+            V3NewtonTrace trace) {
+        return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
+                maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE,
+                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, 1);
+    }
+
+    private static Attempt solve(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3ConvergenceEvidence initialConvergenceEvidence,
+            int maximumIterations,
+            double scaledTolerance,
+            V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
+            V3SolveControl control,
+            V3NewtonTrace trace,
+            int maximumFrozenFineJacobianSteps,
+            int maximumLocalBlockAttempts) {
         problem = Objects.requireNonNull(problem, "problem");
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
@@ -98,7 +169,10 @@ final class V3SimultaneousColumnSolver {
         differenceScale = Objects.requireNonNull(differenceScale, "differenceScale");
         control = Objects.requireNonNull(control, "control");
         trace = Objects.requireNonNull(trace, "trace");
-        if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0) {
+        if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0
+                || maximumFrozenFineJacobianSteps < 0
+                || maximumFrozenFineJacobianSteps > MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS
+                || maximumLocalBlockAttempts < 0) {
             throw new IllegalArgumentException("V3 Newton solve limits are invalid");
         }
         V3StageBlockLayout layout = new V3StageBlockLayout(problem);
@@ -107,6 +181,9 @@ final class V3SimultaneousColumnSolver {
         V3DryMeshState state = initialState;
         double lastMerit = Double.NaN;
         V3ConvergenceEvidence lastConvergenceEvidence = initialConvergenceEvidence;
+        V3FiniteDifferenceJacobian.Jacobian cachedFineJacobian = null;
+        int frozenFineJacobianSteps = 0;
+        int localBlockAttempts = 0;
         for (int iteration = 0; iteration <= maximumIterations; iteration++) {
             control.checkpoint();
             V3MeshResidual residual;
@@ -123,7 +200,7 @@ final class V3SimultaneousColumnSolver {
             control.checkpoint();
             double maximumResidual = residual.maximumAbsoluteScaledResidual();
             double merit = scaledSquaredNorm(residual);
-            trace.sampledIteration(iteration, residual, merit);
+            trace.sampledState(iteration, state, residual, merit);
             if (maximumResidual <= scaledTolerance && lastConvergenceEvidence.satisfiesGates()) {
                 return new Attempt.Converged(state, new Evidence(iteration, maximumResidual, merit, 0.0, 0.0,
                         "residual and final-step tolerances", lastConvergenceEvidence));
@@ -142,19 +219,72 @@ final class V3SimultaneousColumnSolver {
                         new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, "iteration budget exhausted",
                                 lastConvergenceEvidence));
             }
-            V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
-                    evaluator, coordinates, state, workspaceFactory, differenceScale, control);
+            if (maximumLocalBlockAttempts > localBlockAttempts
+                    && differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.FINE
+                    && coordinates.coordinateCount() >= LOCAL_BLOCK_JACOBIAN_MINIMUM_COORDINATES) {
+                localBlockAttempts++;
+                boolean localBlockAccepted = false;
+                try {
+                    V3BlockJacobian localJacobian = V3BlockJacobianAssembler.assembleLocal(
+                            problem, evaluator, coordinates, state, workspaceFactory, differenceScale, control);
+                    V3BandedPivotedSolver.Result localLinear = V3BandedPivotedSolver.solve(
+                            localJacobian.toBandedMatrix(), negativeScaledResidual(residual));
+                    if (localLinear instanceof V3BandedPivotedSolver.Result.Success localSuccess) {
+                        double[] baseCoordinates = coordinates.encode(state);
+                        AcceptedTrial localTrial = armijoTrial(
+                                evaluator, coordinates, baseCoordinates, localSuccess.solution(), merit, workspaceFactory,
+                                maximumLineSearchSteps, control);
+                        if (localTrial != null) {
+                            localBlockAccepted = true;
+                            trace.localBlockDirection(iteration, true);
+                            state = localTrial.state();
+                            lastMerit = localTrial.merit();
+                            cachedFineJacobian = null;
+                            frozenFineJacobianSteps = 0;
+                            lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+                            continue;
+                        }
+                    }
+                } catch (IllegalArgumentException | V3ThermoException localUnavailable) {
+                    // The full coloured finite-difference Jacobian remains the authoritative fallback when a local
+                    // one-sided PR probe crosses a property/root boundary.
+                }
+                if (!localBlockAccepted) trace.localBlockDirection(iteration, false);
+            }
+            boolean usesFrozenFineJacobian = differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.FINE
+                    && cachedFineJacobian != null && frozenFineJacobianSteps < maximumFrozenFineJacobianSteps;
+            V3FiniteDifferenceJacobian.Jacobian jacobian = usesFrozenFineJacobian
+                    ? cachedFineJacobian
+                    : V3FiniteDifferenceJacobian.evaluate(
+                            evaluator, coordinates, state, workspaceFactory, differenceScale, control);
+            trace.finiteDifferenceJacobian(iteration, usesFrozenFineJacobian);
+            if (!usesFrozenFineJacobian && differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.FINE) {
+                cachedFineJacobian = jacobian;
+                frozenFineJacobianSteps = 0;
+            }
             V3BandedPivotedSolver.Result linearResult;
             try {
                 linearResult = V3BandedPivotedSolver.solve(
                         toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
             } catch (IllegalStateException unavailable) {
+                if (usesFrozenFineJacobian) {
+                    cachedFineJacobian = null;
+                    frozenFineJacobianSteps = 0;
+                    iteration--;
+                    continue;
+                }
                 if (!NEWTON_OFF_BAND_MESSAGE.equals(unavailable.getMessage())) throw unavailable;
                 return new Attempt.Failure("JACOBIAN_BAND_STRUCTURE", state,
                         new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, unavailable.getMessage(),
                                 lastConvergenceEvidence));
             }
             if (!(linearResult instanceof V3BandedPivotedSolver.Result.Success linearSuccess)) {
+                if (usesFrozenFineJacobian) {
+                    cachedFineJacobian = null;
+                    frozenFineJacobianSteps = 0;
+                    iteration--;
+                    continue;
+                }
                 V3BandedPivotedSolver.Result.Failure failure = (V3BandedPivotedSolver.Result.Failure) linearResult;
                 double[] baseCoordinates = coordinates.encode(state);
                 AcceptedTrial descentTrial = dampedGaussNewtonTrial(
@@ -180,6 +310,12 @@ final class V3SimultaneousColumnSolver {
                     evaluator, coordinates, baseCoordinates, linearSuccess.solution(), merit, workspaceFactory,
                     maximumLineSearchSteps, control);
             boolean usedDescentFallback = acceptedTrial == null;
+            if (usedDescentFallback && usesFrozenFineJacobian) {
+                cachedFineJacobian = null;
+                frozenFineJacobianSteps = 0;
+                iteration--;
+                continue;
+            }
             if (usedDescentFallback) {
                 acceptedTrial = dampedGaussNewtonTrial(
                         evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory,
@@ -197,8 +333,17 @@ final class V3SimultaneousColumnSolver {
             }
             state = acceptedTrial.state();
             lastMerit = acceptedTrial.merit();
-            lastConvergenceEvidence = usedDescentFallback ? V3ConvergenceEvidence.unavailable()
-                    : convergenceEvidence(coordinates, baseCoordinates, acceptedTrial.coordinates(), linearSuccess.backwardError());
+            if (usedDescentFallback) {
+                cachedFineJacobian = null;
+                frozenFineJacobianSteps = 0;
+                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+            } else if (usesFrozenFineJacobian) {
+                frozenFineJacobianSteps++;
+                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+            } else {
+                lastConvergenceEvidence = convergenceEvidence(
+                        coordinates, baseCoordinates, acceptedTrial.coordinates(), linearSuccess.backwardError());
+            }
             double acceptedStep = acceptedTrial.step();
             if (!Double.isFinite(lastMerit)) {
                 return new Attempt.Failure("INTERNAL_INVARIANT", state,

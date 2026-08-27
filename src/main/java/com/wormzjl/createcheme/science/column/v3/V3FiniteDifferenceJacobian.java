@@ -205,7 +205,7 @@ final class V3FiniteDifferenceJacobian {
         }
     }
 
-    private static double step(
+    static double step(
             double coordinate, V3DegreeOfFreedomLedger.UnknownFamily family, DifferenceScale differenceScale) {
         return family == V3DegreeOfFreedomLedger.UnknownFamily.TEMPERATURE
                 ? Math.max(differenceScale.minimumTemperatureStepKelvin,

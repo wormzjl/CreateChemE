@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import com.wormzjl.createcheme.science.column.v3.linalg.V3BandedMatrix;
 import java.util.Objects;
 
 /** Immutable lower/diagonal/upper stage-block Jacobian with no hidden dense production representation. */
@@ -28,6 +29,72 @@ final class V3BlockJacobian {
     double[][] diagonal(int node) { return copy(diagonal[node]); }
     double[][] upper(int node) { return copy(upper[node]); }
     double maximumOffBandMagnitude() { return maximumOffBandMagnitude; }
+
+    /** Materializes only the declared tri-block coupling as the scalar band matrix used by the current LU solver. */
+    V3BandedMatrix toBandedMatrix() {
+        int lowerBandwidth = 0;
+        int upperBandwidth = 0;
+        for (int rowNode = 0; rowNode < layout.nodeCount(); rowNode++) {
+            int rowStart = layout.start(rowNode);
+            lowerBandwidth = Math.max(lowerBandwidth, maximumLowerBandwidth(
+                    lower[rowNode], rowStart, rowNode == 0 ? 0 : layout.start(rowNode - 1)));
+            int diagonalLower = maximumLowerBandwidth(diagonal[rowNode], rowStart, rowStart);
+            int diagonalUpper = maximumUpperBandwidth(diagonal[rowNode], rowStart, rowStart);
+            lowerBandwidth = Math.max(lowerBandwidth, diagonalLower);
+            upperBandwidth = Math.max(upperBandwidth, diagonalUpper);
+            if (rowNode + 1 < layout.nodeCount()) {
+                upperBandwidth = Math.max(upperBandwidth,
+                        maximumUpperBandwidth(upper[rowNode], rowStart, layout.start(rowNode + 1)));
+            }
+        }
+        V3BandedMatrix matrix = new V3BandedMatrix(totalSize(), lowerBandwidth, upperBandwidth);
+        for (int rowNode = 0; rowNode < layout.nodeCount(); rowNode++) {
+            int rowStart = layout.start(rowNode);
+            if (rowNode > 0) putBlock(matrix, lower[rowNode], rowStart, layout.start(rowNode - 1));
+            putBlock(matrix, diagonal[rowNode], rowStart, rowStart);
+            if (rowNode + 1 < layout.nodeCount()) putBlock(matrix, upper[rowNode], rowStart, layout.start(rowNode + 1));
+        }
+        return matrix;
+    }
+
+    private int totalSize() {
+        int finalNode = layout.nodeCount() - 1;
+        return layout.start(finalNode) + layout.size(finalNode);
+    }
+
+    private static int maximumLowerBandwidth(double[][] block, int rowStart, int columnStart) {
+        int maximum = 0;
+        for (int row = 0; row < block.length; row++) {
+            for (int column = 0; column < block[row].length; column++) {
+                if (Math.abs(block[row][column]) > 0.0) {
+                    maximum = Math.max(maximum, rowStart + row - columnStart - column);
+                }
+            }
+        }
+        return Math.max(0, maximum);
+    }
+
+    private static int maximumUpperBandwidth(double[][] block, int rowStart, int columnStart) {
+        int maximum = 0;
+        for (int row = 0; row < block.length; row++) {
+            for (int column = 0; column < block[row].length; column++) {
+                if (Math.abs(block[row][column]) > 0.0) {
+                    maximum = Math.max(maximum, columnStart + column - rowStart - row);
+                }
+            }
+        }
+        return Math.max(0, maximum);
+    }
+
+    private static void putBlock(V3BandedMatrix matrix, double[][] block, int rowStart, int columnStart) {
+        for (int row = 0; row < block.length; row++) {
+            for (int column = 0; column < block[row].length; column++) {
+                if (block[row][column] != 0.0) {
+                    matrix.set(rowStart + row, columnStart + column, block[row][column]);
+                }
+            }
+        }
+    }
 
     private static double[][][] copyBlocks(double[][][] blocks, V3StageBlockLayout layout, int columnOffset) {
         blocks = Objects.requireNonNull(blocks, "blocks");

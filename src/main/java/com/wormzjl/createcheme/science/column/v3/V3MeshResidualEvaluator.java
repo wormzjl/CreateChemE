@@ -5,6 +5,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,6 +56,35 @@ final class V3MeshResidualEvaluator {
         return new V3MeshResidual(rows);
     }
 
+    /**
+     * Returns the thermodynamic terms whose value can change when only one stage block is perturbed.
+     *
+     * <p>Material rows are intentionally absent: their log-flow derivatives are exact and are assembled without a
+     * property call. The returned phase-energy terms are total phase enthalpy rates, so adjacent energy rows can use
+     * their difference directly.</p>
+     */
+    LocalNodeTerms localTerms(V3DryMeshState state, int node, V3ThermoWorkspace workspace) {
+        state = Objects.requireNonNull(state, "state");
+        workspace = Objects.requireNonNull(workspace, "workspace");
+        if (state.nodeCount() != problem.topology().nodeCount()
+                || state.componentCount() != activeComponentBasis.componentCount()
+                || node < problem.topology().condenserNode() || node > problem.topology().reboilerNode()) {
+            throw new IllegalArgumentException("V3 local MESH thermodynamic probe does not match its problem");
+        }
+        NodeProperties properties = nodeProperties(state, node, workspace);
+        double[] equilibrium = new double[state.componentCount()];
+        Arrays.fill(equilibrium, Double.NaN);
+        for (int component = 0; component < equilibrium.length; component++) {
+            if (problem.condenserComponentPhases().hasVaporLiquidEquilibrium(problem.topology(), node, component)) {
+                equilibrium[component] = equilibriumResidual(node, component, properties);
+            }
+        }
+        double liquidEnergy = problem.topology().hasLiquidPhase(node)
+                ? phaseEnergy(state, node, true, properties) : 0.0;
+        double vaporEnergy = phaseEnergy(state, node, false, properties);
+        return new LocalNodeTerms(equilibrium, liquidEnergy, vaporEnergy);
+    }
+
     private double materialResidual(V3DryMeshState state, int node, int component) {
         V3ColumnTopology topology = problem.topology();
         if (node == topology.condenserNode()) {
@@ -98,30 +128,38 @@ final class V3MeshResidualEvaluator {
     }
 
     private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties[] properties) {
+        return phaseEnergy(state, node, liquid, properties[node]);
+    }
+
+    private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties properties) {
         double totalFlow = phaseTotal(state, node, liquid);
         if (totalFlow == 0.0) return 0.0;
-        return totalFlow * (liquid ? properties[node].liquidResult().molarEnthalpyJoulesPerMol()
-                : properties[node].vaporResult().molarEnthalpyJoulesPerMol());
+        return totalFlow * (liquid ? properties.liquidResult().molarEnthalpyJoulesPerMol()
+                : properties.vaporResult().molarEnthalpyJoulesPerMol());
     }
 
     /** Builds immutable per-node property snapshots once per residual evaluation. */
     private NodeProperties[] nodeProperties(V3DryMeshState state, V3ThermoWorkspace workspace) {
         NodeProperties[] properties = new NodeProperties[state.nodeCount()];
         for (int node = 0; node < properties.length; node++) {
-            double[] vaporComposition = normalizedPublicPhaseComposition(state, node, false);
-            double temperature = state.temperatureKelvin(node);
-            double pressure = problem.nodePressurePascal(node);
-            V3FugacityResult vaporResult = thermo.fugacity(
-                    temperature, pressure, vaporComposition, V3Phase.VAPOR, workspace);
-            double[] liquidComposition = null;
-            V3FugacityResult liquidResult = null;
-            if (problem.topology().hasLiquidPhase(node)) {
-                liquidComposition = normalizedPublicPhaseComposition(state, node, true);
-                liquidResult = thermo.fugacity(temperature, pressure, liquidComposition, V3Phase.LIQUID, workspace);
-            }
-            properties[node] = new NodeProperties(liquidComposition, vaporComposition, liquidResult, vaporResult);
+            properties[node] = nodeProperties(state, node, workspace);
         }
         return properties;
+    }
+
+    private NodeProperties nodeProperties(V3DryMeshState state, int node, V3ThermoWorkspace workspace) {
+        double[] vaporComposition = normalizedPublicPhaseComposition(state, node, false);
+        double temperature = state.temperatureKelvin(node);
+        double pressure = problem.nodePressurePascal(node);
+        V3FugacityResult vaporResult = thermo.fugacity(
+                temperature, pressure, vaporComposition, V3Phase.VAPOR, workspace);
+        double[] liquidComposition = null;
+        V3FugacityResult liquidResult = null;
+        if (problem.topology().hasLiquidPhase(node)) {
+            liquidComposition = normalizedPublicPhaseComposition(state, node, true);
+            liquidResult = thermo.fugacity(temperature, pressure, liquidComposition, V3Phase.LIQUID, workspace);
+        }
+        return new NodeProperties(liquidComposition, vaporComposition, liquidResult, vaporResult);
     }
 
     private double[] normalizedPublicPhaseComposition(V3DryMeshState state, int node, boolean liquid) {
@@ -172,4 +210,18 @@ final class V3MeshResidualEvaluator {
             double[] vaporComposition,
             V3FugacityResult liquidResult,
             V3FugacityResult vaporResult) {}
+
+    /** Package-local response of one node to a local coordinate perturbation. */
+    record LocalNodeTerms(double[] equilibriumResiduals, double liquidPhaseEnergy, double vaporPhaseEnergy) {
+        LocalNodeTerms {
+            equilibriumResiduals = Objects.requireNonNull(equilibriumResiduals, "equilibriumResiduals").clone();
+            if (!Double.isFinite(liquidPhaseEnergy) || !Double.isFinite(vaporPhaseEnergy)) {
+                throw new IllegalArgumentException("V3 local MESH phase energies must be finite");
+            }
+        }
+
+        @Override public double[] equilibriumResiduals() { return equilibriumResiduals.clone(); }
+
+        double equilibriumResidual(int component) { return equilibriumResiduals[component]; }
+    }
 }

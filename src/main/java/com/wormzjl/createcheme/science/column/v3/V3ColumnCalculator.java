@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.science.column.v3;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
@@ -19,7 +20,19 @@ public final class V3ColumnCalculator {
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r2";
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
-    private static final double LOW_PRESSURE_CONTINUATION_PROJECTION_LIMIT_PASCAL = 150_000.0;
+    private static final double PRESSURE_CONTINUATION_TRIGGER_PASCAL = 100_000.0;
+    private static final double PRESSURE_CONTINUATION_ANCHOR_PASCAL = 150_000.0;
+    private static final double PRESSURE_CONTINUATION_STEP_PASCAL = 10_000.0;
+    private static final double PRESSURE_CONTINUATION_FINE_STEP_PASCAL = 5_000.0;
+    private static final double PRESSURE_CONTINUATION_FINE_STEP_FROM_PASCAL = 110_000.0;
+    private static final int PRESSURE_CONTINUATION_CORRECTOR_MAXIMUM_ITERATIONS = 12;
+    private static final int PRESSURE_CONTINUATION_RECOVERY_MAXIMUM_ITERATIONS = 24;
+
+    private enum ContinuationJacobianPolicy {
+        NONE,
+        STAGE_LOCAL_BLOCKS,
+        PRESSURE_LOCAL_PREDICTOR
+    }
 
     private V3ColumnCalculator() {}
 
@@ -57,9 +70,13 @@ public final class V3ColumnCalculator {
                     problem, FORMULATION_REVISION, thermo.datasetRevision(), ASSUMPTIONS_REVISION);
             V3SolvePass pass;
             if (initializerMode == V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
-                pass = solveDwsimStageContinuation(input, thermo, control);
+                pass = requiresPressureContinuation(admission)
+                        ? solveDwsimPressureContinuation(input, thermo, control)
+                        : solveDwsimStageContinuation(input, thermo, control);
                 if (!publishesSuccess(pass.attempt(), pass.audit())
-                        && pass.terminalStageCount() >= input.stageCount()) {
+                        && pass.attemptedRequestedProblem()
+                        && pass.terminalStageCount() >= input.stageCount()
+                        && pass.allowsFreshMaterialClosedFallback()) {
                     // The sequential material/VLE preconditioner is deliberately optional. It must not turn an
                     // otherwise solvable MESH problem into a failure; this is a fresh V3 material-closed seed,
                     // never a V1 approximation or a retained warm state.
@@ -101,7 +118,7 @@ public final class V3ColumnCalculator {
                     // the band-structure guard because of finite-difference noise.
                 }
             }
-            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath);
+            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, pass.solverEvents());
             if (pass.reachedRequestedProblem()
                     && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()) {
                 V3ColumnResult result = V3ColumnResult.accepted(
@@ -109,7 +126,12 @@ public final class V3ColumnCalculator {
                 return new V3ColumnOutcome.Success(result, diagnostics);
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
-                String detail = pass.terminalStageCount() < input.stageCount()
+                String detail = !pass.attemptedRequestedProblem()
+                        ? "DWSIM pressure continuation stalled before the requested operating point at "
+                        + pass.solvePath() + " after " + failure.evidence().iterations()
+                        + " Newton iterations; maximum scaled residual "
+                        + failure.evidence().maximumScaledResidual() + ": " + failure.evidence().termination()
+                        : pass.terminalStageCount() < input.stageCount()
                         ? "DWSIM continuation stalled at " + pass.terminalStageCount() + " stages after "
                         + failure.evidence().iterations() + " Newton iterations; maximum scaled residual "
                         + failure.evidence().maximumScaledResidual() + ": " + failure.evidence().termination()
@@ -127,6 +149,11 @@ public final class V3ColumnCalculator {
         } catch (IllegalStateException internal) {
             return terminalFailure(V3SolverFailureCode.INTERNAL_ERROR, internal.getMessage(), "internal");
         }
+    }
+
+    private static boolean requiresPressureContinuation(V3OperatingDomainValidator.Assessment admission) {
+        return admission instanceof V3OperatingDomainValidator.Assessment.Eligible eligible
+                && eligible.minimumNodePressurePascal() <= PRESSURE_CONTINUATION_TRIGGER_PASCAL;
     }
 
     /**
@@ -150,35 +177,89 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed = previousState == null
                     ? V3ColumnInitializer.initialize(stageProblem, thermo, thermo.newWorkspace(),
                             V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state()
-                    : continuationSeed(input, stageProblem, thermo, previousState, control);
+                    : continuationSeed(stageProblem, previousState, thermo, control);
             lastPass = solveSingleProblem(stageProblem, thermo,
-                    seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd");
+                    seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd",
+                    ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS);
             if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
                 lastPass = recoverDwsimContinuationStage(stageProblem, thermo, lastPass, control, stagePath, stageCount);
                 if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
                     return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
                             "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount,
-                            lastPass.recoverySeed(), stageCount, false);
+                            lastPass.recoverySeed(), stageCount, false, stageCount == input.stageCount(),
+                            stageCount == input.stageCount(), lastPass.solverEvents());
                 }
             }
             previousState = lastPass.attempt().state();
         }
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
         return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                lastPass.solvePath(), lastPass.recoverySeed(), lastPass.terminalStageCount(), true);
+                lastPass.solvePath(), lastPass.recoverySeed(), lastPass.terminalStageCount(), true, true, false,
+                lastPass.solverEvents());
+    }
+
+    /**
+     * Continues a qualified 150 kPa(a) cold solution downward in bounded request-local pressure steps.
+     *
+     * <p>Each leg solves the complete requested-stage MESH system and independently audits it before its state may
+     * seed the next leg. No accepted state survives this calculation call.</p>
+     */
+    private static V3SolvePass solveDwsimPressureContinuation(
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control) {
+        if (input.topPressurePascal() > PRESSURE_CONTINUATION_TRIGGER_PASCAL) {
+            throw new IllegalArgumentException("V3 pressure continuation was requested outside its low-pressure lane");
+        }
+        V3ColumnInput anchorInput = withTopPressure(input, PRESSURE_CONTINUATION_ANCHOR_PASCAL);
+        V3SolvePass pass = solveDwsimStageContinuation(anchorInput, thermo, control);
+        List<String> pressureEvents = new ArrayList<>();
+        String pressurePath = dwsimPressurePath(input.topPressurePascal());
+        if (!publishesSuccess(pass.attempt(), pass.audit())) {
+            return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
+                    "cold/dwsim-pressure/" + pressurePath + "/anchor-failed", pass.recoverySeed(),
+                    pass.terminalStageCount(), false, false, false,
+                    mergedEvents(pressureEvents, pass.solverEvents()));
+        }
+        for (double pressure : dwsimPressureSteps(input.topPressurePascal())) {
+            control.checkpoint();
+            V3ColumnInput stepInput = withTopPressure(input, pressure);
+            V3ColumnProblem stepProblem = V3ColumnProblemResolver.resolve(stepInput, V3CondenserPhaseBranch.TWO_PHASE);
+            V3DryMeshState seed = pass.attempt().state();
+            String stepPath = "cold/dwsim-pressure/" + pressurePath + "/top-"
+                    + Math.round(pressure / 1_000.0) + "kpa/fine-fd";
+            pass = solveSingleProblem(stepProblem, thermo, seed, control, stepPath,
+                    ContinuationJacobianPolicy.PRESSURE_LOCAL_PREDICTOR,
+                    PRESSURE_CONTINUATION_CORRECTOR_MAXIMUM_ITERATIONS);
+            pressureEvents.add(pressureEvent(pressure, "predictor", pass));
+            if (!publishesSuccess(pass.attempt(), pass.audit())) {
+                pass = recoverWithBubblePointProjection(stepProblem, thermo, seed, control,
+                        "cold/dwsim-pressure/" + pressurePath + "/top-"
+                                + Math.round(pressure / 1_000.0) + "kpa/material-vle-recovery/fine-fd",
+                        ContinuationJacobianPolicy.PRESSURE_LOCAL_PREDICTOR,
+                        PRESSURE_CONTINUATION_RECOVERY_MAXIMUM_ITERATIONS);
+                pressureEvents.add(pressureEvent(pressure, "Wang-Henke material/VLE recovery", pass));
+                if (!publishesSuccess(pass.attempt(), pass.audit())) {
+                    boolean attemptedRequestedProblem = Double.compare(pressure, input.topPressurePascal()) == 0;
+                    return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
+                            "cold/dwsim-pressure/" + pressurePath + "/failed-top-"
+                                    + Math.round(pressure / 1_000.0) + "kpa",
+                            pass.recoverySeed(), input.stageCount(), false, attemptedRequestedProblem, false,
+                            mergedEvents(pressureEvents, pass.solverEvents()));
+                }
+            }
+        }
+        return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
+                pass.solvePath(), pass.recoverySeed(), input.stageCount(), true, true, false,
+                mergedEvents(pressureEvents, pass.solverEvents()));
     }
 
     /** Applies the material/VLE hand-off projection only in the qualified low-pressure operating region. */
     private static V3DryMeshState continuationSeed(
-            V3ColumnInput input,
             V3ColumnProblem targetProblem,
-            V3PengRobinsonThermo thermo,
             V3DryMeshState previousState,
+            V3PengRobinsonThermo thermo,
             V3SolveControl control) {
         V3DryMeshState interpolated = interpolate(previousState, targetProblem);
-        return input.topPressurePascal() <= LOW_PRESSURE_CONTINUATION_PROJECTION_LIMIT_PASCAL
-                ? projectedSeedOrPrevious(targetProblem, thermo, interpolated, control)
-                : interpolated;
+        return projectedSeedOrPrevious(targetProblem, thermo, interpolated, control);
     }
 
     private static V3DryMeshState projectedSeedOrPrevious(
@@ -230,9 +311,23 @@ public final class V3ColumnCalculator {
             String stagePath,
         int stageCount) {
         control.checkpoint();
-        V3DryMeshState projected = projectedSeedOrPrevious(problem, thermo, failedPass.attempt().state(), control);
-        return solveSingleProblem(problem, thermo, projected, control,
-                "cold/dwsim-sequential/" + stagePath + "/material-vle-recovery-stage-" + stageCount + "/fine-fd");
+        return recoverWithBubblePointProjection(problem, thermo, failedPass.attempt().state(), control,
+                "cold/dwsim-sequential/" + stagePath + "/material-vle-recovery-stage-" + stageCount + "/fine-fd",
+                ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                MAXIMUM_NEWTON_ITERATIONS);
+    }
+
+    private static V3SolvePass recoverWithBubblePointProjection(
+            V3ColumnProblem problem,
+            V3PengRobinsonThermo thermo,
+            V3DryMeshState projectionSource,
+            V3SolveControl control,
+            String solvePath,
+            ContinuationJacobianPolicy jacobianPolicy,
+            int maximumIterations) {
+        control.checkpoint();
+        V3DryMeshState projected = projectedSeedOrPrevious(problem, thermo, projectionSource, control);
+        return solveSingleProblem(problem, thermo, projected, control, solvePath, jacobianPolicy, maximumIterations);
     }
 
     private static V3SolvePass solveSingleProblem(
@@ -241,19 +336,56 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed,
             V3SolveControl control,
             String solvePath) {
+        return solveSingleProblem(problem, thermo, seed, control, solvePath, ContinuationJacobianPolicy.NONE);
+    }
+
+    private static V3SolvePass solveSingleProblem(
+            V3ColumnProblem problem,
+            V3PengRobinsonThermo thermo,
+            V3DryMeshState seed,
+            V3SolveControl control,
+            String solvePath,
+            ContinuationJacobianPolicy jacobianPolicy) {
+        return solveSingleProblem(problem, thermo, seed, control, solvePath, jacobianPolicy,
+                MAXIMUM_NEWTON_ITERATIONS);
+    }
+
+    private static V3SolvePass solveSingleProblem(
+            V3ColumnProblem problem,
+            V3PengRobinsonThermo thermo,
+            V3DryMeshState seed,
+            V3SolveControl control,
+            String solvePath,
+            ContinuationJacobianPolicy jacobianPolicy,
+            int maximumIterations) {
+        if (maximumIterations < 1 || maximumIterations > MAXIMUM_NEWTON_ITERATIONS) {
+            throw new IllegalArgumentException("V3 simultaneous solve iteration limit is invalid");
+        }
+        jacobianPolicy = Objects.requireNonNull(jacobianPolicy, "jacobianPolicy");
         control.checkpoint();
         V3FlashResult feedFlash = thermo.flashTP(problem.input().feedTemperatureKelvin(),
                 problem.nodePressurePascal(problem.topology().feedTrayNumber()),
                 problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                 problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
-        V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
-                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed, thermo::newWorkspace,
-                MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE, control);
+        SolveTelemetry telemetry = new SolveTelemetry(problem);
+        V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
+        V3SimultaneousColumnSolver.Attempt attempt = switch (jacobianPolicy) {
+            case NONE -> V3SimultaneousColumnSolver.solve(
+                    problem, evaluator, coordinates, seed, thermo::newWorkspace,
+                    V3ConvergenceEvidence.unavailable(), maximumIterations, SCALED_RESIDUAL_TOLERANCE,
+                    V3FiniteDifferenceJacobian.DifferenceScale.FINE, control, telemetry);
+            case STAGE_LOCAL_BLOCKS -> V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
+                    problem, evaluator, coordinates, seed, thermo::newWorkspace,
+                    maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+            case PRESSURE_LOCAL_PREDICTOR -> V3SimultaneousColumnSolver.solveWithOneLocalBlockPredictor(
+                    problem, evaluator, coordinates, seed, thermo::newWorkspace,
+                    maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+        };
         control.checkpoint();
         V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state(), control);
         return new V3SolvePass(attempt, audit, feedFlash.molarEnthalpyJoulesPerMol(), solvePath,
-                seed, problem.input().stageCount(), true);
+                seed, problem.input().stageCount(), true, true, true, telemetry.events());
     }
 
     private static List<Integer> dwsimStageCounts(int requestedStageCount) {
@@ -280,6 +412,36 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), stageCount, feedStage,
                 input.topPressurePascal(), input.stagePressureDropPascal(), input.specifications());
+    }
+
+    private static V3ColumnInput withTopPressure(V3ColumnInput input, double topPressurePascal) {
+        if (!Double.isFinite(topPressurePascal) || topPressurePascal <= 0.0) {
+            throw new IllegalArgumentException("V3 pressure-continuation top pressure is invalid");
+        }
+        return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
+                input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
+                input.feedStageNumber(), topPressurePascal, input.stagePressureDropPascal(), input.specifications());
+    }
+
+    private static List<Double> dwsimPressureSteps(double requestedTopPressurePascal) {
+        List<Double> pressures = new java.util.ArrayList<>();
+        double pressure = PRESSURE_CONTINUATION_ANCHOR_PASCAL;
+        while (pressure > requestedTopPressurePascal) {
+            double step = pressure > PRESSURE_CONTINUATION_FINE_STEP_FROM_PASCAL
+                    ? PRESSURE_CONTINUATION_STEP_PASCAL : PRESSURE_CONTINUATION_FINE_STEP_PASCAL;
+            pressure = Math.max(requestedTopPressurePascal, pressure - step);
+            pressures.add(pressure);
+        }
+        return List.copyOf(pressures);
+    }
+
+    private static String dwsimPressurePath(double requestedTopPressurePascal) {
+        StringBuilder path = new StringBuilder();
+        path.append(Math.round(PRESSURE_CONTINUATION_ANCHOR_PASCAL / 1_000.0));
+        for (double pressure : dwsimPressureSteps(requestedTopPressurePascal)) {
+            path.append('-').append(Math.round(pressure / 1_000.0));
+        }
+        return path.toString();
     }
 
     private static V3DryMeshState interpolate(V3DryMeshState source, V3ColumnProblem target) {
@@ -333,12 +495,17 @@ public final class V3ColumnCalculator {
     }
 
     private static V3SolverDiagnostics diagnostics(
-            V3SimultaneousColumnSolver.Attempt attempt, V3AcceptanceAudit audit, String solvePath) {
+            V3SimultaneousColumnSolver.Attempt attempt,
+            V3AcceptanceAudit audit,
+            String solvePath,
+            List<String> solverEvents) {
         V3SimultaneousColumnSolver.Evidence evidence = attempt.evidence();
         double finalStepNorm = Math.max(evidence.convergenceEvidence().maximumLogFlowChange(),
                 evidence.convergenceEvidence().maximumTemperatureChangeKelvin());
+        List<String> events = new ArrayList<>(solverEvents);
+        if (events.size() < V3SolverDiagnostics.MAX_EVENTS) events.add(evidence.termination());
         return new V3SolverDiagnostics(0, evidence.iterations(), 0, 0, evidence.maximumScaledResidual(), finalStepNorm,
-                solvePath, List.of(evidence.termination()), audit, evidence.convergenceEvidence());
+                solvePath, events, audit, evidence.convergenceEvidence());
     }
 
     private static V3ColumnOutcome.Failure terminalFailure(
@@ -377,15 +544,119 @@ public final class V3ColumnCalculator {
             String solvePath,
             V3DryMeshState recoverySeed,
             int terminalStageCount,
-            boolean reachedRequestedProblem) {
+            boolean reachedRequestedProblem,
+            boolean attemptedRequestedProblem,
+            boolean allowsFreshMaterialClosedFallback,
+            List<String> solverEvents) {
         private V3SolvePass {
             attempt = Objects.requireNonNull(attempt, "attempt");
             audit = Objects.requireNonNull(audit, "audit");
             recoverySeed = Objects.requireNonNull(recoverySeed, "recoverySeed");
+            solverEvents = List.copyOf(Objects.requireNonNull(solverEvents, "solverEvents"));
             if (!Double.isFinite(feedMolarEnthalpyJoulesPerMol) || solvePath == null || solvePath.isBlank()
-                    || terminalStageCount < V3ColumnInput.MIN_STAGE_COUNT) {
+                    || terminalStageCount < V3ColumnInput.MIN_STAGE_COUNT
+                    || solverEvents.size() > V3SolverDiagnostics.MAX_EVENTS
+                    || solverEvents.stream().anyMatch(event -> event == null || event.length() > 256)) {
                 throw new IllegalArgumentException("V3 solve pass evidence is invalid");
             }
+        }
+    }
+
+    private static String pressureEvent(double pressurePascal, String phase, V3SolvePass pass) {
+        V3SimultaneousColumnSolver.Evidence evidence = pass.attempt().evidence();
+        return "pressure " + Math.round(pressurePascal / 1_000.0) + " kPa " + phase
+                + ": " + evidence.termination() + ", iterations=" + evidence.iterations()
+                + ", residual=" + evidence.maximumScaledResidual();
+    }
+
+    private static List<String> mergedEvents(List<String> continuationEvents, List<String> solverEvents) {
+        List<String> result = new ArrayList<>(continuationEvents);
+        for (String event : solverEvents) {
+            if (result.size() >= V3SolverDiagnostics.MAX_EVENTS) break;
+            result.add(event);
+        }
+        return List.copyOf(result);
+    }
+
+    /** Bounded per-solve direction counters, surfaced through the existing diagnostics event contract. */
+    private static final class SolveTelemetry implements V3NewtonTrace {
+        private final V3ColumnProblem problem;
+        private int acceptedLocalBlockDirections;
+        private int rejectedLocalBlockDirections;
+        private int freshFiniteDifferenceJacobians;
+        private int reusedFiniteDifferenceJacobians;
+        private double initialMaximumScaledResidual = Double.NaN;
+        private double finalMaximumScaledResidual = Double.NaN;
+        private V3DegreeOfFreedomLedger.EquationId finalDominantEquation;
+        private double finalDominantPhysicalResidual;
+        private V3DryMeshState finalState;
+
+        private SolveTelemetry(V3ColumnProblem problem) {
+            this.problem = Objects.requireNonNull(problem, "problem");
+        }
+
+        @Override
+        public void sampledIteration(int iteration, V3MeshResidual residual, double scaledMerit) {
+            // The state-bearing callback below owns production telemetry. This method preserves lambda compatibility.
+        }
+
+        @Override
+        public void sampledState(int iteration, V3DryMeshState state, V3MeshResidual residual, double scaledMerit) {
+            double maximum = residual.maximumAbsoluteScaledResidual();
+            if (Double.isNaN(initialMaximumScaledResidual)) initialMaximumScaledResidual = maximum;
+            finalMaximumScaledResidual = maximum;
+            finalState = state;
+            V3MeshResidual.Row dominant = null;
+            for (V3MeshResidual.Row row : residual.rows()) {
+                if (dominant == null || Math.abs(row.scaledValue()) > Math.abs(dominant.scaledValue())) dominant = row;
+            }
+            if (dominant != null) {
+                finalDominantEquation = dominant.equation();
+                finalDominantPhysicalResidual = dominant.physicalValue();
+            }
+        }
+
+        @Override
+        public void localBlockDirection(int iteration, boolean accepted) {
+            if (accepted) acceptedLocalBlockDirections++;
+            else rejectedLocalBlockDirections++;
+        }
+
+        @Override
+        public void finiteDifferenceJacobian(int iteration, boolean reused) {
+            if (reused) reusedFiniteDifferenceJacobians++;
+            else freshFiniteDifferenceJacobians++;
+        }
+
+        List<String> events() {
+            List<String> events = new ArrayList<>();
+            if (Double.isFinite(initialMaximumScaledResidual)) {
+                events.add("scaled residual: initial=" + initialMaximumScaledResidual
+                        + ", final=" + finalMaximumScaledResidual);
+            }
+            if (finalDominantEquation != null) {
+                events.add("dominant residual: " + finalDominantEquation + ", physical="
+                        + finalDominantPhysicalResidual);
+                if (finalState != null && finalDominantEquation.family()
+                        == V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM) {
+                    int activeComponent = finalDominantEquation.component();
+                    int publicComponent = problem.activeComponentBasis().publicIndex(activeComponent);
+                    int node = finalDominantEquation.node();
+                    events.add("dominant VLE state: component=" + problem.input().componentBasis().componentId(publicComponent)
+                            + ", node=" + node + ", temperature=" + finalState.temperatureKelvin(node)
+                            + ", liquid-flow=" + finalState.liquidFlow(node, activeComponent)
+                            + ", vapor-flow=" + finalState.vaporFlow(node, activeComponent));
+                }
+            }
+            if (acceptedLocalBlockDirections + rejectedLocalBlockDirections > 0) {
+                events.add("local-block directions: accepted=" + acceptedLocalBlockDirections
+                        + ", rejected=" + rejectedLocalBlockDirections);
+            }
+            if (freshFiniteDifferenceJacobians + reusedFiniteDifferenceJacobians > 0) {
+                events.add("fine finite-difference Jacobians: fresh=" + freshFiniteDifferenceJacobians
+                        + ", reused=" + reusedFiniteDifferenceJacobians);
+            }
+            return List.copyOf(events);
         }
     }
 }
