@@ -183,7 +183,7 @@ public final class V3ColumnCalculator {
 
     private static V3DryMeshState projectedSeedOrPrevious(
             V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState previousState, V3SolveControl control) {
-        V3PreconditionerResult result = V3BubblePointPreconditioner.INSTANCE.prepare(
+        V3PreconditionerResult result = V3HybridPreconditioner.prepare(
                 new V3PreconditionerRequest(problem, previousState, control), thermo, thermo.newWorkspace());
         if (result instanceof V3PreconditionerResult.Prepared prepared
                 && isLogCoordinateFeasible(problem, prepared.state())) {
