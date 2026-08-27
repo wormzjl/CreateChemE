@@ -109,7 +109,17 @@ final class V3SimultaneousColumnSolver {
         V3ConvergenceEvidence lastConvergenceEvidence = initialConvergenceEvidence;
         for (int iteration = 0; iteration <= maximumIterations; iteration++) {
             control.checkpoint();
-            V3MeshResidual residual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
+            V3MeshResidual residual;
+            try {
+                residual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
+            } catch (IllegalArgumentException invalidState) {
+                String detail = invalidState.getMessage();
+                if (detail == null || detail.isBlank()) detail = "V3 MESH state is outside the logarithmic phase-flow domain";
+                if (detail.length() > 192) detail = detail.substring(0, 192);
+                return new Attempt.Failure("STATE_DOMAIN", state,
+                        new Evidence(iteration, 0.0, 0.0, 0.0, 0.0, detail,
+                                lastConvergenceEvidence));
+            }
             control.checkpoint();
             double maximumResidual = residual.maximumAbsoluteScaledResidual();
             double merit = scaledSquaredNorm(residual);

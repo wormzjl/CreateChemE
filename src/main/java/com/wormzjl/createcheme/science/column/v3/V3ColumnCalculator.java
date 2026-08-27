@@ -19,6 +19,7 @@ public final class V3ColumnCalculator {
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r2";
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
+    private static final double LOW_PRESSURE_CONTINUATION_PROJECTION_LIMIT_PASCAL = 150_000.0;
 
     private V3ColumnCalculator() {}
 
@@ -145,19 +146,80 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed = previousState == null
                     ? V3ColumnInitializer.initialize(stageProblem, thermo, thermo.newWorkspace(),
                             V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state()
-                    : interpolate(previousState, stageProblem);
+                    : continuationSeed(input, stageProblem, thermo, previousState);
             lastPass = solveSingleProblem(stageProblem, thermo,
                     seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd");
             if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
-                return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                        "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount,
-                        lastPass.recoverySeed(), stageCount, false);
+                lastPass = recoverDwsimContinuationStage(stageProblem, thermo, lastPass, control, stagePath, stageCount);
+                if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
+                    return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
+                            "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount,
+                            lastPass.recoverySeed(), stageCount, false);
+                }
             }
             previousState = lastPass.attempt().state();
         }
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
         return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
                 lastPass.solvePath(), lastPass.recoverySeed(), lastPass.terminalStageCount(), true);
+    }
+
+    /** Applies the material/VLE hand-off projection only in the qualified low-pressure operating region. */
+    private static V3DryMeshState continuationSeed(
+            V3ColumnInput input, V3ColumnProblem targetProblem, V3PengRobinsonThermo thermo, V3DryMeshState previousState) {
+        V3DryMeshState interpolated = interpolate(previousState, targetProblem);
+        return input.topPressurePascal() <= LOW_PRESSURE_CONTINUATION_PROJECTION_LIMIT_PASCAL
+                ? projectedSeedOrPrevious(targetProblem, thermo, interpolated)
+                : interpolated;
+    }
+
+    private static V3DryMeshState projectedSeedOrPrevious(
+            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState previousState) {
+        try {
+            V3DryMeshState projected = V3ColumnInitializer.projectMaterialBalancesAtFixedTemperature(
+                    problem, thermo, thermo.newWorkspace(), previousState);
+            return isLogCoordinateFeasible(problem, projected) ? projected : previousState;
+        } catch (V3ThermoException | IllegalArgumentException unavailableProjection) {
+            return previousState;
+        }
+    }
+
+    private static boolean isLogCoordinateFeasible(V3ColumnProblem problem, V3DryMeshState state) {
+        for (int node = 0; node < state.nodeCount(); node++) {
+            if (!Double.isFinite(state.temperatureKelvin(node)) || state.temperatureKelvin(node) <= 0.0) return false;
+            for (int component = 0; component < state.componentCount(); component++) {
+                if (!Double.isFinite(state.vaporFlow(node, component)) || state.vaporFlow(node, component) <= 0.0) {
+                    return false;
+                }
+                boolean liquidPhase = problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component);
+                if (liquidPhase && (!Double.isFinite(state.liquidFlow(node, component))
+                        || state.liquidFlow(node, component) <= 0.0)) {
+                    return false;
+                }
+                if (!liquidPhase && state.liquidFlow(node, component) != 0.0) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Re-establishes component material closure after a failed auxiliary continuation solve, then retries MESH.
+     *
+     * <p>This mirrors the DWSIM-style sequential material/VLE phase of a Wang-Henke solve. It is deliberately
+     * bounded and local to the current request; the recovered state cannot be published until the unchanged
+     * simultaneous solver and independent acceptance audit both pass.</p>
+     */
+    private static V3SolvePass recoverDwsimContinuationStage(
+            V3ColumnProblem problem,
+            V3PengRobinsonThermo thermo,
+            V3SolvePass failedPass,
+            V3SolveControl control,
+            String stagePath,
+            int stageCount) {
+        control.checkpoint();
+        V3DryMeshState projected = projectedSeedOrPrevious(problem, thermo, failedPass.attempt().state());
+        return solveSingleProblem(problem, thermo, projected, control,
+                "cold/dwsim-sequential/" + stagePath + "/material-vle-recovery-stage-" + stageCount + "/fine-fd");
     }
 
     private static V3SolvePass solveSingleProblem(
@@ -284,7 +346,9 @@ public final class V3ColumnCalculator {
             return V3SolverFailureCode.LINEAR_SOLVE_FAILURE;
         }
         if (code.startsWith("MAX_ITERATIONS") || code.startsWith("LINE_SEARCH")
-                || code.startsWith("CONVERGENCE_EVIDENCE")) return V3SolverFailureCode.NONCONVERGENCE;
+                || code.startsWith("CONVERGENCE_EVIDENCE") || code.startsWith("STATE_DOMAIN")) {
+            return V3SolverFailureCode.NONCONVERGENCE;
+        }
         return V3SolverFailureCode.INTERNAL_ERROR;
     }
 

@@ -32,6 +32,7 @@ final class V3ColumnInitializer {
     private static final double BUBBLE_POINT_DIFFERENCE_KELVIN = 1.0;
     private static final double BUBBLE_POINT_MAXIMUM_TEMPERATURE_CHANGE_KELVIN = 5.0;
     private static final double BUBBLE_POINT_DAMPING = 0.5;
+    private static final int MATERIAL_BALANCE_PROJECTION_SWEEPS = 3;
 
     private V3ColumnInitializer() {}
 
@@ -76,7 +77,8 @@ final class V3ColumnInitializer {
             vapor[1][component] = vapor[0][component] + liquid[0][component];
 
             double reflux = condenserLiquidComponent ? refluxRatio * externalLiquid : 0.0;
-            double traffic = refluxRatio > 0.0 ? reflux : ZERO_REFLUX_TRAFFIC_FRACTION * feed;
+            double traffic = condenserLiquidComponent && refluxRatio > 0.0
+                    ? reflux : ZERO_REFLUX_TRAFFIC_FRACTION * feed;
             double previousLiquid = traffic;
             for (int tray = 1; tray <= topology.trayCount(); tray++) {
                 double feedAtTray = tray == topology.feedTrayNumber() ? feed : 0.0;
@@ -116,6 +118,60 @@ final class V3ColumnInitializer {
         }
         return new Seed(state, new Evidence(feedFlash.phase().name(), feedFlash.vaporFraction(),
                 trafficPolicy));
+    }
+
+    /**
+     * Applies a bounded Wang-Henke-style material/VLE projection to an existing cold state.
+     *
+     * <p>The temperature profile is intentionally held fixed. Each sweep calculates PR phase ratios from the
+     * current compositions, solves the component tridiagonal material balances, and reconstructs the corresponding
+     * phase flows. This is a solver recovery preconditioner only; a subsequent simultaneous MESH solve and fresh
+     * audit remain required before publication.</p>
+     */
+    static V3DryMeshState projectMaterialBalancesAtFixedTemperature(
+            V3ColumnProblem problem, V3ThermoModel thermo, V3ThermoWorkspace workspace, V3DryMeshState state) {
+        problem = Objects.requireNonNull(problem, "problem");
+        thermo = Objects.requireNonNull(thermo, "thermo");
+        workspace = Objects.requireNonNull(workspace, "workspace");
+        state = Objects.requireNonNull(state, "state");
+        if (state.nodeCount() != problem.topology().nodeCount()
+                || state.componentCount() != problem.activeComponentBasis().componentCount()) {
+            throw new IllegalArgumentException("V3 material projection state does not match its problem");
+        }
+        V3ColumnTopology topology = problem.topology();
+        double[][] liquid = flows(state, true);
+        double[][] vapor = flows(state, false);
+        double[] temperatures = temperatures(state);
+        for (int sweep = 0; sweep < MATERIAL_BALANCE_PROJECTION_SWEEPS; sweep++) {
+            solveMaterialBalances(problem, phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures), liquid, vapor);
+            updateBubblePointTemperatures(problem, thermo, workspace, liquid, vapor, temperatures);
+        }
+        solveMaterialBalances(problem, phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures), liquid, vapor);
+        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures);
+    }
+
+    private static void solveMaterialBalances(
+            V3ColumnProblem problem, double[][] phaseRatios, double[][] liquid, double[][] vapor) {
+        V3ColumnTopology topology = problem.topology();
+        for (int component = 0; component < liquid[0].length; component++) {
+            double[] componentLiquid = problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
+                    ? solveVaporOnlyCondenserComponentMaterialBalance(problem, component, phaseRatiosColumn(phaseRatios, component))
+                    : solveComponentMaterialBalance(
+                            problem, component, phaseRatiosColumn(phaseRatios, component), organicRefluxFraction(problem));
+            for (int node = 0; node < topology.nodeCount(); node++) {
+                liquid[node][component] = componentLiquid[node];
+                vapor[node][component] = node == topology.condenserNode()
+                        && problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
+                        ? phaseRatios[1][component] * componentLiquid[1]
+                        : phaseRatios[node][component] * componentLiquid[node];
+            }
+        }
+    }
+
+    private static double[] phaseRatiosColumn(double[][] phaseRatios, int component) {
+        double[] result = new double[phaseRatios.length];
+        for (int node = 0; node < result.length; node++) result[node] = phaseRatios[node][component];
+        return result;
     }
 
     private static V3DryMeshState phaseAwareTrafficSeed(
@@ -194,18 +250,29 @@ final class V3ColumnInitializer {
             V3ThermoWorkspace workspace,
             ColdTrafficCandidate candidate,
             double[] temperatures) {
+        return updateBubblePointTemperatures(
+                problem, thermo, workspace, candidate.liquidFlows(), candidate.vaporFlows(), temperatures);
+    }
+
+    private static double updateBubblePointTemperatures(
+            V3ColumnProblem problem,
+            V3ThermoModel thermo,
+            V3ThermoWorkspace workspace,
+            double[][] liquidFlows,
+            double[][] vaporFlows,
+            double[] temperatures) {
         V3ColumnTopology topology = problem.topology();
         V3ActiveComponentBasis active = problem.activeComponentBasis();
         double maximumChange = 0.0;
         for (int node = 1; node <= topology.reboilerNode(); node++) {
             double temperature = temperatures[node];
             double residual = bubblePointResidual(problem, thermo, workspace, active,
-                    candidate.liquidFlows()[node], candidate.vaporFlows()[node], node, temperature);
+                    liquidFlows[node], vaporFlows[node], node, temperature);
             double upperResidual = bubblePointResidual(problem, thermo, workspace, active,
-                    candidate.liquidFlows()[node], candidate.vaporFlows()[node], node,
+                    liquidFlows[node], vaporFlows[node], node,
                     temperature + BUBBLE_POINT_DIFFERENCE_KELVIN);
             double lowerResidual = bubblePointResidual(problem, thermo, workspace, active,
-                    candidate.liquidFlows()[node], candidate.vaporFlows()[node], node,
+                    liquidFlows[node], vaporFlows[node], node,
                     temperature - BUBBLE_POINT_DIFFERENCE_KELVIN);
             double derivative = (upperResidual - lowerResidual) / (2.0 * BUBBLE_POINT_DIFFERENCE_KELVIN);
             if (!Double.isFinite(residual) || !Double.isFinite(derivative) || Math.abs(derivative) <= 1.0e-12) continue;
