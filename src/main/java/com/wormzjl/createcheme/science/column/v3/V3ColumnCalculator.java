@@ -150,7 +150,7 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed = previousState == null
                     ? V3ColumnInitializer.initialize(stageProblem, thermo, thermo.newWorkspace(),
                             V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state()
-                    : continuationSeed(input, stageProblem, thermo, previousState);
+                    : continuationSeed(input, stageProblem, thermo, previousState, control);
             lastPass = solveSingleProblem(stageProblem, thermo,
                     seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd");
             if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
@@ -170,22 +170,26 @@ public final class V3ColumnCalculator {
 
     /** Applies the material/VLE hand-off projection only in the qualified low-pressure operating region. */
     private static V3DryMeshState continuationSeed(
-            V3ColumnInput input, V3ColumnProblem targetProblem, V3PengRobinsonThermo thermo, V3DryMeshState previousState) {
+            V3ColumnInput input,
+            V3ColumnProblem targetProblem,
+            V3PengRobinsonThermo thermo,
+            V3DryMeshState previousState,
+            V3SolveControl control) {
         V3DryMeshState interpolated = interpolate(previousState, targetProblem);
         return input.topPressurePascal() <= LOW_PRESSURE_CONTINUATION_PROJECTION_LIMIT_PASCAL
-                ? projectedSeedOrPrevious(targetProblem, thermo, interpolated)
+                ? projectedSeedOrPrevious(targetProblem, thermo, interpolated, control)
                 : interpolated;
     }
 
     private static V3DryMeshState projectedSeedOrPrevious(
-            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState previousState) {
-        try {
-            V3DryMeshState projected = V3ColumnInitializer.projectMaterialBalancesAtFixedTemperature(
-                    problem, thermo, thermo.newWorkspace(), previousState);
-            return isLogCoordinateFeasible(problem, projected) ? projected : previousState;
-        } catch (V3ThermoException | IllegalArgumentException unavailableProjection) {
-            return previousState;
+            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState previousState, V3SolveControl control) {
+        V3PreconditionerResult result = V3BubblePointPreconditioner.INSTANCE.prepare(
+                new V3PreconditionerRequest(problem, previousState, control), thermo, thermo.newWorkspace());
+        if (result instanceof V3PreconditionerResult.Prepared prepared
+                && isLogCoordinateFeasible(problem, prepared.state())) {
+            return prepared.state();
         }
+        return previousState;
     }
 
     private static boolean isLogCoordinateFeasible(V3ColumnProblem problem, V3DryMeshState state) {
@@ -221,7 +225,7 @@ public final class V3ColumnCalculator {
             String stagePath,
             int stageCount) {
         control.checkpoint();
-        V3DryMeshState projected = projectedSeedOrPrevious(problem, thermo, failedPass.attempt().state());
+        V3DryMeshState projected = projectedSeedOrPrevious(problem, thermo, failedPass.attempt().state(), control);
         return solveSingleProblem(problem, thermo, projected, control,
                 "cold/dwsim-sequential/" + stagePath + "/material-vle-recovery-stage-" + stageCount + "/fine-fd");
     }
