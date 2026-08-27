@@ -29,10 +29,6 @@ public final class V3ColumnTopology {
         return new V3ColumnTopology(trayCount, feedTrayNumber, V3CondenserPhaseBranch.VAPOR_ONLY);
     }
 
-    public static V3ColumnTopology totalLiquid(int trayCount, int feedTrayNumber) {
-        return new V3ColumnTopology(trayCount, feedTrayNumber, V3CondenserPhaseBranch.TOTAL_LIQUID);
-    }
-
     public int trayCount() {
         return trayCount;
     }
@@ -60,16 +56,11 @@ public final class V3ColumnTopology {
 
     public boolean hasLiquidPhase(int node) {
         requireNode(node);
-        return node != condenserNode() || condenserPhaseBranch != V3CondenserPhaseBranch.VAPOR_ONLY;
-    }
-
-    public boolean hasVaporPhase(int node) {
-        requireNode(node);
-        return node != condenserNode() || condenserPhaseBranch != V3CondenserPhaseBranch.TOTAL_LIQUID;
+        return node != condenserNode() || condenserPhaseBranch == V3CondenserPhaseBranch.TWO_PHASE;
     }
 
     public boolean hasVaporLiquidEquilibriumEquation(int node) {
-        return hasLiquidPhase(node) && hasVaporPhase(node);
+        return hasLiquidPhase(node);
     }
 
     public boolean hasTemperatureUnknown(int node) {

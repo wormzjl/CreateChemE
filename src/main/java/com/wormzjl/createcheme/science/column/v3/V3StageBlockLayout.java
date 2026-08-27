@@ -19,10 +19,8 @@ final class V3StageBlockLayout {
         int offset = 0;
         for (int node = 0; node < topology.nodeCount(); node++) {
             starts[node] = offset;
-            int componentCount = problem.activeComponentBasis().componentCount();
-            int expected = (topology.hasLiquidPhase(node) ? componentCount : 0)
-                    + (topology.hasVaporPhase(node) ? componentCount : 0)
-                    + (topology.hasTemperatureUnknown(node) ? 1 : 0);
+            int expected = 2 * problem.activeComponentBasis().componentCount() + (topology.hasTemperatureUnknown(node) ? 1 : 0)
+                    - (topology.hasLiquidPhase(node) ? 0 : problem.activeComponentBasis().componentCount());
             if (expected <= 0 || offset + expected > unknowns.size()) {
                 throw new IllegalArgumentException("V3 MESH ledger block size is invalid");
             }
@@ -46,13 +44,9 @@ final class V3StageBlockLayout {
             }
         }
         boolean expectedLiquid = topology.hasLiquidPhase(node);
-        boolean expectedVapor = topology.hasVaporPhase(node);
         long liquids = unknowns.subList(start, start + size).stream().filter(unknown -> unknown.id().family()
                 == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW).count();
-        long vapors = unknowns.subList(start, start + size).stream().filter(unknown -> unknown.id().family()
-                == V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW).count();
         if ((liquids > 0) != expectedLiquid) throw new IllegalArgumentException("V3 MESH unknown ledger phase map disagrees with topology");
-        if ((vapors > 0) != expectedVapor) throw new IllegalArgumentException("V3 MESH unknown ledger phase map disagrees with topology");
     }
 
     private static void validateEquationBlock(

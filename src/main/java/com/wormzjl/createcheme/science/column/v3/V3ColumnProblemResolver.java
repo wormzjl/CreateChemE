@@ -18,11 +18,9 @@ public final class V3ColumnProblemResolver {
         input = Objects.requireNonNull(input, "input");
         condenserPhaseBranch = Objects.requireNonNull(condenserPhaseBranch, "condenserPhaseBranch");
         validateInput(input);
-        V3ColumnTopology topology = switch (condenserPhaseBranch) {
-            case TWO_PHASE -> V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber());
-            case TOTAL_LIQUID -> V3ColumnTopology.totalLiquid(input.stageCount(), input.feedStageNumber());
-            case VAPOR_ONLY -> V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
-        };
+        V3ColumnTopology topology = condenserPhaseBranch == V3CondenserPhaseBranch.TWO_PHASE
+                ? V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber())
+                : V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
         V3ActiveComponentBasis activeComponentBasis = V3ActiveComponentBasis.from(input);
         V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(
                 topology, activeComponentBasis.componentCount(), input.specifications());

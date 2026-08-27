@@ -1,10 +1,8 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
-import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
@@ -21,9 +19,6 @@ public final class V3ColumnCalculator {
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r2";
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
-    private static final double DWSIM_CONDENSER_REFERENCE_TEMPERATURE_KELVIN = 400.0;
-    /** DWSIM constrains bubble-point temperature motion to 5 K for a wide-boiling mixture. */
-    private static final double DWSIM_CONDENSER_TEMPERATURE_STEP_KELVIN = 5.0;
 
     private V3ColumnCalculator() {}
 
@@ -52,27 +47,13 @@ public final class V3ColumnCalculator {
         try {
             control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-            V3CondenserPhaseBranch condenserBranch = selectCondenserBranch(input, thermo);
-            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, condenserBranch);
+            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
             V3InputDigest digest = V3InputDigest.of(
                     problem, FORMULATION_REVISION, thermo.datasetRevision(), ASSUMPTIONS_REVISION);
             V3SolvePass pass;
             if (initializerMode == V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
-                boolean lowerCondenserContinuation = input.stageCount() >= 4
-                        && condenserBranch == V3CondenserPhaseBranch.TWO_PHASE
-                        && condenserTemperatureKelvin(input) < DWSIM_CONDENSER_REFERENCE_TEMPERATURE_KELVIN;
-                if (lowerCondenserContinuation) {
-                    pass = solveDwsimCondenserTemperatureContinuation(input, thermo, control);
-                } else if (condenserBranch == V3CondenserPhaseBranch.TOTAL_LIQUID) {
-                    V3DryMeshState totalCondenserSeed = V3ColumnInitializer.initialize(
-                            problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state();
-                    pass = solveSingleProblem(problem, thermo, totalCondenserSeed,
-                            control, "cold/total-liquid-condenser/fine-fd");
-                } else {
-                    pass = solveDwsimStageContinuation(input, thermo, control, condenserBranch);
-                }
-                if (!lowerCondenserContinuation && condenserBranch == V3CondenserPhaseBranch.TWO_PHASE
-                        && !publishesSuccess(pass.attempt(), pass.audit())
+                pass = solveDwsimStageContinuation(input, thermo, control);
+                if (!publishesSuccess(pass.attempt(), pass.audit())
                         && pass.terminalStageCount() >= input.stageCount()) {
                     // The sequential material/VLE preconditioner is deliberately optional. It must not turn an
                     // otherwise solvable MESH problem into a failure; this is a fresh V3 material-closed seed,
@@ -123,11 +104,7 @@ public final class V3ColumnCalculator {
                 return new V3ColumnOutcome.Success(result, diagnostics);
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
-                String detail = !pass.reachedRequestedProblem()
-                        ? "DWSIM continuation stalled on " + pass.solvePath() + " after "
-                        + failure.evidence().iterations() + " Newton iterations; maximum scaled residual "
-                        + failure.evidence().maximumScaledResidual() + ": " + failure.evidence().termination()
-                        : pass.terminalStageCount() < input.stageCount()
+                String detail = pass.terminalStageCount() < input.stageCount()
                         ? "DWSIM continuation stalled at " + pass.terminalStageCount() + " stages after "
                         + failure.evidence().iterations() + " Newton iterations; maximum scaled residual "
                         + failure.evidence().maximumScaledResidual() + ": " + failure.evidence().termination()
@@ -155,10 +132,7 @@ public final class V3ColumnCalculator {
      * workspaces are retained after this calculation returns.</p>
      */
     private static V3SolvePass solveDwsimStageContinuation(
-            V3ColumnInput input,
-            V3PengRobinsonThermo thermo,
-            V3SolveControl control,
-            V3CondenserPhaseBranch condenserBranch) {
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control) {
         List<Integer> stageCounts = dwsimStageCounts(input.stageCount());
         String stagePath = dwsimStagePath(stageCounts);
         V3DryMeshState previousState = null;
@@ -167,7 +141,7 @@ public final class V3ColumnCalculator {
             control.checkpoint();
             V3ColumnInput stageInput = stageCount == input.stageCount()
                     ? input : withStageGeometry(input, stageCount);
-            V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, condenserBranch);
+            V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, V3CondenserPhaseBranch.TWO_PHASE);
             V3DryMeshState seed = previousState == null
                     ? V3ColumnInitializer.initialize(stageProblem, thermo, thermo.newWorkspace(),
                             V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state()
@@ -184,78 +158,6 @@ public final class V3ColumnCalculator {
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
         return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
                 lastPass.solvePath(), lastPass.recoverySeed(), lastPass.terminalStageCount(), true);
-    }
-
-    /**
-     * Uses a DWSIM-style homotopy for a lower condenser temperature: the 400 K anchor is qualified through the normal
-     * stage grid first, then the full requested column receives bounded material/VLE/energy tear refreshes in 5 K
-     * steps. One final simultaneous-MESH solve and fresh audit decide publication at the requested temperature.
-     */
-    private static V3SolvePass solveDwsimCondenserTemperatureContinuation(
-            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control) {
-        List<Double> temperatures = dwsimCondenserTemperatures(condenserTemperatureKelvin(input));
-        String temperaturePath = dwsimTemperaturePath(temperatures);
-        List<Integer> stageCounts = dwsimStageCounts(input.stageCount());
-        String stagePath = dwsimStagePath(stageCounts);
-        int temperatureStageIndex = stageCounts.size() - 1;
-        int temperatureStageCount = stageCounts.get(temperatureStageIndex);
-        V3ColumnInput anchorGeometry = temperatureStageCount == input.stageCount()
-                ? input : withStageGeometry(input, temperatureStageCount);
-        V3ColumnInput anchorInput = withCondenserTemperature(
-                anchorGeometry, DWSIM_CONDENSER_REFERENCE_TEMPERATURE_KELVIN);
-        V3SolvePass lastPass = solveDwsimStageContinuation(
-                anchorInput, thermo, control, V3CondenserPhaseBranch.TWO_PHASE);
-        if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
-            return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                    "cold/dwsim-temperature-stage/" + temperaturePath + "/" + stagePath + "/failed-anchor",
-                    lastPass.recoverySeed(), temperatureStageCount, false);
-        }
-        V3DryMeshState continuationState = lastPass.attempt().state();
-        for (int step = 1; step < temperatures.size(); step++) {
-            control.checkpoint();
-            double temperatureKelvin = temperatures.get(step);
-            V3ColumnInput temperatureInput = withCondenserTemperature(anchorGeometry, temperatureKelvin);
-            V3ColumnProblem temperatureProblem = V3ColumnProblemResolver.resolve(
-                    temperatureInput, V3CondenserPhaseBranch.TWO_PHASE);
-            V3ColumnInitializer.ContinuedProfile continued = V3ColumnInitializer.continueFromProfile(
-                    temperatureProblem, thermo, thermo.newWorkspace(), continuationState);
-            boolean finalTemperatureStep = step == temperatures.size() - 1;
-            if (!finalTemperatureStep) {
-                // DWSIM's inexpensive material/VLE/energy updates carry the tear state through the bounded 5 K
-                // homotopy. The full MESH correction is deliberately reserved for the requested final condition.
-                continuationState = continued.state();
-                continue;
-            }
-            lastPass = solveSingleProblem(temperatureProblem, thermo, continued.state(), control,
-                    "cold/dwsim-temperature-stage/" + temperaturePath + "/" + stagePath + "/"
-                            + continued.pathMarker() + "/fine-fd");
-            if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
-                return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                        "cold/dwsim-temp/" + continued.pathMarker() + "/failed-at-" + temperatureKelvin + "K",
-                        lastPass.recoverySeed(), temperatureStageCount, true);
-            }
-            continuationState = lastPass.attempt().state();
-        }
-        for (int stageIndex = temperatureStageIndex + 1; stageIndex < stageCounts.size(); stageIndex++) {
-            int stageCount = stageCounts.get(stageIndex);
-            V3ColumnInput stageInput = stageCount == input.stageCount()
-                    ? input : withStageGeometry(input, stageCount);
-            V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(
-                    stageInput, V3CondenserPhaseBranch.TWO_PHASE);
-            V3DryMeshState seed = interpolate(continuationState, stageProblem);
-            lastPass = solveSingleProblem(stageProblem, thermo, seed, control,
-                    "cold/dwsim-temperature-stage/" + temperaturePath + "/" + stagePath + "/fine-fd");
-            if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
-                return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                        "cold/dwsim-temperature-stage/" + temperaturePath + "/" + stagePath
-                                + "/failed-stage-" + stageCount,
-                        lastPass.recoverySeed(), stageCount, false);
-            }
-            continuationState = lastPass.attempt().state();
-        }
-        return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
-                "cold/dwsim-temperature-stage/" + temperaturePath + "/" + stagePath + "/accepted", lastPass.recoverySeed(),
-                input.stageCount(), true);
     }
 
     private static V3SolvePass solveSingleProblem(
@@ -288,43 +190,11 @@ public final class V3ColumnCalculator {
         return List.copyOf(result);
     }
 
-    private static List<Double> dwsimCondenserTemperatures(double requestedTemperatureKelvin) {
-        if (!Double.isFinite(requestedTemperatureKelvin) || requestedTemperatureKelvin <= 0.0) {
-            throw new IllegalArgumentException("V3 condenser continuation needs a positive finite target temperature");
-        }
-        if (requestedTemperatureKelvin >= DWSIM_CONDENSER_REFERENCE_TEMPERATURE_KELVIN) {
-            return List.of(requestedTemperatureKelvin);
-        }
-        List<Double> result = new ArrayList<>();
-        double current = DWSIM_CONDENSER_REFERENCE_TEMPERATURE_KELVIN;
-        result.add(current);
-        while (current - requestedTemperatureKelvin > DWSIM_CONDENSER_TEMPERATURE_STEP_KELVIN) {
-            current -= DWSIM_CONDENSER_TEMPERATURE_STEP_KELVIN;
-            result.add(current);
-        }
-        if (current != requestedTemperatureKelvin) result.add(requestedTemperatureKelvin);
-        return List.copyOf(result);
-    }
-
     private static String dwsimStagePath(List<Integer> stageCounts) {
         StringBuilder path = new StringBuilder();
         for (int index = 0; index < stageCounts.size(); index++) {
             if (index > 0) path.append('-');
             path.append(stageCounts.get(index));
-        }
-        return path.toString();
-    }
-
-    private static String dwsimTemperaturePath(List<Double> temperatures) {
-        if (temperatures.size() > 6) {
-            return Math.round(temperatures.getFirst() * 100.0) / 100.0 + "-to-"
-                    + Math.round(temperatures.getLast() * 100.0) / 100.0 + "-by-"
-                    + DWSIM_CONDENSER_TEMPERATURE_STEP_KELVIN;
-        }
-        StringBuilder path = new StringBuilder();
-        for (int index = 0; index < temperatures.size(); index++) {
-            if (index > 0) path.append('-');
-            path.append(Math.round(temperatures.get(index) * 100.0) / 100.0);
         }
         return path.toString();
     }
@@ -335,20 +205,6 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), stageCount, feedStage,
                 input.topPressurePascal(), input.stagePressureDropPascal(), input.specifications());
-    }
-
-    private static V3ColumnInput withCondenserTemperature(V3ColumnInput input, double temperatureKelvin) {
-        List<V3ColumnSpecification> specifications = new ArrayList<>(input.specifications().size());
-        for (V3ColumnSpecification specification : input.specifications()) {
-            if (specification instanceof V3ColumnSpecification.CondenserOutletTemperature) {
-                specifications.add(new V3ColumnSpecification.CondenserOutletTemperature(temperatureKelvin));
-            } else {
-                specifications.add(specification);
-            }
-        }
-        return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
-                input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
-                input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(), specifications);
     }
 
     private static V3DryMeshState interpolate(V3DryMeshState source, V3ColumnProblem target) {
@@ -379,45 +235,6 @@ public final class V3ColumnCalculator {
     private static <S extends V3ColumnSpecification> S specification(V3ColumnInput input, Class<S> type) {
         return input.specifications().stream().filter(type::isInstance).map(type::cast).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("V3 input is missing " + type.getSimpleName()));
-    }
-
-    private static double condenserTemperatureKelvin(V3ColumnInput input) {
-        return specification(input, V3ColumnSpecification.CondenserOutletTemperature.class).kelvin();
-    }
-
-    /**
-     * Classifies the low-temperature condenser endpoint from a solve-local PR flash of the sequential cold seed.
-     * The phase branch is a compiled equation set, never a user-entered switch. Temperatures at and above the
-     * qualified 400 K anchor retain the existing two-phase formulation.
-     */
-    private static V3CondenserPhaseBranch selectCondenserBranch(
-            V3ColumnInput input, V3PengRobinsonThermo thermo) {
-        if (condenserTemperatureKelvin(input) >= DWSIM_CONDENSER_REFERENCE_TEMPERATURE_KELVIN
-                || specification(input, V3ColumnSpecification.ReboilerDuty.class).watts() == 0.0) {
-            return V3CondenserPhaseBranch.TWO_PHASE;
-        }
-        try {
-            V3ColumnProblem twoPhaseProblem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
-            V3DryMeshState seed = V3ColumnInitializer.initialize(
-                    twoPhaseProblem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state();
-            V3ActiveComponentBasis active = twoPhaseProblem.activeComponentBasis();
-            double[] condenserOverall = new double[input.componentBasis().componentCount()];
-            int condenser = twoPhaseProblem.topology().condenserNode();
-            for (int component = 0; component < active.componentCount(); component++) {
-                condenserOverall[active.publicIndex(component)] = seed.liquidFlow(condenser, component)
-                        + seed.vaporFlow(condenser, component);
-            }
-            V3FlashResult flash = thermo.flashTP(condenserTemperatureKelvin(input), input.topPressurePascal(),
-                    condenserOverall, thermo.newWorkspace());
-            if (flash.phase() == V3FeedPhase.LIQUID) return V3CondenserPhaseBranch.TOTAL_LIQUID;
-            if (flash.phase() == V3FeedPhase.VAPOR
-                    && specification(input, V3ColumnSpecification.OrganicRefluxRatio.class).ratio() == 0.0) {
-                return V3CondenserPhaseBranch.VAPOR_ONLY;
-            }
-        } catch (V3ThermoException | IllegalArgumentException unavailablePreflight) {
-            // The normal two-phase path retains its typed diagnostic if a bounded endpoint preflight is unavailable.
-        }
-        return V3CondenserPhaseBranch.TWO_PHASE;
     }
 
     private static V3AcceptanceAudit audit(
