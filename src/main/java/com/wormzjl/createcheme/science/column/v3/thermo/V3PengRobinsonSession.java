@@ -28,6 +28,10 @@ final class V3PengRobinsonSession {
     String datasetRevision() { return propertyPackage.datasetRevision(); }
     V3ComponentBasis componentBasis() { return componentBasis; }
     int componentCount() { return kernel.componentCount(); }
+    double minimumTemperatureKelvin() { return propertyPackage.minimumTemperatureKelvin(); }
+    double maximumTemperatureKelvin() { return propertyPackage.maximumTemperatureKelvin(); }
+    double minimumPressurePascal() { return propertyPackage.minimumPressurePascal(); }
+    double maximumPressurePascal() { return propertyPackage.maximumPressurePascal(); }
 
     double componentMolecularWeightKgPerMol(int publicComponent) {
         if (publicComponent < 0 || publicComponent >= componentBasis.componentCount()) {

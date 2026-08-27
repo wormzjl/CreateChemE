@@ -49,6 +49,10 @@ public final class V3ColumnCalculator {
             control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+            V3OperatingDomainAssessment admission = V3OperatingDomainValidator.assess(problem, thermo);
+            if (admission instanceof V3OperatingDomainAssessment.Rejected rejected) {
+                return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(), "admission");
+            }
             V3InputDigest digest = V3InputDigest.of(
                     problem, FORMULATION_REVISION, thermo.datasetRevision(), ASSUMPTIONS_REVISION);
             V3SolvePass pass;

@@ -24,6 +24,26 @@ public final class V3PengRobinsonThermo implements V3ThermoModel {
         return session.datasetRevision();
     }
 
+    /** Returns the inclusive lower temperature bound declared by the selected property package. */
+    public double minimumTemperatureKelvin() {
+        return session.minimumTemperatureKelvin();
+    }
+
+    /** Returns the inclusive upper temperature bound declared by the selected property package. */
+    public double maximumTemperatureKelvin() {
+        return session.maximumTemperatureKelvin();
+    }
+
+    /** Returns the inclusive lower absolute-pressure bound declared by the selected property package. */
+    public double minimumPressurePascal() {
+        return session.minimumPressurePascal();
+    }
+
+    /** Returns the inclusive upper absolute-pressure bound declared by the selected property package. */
+    public double maximumPressurePascal() {
+        return session.maximumPressurePascal();
+    }
+
     /** Resolves the registered dry-hydrocarbon assay without exposing mutable property-package data. */
     public V3CrudeFeed crudeFeed(String assayId) {
         return session.crudeFeed(assayId);
