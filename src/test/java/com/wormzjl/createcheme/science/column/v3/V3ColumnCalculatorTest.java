@@ -89,6 +89,23 @@ class V3ColumnCalculatorTest {
     }
 
     @Test
+    void nearbyFiftyFiveCelsiusPartialCondenserRetainsTheNoncondensableOverhead() {
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(qualifiedPartialCondenserRealCrudePilot(328.15), () -> {
+            if (System.nanoTime() - started >= 45_000_000_000L) {
+                throw new AssertionError("qualified 55 Celsius partial-condenser solve exceeded its cold-test budget");
+            }
+        });
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.result().convergenceEvidence().satisfiesGates());
+        assertEquals(3, success.result().streams().size());
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("distillate_liquid")));
+    }
+
+    @Test
     void qualifiedFiftyCelsiusPartialCondenserSeedProducesABoundedThirtyStageProbe() {
         V3ColumnInput input = qualifiedFiftyCelsiusRealCrudePilot();
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
@@ -141,6 +158,10 @@ class V3ColumnCalculatorTest {
     }
 
     private static V3ColumnInput qualifiedFiftyCelsiusRealCrudePilot() {
+        return qualifiedPartialCondenserRealCrudePilot(323.15);
+    }
+
+    private static V3ColumnInput qualifiedPartialCondenserRealCrudePilot(double condenserTemperatureKelvin) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
         double[] feedFlows = crude.moleFractions();
@@ -148,7 +169,7 @@ class V3ColumnCalculatorTest {
         for (int component = 0; component < feedFlows.length; component++) feedFlows[component] *= totalFlow;
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(), crude.componentBasis(),
                 feedFlows, 638.15, 30, 24, 250_000.0, 750.0, List.of(
-                        new V3ColumnSpecification.CondenserOutletTemperature(323.15),
+                        new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperatureKelvin),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
     }
