@@ -23,6 +23,17 @@ class V3LowPressureColdProbeTest {
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("distillate_liquid")));
     }
 
+    @Test
+    void onePointOneBarPartialCondenserConvergesWithBubblePointRecovery() {
+        V3ColumnOutcome.Success success = calculate(110_000.0);
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.result().convergenceEvidence().satisfiesGates());
+        assertTrue(success.diagnostics().solvePath().contains("dwsim"));
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("distillate_liquid")));
+    }
+
     private static V3ColumnOutcome.Success calculate(double topPressurePascal) {
         long started = System.nanoTime();
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(realCrudeInput(topPressurePascal), () -> {
