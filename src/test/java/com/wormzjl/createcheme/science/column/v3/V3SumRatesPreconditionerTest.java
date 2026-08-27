@@ -18,12 +18,13 @@ class V3SumRatesPreconditionerTest {
         V3DryMeshState materialClosed = V3ColumnInitializer.initialize(
                 problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.MATERIAL_CLOSED).state();
 
-        V3PreconditionerResult.Prepared prepared = assertInstanceOf(V3PreconditionerResult.Prepared.class,
+        V3SequentialPreconditioner.Result.Prepared prepared = assertInstanceOf(
+                V3SequentialPreconditioner.Result.Prepared.class,
                 V3SumRatesPreconditioner.INSTANCE.prepare(
-                        new V3PreconditionerRequest(problem, materialClosed, V3SolveControl.UNBOUNDED),
+                        new V3SequentialPreconditioner.Request(problem, materialClosed, V3SolveControl.UNBOUNDED),
                         thermo, thermo.newWorkspace()));
 
-        assertEquals(V3PreconditionerId.SUM_RATES, prepared.evidence().id());
+        assertEquals(V3SequentialPreconditioner.Id.SUM_RATES, prepared.evidence().id());
         assertTrue(prepared.evidence().sweeps() > 0);
         assertTrue(prepared.evidence().detail().contains("energy correction"));
         assertFinitePositive(problem, prepared.state());

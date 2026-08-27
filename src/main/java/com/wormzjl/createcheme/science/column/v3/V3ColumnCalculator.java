@@ -49,8 +49,8 @@ public final class V3ColumnCalculator {
             control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
-            V3OperatingDomainAssessment admission = V3OperatingDomainValidator.assess(problem, thermo);
-            if (admission instanceof V3OperatingDomainAssessment.Rejected rejected) {
+            V3OperatingDomainValidator.Assessment admission = V3OperatingDomainValidator.assess(problem, thermo);
+            if (admission instanceof V3OperatingDomainValidator.Assessment.Rejected rejected) {
                 return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(), "admission");
             }
             V3InputDigest digest = V3InputDigest.of(
@@ -183,14 +183,14 @@ public final class V3ColumnCalculator {
 
     private static V3DryMeshState projectedSeedOrPrevious(
             V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState previousState, V3SolveControl control) {
-        V3PreconditionerResult result = V3BubblePointPreconditioner.INSTANCE.prepare(
-                new V3PreconditionerRequest(problem, previousState, control), thermo, thermo.newWorkspace());
+        V3SequentialPreconditioner.Result result = V3BubblePointPreconditioner.INSTANCE.prepare(
+                new V3SequentialPreconditioner.Request(problem, previousState, control), thermo, thermo.newWorkspace());
         return preparedSeedOrPrevious(problem, previousState, result);
     }
 
     private static V3DryMeshState preparedSeedOrPrevious(
-            V3ColumnProblem problem, V3DryMeshState previousState, V3PreconditionerResult result) {
-        if (result instanceof V3PreconditionerResult.Prepared prepared
+            V3ColumnProblem problem, V3DryMeshState previousState, V3SequentialPreconditioner.Result result) {
+        if (result instanceof V3SequentialPreconditioner.Result.Prepared prepared
                 && isLogCoordinateFeasible(problem, prepared.state())) {
             return prepared.state();
         }

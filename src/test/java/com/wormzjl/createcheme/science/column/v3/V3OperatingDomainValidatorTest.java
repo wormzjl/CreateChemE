@@ -13,10 +13,10 @@ class V3OperatingDomainValidatorTest {
 
     @Test
     void admitsTheInclusiveFiftyKilopascalPackageBoundaryBeforeNumericalWork() {
-        V3OperatingDomainAssessment.Eligible eligible = assertInstanceOf(
-                V3OperatingDomainAssessment.Eligible.class, assess(50_000.0, 750.0));
+        V3OperatingDomainValidator.Assessment.Eligible eligible = assertInstanceOf(
+                V3OperatingDomainValidator.Assessment.Eligible.class, assess(50_000.0, 750.0));
 
-        assertEquals(V3HybridOperatingLane.LOW_PRESSURE_HYBRID, eligible.lane());
+        assertEquals(V3OperatingDomainValidator.Assessment.Lane.LOW_PRESSURE_HYBRID, eligible.lane());
         assertEquals(50_000.0, eligible.minimumNodePressurePascal());
         assertEquals(71_750.0, eligible.maximumNodePressurePascal());
         assertEquals(50_000.0, eligible.packageMinimumPressurePascal());
@@ -25,20 +25,20 @@ class V3OperatingDomainValidatorTest {
 
     @Test
     void rejectsTheOneKilopascalVacuumRequestWithAStableVduAdvisory() {
-        V3OperatingDomainAssessment.Rejected rejected = assertInstanceOf(
-                V3OperatingDomainAssessment.Rejected.class, assess(1_000.0, 750.0));
+        V3OperatingDomainValidator.Assessment.Rejected rejected = assertInstanceOf(
+                V3OperatingDomainValidator.Assessment.Rejected.class, assess(1_000.0, 750.0));
 
-        assertEquals(V3OperatingDomainAssessment.Reason.BELOW_PACKAGE_PRESSURE, rejected.reason());
+        assertEquals(V3OperatingDomainValidator.Assessment.Reason.BELOW_PACKAGE_PRESSURE, rejected.reason());
         assertTrue(rejected.detail().contains("VDU_REQUIRED"));
         assertEquals(1_000.0, rejected.minimumNodePressurePascal());
     }
 
     @Test
     void rejectsAProfileThatExceedsThePackageCeilingBeforeThermodynamics() {
-        V3OperatingDomainAssessment.Rejected rejected = assertInstanceOf(
-                V3OperatingDomainAssessment.Rejected.class, assess(1_999_000.0, 1_000.0));
+        V3OperatingDomainValidator.Assessment.Rejected rejected = assertInstanceOf(
+                V3OperatingDomainValidator.Assessment.Rejected.class, assess(1_999_000.0, 1_000.0));
 
-        assertEquals(V3OperatingDomainAssessment.Reason.ABOVE_PACKAGE_PRESSURE, rejected.reason());
+        assertEquals(V3OperatingDomainValidator.Assessment.Reason.ABOVE_PACKAGE_PRESSURE, rejected.reason());
         assertEquals(2_028_000.0, rejected.maximumNodePressurePascal());
     }
 
@@ -54,13 +54,13 @@ class V3OperatingDomainValidatorTest {
 
     @Test
     void hundredKilopascalAndAboveRemainInTheNormalDryCduLane() {
-        V3OperatingDomainAssessment.Eligible eligible = assertInstanceOf(
-                V3OperatingDomainAssessment.Eligible.class, assess(100_000.0, 750.0));
+        V3OperatingDomainValidator.Assessment.Eligible eligible = assertInstanceOf(
+                V3OperatingDomainValidator.Assessment.Eligible.class, assess(100_000.0, 750.0));
 
-        assertEquals(V3HybridOperatingLane.NORMAL_CDU, eligible.lane());
+        assertEquals(V3OperatingDomainValidator.Assessment.Lane.NORMAL_CDU, eligible.lane());
     }
 
-    private static V3OperatingDomainAssessment assess(double topPressurePascal, double stageDropPascal) {
+    private static V3OperatingDomainValidator.Assessment assess(double topPressurePascal, double stageDropPascal) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE_ID);
         V3ColumnProblem problem = V3ColumnProblemResolver.resolve(
                 input(topPressurePascal, stageDropPascal), V3CondenserPhaseBranch.TWO_PHASE);

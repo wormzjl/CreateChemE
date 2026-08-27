@@ -23,13 +23,13 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
     private V3SumRatesPreconditioner() {}
 
     @Override
-    public V3PreconditionerId id() {
-        return V3PreconditionerId.SUM_RATES;
+    public V3SequentialPreconditioner.Id id() {
+        return V3SequentialPreconditioner.Id.SUM_RATES;
     }
 
     @Override
-    public V3PreconditionerResult prepare(
-            V3PreconditionerRequest request, V3ThermoModel thermo, V3ThermoWorkspace workspace) {
+    public V3SequentialPreconditioner.Result prepare(
+            V3SequentialPreconditioner.Request request, V3ThermoModel thermo, V3ThermoWorkspace workspace) {
         request = Objects.requireNonNull(request, "request");
         thermo = Objects.requireNonNull(thermo, "thermo");
         workspace = Objects.requireNonNull(workspace, "workspace");
@@ -40,14 +40,14 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
                     request.problem().input().feedComponentMolarFlowsMolPerSecond(), workspace);
             return prepare(request, thermo, workspace, feedFlash.molarEnthalpyJoulesPerMol());
         } catch (V3ThermoException failure) {
-            return failed(V3PreconditionerFailure.PROPERTY_DOMAIN, 0, failure.getMessage());
+            return failed(V3SequentialPreconditioner.Failure.PROPERTY_DOMAIN, 0, failure.getMessage());
         } catch (IllegalArgumentException failure) {
-            return failed(V3PreconditionerFailure.INVALID_STATE, 0, failure.getMessage());
+            return failed(V3SequentialPreconditioner.Failure.INVALID_STATE, 0, failure.getMessage());
         }
     }
 
-    private V3PreconditionerResult prepare(
-            V3PreconditionerRequest request,
+    private V3SequentialPreconditioner.Result prepare(
+            V3SequentialPreconditioner.Request request,
             V3ThermoModel thermo,
             V3ThermoWorkspace workspace,
             double feedMolarEnthalpyJoulesPerMol) {
@@ -81,10 +81,11 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
         finalEnergyNorm = maximumAbsoluteScaledEnergy(finalResidual);
         if (!Double.isFinite(initialEnergyNorm) || !Double.isFinite(finalEnergyNorm)
                 || finalEnergyNorm > initialEnergyNorm * (1.0 + 1.0e-8)) {
-            return failed(V3PreconditionerFailure.INVALID_STATE, completedSweeps,
+            return failed(V3SequentialPreconditioner.Failure.INVALID_STATE, completedSweeps,
                     "sum-rates energy correction did not improve its seed residual");
         }
-        return new V3PreconditionerResult.Prepared(candidate, new V3PreconditionerEvidence(id(), completedSweeps,
+        return new V3SequentialPreconditioner.Result.Prepared(candidate,
+                new V3SequentialPreconditioner.Evidence(id(), completedSweeps,
                 "component TDMA plus tridiagonal energy correction reduced scaled energy from "
                         + initialEnergyNorm + " to " + finalEnergyNorm));
     }
@@ -216,9 +217,11 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
         }
     }
 
-    private V3PreconditionerResult.Failed failed(V3PreconditionerFailure reason, int sweeps, String detail) {
+    private V3SequentialPreconditioner.Result.Failed failed(
+            V3SequentialPreconditioner.Failure reason, int sweeps, String detail) {
         String bounded = detail == null || detail.isBlank() ? "sum-rates preconditioner failed" : detail;
         if (bounded.length() > 256) bounded = bounded.substring(0, 256);
-        return new V3PreconditionerResult.Failed(reason, new V3PreconditionerEvidence(id(), sweeps, bounded));
+        return new V3SequentialPreconditioner.Result.Failed(
+                reason, new V3SequentialPreconditioner.Evidence(id(), sweeps, bounded));
     }
 }

@@ -20,12 +20,13 @@ class V3BubblePointPreconditionerTest {
         V3DryMeshState materialClosed = V3ColumnInitializer.initialize(
                 problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.MATERIAL_CLOSED).state();
 
-        V3PreconditionerResult.Prepared prepared = assertInstanceOf(V3PreconditionerResult.Prepared.class,
+        V3SequentialPreconditioner.Result.Prepared prepared = assertInstanceOf(
+                V3SequentialPreconditioner.Result.Prepared.class,
                 V3BubblePointPreconditioner.INSTANCE.prepare(
-                        new V3PreconditionerRequest(problem, materialClosed, V3SolveControl.UNBOUNDED),
+                        new V3SequentialPreconditioner.Request(problem, materialClosed, V3SolveControl.UNBOUNDED),
                         thermo, thermo.newWorkspace()));
 
-        assertEquals(V3PreconditionerId.BUBBLE_POINT, prepared.evidence().id());
+        assertEquals(V3SequentialPreconditioner.Id.BUBBLE_POINT, prepared.evidence().id());
         assertEquals(3, prepared.evidence().sweeps());
         assertFinitePositive(problem, prepared.state());
     }
@@ -38,7 +39,7 @@ class V3BubblePointPreconditionerTest {
                 problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.MATERIAL_CLOSED).state();
 
         assertThrows(CancellationException.class, () -> V3BubblePointPreconditioner.INSTANCE.prepare(
-                new V3PreconditionerRequest(problem, materialClosed, () -> {
+                new V3SequentialPreconditioner.Request(problem, materialClosed, () -> {
                     throw new CancellationException("test cancellation");
                 }), thermo, thermo.newWorkspace()));
     }

@@ -12,13 +12,13 @@ final class V3BubblePointPreconditioner implements V3SequentialPreconditioner {
     private V3BubblePointPreconditioner() {}
 
     @Override
-    public V3PreconditionerId id() {
-        return V3PreconditionerId.BUBBLE_POINT;
+    public V3SequentialPreconditioner.Id id() {
+        return V3SequentialPreconditioner.Id.BUBBLE_POINT;
     }
 
     @Override
-    public V3PreconditionerResult prepare(
-            V3PreconditionerRequest request, V3ThermoModel thermo, V3ThermoWorkspace workspace) {
+    public V3SequentialPreconditioner.Result prepare(
+            V3SequentialPreconditioner.Request request, V3ThermoModel thermo, V3ThermoWorkspace workspace) {
         request = Objects.requireNonNull(request, "request");
         thermo = Objects.requireNonNull(thermo, "thermo");
         workspace = Objects.requireNonNull(workspace, "workspace");
@@ -27,14 +27,14 @@ final class V3BubblePointPreconditioner implements V3SequentialPreconditioner {
             V3DryMeshState state = V3ColumnInitializer.projectMaterialBalancesAtFixedTemperature(
                     request.problem(), thermo, workspace, request.seed());
             request.control().checkpoint();
-            return new V3PreconditionerResult.Prepared(state,
-                    new V3PreconditionerEvidence(id(), 3, "bounded material/bubble-point projection"));
+            return new V3SequentialPreconditioner.Result.Prepared(state,
+                    new V3SequentialPreconditioner.Evidence(id(), 3, "bounded material/bubble-point projection"));
         } catch (V3ThermoException failure) {
-            return new V3PreconditionerResult.Failed(V3PreconditionerFailure.PROPERTY_DOMAIN,
-                    new V3PreconditionerEvidence(id(), 0, boundedDetail(failure.getMessage())));
+            return new V3SequentialPreconditioner.Result.Failed(V3SequentialPreconditioner.Failure.PROPERTY_DOMAIN,
+                    new V3SequentialPreconditioner.Evidence(id(), 0, boundedDetail(failure.getMessage())));
         } catch (IllegalArgumentException failure) {
-            return new V3PreconditionerResult.Failed(V3PreconditionerFailure.INVALID_STATE,
-                    new V3PreconditionerEvidence(id(), 0, boundedDetail(failure.getMessage())));
+            return new V3SequentialPreconditioner.Result.Failed(V3SequentialPreconditioner.Failure.INVALID_STATE,
+                    new V3SequentialPreconditioner.Evidence(id(), 0, boundedDetail(failure.getMessage())));
         }
     }
 
