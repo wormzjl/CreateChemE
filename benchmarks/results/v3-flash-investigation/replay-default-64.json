@@ -1,0 +1,2424 @@
+{
+  "scope": "DIAGNOSTIC REPLAY ONLY, NOT A PRODUCTION FIX. Default reproduces V3FeedFlash arithmetic and liquid-only post-PR endpoint handling. Configurable iteration limit, damping, and inactive-component stopping are explicit counterfactuals. Observation overhead is not a clean performance measurement.",
+  "inputCapture": "D:\\Minecraft\\Modding\\1.21\\CreateChemE-stage-trace-truncation\\benchmarks\\results\\v3-flash-investigation\\100-off-capture.json",
+  "eventIndex": 0,
+  "packageId": "createcheme:cdu17_tjl_acs2018",
+  "datasetRevision": "cdu17-tjl-kl1976-r2",
+  "temperatureKelvin": 638.15,
+  "pressurePascal": 137250.0,
+  "normalizedOverall": [
+    0.0,
+    0.0012538307614088564,
+    0.01125827896184405,
+    0.030567148542406393,
+    0.1378591287206576,
+    0.06609502137128358,
+    0.11425564814222493,
+    0.05540489460148969,
+    0.10058448104420363,
+    0.08801950204022142,
+    0.07490279910729795,
+    0.06483752146890542,
+    0.05504527455357128,
+    0.0621402109396859,
+    0.0961061758627012,
+    0.04167008388209813
+  ],
+  "capturedCompositionSum": 1.0,
+  "componentIds": [
+    "methane",
+    "ethane",
+    "propane",
+    "C4_CDU",
+    "PC01",
+    "PC02",
+    "PC03",
+    "PC04",
+    "PC05",
+    "PC06",
+    "PC07",
+    "PC08",
+    "PC09",
+    "PC10",
+    "PC11",
+    "PC12"
+  ],
+  "settings": {
+    "logKTolerance": 1.0E-10,
+    "skipInactiveConvergence": false,
+    "endpointResidualTolerance": 1.0E-12,
+    "rachfordRiceIterations": 100,
+    "relaxation": 0.5,
+    "maxIterations": 64
+  },
+  "faithfulDefaultSettings": true,
+  "trace": [
+    {
+      "iteration": 1,
+      "vaporFraction": 0.7848494160720427,
+      "liquidEndpointResidual": 47.03687720989647,
+      "vaporEndpointResidual": -1082.238701140653,
+      "maximumLogKErrorAll": 2.1859980437478193,
+      "maximumLogKErrorActive": 1.9189813345242657,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": null,
+      "maximumVaporCompositionChange": null,
+      "maximumLiquidVaporCompositionDifference": 0.4248107173937455,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026176912570792632
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9773672203689673
+      },
+      "nextLiquidEndpointResidual": 26.953458596161557,
+      "nextVaporEndpointResidual": -1651.8074757507552,
+      "stoppingError": 2.1859980437478193
+    },
+    {
+      "iteration": 2,
+      "vaporFraction": 0.7855972618963729,
+      "liquidEndpointResidual": 26.953458596161557,
+      "vaporEndpointResidual": -1651.8074757507552,
+      "maximumLogKErrorAll": 1.0947441370673268,
+      "maximumLogKErrorActive": 0.9609830522800582,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 0.005854970405029608,
+      "maximumVaporCompositionChange": 0.001747020435101939,
+      "maximumLiquidVaporCompositionDifference": 0.42567698250189967,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026152397679308603
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9771486939051475
+      },
+      "nextLiquidEndpointResidual": 20.54709991339284,
+      "nextVaporEndpointResidual": -2042.3237314773755,
+      "stoppingError": 1.0947441370673268
+    },
+    {
+      "iteration": 3,
+      "vaporFraction": 0.785684346828329,
+      "liquidEndpointResidual": 20.54709991339284,
+      "vaporEndpointResidual": -2042.3237314773755,
+      "maximumLogKErrorAll": 0.5483796722494105,
+      "maximumLogKErrorActive": 0.4813586589651635,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 0.0031494976321020107,
+      "maximumVaporCompositionChange": 8.756245053053689E-4,
+      "maximumLiquidVaporCompositionDifference": 0.42554951105913397,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026116469704229095
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9770386659270918
+      },
+      "nextLiquidEndpointResidual": 17.966695497364032,
+      "nextVaporEndpointResidual": -2271.6414627356057,
+      "stoppingError": 0.5483796722494105
+    },
+    {
+      "iteration": 4,
+      "vaporFraction": 0.7856366943217536,
+      "liquidEndpointResidual": 17.966695497364032,
+      "vaporEndpointResidual": -2271.6414627356057,
+      "maximumLogKErrorAll": 0.2747395017103189,
+      "maximumLogKErrorActive": 0.2411538675229954,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 0.0016405649278299905,
+      "maximumVaporCompositionChange": 4.3883810367920453E-4,
+      "maximumLiquidVaporCompositionDifference": 0.42530434893585756,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026090921466465966
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769831289358211
+      },
+      "nextLiquidEndpointResidual": 16.805370978240983,
+      "nextVaporEndpointResidual": -2396.12205621801,
+      "stoppingError": 0.2747395017103189
+    },
+    {
+      "iteration": 5,
+      "vaporFraction": 0.7855883220400406,
+      "liquidEndpointResidual": 16.805370978240983,
+      "vaporEndpointResidual": -2396.12205621801,
+      "maximumLogKErrorAll": 0.13765884950466312,
+      "maximumLogKErrorActive": 0.12082688659591412,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 8.407393833501919E-4,
+      "maximumVaporCompositionChange": 2.2066386588553977E-4,
+      "maximumLiquidVaporCompositionDifference": 0.425130972403482,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02607604083818127
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976955018733423
+      },
+      "nextLiquidEndpointResidual": 16.253614307252498,
+      "nextVaporEndpointResidual": -2461.0688027815036,
+      "stoppingError": 0.13765884950466312
+    },
+    {
+      "iteration": 6,
+      "vaporFraction": 0.7855584974590095,
+      "liquidEndpointResidual": 16.253614307252498,
+      "vaporEndpointResidual": -2461.0688027815036,
+      "maximumLogKErrorAll": 0.06897837397690854,
+      "maximumLogKErrorActive": 0.06054230174417263,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.2730113912453627E-4,
+      "maximumVaporCompositionChange": 1.1125869492516899E-4,
+      "maximumLiquidVaporCompositionDifference": 0.4250313956176753,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02606807263838662
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769407659589019
+      },
+      "nextLiquidEndpointResidual": 15.98434846472548,
+      "nextVaporEndpointResidual": -2494.2860722719956,
+      "stoppingError": 0.06897837397690854
+    },
+    {
+      "iteration": 7,
+      "vaporFraction": 0.7855426360613691,
+      "liquidEndpointResidual": 15.98434846472548,
+      "vaporEndpointResidual": -2494.2860722719956,
+      "maximumLogKErrorAll": 0.034565092531156694,
+      "maximumLogKErrorActive": 0.030336828789200077,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.1626961891760277E-4,
+      "maximumVaporCompositionChange": 5.6189276975031344E-5,
+      "maximumLiquidVaporCompositionDifference": 0.42497867093187564,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026063971579355194
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769335325901295
+      },
+      "nextLiquidEndpointResidual": 15.851176723619522,
+      "nextVaporEndpointResidual": -2511.1062321854843,
+      "stoppingError": 0.034565092531156694
+    },
+    {
+      "iteration": 8,
+      "vaporFraction": 0.7855347318746186,
+      "liquidEndpointResidual": 15.851176723619522,
+      "vaporEndpointResidual": -2511.1062321854843,
+      "maximumLogKErrorAll": 0.01732100767782896,
+      "maximumLogKErrorActive": 0.015201691186847555,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.092326343317962E-4,
+      "maximumVaporCompositionChange": 2.8403246550477712E-5,
+      "maximumLiquidVaporCompositionDifference": 0.42495177557386365,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02606190168605027
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769298598803304
+      },
+      "nextLiquidEndpointResidual": 15.784872614276695,
+      "nextVaporEndpointResidual": -2519.5808616152603,
+      "stoppingError": 0.01732100767782896
+    },
+    {
+      "iteration": 9,
+      "vaporFraction": 0.7855309250038274,
+      "liquidEndpointResidual": 15.784872614276695,
+      "vaporEndpointResidual": -2519.5808616152603,
+      "maximumLogKErrorAll": 0.008679950211705645,
+      "maximumLogKErrorActive": 0.0076176687045013125,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.5114096582931094E-5,
+      "maximumVaporCompositionChange": 1.4364605510151784E-5,
+      "maximumLiquidVaporCompositionDifference": 0.42493830587820086,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02606086732579166
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769279946485812
+      },
+      "nextLiquidEndpointResidual": 15.751750232236677,
+      "nextVaporEndpointResidual": -2523.839991325784,
+      "stoppingError": 0.008679950211705645
+    },
+    {
+      "iteration": 10,
+      "vaporFraction": 0.7855291289206539,
+      "liquidEndpointResidual": 15.751750232236677,
+      "vaporEndpointResidual": -2523.839991325784,
+      "maximumLogKErrorAll": 0.0043497901151940965,
+      "maximumLogKErrorActive": 0.003817323613775514,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.779433491981176E-5,
+      "maximumVaporCompositionChange": 7.266583897436174E-6,
+      "maximumLiquidVaporCompositionDifference": 0.4249316235326766,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026060353079780718
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769270472736744
+      },
+      "nextLiquidEndpointResidual": 15.735176056489163,
+      "nextVaporEndpointResidual": -2525.977835250064,
+      "stoppingError": 0.0043497901151940965
+    },
+    {
+      "iteration": 11,
+      "vaporFraction": 0.7855282940402446,
+      "liquidEndpointResidual": 15.735176056489163,
+      "vaporEndpointResidual": -2525.977835250064,
+      "maximumLogKErrorAll": 0.002179821770209145,
+      "maximumLogKErrorActive": 0.0019129199394081198,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.4013581760369265E-5,
+      "maximumVaporCompositionChange": 3.6764567284755523E-6,
+      "maximumLiquidVaporCompositionDifference": 0.42492832553944226,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026060098038034718
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769265660686377
+      },
+      "nextLiquidEndpointResidual": 15.726875612632453,
+      "nextVaporEndpointResidual": -2527.0502615303876,
+      "stoppingError": 0.002179821770209145
+    },
+    {
+      "iteration": 12,
+      "vaporFraction": 0.7855279113077611,
+      "liquidEndpointResidual": 15.726875612632453,
+      "vaporEndpointResidual": -2527.0502615303876,
+      "maximumLogKErrorAll": 0.001092427831311582,
+      "maximumLogKErrorActive": 9.586377581980443E-4,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 7.064849637639092E-6,
+      "maximumVaporCompositionChange": 1.8603143869463934E-6,
+      "maximumLiquidVaporCompositionDifference": 0.4249267035630458,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059971949540295
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769263216264352
+      },
+      "nextLiquidEndpointResidual": 15.72271669744032,
+      "nextVaporEndpointResidual": -2527.588038027628,
+      "stoppingError": 0.001092427831311582
+    },
+    {
+      "iteration": 13,
+      "vaporFraction": 0.7855277376216496,
+      "liquidEndpointResidual": 15.72271669744032,
+      "vaporEndpointResidual": -2527.588038027628,
+      "maximumLogKErrorAll": 5.474540373979764E-4,
+      "maximumLogKErrorActive": 4.803890693105828E-4,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.5615050805182236E-6,
+      "maximumVaporCompositionChange": 9.412686876875132E-7,
+      "maximumLiquidVaporCompositionDifference": 0.4249259064512801,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059909470903975
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769261974789593
+      },
+      "nextLiquidEndpointResidual": 15.72063262077422,
+      "nextVaporEndpointResidual": -2527.8576934381504,
+      "stoppingError": 5.474540373979764E-4
+    },
+    {
+      "iteration": 14,
+      "vaporFraction": 0.7855276603969819,
+      "liquidEndpointResidual": 15.72063262077422,
+      "vaporEndpointResidual": -2527.8576934381504,
+      "maximumLogKErrorAll": 2.7436413683812333E-4,
+      "maximumLogKErrorActive": 2.4074529007300782E-4,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.7954860459246103E-6,
+      "maximumVaporCompositionChange": 4.7638146143808013E-7,
+      "maximumLiquidVaporCompositionDifference": 0.42492551619042196,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605987866462034
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926134405917
+      },
+      "nextLiquidEndpointResidual": 15.719588067098623,
+      "nextVaporEndpointResidual": -2527.992885949404,
+      "stoppingError": 2.7436413683812333E-4
+    },
+    {
+      "iteration": 15,
+      "vaporFraction": 0.7855276265223319,
+      "liquidEndpointResidual": 15.719588067098623,
+      "vaporEndpointResidual": -2527.992885949404,
+      "maximumLogKErrorAll": 1.375178688087786E-4,
+      "maximumLogKErrorActive": 1.206641654425411E-4,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 9.051601863874215E-7,
+      "maximumVaporCompositionChange": 2.4106502560100607E-7,
+      "maximumLiquidVaporCompositionDifference": 0.42492532500725116,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605986350594397
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926102370822
+      },
+      "nextLiquidEndpointResidual": 15.719064397709882,
+      "nextVaporEndpointResidual": -2528.0606505295855,
+      "stoppingError": 1.375178688087786E-4
+    },
+    {
+      "iteration": 16,
+      "vaporFraction": 0.7855276117660002,
+      "liquidEndpointResidual": 15.719064397709882,
+      "vaporEndpointResidual": -2528.0606505295855,
+      "maximumLogKErrorAll": 6.891294052291386E-5,
+      "maximumLogKErrorActive": 6.046443724017081E-5,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.5629627223875424E-7,
+      "maximumVaporCompositionChange": 1.219380227415745E-7,
+      "maximumLiquidVaporCompositionDifference": 0.4249252309996931,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059855949388477
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260861109861
+      },
+      "nextLiquidEndpointResidual": 15.718801958512318,
+      "nextVaporEndpointResidual": -2528.09462960137,
+      "stoppingError": 6.891294052291386E-5
+    },
+    {
+      "iteration": 17,
+      "vaporFraction": 0.7855276057531497,
+      "liquidEndpointResidual": 15.718801958512318,
+      "vaporEndpointResidual": -2528.09462960137,
+      "maximumLogKErrorAll": 3.45339316671911E-5,
+      "maximumLogKErrorActive": 3.029875201043808E-5,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.3006532309799432E-7,
+      "maximumVaporCompositionChange": 6.173713977541961E-8,
+      "maximumLiquidVaporCompositionDifference": 0.4249251852956697,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059852228365432
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926077846878
+      },
+      "nextLiquidEndpointResidual": 15.718670434272804,
+      "nextVaporEndpointResidual": -2528.1116677883083,
+      "stoppingError": 3.45339316671911E-5
+    },
+    {
+      "iteration": 18,
+      "vaporFraction": 0.7855276034459007,
+      "liquidEndpointResidual": 15.718670434272804,
+      "vaporEndpointResidual": -2528.1116677883083,
+      "maximumLogKErrorAll": 1.731523924686229E-5,
+      "maximumLogKErrorActive": 1.5191705572625835E-5,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.1600413507562024E-7,
+      "maximumVaporCompositionChange": 3.1259108378145495E-8,
+      "maximumLiquidVaporCompositionDifference": 0.42492516311649,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059850433223286
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260736465486
+      },
+      "nextLiquidEndpointResidual": 15.71860445600077,
+      "nextVaporEndpointResidual": -2528.1202035267424,
+      "stoppingError": 1.731523924686229E-5
+    },
+    {
+      "iteration": 19,
+      "vaporFraction": 0.785527602496426,
+      "liquidEndpointResidual": 15.71860445600077,
+      "vaporEndpointResidual": -2528.1202035267424,
+      "maximumLogKErrorAll": 8.656138271945224E-6,
+      "maximumLogKErrorActive": 7.592559140512378E-6,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.847169740058611E-8,
+      "maximumVaporCompositionChange": 1.5794362026588793E-8,
+      "maximumLiquidVaporCompositionDifference": 0.4249251520820513,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059849441816274
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260715185153
+      },
+      "nextLiquidEndpointResidual": 15.718571532740807,
+      "nextVaporEndpointResidual": -2528.1245015191766,
+      "stoppingError": 8.656138271945224E-6
+    },
+    {
+      "iteration": 20,
+      "vaporFraction": 0.7855276025518563,
+      "liquidEndpointResidual": 15.718571532740807,
+      "vaporEndpointResidual": -2528.1245015191766,
+      "maximumLogKErrorAll": 4.347626457068543E-6,
+      "maximumLogKErrorActive": 3.813980199218747E-6,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.9536233042692928E-8,
+      "maximumVaporCompositionChange": 8.074203423913406E-9,
+      "maximumLiquidVaporCompositionDifference": 0.4249251474057598,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059849054222484
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926070421335
+      },
+      "nextLiquidEndpointResidual": 15.71855496706368,
+      "nextVaporEndpointResidual": -2528.126648584164,
+      "stoppingError": 4.347626457068543E-6
+    },
+    {
+      "iteration": 21,
+      "vaporFraction": 0.7855276025148274,
+      "liquidEndpointResidual": 15.71855496706368,
+      "vaporEndpointResidual": -2528.126648584164,
+      "maximumLogKErrorAll": 2.1652621100543E-6,
+      "maximumLogKErrorActive": 1.8983508747183464E-6,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.4872001685706238E-8,
+      "maximumVaporCompositionChange": 4.0538630091679906E-9,
+      "maximumLiquidVaporCompositionDifference": 0.42492514485806077,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848783512474
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260698707971
+      },
+      "nextLiquidEndpointResidual": 15.718546756418636,
+      "nextVaporEndpointResidual": -2528.1277366565546,
+      "stoppingError": 2.1652621100543E-6
+    },
+    {
+      "iteration": 22,
+      "vaporFraction": 0.7855276027671407,
+      "liquidEndpointResidual": 15.718546756418636,
+      "vaporEndpointResidual": -2528.1277366565546,
+      "maximumLogKErrorAll": 1.077861629283916E-6,
+      "maximumLogKErrorActive": 9.443774446893372E-7,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 7.533001999959765E-9,
+      "maximumVaporCompositionChange": 2.101949274357917E-9,
+      "maximumLiquidVaporCompositionDifference": 0.4249251440566031,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848662603913
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926069580994
+      },
+      "nextLiquidEndpointResidual": 15.718542690755221,
+      "nextVaporEndpointResidual": -2528.1282884258376,
+      "stoppingError": 1.077861629283916E-6
+    },
+    {
+      "iteration": 23,
+      "vaporFraction": 0.7855276030390663,
+      "liquidEndpointResidual": 15.718542690755221,
+      "vaporEndpointResidual": -2528.1282884258376,
+      "maximumLogKErrorAll": 5.521904284933044E-7,
+      "maximumLogKErrorActive": 4.847111396699688E-7,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.817559240948398E-9,
+      "maximumVaporCompositionChange": 1.0910375033978958E-9,
+      "maximumLiquidVaporCompositionDifference": 0.42492514391095826,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848671233232
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260694283184
+      },
+      "nextLiquidEndpointResidual": 15.718540571902018,
+      "nextVaporEndpointResidual": -2528.128555001743,
+      "stoppingError": 5.521904284933044E-7
+    },
+    {
+      "iteration": 24,
+      "vaporFraction": 0.7855276029908087,
+      "liquidEndpointResidual": 15.718540571902018,
+      "vaporEndpointResidual": -2528.128555001743,
+      "maximumLogKErrorAll": 2.8003056051773E-7,
+      "maximumLogKErrorActive": 2.4604937820527084E-7,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.896860141181733E-9,
+      "maximumVaporCompositionChange": 5.092512592175247E-10,
+      "maximumLiquidVaporCompositionDifference": 0.42492514347565524,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848653027684
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693595592
+      },
+      "nextLiquidEndpointResidual": 15.718539487617223,
+      "nextVaporEndpointResidual": -2528.12868589904,
+      "stoppingError": 2.8003056051773E-7
+    },
+    {
+      "iteration": 25,
+      "vaporFraction": 0.7855276029180289,
+      "liquidEndpointResidual": 15.718539487617223,
+      "vaporEndpointResidual": -2528.12868589904,
+      "maximumLogKErrorAll": 1.5357778959668167E-7,
+      "maximumLogKErrorActive": 1.3593424164071166E-7,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 9.484051877173272E-10,
+      "maximumVaporCompositionChange": 2.4590034175542286E-10,
+      "maximumLiquidVaporCompositionDifference": 0.42492514315991925,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848685323683
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693270481
+      },
+      "nextLiquidEndpointResidual": 15.718538854484649,
+      "nextVaporEndpointResidual": -2528.1287403679435,
+      "stoppingError": 1.5357778959668167E-7
+    },
+    {
+      "iteration": 26,
+      "vaporFraction": 0.7855276026656455,
+      "liquidEndpointResidual": 15.718538854484649,
+      "vaporEndpointResidual": -2528.1287403679435,
+      "maximumLogKErrorAll": 5.3049430626117555E-8,
+      "maximumLogKErrorActive": 4.530823360937575E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.563995375545971E-10,
+      "maximumVaporCompositionChange": 7.647394523191409E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514258813097,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848569943034
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693202971
+      },
+      "nextLiquidEndpointResidual": 15.718538699027464,
+      "nextVaporEndpointResidual": -2528.1287878469734,
+      "stoppingError": 5.3049430626117555E-8
+    },
+    {
+      "iteration": 27,
+      "vaporFraction": 0.7855276029340095,
+      "liquidEndpointResidual": 15.718538699027464,
+      "vaporEndpointResidual": -2528.1287878469734,
+      "maximumLogKErrorAll": 4.022901745059926E-8,
+      "maximumLogKErrorActive": 3.571529738621848E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.790073893090607E-10,
+      "maximumVaporCompositionChange": 1.2516523928418621E-10,
+      "maximumLiquidVaporCompositionDifference": 0.4249251430527522,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984863612848
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692992431
+      },
+      "nextLiquidEndpointResidual": 15.718538528869225,
+      "nextVaporEndpointResidual": -2528.1288001653998,
+      "stoppingError": 4.022901745059926E-8
+    },
+    {
+      "iteration": 28,
+      "vaporFraction": 0.785527602845747,
+      "liquidEndpointResidual": 15.718538528869225,
+      "vaporEndpointResidual": -2528.1288001653998,
+      "maximumLogKErrorAll": 2.711230528973374E-8,
+      "maximumLogKErrorActive": 2.4531592757170984E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.8882073682391365E-10,
+      "maximumVaporCompositionChange": 1.4215982557796991E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514286012273,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848655438256
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692985824
+      },
+      "nextLiquidEndpointResidual": 15.71853839645433,
+      "nextVaporEndpointResidual": -2528.1288004726157,
+      "stoppingError": 2.711230528973374E-8
+    },
+    {
+      "iteration": 29,
+      "vaporFraction": 0.7855276026866049,
+      "liquidEndpointResidual": 15.71853839645433,
+      "vaporEndpointResidual": -2528.1288004726157,
+      "maximumLogKErrorAll": 1.8900073506245008E-8,
+      "maximumLogKErrorActive": 1.7365286986148476E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.154289607287808E-10,
+      "maximumVaporCompositionChange": 2.4808488596761435E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251425446589,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984866479716
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926069303383
+      },
+      "nextLiquidEndpointResidual": 15.718538294011523,
+      "nextVaporEndpointResidual": -2528.128796133616,
+      "stoppingError": 1.8900073506245008E-8
+    },
+    {
+      "iteration": 30,
+      "vaporFraction": 0.7855276025183466,
+      "liquidEndpointResidual": 15.718538294011523,
+      "vaporEndpointResidual": -2528.128796133616,
+      "maximumLogKErrorAll": 1.3377283281101882E-8,
+      "maximumLogKErrorActive": 1.3377283281101882E-8,
+      "dominantAll": {
+        "index": 15,
+        "overallMoleFraction": 0.04167008388209813,
+        "component": "PC12"
+      },
+      "dominantActive": {
+        "index": 15,
+        "overallMoleFraction": 0.04167008388209813,
+        "component": "PC12"
+      },
+      "maximumLiquidCompositionChange": 3.2789698733992623E-10,
+      "maximumVaporCompositionChange": 2.9360444631088E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514221825434,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984856661936
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926069309757
+      },
+      "nextLiquidEndpointResidual": 15.718538395459575,
+      "nextVaporEndpointResidual": -2528.1288129909703,
+      "stoppingError": 1.3377283281101882E-8
+    },
+    {
+      "iteration": 31,
+      "vaporFraction": 0.7855276028057148,
+      "liquidEndpointResidual": 15.718538395459575,
+      "vaporEndpointResidual": -2528.1288129909703,
+      "maximumLogKErrorAll": 1.898631207808421E-8,
+      "maximumLogKErrorActive": 1.7942067387366478E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.498473898413181E-10,
+      "maximumVaporCompositionChange": 6.717012362988939E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251427627769,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984868323713
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692963591
+      },
+      "nextLiquidEndpointResidual": 15.718538273402865,
+      "nextVaporEndpointResidual": -2528.1287999057045,
+      "stoppingError": 1.898631207808421E-8
+    },
+    {
+      "iteration": 32,
+      "vaporFraction": 0.785527602529746,
+      "liquidEndpointResidual": 15.718538273402865,
+      "vaporEndpointResidual": -2528.1287999057045,
+      "maximumLogKErrorAll": 1.821126716095023E-8,
+      "maximumLogKErrorActive": 1.7454740763866994E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.316976303681997E-10,
+      "maximumVaporCompositionChange": 5.830298743791928E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251422351931,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984855862764
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693083743
+      },
+      "nextLiquidEndpointResidual": 15.71853839987052,
+      "nextVaporEndpointResidual": -2528.1288167187117,
+      "stoppingError": 1.821126716095023E-8
+    },
+    {
+      "iteration": 33,
+      "vaporFraction": 0.7855276028474845,
+      "liquidEndpointResidual": 15.71853839987052,
+      "vaporEndpointResidual": -2528.1288167187117,
+      "maximumLogKErrorAll": 8.892264702353714E-10,
+      "maximumLogKErrorActive": 8.892264702353714E-10,
+      "dominantAll": {
+        "index": 15,
+        "overallMoleFraction": 0.04167008388209813,
+        "component": "PC12"
+      },
+      "dominantActive": {
+        "index": 15,
+        "overallMoleFraction": 0.04167008388209813,
+        "component": "PC12"
+      },
+      "maximumLiquidCompositionChange": 6.09977901522285E-10,
+      "maximumVaporCompositionChange": 7.068962776246579E-11,
+      "maximumLiquidVaporCompositionDifference": 0.424925142839835,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984861241467
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692940505
+      },
+      "nextLiquidEndpointResidual": 15.718538404573977,
+      "nextVaporEndpointResidual": -2528.1288178389577,
+      "stoppingError": 8.892264702353714E-10
+    },
+    {
+      "iteration": 34,
+      "vaporFraction": 0.7855276028652409,
+      "liquidEndpointResidual": 15.718538404573977,
+      "vaporEndpointResidual": -2528.1288178389577,
+      "maximumLogKErrorAll": 1.9099566372915433E-8,
+      "maximumLogKErrorActive": 1.819787431855957E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.3336222671209725E-11,
+      "maximumVaporCompositionChange": 4.624245431017471E-12,
+      "maximumLiquidVaporCompositionDifference": 0.4249251428726677,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984868792327
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692931531
+      },
+      "nextLiquidEndpointResidual": 15.718538276092929,
+      "nextVaporEndpointResidual": -2528.128802102969,
+      "stoppingError": 1.9099566372915433E-8
+    },
+    {
+      "iteration": 35,
+      "vaporFraction": 0.7855276025553364,
+      "liquidEndpointResidual": 15.718538276092929,
+      "vaporEndpointResidual": -2528.128802102969,
+      "maximumLogKErrorAll": 2.302909862805791E-9,
+      "maximumLogKErrorActive": 2.202799720407711E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.956672932683205E-10,
+      "maximumVaporCompositionChange": 6.766107812916644E-11,
+      "maximumLiquidVaporCompositionDifference": 0.424925142282006,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984862230465
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693069477
+      },
+      "nextLiquidEndpointResidual": 15.718538291948777,
+      "nextVaporEndpointResidual": -2528.1288042094498,
+      "stoppingError": 2.302909862805791E-9
+    },
+    {
+      "iteration": 36,
+      "vaporFraction": 0.7855276025941287,
+      "liquidEndpointResidual": 15.718538291948777,
+      "vaporEndpointResidual": -2528.1288042094498,
+      "maximumLogKErrorAll": 2.0529896005427872E-8,
+      "maximumLogKErrorActive": 1.9589912803041898E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 7.488493158902543E-11,
+      "maximumVaporCompositionChange": 8.457005928885764E-12,
+      "maximumLiquidVaporCompositionDifference": 0.42492514235635237,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984855015947
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693052264
+      },
+      "nextLiquidEndpointResidual": 15.718538431160702,
+      "nextVaporEndpointResidual": -2528.1288216164953,
+      "stoppingError": 2.0529896005427872E-8
+    },
+    {
+      "iteration": 37,
+      "vaporFraction": 0.7855276029336946,
+      "liquidEndpointResidual": 15.718538431160702,
+      "vaporEndpointResidual": -2528.1288216164953,
+      "maximumLogKErrorAll": 1.4770305867273237E-8,
+      "maximumLogKErrorActive": 1.4082785604330184E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 6.523281914638801E-10,
+      "maximumVaporCompositionChange": 7.455466799477506E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514300309997,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848668443297
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692900532
+      },
+      "nextLiquidEndpointResidual": 15.718538331397285,
+      "nextVaporEndpointResidual": -2528.1288092260406,
+      "stoppingError": 1.4770305867273237E-8
+    },
+    {
+      "iteration": 38,
+      "vaporFraction": 0.7855276026922946,
+      "liquidEndpointResidual": 15.718538331397285,
+      "vaporEndpointResidual": -2528.1288092260406,
+      "maximumLogKErrorAll": 1.0897713842439316E-8,
+      "maximumLogKErrorActive": 1.0396326466377559E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.6425419064632933E-10,
+      "maximumVaporCompositionChange": 5.272438041714622E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514254267405,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848582467127
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693007975
+      },
+      "nextLiquidEndpointResidual": 15.718538405208463,
+      "nextVaporEndpointResidual": -2528.1288184364366,
+      "stoppingError": 1.0897713842439316E-8
+    },
+    {
+      "iteration": 39,
+      "vaporFraction": 0.7855276028719256,
+      "liquidEndpointResidual": 15.718538405208463,
+      "vaporEndpointResidual": -2528.1288184364366,
+      "maximumLogKErrorAll": 1.1746334571682837E-8,
+      "maximumLogKErrorActive": 1.1209782435628313E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.451850472124818E-10,
+      "maximumVaporCompositionChange": 3.938216419641094E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251428849349,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848569769728
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692927795
+      },
+      "nextLiquidEndpointResidual": 15.718538484879883,
+      "nextVaporEndpointResidual": -2528.128828370578,
+      "stoppingError": 1.1746334571682837E-8
+    },
+    {
+      "iteration": 40,
+      "vaporFraction": 0.785527603066837,
+      "liquidEndpointResidual": 15.718538484879883,
+      "vaporEndpointResidual": -2528.128828370578,
+      "maximumLogKErrorAll": 8.073734569791213E-9,
+      "maximumLogKErrorActive": 7.697044779320095E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.7411124198527546E-10,
+      "maximumVaporCompositionChange": 4.291102195796981E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251432557538,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848636025396
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692840508
+      },
+      "nextLiquidEndpointResidual": 15.71853843036543,
+      "nextVaporEndpointResidual": -2528.12882158706,
+      "stoppingError": 8.073734569791213E-9
+    },
+    {
+      "iteration": 41,
+      "vaporFraction": 0.7855276029352665,
+      "liquidEndpointResidual": 15.71853843036543,
+      "vaporEndpointResidual": -2528.12882158706,
+      "maximumLogKErrorAll": 1.4237349965640078E-8,
+      "maximumLogKErrorActive": 1.3582768687570024E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.5321422736368504E-10,
+      "maximumVaporCompositionChange": 2.8669691620741844E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251430045766,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848666838248
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926069289896
+      },
+      "nextLiquidEndpointResidual": 15.71853833393519,
+      "nextVaporEndpointResidual": -2528.1288095776054,
+      "stoppingError": 1.4237349965640078E-8
+    },
+    {
+      "iteration": 42,
+      "vaporFraction": 0.7855276027002562,
+      "liquidEndpointResidual": 15.71853833393519,
+      "vaporEndpointResidual": -2528.1288095776054,
+      "maximumLogKErrorAll": 1.3225895933999254E-8,
+      "maximumLogKErrorActive": 1.2622607847845302E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.513935336625252E-10,
+      "maximumVaporCompositionChange": 5.1595033800921897E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251425570662,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984867524397
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693003978
+      },
+      "nextLiquidEndpointResidual": 15.718538244208892,
+      "nextVaporEndpointResidual": -2528.128798399576,
+      "stoppingError": 1.3225895933999254E-8
+    },
+    {
+      "iteration": 43,
+      "vaporFraction": 0.7855276024804461,
+      "liquidEndpointResidual": 15.718538244208892,
+      "vaporEndpointResidual": -2528.128798399576,
+      "maximumLogKErrorAll": 5.0222954683931675E-9,
+      "maximumLogKErrorActive": 4.798192954069691E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.2174869152589167E-10,
+      "maximumVaporCompositionChange": 4.844986217777958E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251421390722,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984865498856
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.976926069310251
+      },
+      "nextLiquidEndpointResidual": 15.71853820998497,
+      "nextVaporEndpointResidual": -2528.1287941333558,
+      "stoppingError": 5.0222954683931675E-9
+    },
+    {
+      "iteration": 44,
+      "vaporFraction": 0.7855276023954132,
+      "liquidEndpointResidual": 15.71853820998497,
+      "vaporEndpointResidual": -2528.1287941333558,
+      "maximumLogKErrorAll": 1.0792042814955494E-8,
+      "maximumLogKErrorActive": 1.0290899687959154E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.626808132648705E-10,
+      "maximumVaporCompositionChange": 1.8943312196650908E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514197797254,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848598292745
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693140946
+      },
+      "nextLiquidEndpointResidual": 15.71853828292965,
+      "nextVaporEndpointResidual": -2528.1288032169937,
+      "stoppingError": 1.0792042814955494E-8
+    },
+    {
+      "iteration": 45,
+      "vaporFraction": 0.7855276025719817,
+      "liquidEndpointResidual": 15.71853828292965,
+      "vaporEndpointResidual": -2528.1288032169937,
+      "maximumLogKErrorAll": 1.026162177453216E-8,
+      "maximumLogKErrorActive": 9.79092451558472E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.3962693768430086E-10,
+      "maximumVaporCompositionChange": 3.8559516690739315E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251423148144,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848590924417
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693062372
+      },
+      "nextLiquidEndpointResidual": 15.718538352466553,
+      "nextVaporEndpointResidual": -2528.1288118791413,
+      "stoppingError": 1.026162177453216E-8
+    },
+    {
+      "iteration": 46,
+      "vaporFraction": 0.7855276027416982,
+      "liquidEndpointResidual": 15.718538352466553,
+      "vaporEndpointResidual": -2528.1288118791413,
+      "maximumLogKErrorAll": 2.1321430843102007E-8,
+      "maximumLogKErrorActive": 2.0337540540538157E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.2588776122111085E-10,
+      "maximumVaporCompositionChange": 3.730111358679622E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514263787234,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984870373579
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692986466
+      },
+      "nextLiquidEndpointResidual": 15.718538208163848,
+      "nextVaporEndpointResidual": -2528.1287939059803,
+      "stoppingError": 2.1321430843102007E-8
+    },
+    {
+      "iteration": 47,
+      "vaporFraction": 0.7855276023909128,
+      "liquidEndpointResidual": 15.718538208163848,
+      "vaporEndpointResidual": -2528.1287939059803,
+      "maximumLogKErrorAll": 8.690461683613648E-9,
+      "maximumLogKErrorActive": 8.285952368680682E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 6.741333602455768E-10,
+      "maximumVaporCompositionChange": 7.68593313993371E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251419694352,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848606615088
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693142975
+      },
+      "nextLiquidEndpointResidual": 15.718538266874312,
+      "nextVaporEndpointResidual": -2528.1288012167415,
+      "stoppingError": 8.690461683613648E-9
+    },
+    {
+      "iteration": 48,
+      "vaporFraction": 0.7855276025327966,
+      "liquidEndpointResidual": 15.718538266874312,
+      "vaporEndpointResidual": -2528.1288012167415,
+      "maximumLogKErrorAll": 1.9675362672444408E-8,
+      "maximumLogKErrorActive": 1.8771303622600044E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.7300289806575506E-10,
+      "maximumVaporCompositionChange": 3.0945912499191763E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251422402251,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984855670529
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693079898
+      },
+      "nextLiquidEndpointResidual": 15.718538400154738,
+      "nextVaporEndpointResidual": -2528.1288178188493,
+      "stoppingError": 1.9675362672444408E-8
+    },
+    {
+      "iteration": 49,
+      "vaporFraction": 0.7855276028577165,
+      "liquidEndpointResidual": 15.718538400154738,
+      "vaporEndpointResidual": -2528.1288178188493,
+      "maximumLogKErrorAll": 2.2508158892264873E-8,
+      "maximumLogKErrorActive": 2.1466949995385676E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 6.24055529474532E-10,
+      "maximumVaporCompositionChange": 7.134949575604566E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251428589034,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848702206068
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692934676
+      },
+      "nextLiquidEndpointResidual": 15.718538247898154,
+      "nextVaporEndpointResidual": -2528.128798856356,
+      "stoppingError": 2.2508158892264873E-8
+    },
+    {
+      "iteration": 50,
+      "vaporFraction": 0.7855276024882079,
+      "liquidEndpointResidual": 15.718538247898154,
+      "vaporEndpointResidual": -2528.128798856356,
+      "maximumLogKErrorAll": 1.3048468971987859E-9,
+      "maximumLogKErrorActive": 1.248918302110269E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 7.103592158941296E-10,
+      "maximumVaporCompositionChange": 8.085790370593315E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514215447785,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848640089645
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693099375
+      },
+      "nextLiquidEndpointResidual": 15.718538238936238,
+      "nextVaporEndpointResidual": -2528.128797738146,
+      "stoppingError": 1.3048468971987859E-9
+    },
+    {
+      "iteration": 51,
+      "vaporFraction": 0.7855276024653948,
+      "liquidEndpointResidual": 15.718538238936238,
+      "vaporEndpointResidual": -2528.128797738146,
+      "maximumLogKErrorAll": 1.5833571787027267E-8,
+      "maximumLogKErrorActive": 1.5103307937636146E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.343231330139474E-11,
+      "maximumVaporCompositionChange": 5.172827444166472E-12,
+      "maximumLiquidVaporCompositionDifference": 0.4249251421115278,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848575128663
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693109831
+      },
+      "nextLiquidEndpointResidual": 15.718538346109165,
+      "nextVaporEndpointResidual": -2528.128811086833,
+      "stoppingError": 1.5833571787027267E-8
+    },
+    {
+      "iteration": 52,
+      "vaporFraction": 0.7855276027260143,
+      "liquidEndpointResidual": 15.718538346109165,
+      "vaporEndpointResidual": -2528.128811086833,
+      "maximumLogKErrorAll": 9.011191792751561E-10,
+      "maximumLogKErrorActive": 8.557385910989979E-10,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.008172210274608E-10,
+      "maximumVaporCompositionChange": 5.711915662676148E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251426081029,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848625869853
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692993526
+      },
+      "nextLiquidEndpointResidual": 15.71853834012632,
+      "nextVaporEndpointResidual": -2528.1288103435263,
+      "stoppingError": 9.011191792751561E-10
+    },
+    {
+      "iteration": 53,
+      "vaporFraction": 0.7855276027123812,
+      "liquidEndpointResidual": 15.71853834012632,
+      "vaporEndpointResidual": -2528.1288103435263,
+      "maximumLogKErrorAll": 7.346312891343132E-9,
+      "maximumLogKErrorActive": 7.006925706320999E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.656291853142534E-11,
+      "maximumVaporCompositionChange": 2.832664658392048E-12,
+      "maximumLiquidVaporCompositionDifference": 0.42492514258166225,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848651544204
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260692999362
+      },
+      "nextLiquidEndpointResidual": 15.718538290418513,
+      "nextVaporEndpointResidual": -2528.128804152651,
+      "stoppingError": 7.346312891343132E-9
+    },
+    {
+      "iteration": 54,
+      "vaporFraction": 0.7855276025916387,
+      "liquidEndpointResidual": 15.718538290418513,
+      "vaporEndpointResidual": -2528.128804152651,
+      "maximumLogKErrorAll": 8.383293170766137E-9,
+      "maximumLogKErrorActive": 7.99951926921949E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.3207735733166146E-10,
+      "maximumVaporCompositionChange": 2.6439773981312698E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514235153556,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848661914964
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693053208
+      },
+      "nextLiquidEndpointResidual": 15.71853823358674,
+      "nextVaporEndpointResidual": -2528.1287970727003,
+      "stoppingError": 8.383293170766137E-9
+    },
+    {
+      "iteration": 55,
+      "vaporFraction": 0.7855276024527487,
+      "liquidEndpointResidual": 15.71853823358674,
+      "vaporEndpointResidual": -2528.1287970727003,
+      "maximumLogKErrorAll": 9.888731611340518E-9,
+      "maximumLogKErrorActive": 9.43064826230966E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 2.66622612876688E-10,
+      "maximumVaporCompositionChange": 3.055686259578749E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251420872486,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984859874555
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693115378
+      },
+      "nextLiquidEndpointResidual": 15.71853830045957,
+      "nextVaporEndpointResidual": -2528.128805400876,
+      "stoppingError": 9.888731611340518E-9
+    },
+    {
+      "iteration": 56,
+      "vaporFraction": 0.7855276026148874,
+      "liquidEndpointResidual": 15.71853830045957,
+      "vaporEndpointResidual": -2528.128805400876,
+      "maximumLogKErrorAll": 2.5805082515262256E-9,
+      "maximumLogKErrorActive": 2.4633504125404215E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 3.1176394799103946E-10,
+      "maximumVaporCompositionChange": 3.545402166293954E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251423964256,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984861829269
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693043149
+      },
+      "nextLiquidEndpointResidual": 15.718538317983006,
+      "nextVaporEndpointResidual": -2528.1288075842963,
+      "stoppingError": 2.5805082515262256E-9
+    },
+    {
+      "iteration": 57,
+      "vaporFraction": 0.7855276026579461,
+      "liquidEndpointResidual": 15.718538317983006,
+      "vaporEndpointResidual": -2528.1288075842963,
+      "maximumLogKErrorAll": 5.0407997775892E-9,
+      "maximumLogKErrorActive": 4.8075126102276045E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 8.256539896223103E-11,
+      "maximumVaporCompositionChange": 9.51258516401765E-12,
+      "maximumLiquidVaporCompositionDifference": 0.4249251424782416,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984864544625
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693023814
+      },
+      "nextLiquidEndpointResidual": 15.718538283887666,
+      "nextVaporEndpointResidual": -2528.1288033380097,
+      "stoppingError": 5.0407997775892E-9
+    },
+    {
+      "iteration": 58,
+      "vaporFraction": 0.7855276025752256,
+      "liquidEndpointResidual": 15.718538283887666,
+      "vaporEndpointResidual": -2528.1288033380097,
+      "maximumLogKErrorAll": 1.6029749971835372E-8,
+      "maximumLogKErrorActive": 1.5293822208661823E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 1.5903511840775764E-10,
+      "maximumVaporCompositionChange": 1.809709326838771E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514232053213,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984869215855
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693060675
+      },
+      "nextLiquidEndpointResidual": 15.718538175283623,
+      "nextVaporEndpointResidual": -2528.128789809334,
+      "stoppingError": 1.6029749971835372E-8
+    },
+    {
+      "iteration": 59,
+      "vaporFraction": 0.7855276023103153,
+      "liquidEndpointResidual": 15.718538175283623,
+      "vaporEndpointResidual": -2528.128789809334,
+      "maximumLogKErrorAll": 1.2467911147950872E-9,
+      "maximumLogKErrorActive": 1.1952252521041373E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.087397170200347E-10,
+      "maximumVaporCompositionChange": 5.8197016650218814E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514181619256,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848649046924
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693179116
+      },
+      "nextLiquidEndpointResidual": 15.718538166663278,
+      "nextVaporEndpointResidual": -2528.128788732548,
+      "stoppingError": 1.2467911147950872E-9
+    },
+    {
+      "iteration": 60,
+      "vaporFraction": 0.7855276022879301,
+      "liquidEndpointResidual": 15.718538166663278,
+      "vaporEndpointResidual": -2528.128788732548,
+      "maximumLogKErrorAll": 1.6119990675633744E-8,
+      "maximumLogKErrorActive": 1.5375717588028692E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.2449654902299017E-11,
+      "maximumVaporCompositionChange": 5.147278436812286E-12,
+      "maximumLiquidVaporCompositionDifference": 0.424925141774262,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984858312682
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693189491
+      },
+      "nextLiquidEndpointResidual": 15.718538275750461,
+      "nextVaporEndpointResidual": -2528.128802319057,
+      "stoppingError": 1.6119990675633744E-8
+    },
+    {
+      "iteration": 61,
+      "vaporFraction": 0.7855276025530136,
+      "liquidEndpointResidual": 15.718538275750461,
+      "vaporEndpointResidual": -2528.128802319057,
+      "maximumLogKErrorAll": 1.4868319908600824E-9,
+      "maximumLogKErrorActive": 1.4221166466654722E-9,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 5.09471187459809E-10,
+      "maximumVaporCompositionChange": 5.806513603268115E-11,
+      "maximumLiquidVaporCompositionDifference": 0.42492514227943906,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984862551075
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693071244
+      },
+      "nextLiquidEndpointResidual": 15.718538285932196,
+      "nextVaporEndpointResidual": -2528.1288035889893,
+      "stoppingError": 1.4868319908600824E-9
+    },
+    {
+      "iteration": 62,
+      "vaporFraction": 0.7855276025786988,
+      "liquidEndpointResidual": 15.718538285932196,
+      "vaporEndpointResidual": -2528.1288035889893,
+      "maximumLogKErrorAll": 1.4300368889053061E-8,
+      "maximumLogKErrorActive": 1.3640732987596493E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.898892402849242E-11,
+      "maximumVaporCompositionChange": 5.786301993104814E-12,
+      "maximumLiquidVaporCompositionDifference": 0.42492514232790923,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.02605984868510225
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693059532
+      },
+      "nextLiquidEndpointResidual": 15.718538189139725,
+      "nextVaporEndpointResidual": -2528.128791533251,
+      "stoppingError": 1.4300368889053061E-8
+    },
+    {
+      "iteration": 63,
+      "vaporFraction": 0.7855276023433428,
+      "liquidEndpointResidual": 15.718538189139725,
+      "vaporEndpointResidual": -2528.128791533251,
+      "maximumLogKErrorAll": 1.3487148287083528E-8,
+      "maximumLogKErrorActive": 1.2870769339201615E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.522777707904879E-10,
+      "maximumVaporCompositionChange": 5.15786996446721E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251418794601,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848694364174
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693164558
+      },
+      "nextLiquidEndpointResidual": 15.718538097676245,
+      "nextVaporEndpointResidual": -2528.1287801383364,
+      "stoppingError": 1.3487148287083528E-8
+    },
+    {
+      "iteration": 64,
+      "vaporFraction": 0.7855276021195678,
+      "liquidEndpointResidual": 15.718538097676245,
+      "vaporEndpointResidual": -2528.1287801383364,
+      "maximumLogKErrorAll": 2.0591112814827284E-8,
+      "maximumLogKErrorActive": 1.9638406456579105E-8,
+      "dominantAll": {
+        "index": 0,
+        "overallMoleFraction": 0.0,
+        "component": "methane"
+      },
+      "dominantActive": {
+        "index": 1,
+        "overallMoleFraction": 0.0012538307614088564,
+        "component": "ethane"
+      },
+      "maximumLiquidCompositionChange": 4.294746780431069E-10,
+      "maximumVaporCompositionChange": 4.927418889577595E-11,
+      "maximumLiquidVaporCompositionDifference": 0.4249251414537755,
+      "liquidRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.026059848574683075
+      },
+      "vaporRoot": {
+        "rootSeparation": 0.0,
+        "physicalRootCount": 1,
+        "compressibilityFactor": 0.9769260693264787
+      },
+      "nextLiquidEndpointResidual": 15.718538236959501,
+      "nextVaporEndpointResidual": -2528.1287974848474,
+      "stoppingError": 2.0591112814827284E-8
+    }
+  ],
+  "initial": {
+    "wilsonK": [
+      1515.3288518693807,
+      773.2466626377734,
+      418.0622243978077,
+      240.71741802389025,
+      136.8446929983839,
+      88.50826154520435,
+      50.93789642348428,
+      30.000184691496735,
+      17.142487688404927,
+      7.903827322545187,
+      3.414543964274004,
+      1.3872566237754755,
+      0.5274978809798101,
+      0.1536825549225682,
+      0.010960879795393756,
+      3.880364964721891E-5
+    ],
+    "logK": [
+      7.323387758328686,
+      6.650598095536173,
+      6.035630283641591,
+      5.4836237062086415,
+      4.9188466550371395,
+      4.483095898450239,
+      3.9306071735177284,
+      3.4012035380264294,
+      2.841560041984783,
+      2.0673471133629415,
+      1.228043945093621,
+      0.3273281449650249,
+      -0.6396104307398701,
+      -1.8728661357083878,
+      -4.513422727381647,
+      -10.156996252686048
+    ],
+    "liquidEndpointResidual": 47.03687720989647,
+    "vaporEndpointResidual": -1082.238701140653
+  },
+  "status": "FLASH_NONCONVERGENCE",
+  "failure": "V3 feed flash did not converge within 64 iterations",
+  "failurePhase": null,
+  "elapsedMilliseconds": 14.1259,
+  "lastArrays": {
+    "arrayTiming": "lastLogKUsed, x/y and lastLogPhi describe the final evaluated iteration. workspaceLogKAtExit includes the last damped update on iteration-limit failure, but not on convergence. Endpoint publication may have refreshed the workspace liquid evaluation afterward.",
+    "lastLogKUsed": [
+      5.133495672699043,
+      4.728270998288392,
+      4.4164504893429335,
+      4.11301698068063,
+      3.769552421842236,
+      3.5074764986917204,
+      3.153552082225303,
+      2.7942445787735997,
+      2.3948900887694213,
+      1.8078688352738306,
+      1.1324091602155533,
+      0.3648011536487746,
+      -0.5055924008768122,
+      -1.687527962815242,
+      -4.459830789592541,
+      -11.010098758405697
+    ],
+    "lastTargetLogK": [
+      5.133495693290156,
+      4.728271017926798,
+      4.41645050826181,
+      4.1130169989006955,
+      3.7695524392350332,
+      3.507476515483679,
+      3.1535520982123564,
+      2.79424459394579,
+      2.394890103038666,
+      1.807868848227769,
+      1.1324091716604228,
+      0.364801163383437,
+      -0.505592393076841,
+      -1.6875279576182338,
+      -4.459830790433868,
+      -11.010098772169917
+    ],
+    "lastLogPhiLiquid": [
+      5.154358946921283,
+      4.743416582383044,
+      4.4267870281470145,
+      4.118632647345579,
+      3.7709176527133357,
+      3.5046821324102693,
+      3.144944171261128,
+      2.779665809812334,
+      2.3735924221943465,
+      1.7763344273597257,
+      1.0889632662314002,
+      0.30767599849825444,
+      -0.5783646711519648,
+      -1.7822780063547832,
+      -4.608153328700899,
+      -11.325523983171037
+    ],
+    "lastLogPhiVapor": [
+      0.02086325363112677,
+      0.015145564456245588,
+      0.010336519885204825,
+      0.005615648444883601,
+      0.0013652134783024225,
+      -0.002794383073409838,
+      -0.008607926951228143,
+      -0.014578784133455775,
+      -0.021297680844319204,
+      -0.03153442086804329,
+      -0.04344590542902266,
+      -0.057125164885182544,
+      -0.0727722780751238,
+      -0.09475004873654935,
+      -0.148322538267031,
+      -0.31542521100112053
+    ],
+    "workspaceLogKAtExit": [
+      5.1334956829945995,
+      4.728271008107595,
+      4.416450498802371,
+      4.113016989790663,
+      3.7695524305386345,
+      3.5074765070876994,
+      3.1535520902188297,
+      2.794244586359695,
+      2.3948900959040436,
+      1.8078688417507998,
+      1.132409165937988,
+      0.3648011585161058,
+      -0.5055923969768266,
+      -1.687527960216738,
+      -4.459830790013204,
+      -11.010098765287808
+    ],
+    "workspaceNextLogKAtExit": [
+      5.1334956829945995,
+      4.728271008107595,
+      4.416450498802371,
+      4.113016989790663,
+      3.7695524305386345,
+      3.5074765070876994,
+      3.1535520902188297,
+      2.794244586359695,
+      2.3948900959040436,
+      1.8078688417507998,
+      1.132409165937988,
+      0.3648011585161058,
+      -0.5055923969768266,
+      -1.687527960216738,
+      -4.459830790013204,
+      -11.010098765287808
+    ],
+    "liquidComposition": [
+      0.0,
+      1.407888682518413E-5,
+      1.7252053545166332E-4,
+      6.337201574478858E-4,
+      0.004022093920997712,
+      0.0025014399316657305,
+      0.006139203934047935,
+      0.004242964278482921,
+      0.011392062401119863,
+      0.017589199430239233,
+      0.028243236106043308,
+      0.048177288606068874,
+      0.07997721832367034,
+      0.17271900822728747,
+      0.42989660330920365,
+      0.19427936195144835
+    ],
+    "vaporComposition": [
+      0.0,
+      0.0015923198948285735,
+      0.014285020715559892,
+      0.03873986474637123,
+      0.17440061968957798,
+      0.0834579604511548,
+      0.14377465291948052,
+      0.06937362319480606,
+      0.12493666401972406,
+      0.1072490693316176,
+      0.08764224751615085,
+      0.06938626053510445,
+      0.048238112399415244,
+      0.03194891053851142,
+      0.004971461855428148,
+      3.2121922689888464E-6
+    ]
+  }
+}

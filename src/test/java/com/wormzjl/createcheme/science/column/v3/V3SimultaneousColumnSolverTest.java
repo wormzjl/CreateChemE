@@ -97,9 +97,29 @@ class V3SimultaneousColumnSolverTest {
         V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace());
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                 problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
+        V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
+                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 128, 1.0e-8);
+        // This fixture tests rejection of a numerically converged, physically invalid branch,
+        // not convergence from one particular cold trajectory. Use the same existing recovery
+        // paths as the exact-warm companion and production facade; keep every acceptance gate.
+        if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged)) {
+            V3SequentialPreconditioner.Result preparation = V3BubblePointPreconditioner.INSTANCE.prepare(
+                    new V3SequentialPreconditioner.Request(problem, attempt.state(), V3SolveControl.UNBOUNDED),
+                    thermo, thermo.newWorkspace());
+            if (preparation instanceof V3SequentialPreconditioner.Result.Prepared prepared) {
+                attempt = V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
+                        problem, evaluator, new V3DryMeshCoordinateMap(problem), prepared.state(), thermo::newWorkspace,
+                        128, 1.0e-8, V3SolveControl.UNBOUNDED);
+            }
+        }
+        if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged)) {
+            attempt = V3SimultaneousColumnSolver.solve(
+                    problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
+                    V3ConvergenceEvidence.unavailable(), 128, 1.0e-8,
+                    V3FiniteDifferenceJacobian.DifferenceScale.COARSE);
+        }
         V3SimultaneousColumnSolver.Attempt.Converged converged = assertInstanceOf(
-                V3SimultaneousColumnSolver.Attempt.Converged.class, V3SimultaneousColumnSolver.solve(
-                        problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 128, 1.0e-8));
+                V3SimultaneousColumnSolver.Attempt.Converged.class, attempt, attempt::toString);
         V3ConvergenceEvidence convergenceEvidence = converged.evidence().convergenceEvidence();
         V3AcceptanceAudit audit = new V3AcceptanceAuditor(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol())
                 .audit(converged.state(), thermo.newWorkspace());

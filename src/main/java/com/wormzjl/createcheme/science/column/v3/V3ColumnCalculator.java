@@ -1,9 +1,11 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationEvidence;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -20,7 +22,7 @@ import java.util.concurrent.CancellationException;
  */
 public final class V3ColumnCalculator {
     /** Cutoff-enabled formulation; the exact-off path retains the legacy revision in its digest. */
-    public static final String FORMULATION_REVISION = "v3-dry-mesh-r3-stage-trace";
+    public static final String FORMULATION_REVISION = "v3-dry-mesh-r4-flash-trace";
     private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r2";
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r3";
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
@@ -513,15 +515,22 @@ public final class V3ColumnCalculator {
         }
         jacobianPolicy = Objects.requireNonNull(jacobianPolicy, "jacobianPolicy");
         control.checkpoint();
-        V3FlashResult feedFlash = thermo.flashTP(problem.input().feedTemperatureKelvin(),
-                problem.nodePressurePascal(problem.topology().feedTrayNumber()),
-                problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
+        V3FlashResult feedFlash = policy.attemptCutoff() > 0.0
+                ? thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
+                        problem.input().feedComponentMolarFlowsMolPerSecond(), V3TraceTruncationPolicy.of(policy.attemptCutoff()),
+                        thermo.newWorkspace(), control::checkpoint)
+                : thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
+                        problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
+        // A phase-allocation approximation must never change the authored feed's physical energy.
+        double feedMolarEnthalpy = feedFlash.referenceMolarEnthalpyJoulesPerMol();
         V3DryMeshState recoverySeed = seed;
         PreparedAttempt prepared = prepareAttempt(problem, seed, policy);
         problem = prepared.problem();
         seed = prepared.seed();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
-                problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
+                problem, thermo, feedMolarEnthalpy);
         SolveTelemetry telemetry = new SolveTelemetry(problem);
         V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
         V3SimultaneousColumnSolver.Attempt attempt = switch (jacobianPolicy) {
@@ -537,12 +546,13 @@ public final class V3ColumnCalculator {
                     maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
         };
         control.checkpoint();
-        V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state(), control);
+        V3AcceptanceAudit audit = audit(problem, thermo, feedMolarEnthalpy, attempt.state(), control);
         List<String> events = telemetry.events();
+        if (policy.attemptCutoff() > 0.0) events = mergedEvents(List.of(flashTraceEvent(feedFlash)), events);
         if (!prepared.support().note().isEmpty()) {
             events = mergedEvents(List.of("stage-trace support: " + prepared.support().note()), events);
         }
-        return new V3SolvePass(attempt, audit, feedFlash.molarEnthalpyJoulesPerMol(), solvePath,
+        return new V3SolvePass(attempt, audit, feedMolarEnthalpy, solvePath,
                 recoverySeed, problem.input().stageCount(), true, true, true, events, prepared);
     }
 
@@ -621,7 +631,8 @@ public final class V3ColumnCalculator {
         // Preserve availability and phase-transition evidence without retaining earlier numerical states.
         List<String> notes = null;
         for (String event : previous.solverEvents()) {
-            if (!event.startsWith("stage-trace support:") && !event.startsWith("condenser phase transition")) continue;
+            if (!event.startsWith("stage-trace support:") && !event.startsWith("condenser phase transition")
+                    && !event.startsWith("flash-trace ")) continue;
             if (notes == null) notes = new ArrayList<>();
             if (!notes.contains(event) && !next.solverEvents().contains(event)) notes.add(event);
         }
@@ -658,6 +669,20 @@ public final class V3ColumnCalculator {
                 + support.truncatedPointCount() + "/" + support.totalPointCount() + "; closure-pruned="
                 + support.closurePrunedCount() + "; defect/feed=" + defect
                 + (support.note().isEmpty() ? "" : "; " + support.note());
+        return event.length() <= 256 ? event : event.substring(0, 256);
+    }
+
+    private static String flashTraceEvent(V3FlashResult flash) {
+        V3FlashTruncationEvidence evidence = flash.truncationEvidence();
+        String event = String.format(Locale.ROOT,
+                "flash-trace cutoff=%.6g; status=%s; omitted=%dL/%dV; it=%d/%d",
+                evidence.cutoffMoleFraction(), evidence.status(), evidence.omittedLiquidComponents(),
+                evidence.omittedVaporComponents(), evidence.referenceIterations(), evidence.reducedIterations());
+        event += evidence.errorsEvaluated() ? String.format(Locale.ROOT,
+                "; alloc=%.3g; beta=%.3g; x/y=%.3g; mass=%.3g; dH=%.3g J/mol",
+                evidence.allocationError(), evidence.betaError(), evidence.maxPhaseCompositionError(),
+                evidence.maxMaterialClosureError(), evidence.enthalpyErrorJoulesPerMol()) : "; errors=not-evaluated";
+        event += "; feed-H=reference";
         return event.length() <= 256 ? event : event.substring(0, 256);
     }
 

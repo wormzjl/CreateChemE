@@ -219,6 +219,42 @@ tasks.register('v3TimeoutBenchmarkHarnessTest', JavaExec) {
     args '--self-test'
 }
 
+tasks.register('v3FlashFailureCapture', JavaExec) {
+    group = 'verification'
+    description = 'Captures flash failure inputs and caught exception stacks in an owned debugger JVM.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3FlashFailureCapture'
+    jvmArgs '--add-modules=jdk.jdi'
+    args '--pressureKpa=' + providers.gradleProperty('flashPressureKpa').getOrElse('100')
+    args '--cutoff=' + providers.gradleProperty('flashCutoff').getOrElse('0')
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-capture.json')
+}
+
+tasks.register('v3FlashReplayProbe', JavaExec) {
+    group = 'verification'
+    description = 'Replays captured TP-flash inputs with diagnostic iteration traces and explicit counterfactual controls.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.thermo.V3FlashReplayProbe'
+    args '--input=' + providers.gradleProperty('flashInput').getOrElse('benchmarks/results/v3-flash-investigation/100-off-capture.json')
+    args '--event=' + providers.gradleProperty('flashEvent').getOrElse('0')
+    args '--maxIterations=' + providers.gradleProperty('flashMaxIterations').getOrElse('64')
+    args '--relaxation=' + providers.gradleProperty('flashRelaxation').getOrElse('0.5')
+    args '--skipInactiveConvergence=' + providers.gradleProperty('flashSkipInactive').getOrElse('false')
+    args '--polishRoots=' + providers.gradleProperty('flashPolishRoots').getOrElse('false')
+    if (providers.gradleProperty('flashReplayPressurePascal').isPresent()) {
+        args '--pressurePascal=' + providers.gradleProperty('flashReplayPressurePascal').get()
+    }
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-replay.json')
+}
+
+tasks.register('v3FlashTruncationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Records strict/reference-validated flash pairs and conservation evidence; not a timing benchmark.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationProbe'
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-truncation.json')
+}
+
 tasks.register('v3ContinuationProbe', JavaExec) {
     group = 'verification'
     description = 'Traces the first V3 continuation path without recovery; diagnostic counterfactuals only.'
@@ -235,6 +271,30 @@ tasks.register('v3ContinuationProbe', JavaExec) {
     args '--dutyMW=' + providers.gradleProperty('v3DutyMW').getOrElse('8')
     args '--report=' + providers.gradleProperty('v3Report').getOrElse(
             layout.buildDirectory.file('reports/benchmarks/v3-continuation-probe.json').get().asFile.absolutePath)
+}
+
+tasks.register('v3LowPressureProbe', JavaExec) {
+    group = 'verification'
+    description = 'Replays the actual 60-to-55 kPa pressure failure and tests numerical counterfactuals without production changes.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3LowPressureProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse('build/reports/benchmarks/v3-low-pressure.json')
+    if (providers.gradleProperty('v3SmallSteps').isPresent()) args '--smallSteps'
+    if (providers.gradleProperty('v3Adaptive').isPresent()) args '--adaptive'
+    if (providers.gradleProperty('v3TruncatedProbe').isPresent()) args '--truncated'
+}
+
+tasks.register('v3LowPressureLinearProbe', JavaExec) {
+    group = 'verification'
+    description = 'Inspects captured low-pressure Jacobians and Newton line searches without production edits.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3LowPressureLinearProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--input=' + providers.gradleProperty('v3LinearInput').getOrElse('benchmarks/results/v3-low-pressure/replay-counterfactuals.json')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse('build/reports/benchmarks/v3-low-pressure-linear.json')
 }
 
 tasks.named('wrapper', Wrapper).configure {

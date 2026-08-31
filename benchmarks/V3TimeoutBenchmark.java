@@ -32,6 +32,7 @@ public final class V3TimeoutBenchmark {
     private static final List<Scenario> SCENARIOS = List.of(
             new Scenario("250-off", 250, 2610.7, 8, 0),
             new Scenario("150-off", 150, 2610.7, 8, 0),
+            new Scenario("150-on", 150, 2610.7, 8, 1.0e-6),
             new Scenario("110-off", 110, 2610.7, 8, 0),
             new Scenario("110-on", 110, 2610.7, 8, 1.0e-6),
             new Scenario("100-off", 100, 2610.7, 8, 0),

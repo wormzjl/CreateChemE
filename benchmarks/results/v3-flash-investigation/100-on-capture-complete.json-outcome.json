@@ -1,0 +1,39 @@
+{
+  "code": "PROPERTY_OUT_OF_RANGE",
+  "summary": "V3 feed flash did not converge within 64 iterations",
+  "diagnostics": {
+    "initializerIterations": 0,
+    "newtonIterations": 0,
+    "residualEvaluations": 0,
+    "linearSolves": 0,
+    "maximumScaledResidual": 0.0,
+    "finalStepNorm": 0.0,
+    "solvePath": "property",
+    "events": [
+      "stage-trace cutoff\u003d1.0E-6; support evidence unavailable",
+      "stage-trace fallback: retried untruncated after NONCONVERGENCE; audit\u003dUNAVAILABLE; outcome\u003dfailure",
+      "V3 feed flash did not converge within 64 iterations"
+    ],
+    "acceptanceAudit": {
+      "checks": [
+        {
+          "family": "UNAVAILABLE",
+          "value": 1.0,
+          "limit": 0.0,
+          "passed": false,
+          "detail": "V3 feed flash did not converge within 64 iterations"
+        }
+      ],
+      "advisoryEvidence": [
+        "ESTIMATED_HEAVY_RESIDUE: PC12 is extrapolated and vapor-ineligible"
+      ]
+    },
+    "convergenceEvidence": {
+      "hasFinalNewtonStep": false,
+      "finalLinearBackwardError": 0.0,
+      "maximumLogFlowChange": 0.0,
+      "maximumTemperatureChangeKelvin": 0.0,
+      "maximumTemperatureStepRatio": 0.0
+    }
+  }
+}

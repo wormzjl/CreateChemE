@@ -1,0 +1,9 @@
+{
+  "started": "2026-08-31T09:19:49.130740Z",
+  "requestedPressureKpa": 100.0,
+  "cutoff": 1.0E-6,
+  "note": "Debugger observation only; no production code modified. All V3FeedFlash exception sites are captured, including internally caught failures. Timing is not a benchmark.",
+  "events": [],
+  "childExitCode": 1,
+  "finished": "2026-08-31T09:19:59.864009300Z"
+}

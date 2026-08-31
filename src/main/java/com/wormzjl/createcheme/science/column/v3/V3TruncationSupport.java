@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +10,7 @@ import java.util.Objects;
  * material/VLE rows. Derivation is not wired into production solves until the numerical/audit phases.
  */
 final class V3TruncationSupport {
-    static final double MAX_CUTOFF_MOLE_FRACTION = 0.01;
+    static final double MAX_CUTOFF_MOLE_FRACTION = V3TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION;
 
     private final V3ColumnTopology topology;
     private final int componentCount;
@@ -327,9 +328,7 @@ final class V3TruncationSupport {
     }
 
     static void requireCutoff(double cutoff) {
-        if (!Double.isFinite(cutoff) || cutoff < 0.0 || cutoff > MAX_CUTOFF_MOLE_FRACTION) {
-            throw new IllegalArgumentException("V3 stage-trace cutoff must be finite and in [0, 0.01] mole fraction");
-        }
+        V3TraceTruncationPolicy.requireCutoff(cutoff);
     }
 
     private static void requireComponentCount(int componentCount) {

@@ -11,6 +11,8 @@ final class V3PengRobinsonKernel {
     static final double GAS_CONSTANT = 8.31446261815324;
     private static final double SQRT_TWO = Math.sqrt(2.0);
     private static final double ROOT_EPSILON = 1.0e-12;
+    private static final double COALESCENCE_DISCRIMINANT_TOLERANCE = 1.0e-16;
+    private static final int MAXIMUM_ROOT_REFINEMENTS = 4;
 
     private final V3PropertyPackage propertyPackage;
     private final int count;
@@ -173,7 +175,12 @@ final class V3PengRobinsonKernel {
         output.rootSeparation = rootSelection.rootSeparation();
     }
 
-    private static RootSelection selectRoot(double reducedA, double reducedB, Root root) {
+    /** Package-local precision qualifier; the EOS owns phase selection and its coalescence policy. */
+    static RootSelection selectRoot(double reducedA, double reducedB, Root root) {
+        Objects.requireNonNull(root, "root");
+        if (!Double.isFinite(reducedA) || reducedA < 0.0 || !Double.isFinite(reducedB) || reducedB < 0.0) {
+            throw new IllegalArgumentException("PR reduced parameters must be finite and nonnegative");
+        }
         double c2 = -(1.0 - reducedB);
         double c1 = reducedA - 3.0 * reducedB * reducedB - 2.0 * reducedB;
         double c0 = -(reducedA * reducedB - reducedB * reducedB - reducedB * reducedB * reducedB);
@@ -184,7 +191,26 @@ final class V3PengRobinsonKernel {
         double largest;
         double smallestPhysical;
         int physicalRootCount = 1;
-        if (discriminant >= -1.0e-16) {
+        if (discriminant > COALESCENCE_DISCRIMINANT_TOLERANCE) {
+            double sqrt = Math.sqrt(discriminant);
+            largest = Math.cbrt(-q / 2.0 + sqrt) + Math.cbrt(-q / 2.0 - sqrt) - offset;
+            // Compute the non-cancelling Cardano term, then use uv=-p/3 for its partner.
+            // Subtracting nearly equal -q/2 and sqrt(D) before taking a cube root amplifies
+            // roundoff enough to prevent the unchanged flash fugacity criterion from converging.
+            // Preserve the original value when it is already backward accurate: gratuitous
+            // last-bit changes to well-behaved roots can perturb finite-difference cold solves.
+            if (!(largest > reducedB) || !backwardAccurate(largest, c2, c1, c0)) {
+                double dominant = -q / 2.0 - Math.copySign(sqrt, q);
+                double u = Math.cbrt(dominant);
+                double repaired = refineRoot(u - p / (3.0 * u) - offset, c2, c1, c0, reducedB);
+                if (Double.isFinite(repaired) && repaired > reducedB
+                        && (!(largest > reducedB) || Math.abs(cubicResidual(repaired, c2, c1, c0))
+                        < Math.abs(cubicResidual(largest, c2, c1, c0)))) largest = repaired;
+            }
+            smallestPhysical = largest;
+        } else if (discriminant >= -COALESCENCE_DISCRIMINANT_TOLERANCE) {
+            // Preserve the existing classification and arithmetic at coalescence. A multiple
+            // root is ill-conditioned; unconstrained Newton refinement could change its branch.
             double sqrt = Math.sqrt(Math.max(0.0, discriminant));
             largest = Math.cbrt(-q / 2.0 + sqrt) + Math.cbrt(-q / 2.0 - sqrt) - offset;
             smallestPhysical = largest;
@@ -194,18 +220,27 @@ final class V3PengRobinsonKernel {
             double r0 = radius * Math.cos(angle) - offset;
             double r1 = radius * Math.cos(angle - 2.0 * Math.PI / 3.0) - offset;
             double r2 = radius * Math.cos(angle - 4.0 * Math.PI / 3.0) - offset;
+            double physicalBoundary = reducedB + ROOT_EPSILON;
+            // Freeze membership before refinement. Each Newton interval is derived from the
+            // same immutable polynomial, not from previously refined neighboring roots.
+            boolean physical0 = r0 > physicalBoundary;
+            boolean physical1 = r1 > physicalBoundary;
+            boolean physical2 = r2 > physicalBoundary;
+            if (physical0 && !backwardAccurate(r0, c2, c1, c0)) r0 = refineRoot(r0, c2, c1, c0, physicalBoundary);
+            if (physical1 && !backwardAccurate(r1, c2, c1, c0)) r1 = refineRoot(r1, c2, c1, c0, physicalBoundary);
+            if (physical2 && !backwardAccurate(r2, c2, c1, c0)) r2 = refineRoot(r2, c2, c1, c0, physicalBoundary);
             largest = Math.max(r0, Math.max(r1, r2));
             smallestPhysical = Double.POSITIVE_INFINITY;
             physicalRootCount = 0;
-            if (r0 > reducedB + ROOT_EPSILON) {
+            if (physical0) {
                 smallestPhysical = r0;
                 physicalRootCount++;
             }
-            if (r1 > reducedB + ROOT_EPSILON) {
+            if (physical1) {
                 smallestPhysical = Math.min(smallestPhysical, r1);
                 physicalRootCount++;
             }
-            if (r2 > reducedB + ROOT_EPSILON) {
+            if (physical2) {
                 smallestPhysical = Math.min(smallestPhysical, r2);
                 physicalRootCount++;
             }
@@ -219,6 +254,60 @@ final class V3PengRobinsonKernel {
             throw new IllegalStateException("Peng-Robinson equation has no physical " + root + " root");
         }
         return new RootSelection(selected, physicalRootCount, Math.max(0.0, largest - smallestPhysical));
+    }
+
+    /**
+     * Improves an analytic root only inside its derivative-monotonic interval. The derivative
+     * extrema separate all three real roots, so an accepted step cannot move to a neighboring root.
+     * Physical membership, coalescence classification, and the original seed survive any rejection.
+     */
+    private static double refineRoot(double seed, double c2, double c1, double c0, double physicalBoundary) {
+        if (!Double.isFinite(seed) || seed <= physicalBoundary) return seed;
+        double lower = physicalBoundary;
+        double upper = Double.POSITIVE_INFINITY;
+        double derivativeDiscriminant = Math.fma(c2, c2, -3.0 * c1);
+        if (derivativeDiscriminant > 0.0) {
+            double gap = Math.sqrt(derivativeDiscriminant);
+            double left = (-c2 - gap) / 3.0;
+            double right = (-c2 + gap) / 3.0;
+            if (seed < left) {
+                upper = left;
+            } else if (seed > right) {
+                lower = Math.max(lower, right);
+            } else if (seed > left && seed < right) {
+                lower = Math.max(lower, left);
+                upper = right;
+            } else {
+                return seed;
+            }
+        }
+        if (!(seed > lower && seed < upper)) return seed;
+        double z = seed;
+        double residual = cubicResidual(z, c2, c1, c0);
+        for (int iteration = 0; iteration < MAXIMUM_ROOT_REFINEMENTS; iteration++) {
+            double derivative = Math.fma(Math.fma(3.0, z, 2.0 * c2), z, c1);
+            double derivativeScale = (3.0 * Math.abs(z) + 2.0 * Math.abs(c2)) * Math.abs(z) + Math.abs(c1);
+            if (!Double.isFinite(derivative) || !Double.isFinite(residual)
+                    || Math.abs(derivative) <= 32.0 * Math.ulp(Math.max(1.0, derivativeScale))) break;
+            double candidate = z - residual / derivative;
+            if (!Double.isFinite(candidate) || candidate == z || candidate <= lower || candidate >= upper) break;
+            double candidateResidual = cubicResidual(candidate, c2, c1, c0);
+            if (!Double.isFinite(candidateResidual) || Math.abs(candidateResidual) >= Math.abs(residual)) break;
+            z = candidate;
+            residual = candidateResidual;
+        }
+        return z;
+    }
+
+    private static double cubicResidual(double z, double c2, double c1, double c0) {
+        return Math.fma(Math.fma(z + c2, z, c1), z, c0);
+    }
+
+    private static boolean backwardAccurate(double z, double c2, double c1, double c0) {
+        double scale = Math.abs(z * z * z) + Math.abs(c2 * z * z) + Math.abs(c1 * z) + Math.abs(c0);
+        double residual = cubicResidual(z, c2, c1, c0);
+        return Double.isFinite(scale) && Double.isFinite(residual)
+                && Math.abs(residual) <= 8.0 * Math.ulp(scale);
     }
 
     private static void normalizeInto(double[] source, double[] target) {
@@ -308,5 +397,5 @@ final class V3PengRobinsonKernel {
         double rootSeparation() { return rootSeparation; }
     }
 
-    private record RootSelection(double selectedCompressibility, int physicalRootCount, double rootSeparation) {}
+    record RootSelection(double selectedCompressibility, int physicalRootCount, double rootSeparation) {}
 }

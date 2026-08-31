@@ -1,0 +1,529 @@
+{
+  "schema": 1,
+  "started": "2026-08-31T10:31:42.457922300Z",
+  "java": "21.0.11",
+  "vm": "Java HotSpot(TM) 64-Bit Server VM",
+  "processors": 16,
+  "maximumHeapBytes": 2147483648,
+  "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+  "arguments": [
+    "--samples\u003d1",
+    "--warmup\u003d0",
+    "--deadlineSeconds\u003d45",
+    "--cases\u003d100-off",
+    "--profile\u003dfalse",
+    "--report\u003dbenchmarks/results/v3-flash-cold-final/100-off.json"
+  ],
+  "notes": [
+    "Serial public V3 façade calls, no game/executor queue.",
+    "Warmup uses the same model and 30-stage 150 kPa case; sample order reverses on alternate rounds.",
+    "The diagnostic deadline is separate from the unchanged 45-second game deadline.",
+    "Facade iteration counters describe its selected terminal attempt, not aggregate continuation work.",
+    "Checkpoint stacks are breadcrumbs, not statistical CPU samples. Optional JFR samples supply CPU attribution."
+  ],
+  "cells": [
+    {
+      "scenario": {
+        "name": "100-off",
+        "pressureKpa": 100.0,
+        "feedKmolH": 2610.7,
+        "dutyMW": 8.0,
+        "cutoff": 0.0
+      },
+      "sample": 0,
+      "warmup": false,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "componentBasis": {
+          "componentIds": [
+            "methane",
+            "ethane",
+            "propane",
+            "C4_CDU",
+            "PC01",
+            "PC02",
+            "PC03",
+            "PC04",
+            "PC05",
+            "PC06",
+            "PC07",
+            "PC08",
+            "PC09",
+            "PC10",
+            "PC11",
+            "PC12"
+          ]
+        },
+        "feedComponentMolarFlowsMolPerSecond": [
+          0.0,
+          0.9092711024472504,
+          8.164441357135074,
+          22.167126305461213,
+          99.97467426417244,
+          47.931742303891674,
+          82.85756127914073,
+          40.17932176003031,
+          72.94330685058401,
+          63.83125388233502,
+          54.31909378595077,
+          47.01981036079761,
+          39.918527299169035,
+          45.06373575006611,
+          69.69566481243167,
+          30.21891333083155
+        ],
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000.0,
+        "stagePressureDropPascal": 750.0,
+        "specifications": [
+          {
+            "kelvin": 323.15
+          },
+          {
+            "ratio": 2.0
+          },
+          {
+            "watts": 8000000.0
+          }
+        ]
+      },
+      "status": "SUCCESS",
+      "diagnostics": {
+        "initializerIterations": 0,
+        "newtonIterations": 6,
+        "residualEvaluations": 0,
+        "linearSolves": 0,
+        "maximumScaledResidual": 6.394884621840902E-14,
+        "finalStepNorm": 3.410605131648481E-13,
+        "solvePath": "cold/dwsim-pressure/150-140-130-120-110-105-100/top-100kpa/fine-fd",
+        "events": [
+          "pressure 140 kPa predictor: verified final Newton correction, iterations\u003d5, residual\u003d1.1905490526386852E-10",
+          "pressure 130 kPa predictor: verified final Newton correction, iterations\u003d4, residual\u003d4.0900314449446745E-12",
+          "pressure 120 kPa predictor: verified final Newton correction, iterations\u003d4, residual\u003d1.3050988539136122E-13",
+          "pressure 110 kPa predictor: verified final Newton correction, iterations\u003d4, residual\u003d6.039613253960852E-14",
+          "pressure 105 kPa predictor: verified final Newton correction, iterations\u003d6, residual\u003d2.1316282072803006E-14",
+          "pressure 100 kPa predictor: verified final Newton correction, iterations\u003d6, residual\u003d6.394884621840902E-14",
+          "condenser phase transition: LIQUID_ONLY -\u003e TWO_PHASE; overhead flash vapor fraction\u003d6.356535319475302E-4",
+          "scaled residual: initial\u003d0.04936610566865873, final\u003d7.105427357601002E-14",
+          "dominant residual: EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d0, component\u003d14], physical\u003d7.105427357601002E-14",
+          "dominant VLE state: component\u003dPC12, node\u003d0, temperature\u003d323.15, liquid-flow\u003d2.4472898631507104E-60, vapor-flow\u003d7.445022877196929E-81",
+          "local-block directions: accepted\u003d1, rejected\u003d0",
+          "fine finite-difference Jacobians: fresh\u003d3, reused\u003d2",
+          "verified final Newton correction"
+        ],
+        "acceptanceAudit": {
+          "checks": [
+            {
+              "family": "FINITE_TOPOLOGY",
+              "value": 0.0,
+              "limit": 0.0,
+              "passed": true,
+              "detail": "all active flows and topology phases are finite"
+            },
+            {
+              "family": "LOCAL_COMPONENT_BALANCE",
+              "value": 8.905264334238489E-15,
+              "limit": 1.0,
+              "passed": true,
+              "detail": "fresh residual recomputation"
+            },
+            {
+              "family": "EQUILIBRIUM",
+              "value": 6.394884621840902E-14,
+              "limit": 1.0E-8,
+              "passed": true,
+              "detail": "fresh residual recomputation"
+            },
+            {
+              "family": "ENERGY_BALANCE",
+              "value": 1.0273907438206527E-15,
+              "limit": 1.0,
+              "passed": true,
+              "detail": "fresh residual recomputation"
+            },
+            {
+              "family": "CONDENSER_PHASE",
+              "value": 9.25067314416772E-14,
+              "limit": 1.0E-8,
+              "passed": true,
+              "detail": "fresh combined-outlet TP flash; beta\u003d0.00375955095181894"
+            }
+          ],
+          "advisoryEvidence": [
+            "ESTIMATED_HEAVY_RESIDUE: PC12 properties are extrapolated; no hard-coded phase restriction"
+          ]
+        },
+        "convergenceEvidence": {
+          "hasFinalNewtonStep": true,
+          "finalLinearBackwardError": 5.3621420638407255E-18,
+          "maximumLogFlowChange": 5.684341886080802E-14,
+          "maximumTemperatureChangeKelvin": 3.410605131648481E-13,
+          "maximumTemperatureStepRatio": 2.1770260372034045E-7
+        }
+      },
+      "branch": "TWO_PHASE",
+      "streams": [
+        {
+          "streamId": "overhead_vapor",
+          "displayName": "Overhead vapor",
+          "phase": "VAPOR",
+          "molarFlowMolPerSecond": 4.519101315952323,
+          "massFlowKgPerSecond": 0.29883602349361266,
+          "temperatureKelvin": 323.15,
+          "pressurePascal": 100000.0,
+          "vaporMoleFraction": 1.0,
+          "moleFractions": [
+            {
+              "componentId": "methane",
+              "moleFraction": 0.0,
+              "massFraction": 0.0
+            },
+            {
+              "componentId": "ethane",
+              "moleFraction": 0.07018955163404177,
+              "massFraction": 0.03191721768286011
+            },
+            {
+              "componentId": "propane",
+              "moleFraction": 0.2618647828213652,
+              "massFraction": 0.17462453784026083
+            },
+            {
+              "componentId": "C4_CDU",
+              "moleFraction": 0.2574676786959717,
+              "massFraction": 0.22629965473176641
+            },
+            {
+              "componentId": "PC01",
+              "moleFraction": 0.3196544015758226,
+              "massFraction": 0.415717464224734
+            },
+            {
+              "componentId": "PC02",
+              "moleFraction": 0.05903011354705844,
+              "massFraction": 0.09016004539867631
+            },
+            {
+              "componentId": "PC03",
+              "moleFraction": 0.027159254240673322,
+              "massFraction": 0.05051752689574209
+            },
+            {
+              "componentId": "PC04",
+              "moleFraction": 0.0033237315421679858,
+              "massFraction": 0.007288078975621465
+            },
+            {
+              "componentId": "PC05",
+              "moleFraction": 0.0012524466957469407,
+              "massFraction": 0.0032955479041147586
+            },
+            {
+              "componentId": "PC06",
+              "moleFraction": 5.803924715211088E-5,
+              "massFraction": 1.7992634622397344E-4
+            },
+            {
+              "componentId": "PC07",
+              "moleFraction": 3.9832070627558666E-18,
+              "massFraction": 1.46974448419284E-17
+            },
+            {
+              "componentId": "PC08",
+              "moleFraction": 7.850831729060018E-34,
+              "massFraction": 3.395477300506202E-33
+            },
+            {
+              "componentId": "PC09",
+              "moleFraction": 6.819630581077713E-48,
+              "massFraction": 3.4341891551752415E-47
+            },
+            {
+              "componentId": "PC10",
+              "moleFraction": 5.927063105484817E-55,
+              "massFraction": 3.423907658801763E-54
+            },
+            {
+              "componentId": "PC11",
+              "moleFraction": 1.3171084728722829E-65,
+              "massFraction": 9.36135103395279E-65
+            },
+            {
+              "componentId": "PC12",
+              "moleFraction": 1.6474565088673154E-81,
+              "massFraction": 1.6193713239800097E-80
+            }
+          ]
+        },
+        {
+          "streamId": "distillate_liquid",
+          "displayName": "Liquid distillate",
+          "phase": "LIQUID",
+          "molarFlowMolPerSecond": 399.1710341746674,
+          "massFlowKgPerSecond": 49.50612652853483,
+          "temperatureKelvin": 323.15,
+          "pressurePascal": 100000.0,
+          "vaporMoleFraction": 0.0,
+          "moleFractions": [
+            {
+              "componentId": "methane",
+              "moleFraction": 0.0,
+              "massFraction": 0.0
+            },
+            {
+              "componentId": "ethane",
+              "moleFraction": 0.0014832674631727035,
+              "massFraction": 3.59627562968653E-4
+            },
+            {
+              "componentId": "propane",
+              "moleFraction": 0.017488863826012592,
+              "massFraction": 0.006218286282277242
+            },
+            {
+              "componentId": "C4_CDU",
+              "moleFraction": 0.05261805405684941,
+              "massFraction": 0.024659081674046502
+            },
+            {
+              "componentId": "PC01",
+              "moleFraction": 0.24683660014207992,
+              "massFraction": 0.17116228628573843
+            },
+            {
+              "componentId": "PC02",
+              "moleFraction": 0.11940824607347257,
+              "massFraction": 0.09724242145489724
+            },
+            {
+              "componentId": "PC03",
+              "moleFraction": 0.20717742306583573,
+              "massFraction": 0.205469616362438
+            },
+            {
+              "componentId": "PC04",
+              "moleFraction": 0.09979776369988094,
+              "massFraction": 0.11667797511099347
+            },
+            {
+              "componentId": "PC05",
+              "moleFraction": 0.17442992887888406,
+              "massFraction": 0.24472048445751388
+            },
+            {
+              "componentId": "PC06",
+              "moleFraction": 0.08075985279373472,
+              "massFraction": 0.13349022080897446
+            },
+            {
+              "componentId": "PC07",
+              "moleFraction": 7.729709737082416E-14,
+              "massFraction": 1.5207333977010506E-13
+            },
+            {
+              "componentId": "PC08",
+              "moleFraction": 2.981443638990892E-28,
+              "massFraction": 6.8753167114927635E-28
+            },
+            {
+              "componentId": "PC09",
+              "moleFraction": 7.236989696160557E-41,
+              "massFraction": 1.943131801409862E-40
+            },
+            {
+              "componentId": "PC10",
+              "moleFraction": 4.645617885348555E-46,
+              "massFraction": 1.4308922111680753E-45
+            },
+            {
+              "componentId": "PC11",
+              "moleFraction": 9.62398102281198E-53,
+              "massFraction": 3.647142125133367E-52
+            },
+            {
+              "componentId": "PC12",
+              "moleFraction": 2.0436434958354014E-63,
+              "massFraction": 1.0710717525241828E-62
+            }
+          ]
+        },
+        {
+          "streamId": "bottoms_liquid",
+          "displayName": "Bottoms liquid",
+          "phase": "LIQUID",
+          "molarFlowMolPerSecond": 321.5043089538245,
+          "massFlowKgPerSecond": 116.71275825992188,
+          "temperatureKelvin": 597.5130322808931,
+          "pressurePascal": 121750.0,
+          "vaporMoleFraction": 0.0,
+          "moleFractions": [
+            {
+              "componentId": "methane",
+              "moleFraction": 0.0,
+              "massFraction": 0.0
+            },
+            {
+              "componentId": "ethane",
+              "moleFraction": 1.849596879492325E-13,
+              "massFraction": 1.5320713004973218E-14
+            },
+            {
+              "componentId": "propane",
+              "moleFraction": 3.892980573866529E-11,
+              "massFraction": 4.728895819038621E-12
+            },
+            {
+              "componentId": "C4_CDU",
+              "moleFraction": 2.2572634199936506E-9,
+              "massFraction": 3.6140383218567837E-10
+            },
+            {
+              "componentId": "PC01",
+              "moleFraction": 3.1939381665462685E-7,
+              "massFraction": 7.566471846027947E-8
+            },
+            {
+              "componentId": "PC02",
+              "moleFraction": 2.072028058635227E-6,
+              "massFraction": 5.764816277559782E-7
+            },
+            {
+              "componentId": "PC03",
+              "moleFraction": 1.1072832847882564E-4,
+              "massFraction": 3.7517364313673725E-5
+            },
+            {
+              "componentId": "PC04",
+              "moleFraction": 0.0010199705786547544,
+              "massFraction": 4.0740289609498653E-4
+            },
+            {
+              "componentId": "PC05",
+              "moleFraction": 0.010296197355011501,
+              "massFraction": 0.004935084257112173
+            },
+            {
+              "componentId": "PC06",
+              "moleFraction": 0.09826928211455278,
+              "massFraction": 0.05549324351747196
+            },
+            {
+              "componentId": "PC07",
+              "moleFraction": 0.16895292620703695,
+              "massFraction": 0.11355964061998966
+            },
+            {
+              "componentId": "PC08",
+              "moleFraction": 0.14624939402460935,
+              "massFraction": 0.11522018641046823
+            },
+            {
+              "componentId": "PC09",
+              "moleFraction": 0.12416171786021778,
+              "massFraction": 0.11389388605673922
+            },
+            {
+              "componentId": "PC10",
+              "moleFraction": 0.14016526215994918,
+              "massFraction": 0.14749327591237732
+            },
+            {
+              "componentId": "PC11",
+              "moleFraction": 0.2167798778163237,
+              "massFraction": 0.2806630821704376
+            },
+            {
+              "componentId": "PC12",
+              "moleFraction": 0.0939922498369118,
+              "massFraction": 0.16829602828250093
+            }
+          ]
+        }
+      ],
+      "inputDigest": "bb1f60a84081ab5f2053405f3dcc0cfbb917bd1824b0f9dfb552cc5c2a2090d2",
+      "removedPoints": 0,
+      "wallSeconds": 5.0595344,
+      "cpuSeconds": 4.9375,
+      "allocatedBytes": 14804938880,
+      "gcMilliseconds": 65,
+      "gcCollections": 49,
+      "checkpoints": 170932,
+      "checkpointBreadcrumbs": [
+        {
+          "frames": [
+            "preferredCondenserBranch:112",
+            "calculate:95",
+            "calculate:83",
+            "calculate:60",
+            "calculate:74"
+          ],
+          "seconds": 0.0023456
+        },
+        {
+          "frames": [
+            "verifyFinalNewtonCorrection:386",
+            "solve:209",
+            "solveWithContinuationLocalBlocks:128",
+            "solveSingleProblem:541",
+            "solveSingleProblem:500",
+            "solveDwsimStageContinuation:310",
+            "solveDwsimPressureContinuation:352",
+            "calculateBranch:158",
+            "calculate:96",
+            "calculate:83"
+          ],
+          "seconds": 1.0308175
+        },
+        {
+          "frames": [
+            "verifyFinalNewtonCorrection:386",
+            "solve:209",
+            "solveWithContinuationLocalBlocks:128",
+            "solveSingleProblem:541",
+            "solveSingleProblem:500",
+            "solveDwsimStageContinuation:310",
+            "solveDwsimPressureContinuation:352",
+            "calculateBranch:158",
+            "calculate:96",
+            "calculate:83"
+          ],
+          "seconds": 2.0920749
+        },
+        {
+          "frames": [
+            "armijoTrial:484",
+            "solve:309",
+            "solveWithOneLocalBlockPredictor:144",
+            "solveSingleProblem:544",
+            "solveDwsimPressureContinuation:369",
+            "calculateBranch:158",
+            "calculate:96",
+            "calculate:83",
+            "calculate:60",
+            "calculate:74"
+          ],
+          "seconds": 3.1128026
+        },
+        {
+          "frames": [
+            "solve:228",
+            "solveWithOneLocalBlockPredictor:144",
+            "solveSingleProblem:544",
+            "solveDwsimPressureContinuation:369",
+            "calculateBranch:158",
+            "calculate:96",
+            "calculate:83",
+            "calculate:60",
+            "calculate:74"
+          ],
+          "seconds": 4.1130839
+        }
+      ]
+    }
+  ],
+  "finished": "2026-08-31T10:31:47.576833800Z"
+}
