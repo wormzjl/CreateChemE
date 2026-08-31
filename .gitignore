@@ -29,9 +29,11 @@ bin/
 .science-compile/
 src/generated/resources/.cache/
 *.log
+logs/
 
 # Local design and research notes
 documentation/
+benchmarks/
 
 # Claude × Codex collaboration runtime files
 .collab/
