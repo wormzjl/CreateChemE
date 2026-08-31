@@ -9,8 +9,7 @@ public final class V3ColumnProblemResolver {
     /**
      * Resolves one candidate condenser branch.
      *
-     * <p>A future endpoint flash selects this branch; it is not a user control.  Keeping it
-     * explicit in M0 allows both branch contracts to be tested before thermodynamics exists.</p>
+     * <p>The calculation selects and validates this branch; it is not a user control.</p>
      *
      * @throws IllegalArgumentException if the input/schema/branch cannot form a closed V3 problem
      */
@@ -18,9 +17,11 @@ public final class V3ColumnProblemResolver {
         input = Objects.requireNonNull(input, "input");
         condenserPhaseBranch = Objects.requireNonNull(condenserPhaseBranch, "condenserPhaseBranch");
         validateInput(input);
-        V3ColumnTopology topology = condenserPhaseBranch == V3CondenserPhaseBranch.TWO_PHASE
-                ? V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber())
-                : V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
+        V3ColumnTopology topology = switch (condenserPhaseBranch) {
+            case TWO_PHASE -> V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber());
+            case VAPOR_ONLY -> V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
+            case LIQUID_ONLY -> V3ColumnTopology.liquidOnly(input.stageCount(), input.feedStageNumber());
+        };
         V3ActiveComponentBasis activeComponentBasis = V3ActiveComponentBasis.from(input);
         V3CondenserComponentPhases condenserComponentPhases = V3CondenserComponentPhases.from(activeComponentBasis);
         V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(

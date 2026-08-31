@@ -52,6 +52,14 @@ final class V3FeedFlash {
                 workspace.nextLogK[component] = 0.5 * (workspace.logK[component] + target);
             }
             if (maximumLogKChange <= LOG_K_TOLERANCE) {
+                // PR updates can move an initial Wilson two-phase bracket onto the liquid endpoint.
+                // Bisection otherwise leaves a tiny positive vapor fraction and mislabels the single phase.
+                if (rachfordRiceResidual(workspace.normalizedOverall, workspace.logK, 0.0) <= PHASE_ENDPOINT_TOLERANCE) {
+                    model.evaluateInto(temperatureKelvin, pressurePascal, workspace.normalizedOverall, V3Phase.LIQUID, workspace);
+                    return V3FlashResult.liquid(iteration, workspace.normalizedOverall,
+                            model.phaseMolarEnthalpy(temperatureKelvin, workspace.normalizedOverall, V3Phase.LIQUID, workspace),
+                            "all-liquid converged PR endpoint classification");
+                }
                 double liquidEnthalpy = model.phaseMolarEnthalpy(temperatureKelvin, workspace.liquidComposition,
                         V3Phase.LIQUID, workspace);
                 double vaporEnthalpy = model.phaseMolarEnthalpy(temperatureKelvin, workspace.vaporComposition,

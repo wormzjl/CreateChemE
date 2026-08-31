@@ -13,6 +13,8 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import com.wormzjl.createcheme.science.column.v3.linalg.V3BandedMatrix;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class V3BlockJacobianAssemblerTest {
     @Test
@@ -56,12 +58,13 @@ class V3BlockJacobianAssemblerTest {
         }
     }
 
-    @Test
-    void localStageBlocksMatchTheColoredReferenceForTheRealCrudePartialCondenser() {
+    @ParameterizedTest
+    @EnumSource(value = V3CondenserPhaseBranch.class, names = {"TWO_PHASE", "LIQUID_ONLY"})
+    void localStageBlocksMatchTheColoredReferenceForRealCrudeCondenserBranches(V3CondenserPhaseBranch branch) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
         V3ColumnInput input = realCrudeInput(crude, 100_000.0);
-        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, branch);
         V3DryMeshState state = V3ColumnInitializer.initialize(
                 problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state();
         V3FlashResult feed = thermo.flashTP(input.feedTemperatureKelvin(),

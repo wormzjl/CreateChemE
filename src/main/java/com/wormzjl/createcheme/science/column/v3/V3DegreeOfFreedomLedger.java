@@ -171,7 +171,9 @@ public final class V3DegreeOfFreedomLedger {
                 if (condenserComponentPhases.hasLiquid(topology, node, component)) {
                     unknowns.add(new Unknown(new UnknownId(UnknownFamily.LIQUID_COMPONENT_FLOW, node, component)));
                 }
-                unknowns.add(new Unknown(new UnknownId(UnknownFamily.VAPOR_COMPONENT_FLOW, node, component)));
+                if (topology.hasVaporPhase(node)) {
+                    unknowns.add(new Unknown(new UnknownId(UnknownFamily.VAPOR_COMPONENT_FLOW, node, component)));
+                }
             }
             if (topology.hasTemperatureUnknown(node)) {
                 unknowns.add(new Unknown(new UnknownId(UnknownFamily.TEMPERATURE, node, -1)));

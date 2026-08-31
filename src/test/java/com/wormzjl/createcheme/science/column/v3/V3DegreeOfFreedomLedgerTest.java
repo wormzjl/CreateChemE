@@ -17,11 +17,15 @@ class V3DegreeOfFreedomLedgerTest {
                         V3ColumnTopology.twoPhase(trayCount, 1), componentCount, standardSpecifications(0.0));
                 V3DegreeOfFreedomLedger vaporOnly = V3DegreeOfFreedomLedger.create(
                         V3ColumnTopology.vaporOnly(trayCount, trayCount), componentCount, standardSpecifications(0.0));
+                V3DegreeOfFreedomLedger liquidOnly = V3DegreeOfFreedomLedger.create(
+                        V3ColumnTopology.liquidOnly(trayCount, 1), componentCount, standardSpecifications(4.17));
 
                 assertTrue(twoPhase.isValid(), twoPhase::humanReadableDiagnostic);
                 assertEquals(twoPhase.equationCount(), twoPhase.structuralRank(), twoPhase::humanReadableDiagnostic);
                 assertTrue(vaporOnly.isValid(), vaporOnly::humanReadableDiagnostic);
                 assertEquals(vaporOnly.equationCount(), vaporOnly.structuralRank(), vaporOnly::humanReadableDiagnostic);
+                assertTrue(liquidOnly.isValid(), liquidOnly::humanReadableDiagnostic);
+                assertEquals(liquidOnly.equationCount(), liquidOnly.structuralRank(), liquidOnly::humanReadableDiagnostic);
             }
         }
     }
@@ -83,6 +87,26 @@ class V3DegreeOfFreedomLedgerTest {
     }
 
     @Test
+    void liquidOnlyCondenserRemovesOnlyCondenserVaporAndVleFamilies() {
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input(4.17, standardSpecifications(4.17)),
+                V3CondenserPhaseBranch.LIQUID_ONLY);
+        V3DegreeOfFreedomLedger ledger = problem.degreeOfFreedomLedger();
+
+        assertEquals(27, ledger.unknownCount());
+        assertEquals(27, ledger.equationCount());
+        assertEquals(27, ledger.structuralRank());
+        assertTrue(ledger.isValid());
+        assertEquals(2, new V3StageBlockLayout(problem).size(0));
+        assertTrue(ledger.unknowns().stream().noneMatch(unknown -> unknown.id().family()
+                == V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW && unknown.id().node() == 0));
+        assertTrue(ledger.equations().stream().noneMatch(equation -> equation.id().family()
+                == V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM && equation.id().node() == 0));
+        assertTrue(ledger.equations().stream().flatMap(equation -> equation.referencedUnknowns().stream())
+                .noneMatch(unknown -> unknown.family() == V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW
+                        && unknown.node() == 0));
+    }
+
+    @Test
     void duplicateAndMissingControlsAreIndependentContractFailures() {
         V3ColumnTopology topology = V3ColumnTopology.twoPhase(4, 2);
         V3DegreeOfFreedomLedger duplicate = V3DegreeOfFreedomLedger.create(topology, 2, List.of(
@@ -111,7 +135,7 @@ class V3DegreeOfFreedomLedgerTest {
 
     private static V3ColumnInput input(double refluxRatio, List<V3ColumnSpecification> specifications) {
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:ideal_binary", "test:baseline",
-                new V3ComponentBasis(List.of("methane", "n-pentane")), new double[] {40.0, 60.0}, 450.0,
+                new V3ComponentBasis(List.of("methane", "ethane")), new double[] {40.0, 60.0}, 450.0,
                 4, 2, 250_000.0, 750.0, specifications);
     }
 

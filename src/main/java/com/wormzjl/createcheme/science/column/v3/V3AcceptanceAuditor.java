@@ -3,6 +3,8 @@ package com.wormzjl.createcheme.science.column.v3;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -44,6 +46,9 @@ final class V3AcceptanceAuditor {
                 "EQUILIBRIUM", EQUILIBRIUM_LIMIT));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE,
                 "ENERGY_BALANCE", 1.0));
+        if (problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.LIQUID_ONLY) {
+            checks.add(liquidCondenserPhase(state, workspace));
+        }
         List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
                 ? registeredPackage.advisoryEvidence() : List.of();
         return new V3AcceptanceAudit(checks, advisoryEvidence);
@@ -54,7 +59,9 @@ final class V3AcceptanceAuditor {
         for (int node = 0; node < state.nodeCount(); node++) {
             valid &= Double.isFinite(state.temperatureKelvin(node)) && state.temperatureKelvin(node) > 0.0;
             for (int component = 0; component < state.componentCount(); component++) {
-                valid &= Double.isFinite(state.vaporFlow(node, component)) && state.vaporFlow(node, component) > 0.0;
+                valid &= problem.topology().hasVaporPhase(node)
+                        ? Double.isFinite(state.vaporFlow(node, component)) && state.vaporFlow(node, component) > 0.0
+                        : state.vaporFlow(node, component) == 0.0;
                 if (problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component)) {
                     valid &= Double.isFinite(state.liquidFlow(node, component)) && state.liquidFlow(node, component) > 0.0;
                 } else {
@@ -65,6 +72,19 @@ final class V3AcceptanceAuditor {
         double value = valid ? 0.0 : 1.0;
         return valid ? V3AcceptanceAudit.Check.pass("FINITE_TOPOLOGY", value, 0.0, "all active flows and topology phases are finite")
                 : V3AcceptanceAudit.Check.fail("FINITE_TOPOLOGY", value, 0.0, "candidate violates a finite flow or absent-phase invariant");
+    }
+
+    private V3AcceptanceAudit.Check liquidCondenserPhase(V3DryMeshState state, V3ThermoWorkspace workspace) {
+        int node = problem.topology().condenserNode();
+        double[] liquid = new double[problem.input().componentBasis().componentCount()];
+        for (int component = 0; component < state.componentCount(); component++) {
+            liquid[problem.activeComponentBasis().publicIndex(component)] = state.liquidFlow(node, component);
+        }
+        V3FlashResult flash = thermo.flashTP(state.temperatureKelvin(node), problem.nodePressurePascal(node),
+                liquid, workspace);
+        return flash.phase() == V3FeedPhase.LIQUID
+                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", 0.0, 0.0, "outlet TP flash confirms liquid only")
+                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, 0.0, "outlet TP flash requires a vapor phase");
     }
 
     private static V3AcceptanceAudit.Check maximumFamily(

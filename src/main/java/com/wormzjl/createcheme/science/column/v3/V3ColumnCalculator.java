@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
 import java.util.ArrayList;
@@ -16,8 +17,8 @@ import java.util.concurrent.CancellationException;
  * {@link V3ColumnOutcome.Success} can be returned.</p>
  */
 public final class V3ColumnCalculator {
-    public static final String FORMULATION_REVISION = "v3-dry-mesh-r1";
-    public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r2";
+    public static final String FORMULATION_REVISION = "v3-dry-mesh-r2";
+    public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r3";
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
     private static final double PRESSURE_CONTINUATION_TRIGGER_PASCAL = 100_000.0;
@@ -36,7 +37,7 @@ public final class V3ColumnCalculator {
 
     private V3ColumnCalculator() {}
 
-    /** Calculates one dry two-phase-condenser V3 problem without sharing mutable numerical state across callers. */
+    /** Calculates one dry V3 problem without sharing mutable numerical state across callers. */
     public static V3ColumnOutcome calculate(V3ColumnInput input) {
         return calculate(input, V3SolveControl.UNBOUNDED);
     }
@@ -55,6 +56,53 @@ public final class V3ColumnCalculator {
     /** Package-private cold-start qualifier for reviewed initializer modes; production uses the sequential MESH path. */
     static V3ColumnOutcome calculate(
             V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode) {
+        Objects.requireNonNull(input, "input");
+        Objects.requireNonNull(control, "control");
+        Objects.requireNonNull(initializerMode, "initializerMode");
+        if (initializerMode != V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
+            return calculateBranch(input, control, initializerMode, V3CondenserPhaseBranch.TWO_PHASE);
+        }
+        V3CondenserPhaseBranch preferred = preferredCondenserBranch(input, control);
+        V3ColumnOutcome outcome = calculateBranch(input, control, initializerMode, preferred);
+        if (outcome instanceof V3ColumnOutcome.Success
+                || outcome instanceof V3ColumnOutcome.Failure failure
+                && (failure.code() == V3SolverFailureCode.INVALID_INPUT
+                || failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE)) return outcome;
+        V3CondenserPhaseBranch alternate = preferred == V3CondenserPhaseBranch.LIQUID_ONLY
+                ? V3CondenserPhaseBranch.TWO_PHASE : V3CondenserPhaseBranch.LIQUID_ONLY;
+        V3ColumnOutcome alternative = calculateBranch(input, control, initializerMode, alternate);
+        return alternative instanceof V3ColumnOutcome.Success ? alternative : outcome;
+    }
+
+    /** A seed flash only orders the branch attempts; the solved liquid outlet is independently audited. */
+    private static V3CondenserPhaseBranch preferredCondenserBranch(V3ColumnInput input, V3SolveControl control) {
+        control.checkpoint();
+        try {
+            V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
+            V3ColumnInput probeInput = input.stageCount() <= 4 ? input : withStageGeometry(input, 4);
+            V3ColumnProblem probe = V3ColumnProblemResolver.resolve(probeInput, V3CondenserPhaseBranch.TWO_PHASE);
+            if (V3OperatingDomainValidator.assess(probe, thermo) instanceof V3OperatingDomainValidator.Assessment.Rejected) {
+                return V3CondenserPhaseBranch.TWO_PHASE;
+            }
+            V3DryMeshState seed = V3ColumnInitializer.initialize(probe, thermo, thermo.newWorkspace(),
+                    V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state();
+            double[] overhead = new double[input.componentBasis().componentCount()];
+            for (int component = 0; component < seed.componentCount(); component++) {
+                overhead[probe.activeComponentBasis().publicIndex(component)] = seed.vaporFlow(1, component);
+            }
+            control.checkpoint();
+            V3FlashResult flash = thermo.flashTP(seed.temperatureKelvin(0), probe.nodePressurePascal(0),
+                    overhead, thermo.newWorkspace());
+            return flash.phase() == V3FeedPhase.LIQUID
+                    ? V3CondenserPhaseBranch.LIQUID_ONLY : V3CondenserPhaseBranch.TWO_PHASE;
+        } catch (V3ThermoException | IllegalArgumentException unavailableSeedFlash) {
+            return V3CondenserPhaseBranch.TWO_PHASE;
+        }
+    }
+
+    private static V3ColumnOutcome calculateBranch(
+            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode,
+            V3CondenserPhaseBranch condenserBranch) {
         input = Objects.requireNonNull(input, "input");
         control = Objects.requireNonNull(control, "control");
         initializerMode = Objects.requireNonNull(initializerMode, "initializerMode");
@@ -63,7 +111,7 @@ public final class V3ColumnCalculator {
             control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
             advisoryEvidence = thermo.advisoryEvidence();
-            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, condenserBranch);
             V3OperatingDomainValidator.Assessment admission = V3OperatingDomainValidator.assess(problem, thermo);
             if (admission instanceof V3OperatingDomainValidator.Assessment.Rejected rejected) {
                 return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(), "admission", advisoryEvidence);
@@ -73,8 +121,8 @@ public final class V3ColumnCalculator {
             V3SolvePass pass;
             if (initializerMode == V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
                 pass = requiresPressureContinuation(admission)
-                        ? solveDwsimPressureContinuation(input, thermo, control)
-                        : solveDwsimStageContinuation(input, thermo, control);
+                        ? solveDwsimPressureContinuation(input, thermo, control, condenserBranch)
+                        : solveDwsimStageContinuation(input, thermo, control, condenserBranch);
                 if (!publishesSuccess(pass.attempt(), pass.audit())
                         && pass.attemptedRequestedProblem()
                         && pass.terminalStageCount() >= input.stageCount()
@@ -120,6 +168,7 @@ public final class V3ColumnCalculator {
                     // the band-structure guard because of finite-difference noise.
                 }
             }
+            if (condenserBranch == V3CondenserPhaseBranch.LIQUID_ONLY) solvePath += "/liquid-only-condenser";
             V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, pass.solverEvents());
             if (pass.reachedRequestedProblem()
                     && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()) {
@@ -166,7 +215,8 @@ public final class V3ColumnCalculator {
      * workspaces are retained after this calculation returns.</p>
      */
     private static V3SolvePass solveDwsimStageContinuation(
-            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control) {
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control,
+            V3CondenserPhaseBranch condenserBranch) {
         List<Integer> stageCounts = dwsimStageCounts(input.stageCount());
         String stagePath = dwsimStagePath(stageCounts);
         V3DryMeshState previousState = null;
@@ -175,7 +225,7 @@ public final class V3ColumnCalculator {
             control.checkpoint();
             V3ColumnInput stageInput = stageCount == input.stageCount()
                     ? input : withStageGeometry(input, stageCount);
-            V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, V3CondenserPhaseBranch.TWO_PHASE);
+            V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, condenserBranch);
             V3DryMeshState seed = previousState == null
                     ? V3ColumnInitializer.initialize(stageProblem, thermo, thermo.newWorkspace(),
                             V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state()
@@ -184,7 +234,12 @@ public final class V3ColumnCalculator {
                     seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd",
                     ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS);
             if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
-                lastPass = recoverDwsimContinuationStage(stageProblem, thermo, lastPass, control, stagePath, stageCount);
+                boolean phaseMismatch = lastPass.attempt() instanceof V3SimultaneousColumnSolver.Attempt.Converged
+                        && lastPass.audit().checks().stream().anyMatch(check -> check.family().equals("CONDENSER_PHASE")
+                        && !check.passed());
+                if (!phaseMismatch) {
+                    lastPass = recoverDwsimContinuationStage(stageProblem, thermo, lastPass, control, stagePath, stageCount);
+                }
                 if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
                     return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
                             "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount,
@@ -207,12 +262,13 @@ public final class V3ColumnCalculator {
      * seed the next leg. No accepted state survives this calculation call.</p>
      */
     private static V3SolvePass solveDwsimPressureContinuation(
-            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control) {
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control,
+            V3CondenserPhaseBranch condenserBranch) {
         if (input.topPressurePascal() > PRESSURE_CONTINUATION_TRIGGER_PASCAL) {
             throw new IllegalArgumentException("V3 pressure continuation was requested outside its low-pressure lane");
         }
         V3ColumnInput anchorInput = withTopPressure(input, PRESSURE_CONTINUATION_ANCHOR_PASCAL);
-        V3SolvePass pass = solveDwsimStageContinuation(anchorInput, thermo, control);
+        V3SolvePass pass = solveDwsimStageContinuation(anchorInput, thermo, control, condenserBranch);
         List<String> pressureEvents = new ArrayList<>();
         String pressurePath = dwsimPressurePath(input.topPressurePascal());
         if (!publishesSuccess(pass.attempt(), pass.audit())) {
@@ -224,7 +280,7 @@ public final class V3ColumnCalculator {
         for (double pressure : dwsimPressureSteps(input.topPressurePascal())) {
             control.checkpoint();
             V3ColumnInput stepInput = withTopPressure(input, pressure);
-            V3ColumnProblem stepProblem = V3ColumnProblemResolver.resolve(stepInput, V3CondenserPhaseBranch.TWO_PHASE);
+            V3ColumnProblem stepProblem = V3ColumnProblemResolver.resolve(stepInput, condenserBranch);
             V3DryMeshState seed = pass.attempt().state();
             String stepPath = "cold/dwsim-pressure/" + pressurePath + "/top-"
                     + Math.round(pressure / 1_000.0) + "kpa/fine-fd";
@@ -284,9 +340,11 @@ public final class V3ColumnCalculator {
         for (int node = 0; node < state.nodeCount(); node++) {
             if (!Double.isFinite(state.temperatureKelvin(node)) || state.temperatureKelvin(node) <= 0.0) return false;
             for (int component = 0; component < state.componentCount(); component++) {
-                if (!Double.isFinite(state.vaporFlow(node, component)) || state.vaporFlow(node, component) <= 0.0) {
+                boolean vaporPhase = problem.topology().hasVaporPhase(node);
+                if (vaporPhase && (!Double.isFinite(state.vaporFlow(node, component)) || state.vaporFlow(node, component) <= 0.0)) {
                     return false;
                 }
+                if (!vaporPhase && state.vaporFlow(node, component) != 0.0) return false;
                 boolean liquidPhase = problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component);
                 if (liquidPhase && (!Double.isFinite(state.liquidFlow(node, component))
                         || state.liquidFlow(node, component) <= 0.0)) {

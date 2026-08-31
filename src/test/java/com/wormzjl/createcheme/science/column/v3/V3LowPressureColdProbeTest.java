@@ -1,6 +1,8 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
@@ -8,29 +10,31 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Cold qualification for the client-reported low-top-pressure partial-condenser operating region. */
+/** Cold qualification for the client-reported low-top-pressure condenser operating region. */
 class V3LowPressureColdProbeTest {
     private static final long CASE_BUDGET_NANOS = 45_000_000_000L;
 
     @Test
-    void onePointFiveBarPartialCondenserConvergesWithMaterialVleContinuationRecovery() {
+    void onePointFiveBarTotalCondenserConvergesWithoutOutletGas() {
         V3ColumnOutcome.Success success = calculate(150_000.0);
 
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
         assertTrue(success.diagnostics().solvePath().contains("dwsim"));
-        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
+        assertEquals(V3CondenserPhaseBranch.LIQUID_ONLY, success.result().problem().topology().condenserPhaseBranch());
+        assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("distillate_liquid")));
     }
 
     @Test
-    void onePointOneBarPartialCondenserConvergesWithBubblePointRecovery() {
+    void onePointOneBarTotalCondenserConvergesWithoutOutletGas() {
         V3ColumnOutcome.Success success = calculate(110_000.0);
 
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
         assertTrue(success.diagnostics().solvePath().contains("dwsim"));
-        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
+        assertEquals(V3CondenserPhaseBranch.LIQUID_ONLY, success.result().problem().topology().condenserPhaseBranch());
+        assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("distillate_liquid")));
     }
 

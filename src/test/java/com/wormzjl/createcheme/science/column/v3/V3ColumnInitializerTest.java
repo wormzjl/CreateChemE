@@ -63,6 +63,27 @@ class V3ColumnInitializerTest {
     }
 
     @Test
+    void totalCondenserRequiresLiquidOutletFlashEvenWhenMeshEquationsClose() {
+        V3ColumnProblem problem = problem(1.0, V3CondenserPhaseBranch.LIQUID_ONLY, new double[] {30.0, 60.0});
+        for (boolean vaporFlash : new boolean[] {false, true}) {
+            MaterialOnlyThermo thermo = new MaterialOnlyThermo(vaporFlash);
+            V3DryMeshState seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace()).state();
+            V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
+            V3DryMeshState restored = coordinates.decode(coordinates.encode(seed));
+            V3AcceptanceAudit audit = new V3AcceptanceAuditor(problem, thermo, 0.0)
+                    .audit(restored, thermo.newWorkspace());
+
+            for (int component = 0; component < restored.componentCount(); component++) {
+                assertEquals(0.0, restored.vaporFlow(0, component));
+                assertEquals(restored.vaporFlow(1, component), restored.liquidFlow(0, component), 1.0e-12);
+            }
+            assertTrue(audit.checks().stream().filter(check -> !check.family().equals("CONDENSER_PHASE"))
+                    .allMatch(V3AcceptanceAudit.Check::passed));
+            assertEquals(!vaporFlash, audit.accepted());
+        }
+    }
+
+    @Test
     void exactZeroFeedComponentIsEliminatedFromTheSeedWithoutAFloor() {
         V3ColumnProblem problem = problem(1.0, V3CondenserPhaseBranch.TWO_PHASE, new double[] {30.0, 0.0});
 
@@ -84,6 +105,10 @@ class V3ColumnInitializerTest {
 
     private static final class MaterialOnlyThermo implements V3ThermoModel {
         private final V3ComponentBasis basis = new V3ComponentBasis(List.of("component-a", "component-b"));
+        private final boolean vaporFlash;
+
+        private MaterialOnlyThermo() { this(false); }
+        private MaterialOnlyThermo(boolean vaporFlash) { this.vaporFlash = vaporFlash; }
 
         @Override public V3ComponentBasis componentBasis() { return basis; }
         @Override public V3ThermoWorkspace newWorkspace() { return new V3ThermoWorkspace(2); }
@@ -105,8 +130,11 @@ class V3ColumnInitializerTest {
         @Override
         public V3FlashResult flashTP(
                 double temperatureKelvin, double pressurePascal, double[] overallComposition, V3ThermoWorkspace workspace) {
-            return new V3FlashResult(V3FeedPhase.LIQUID, 0, 0.0, overallComposition, new double[0], 0.0,
-                    "manufactured all-liquid feed flash");
+            double total = java.util.Arrays.stream(overallComposition).sum();
+            double[] normalized = java.util.Arrays.stream(overallComposition).map(flow -> flow / total).toArray();
+            return new V3FlashResult(vaporFlash ? V3FeedPhase.VAPOR : V3FeedPhase.LIQUID, 0,
+                    vaporFlash ? 1.0 : 0.0, vaporFlash ? new double[0] : normalized,
+                    vaporFlash ? normalized : new double[0], 0.0, "manufactured single-phase flash");
         }
     }
 }

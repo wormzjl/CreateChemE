@@ -21,7 +21,7 @@ final class V3StageBlockLayout {
             starts[node] = offset;
             int expected = topology.hasTemperatureUnknown(node) ? 1 : 0;
             for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
-                expected++;
+                if (topology.hasVaporPhase(node)) expected++;
                 if (problem.condenserComponentPhases().hasLiquid(topology, node, component)) expected++;
             }
             if (expected <= 0 || offset + expected > unknowns.size()) {
@@ -53,7 +53,10 @@ final class V3StageBlockLayout {
             boolean foundLiquid = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
                     == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW
                     && unknown.id().component() == activeComponent);
-            if (foundLiquid != expectedLiquid) {
+            boolean foundVapor = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
+                    == V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW
+                    && unknown.id().component() == activeComponent);
+            if (foundLiquid != expectedLiquid || foundVapor != topology.hasVaporPhase(node)) {
                 throw new IllegalArgumentException("V3 MESH unknown ledger component phase map disagrees with topology");
             }
         }

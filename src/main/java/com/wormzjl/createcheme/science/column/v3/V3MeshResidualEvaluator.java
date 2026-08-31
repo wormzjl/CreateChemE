@@ -148,11 +148,14 @@ final class V3MeshResidualEvaluator {
     }
 
     private NodeProperties nodeProperties(V3DryMeshState state, int node, V3ThermoWorkspace workspace) {
-        double[] vaporComposition = normalizedPublicPhaseComposition(state, node, false);
         double temperature = state.temperatureKelvin(node);
         double pressure = problem.nodePressurePascal(node);
-        V3FugacityResult vaporResult = thermo.fugacity(
-                temperature, pressure, vaporComposition, V3Phase.VAPOR, workspace);
+        double[] vaporComposition = null;
+        V3FugacityResult vaporResult = null;
+        if (problem.topology().hasVaporPhase(node)) {
+            vaporComposition = normalizedPublicPhaseComposition(state, node, false);
+            vaporResult = thermo.fugacity(temperature, pressure, vaporComposition, V3Phase.VAPOR, workspace);
+        }
         double[] liquidComposition = null;
         V3FugacityResult liquidResult = null;
         if (problem.topology().hasLiquidPhase(node)) {

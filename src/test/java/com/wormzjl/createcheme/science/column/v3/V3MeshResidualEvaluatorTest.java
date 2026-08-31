@@ -76,6 +76,8 @@ class V3MeshResidualEvaluatorTest {
         double[][] illegalLiquid = liquidFlows();
         assertThrows(IllegalArgumentException.class,
                 () -> new V3DryMeshState(vaporOnly, 2, illegalLiquid, vaporFlows(), temperatures()));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3DryMeshState(V3ColumnTopology.liquidOnly(4, 2), 2, liquidFlows(), vaporFlows(), temperatures()));
     }
 
     private static V3ColumnProblem problem() {

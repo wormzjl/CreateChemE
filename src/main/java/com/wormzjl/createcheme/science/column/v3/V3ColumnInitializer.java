@@ -71,8 +71,9 @@ final class V3ColumnInitializer {
             double feed = problem.activeComponentBasis().feedFlowMolPerSecond(component);
             boolean condenserLiquidComponent = problem.condenserComponentPhases().hasLiquid(topology, 0, component);
             double externalLiquid = condenserLiquidComponent ? TWO_PHASE_EXTERNAL_LIQUID_FRACTION * feed : 0.0;
-            double externalVapor = (topology.hasLiquidPhase(0) ? TWO_PHASE_EXTERNAL_VAPOR_FRACTION
-                    : VAPOR_ONLY_EXTERNAL_VAPOR_FRACTION) * feed;
+            double externalVapor = topology.hasVaporPhase(0)
+                    ? (topology.hasLiquidPhase(0) ? TWO_PHASE_EXTERNAL_VAPOR_FRACTION
+                    : VAPOR_ONLY_EXTERNAL_VAPOR_FRACTION) * feed : 0.0;
             if (condenserLiquidComponent) liquid[0][component] = (1.0 + refluxRatio) * externalLiquid;
             vapor[0][component] = externalVapor;
             vapor[1][component] = vapor[0][component] + liquid[0][component];
@@ -230,7 +231,8 @@ final class V3ColumnInitializer {
         for (int node = 0; node < ratios.length; node++) {
             ratios[node] = new double[equilibriumConstants[node].length];
             for (int component = 0; component < ratios[node].length; component++) {
-                ratios[node][component] = boundedRatio(totalFlowRatios[node] * equilibriumConstants[node][component]);
+                ratios[node][component] = totalFlowRatios[node] == 0.0 ? 0.0
+                        : boundedRatio(totalFlowRatios[node] * equilibriumConstants[node][component]);
             }
         }
         return ratios;
@@ -247,7 +249,7 @@ final class V3ColumnInitializer {
             }
             double liquidTotal = sum(liquid[node]);
             double vaporTotal = sum(vapor[node]);
-            if (!(liquidTotal > 0.0) || !(vaporTotal > 0.0)
+            if (!(liquidTotal > 0.0) || (node == 0 ? vaporTotal < 0.0 : !(vaporTotal > 0.0))
                     || !Double.isFinite(liquidTotal) || !Double.isFinite(vaporTotal)) {
                 throw new IllegalArgumentException("V3 material phase-ratio update has no positive phase total");
             }
@@ -269,6 +271,7 @@ final class V3ColumnInitializer {
         for (int sweep = 0; sweep < PHASE_AWARE_SWEEPS; sweep++) {
             double[][] kValues = phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures(materialClosed));
             for (int node = 0; node < vapor.length; node++) {
+                if (!problem.topology().hasVaporPhase(node)) continue;
                 double vaporTotal = 0.0;
                 double liquidTotal = 0.0;
                 for (double flow : vapor[node]) vaporTotal += flow;
@@ -309,8 +312,9 @@ final class V3ColumnInitializer {
                 temperatures);
         ColdTrafficCandidate best = null;
         for (int liquidProductStep = 1; liquidProductStep < COLD_TRAFFIC_GRID_DIVISIONS; liquidProductStep++) {
-            for (int vaporProductStep = 1;
-                 liquidProductStep + vaporProductStep < COLD_TRAFFIC_GRID_DIVISIONS;
+            for (int vaporProductStep = topology.hasVaporPhase(0) ? 1 : 0;
+                 liquidProductStep + vaporProductStep < COLD_TRAFFIC_GRID_DIVISIONS
+                         && (topology.hasVaporPhase(0) || vaporProductStep == 0);
                  vaporProductStep++) {
                 ColdTrafficCandidate candidate = coldTrafficCandidate(
                         problem, kValues, feedFlow, feedVaporFraction,
@@ -403,8 +407,8 @@ final class V3ColumnInitializer {
     }
 
     /**
-     * DWSIM-style partial-condenser traffic tear. It retains both condenser phases: only the liquid node is split
-     * into reflux and liquid distillate, while the independently solved vapor product carries non-condensables.
+     * DWSIM-style condenser traffic tear. The liquid node is split into reflux and liquid distillate;
+     * a partial condenser also has an independently solved vapor product.
      */
     private static ColdTrafficCandidate refinePartialCondenserTraffic(
             V3ColumnProblem problem,
@@ -493,6 +497,10 @@ final class V3ColumnInitializer {
             double preferredLiquidProductFraction,
             EnergyProperties enthalpies,
             double feedMolarEnthalpyJoulesPerMol) {
+        if (!problem.topology().hasVaporPhase(problem.topology().condenserNode())) {
+            return totalCondenserEnergyCandidate(problem, kValues, feedFlow, feedVaporFraction,
+                    enthalpies, feedMolarEnthalpyJoulesPerMol);
+        }
         ColdTrafficCandidate best = partialCondenserEnergyCandidate(
                 problem, kValues, feedFlow, feedVaporFraction, preferredLiquidProductFraction, enthalpies,
                 feedMolarEnthalpyJoulesPerMol);
@@ -505,6 +513,26 @@ final class V3ColumnInitializer {
             }
         }
         return best;
+    }
+
+    /** With no vapor product, the energy recurrence determines liquid distillate flow directly. */
+    private static ColdTrafficCandidate totalCondenserEnergyCandidate(
+            V3ColumnProblem problem, double[][] kValues, double feedFlow, double feedVaporFraction,
+            EnergyProperties enthalpies, double feedMolarEnthalpyJoulesPerMol) {
+        double probe = feedFlow * 0.1;
+        double zeroMismatch = reboilerTrafficMismatch(
+                problem, enthalpies, feedFlow, 0.0, 0.0, feedMolarEnthalpyJoulesPerMol);
+        double probeMismatch = reboilerTrafficMismatch(
+                problem, enthalpies, feedFlow, probe, 0.0, feedMolarEnthalpyJoulesPerMol);
+        double slope = (probeMismatch - zeroMismatch) / probe;
+        if (!Double.isFinite(zeroMismatch) || !Double.isFinite(slope) || Math.abs(slope) <= 1.0e-12) return null;
+        double liquidProduct = -zeroMismatch / slope;
+        if (!(liquidProduct > 0.0) || liquidProduct >= feedFlow) return null;
+        TrafficTotals traffic = partialCondenserEnergyTrafficTotals(
+                problem, enthalpies, feedFlow, liquidProduct, 0.0, feedMolarEnthalpyJoulesPerMol);
+        if (traffic == null || !positiveFiniteTraffic(traffic)) return null;
+        return coldTrafficCandidate(problem, kValues, feedFlow, feedVaporFraction,
+                traffic.liquidTotals(), traffic.vaporTotals(), liquidProduct / feedFlow, 0.0);
     }
 
     private static EnergyProperties energyProperties(
@@ -522,8 +550,10 @@ final class V3ColumnInitializer {
                 double pressure = problem.nodePressurePascal(node);
                 liquidEnthalpy[node] = thermo.molarEnthalpy(temperatures[node], pressure,
                         publicComposition(active, reference.liquidFlows()[node]), V3Phase.LIQUID, workspace);
-                vaporEnthalpy[node] = thermo.molarEnthalpy(temperatures[node], pressure,
-                        publicComposition(active, reference.vaporFlows()[node]), V3Phase.VAPOR, workspace);
+                if (problem.topology().hasVaporPhase(node)) {
+                    vaporEnthalpy[node] = thermo.molarEnthalpy(temperatures[node], pressure,
+                            publicComposition(active, reference.vaporFlows()[node]), V3Phase.VAPOR, workspace);
+                }
             } catch (V3ThermoException | IllegalArgumentException unavailable) {
                 return null;
             }
@@ -636,7 +666,7 @@ final class V3ColumnInitializer {
         for (int component = 0; component < components; component++) {
             double[] componentPhaseRatios = new double[nodes];
             for (int node = 0; node < nodes; node++) {
-                componentPhaseRatios[node] = boundedRatio(
+                componentPhaseRatios[node] = vaporTotals[node] == 0.0 ? 0.0 : boundedRatio(
                         kValues[node][component] * vaporTotals[node] / liquidTotals[node]);
             }
             double[] componentLiquid;
@@ -665,7 +695,7 @@ final class V3ColumnInitializer {
         double[] vapor = traffic.vaporTotals();
         if (liquid.length != vapor.length) return false;
         for (int node = 0; node < liquid.length; node++) {
-            if (!(liquid[node] > 0.0) || !(vapor[node] > 0.0)
+            if (!(liquid[node] > 0.0) || (node == 0 ? vapor[node] < 0.0 : !(vapor[node] > 0.0))
                     || !Double.isFinite(liquid[node]) || !Double.isFinite(vapor[node])) return false;
         }
         return true;
@@ -683,7 +713,9 @@ final class V3ColumnInitializer {
         double overheadVapor = vaporProductFraction * feedFlow;
         double bottoms = feedFlow - liquidProduct - overheadVapor;
         double refluxFraction = organicRefluxFraction(problem);
-        if (!(liquidProduct > 0.0) || !(overheadVapor > 0.0) || !(bottoms > 0.0) || refluxFraction >= 1.0) return false;
+        boolean hasVaporProduct = problem.topology().hasVaporPhase(problem.topology().condenserNode());
+        if (!(liquidProduct > 0.0) || (hasVaporProduct ? !(overheadVapor > 0.0) : overheadVapor != 0.0)
+                || !(bottoms > 0.0) || refluxFraction >= 1.0) return false;
         double condensate = liquidProduct / (1.0 - refluxFraction);
         if (!Double.isFinite(condensate) || condensate <= 0.0) return false;
         liquidTotals[0] = condensate;
@@ -719,8 +751,10 @@ final class V3ColumnInitializer {
                 liquidSum += liquid[node][component];
                 vaporSum += vapor[node][component];
             }
-            if (!(liquidSum > 0.0) || !(vaporSum > 0.0)) return Double.POSITIVE_INFINITY;
+            if (!(liquidSum > 0.0)) return Double.POSITIVE_INFINITY;
             mismatch = Math.max(mismatch, Math.abs(Math.log(liquidSum / liquidTotals[node])));
+            if (node == 0 && vaporSum == 0.0 && vaporTotals[node] == 0.0) continue;
+            if (!(vaporSum > 0.0)) return Double.POSITIVE_INFINITY;
             mismatch = Math.max(mismatch, Math.abs(Math.log(vaporSum / vaporTotals[node])));
         }
         return mismatch;
@@ -742,6 +776,10 @@ final class V3ColumnInitializer {
         V3ActiveComponentBasis active = problem.activeComponentBasis();
         double[][] ratios = new double[liquid.length][active.componentCount()];
         for (int node = 0; node < liquid.length; node++) {
+            if (!problem.topology().hasVaporPhase(node)) {
+                java.util.Arrays.fill(ratios[node], 1.0);
+                continue;
+            }
             double[] liquidComposition = publicComposition(active, liquid[node]);
             double[] vaporComposition = publicComposition(active, vapor[node]);
             V3FugacityResult liquidResult = thermo.fugacity(
@@ -947,7 +985,7 @@ final class V3ColumnInitializer {
                 throw new IllegalArgumentException("V3 cold traffic mismatch is invalid");
             }
             if (!Double.isFinite(liquidProductFraction) || !Double.isFinite(vaporProductFraction)
-                    || liquidProductFraction <= 0.0 || vaporProductFraction <= 0.0
+                    || liquidProductFraction <= 0.0 || vaporProductFraction < 0.0
                     || liquidProductFraction + vaporProductFraction >= 1.0) {
                 throw new IllegalArgumentException("V3 cold traffic product fractions are invalid");
             }

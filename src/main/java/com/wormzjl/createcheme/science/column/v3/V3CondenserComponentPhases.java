@@ -1,6 +1,5 @@
 package com.wormzjl.createcheme.science.column.v3;
 
-import java.util.Locale;
 import java.util.Objects;
 
 /** Immutable component-level condenser phase rule for one resolved V3 problem. */
@@ -13,13 +12,8 @@ final class V3CondenserComponentPhases {
 
     static V3CondenserComponentPhases from(V3ActiveComponentBasis activeComponentBasis) {
         activeComponentBasis = Objects.requireNonNull(activeComponentBasis, "activeComponentBasis");
-        boolean[] liquid = new boolean[activeComponentBasis.componentCount()];
-        for (int component = 0; component < liquid.length; component++) {
-            String id = activeComponentBasis.publicBasis().componentId(activeComponentBasis.publicIndex(component))
-                    .toLowerCase(Locale.ROOT);
-            liquid[component] = !id.equals("methane") && !id.equals("ethane");
-        }
-        return new V3CondenserComponentPhases(liquid);
+        // Let vapor-liquid equilibrium determine partitioning for every active component.
+        return allLiquid(activeComponentBasis.componentCount());
     }
 
     static V3CondenserComponentPhases allLiquid(int componentCount) {
@@ -36,7 +30,7 @@ final class V3CondenserComponentPhases {
     }
 
     boolean hasVaporLiquidEquilibrium(V3ColumnTopology topology, int node, int component) {
-        return hasLiquid(topology, node, component);
+        return hasLiquid(topology, node, component) && topology.hasVaporPhase(node);
     }
 
     boolean isVaporOnlyAtCondenser(int component) {
