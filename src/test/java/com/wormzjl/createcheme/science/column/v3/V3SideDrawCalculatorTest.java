@@ -27,6 +27,20 @@ class V3SideDrawCalculatorTest {
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
         assertTrue(success.diagnostics().solvePath().contains("draws-3"));
+        if (cutoff > 0.0) {
+            assertFalse(success.result().problem().truncationSupport().isIdentity(),
+                    "the draw supply path must preserve a reduced solve instead of forcing a cold untruncated retry");
+            assertTrue(success.diagnostics().events().stream().noneMatch(event -> event.startsWith("stage-trace fallback:")),
+                    success.diagnostics().events()::toString);
+            var defect = success.result().acceptanceAudit().checks().stream()
+                    .filter(check -> check.family().equals("TRUNCATION_MASS_DEFECT")).findFirst().orElseThrow();
+            assertTrue(defect.passed());
+            assertTrue(defect.value() <= 8.0 * cutoff);
+            double feed = java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum();
+            double products = success.result().streams().stream().mapToDouble(V3ColumnStreamProperties::molarFlowMolPerSecond).sum();
+            assertEquals(defect.value(), (feed - products) / feed, 1.0e-8,
+                    "all six products must account for the independently audited truncation defect");
+        }
         List<V3ColumnStreamProperties> streams = success.result().streams();
         assertEquals(6, streams.size());
         assertEquals(streams, V3ColumnDisplayResult.fromAccepted(success).streams());

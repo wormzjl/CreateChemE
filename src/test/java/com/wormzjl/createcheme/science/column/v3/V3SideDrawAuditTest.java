@@ -47,7 +47,7 @@ class V3SideDrawAuditTest {
     }
 
     @Test
-    void nonFeedDrawTrayIsForcedRetainedAndAnIsolatedForcedPointFallsBackSafely() {
+    void nonFeedDrawTrayRetainsItsMaterialPathWithoutExpandingTheWholeColumn() {
         var fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
         V3ColumnProblem connected = drawn(fixture.original(), 3, 5);
         V3TruncationSupport support = V3TruncationSupport.derive(connected, 0.01, fixture.exact());
@@ -55,10 +55,36 @@ class V3SideDrawAuditTest {
         assertTrue(support.retains(3, 2));
         assertFalse(support.retains(4, 2));
         assertTrue(V3ColumnProblemResolver.withTruncation(connected, support).degreeOfFreedomLedger().isValid());
-        V3ColumnProblem isolated = drawn(fixture.original(), 4, 5);
-        V3TruncationSupport fallback = V3TruncationSupport.derive(isolated, 0.01, fixture.exact());
-        assertTrue(fallback.isIdentity());
-        assertTrue(fallback.note().contains("inflow"));
+        V3ColumnProblem distant = drawn(fixture.original(), 4, 5);
+        V3TruncationSupport path = V3TruncationSupport.derive(distant, 0.01, fixture.exact());
+        assertFalse(path.isIdentity());
+        for (int tray = 2; tray <= 4; tray++) assertTrue(path.retains(tray, 2));
+        assertFalse(path.retains(0, 2));
+        assertFalse(path.retains(1, 2));
+        assertFalse(path.retains(5, 2));
+        assertEquals("", path.note());
+        assertTrue(V3ColumnProblemResolver.withTruncation(distant, path).degreeOfFreedomLedger().isValid());
+        V3DryMeshState projected = path.projectSeed(distant, fixture.exact());
+        assertTrue(projected.liquidFlow(3, 2) > 0);
+        assertTrue(projected.vaporFlow(3, 2) > 0);
+    }
+
+    @Test
+    void drawAboveFeedRetainsItsVaporSupplyPathAsWellAsTheLiquidDrawPoint() {
+        var fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
+        V3ColumnInput base = fixture.original().input();
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(base.schemaVersion(), base.packageId(),
+                base.assayId(), base.componentBasis(), base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(),
+                base.stageCount(), 4, base.topPressurePascal(), base.stagePressureDropPascal(), base.specifications(),
+                List.of(new V3SideDrawSpec(1, 5))), V3CondenserPhaseBranch.TWO_PHASE);
+        V3TruncationSupport support = V3TruncationSupport.derive(problem, 0.01, fixture.exact());
+        assertFalse(support.isIdentity());
+        for (int tray = 1; tray <= 4; tray++) {
+            for (int component = 0; component < 3; component++) assertTrue(support.retains(tray, component));
+        }
+        assertFalse(support.retains(0, 2));
+        assertFalse(support.retains(5, 2));
+        assertTrue(V3ColumnProblemResolver.withTruncation(problem, support).degreeOfFreedomLedger().isValid());
     }
 
     private static V3AcceptanceAudit.Check check(V3AcceptanceAudit audit, String name) {

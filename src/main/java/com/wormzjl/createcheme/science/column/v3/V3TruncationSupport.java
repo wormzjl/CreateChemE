@@ -7,7 +7,7 @@ import java.util.Objects;
 
 /**
  * Immutable, attempt-local component/stage support. A removed point has neither flow coordinates nor
- * material/VLE rows. Derivation is not wired into production solves until the numerical/audit phases.
+ * material/VLE rows. Support is derived from the final deciding seed and frozen throughout Newton.
  */
 final class V3TruncationSupport {
     static final double MAX_CUTOFF_MOLE_FRACTION = V3TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION;
@@ -92,6 +92,14 @@ final class V3TruncationSupport {
             throw new IllegalArgumentException("V3 deciding state does not match the truncation support");
         }
         boolean[][] retained = new boolean[topology.nodeCount()][components];
+        // A specified draw needs a material path back to the feed, including trace components.
+        // Retaining isolated draw points makes later grids expand abruptly to the full problem.
+        int firstProductPathNode = topology.feedTrayNumber();
+        int lastProductPathNode = topology.feedTrayNumber();
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            firstProductPathNode = Math.min(firstProductPathNode, draw.trayNumber());
+            lastProductPathNode = Math.max(lastProductPathNode, draw.trayNumber());
+        }
         for (int node = 0; node < topology.nodeCount(); node++) {
             double liquidTotal = phaseTotal(problem, decidingState, node, true);
             double vaporTotal = phaseTotal(problem, decidingState, node, false);
@@ -99,7 +107,7 @@ final class V3TruncationSupport {
                 boolean testLiquid = problem.condenserComponentPhases().hasLiquid(topology, node, component)
                         && liquidTotal > 0.0;
                 boolean testVapor = topology.hasVaporPhase(node) && vaporTotal > 0.0;
-                retained[node][component] = node == topology.feedTrayNumber() || problem.nodeSideDrawMolPerSecond(node) > 0.0
+                retained[node][component] = (node >= firstProductPathNode && node <= lastProductPathNode)
                         || (!testLiquid && !testVapor)
                         || (testLiquid && decidingState.liquidFlow(node, component) / liquidTotal >= cutoffMoleFraction)
                         || (testVapor && decidingState.vaporFlow(node, component) / vaporTotal >= cutoffMoleFraction);
