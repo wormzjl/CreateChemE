@@ -27,7 +27,10 @@ public final class V3BandedPivotedSolver {
         if (originalMatrixInfinityNorm == 0.0) {
             return new Result.Failure(FailureCode.SINGULAR, "V3 band matrix contains no nonzero pivot", 0.0, 0.0, 0, 0.0);
         }
-        scaleRowsAndColumns(work, rightHandSide);
+        if (!Double.isFinite(originalMatrixInfinityNorm) || !scaleRowsAndColumns(work, rightHandSide)) {
+            return new Result.Failure(FailureCode.ILL_CONDITIONED,
+                    "V3 banded LU scaling exceeds the finite numerical range", 0.0, 0.0, 0, 0.0);
+        }
         double initialMaximum = work.maximumAbsoluteValue();
         double maximumDuringFactorization = initialMaximum;
         double minimumPivot = Double.POSITIVE_INFINITY;
@@ -99,20 +102,21 @@ public final class V3BandedPivotedSolver {
         return rightHandSide;
     }
 
-    private static void scaleRowsAndColumns(SparseRows work, double[] rightHandSide) {
+    private static boolean scaleRowsAndColumns(SparseRows work, double[] rightHandSide) {
         for (int row = 0; row < work.size(); row++) {
             double maximum = work.rowMaximum(row);
             if (maximum == 0.0) continue;
             double scale = 1.0 / maximum;
-            work.scaleRow(row, scale);
-            rightHandSide[row] *= scale;
+            work.divideRow(row, maximum);
+            rightHandSide[row] = Double.isFinite(scale) ? rightHandSide[row] * scale : rightHandSide[row] / maximum;
+            if (!Double.isFinite(rightHandSide[row])) return false;
         }
         for (int column = 0; column < work.size(); column++) {
             double maximum = work.columnMaximum(column);
             if (maximum == 0.0) continue;
-            work.setColumnScale(column, 1.0 / maximum);
-            work.scaleColumn(column, 1.0 / maximum);
+            work.divideColumn(column, maximum);
         }
+        return true;
     }
 
     private static double[] backSubstitute(SparseRows work, double[] rightHandSide) {
@@ -212,14 +216,14 @@ public final class V3BandedPivotedSolver {
 
     private static final class SparseRows {
         private final TreeMap<Integer, Double>[] rows;
-        private final double[] columnScales;
+        private final double[] columnDivisors;
 
         @SuppressWarnings("unchecked")
         private SparseRows(int size) {
             rows = new TreeMap[size];
             for (int row = 0; row < size; row++) rows[row] = new TreeMap<>();
-            columnScales = new double[size];
-            java.util.Arrays.fill(columnScales, 1.0);
+            columnDivisors = new double[size];
+            java.util.Arrays.fill(columnDivisors, 1.0);
         }
 
         static SparseRows copyOf(V3BandedMatrix matrix) {
@@ -256,14 +260,19 @@ public final class V3BandedPivotedSolver {
             for (TreeMap<Integer, Double> row : rows) maximum = Math.max(maximum, Math.abs(row.getOrDefault(column, 0.0)));
             return maximum;
         }
-        void scaleRow(int row, double scale) {
-            for (Map.Entry<Integer, Double> entry : rows[row].entrySet()) entry.setValue(entry.getValue() * scale);
+        void divideRow(int row, double divisor) {
+            double scale = 1.0 / divisor;
+            for (Map.Entry<Integer, Double> entry : rows[row].entrySet()) {
+                // The quotient is bounded even when a subnormal divisor's reciprocal overflows.
+                entry.setValue(Double.isFinite(scale) ? entry.getValue() * scale : entry.getValue() / divisor);
+            }
         }
-        void setColumnScale(int column, double scale) { columnScales[column] = scale; }
-        void scaleColumn(int column, double scale) {
+        void divideColumn(int column, double divisor) {
+            columnDivisors[column] = divisor;
+            double scale = 1.0 / divisor;
             for (TreeMap<Integer, Double> row : rows) {
                 Double value = row.get(column);
-                if (value != null) row.put(column, value * scale);
+                if (value != null) row.put(column, Double.isFinite(scale) ? value * scale : value / divisor);
             }
         }
         double maximumAbsoluteValue() {
@@ -273,7 +282,10 @@ public final class V3BandedPivotedSolver {
         }
         double[] unscaleColumns(double[] scaledSolution) {
             double[] solution = scaledSolution.clone();
-            for (int column = 0; column < solution.length; column++) solution[column] *= columnScales[column];
+            for (int column = 0; column < solution.length; column++) {
+                double scale = 1.0 / columnDivisors[column];
+                solution[column] = Double.isFinite(scale) ? solution[column] * scale : solution[column] / columnDivisors[column];
+            }
             return solution;
         }
     }

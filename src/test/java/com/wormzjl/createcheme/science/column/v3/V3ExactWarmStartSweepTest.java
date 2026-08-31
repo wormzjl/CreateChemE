@@ -28,7 +28,7 @@ class V3ExactWarmStartSweepTest {
                 binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 50_000.0))) {
             ColdAttempt cold = coldAttempt(input);
             V3SimultaneousColumnSolver.Attempt.Converged coldConverged = assertInstanceOf(
-                    V3SimultaneousColumnSolver.Attempt.Converged.class, cold.attempt());
+                    V3SimultaneousColumnSolver.Attempt.Converged.class, cold.attempt(), cold.attempt()::toString);
             assertTrue(cold.audit().accepted());
             assertTrue(coldConverged.evidence().convergenceEvidence().satisfiesGates());
 
@@ -71,6 +71,21 @@ class V3ExactWarmStartSweepTest {
                 problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 128, 1.0e-8);
         V3AcceptanceAuditor auditor = new V3AcceptanceAuditor(problem, thermo, flash.molarEnthalpyJoulesPerMol());
         V3AcceptanceAudit audit = auditor.audit(attempt.state(), thermo.newWorkspace());
+        if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged) || !audit.accepted()) {
+            V3SequentialPreconditioner.Result preparation = V3BubblePointPreconditioner.INSTANCE.prepare(
+                    new V3SequentialPreconditioner.Request(problem, attempt.state(), V3SolveControl.UNBOUNDED),
+                    thermo, thermo.newWorkspace());
+            if (preparation instanceof V3SequentialPreconditioner.Result.Prepared prepared) {
+                V3SimultaneousColumnSolver.Attempt recovered = V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
+                        problem, evaluator, new V3DryMeshCoordinateMap(problem), prepared.state(),
+                        thermo::newWorkspace, 128, 1.0e-8, V3SolveControl.UNBOUNDED);
+                V3AcceptanceAudit recoveredAudit = auditor.audit(recovered.state(), thermo.newWorkspace());
+                if (recovered instanceof V3SimultaneousColumnSolver.Attempt.Converged && recoveredAudit.accepted()) {
+                    attempt = recovered;
+                    audit = recoveredAudit;
+                }
+            }
+        }
         if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged
                 && converged.evidence().convergenceEvidence().satisfiesGates() && audit.accepted())) {
             V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(

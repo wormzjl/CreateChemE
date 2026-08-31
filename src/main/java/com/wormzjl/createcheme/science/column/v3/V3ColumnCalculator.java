@@ -134,6 +134,17 @@ public final class V3ColumnCalculator {
                             problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.MATERIAL_CLOSED).state();
                     pass = solveSingleProblem(problem, thermo, fallbackSeed,
                             control, "cold/dwsim-material-closed-fallback/fine-fd");
+                    if (!publishesSuccess(pass.attempt(), pass.audit())) {
+                        V3SolvePass recovered = recoverWithBubblePointProjection(
+                                problem, thermo, pass.attempt().state(), control,
+                                "cold/dwsim-material-closed-fallback/material-vle-recovery/fine-fd",
+                                ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS, MAXIMUM_NEWTON_ITERATIONS);
+                        if (publishesSuccess(recovered.attempt(), recovered.audit())
+                                || recovered.attempt().evidence().maximumScaledResidual()
+                                < pass.attempt().evidence().maximumScaledResidual()) {
+                            pass = recovered;
+                        }
+                    }
                 }
             } else {
                 pass = solveSingleProblem(problem, thermo,

@@ -110,7 +110,7 @@ class V3DwsimStageContinuationTest {
         V3FlashResult feedFlash = feedFlash(thermo, problem);
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                 problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
-        return V3SimultaneousColumnSolver.solve(problem, evaluator, new V3DryMeshCoordinateMap(problem), seed,
+        return V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(problem, evaluator, new V3DryMeshCoordinateMap(problem), seed,
                 thermo::newWorkspace, V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS,
                 V3ColumnCalculator.SCALED_RESIDUAL_TOLERANCE, control);
     }
@@ -153,7 +153,12 @@ class V3DwsimStageContinuationTest {
         }
         temperatures[target.topology().condenserNode()] = specification(
                 target.input(), V3ColumnSpecification.CondenserOutletTemperature.class).kelvin();
-        return new V3DryMeshState(target.topology(), components, liquid, vapor, temperatures);
+        V3DryMeshState interpolated = new V3DryMeshState(target.topology(), components, liquid, vapor, temperatures);
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(target.input().packageId());
+        V3SequentialPreconditioner.Result prepared = V3BubblePointPreconditioner.INSTANCE.prepare(
+                new V3SequentialPreconditioner.Request(target, interpolated, V3SolveControl.UNBOUNDED),
+                thermo, thermo.newWorkspace());
+        return prepared instanceof V3SequentialPreconditioner.Result.Prepared result ? result.state() : interpolated;
     }
 
     private static <S extends V3ColumnSpecification> S specification(V3ColumnInput input, Class<S> type) {

@@ -26,7 +26,8 @@ class V3ColumnCalculatorTest {
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
         assertEquals(success.result().acceptanceAudit(), success.diagnostics().acceptanceAudit());
         assertEquals(success.result().convergenceEvidence(), success.diagnostics().convergenceEvidence());
-        assertEquals(3, success.result().streams().size());
+        assertEquals(V3CondenserPhaseBranch.LIQUID_ONLY, success.result().problem().topology().condenserPhaseBranch());
+        assertEquals(2, success.result().streams().size());
         assertTrue(success.result().streams().stream().allMatch(stream -> stream.molarFlowMolPerSecond() > 0.0));
     }
 
@@ -71,6 +72,8 @@ class V3ColumnCalculatorTest {
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
         assertTrue(success.diagnostics().solvePath().contains("dwsim-sequential/4-8-15-30"));
+        assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
     }
 
     @ParameterizedTest

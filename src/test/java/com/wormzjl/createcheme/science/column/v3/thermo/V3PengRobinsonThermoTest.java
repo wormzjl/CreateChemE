@@ -20,7 +20,7 @@ class V3PengRobinsonThermoTest {
         copy[0] = 1.0;
 
         assertEquals(PACKAGE_ID, thermo.packageId());
-        assertEquals("cdu17-tjl-acs2018-r1", thermo.datasetRevision());
+        assertEquals("cdu17-tjl-kl1976-r2", thermo.datasetRevision());
         assertEquals(16, thermo.componentBasis().componentCount());
         assertEquals("methane", thermo.componentBasis().componentId(0));
         assertEquals("PC12", thermo.componentBasis().componentId(15));
