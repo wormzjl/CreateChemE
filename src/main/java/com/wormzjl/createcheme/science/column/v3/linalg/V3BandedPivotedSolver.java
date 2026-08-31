@@ -66,13 +66,17 @@ public final class V3BandedPivotedSolver {
                 double multiplier = work.get(row, pivot) / diagonal;
                 if (multiplier == 0.0) continue;
                 work.put(row, pivot, multiplier);
+                // Each entry is written once per pivot, so these values survive to its end.
+                // Including the L multiplier preserves the former whole-matrix growth scan.
+                maximumDuringFactorization = Math.max(maximumDuringFactorization, Math.abs(multiplier));
                 for (Map.Entry<Integer, Double> entry : work.entriesAfter(pivot)) {
                     int column = entry.getKey();
-                    work.put(row, column, work.get(row, column) - multiplier * entry.getValue());
+                    double updated = work.get(row, column) - multiplier * entry.getValue();
+                    work.put(row, column, updated);
+                    maximumDuringFactorization = Math.max(maximumDuringFactorization, Math.abs(updated));
                 }
                 rightHandSide[row] -= multiplier * rightHandSide[pivot];
             }
-            maximumDuringFactorization = Math.max(maximumDuringFactorization, work.maximumAbsoluteValue());
         }
         if (minimumPivot / maximumPivot < ILL_CONDITIONED_PIVOT_RATIO) {
             return new Result.Failure(FailureCode.ILL_CONDITIONED,

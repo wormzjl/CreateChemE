@@ -75,7 +75,8 @@ final class V3MeshResidualEvaluator {
         double[] equilibrium = new double[state.componentCount()];
         Arrays.fill(equilibrium, Double.NaN);
         for (int component = 0; component < equilibrium.length; component++) {
-            if (problem.condenserComponentPhases().hasVaporLiquidEquilibrium(problem.topology(), node, component)) {
+            if (problem.truncationSupport().retains(node, component)
+                    && problem.condenserComponentPhases().hasVaporLiquidEquilibrium(problem.topology(), node, component)) {
                 equilibrium[component] = equilibriumResidual(node, component, properties);
             }
         }
@@ -173,6 +174,10 @@ final class V3MeshResidualEvaluator {
         double[] composition = new double[problem.input().componentBasis().componentCount()];
         for (int component = 0; component < state.componentCount(); component++) {
             double flow = liquid ? state.liquidFlow(node, component) : state.vaporFlow(node, component);
+            if (!problem.truncationSupport().retains(node, component)) {
+                if (flow != 0.0) throw new IllegalArgumentException("V3 truncated component flow must be exactly zero");
+                continue;
+            }
             if (flow == 0.0 && liquid && !problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component)) {
                 continue;
             }

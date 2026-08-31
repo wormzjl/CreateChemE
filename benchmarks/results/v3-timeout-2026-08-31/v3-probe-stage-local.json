@@ -1,0 +1,671 @@
+{
+  "startedUtc": "2026-08-31T08:10:44.848220600Z",
+  "javaVersion": "21.0.11",
+  "logicalProcessors": 16,
+  "parameters": {
+    "feedStage": 24,
+    "deadlineSeconds": 45.0,
+    "stages": 30,
+    "dutyMW": 8.0,
+    "pressureKpa": 110.0,
+    "mode": "stage-local",
+    "feedMolS": 725.1944444444445,
+    "stageTraceCutoff": 0.0,
+    "feedKmolH": 2610.7
+  },
+  "fixedInput": {
+    "stagePressureDropPa": 750.0,
+    "assay": "createcheme:tia_juana_light",
+    "condenserTemperatureK": 323.15,
+    "package": "createcheme:cdu17_tjl_acs2018",
+    "refluxRatio": 2.0,
+    "feedTemperatureK": 638.15
+  },
+  "scope": "First-path diagnostic only; production preferred branch and seed handoff; no failed-rung recovery, material-closed fallback, coarse stencil, or alternate condenser branch. Pressure mode overrides the \u003c\u003d100 kPa routing gate. Observer output is included in timing.",
+  "setupMilliseconds": {
+    "load-package-and-feed": 7.7188,
+    "preferred-condenser-probe": 75.4725
+  },
+  "rungs": [
+    {
+      "label": "stages\u003d4/pressure\u003d110.0kPa/STAGE_LOCAL",
+      "stages": 4,
+      "feedStage": 3,
+      "pressureKpa": 110.0,
+      "policy": "STAGE_LOCAL",
+      "maximumIterations": 128,
+      "phaseMilliseconds": {
+        "stages\u003d4/pressure\u003d110.0kPa/STAGE_LOCAL/resolve": 8.7863,
+        "stages\u003d4/pressure\u003d110.0kPa/STAGE_LOCAL/seed": 1.2768,
+        "stages\u003d4/pressure\u003d110.0kPa/STAGE_LOCAL/feed-flash": 2.6762,
+        "stages\u003d4/pressure\u003d110.0kPa/STAGE_LOCAL/solve": 320.1368,
+        "stages\u003d4/pressure\u003d110.0kPa/STAGE_LOCAL/audit": 3.2785
+      },
+      "traceEveryTenIterations": [
+        {
+          "iteration": 0,
+          "elapsedMilliseconds": 31.4327,
+          "maximumScaledResidual": 4.317030861814615,
+          "scaledMerit": 74.7902738697794,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d1, component\u003d14]",
+          "dominantPhysicalResidual": 4.317030861814615,
+          "dominantScaledResidual": 4.317030861814615,
+          "componentId": "PC12",
+          "temperatureKelvin": 391.15,
+          "liquidFlowMolS": 9.950174717420869E-17,
+          "vaporFlowMolS": 2.300987145947182E-28,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        }
+      ],
+      "status": "SUCCESS",
+      "seedSource": "sequential-material-vle",
+      "projectionResult": null,
+      "projectionEvidence": null,
+      "projectionUsed": false,
+      "admission": {
+        "lane": "NORMAL_CDU",
+        "minimumNodePressurePascal": 110000.0,
+        "maximumNodePressurePascal": 112250.0,
+        "packageMinimumPressurePascal": 50000.0,
+        "packageMaximumPressurePascal": 2000000.0
+      },
+      "coordinateCount": 170,
+      "feedPhase": "TWO_PHASE",
+      "feedMolarEnthalpyJoulesPerMol": 88209.31752615568,
+      "localAccepted": 6,
+      "localRejected": 0,
+      "freshFiniteDifference": 0,
+      "reusedFiniteDifference": 0,
+      "elapsedMilliseconds": 343.3148,
+      "checkpointCount": 4430,
+      "latestTrace": {
+        "iteration": 6,
+        "elapsedMilliseconds": 166.3412,
+        "maximumScaledResidual": 3.6683682456269133E-9,
+        "scaledMerit": 5.364883945410357E-17,
+        "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d5, component\u003d8]",
+        "dominantPhysicalResidual": -2.341565448205074E-7,
+        "dominantScaledResidual": -3.6683682456269133E-9,
+        "componentId": "PC06",
+        "temperatureKelvin": 588.5039114849376,
+        "liquidFlowMolS": 30.625835547862113,
+        "vaporFlowMolS": 17.701957758407648,
+        "localAccepted": 6,
+        "localRejected": 0,
+        "freshFiniteDifference": 0,
+        "reusedFiniteDifference": 0
+      },
+      "solverCode": "CONVERGED",
+      "evidence": {
+        "iterations": 6,
+        "maximumScaledResidual": 2.744431779477489E-10,
+        "scaledMerit": 3.5534777428502653E-19,
+        "acceptedStep": 1.0,
+        "pivotGrowth": 3.2111553027983307E-17,
+        "termination": "verified final Newton correction",
+        "convergenceEvidence": {
+          "hasFinalNewtonStep": true,
+          "finalLinearBackwardError": 3.2111553027983307E-17,
+          "maximumLogFlowChange": 7.719232364422624E-9,
+          "maximumTemperatureChangeKelvin": 3.3541027733008377E-9,
+          "maximumTemperatureStepRatio": 0.0021458420941051545
+        }
+      },
+      "audit": {
+        "checks": [
+          {
+            "family": "FINITE_TOPOLOGY",
+            "value": 0.0,
+            "limit": 0.0,
+            "passed": true,
+            "detail": "all active flows and topology phases are finite"
+          },
+          {
+            "family": "LOCAL_COMPONENT_BALANCE",
+            "value": 2.0220067145698432E-10,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "EQUILIBRIUM",
+            "value": 1.2559486783914053E-10,
+            "limit": 1.0E-8,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "ENERGY_BALANCE",
+            "value": 2.744431779477489E-10,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "CONDENSER_PHASE",
+            "value": 0.0,
+            "limit": 0.0,
+            "passed": true,
+            "detail": "outlet TP flash confirms liquid only"
+          }
+        ],
+        "advisoryEvidence": [
+          "ESTIMATED_HEAVY_RESIDUE: PC12 is extrapolated and vapor-ineligible"
+        ]
+      }
+    },
+    {
+      "label": "stages\u003d8/pressure\u003d110.0kPa/STAGE_LOCAL",
+      "stages": 8,
+      "feedStage": 6,
+      "pressureKpa": 110.0,
+      "policy": "STAGE_LOCAL",
+      "maximumIterations": 128,
+      "phaseMilliseconds": {
+        "stages\u003d8/pressure\u003d110.0kPa/STAGE_LOCAL/resolve": 3.5065,
+        "stages\u003d8/pressure\u003d110.0kPa/STAGE_LOCAL/seed": 2.6295,
+        "stages\u003d8/pressure\u003d110.0kPa/STAGE_LOCAL/feed-flash": 0.7699,
+        "stages\u003d8/pressure\u003d110.0kPa/STAGE_LOCAL/solve": 637.364,
+        "stages\u003d8/pressure\u003d110.0kPa/STAGE_LOCAL/audit": 0.941
+      },
+      "traceEveryTenIterations": [
+        {
+          "iteration": 0,
+          "elapsedMilliseconds": 7.3068,
+          "maximumScaledResidual": 7.09435880690317,
+          "scaledMerit": 279.2985348301685,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d1, component\u003d14]",
+          "dominantPhysicalResidual": 7.09435880690317,
+          "dominantScaledResidual": 7.09435880690317,
+          "componentId": "PC12",
+          "temperatureKelvin": 396.50515513579535,
+          "liquidFlowMolS": 5.040173105059261E-15,
+          "vaporFlowMolS": 1.9842714129339982E-25,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 10,
+          "elapsedMilliseconds": 199.9656,
+          "maximumScaledResidual": 1.0336899492813245E-5,
+          "scaledMerit": 1.5530417648019502E-10,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d5, component\u003d14]",
+          "dominantPhysicalResidual": 1.0336899492813245E-5,
+          "dominantScaledResidual": 1.0336899492813245E-5,
+          "componentId": "PC12",
+          "temperatureKelvin": 510.9238283715011,
+          "liquidFlowMolS": 1.4199542110974076E-4,
+          "vaporFlowMolS": 4.035966372625194E-12,
+          "localAccepted": 10,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        }
+      ],
+      "status": "SUCCESS",
+      "seedSource": "interpolated-plus-material-vle",
+      "projectionResult": "Prepared",
+      "projectionEvidence": {
+        "id": "BUBBLE_POINT",
+        "sweeps": 3,
+        "detail": "bounded material/bubble-point projection"
+      },
+      "projectionUsed": true,
+      "admission": {
+        "lane": "NORMAL_CDU",
+        "minimumNodePressurePascal": 110000.0,
+        "maximumNodePressurePascal": 115250.0,
+        "packageMinimumPressurePascal": 50000.0,
+        "packageMaximumPressurePascal": 2000000.0
+      },
+      "coordinateCount": 294,
+      "feedPhase": "TWO_PHASE",
+      "feedMolarEnthalpyJoulesPerMol": 88116.8132620666,
+      "localAccepted": 17,
+      "localRejected": 1,
+      "freshFiniteDifference": 1,
+      "reusedFiniteDifference": 0,
+      "elapsedMilliseconds": 645.2673,
+      "checkpointCount": 17923,
+      "latestTrace": {
+        "iteration": 18,
+        "elapsedMilliseconds": 434.7806,
+        "maximumScaledResidual": 7.498783688785382E-9,
+        "scaledMerit": 1.121102790110673E-16,
+        "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d4, component\u003d14]",
+        "dominantPhysicalResidual": -2.2660509437805876E-7,
+        "dominantScaledResidual": -7.498783688785382E-9,
+        "componentId": "PC12",
+        "temperatureKelvin": 497.8198989938181,
+        "liquidFlowMolS": 2.2660559536294133E-7,
+        "vaporFlowMolS": 1.6958847880087017E-15,
+        "localAccepted": 17,
+        "localRejected": 1,
+        "freshFiniteDifference": 1,
+        "reusedFiniteDifference": 0
+      },
+      "solverCode": "CONVERGED",
+      "evidence": {
+        "iterations": 18,
+        "maximumScaledResidual": 7.49878368836456E-9,
+        "scaledMerit": 1.1211026787389149E-16,
+        "acceptedStep": 1.0,
+        "pivotGrowth": 3.1322455266804625E-18,
+        "termination": "verified final Newton correction",
+        "convergenceEvidence": {
+          "hasFinalNewtonStep": true,
+          "finalLinearBackwardError": 3.1322455266804625E-18,
+          "maximumLogFlowChange": 1.8047217054117937E-9,
+          "maximumTemperatureChangeKelvin": 1.2960299500264227E-11,
+          "maximumTemperatureStepRatio": 8.302263615755242E-6
+        }
+      },
+      "audit": {
+        "checks": [
+          {
+            "family": "FINITE_TOPOLOGY",
+            "value": 0.0,
+            "limit": 0.0,
+            "passed": true,
+            "detail": "all active flows and topology phases are finite"
+          },
+          {
+            "family": "LOCAL_COMPONENT_BALANCE",
+            "value": 7.49878368836456E-9,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "EQUILIBRIUM",
+            "value": 9.769962616701378E-13,
+            "limit": 1.0E-8,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "ENERGY_BALANCE",
+            "value": 1.1814993553937507E-13,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "CONDENSER_PHASE",
+            "value": 0.0,
+            "limit": 0.0,
+            "passed": true,
+            "detail": "outlet TP flash confirms liquid only"
+          }
+        ],
+        "advisoryEvidence": [
+          "ESTIMATED_HEAVY_RESIDUE: PC12 is extrapolated and vapor-ineligible"
+        ]
+      }
+    },
+    {
+      "label": "stages\u003d15/pressure\u003d110.0kPa/STAGE_LOCAL",
+      "stages": 15,
+      "feedStage": 12,
+      "pressureKpa": 110.0,
+      "policy": "STAGE_LOCAL",
+      "maximumIterations": 128,
+      "phaseMilliseconds": {
+        "stages\u003d15/pressure\u003d110.0kPa/STAGE_LOCAL/resolve": 3.6994,
+        "stages\u003d15/pressure\u003d110.0kPa/STAGE_LOCAL/seed": 0.4306,
+        "stages\u003d15/pressure\u003d110.0kPa/STAGE_LOCAL/feed-flash": 0.6954,
+        "stages\u003d15/pressure\u003d110.0kPa/STAGE_LOCAL/solve": 2203.5244,
+        "stages\u003d15/pressure\u003d110.0kPa/STAGE_LOCAL/audit": 0.9055
+      },
+      "traceEveryTenIterations": [
+        {
+          "iteration": 0,
+          "elapsedMilliseconds": 5.1142,
+          "maximumScaledResidual": 6.835589763264792,
+          "scaledMerit": 291.79880185339863,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d1, component\u003d14]",
+          "dominantPhysicalResidual": 6.835589763264792,
+          "dominantScaledResidual": 6.835589763264792,
+          "componentId": "PC12",
+          "temperatureKelvin": 394.9210098792764,
+          "liquidFlowMolS": 7.36057995059117E-23,
+          "vaporFlowMolS": 1.7750484224307446E-33,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 10,
+          "elapsedMilliseconds": 513.0529,
+          "maximumScaledResidual": 1.3094943039249074E-5,
+          "scaledMerit": 3.357442959787817E-10,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d11, component\u003d14]",
+          "dominantPhysicalResidual": 1.3094943039249074E-5,
+          "dominantScaledResidual": 1.3094943039249074E-5,
+          "componentId": "PC12",
+          "temperatureKelvin": 512.8251306781339,
+          "liquidFlowMolS": 1.807896610460467E-4,
+          "vaporFlowMolS": 5.895754388080871E-12,
+          "localAccepted": 10,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 20,
+          "elapsedMilliseconds": 1000.2175,
+          "maximumScaledResidual": 1.702226981592503E-8,
+          "scaledMerit": 1.5477566256867162E-15,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d10, component\u003d14]",
+          "dominantPhysicalResidual": -1.702226981592503E-8,
+          "dominantScaledResidual": -1.702226981592503E-8,
+          "componentId": "PC12",
+          "temperatureKelvin": 501.03630955127915,
+          "liquidFlowMolS": 1.8250905841439854E-7,
+          "vaporFlowMolS": 1.7574830358879966E-15,
+          "localAccepted": 20,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        }
+      ],
+      "status": "SUCCESS",
+      "seedSource": "interpolated-plus-material-vle",
+      "projectionResult": "Prepared",
+      "projectionEvidence": {
+        "id": "BUBBLE_POINT",
+        "sweeps": 3,
+        "detail": "bounded material/bubble-point projection"
+      },
+      "projectionUsed": true,
+      "admission": {
+        "lane": "NORMAL_CDU",
+        "minimumNodePressurePascal": 110000.0,
+        "maximumNodePressurePascal": 120500.0,
+        "packageMinimumPressurePascal": 50000.0,
+        "packageMaximumPressurePascal": 2000000.0
+      },
+      "coordinateCount": 511,
+      "feedPhase": "TWO_PHASE",
+      "feedMolarEnthalpyJoulesPerMol": 87935.84955464597,
+      "localAccepted": 23,
+      "localRejected": 1,
+      "freshFiniteDifference": 1,
+      "reusedFiniteDifference": 0,
+      "elapsedMilliseconds": 2209.2949,
+      "checkpointCount": 39978,
+      "latestTrace": {
+        "iteration": 24,
+        "elapsedMilliseconds": 1501.5833,
+        "maximumScaledResidual": 5.2436230937441094E-9,
+        "scaledMerit": 5.055710584916884E-17,
+        "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d11, component\u003d14]",
+        "dominantPhysicalResidual": 1.5845659180940004E-7,
+        "dominantScaledResidual": 5.2436230937441094E-9,
+        "componentId": "PC12",
+        "temperatureKelvin": 512.8251312266575,
+        "liquidFlowMolS": 1.5785954624047026E-5,
+        "vaporFlowMolS": 5.147978593598693E-13,
+        "localAccepted": 23,
+        "localRejected": 1,
+        "freshFiniteDifference": 1,
+        "reusedFiniteDifference": 0
+      },
+      "solverCode": "CONVERGED",
+      "evidence": {
+        "iterations": 24,
+        "maximumScaledResidual": 5.24362237777201E-9,
+        "scaledMerit": 5.055709606302796E-17,
+        "acceptedStep": 1.0,
+        "pivotGrowth": 7.877094239097413E-18,
+        "termination": "verified final Newton correction",
+        "convergenceEvidence": {
+          "hasFinalNewtonStep": true,
+          "finalLinearBackwardError": 7.877094239097413E-18,
+          "maximumLogFlowChange": 1.3699228418317944E-9,
+          "maximumTemperatureChangeKelvin": 4.320099833421409E-12,
+          "maximumTemperatureStepRatio": 2.7647005959578233E-6
+        }
+      },
+      "audit": {
+        "checks": [
+          {
+            "family": "FINITE_TOPOLOGY",
+            "value": 0.0,
+            "limit": 0.0,
+            "passed": true,
+            "detail": "all active flows and topology phases are finite"
+          },
+          {
+            "family": "LOCAL_COMPONENT_BALANCE",
+            "value": 5.24362237777201E-9,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "EQUILIBRIUM",
+            "value": 7.709388682997087E-13,
+            "limit": 1.0E-8,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "ENERGY_BALANCE",
+            "value": 6.030783666227232E-14,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "CONDENSER_PHASE",
+            "value": 0.0,
+            "limit": 0.0,
+            "passed": true,
+            "detail": "outlet TP flash confirms liquid only"
+          }
+        ],
+        "advisoryEvidence": [
+          "ESTIMATED_HEAVY_RESIDUE: PC12 is extrapolated and vapor-ineligible"
+        ]
+      }
+    },
+    {
+      "label": "stages\u003d30/pressure\u003d110.0kPa/STAGE_LOCAL",
+      "stages": 30,
+      "feedStage": 24,
+      "pressureKpa": 110.0,
+      "policy": "STAGE_LOCAL",
+      "maximumIterations": 128,
+      "phaseMilliseconds": {
+        "stages\u003d30/pressure\u003d110.0kPa/STAGE_LOCAL/resolve": 7.7549,
+        "stages\u003d30/pressure\u003d110.0kPa/STAGE_LOCAL/seed": 0.7099,
+        "stages\u003d30/pressure\u003d110.0kPa/STAGE_LOCAL/feed-flash": 1.4623,
+        "stages\u003d30/pressure\u003d110.0kPa/STAGE_LOCAL/solve": 15900.2659,
+        "stages\u003d30/pressure\u003d110.0kPa/STAGE_LOCAL/audit": 1.1321
+      },
+      "traceEveryTenIterations": [
+        {
+          "iteration": 0,
+          "elapsedMilliseconds": 10.3782,
+          "maximumScaledResidual": 11.607989738355405,
+          "scaledMerit": 695.055141929743,
+          "dominantEquation": "EquationId[family\u003dENERGY_BALANCE, node\u003d3, component\u003d-1]",
+          "dominantPhysicalResidual": 8.418049669423461E8,
+          "dominantScaledResidual": 11.607989738355405,
+          "componentId": null,
+          "temperatureKelvin": 466.0561807868059,
+          "liquidFlowMolS": null,
+          "vaporFlowMolS": null,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 10,
+          "elapsedMilliseconds": 1726.3846,
+          "maximumScaledResidual": 1.1772439105328658E-5,
+          "scaledMerit": 2.2404992173814826E-10,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d23, component\u003d14]",
+          "dominantPhysicalResidual": 1.1772439105328658E-5,
+          "dominantScaledResidual": 1.1772439105328658E-5,
+          "componentId": "PC12",
+          "temperatureKelvin": 515.2774160581115,
+          "liquidFlowMolS": 1.5989106674104385E-4,
+          "vaporFlowMolS": 6.142956374707905E-12,
+          "localAccepted": 10,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 20,
+          "elapsedMilliseconds": 5747.0811,
+          "maximumScaledResidual": 1.1788173797786834E-8,
+          "scaledMerit": 2.8503412247835525E-16,
+          "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d22, component\u003d14]",
+          "dominantPhysicalResidual": -3.5622580232409977E-7,
+          "dominantScaledResidual": -1.1788173797786834E-8,
+          "componentId": "PC12",
+          "temperatureKelvin": 503.6656467814792,
+          "liquidFlowMolS": 3.5622661780388865E-7,
+          "vaporFlowMolS": 4.111340050643919E-15,
+          "localAccepted": 18,
+          "localRejected": 2,
+          "freshFiniteDifference": 2,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 30,
+          "elapsedMilliseconds": 10528.9631,
+          "maximumScaledResidual": 1.0152044227196289E-8,
+          "scaledMerit": 2.08175549226138E-16,
+          "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d22, component\u003d14]",
+          "dominantPhysicalResidual": -3.067837446324134E-7,
+          "dominantScaledResidual": -1.0152044227196289E-8,
+          "componentId": "PC12",
+          "temperatureKelvin": 503.6656467774155,
+          "liquidFlowMolS": 3.0678454187805834E-7,
+          "vaporFlowMolS": 3.540711198433441E-15,
+          "localAccepted": 25,
+          "localRejected": 6,
+          "freshFiniteDifference": 5,
+          "reusedFiniteDifference": 1
+        }
+      ],
+      "status": "FAILED_RUNG",
+      "seedSource": "interpolated-plus-material-vle",
+      "projectionResult": "Prepared",
+      "projectionEvidence": {
+        "id": "BUBBLE_POINT",
+        "sweeps": 3,
+        "detail": "bounded material/bubble-point projection"
+      },
+      "projectionUsed": true,
+      "admission": {
+        "lane": "NORMAL_CDU",
+        "minimumNodePressurePascal": 110000.0,
+        "maximumNodePressurePascal": 131750.0,
+        "packageMinimumPressurePascal": 50000.0,
+        "packageMaximumPressurePascal": 2000000.0
+      },
+      "coordinateCount": 976,
+      "feedPhase": "TWO_PHASE",
+      "feedMolarEnthalpyJoulesPerMol": 87588.86630274451,
+      "localAccepted": 29,
+      "localRejected": 7,
+      "freshFiniteDifference": 6,
+      "reusedFiniteDifference": 1,
+      "elapsedMilliseconds": 15911.6142,
+      "checkpointCount": 116853,
+      "latestTrace": {
+        "iteration": 35,
+        "elapsedMilliseconds": 12646.0153,
+        "maximumScaledResidual": 9.897446765194595E-9,
+        "scaledMerit": 1.9738369790447257E-16,
+        "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d22, component\u003d14]",
+        "dominantPhysicalResidual": -2.9909008599393456E-7,
+        "dominantScaledResidual": -9.897446765194595E-9,
+        "componentId": "PC12",
+        "temperatureKelvin": 503.6656467773783,
+        "liquidFlowMolS": 2.990908804023069E-7,
+        "vaporFlowMolS": 3.451915874763625E-15,
+        "localAccepted": 29,
+        "localRejected": 7,
+        "freshFiniteDifference": 6,
+        "reusedFiniteDifference": 1
+      },
+      "solverCode": "CONVERGED",
+      "evidence": {
+        "iterations": 35,
+        "maximumScaledResidual": 9.897446759882858E-9,
+        "scaledMerit": 1.9555081964878174E-16,
+        "acceptedStep": 1.0,
+        "pivotGrowth": 3.601035980584783E-18,
+        "termination": "verified final Newton correction",
+        "convergenceEvidence": {
+          "hasFinalNewtonStep": true,
+          "finalLinearBackwardError": 3.601035980584783E-18,
+          "maximumLogFlowChange": 2.950550026525889E-9,
+          "maximumTemperatureChangeKelvin": 5.027231964049861E-10,
+          "maximumTemperatureStepRatio": 3.3176974151789796E-4
+        }
+      },
+      "audit": {
+        "checks": [
+          {
+            "family": "FINITE_TOPOLOGY",
+            "value": 0.0,
+            "limit": 0.0,
+            "passed": true,
+            "detail": "all active flows and topology phases are finite"
+          },
+          {
+            "family": "LOCAL_COMPONENT_BALANCE",
+            "value": 9.897446759882858E-9,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "EQUILIBRIUM",
+            "value": 1.1155520951433573E-12,
+            "limit": 1.0E-8,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "ENERGY_BALANCE",
+            "value": 1.3510188281241584E-13,
+            "limit": 1.0,
+            "passed": true,
+            "detail": "fresh residual recomputation"
+          },
+          {
+            "family": "CONDENSER_PHASE",
+            "value": 1.0,
+            "limit": 0.0,
+            "passed": false,
+            "detail": "outlet TP flash requires a vapor phase"
+          }
+        ],
+        "advisoryEvidence": [
+          "ESTIMATED_HEAVY_RESIDUE: PC12 is extrapolated and vapor-ineligible"
+        ]
+      }
+    }
+  ],
+  "status": "FAILED_RUNG",
+  "condenserBranch": "LIQUID_ONLY",
+  "elapsedMilliseconds": 19214.4268,
+  "terminalPhase": "stages\u003d30/pressure\u003d110.0kPa/STAGE_LOCAL/audit",
+  "checkpointCount": 179188,
+  "maximumCheckpointGapMilliseconds": 571.3938
+}

@@ -1,0 +1,729 @@
+{
+  "schema": 1,
+  "started": "2026-08-31T08:32:43.403326500Z",
+  "java": "21.0.11",
+  "vm": "Java HotSpot(TM) 64-Bit Server VM",
+  "processors": 16,
+  "maximumHeapBytes": 2147483648,
+  "cpu": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+  "arguments": [
+    "--samples\u003d1",
+    "--warmup\u003d0",
+    "--deadlineSeconds\u003d45",
+    "--cases\u003d110-on",
+    "--profile\u003dfalse",
+    "--report\u003dbenchmarks/results/v3-phase-cold-before/110-on-1.json"
+  ],
+  "notes": [
+    "Serial public V3 façade calls, no game/executor queue.",
+    "Warmup uses the same model and 30-stage 150 kPa case; sample order reverses on alternate rounds.",
+    "The diagnostic deadline is separate from the unchanged 45-second game deadline.",
+    "Facade iteration counters describe its selected terminal attempt, not aggregate continuation work.",
+    "Checkpoint stacks are breadcrumbs, not statistical CPU samples. Optional JFR samples supply CPU attribution."
+  ],
+  "cells": [
+    {
+      "scenario": {
+        "name": "110-on",
+        "pressureKpa": 110.0,
+        "feedKmolH": 2610.7,
+        "dutyMW": 8.0,
+        "cutoff": 1.0E-6
+      },
+      "sample": 0,
+      "warmup": false,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "componentBasis": {
+          "componentIds": [
+            "methane",
+            "ethane",
+            "propane",
+            "C4_CDU",
+            "PC01",
+            "PC02",
+            "PC03",
+            "PC04",
+            "PC05",
+            "PC06",
+            "PC07",
+            "PC08",
+            "PC09",
+            "PC10",
+            "PC11",
+            "PC12"
+          ]
+        },
+        "feedComponentMolarFlowsMolPerSecond": [
+          0.0,
+          0.9092711024472504,
+          8.164441357135074,
+          22.167126305461213,
+          99.97467426417244,
+          47.931742303891674,
+          82.85756127914073,
+          40.17932176003031,
+          72.94330685058401,
+          63.83125388233502,
+          54.31909378595077,
+          47.01981036079761,
+          39.918527299169035,
+          45.06373575006611,
+          69.69566481243167,
+          30.21891333083155
+        ],
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 110000.0,
+        "stagePressureDropPascal": 750.0,
+        "specifications": [
+          {
+            "kelvin": 323.15
+          },
+          {
+            "ratio": 2.0
+          },
+          {
+            "watts": 8000000.0
+          }
+        ]
+      },
+      "status": "DIAGNOSTIC_DEADLINE",
+      "deadlineStack": [
+        "com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark$Deadline.checkpoint(V3TimeoutBenchmark.java:263)",
+        "com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolver.dampedNormalMatrix(V3SimultaneousColumnSolver.java:565)",
+        "com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolver.dampedGaussNewtonTrial(V3SimultaneousColumnSolver.java:539)",
+        "com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolver.solve(V3SimultaneousColumnSolver.java:290)",
+        "com.wormzjl.createcheme.science.column.v3.V3SimultaneousColumnSolver.solve(V3SimultaneousColumnSolver.java:95)",
+        "com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator.solveSingleProblem(V3ColumnCalculator.java:495)",
+        "com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator.solveSingleProblem(V3ColumnCalculator.java:465)",
+        "com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator.solveSingleProblem(V3ColumnCalculator.java:454)",
+        "com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator.calculateBranch(V3ColumnCalculator.java:163)",
+        "com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator.calculate(V3ColumnCalculator.java:91)",
+        "com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator.lambda$calculate$0(V3ColumnCalculator.java:71)",
+        "com.wormzjl.createcheme.science.column.v3.V3TruncationFallback.calculate(V3TruncationFallback.java:15)",
+        "com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator.calculate(V3ColumnCalculator.java:71)",
+        "com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark.run(V3TimeoutBenchmark.java:114)",
+        "com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark.main(V3TimeoutBenchmark.java:80)"
+      ],
+      "wallSeconds": 45.0011276,
+      "cpuSeconds": 44.796875,
+      "allocatedBytes": 26124115872,
+      "gcMilliseconds": 120,
+      "gcCollections": 86,
+      "checkpoints": 142605,
+      "checkpointBreadcrumbs": [
+        {
+          "seconds": 0.0029342,
+          "frames": [
+            "preferredCondenserBranch:104",
+            "calculate:90",
+            "lambda$calculate$0:71",
+            "calculate:71"
+          ]
+        },
+        {
+          "seconds": 1.0309061,
+          "frames": [
+            "solveSingleProblem:506",
+            "solveSingleProblem:465",
+            "solveDwsimStageContinuation:283",
+            "calculateBranch:153",
+            "calculate:91",
+            "lambda$calculate$0:71",
+            "calculate:71"
+          ]
+        },
+        {
+          "seconds": 2.0317695,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:320",
+            "solveWithContinuationLocalBlocks:128",
+            "solveSingleProblem:499",
+            "solveSingleProblem:465",
+            "solveDwsimStageContinuation:283",
+            "calculateBranch:153",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 3.0840085,
+          "frames": [
+            "armijoTrial:483",
+            "solve:234",
+            "solveWithContinuationLocalBlocks:128",
+            "solveSingleProblem:499",
+            "solveSingleProblem:465",
+            "solveDwsimStageContinuation:283",
+            "calculateBranch:153",
+            "calculate:91",
+            "lambda$calculate$0:71",
+            "calculate:71"
+          ]
+        },
+        {
+          "seconds": 4.1145292,
+          "frames": [
+            "armijoTrial:483",
+            "solve:234",
+            "solveWithContinuationLocalBlocks:128",
+            "solveSingleProblem:499",
+            "solveSingleProblem:465",
+            "solveDwsimStageContinuation:283",
+            "calculateBranch:153",
+            "calculate:91",
+            "lambda$calculate$0:71",
+            "calculate:71"
+          ]
+        },
+        {
+          "seconds": 5.2016964,
+          "frames": [
+            "verifyFinalNewtonCorrection:385",
+            "solve:209",
+            "solveWithContinuationLocalBlocks:128",
+            "solveSingleProblem:499",
+            "solveSingleProblem:465",
+            "solveDwsimStageContinuation:283",
+            "calculateBranch:153",
+            "calculate:91",
+            "lambda$calculate$0:71",
+            "calculate:71"
+          ]
+        },
+        {
+          "seconds": 6.3624563,
+          "frames": [
+            "armijoTrial:483",
+            "solve:309",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71",
+            "calculate:71"
+          ]
+        },
+        {
+          "seconds": 7.363157,
+          "frames": [
+            "dampedNormalMatrix:565",
+            "dampedGaussNewtonTrial:539",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 8.3633928,
+          "frames": [
+            "dampedNormalMatrix:565",
+            "dampedGaussNewtonTrial:539",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 9.4630967,
+          "frames": [
+            "dampedGaussNewtonTrial:535",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71",
+            "calculate:71"
+          ]
+        },
+        {
+          "seconds": 10.5205621,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 11.7180122,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 12.8835914,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 14.0409355,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 15.2239074,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 16.4242281,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 17.6361578,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 18.8227421,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 20.020419,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 21.1966217,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 22.3580425,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 23.508084,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 24.6575883,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 25.6752418,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 26.8222437,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 27.8817336,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 29.0623344,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 30.1750858,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 31.2210981,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 32.3860582,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 33.5438845,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 34.6962709,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 35.8473849,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 36.9194854,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 37.9771279,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 39.0453191,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 40.2428648,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 41.3276279,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 42.3949325,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 43.4708628,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        },
+        {
+          "seconds": 44.5700576,
+          "frames": [
+            "armijoTrial:483",
+            "dampedGaussNewtonTrial:547",
+            "solve:290",
+            "solve:95",
+            "solveSingleProblem:495",
+            "solveSingleProblem:465",
+            "solveSingleProblem:454",
+            "calculateBranch:163",
+            "calculate:91",
+            "lambda$calculate$0:71"
+          ]
+        }
+      ]
+    }
+  ],
+  "finished": "2026-08-31T08:33:28.451466800Z"
+}

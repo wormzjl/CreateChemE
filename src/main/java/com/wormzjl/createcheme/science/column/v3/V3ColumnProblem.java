@@ -10,17 +10,19 @@ public final class V3ColumnProblem {
     private final V3CondenserComponentPhases condenserComponentPhases;
     private final double[] nodePressuresPascal;
     private final V3DegreeOfFreedomLedger degreeOfFreedomLedger;
+    private final V3TruncationSupport truncationSupport;
 
     V3ColumnProblem(
             V3ColumnInput input, V3ColumnTopology topology, V3ActiveComponentBasis activeComponentBasis,
             V3CondenserComponentPhases condenserComponentPhases, double[] nodePressuresPascal,
-            V3DegreeOfFreedomLedger degreeOfFreedomLedger) {
+            V3DegreeOfFreedomLedger degreeOfFreedomLedger, V3TruncationSupport truncationSupport) {
         this.input = Objects.requireNonNull(input, "input");
         this.topology = Objects.requireNonNull(topology, "topology");
         this.activeComponentBasis = Objects.requireNonNull(activeComponentBasis, "activeComponentBasis");
         this.condenserComponentPhases = Objects.requireNonNull(condenserComponentPhases, "condenserComponentPhases");
         this.nodePressuresPascal = Objects.requireNonNull(nodePressuresPascal, "nodePressuresPascal").clone();
         this.degreeOfFreedomLedger = Objects.requireNonNull(degreeOfFreedomLedger, "degreeOfFreedomLedger");
+        this.truncationSupport = Objects.requireNonNull(truncationSupport, "truncationSupport");
         if (this.nodePressuresPascal.length != topology.nodeCount()) {
             throw new IllegalArgumentException("V3 pressure profile does not match the resolved topology");
         }
@@ -31,9 +33,11 @@ public final class V3ColumnProblem {
         }
         if (!degreeOfFreedomLedger.topology().equals(topology)
                 || degreeOfFreedomLedger.componentCount() != activeComponentBasis.componentCount()
-                || !degreeOfFreedomLedger.specifications().equals(input.specifications())) {
+                || !degreeOfFreedomLedger.specifications().equals(input.specifications())
+                || degreeOfFreedomLedger.truncationSupport() != truncationSupport) {
             throw new IllegalArgumentException("V3 degree-of-freedom ledger does not describe this resolved problem");
         }
+        truncationSupport.requireCompatible(this);
     }
 
     public V3ColumnInput input() {
@@ -50,6 +54,10 @@ public final class V3ColumnProblem {
 
     V3CondenserComponentPhases condenserComponentPhases() {
         return condenserComponentPhases;
+    }
+
+    V3TruncationSupport truncationSupport() {
+        return truncationSupport;
     }
 
     public double[] nodePressuresPascal() {

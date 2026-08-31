@@ -1,6 +1,5 @@
 package com.wormzjl.createcheme.world.level.block.entity;
 
-import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
@@ -70,12 +69,11 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     /**
      * Atomically freezes a validated server-resolved input for one worker operation.
      *
-     * <p>Must run on the logical server thread. A stale editor revision, disabled rollout, or existing operation is
+     * <p>Must run on the logical server thread. A stale editor revision or existing operation is
      * rejected without changing the block state.</p>
      */
     public Optional<V3Operation> tryBegin(long expectedInputRevision, long operationId, V3ColumnInput input) {
-        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null
-                || CreateChemE.columnV3Rollout() == CreateChemE.V3Rollout.DISABLED) {
+        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null) {
             return Optional.empty();
         }
         input = Objects.requireNonNull(input, "input");

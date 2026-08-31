@@ -30,7 +30,30 @@ public final class V3ColumnProblemResolver {
             throw new IllegalArgumentException("Invalid V3 degree-of-freedom contract: " + ledger.humanReadableDiagnostic());
         }
         return new V3ColumnProblem(input, topology, activeComponentBasis, condenserComponentPhases,
-                pressureProfile(input, topology), ledger);
+                pressureProfile(input, topology), ledger, ledger.truncationSupport());
+    }
+
+    /**
+     * Attaches fixed support without changing authored inputs. Identity returns the original problem
+     * and ledger. An invalid reduced ledger is rejected for the attempt orchestrator to retry unmasked.
+     */
+    static V3ColumnProblem withTruncation(V3ColumnProblem problem, V3TruncationSupport support) {
+        Objects.requireNonNull(problem, "problem");
+        Objects.requireNonNull(support, "support");
+        support.requireCompatible(problem);
+        if (!problem.truncationSupport().isIdentity()) {
+            throw new IllegalArgumentException("V3 truncation requires the original untruncated problem");
+        }
+        if (support.isIdentity()) return problem;
+        V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(problem.topology(),
+                problem.activeComponentBasis().componentCount(), problem.input().specifications(),
+                problem.condenserComponentPhases(), support);
+        if (!ledger.isValid()) {
+            throw new IllegalArgumentException("Invalid V3 reduced degree-of-freedom contract: "
+                    + ledger.humanReadableDiagnostic());
+        }
+        return new V3ColumnProblem(problem.input(), problem.topology(), problem.activeComponentBasis(),
+                problem.condenserComponentPhases(), problem.nodePressuresPascal(), ledger, support);
     }
 
     private static void validateInput(V3ColumnInput input) {

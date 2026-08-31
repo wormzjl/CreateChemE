@@ -195,6 +195,48 @@ tasks.register('legacyColumnBenchmarkHarnessTest', JavaExec) {
     args '--self-test'
 }
 
+tasks.register('v3TimeoutBenchmark', JavaExec) {
+    group = 'verification'
+    description = 'Serial V3 timeout diagnostics with optional per-case JFR, CPU, allocation and outcome reports.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--samples=' + providers.gradleProperty('v3Samples').getOrElse('1')
+    args '--warmup=' + providers.gradleProperty('v3Warmup').getOrElse('1')
+    args '--deadlineSeconds=' + providers.gradleProperty('v3DeadlineSeconds').getOrElse('90')
+    args '--cases=' + providers.gradleProperty('v3Cases').getOrElse('150-off,110-off,110-on,100-off,110-test-feed,110-matched-duty')
+    args '--profile=' + providers.gradleProperty('v3Profile').getOrElse('false')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-timeout.json').get().asFile.absolutePath)
+}
+
+tasks.register('v3TimeoutBenchmarkHarnessTest', JavaExec) {
+    group = 'verification'
+    description = 'Checks V3 timeout benchmark argument validation and timeout report serialization.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark'
+    args '--self-test'
+}
+
+tasks.register('v3ContinuationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Traces the first V3 continuation path without recovery; diagnostic counterfactuals only.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3ContinuationProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--mode=' + providers.gradleProperty('v3ProbeMode').getOrElse('stage-local')
+    args '--branch=' + providers.gradleProperty('v3ProbeBranch').getOrElse('preferred')
+    args '--linearDiagnostics=' + providers.gradleProperty('v3LinearDiagnostics').getOrElse('0')
+    args '--deadlineSeconds=' + providers.gradleProperty('v3DeadlineSeconds').getOrElse('90')
+    args '--feedKmolH=' + providers.gradleProperty('v3FeedKmolH').getOrElse('2610.7')
+    args '--pressureKpa=' + providers.gradleProperty('v3PressureKpa').getOrElse('110')
+    args '--dutyMW=' + providers.gradleProperty('v3DutyMW').getOrElse('8')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-continuation-probe.json').get().asFile.absolutePath)
+}
+
 tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }

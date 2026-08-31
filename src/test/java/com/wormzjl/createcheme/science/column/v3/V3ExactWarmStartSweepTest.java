@@ -12,28 +12,45 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Exact-input hot-start companion to {@link V3ColdStartSweepTest}.
  *
- * <p>Each source point first converges from a fresh initializer. The hot attempt receives only that accepted
+ * <p>Each source point first converges from a fresh initializer. The hot attempt receives only that numerical
  * solver-owned state and convergence certificate, while problem resolution, evaluator construction, thermodynamic
  * workspaces, residual recomputation, and acceptance audit are all fresh. Nearby-input reuse is deliberately out of
- * scope for this exact-compatibility test.</p>
+ * scope for this exact-compatibility test. The original two-phase numerical matrix is retained as negative
+ * coverage: neither a cold nor hot certificate may override its independent phase rejection. A separate
+ * physically valid liquid-only case verifies accepted-state reuse.</p>
  */
 class V3ExactWarmStartSweepTest {
     @Test
-    void coldQualifiedMatrixPointsAlsoPassFreshExactInputHotStarts() {
+    void numericalTwoPhaseMatrixRemainsRejectedAfterFreshExactInputHotStarts() {
         for (V3ColumnInput input : List.of(
                 binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 0.0),
                 binaryInput(100.0, 551.0, 250_000.0, 750.0, 300.0, 2.0, 0.0),
                 binaryInput(100.0, 550.0, 250_000.0, 0.0, 300.0, 2.0, 0.0),
                 binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 20_000.0),
                 binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 50_000.0))) {
-            ColdAttempt cold = coldAttempt(input);
+            verifyExactHotStart(input, V3CondenserPhaseBranch.TWO_PHASE, false);
+        }
+    }
+
+    @Test
+    void physicallyAcceptedLiquidOnlyStatePassesFreshExactInputHotStart() {
+        verifyExactHotStart(binaryInput(100.0, 550.0, 250_000.0, 750.0, 300.0, 2.0, 0.0),
+                V3CondenserPhaseBranch.LIQUID_ONLY, true);
+    }
+
+    private static void verifyExactHotStart(V3ColumnInput input, V3CondenserPhaseBranch branch, boolean accepted) {
+            String label = caseLabel(input);
+            ColdAttempt cold = coldAttempt(input, branch);
             V3SimultaneousColumnSolver.Attempt.Converged coldConverged = assertInstanceOf(
-                    V3SimultaneousColumnSolver.Attempt.Converged.class, cold.attempt(), cold.attempt()::toString);
-            assertTrue(cold.audit().accepted());
-            assertTrue(coldConverged.evidence().convergenceEvidence().satisfiesGates());
+                    V3SimultaneousColumnSolver.Attempt.Converged.class, cold.attempt(), () -> label + ": " + cold.attempt());
+            assertEquals(accepted, cold.audit().accepted(), () -> label + ": cold audit=" + cold.audit());
+            assertTrue(cold.audit().checks().stream().filter(check -> !check.family().equals("CONDENSER_PHASE"))
+                    .allMatch(V3AcceptanceAudit.Check::passed));
+            assertTrue(coldConverged.evidence().convergenceEvidence().satisfiesGates(),
+                    () -> label + ": cold evidence=" + coldConverged.evidence());
 
             V3PengRobinsonThermo freshThermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-            V3ColumnProblem freshProblem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+            V3ColumnProblem freshProblem = V3ColumnProblemResolver.resolve(input, branch);
             V3FlashResult freshFlash = freshThermo.flashTP(input.feedTemperatureKelvin(),
                     freshProblem.nodePressurePascal(freshProblem.topology().feedTrayNumber()),
                     input.feedComponentMolarFlowsMolPerSecond(), freshThermo.newWorkspace());
@@ -49,29 +66,39 @@ class V3ExactWarmStartSweepTest {
                             freshThermo::newWorkspace,
                             coldConverged.evidence().convergenceEvidence(),
                             128,
-                            1.0e-8));
+                            1.0e-8), label + ": exact-input hot solve");
             V3AcceptanceAudit hotAudit = new V3AcceptanceAuditor(
                     freshProblem, freshThermo, freshFlash.molarEnthalpyJoulesPerMol())
                     .audit(hotConverged.state(), freshThermo.newWorkspace());
-            assertEquals(0, hotConverged.evidence().iterations());
-            assertTrue(hotConverged.evidence().convergenceEvidence().satisfiesGates());
-            assertTrue(hotAudit.accepted());
-        }
+            assertEquals(0, hotConverged.evidence().iterations(), label);
+            assertTrue(hotConverged.evidence().convergenceEvidence().satisfiesGates(),
+                    () -> label + ": hot evidence=" + hotConverged.evidence());
+            assertEquals(accepted, hotAudit.accepted(), () -> label + ": hot audit=" + hotAudit);
+            assertTrue(hotAudit.checks().stream().filter(check -> !check.family().equals("CONDENSER_PHASE"))
+                    .allMatch(V3AcceptanceAudit.Check::passed));
     }
 
-    private static ColdAttempt coldAttempt(V3ColumnInput input) {
+    private static ColdAttempt coldAttempt(V3ColumnInput input, V3CondenserPhaseBranch branch) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, branch);
         V3FlashResult flash = thermo.flashTP(input.feedTemperatureKelvin(),
                 problem.nodePressurePascal(problem.topology().feedTrayNumber()), input.feedComponentMolarFlowsMolPerSecond(),
                 thermo.newWorkspace());
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, flash.molarEnthalpyJoulesPerMol());
-        V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace());
-        V3SimultaneousColumnSolver.Attempt attempt = V3SimultaneousColumnSolver.solve(
-                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace, 128, 1.0e-8);
+        V3ColumnInitializer.Seed seed = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace(),
+                branch == V3CondenserPhaseBranch.TWO_PHASE ? V3ColumnInitializer.Mode.MATERIAL_CLOSED
+                        : V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE);
+        // Preserve the original two-phase numerical matrix; the accepted liquid case uses production's cold policy.
+        V3SimultaneousColumnSolver.Attempt attempt = branch == V3CondenserPhaseBranch.TWO_PHASE
+                ? V3SimultaneousColumnSolver.solve(problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(),
+                        thermo::newWorkspace, 128, 1.0e-8)
+                : V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
+                problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
+                128, 1.0e-8, V3SolveControl.UNBOUNDED);
         V3AcceptanceAuditor auditor = new V3AcceptanceAuditor(problem, thermo, flash.molarEnthalpyJoulesPerMol());
         V3AcceptanceAudit audit = auditor.audit(attempt.state(), thermo.newWorkspace());
-        if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged) || !audit.accepted()) {
+        if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged)
+                || (branch != V3CondenserPhaseBranch.TWO_PHASE && !audit.accepted())) {
             V3SequentialPreconditioner.Result preparation = V3BubblePointPreconditioner.INSTANCE.prepare(
                     new V3SequentialPreconditioner.Request(problem, attempt.state(), V3SolveControl.UNBOUNDED),
                     thermo, thermo.newWorkspace());
@@ -80,26 +107,44 @@ class V3ExactWarmStartSweepTest {
                         problem, evaluator, new V3DryMeshCoordinateMap(problem), prepared.state(),
                         thermo::newWorkspace, 128, 1.0e-8, V3SolveControl.UNBOUNDED);
                 V3AcceptanceAudit recoveredAudit = auditor.audit(recovered.state(), thermo.newWorkspace());
-                if (recovered instanceof V3SimultaneousColumnSolver.Attempt.Converged && recoveredAudit.accepted()) {
+                if (recovered instanceof V3SimultaneousColumnSolver.Attempt.Converged
+                        && (branch == V3CondenserPhaseBranch.TWO_PHASE || recoveredAudit.accepted())) {
                     attempt = recovered;
                     audit = recoveredAudit;
                 }
             }
         }
         if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged
-                && converged.evidence().convergenceEvidence().satisfiesGates() && audit.accepted())) {
+                && converged.evidence().convergenceEvidence().satisfiesGates()
+                && (branch == V3CondenserPhaseBranch.TWO_PHASE || audit.accepted()))) {
             V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
                     problem, evaluator, new V3DryMeshCoordinateMap(problem), seed.state(), thermo::newWorkspace,
                     V3ConvergenceEvidence.unavailable(), 128, 1.0e-8,
                     V3FiniteDifferenceJacobian.DifferenceScale.COARSE);
             V3AcceptanceAudit coarseAudit = auditor.audit(coarseAttempt.state(), thermo.newWorkspace());
             if (coarseAttempt instanceof V3SimultaneousColumnSolver.Attempt.Converged coarseConverged
-                    && coarseConverged.evidence().convergenceEvidence().satisfiesGates() && coarseAudit.accepted()) {
+                    && coarseConverged.evidence().convergenceEvidence().satisfiesGates()
+                    && (branch == V3CondenserPhaseBranch.TWO_PHASE || coarseAudit.accepted())) {
                 attempt = coarseAttempt;
                 audit = coarseAudit;
             }
         }
         return new ColdAttempt(attempt, audit);
+    }
+
+    private static String caseLabel(V3ColumnInput input) {
+        StringBuilder label = new StringBuilder("feedTemperatureK=").append(input.feedTemperatureKelvin())
+                .append(", topPressurePa=").append(input.topPressurePascal())
+                .append(", stagePressureDropPa=").append(input.stagePressureDropPascal());
+        for (V3ColumnSpecification specification : input.specifications()) {
+            switch (specification) {
+                case V3ColumnSpecification.CondenserOutletTemperature temperature ->
+                        label.append(", condenserTemperatureK=").append(temperature.kelvin());
+                case V3ColumnSpecification.OrganicRefluxRatio reflux -> label.append(", refluxRatio=").append(reflux.ratio());
+                case V3ColumnSpecification.ReboilerDuty duty -> label.append(", reboilerDutyW=").append(duty.watts());
+            }
+        }
+        return label.toString();
     }
 
     private static V3ColumnInput binaryInput(

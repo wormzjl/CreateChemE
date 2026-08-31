@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.runtime;
 
+import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.science.column.ColumnSimulation;
 import com.wormzjl.createcheme.science.column.TiaJuanaLight12PropertyPackage;
 import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnInput;
@@ -98,7 +99,9 @@ public final class ProcessSolveServices {
     public static AdmissionResult submitV3Column(MinecraftServer server, V3ColumnRequest request) {
         requireServerThread(server);
         Objects.requireNonNull(request, "request");
-        return submit(server, request, new V3ColumnCommand(request.operation().input()), request.operation().input().packageId());
+        double stageTraceCutoffMoleFraction = CreateChemE.columnV3StageTraceCutoffMolPercent() / 100.0;
+        return submit(server, request, new V3ColumnCommand(request.operation().input(), stageTraceCutoffMoleFraction),
+                request.operation().input().packageId());
     }
 
     private static AdmissionResult submit(
@@ -325,22 +328,28 @@ public final class ProcessSolveServices {
         }
     }
 
-    private record V3ColumnCommand(V3ColumnInput input) implements ProcessSolveCommand {
-        private V3ColumnCommand {
+    /** Immutable worker snapshot; configuration has already been read and converted by server-thread admission. */
+    record V3ColumnCommand(V3ColumnInput input, double stageTraceCutoffMoleFraction) implements ProcessSolveCommand {
+        V3ColumnCommand {
             Objects.requireNonNull(input, "input");
+            if (!Double.isFinite(stageTraceCutoffMoleFraction) || stageTraceCutoffMoleFraction < 0.0
+                    || stageTraceCutoffMoleFraction > 0.01) {
+                throw new IllegalArgumentException("V3 stage-trace cutoff must be finite and in [0, 0.01] mole fraction");
+            }
         }
 
         @Override
         public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken) {
             cancellationToken.throwIfCancellationRequested();
-            V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, cancellationToken::throwIfCancellationRequested);
+            V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input,
+                    cancellationToken::throwIfCancellationRequested, stageTraceCutoffMoleFraction);
             cancellationToken.throwIfCancellationRequested();
             return new V3ColumnSolveResult(outcome);
         }
     }
 
-    private record V3ColumnSolveResult(V3ColumnOutcome outcome) implements ProcessSolveResult {
-        private V3ColumnSolveResult {
+    record V3ColumnSolveResult(V3ColumnOutcome outcome) implements ProcessSolveResult {
+        V3ColumnSolveResult {
             Objects.requireNonNull(outcome, "outcome");
         }
     }

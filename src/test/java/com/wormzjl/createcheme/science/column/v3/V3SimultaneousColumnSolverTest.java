@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.science.column.v3;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
@@ -87,7 +88,7 @@ class V3SimultaneousColumnSolverTest {
     }
 
     @Test
-    void registeredPrBinaryColdStartConvergesAndPassesBothPublicationGates() {
+    void registeredPrBinaryNumericalTwoPhaseRootCannotPassTheIndependentPhaseGate() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
         V3ColumnProblem problem = V3ColumnProblemResolver.resolve(binaryInput(thermo), V3CondenserPhaseBranch.TWO_PHASE);
         V3FlashResult feedFlash = thermo.flashTP(problem.input().feedTemperatureKelvin(),
@@ -104,13 +105,15 @@ class V3SimultaneousColumnSolverTest {
                 .audit(converged.state(), thermo.newWorkspace());
 
         assertTrue(convergenceEvidence.satisfiesGates());
-        assertTrue(audit.accepted());
-        V3ColumnResult result = V3ColumnResult.accepted(
-                problem, new V3InputDigest("1".repeat(64)), audit, convergenceEvidence);
-        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(
-                0, converged.evidence().iterations(), 1, 1, converged.evidence().maximumScaledResidual(), 0.0,
-                "registered-pr-binary", List.of(), audit, convergenceEvidence);
-        assertTrue(new V3ColumnOutcome.Success(result, diagnostics).isSuccess());
+        // This old numerical fixture can close a two-phase MESH system at a liquid-only outlet.
+        // A verified Newton correction must not bypass the independent phase check.
+        assertTrue(audit.checks().stream().filter(check -> !check.family().equals("CONDENSER_PHASE"))
+                .allMatch(V3AcceptanceAudit.Check::passed), audit::toString);
+        assertFalse(audit.accepted());
+        assertTrue(audit.checks().stream().anyMatch(check -> check.family().equals("CONDENSER_PHASE")
+                && !check.passed() && check.detail().contains("LIQUID")));
+        assertThrows(IllegalArgumentException.class, () -> V3ColumnResult.accepted(
+                problem, new V3InputDigest("1".repeat(64)), audit, convergenceEvidence));
 
         V3SimultaneousColumnSolver.Attempt.Converged warmConverged = assertInstanceOf(
                 V3SimultaneousColumnSolver.Attempt.Converged.class, V3SimultaneousColumnSolver.solve(
@@ -118,7 +121,7 @@ class V3SimultaneousColumnSolverTest {
                         convergenceEvidence, 128, 1.0e-8));
         assertEquals(0, warmConverged.evidence().iterations());
         assertTrue(warmConverged.evidence().convergenceEvidence().satisfiesGates());
-        assertTrue(new V3AcceptanceAuditor(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol())
+        assertFalse(new V3AcceptanceAuditor(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol())
                 .audit(warmConverged.state(), thermo.newWorkspace()).accepted());
     }
 
@@ -208,7 +211,7 @@ class V3SimultaneousColumnSolverTest {
         @Override
         public V3FlashResult flashTP(
                 double temperatureKelvin, double pressurePascal, double[] overallComposition, V3ThermoWorkspace workspace) {
-            throw new UnsupportedOperationException("The Newton manufactured model does not implement a flash");
+            return V3ManufacturedFlash.flash(overallComposition, K[nodeForTemperature(temperatureKelvin)]);
         }
 
         private static int nodeForTemperature(double temperatureKelvin) {

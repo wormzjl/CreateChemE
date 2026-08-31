@@ -277,6 +277,13 @@ public final class ColumnV3Network {
                 specifiedValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO),
                 specifiedValue(input, V3ControlledQuantity.REBOILER_DUTY) / 1_000_000.0,
                 detail);
+        job.completion().result().ifPresent(outcome -> {
+            for (String event : outcome.diagnostics().events()) {
+                if (event.startsWith("stage-trace ")) {
+                    CreateChemE.LOGGER.info("column_v3 request={} event={}", job.request().requestId(), event);
+                }
+            }
+        });
     }
 
     private static double totalFeedFlow(V3ColumnInput input) {

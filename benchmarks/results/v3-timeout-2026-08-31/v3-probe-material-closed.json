@@ -1,0 +1,219 @@
+{
+  "startedUtc": "2026-08-31T08:13:47.379030300Z",
+  "javaVersion": "21.0.11",
+  "logicalProcessors": 16,
+  "requestedBranch": "liquid-only",
+  "linearDiagnosticLimit": 3,
+  "parameters": {
+    "feedStage": 24,
+    "deadlineSeconds": 45.0,
+    "stages": 30,
+    "dutyMW": 8.0,
+    "pressureKpa": 110.0,
+    "mode": "material-closed",
+    "feedMolS": 725.1944444444445,
+    "stageTraceCutoff": 0.0,
+    "feedKmolH": 2610.7
+  },
+  "fixedInput": {
+    "assay": "createcheme:tia_juana_light",
+    "condenserTemperatureK": 323.15,
+    "package": "createcheme:cdu17_tjl_acs2018",
+    "refluxRatio": 2.0,
+    "feedTemperatureK": 638.15,
+    "stagePressureDropPa": 750.0
+  },
+  "scope": "First-path diagnostic only; preferred branch unless explicitly overridden; no failed-rung recovery, automatic material-closed fallback, coarse stencil, or alternate condenser branch. Material-closed mode probes only the fresh 30-stage fallback. Pressure mode overrides the \u003c\u003d100 kPa routing gate. Observer output is included in timing.",
+  "measurementCaveats": "stage-full disables both local-block steps AND one-step frozen-FD reuse; it is not a pure local-block ablation. FD counts come from the solver\u0027s callback and exclude final-Newton verification and optional diagnostic recomputations. An extra diagnostic condenser TP flash follows each audit. linearDiagnostics adds up to three duplicate FINE Jacobian/LU calculations inside the deadline; separate diagnostic timings are reported and such runs are not clean timing comparisons.",
+  "setupMilliseconds": {
+    "load-package-and-feed": 7.713,
+    "condenser-branch-selection": 9.3791
+  },
+  "rungs": [
+    {
+      "label": "stages\u003d30/pressure\u003d110.0kPa/FULL_FINE",
+      "stages": 30,
+      "feedStage": 24,
+      "pressureKpa": 110.0,
+      "policy": "FULL_FINE",
+      "maximumIterations": 128,
+      "phaseMilliseconds": {
+        "stages\u003d30/pressure\u003d110.0kPa/FULL_FINE/resolve": 43.3308,
+        "stages\u003d30/pressure\u003d110.0kPa/FULL_FINE/seed": 7.1772,
+        "stages\u003d30/pressure\u003d110.0kPa/FULL_FINE/feed-flash": 3.5751,
+        "stages\u003d30/pressure\u003d110.0kPa/FULL_FINE/solve": 44181.7566,
+        "stages\u003d30/pressure\u003d110.0kPa/FULL_FINE/extra-linear-diagnostic": 760.4948999999999
+      },
+      "traceEveryTenIterations": [
+        {
+          "iteration": 0,
+          "elapsedMilliseconds": 70.3282,
+          "maximumScaledResidual": 35.513028361998316,
+          "scaledMerit": 22462.912550191155,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d5, component\u003d14]",
+          "dominantPhysicalResidual": 35.513028361998316,
+          "dominantScaledResidual": 35.513028361998316,
+          "componentId": "PC12",
+          "temperatureKelvin": 373.9564516129032,
+          "liquidFlowMolS": 12.087565332332622,
+          "vaporFlowMolS": 18.13134799849893,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 0,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 10,
+          "elapsedMilliseconds": 9223.9404,
+          "maximumScaledResidual": 29.9507678108509,
+          "scaledMerit": 17538.599777899028,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d9, component\u003d14]",
+          "dominantPhysicalResidual": 29.9507678108509,
+          "dominantScaledResidual": 29.9507678108509,
+          "componentId": "PC12",
+          "temperatureKelvin": 405.66071560503383,
+          "liquidFlowMolS": 11.318908118495603,
+          "vaporFlowMolS": 8.944692004724802,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 10,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 20,
+          "elapsedMilliseconds": 23795.994,
+          "maximumScaledResidual": 30.051295802674936,
+          "scaledMerit": 17495.188785628932,
+          "dominantEquation": "EquationId[family\u003dVAPOR_LIQUID_EQUILIBRIUM, node\u003d9, component\u003d14]",
+          "dominantPhysicalResidual": 30.051295802674936,
+          "dominantScaledResidual": 30.051295802674936,
+          "componentId": "PC12",
+          "temperatureKelvin": 405.08059302272096,
+          "liquidFlowMolS": 10.766022701192577,
+          "vaporFlowMolS": 8.925725446021941,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 20,
+          "reusedFiniteDifference": 0
+        },
+        {
+          "iteration": 30,
+          "elapsedMilliseconds": 38128.139,
+          "maximumScaledResidual": 25.310429003509135,
+          "scaledMerit": 7334.925853591603,
+          "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d12, component\u003d5]",
+          "dominantPhysicalResidual": -2097.160422159599,
+          "dominantScaledResidual": -25.310429003509135,
+          "componentId": "PC03",
+          "temperatureKelvin": 444.4614064719741,
+          "liquidFlowMolS": 5514.71255541927,
+          "vaporFlowMolS": 8116.888644047422,
+          "localAccepted": 0,
+          "localRejected": 0,
+          "freshFiniteDifference": 30,
+          "reusedFiniteDifference": 0
+        }
+      ],
+      "linearDiagnostics": [
+        {
+          "iteration": 0,
+          "status": "SUCCESS",
+          "maximumOffBandMagnitude": 0.0,
+          "minimumColumnMaximumMagnitude": 0.003492940867086682,
+          "nearZeroColumnCount": 0,
+          "firstNearZeroColumns": [],
+          "linearSuccess": {
+            "maximumPivot": 5.152201106727455,
+            "pivotGrowth": 6.33811364340113,
+            "minimumPivot": 2.69011529218776E-7,
+            "backwardError": 1.1732985768384455E-17,
+            "pivotSwaps": 508
+          },
+          "elapsedMilliseconds": 299.616
+        },
+        {
+          "iteration": 1,
+          "status": "SUCCESS",
+          "maximumOffBandMagnitude": 0.0,
+          "minimumColumnMaximumMagnitude": 0.014929758740424995,
+          "nearZeroColumnCount": 0,
+          "firstNearZeroColumns": [],
+          "linearSuccess": {
+            "maximumPivot": 5.865808235103541,
+            "pivotGrowth": 6.318024601844319,
+            "minimumPivot": 3.305332104302601E-7,
+            "backwardError": 7.122818886312214E-18,
+            "pivotSwaps": 562
+          },
+          "elapsedMilliseconds": 243.9087
+        },
+        {
+          "iteration": 2,
+          "status": "SUCCESS",
+          "maximumOffBandMagnitude": 0.0,
+          "minimumColumnMaximumMagnitude": 0.011791754499654845,
+          "nearZeroColumnCount": 0,
+          "firstNearZeroColumns": [],
+          "linearSuccess": {
+            "maximumPivot": 6.726838103650604,
+            "pivotGrowth": 17.567987041676098,
+            "minimumPivot": 4.007537409630019E-6,
+            "backwardError": 1.6677163866597606E-18,
+            "pivotSwaps": 613
+          },
+          "elapsedMilliseconds": 216.4526
+        }
+      ],
+      "status": "TIMEOUT",
+      "seedSource": "material-closed",
+      "projectionResult": null,
+      "projectionEvidence": null,
+      "projectionUsed": false,
+      "admission": {
+        "lane": "NORMAL_CDU",
+        "minimumNodePressurePascal": 110000.0,
+        "maximumNodePressurePascal": 131750.0,
+        "packageMinimumPressurePascal": 50000.0,
+        "packageMaximumPressurePascal": 2000000.0
+      },
+      "coordinateCount": 976,
+      "feedPhase": "TWO_PHASE",
+      "feedVaporFraction": 0.791083674580854,
+      "feedMolarEnthalpyJoulesPerMol": 87588.86630274451,
+      "localAccepted": 0,
+      "localRejected": 0,
+      "freshFiniteDifference": 37,
+      "reusedFiniteDifference": 0,
+      "elapsedMilliseconds": 45001.4842,
+      "checkpointCount": 52813,
+      "latestTrace": {
+        "iteration": 36,
+        "elapsedMilliseconds": 44965.5297,
+        "maximumScaledResidual": 25.23775980770157,
+        "scaledMerit": 7293.136190814884,
+        "dominantEquation": "EquationId[family\u003dCOMPONENT_MATERIAL_BALANCE, node\u003d12, component\u003d5]",
+        "dominantPhysicalResidual": -2091.1392298148676,
+        "dominantScaledResidual": -25.23775980770157,
+        "componentId": "PC03",
+        "temperatureKelvin": 444.4410140337986,
+        "liquidFlowMolS": 5496.02686468244,
+        "vaporFlowMolS": 8163.232014079979,
+        "localAccepted": 0,
+        "localRejected": 0,
+        "freshFiniteDifference": 36,
+        "reusedFiniteDifference": 0
+      },
+      "solverCode": null,
+      "evidence": null,
+      "audit": null,
+      "condenserFlash": null
+    }
+  ],
+  "status": "TIMEOUT",
+  "condenserBranch": "LIQUID_ONLY",
+  "failure": "java.util.concurrent.CancellationException: deadline exceeded in stages\u003d30/pressure\u003d110.0kPa/FULL_FINE/solve",
+  "elapsedMilliseconds": 45019.4895,
+  "terminalPhase": "stages\u003d30/pressure\u003d110.0kPa/FULL_FINE/solve",
+  "checkpointCount": 52815,
+  "maximumCheckpointGapMilliseconds": 732.8566
+}

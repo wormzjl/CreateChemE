@@ -40,7 +40,7 @@ public record V3ColumnDisplayResult(
         V3ColumnResult result = success.result();
         return new V3ColumnDisplayResult(
                 result.inputDigest().hexadecimalSha256(),
-                V3ColumnCalculator.FORMULATION_REVISION,
+                result.formulationRevision(),
                 V3ColumnCalculator.ASSUMPTIONS_REVISION,
                 V3PengRobinsonThermo.fromRegisteredPackage(result.problem().input().packageId()).datasetRevision(),
                 success.diagnostics().newtonIterations(),
