@@ -58,13 +58,15 @@ public final class V3ColumnCalculator {
         input = Objects.requireNonNull(input, "input");
         control = Objects.requireNonNull(control, "control");
         initializerMode = Objects.requireNonNull(initializerMode, "initializerMode");
+        List<String> advisoryEvidence = List.of();
         try {
             control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
+            advisoryEvidence = thermo.advisoryEvidence();
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
             V3OperatingDomainValidator.Assessment admission = V3OperatingDomainValidator.assess(problem, thermo);
             if (admission instanceof V3OperatingDomainValidator.Assessment.Rejected rejected) {
-                return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(), "admission");
+                return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(), "admission", advisoryEvidence);
             }
             V3InputDigest digest = V3InputDigest.of(
                     problem, FORMULATION_REVISION, thermo.datasetRevision(), ASSUMPTIONS_REVISION);
@@ -143,11 +145,11 @@ public final class V3ColumnCalculator {
         } catch (CancellationException cancelled) {
             throw cancelled;
         } catch (V3ThermoException thermoFailure) {
-            return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property");
+            return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property", advisoryEvidence);
         } catch (IllegalArgumentException invalid) {
-            return terminalFailure(V3SolverFailureCode.INVALID_INPUT, invalid.getMessage(), "input");
+            return terminalFailure(V3SolverFailureCode.INVALID_INPUT, invalid.getMessage(), "input", advisoryEvidence);
         } catch (IllegalStateException internal) {
-            return terminalFailure(V3SolverFailureCode.INTERNAL_ERROR, internal.getMessage(), "internal");
+            return terminalFailure(V3SolverFailureCode.INTERNAL_ERROR, internal.getMessage(), "internal", advisoryEvidence);
         }
     }
 
@@ -509,16 +511,21 @@ public final class V3ColumnCalculator {
     }
 
     private static V3ColumnOutcome.Failure terminalFailure(
-            V3SolverFailureCode code, String detail, String solvePath) {
+            V3SolverFailureCode code, String detail, String solvePath, List<String> advisoryEvidence) {
         String summary = boundedSummary(detail);
-        V3AcceptanceAudit audit = failedAudit("UNAVAILABLE", summary);
+        V3AcceptanceAudit audit = failedAudit("UNAVAILABLE", summary, advisoryEvidence);
         V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, solvePath, List.of(summary),
                 audit, V3ConvergenceEvidence.unavailable());
         return new V3ColumnOutcome.Failure(code, summary, diagnostics);
     }
 
     private static V3AcceptanceAudit failedAudit(String family, String detail) {
-        return new V3AcceptanceAudit(List.of(V3AcceptanceAudit.Check.fail(family, 1.0, 0.0, boundedSummary(detail))));
+        return failedAudit(family, detail, List.of());
+    }
+
+    private static V3AcceptanceAudit failedAudit(String family, String detail, List<String> advisoryEvidence) {
+        return new V3AcceptanceAudit(List.of(V3AcceptanceAudit.Check.fail(family, 1.0, 0.0, boundedSummary(detail))),
+                advisoryEvidence);
     }
 
     private static V3SolverFailureCode failureCode(String code) {

@@ -16,7 +16,8 @@ record V3PropertyComponent(
         double cpB,
         double cpC,
         double cpD,
-        boolean estimatedHeavyResidue) {
+        boolean estimatedHeavyResidue,
+        boolean vaporEligible) {
     V3PropertyComponent {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(displayName, "displayName");

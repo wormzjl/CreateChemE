@@ -2,6 +2,7 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,7 +44,9 @@ final class V3AcceptanceAuditor {
                 "EQUILIBRIUM", EQUILIBRIUM_LIMIT));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE,
                 "ENERGY_BALANCE", 1.0));
-        return new V3AcceptanceAudit(checks);
+        List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
+                ? registeredPackage.advisoryEvidence() : List.of();
+        return new V3AcceptanceAudit(checks, advisoryEvidence);
     }
 
     private V3AcceptanceAudit.Check finitenessAndTopology(V3DryMeshState state) {

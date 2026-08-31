@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,6 +33,7 @@ final class V3PengRobinsonSession {
     double maximumTemperatureKelvin() { return propertyPackage.maximumTemperatureKelvin(); }
     double minimumPressurePascal() { return propertyPackage.minimumPressurePascal(); }
     double maximumPressurePascal() { return propertyPackage.maximumPressurePascal(); }
+    List<String> advisoryEvidence() { return propertyPackage.advisoryEvidence(); }
 
     double componentMolecularWeightKgPerMol(int publicComponent) {
         if (publicComponent < 0 || publicComponent >= componentBasis.componentCount()) {

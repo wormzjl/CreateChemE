@@ -24,6 +24,11 @@ public final class V3PengRobinsonThermo implements V3ThermoModel {
         return session.datasetRevision();
     }
 
+    /** Returns immutable, non-blocking dataset evidence for audits and solver diagnostics. */
+    public java.util.List<String> advisoryEvidence() {
+        return session.advisoryEvidence();
+    }
+
     /** Returns the inclusive lower temperature bound declared by the selected property package. */
     public double minimumTemperatureKelvin() {
         return session.minimumTemperatureKelvin();

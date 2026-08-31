@@ -4,11 +4,20 @@ import java.util.List;
 import java.util.Objects;
 
 /** Immutable acceptance evidence consumed by the sole future V3 success gate. */
-public record V3AcceptanceAudit(List<Check> checks) {
+public record V3AcceptanceAudit(List<Check> checks, List<String> advisoryEvidence) {
+    public V3AcceptanceAudit(List<Check> checks) {
+        this(checks, List.of());
+    }
+
     public V3AcceptanceAudit {
         checks = List.copyOf(checks);
         if (checks.isEmpty() || checks.stream().anyMatch(Objects::isNull)) {
             throw new IllegalArgumentException("A V3 acceptance audit must contain non-null checks");
+        }
+        advisoryEvidence = List.copyOf(advisoryEvidence);
+        if (advisoryEvidence.size() > 16 || advisoryEvidence.stream().anyMatch(
+                evidence -> evidence == null || evidence.isBlank() || evidence.length() > 256)) {
+            throw new IllegalArgumentException("V3 advisory evidence exceeds the bounded contract");
         }
     }
 
