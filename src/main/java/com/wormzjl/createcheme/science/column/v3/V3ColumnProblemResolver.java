@@ -25,7 +25,8 @@ public final class V3ColumnProblemResolver {
         V3ActiveComponentBasis activeComponentBasis = V3ActiveComponentBasis.from(input);
         V3CondenserComponentPhases condenserComponentPhases = V3CondenserComponentPhases.from(activeComponentBasis);
         V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(
-                topology, activeComponentBasis.componentCount(), input.specifications(), condenserComponentPhases);
+                topology, activeComponentBasis.componentCount(), input.specifications(), condenserComponentPhases,
+                V3TruncationSupport.identity(topology, activeComponentBasis.componentCount()), input.sideDraws());
         if (!ledger.isValid()) {
             throw new IllegalArgumentException("Invalid V3 degree-of-freedom contract: " + ledger.humanReadableDiagnostic());
         }
@@ -47,7 +48,7 @@ public final class V3ColumnProblemResolver {
         if (support.isIdentity()) return problem;
         V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(problem.topology(),
                 problem.activeComponentBasis().componentCount(), problem.input().specifications(),
-                problem.condenserComponentPhases(), support);
+                problem.condenserComponentPhases(), support, problem.input().sideDraws());
         if (!ledger.isValid()) {
             throw new IllegalArgumentException("Invalid V3 reduced degree-of-freedom contract: "
                     + ledger.humanReadableDiagnostic());
@@ -56,7 +57,9 @@ public final class V3ColumnProblemResolver {
                 problem.condenserComponentPhases(), problem.nodePressuresPascal(), ledger, support);
     }
 
-    private static void validateInput(V3ColumnInput input) {
+    /** Validates the authored geometry and rates without assembling a numerical ledger or calling properties. */
+    public static void validateInput(V3ColumnInput input) {
+        Objects.requireNonNull(input, "input");
         if (input.schemaVersion() != V3ColumnInput.SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported V3 input schema revision " + input.schemaVersion());
         }
@@ -65,6 +68,17 @@ public final class V3ColumnProblemResolver {
         }
         if (input.feedStageNumber() < 1 || input.feedStageNumber() > input.stageCount()) {
             throw new IllegalArgumentException("V3 feed tray is outside the equilibrium-tray range");
+        }
+        double totalDraw = 0.0;
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            if (draw.trayNumber() > input.stageCount()) {
+                throw new IllegalArgumentException("V3 side draw tray is outside the equilibrium-tray range");
+            }
+            totalDraw += draw.molarFlowMolPerSecond();
+        }
+        double totalFeed = java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum();
+        if (totalDraw >= totalFeed) {
+            throw new IllegalArgumentException("V3 total side draw rate must be less than the feed rate");
         }
         double bottomPressure = input.topPressurePascal()
                 + (input.stageCount() - 1) * input.stagePressureDropPascal();

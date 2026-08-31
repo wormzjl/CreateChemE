@@ -21,6 +21,7 @@ final class V3TruncationSupport {
     private final int closurePrunedCount;
     private final String note;
     private final double organicRefluxRatio;
+    private final double[] nodeSideDrawRates;
     private final List<SinkEdge> sinkEdges;
 
     private V3TruncationSupport(V3ColumnTopology topology, int componentCount) {
@@ -33,6 +34,7 @@ final class V3TruncationSupport {
         closurePrunedCount = 0;
         note = "";
         organicRefluxRatio = 0.0;
+        nodeSideDrawRates = new double[topology.nodeCount()];
         sinkEdges = List.of();
     }
 
@@ -43,6 +45,10 @@ final class V3TruncationSupport {
         requireCutoff(cutoffMoleFraction);
         this.cutoffMoleFraction = cutoffMoleFraction;
         organicRefluxRatio = refluxRatio(problem);
+        nodeSideDrawRates = new double[topology.nodeCount()];
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            nodeSideDrawRates[draw.trayNumber()] = draw.molarFlowMolPerSecond();
+        }
         if (closurePrunedCount < 0 || closurePrunedCount > totalPointCount()) {
             throw new IllegalArgumentException("V3 closure-pruned point count is outside the support");
         }
@@ -93,13 +99,22 @@ final class V3TruncationSupport {
                 boolean testLiquid = problem.condenserComponentPhases().hasLiquid(topology, node, component)
                         && liquidTotal > 0.0;
                 boolean testVapor = topology.hasVaporPhase(node) && vaporTotal > 0.0;
-                retained[node][component] = node == topology.feedTrayNumber()
+                retained[node][component] = node == topology.feedTrayNumber() || problem.nodeSideDrawMolPerSecond(node) > 0.0
                         || (!testLiquid && !testVapor)
                         || (testLiquid && decidingState.liquidFlow(node, component) / liquidTotal >= cutoffMoleFraction)
                         || (testVapor && decidingState.vaporFlow(node, component) / vaporTotal >= cutoffMoleFraction);
             }
         }
         int pruned = pruneUnsupported(problem, retained);
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            if (draw.trayNumber() == topology.feedTrayNumber()) continue;
+            for (int component = 0; component < components; component++) {
+                if (!hasRetainedInflow(problem, retained, refluxRatio(problem), draw.trayNumber(), component)) {
+                    return new V3TruncationSupport(problem, cutoffMoleFraction, null, pruned,
+                            "Stage-trace support fell back to identity: a forced side-draw point has no retained inflow");
+                }
+            }
+        }
         if (!phasesNonempty(problem, retained)) {
             return new V3TruncationSupport(problem, cutoffMoleFraction, null, pruned,
                     "Stage-trace support fell back to identity: inflow closure emptied a structural phase");
@@ -160,7 +175,8 @@ final class V3TruncationSupport {
         double defect = 0.0;
         for (SinkEdge edge : sinkEdges) {
             defect += switch (edge.kind()) {
-                case LIQUID_TO_BELOW -> state.liquidFlow(edge.sourceNode(), edge.component());
+                case LIQUID_TO_BELOW -> liquidDownflowFraction(state, edge.sourceNode())
+                        * state.liquidFlow(edge.sourceNode(), edge.component());
                 case VAPOR_TO_ABOVE -> state.vaporFlow(edge.sourceNode(), edge.component());
                 case REFLUX_TO_TRAY_ONE -> organicRefluxRatio / (1.0 + organicRefluxRatio)
                         * state.liquidFlow(edge.sourceNode(), edge.component());
@@ -168,6 +184,13 @@ final class V3TruncationSupport {
         }
         if (!Double.isFinite(defect)) throw new IllegalArgumentException("V3 truncation mass defect must be finite");
         return defect;
+    }
+
+    private double liquidDownflowFraction(V3DryMeshState state, int node) {
+        if (nodeSideDrawRates[node] == 0.0) return 1.0;
+        double total = 0.0;
+        for (int component = 0; component < state.componentCount(); component++) total += state.liquidFlow(node, component);
+        return 1.0 - nodeSideDrawRates[node] / total;
     }
 
     private void requireState(V3DryMeshState state) {
@@ -231,7 +254,13 @@ final class V3TruncationSupport {
             throw new IllegalArgumentException("V3 truncation support has a different reflux control");
         }
         for (int node = 0; node < topology.nodeCount(); node++) {
+            if (nodeSideDrawRates[node] != problem.nodeSideDrawMolPerSecond(node)) {
+                throw new IllegalArgumentException("V3 truncation support has different side draw rates");
+            }
             for (int component = 0; component < componentCount; component++) {
+                if (nodeSideDrawRates[node] > 0.0 && !retains(node, component)) {
+                    throw new IllegalArgumentException("V3 truncation support cannot remove a side-draw tray point");
+                }
                 if (node == topology.feedTrayNumber()) {
                     if (!retains(node, component)) {
                         throw new IllegalArgumentException("V3 truncation support cannot remove a feed-tray point");
@@ -280,7 +309,7 @@ final class V3TruncationSupport {
         do {
             changed = false;
             for (int node = 0; node < retained.length; node++) {
-                if (node == problem.topology().feedTrayNumber()) continue;
+                if (node == problem.topology().feedTrayNumber() || problem.nodeSideDrawMolPerSecond(node) > 0.0) continue;
                 for (int component = 0; component < retained[node].length; component++) {
                     if (retained[node][component]
                             && !hasRetainedInflow(problem, retained, refluxRatio, node, component)) {

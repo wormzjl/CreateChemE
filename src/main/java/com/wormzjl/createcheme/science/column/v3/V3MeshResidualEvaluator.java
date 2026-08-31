@@ -97,12 +97,13 @@ final class V3MeshResidualEvaluator {
             double liquidIn = node == 1
                     ? (problem.condenserComponentPhases().hasLiquid(topology, 0, component)
                     ? organicRefluxFraction() * state.liquidFlow(0, component) : 0.0)
-                    : state.liquidFlow(node - 1, component);
+                    : (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * state.liquidFlow(node - 1, component);
             double feed = node == topology.feedTrayNumber() ? activeComponentBasis.feedFlowMolPerSecond(component) : 0.0;
             return liquidIn + state.vaporFlow(node + 1, component) + feed - state.liquidFlow(node, component)
                     - state.vaporFlow(node, component);
         }
-        return state.liquidFlow(node - 1, component) - state.liquidFlow(node, component) - state.vaporFlow(node, component);
+        return (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * state.liquidFlow(node - 1, component)
+                - state.liquidFlow(node, component) - state.vaporFlow(node, component);
     }
 
     private double equilibriumResidual(int node, int component, NodeProperties properties) {
@@ -118,13 +119,13 @@ final class V3MeshResidualEvaluator {
         if (node <= topology.trayCount()) {
             double liquidIn = node == 1
                     ? (topology.hasLiquidPhase(0) ? organicRefluxFraction() * phaseEnergy(state, 0, true, properties) : 0.0)
-                    : phaseEnergy(state, node - 1, true, properties);
+                    : (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties);
             double vaporIn = phaseEnergy(state, node + 1, false, properties);
             double feed = node == topology.feedTrayNumber() ? totalFeedFlow * feedMolarEnthalpyJoulesPerMol : 0.0;
             return liquidIn + vaporIn + feed - phaseEnergy(state, node, true, properties)
                     - phaseEnergy(state, node, false, properties);
         }
-        return phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
+        return (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
                 - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
     }
 

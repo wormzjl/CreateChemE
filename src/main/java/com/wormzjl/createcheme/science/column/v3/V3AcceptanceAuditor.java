@@ -43,6 +43,7 @@ final class V3AcceptanceAuditor {
         control.checkpoint();
         List<V3AcceptanceAudit.Check> checks = new ArrayList<>();
         checks.add(finitenessAndTopology(state));
+        if (problem.hasSideDraws()) checks.add(sideDrawSplit(state));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE,
                 "LOCAL_COMPONENT_BALANCE", 1.0));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM,
@@ -60,6 +61,22 @@ final class V3AcceptanceAuditor {
         List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
                 ? registeredPackage.advisoryEvidence() : List.of();
         return new V3AcceptanceAudit(checks, advisoryEvidence);
+    }
+
+    private V3AcceptanceAudit.Check sideDrawSplit(V3DryMeshState state) {
+        double maximum = 0.0;
+        boolean valid = true;
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            double liquid = 0.0;
+            for (int component = 0; component < state.componentCount(); component++) {
+                liquid += state.liquidFlow(draw.trayNumber(), component);
+            }
+            double fraction = draw.molarFlowMolPerSecond() / liquid;
+            valid &= Double.isFinite(liquid) && Double.isFinite(fraction) && liquid > draw.molarFlowMolPerSecond();
+            maximum = Math.max(maximum, Double.isFinite(fraction) ? fraction : Double.MAX_VALUE);
+        }
+        return valid ? V3AcceptanceAudit.Check.pass("SIDE_DRAW_SPLIT", maximum, 1.0, "all side draws leave positive liquid downflow")
+                : V3AcceptanceAudit.Check.fail("SIDE_DRAW_SPLIT", maximum, 1.0, "side draw exhausts the tray liquid; positive downflow required");
     }
 
     private V3AcceptanceAudit.Check finitenessAndTopology(V3DryMeshState state) {
@@ -96,16 +113,17 @@ final class V3AcceptanceAuditor {
         for (V3TruncationSupport.SinkEdge edge : problem.truncationSupport().sinkEdges()) {
             double flow = switch (edge.kind()) {
                 case VAPOR_TO_ABOVE -> state.vaporFlow(edge.sourceNode(), edge.component());
-                case LIQUID_TO_BELOW -> state.liquidFlow(edge.sourceNode(), edge.component());
+                case LIQUID_TO_BELOW -> (1.0 - problem.liquidWithdrawalFraction(state, edge.sourceNode()))
+                        * state.liquidFlow(edge.sourceNode(), edge.component());
                 case REFLUX_TO_TRAY_ONE -> reflux / (1.0 + reflux) * state.liquidFlow(edge.sourceNode(), edge.component());
             };
             fraction += flow / totalFeed;
         }
         double limit = TRUNCATION_DEFECT_BUDGET * problem.truncationSupport().cutoffMoleFraction();
-        return fraction <= limit
+        return fraction >= 0.0 && fraction <= limit
                 ? V3AcceptanceAudit.Check.pass("TRUNCATION_MASS_DEFECT", fraction, limit, "fresh sink-edge defect as a fraction of authored feed")
-                : V3AcceptanceAudit.Check.fail("TRUNCATION_MASS_DEFECT", Double.isFinite(fraction) ? fraction : Double.MAX_VALUE,
-                        limit, "sink-edge defect exceeds the stage-trace mass budget");
+                : V3AcceptanceAudit.Check.fail("TRUNCATION_MASS_DEFECT", Double.isFinite(fraction) ? Math.max(0.0, fraction) : Double.MAX_VALUE,
+                        limit, "sink-edge defect is negative or exceeds the stage-trace mass budget");
     }
 
     private V3AcceptanceAudit.Check liquidCondenserPhase(V3DryMeshState state, V3ThermoWorkspace workspace) {

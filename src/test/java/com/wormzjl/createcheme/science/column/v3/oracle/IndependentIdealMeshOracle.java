@@ -16,9 +16,20 @@ final class IndependentIdealMeshOracle {
     private static final double MAXIMUM_TEMPERATURE_KELVIN = 1_000.0;
 
     private final Problem problem;
+    private final double[] sideDrawRates;
 
     IndependentIdealMeshOracle(Problem problem) {
+        this(problem, new double[problem.nodeCount()]);
+    }
+
+    IndependentIdealMeshOracle(Problem problem, double[] sideDrawRates) {
         this.problem = Objects.requireNonNull(problem, "problem");
+        this.sideDrawRates = sideDrawRates.clone();
+        if (sideDrawRates.length != problem.nodeCount() || sideDrawRates[0] != 0.0
+                || sideDrawRates[problem.nodeCount() - 1] != 0.0
+                || Arrays.stream(sideDrawRates).anyMatch(rate -> rate < 0 || !Double.isFinite(rate))) {
+            throw new IllegalArgumentException("Invalid independent side draw rates");
+        }
     }
 
     int coordinateCount() {
@@ -186,12 +197,12 @@ final class IndependentIdealMeshOracle {
         }
         if (node <= problem.trayCount()) {
             double liquidIn = node == 1 ? problem.refluxFraction() * state.liquidComponentFlows()[0][component]
-                    : state.liquidComponentFlows()[node - 1][component];
+                    : liquidToBelow(state, node - 1, component);
             double feed = node == problem.feedTrayNumber() ? problem.feedComponentFlowsMolPerSecond()[component] : 0.0;
             return liquidIn + state.vaporComponentFlows()[node + 1][component] + feed
                     - state.liquidComponentFlows()[node][component] - state.vaporComponentFlows()[node][component];
         }
-        return state.liquidComponentFlows()[node - 1][component] - state.liquidComponentFlows()[node][component]
+        return liquidToBelow(state, node - 1, component) - state.liquidComponentFlows()[node][component]
                 - state.vaporComponentFlows()[node][component];
     }
 
@@ -199,16 +210,31 @@ final class IndependentIdealMeshOracle {
         if (node <= problem.trayCount()) {
             double liquidIn = node == 1
                     ? liquidEnergy(state.liquidComponentFlows()[0], problem.condenserTemperatureKelvin()) * problem.refluxFraction()
-                    : liquidEnergy(state.liquidComponentFlows()[node - 1], state.temperaturesKelvin()[node - 1]);
+                    : liquidEnergyToBelow(state, node - 1);
             double vaporIn = vaporEnergy(state.vaporComponentFlows()[node + 1], state.temperaturesKelvin()[node + 1]);
             double feed = node == problem.feedTrayNumber()
                     ? liquidEnergy(problem.feedComponentFlowsMolPerSecond(), problem.feedTemperatureKelvin()) : 0.0;
             return liquidIn + vaporIn + feed - liquidEnergy(state.liquidComponentFlows()[node], state.temperaturesKelvin()[node])
                     - vaporEnergy(state.vaporComponentFlows()[node], state.temperaturesKelvin()[node]);
         }
-        return liquidEnergy(state.liquidComponentFlows()[node - 1], state.temperaturesKelvin()[node - 1])
+        return liquidEnergyToBelow(state, node - 1)
                 + problem.reboilerDutyWatts() - liquidEnergy(state.liquidComponentFlows()[node], state.temperaturesKelvin()[node])
                 - vaporEnergy(state.vaporComponentFlows()[node], state.temperaturesKelvin()[node]);
+    }
+
+    private double liquidToBelow(State state, int tray, int component) {
+        double total = sum(state.liquidComponentFlows()[tray]);
+        return state.liquidComponentFlows()[tray][component]
+                - sideDrawRates[tray] * state.liquidComponentFlows()[tray][component] / total;
+    }
+
+    private double liquidEnergyToBelow(State state, int tray) {
+        double energy = 0;
+        for (int component = 0; component < problem.componentCount(); component++) {
+            energy += liquidToBelow(state, tray, component) * problem.componentHeatCapacitiesJPerMolKelvin()[component]
+                    * state.temperaturesKelvin()[tray];
+        }
+        return energy;
     }
 
     private double liquidEnergy(double[] componentFlows, double temperatureKelvin) {

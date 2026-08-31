@@ -24,6 +24,11 @@ sourceSets.main.resources {
 }
 
 sourceSets {
+    // Exercise the actual Minecraft wire/NBT codecs in regression tests as well as the pure science layer.
+    test {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
     // Benchmarks remain outside main and test source sets: they are runnable diagnostics,
     // never production dependencies and never timing assertions in CI.
     benchmark {

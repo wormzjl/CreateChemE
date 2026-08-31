@@ -17,9 +17,17 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 class V3BlockJacobianAssemblerTest {
-    @Test
-    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleAndHaveNoOffBandCoupling() {
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {0, 1, 2, 4})
+    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleAndHaveNoOffBandCoupling(int drawTray) {
         V3ColumnProblem problem = problem();
+        if (drawTray > 0) {
+            V3ColumnInput input = problem.input();
+            problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(),
+                    input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
+                    input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                    input.specifications(), List.of(new V3SideDrawSpec(drawTray, 3.0))), V3CondenserPhaseBranch.TWO_PHASE);
+        }
         SmoothThermo thermo = new SmoothThermo();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
         V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);

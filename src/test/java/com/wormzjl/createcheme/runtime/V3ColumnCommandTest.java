@@ -14,6 +14,20 @@ import org.junit.jupiter.api.Test;
 
 class V3ColumnCommandTest {
     @Test
+    void immutableCommandCarriesSideDrawsIntoThePublicFacade() {
+        V3ColumnInput base = input();
+        V3ColumnInput drawn = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(), base.componentBasis(),
+                base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(), base.stageCount(), base.feedStageNumber(),
+                base.topPressurePascal(), base.stagePressureDropPascal(), base.specifications(),
+                List.of(new com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec(1, 5)));
+        var command = new ProcessSolveServices.V3ColumnCommand(drawn, 0);
+        var result = assertInstanceOf(ProcessSolveServices.V3ColumnSolveResult.class, command.solve(unbounded()));
+        var success = assertInstanceOf(V3ColumnOutcome.Success.class, result.outcome());
+        assertEquals(drawn, success.result().problem().input());
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("side_liquid_tray_01")));
+    }
+
+    @Test
     void admittedCommandRetainsItsCutoffAfterConfigurationChangesBeforeExecution() {
         V3ColumnInput input = input();
         AtomicReference<Double> configMolPercent = new AtomicReference<>(0.0001);

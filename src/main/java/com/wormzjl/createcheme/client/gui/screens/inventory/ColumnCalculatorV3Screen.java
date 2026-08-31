@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.client.gui.screens.inventory;
 import com.wormzjl.createcheme.network.ColumnV3Network;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
@@ -59,6 +60,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private Button streamsTab;
     private Button convergenceTab;
     private Button run;
+    private Button previousStreamPage;
+    private Button nextStreamPage;
+    private int streamPage;
 
     public ColumnCalculatorV3Screen(ColumnCalculatorV3Menu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -71,7 +75,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     protected void init() {
         String[] scalarDraft = editorDraft();
         String[] sideStageDrafts = {"8", "15", "22"};
-        String[] sideRateDrafts = {"496", "653", "149"};
+        String[] sideRateDrafts = {"", "", ""};
         for (int index = 0; index < Math.min(sideDrawFields.size(), SIDE_DRAW_COUNT); index++) {
             sideStageDrafts[index] = sideDrawFields.get(index).stage().getValue();
             sideRateDrafts[index] = sideDrawFields.get(index).rate().getValue();
@@ -94,6 +98,14 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 .bounds(leftPos + 162, tabY, 96, 20).build());
         run = addRenderableWidget(Button.builder(Component.literal("Run V3"), button -> requestCalculation())
                 .bounds(leftPos + 10, topPos + imageHeight - 29, 82, 20).build());
+        previousStreamPage = addRenderableWidget(Button.builder(Component.literal("Previous streams"), button -> {
+            streamPage = Math.max(0, streamPage - 1);
+            refreshControls();
+        }).bounds(leftPos + 10, topPos + imageHeight - 29, 112, 20).build());
+        nextStreamPage = addRenderableWidget(Button.builder(Component.literal("Next streams"), button -> {
+            streamPage++;
+            refreshControls();
+        }).bounds(leftPos + 128, topPos + imageHeight - 29, 100, 20).build());
 
         buildEditors(scalarDraft, sideStageDrafts, sideRateDrafts);
         if (serverState != null) loadInput(serverState.input());
@@ -130,15 +142,15 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             int groupX = leftPos + 10 + index * scalarColumnWidth;
             int stageWidth = Math.max(28, Math.min(44, scalarColumnWidth / 3));
             int rateWidth = Math.max(42, Math.min(78, scalarColumnWidth - stageWidth - 14));
-            EditBox stage = new EditBox(font, groupX, sideY, stageWidth, 20, Component.literal("Reference side stage"));
+            EditBox stage = new EditBox(font, groupX, sideY, stageWidth, 20, Component.literal("Side draw tray"));
             EditBox rate = new EditBox(font, groupX + stageWidth + 6, sideY, rateWidth, 20,
-                    Component.literal("Reference side rate"));
+                    Component.literal("Side draw rate (kmol/h)"));
             stage.setValue(sideStageDrafts[index]);
             rate.setValue(sideRateDrafts[index]);
-            stage.setEditable(false);
-            rate.setEditable(false);
-            stage.active = false;
-            rate.active = false;
+            stage.setMaxLength(3);
+            rate.setMaxLength(20);
+            stage.setResponder(value -> validateDraft());
+            rate.setResponder(value -> validateDraft());
             sideDrawFields.add(new SideDrawFields(addRenderableWidget(stage), addRenderableWidget(rate)));
         }
     }
@@ -186,6 +198,11 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         if (coreEditors.size() == CORE_EDITOR_COUNT) {
             for (int index = 0; index < values.length; index++) coreEditors.get(index).setValue(values[index]);
         }
+        for (int index = 0; index < sideDrawFields.size(); index++) {
+            V3SideDrawSpec draw = index < input.sideDraws().size() ? input.sideDraws().get(index) : null;
+            sideDrawFields.get(index).stage().setValue(draw == null ? "" : Integer.toString(draw.trayNumber()));
+            sideDrawFields.get(index).rate().setValue(draw == null ? "" : compactDraft(draw.molarFlowMolPerSecond() * 3.6));
+        }
     }
 
     private void selectPage(Page target) {
@@ -204,14 +221,21 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         for (SideDrawFields side : sideDrawFields) {
             side.stage().visible = showInputs;
             side.rate().visible = showInputs;
-            side.stage().active = false;
-            side.rate().active = false;
+            side.stage().active = showInputs && !calculating && serverState != null;
+            side.rate().active = showInputs && !calculating && serverState != null;
         }
         inputsTab.active = !showInputs;
         streamsTab.active = page != Page.STREAMS;
         convergenceTab.active = page != Page.CONVERGENCE;
         run.visible = showInputs;
         run.active = showInputs && !calculating && draftInput() != null;
+        int count = serverState == null || serverState.displayResult().isEmpty() ? 0
+                : serverState.displayResult().orElseThrow().streams().size();
+        int perPage = streamsPerPage();
+        streamPage = Math.clamp(streamPage, 0, Math.max(0, (count - 1) / perPage));
+        previousStreamPage.visible = nextStreamPage.visible = page == Page.STREAMS && count > perPage;
+        previousStreamPage.active = streamPage > 0;
+        nextStreamPage.active = (streamPage + 1) * perPage < count;
     }
 
     private void requestCalculation() {
@@ -229,8 +253,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         } else if (draftInput() != null) {
             validation = "Scientific draft is valid; Run V3 performs authoritative DWSIM-path solving.";
         } else {
-            validation = "Enter finite V1-unit values within V3 dry-input bounds.";
+            validation = "Check inputs and draws: distinct trays, positive rates, total draws below feed (blank/0 disables).";
         }
+        if (run != null && previousStreamPage != null && nextStreamPage != null) refreshControls();
     }
 
     private V3ColumnInput draftInput() {
@@ -259,12 +284,15 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             double[] scaledFlows = new double[existingFlows.length];
             double scale = totalFlow / existingTotal;
             for (int index = 0; index < scaledFlows.length; index++) scaledFlows[index] = existingFlows[index] * scale;
+            List<V3SideDrawSpec> draws = V3SideDrawDraft.parse(sideDrawFields.stream()
+                    .map(fields -> new V3SideDrawDraft.Row(fields.stage().getValue(), fields.rate().getValue())).toList(),
+                    stages, totalFlow);
             return new V3ColumnInput(
                     V3ColumnInput.SCHEMA_VERSION, base.packageId(), base.assayId(), base.componentBasis(), scaledFlows,
                     feedTemperature, stages, feedStage, topPressure, pressureDrop, List.of(
                             new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
                             new V3ColumnSpecification.OrganicRefluxRatio(reflux),
-                            new V3ColumnSpecification.ReboilerDuty(reboilerDuty)));
+                            new V3ColumnSpecification.ReboilerDuty(reboilerDuty)), draws);
         } catch (IllegalArgumentException invalid) {
             return null;
         }
@@ -319,9 +347,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             return;
         }
         V3ColumnInput input = serverState.input();
-        graphics.drawString(font, "Reference side draws are display-only: the current V3 dry MESH contract has no side-draw equations.",
+        graphics.drawString(font, "Liquid side draws: tray and kmol/h. Blank or zero rate disables a row.",
                 10, CONTENT_TOP + 159, NOTICE, false);
-        graphics.drawString(font, "All nine scientific inputs are editable; server validation owns the accepted snapshot.",
+        graphics.drawString(font, "Draws require positive liquid downflow; the solver reports infeasible operating points.",
                 10, CONTENT_TOP + 173, MUTED, false);
         graphics.drawString(font, "Input revision " + serverState.inputRevision() + " • state " + serverState.stateRevision()
                         + " • V3 assay " + input.assayId(),
@@ -344,21 +372,27 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         graphics.drawString(font, "Result revision " + serverState.resultRevision() + " • " + resultState,
                 10, CONTENT_TOP + 14, serverState.status() == V3Status.SUCCESS ? SUCCESS : NOTICE, false);
         List<V3ColumnStreamProperties> streams = result.streams();
-        int streamWidth = Math.max(1, (imageWidth - 20) / streams.size());
-        for (int index = 0; index < streams.size(); index++) {
-            renderStreamReport(graphics, 10 + index * streamWidth, streamWidth, CONTENT_TOP + 29, streams.get(index));
+        int first = streamPage * streamsPerPage();
+        int visible = Math.min(streamsPerPage(), streams.size() - first);
+        int streamWidth = Math.max(1, (imageWidth - 20) / visible);
+        for (int index = 0; index < visible; index++) {
+            renderStreamReport(graphics, 10 + index * streamWidth, streamWidth, CONTENT_TOP + 29, streams.get(first + index));
         }
+    }
+
+    private int streamsPerPage() {
+        return Math.clamp((imageWidth - 20) / 200, 1, 3);
     }
 
     private void renderStreamReport(
             GuiGraphics graphics, int x, int width, int y, V3ColumnStreamProperties stream) {
         graphics.drawString(font, abbreviateToWidth(stream.displayName() + " • " + stream.phase(), width - 2), x, y, TEXT, false);
-        graphics.drawString(font, "F " + compact(stream.molarFlowMolPerSecond() * MOL_PER_SECOND_TO_KMOL_PER_HOUR)
-                        + " kmol/h | " + compact(stream.massFlowKgPerSecond() * 3_600.0) + " kg/h",
+        graphics.drawString(font, abbreviateToWidth("F " + compact(stream.molarFlowMolPerSecond() * MOL_PER_SECOND_TO_KMOL_PER_HOUR)
+                        + " kmol/h | " + compact(stream.massFlowKgPerSecond() * 3_600.0) + " kg/h", width - 4),
                 x, y + 12, MUTED, false);
-        graphics.drawString(font, "T " + compact(stream.temperatureKelvin() - CELSIUS_TO_KELVIN) + " C | P "
+        graphics.drawString(font, abbreviateToWidth("T " + compact(stream.temperatureKelvin() - CELSIUS_TO_KELVIN) + " C | P "
                         + compact(stream.pressurePascal() * PASCAL_TO_BAR) + " bar | V/F "
-                        + compact(stream.vaporMoleFraction()),
+                        + compact(stream.vaporMoleFraction()), width - 4),
                 x, y + 23, MUTED, false);
         int[] widths = distributedWidths(width, new double[] {0.42, 0.29, 0.29});
         int tableY = y + 35;

@@ -8,6 +8,8 @@ import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnCompletion;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnRequest;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
@@ -45,7 +47,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 3;
+    public static final int WIRE_SCHEMA_VERSION = 4;
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -202,6 +204,7 @@ public final class ColumnV3Network {
         if (controls.size() != 3 || !controls.containsAll(EnumSet.allOf(V3ControlledQuantity.class))) {
             throw new IllegalArgumentException("V3 input must provide exactly the supported condenser, reflux, and duty controls");
         }
+        V3ColumnProblemResolver.validateInput(input);
     }
 
     private static ColumnCalculatorV3BlockEntity resolveCalculator(ServerPlayer player, BlockPos blockPos) {
@@ -493,6 +496,11 @@ public final class ColumnV3Network {
             buffer.writeUtf(specification.controlledQuantity().name(), MAX_COMPONENT_IDENTIFIER_LENGTH);
             buffer.writeDouble(specificationValue(specification));
         }
+        buffer.writeVarInt(input.sideDraws().size());
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            buffer.writeVarInt(draw.trayNumber());
+            buffer.writeDouble(draw.molarFlowMolPerSecond());
+        }
     }
 
     private static V3ColumnInput readInput(RegistryFriendlyByteBuf buffer) {
@@ -524,8 +532,13 @@ public final class ColumnV3Network {
                         buffer.readUtf(MAX_COMPONENT_IDENTIFIER_LENGTH));
                 specifications.add(specification(quantity, finite(buffer.readDouble(), "specification")));
             }
+            int drawCount = readCount(buffer, V3ColumnInput.MAX_SIDE_DRAWS, "side draw");
+            List<V3SideDrawSpec> draws = new ArrayList<>(drawCount);
+            for (int index = 0; index < drawCount; index++) {
+                draws.add(new V3SideDrawSpec(buffer.readVarInt(), finite(buffer.readDouble(), "side draw rate")));
+            }
             return new V3ColumnInput(schemaVersion, packageId, assayId, new V3ComponentBasis(componentIds), flows,
-                    feedTemperature, stages, feedStage, topPressure, pressureDrop, specifications);
+                    feedTemperature, stages, feedStage, topPressure, pressureDrop, specifications, draws);
         } catch (DecoderException invalidWire) {
             throw invalidWire;
         } catch (IllegalArgumentException | NullPointerException invalid) {

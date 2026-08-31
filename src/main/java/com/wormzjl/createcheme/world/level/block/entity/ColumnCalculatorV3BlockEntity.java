@@ -3,6 +3,8 @@ package com.wormzjl.createcheme.world.level.block.entity;
 import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
@@ -41,7 +43,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 4;
+    public static final int DATA_VERSION = 5;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
     private static final int DEFAULT_STAGE_COUNT = 30;
     private static final int DEFAULT_FEED_STAGE = 24;
@@ -196,7 +198,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                     ? tag.getLong(TAG_RESULT_REVISION) : -1L;
             if (resultRevision < -1L) throw new IllegalArgumentException("Invalid V3 result revision");
             stateRevision = nonNegative(tag.getLong(TAG_STATE_REVISION));
-            if (dataVersion < DATA_VERSION && currentInput.equals(priorUnqualifiedDefaultInput())) {
+            // Version 5 adds optional SideDraws; version 4 inputs migrate unchanged with an empty list.
+            if (dataVersion < 4 && currentInput.equals(priorUnqualifiedDefaultInput())) {
                 currentInput = defaultInput();
                 displayResult = null;
                 resultRevision = -1L;
@@ -361,6 +364,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             specifications.add(specificationTag);
         }
         tag.put("Specifications", specifications);
+        ListTag draws = new ListTag();
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            CompoundTag drawTag = new CompoundTag();
+            drawTag.putInt("Stage", draw.trayNumber());
+            drawTag.putDouble("Rate", draw.molarFlowMolPerSecond());
+            draws.add(drawTag);
+        }
+        tag.put("SideDraws", draws);
         return tag;
     }
 
@@ -386,10 +397,25 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         if (flowTags.size() != axis.size()) throw new IllegalArgumentException("Invalid V3 feed-flow axis");
         double[] feedFlows = new double[flowTags.size()];
         for (int index = 0; index < feedFlows.length; index++) feedFlows[index] = flowTags.getDouble(index);
-        return new V3ColumnInput(
+        if (tag.contains("SideDraws") && !tag.contains("SideDraws", Tag.TAG_LIST)) {
+            throw new IllegalArgumentException("Invalid V3 side draw list");
+        }
+        ListTag drawTags = tag.getList("SideDraws", Tag.TAG_COMPOUND);
+        if (tag.get("SideDraws") instanceof ListTag stored && !stored.isEmpty() && stored.getElementType() != Tag.TAG_COMPOUND) {
+            throw new IllegalArgumentException("Invalid V3 side draw entries");
+        }
+        if (drawTags.size() > V3ColumnInput.MAX_SIDE_DRAWS) throw new IllegalArgumentException("Too many V3 side draws");
+        List<V3SideDrawSpec> draws = new ArrayList<>(drawTags.size());
+        for (int index = 0; index < drawTags.size(); index++) {
+            CompoundTag draw = drawTags.getCompound(index);
+            draws.add(new V3SideDrawSpec(draw.getInt("Stage"), draw.getDouble("Rate")));
+        }
+        V3ColumnInput input = new V3ColumnInput(
                 tag.getInt("Schema"), tag.getString("Package"), tag.getString("Assay"), new V3ComponentBasis(axis),
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
-                tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications);
+                tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws);
+        V3ColumnProblemResolver.validateInput(input);
+        return input;
     }
 
     private static CompoundTag writeDisplayResult(V3ColumnDisplayResult result) {

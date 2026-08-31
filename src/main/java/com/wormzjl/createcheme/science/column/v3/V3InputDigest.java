@@ -48,6 +48,10 @@ public record V3InputDigest(String hexadecimalSha256) {
         put(digest, "feed-temperature-bits", canonicalBits(input.feedTemperatureKelvin()));
         put(digest, "tray-count", input.stageCount());
         put(digest, "feed-tray", input.feedStageNumber());
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            put(digest, "side-draw-tray", draw.trayNumber());
+            put(digest, "side-draw-rate-bits", canonicalBits(draw.molarFlowMolPerSecond()));
+        }
         put(digest, "top-pressure-bits", canonicalBits(input.topPressurePascal()));
         put(digest, "stage-drop-bits", canonicalBits(input.stagePressureDropPascal()));
         put(digest, "condenser-branch", problem.topology().condenserPhaseBranch().name());

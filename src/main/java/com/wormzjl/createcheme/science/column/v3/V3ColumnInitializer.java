@@ -90,9 +90,10 @@ final class V3ColumnInitializer {
                 if (!Double.isFinite(vapor[tray + 1][component]) || vapor[tray + 1][component] <= 0.0) {
                     throw new IllegalArgumentException("V3 initializer generated a nonpositive stage vapor seed");
                 }
-                previousLiquid = liquid[tray][component];
+                previousLiquid = liquid[tray][component] - Math.min(0.95 * liquid[tray][component],
+                        problem.nodeSideDrawMolPerSecond(tray) * feed / totalFeed);
             }
-            liquid[topology.reboilerNode()][component] = liquid[topology.trayCount()][component]
+            liquid[topology.reboilerNode()][component] = previousLiquid
                     - vapor[topology.reboilerNode()][component];
             if (!Double.isFinite(liquid[topology.reboilerNode()][component])
                     || liquid[topology.reboilerNode()][component] <= 0.0) {
@@ -192,12 +193,15 @@ final class V3ColumnInitializer {
     private static void solveMaterialBalancesWithPhaseFlowRatios(
             V3ColumnProblem problem, double[][] phaseFlowRatios, double[][] liquid, double[][] vapor) {
         V3ColumnTopology topology = problem.topology();
+        double[] liquidTotals = new double[liquid.length];
+        for (int node = 0; node < liquid.length; node++) liquidTotals[node] = sum(liquid[node]);
+        double[] withdrawals = estimatedWithdrawals(problem, liquidTotals);
         for (int component = 0; component < liquid[0].length; component++) {
             double[] componentLiquid = problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
                     ? solveVaporOnlyCondenserComponentMaterialBalance(
-                            problem, component, phaseRatiosColumn(phaseFlowRatios, component))
+                            problem, component, phaseRatiosColumn(phaseFlowRatios, component), withdrawals)
                     : solveComponentMaterialBalance(
-                            problem, component, phaseRatiosColumn(phaseFlowRatios, component), organicRefluxFraction(problem));
+                            problem, component, phaseRatiosColumn(phaseFlowRatios, component), organicRefluxFraction(problem), withdrawals);
             for (int node = 0; node < topology.nodeCount(); node++) {
                 liquid[node][component] = componentLiquid[node];
                 vapor[node][component] = node == topology.condenserNode()
@@ -584,7 +588,8 @@ final class V3ColumnInitializer {
             double feedMolarEnthalpyJoulesPerMol) {
         V3ColumnTopology topology = problem.topology();
         int reboiler = topology.reboilerNode();
-        double bottoms = feedFlow - liquidProduct - vaporProduct;
+        double bottoms = feedFlow - liquidProduct - vaporProduct
+                - problem.input().sideDraws().stream().mapToDouble(V3SideDrawSpec::molarFlowMolPerSecond).sum();
         if (!Double.isFinite(bottoms)) return null;
         double[] liquid = new double[reboiler + 1];
         double[] vapor = new double[reboiler + 1];
@@ -593,11 +598,12 @@ final class V3ColumnInitializer {
         vapor[0] = vaporProduct;
         vapor[1] = liquid[0] + vapor[0];
         double feedBefore = 0.0;
+        double drawsBefore = 0.0;
         for (int tray = 1; tray <= topology.trayCount(); tray++) {
             double feedAtTray = tray == topology.feedTrayNumber() ? feedFlow : 0.0;
             double alpha = enthalpies.liquid()[tray - 1] - enthalpies.vapor()[tray];
             double beta = enthalpies.vapor()[tray + 1] - enthalpies.liquid()[tray];
-            double gamma = (feedBefore - liquidProduct - vaporProduct)
+            double gamma = (feedBefore - liquidProduct - vaporProduct - drawsBefore)
                     * (enthalpies.liquid()[tray] - enthalpies.liquid()[tray - 1])
                     + feedAtTray * (enthalpies.liquid()[tray] - feedMolarEnthalpyJoulesPerMol);
             if (!Double.isFinite(alpha) || !Double.isFinite(beta) || !Double.isFinite(gamma)
@@ -606,6 +612,7 @@ final class V3ColumnInitializer {
             if (tray < topology.trayCount()) {
                 vapor[tray + 1] = nextVapor;
                 feedBefore += feedAtTray;
+                drawsBefore += problem.nodeSideDrawMolPerSecond(tray);
                 continue;
             }
             double reboilerDuty = specification(problem, V3ColumnSpecification.ReboilerDuty.class).watts();
@@ -615,9 +622,11 @@ final class V3ColumnInitializer {
             if (!Double.isFinite(nextVapor) || !Double.isFinite(reboilerVapor)) return null;
             vapor[reboiler] = reboilerVapor;
             double cumulativeFeed = 0.0;
+            double cumulativeDraw = 0.0;
             for (int liquidTray = 1; liquidTray <= topology.trayCount(); liquidTray++) {
                 if (liquidTray == topology.feedTrayNumber()) cumulativeFeed += feedFlow;
-                liquid[liquidTray] = vapor[liquidTray + 1] + cumulativeFeed - liquidProduct - vaporProduct;
+                liquid[liquidTray] = vapor[liquidTray + 1] + cumulativeFeed - liquidProduct - vaporProduct - cumulativeDraw;
+                cumulativeDraw += problem.nodeSideDrawMolPerSecond(liquidTray);
                 if (!Double.isFinite(liquid[liquidTray])) return null;
             }
             liquid[reboiler] = bottoms;
@@ -663,6 +672,7 @@ final class V3ColumnInitializer {
         }
         double[][] liquid = new double[nodes][components];
         double[][] vapor = new double[nodes][components];
+        double[] withdrawals = estimatedWithdrawals(problem, liquidTotals);
         for (int component = 0; component < components; component++) {
             double[] componentPhaseRatios = new double[nodes];
             for (int node = 0; node < nodes; node++) {
@@ -672,9 +682,9 @@ final class V3ColumnInitializer {
             double[] componentLiquid;
             try {
                 componentLiquid = problem.condenserComponentPhases().isVaporOnlyAtCondenser(component)
-                        ? solveVaporOnlyCondenserComponentMaterialBalance(problem, component, componentPhaseRatios)
+                        ? solveVaporOnlyCondenserComponentMaterialBalance(problem, component, componentPhaseRatios, withdrawals)
                         : solveComponentMaterialBalance(
-                                problem, component, componentPhaseRatios, organicRefluxFraction(problem));
+                                problem, component, componentPhaseRatios, organicRefluxFraction(problem), withdrawals);
             } catch (IllegalArgumentException singularOrNegative) {
                 return null;
             }
@@ -711,7 +721,8 @@ final class V3ColumnInitializer {
             double[] vaporTotals) {
         double liquidProduct = liquidProductFraction * feedFlow;
         double overheadVapor = vaporProductFraction * feedFlow;
-        double bottoms = feedFlow - liquidProduct - overheadVapor;
+        double totalDraw = problem.input().sideDraws().stream().mapToDouble(V3SideDrawSpec::molarFlowMolPerSecond).sum();
+        double bottoms = feedFlow - liquidProduct - overheadVapor - totalDraw;
         double refluxFraction = organicRefluxFraction(problem);
         boolean hasVaporProduct = problem.topology().hasVaporPhase(problem.topology().condenserNode());
         if (!(liquidProduct > 0.0) || (hasVaporProduct ? !(overheadVapor > 0.0) : overheadVapor != 0.0)
@@ -730,7 +741,8 @@ final class V3ColumnInitializer {
             if (!(liquidOut > 0.0) || !(upwardVapor > 0.0)) return false;
             liquidTotals[tray] = liquidOut;
             vaporTotals[tray] = upwardVapor;
-            incomingLiquid = liquidOut;
+            incomingLiquid = liquidOut - problem.nodeSideDrawMolPerSecond(tray);
+            if (!(incomingLiquid > 0.0)) return false;
             upwardVapor -= vaporFeed;
         }
         double balanceClosedBottoms = incomingLiquid - upwardVapor;
@@ -799,7 +811,7 @@ final class V3ColumnInitializer {
     }
 
     private static double[] solveComponentMaterialBalance(
-            V3ColumnProblem problem, int component, double[] phaseRatios, double refluxFraction) {
+            V3ColumnProblem problem, int component, double[] phaseRatios, double refluxFraction, double[] withdrawals) {
         V3ColumnTopology topology = problem.topology();
         int reboiler = topology.reboilerNode();
         double[] lower = new double[reboiler + 1];
@@ -810,20 +822,20 @@ final class V3ColumnInitializer {
         diagonal[0] = -(1.0 + phaseRatios[0]);
         upper[0] = phaseRatios[1];
         for (int tray = 1; tray <= topology.trayCount(); tray++) {
-            lower[tray] = tray == 1 ? refluxFraction : 1.0;
+            lower[tray] = tray == 1 ? refluxFraction : 1.0 - withdrawals[tray - 1];
             diagonal[tray] = -(1.0 + phaseRatios[tray]);
             upper[tray] = phaseRatios[tray + 1];
             rightHandSide[tray] = tray == topology.feedTrayNumber()
                     ? -problem.activeComponentBasis().feedFlowMolPerSecond(component) : 0.0;
         }
-        lower[reboiler] = 1.0;
+        lower[reboiler] = 1.0 - withdrawals[reboiler - 1];
         diagonal[reboiler] = -(1.0 + phaseRatios[reboiler]);
         return solveTridiagonal(lower, diagonal, upper, rightHandSide);
     }
 
     /** Solves a vapor-only condenser component with V1=V0 and no liquid reflux or condenser VLE row. */
     private static double[] solveVaporOnlyCondenserComponentMaterialBalance(
-            V3ColumnProblem problem, int component, double[] phaseRatios) {
+            V3ColumnProblem problem, int component, double[] phaseRatios, double[] withdrawals) {
         V3ColumnTopology topology = problem.topology();
         int reboiler = topology.reboilerNode();
         double[] lower = new double[reboiler];
@@ -832,19 +844,29 @@ final class V3ColumnInitializer {
         double[] rightHandSide = new double[reboiler];
         for (int tray = 1; tray <= topology.trayCount(); tray++) {
             int row = tray - 1;
-            lower[row] = tray == 1 ? 0.0 : 1.0;
+            lower[row] = tray == 1 ? 0.0 : 1.0 - withdrawals[tray - 1];
             diagonal[row] = -(1.0 + phaseRatios[tray]);
             upper[row] = phaseRatios[tray + 1];
             rightHandSide[row] = tray == topology.feedTrayNumber()
                     ? -problem.activeComponentBasis().feedFlowMolPerSecond(component) : 0.0;
         }
         int reboilerRow = reboiler - 1;
-        lower[reboilerRow] = 1.0;
+        lower[reboilerRow] = 1.0 - withdrawals[reboiler - 1];
         diagonal[reboilerRow] = -(1.0 + phaseRatios[reboiler]);
         double[] reducedSolution = solveTridiagonal(lower, diagonal, upper, rightHandSide);
         double[] liquid = new double[reboiler + 1];
         System.arraycopy(reducedSolution, 0, liquid, 1, reducedSolution.length);
         return liquid;
+    }
+
+    /** A seed-only cap; the residual and acceptance audit always use the uncapped physical split. */
+    private static double[] estimatedWithdrawals(V3ColumnProblem problem, double[] liquidTotals) {
+        double[] withdrawals = new double[liquidTotals.length];
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            withdrawals[draw.trayNumber()] = Math.min(0.95,
+                    draw.molarFlowMolPerSecond() / liquidTotals[draw.trayNumber()]);
+        }
+        return withdrawals;
     }
 
     private static double[] solveTridiagonal(

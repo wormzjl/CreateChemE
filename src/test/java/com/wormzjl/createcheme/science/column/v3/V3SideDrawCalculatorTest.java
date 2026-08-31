@@ -1,0 +1,74 @@
+package com.wormzjl.createcheme.science.column.v3;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+
+class V3SideDrawCalculatorTest {
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({"150000,0", "100000,0", "250000,0", "100000,0.000001"})
+    void modestThirtyTrayCrudeDrawsCloseProductBalances(double pressure, double cutoff) {
+        V3ColumnInput original = canonicalInput(pressure);
+        V3ColumnInput input = new V3ColumnInput(original.schemaVersion(), original.packageId(), original.assayId(),
+                original.componentBasis(), original.feedComponentMolarFlowsMolPerSecond(), original.feedTemperatureKelvin(),
+                original.stageCount(), original.feedStageNumber(), pressure, original.stagePressureDropPascal(),
+                original.specifications(), original.sideDraws().stream()
+                .map(draw -> new V3SideDrawSpec(draw.trayNumber(), 0.25 * draw.molarFlowMolPerSecond())).toList());
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, () -> {
+            if (System.nanoTime() - started > 45_000_000_000L) throw new AssertionError("side-draw solve exceeded 45 seconds");
+        }, cutoff);
+        System.out.println("Qualified side draws: pressure=" + pressure + ", cutoff=" + cutoff + "; "
+                + (System.nanoTime() - started) / 1e9 + " s; " + outcome);
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.result().convergenceEvidence().satisfiesGates());
+        assertTrue(success.diagnostics().solvePath().contains("draws-3"));
+        List<V3ColumnStreamProperties> streams = success.result().streams();
+        assertEquals(6, streams.size());
+        assertEquals(streams, V3ColumnDisplayResult.fromAccepted(success).streams());
+        double[] products = new double[input.componentBasis().componentCount()];
+        for (V3ColumnStreamProperties stream : streams) {
+            for (int i = 0; i < products.length; i++) {
+                products[i] += stream.molarFlowMolPerSecond() * stream.moleFractions().get(i).moleFraction();
+            }
+        }
+        assertArrayEquals(input.feedComponentMolarFlowsMolPerSecond(), products, cutoff > 0 ? 0.01 : 1e-4);
+        double lastTemperature = 0.0;
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            V3ColumnStreamProperties stream = streams.stream().filter(s -> s.displayName().equals(
+                    "Side draw (tray " + draw.trayNumber() + ")")).findFirst().orElseThrow();
+            assertEquals(draw.molarFlowMolPerSecond(), stream.molarFlowMolPerSecond(), 1e-8);
+            assertTrue(stream.temperatureKelvin() > lastTemperature);
+            lastTemperature = stream.temperatureKelvin();
+        }
+    }
+
+    @Test
+    void originalLargeDrawCaseReturnsAnHonestTrayDiagnostic() {
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(canonicalInput(150_000), () -> {
+            if (System.nanoTime() - started > 45_000_000_000L) throw new AssertionError("large-draw failure exceeded 45 seconds");
+        });
+        V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
+        assertTrue(failure.summary().contains("side draw on tray"));
+        assertTrue(failure.diagnostics().events().stream().anyMatch(event -> event.contains("ramp stopped")));
+    }
+
+    static V3ColumnInput canonicalInput(double pressure) {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] feed = crude.moleFractions();
+        for (int i = 0; i < feed.length; i++) feed[i] *= 2610.7 / 3.6;
+        return new V3ColumnInput(1, crude.packageId(), crude.assayId(), crude.componentBasis(), feed,
+                638.15, 30, 24, pressure, 750.0, List.of(
+                new V3ColumnSpecification.CondenserOutletTemperature(400.0),
+                new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), List.of(
+                new V3SideDrawSpec(8, 496.0 / 3.6), new V3SideDrawSpec(15, 653.0 / 3.6),
+                new V3SideDrawSpec(22, 149.0 / 3.6)));
+    }
+}

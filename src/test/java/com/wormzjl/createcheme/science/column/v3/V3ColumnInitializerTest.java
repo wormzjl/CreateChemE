@@ -15,6 +15,22 @@ import org.junit.jupiter.api.Test;
 
 class V3ColumnInitializerTest {
     @Test
+    void materialClosedSeedIncludesAFeedTrayDrawInDownflowAndBottoms() {
+        V3ColumnInput base = problem(1.0, V3CondenserPhaseBranch.TWO_PHASE, new double[] {30, 60}).input();
+        V3ColumnInput input = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(), base.componentBasis(),
+                base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(), base.stageCount(), base.feedStageNumber(),
+                base.topPressurePascal(), base.stagePressureDropPascal(), base.specifications(), List.of(new V3SideDrawSpec(2, 5)));
+        V3ColumnProblem drawn = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+        MaterialOnlyThermo thermo = new MaterialOnlyThermo();
+        V3DryMeshState state = V3ColumnInitializer.initialize(drawn, thermo, thermo.newWorkspace()).state();
+        V3MeshResidual residual = new V3MeshResidualEvaluator(drawn, thermo, 0).evaluate(state, thermo.newWorkspace());
+        assertTrue(residual.rows().stream().filter(row -> row.equation().family()
+                == V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE)
+                .allMatch(row -> Math.abs(row.physicalValue()) < 1e-10));
+        assertTrue(state.liquidFlow(2, 0) > state.liquidFlow(3, 0));
+    }
+
+    @Test
     void materialPhaseFlowRatiosIncludeThePriorStageTotalVaporToLiquidRatio() {
         double[][] equilibriumConstants = {{2.0, 0.5}, {3.0, 0.25}};
         double[][] liquid = {{4.0, 6.0}, {3.0, 7.0}};

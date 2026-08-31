@@ -9,6 +9,7 @@ public final class V3ColumnProblem {
     private final V3ActiveComponentBasis activeComponentBasis;
     private final V3CondenserComponentPhases condenserComponentPhases;
     private final double[] nodePressuresPascal;
+    private final double[] nodeSideDrawMolPerSecond;
     private final V3DegreeOfFreedomLedger degreeOfFreedomLedger;
     private final V3TruncationSupport truncationSupport;
 
@@ -21,6 +22,10 @@ public final class V3ColumnProblem {
         this.activeComponentBasis = Objects.requireNonNull(activeComponentBasis, "activeComponentBasis");
         this.condenserComponentPhases = Objects.requireNonNull(condenserComponentPhases, "condenserComponentPhases");
         this.nodePressuresPascal = Objects.requireNonNull(nodePressuresPascal, "nodePressuresPascal").clone();
+        this.nodeSideDrawMolPerSecond = new double[topology.nodeCount()];
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            this.nodeSideDrawMolPerSecond[draw.trayNumber()] = draw.molarFlowMolPerSecond();
+        }
         this.degreeOfFreedomLedger = Objects.requireNonNull(degreeOfFreedomLedger, "degreeOfFreedomLedger");
         this.truncationSupport = Objects.requireNonNull(truncationSupport, "truncationSupport");
         if (this.nodePressuresPascal.length != topology.nodeCount()) {
@@ -70,5 +75,27 @@ public final class V3ColumnProblem {
 
     public V3DegreeOfFreedomLedger degreeOfFreedomLedger() {
         return degreeOfFreedomLedger;
+    }
+
+    public boolean hasSideDraws() {
+        return !input.sideDraws().isEmpty();
+    }
+
+    public double nodeSideDrawMolPerSecond(int node) {
+        return nodeSideDrawMolPerSecond[node];
+    }
+
+    /** Recomputed from the candidate; intentionally not capped during Newton iteration. */
+    double liquidWithdrawalFraction(V3DryMeshState state, int node) {
+        double rate = nodeSideDrawMolPerSecond[node];
+        if (rate == 0.0) return 0.0;
+        double total = 0.0;
+        for (int component = 0; component < state.componentCount(); component++) {
+            total += state.liquidFlow(node, component);
+        }
+        if (!(total > 0.0) || !Double.isFinite(total)) {
+            throw new IllegalArgumentException("V3 side draw on tray " + node + " has no finite positive liquid flow");
+        }
+        return rate / total;
     }
 }

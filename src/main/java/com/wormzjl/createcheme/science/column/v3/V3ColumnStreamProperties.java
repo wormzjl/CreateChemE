@@ -21,7 +21,7 @@ public record V3ColumnStreamProperties(
         double pressurePascal,
         double vaporMoleFraction,
         List<ComponentFraction> moleFractions) {
-    public static final int MAX_STREAMS = 3;
+    public static final int MAX_STREAMS = 6;
     public static final int MAX_COMPONENTS = V3ComponentBasis.MAX_COMPONENTS;
 
     public V3ColumnStreamProperties {
@@ -86,6 +86,12 @@ public record V3ColumnStreamProperties(
         }
         streams.add(stream(problem, state, thermo, topology.condenserNode(), true, liquidProductScale,
                 "distillate_liquid", "Liquid distillate", "LIQUID"));
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            streams.add(stream(problem, state, thermo, draw.trayNumber(), true,
+                    problem.liquidWithdrawalFraction(state, draw.trayNumber()),
+                    String.format(java.util.Locale.ROOT, "side_liquid_tray_%02d", draw.trayNumber()),
+                    "Side draw (tray " + draw.trayNumber() + ")", "LIQUID"));
+        }
         streams.add(stream(problem, state, thermo, topology.reboilerNode(), true, 1.0,
                 "bottoms_liquid", "Bottoms liquid", "LIQUID"));
         return List.copyOf(streams);
