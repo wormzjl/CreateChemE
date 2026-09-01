@@ -45,8 +45,10 @@ import org.jetbrains.annotations.Nullable;
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
     public static final int DATA_VERSION = 5;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
-    private static final int DEFAULT_STAGE_COUNT = 30;
+    private static final int DEFAULT_STAGE_COUNT = 29;
     private static final int DEFAULT_FEED_STAGE = 24;
+    private static final double DEFAULT_FEED_KMOL_PER_HOUR = 2_610.7;
+    private static final double DEFAULT_TOP_PRESSURE_PASCAL = 150_000.0;
 
     private static final String TAG_DATA_VERSION = "V3DataVersion";
     private static final String TAG_INPUT_REVISION = "InputRevision";
@@ -204,7 +206,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 displayResult = null;
                 resultRevision = -1L;
                 status = V3Status.DIRTY;
-                detail = "Updated untouched V3 draft to the DWSIM-qualified 30-stage default";
+                detail = "Updated untouched V3 draft to the literature-qualified side-draw default";
                 return;
             }
             if (dataVersion < 4 && tag.contains(TAG_RESULT, Tag.TAG_COMPOUND)) {
@@ -317,27 +319,42 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     }
 
     private static V3ColumnInput defaultInput() {
-        return defaultInput(400.0, 2.0);
+        return defaultInput(400.0, 2.0, DEFAULT_STAGE_COUNT, DEFAULT_TOP_PRESSURE_PASCAL, defaultSideDraws());
     }
 
     private static V3ColumnInput priorUnqualifiedDefaultInput() {
-        return defaultInput(332.15, 4.17);
+        return defaultInput(332.15, 4.17, 30, 250_000.0, List.of());
     }
 
-    private static V3ColumnInput defaultInput(double condenserTemperatureKelvin, double refluxRatio) {
+    private static V3ColumnInput defaultInput(
+            double condenserTemperatureKelvin, double refluxRatio, int stageCount, double topPressurePascal,
+            List<V3SideDrawSpec> sideDraws) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PILOT_PACKAGE);
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
         double[] feedFlows = crude.moleFractions();
-        double totalFlowMolPerSecond = 2_610.7 * 1_000.0 / 3_600.0;
+        double totalFlowMolPerSecond = DEFAULT_FEED_KMOL_PER_HOUR * 1_000.0 / 3_600.0;
         for (int component = 0; component < feedFlows.length; component++) {
             feedFlows[component] *= totalFlowMolPerSecond;
         }
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
-                crude.componentBasis(), feedFlows, 365.0 + 273.15, DEFAULT_STAGE_COUNT, DEFAULT_FEED_STAGE,
-                250_000.0, 750.0, List.of(
+                crude.componentBasis(), feedFlows, 365.0 + 273.15, stageCount, DEFAULT_FEED_STAGE,
+                topPressurePascal, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperatureKelvin),
                         new V3ColumnSpecification.OrganicRefluxRatio(refluxRatio),
-                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), sideDraws);
+    }
+
+    private static List<V3SideDrawSpec> defaultSideDraws() {
+        // 25% dry-model qualification of Sotelo et al. (2019), doi:10.2507/IJSIMM18(2)465.
+        return List.of(
+                defaultSideDraw(13, 14_000.0),
+                defaultSideDraw(17, 20_000.0),
+                defaultSideDraw(22, 5_000.0));
+    }
+
+    private static V3SideDrawSpec defaultSideDraw(int trayNumber, double sourceBarrelsPerDay) {
+        double kmolPerHour = DEFAULT_FEED_KMOL_PER_HOUR * sourceBarrelsPerDay / 99_000.0 * 0.25;
+        return new V3SideDrawSpec(trayNumber, kmolPerHour / 3.6);
     }
 
     private static CompoundTag writeInput(V3ColumnInput input) {

@@ -75,8 +75,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     @Override
     protected void init() {
         String[] scalarDraft = editorDraft();
-        String[] sideStageDrafts = {"8", "15", "22"};
-        String[] sideRateDrafts = {"", "", ""};
+        String[] sideStageDrafts = {"13", "17", "22"};
+        String[] sideRateDrafts = {"92.2974747474748", "131.853535353535", "32.9633838383838"};
         for (int index = 0; index < Math.min(sideDrawFields.size(), SIDE_DRAW_COUNT); index++) {
             sideStageDrafts[index] = sideDrawFields.get(index).stage().getValue();
             sideRateDrafts[index] = sideDrawFields.get(index).rate().getValue();
@@ -126,7 +126,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private void buildEditors(String[] scalarDraft, String[] sideStageDrafts, String[] sideRateDrafts) {
         int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
-        String[] defaults = {"2610.7", "365", "30", "24", "126.85", "8", "2", "2.5", "0.75"};
+        String[] defaults = {"2610.7", "365", "29", "24", "126.85", "8", "2", "1.5", "0.75"};
         for (int index = 0; index < CORE_EDITOR_COUNT; index++) {
             int column = index % 3;
             int row = index / 3;

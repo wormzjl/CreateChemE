@@ -18,6 +18,19 @@ import org.junit.jupiter.api.Test;
 
 class V3SideDrawCodecTest {
     @Test
+    void serverDefaultPublishesTheQualifiedLiteratureSideDraws() throws Exception {
+        V3ColumnInput input = (V3ColumnInput) invoke(
+                ColumnCalculatorV3BlockEntity.class, "defaultInput", new Class<?>[0]);
+
+        assertEquals(29, input.stageCount());
+        assertEquals(150_000.0, input.topPressurePascal());
+        assertEquals(List.of(13, 17, 22), input.sideDraws().stream().map(V3SideDrawSpec::trayNumber).toList());
+        assertArrayEquals(new double[] {92.2974747474748, 131.853535353535, 32.9633838383838},
+                input.sideDraws().stream().mapToDouble(draw -> draw.molarFlowMolPerSecond() * 3.6).toArray(),
+                1.0e-12);
+    }
+
+    @Test
     void wireAndNbtRoundTripZeroThroughThreeDrawsAndLegacyNbt() throws Exception {
         for (int count = 0; count <= 3; count++) {
             V3ColumnInput input = input(count);
