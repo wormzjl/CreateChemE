@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "holland-1981-example-3-2",
+  "authority": "HOLLAND_1981_PAGE_SCAN",
+  "description": "Example 3-2 and Appendix B data transcribed from printed pages 99-100 and 596-597 of C. D. Holland, Fundamentals of Multicomponent Distillation (1981).",
+  "source": {
+    "title": "Fundamentals of Multicomponent Distillation",
+    "author": "C. D. Holland",
+    "publisher": "McGraw-Hill",
+    "year": 1981,
+    "archiveItem": "FundamentalsOfMulticomponentDistillation",
+    "verifiedPrintedPages": [95, 99, 100, 596, 597],
+    "notes": [
+      "Table 3-3 prints L2=61.302, but adjacent total balances require 71.302.",
+      "Table 3-3 prints T13=456.41 F, while Table 3-2 converges to 446.41 F and the B-1 bubble equation supports 446.41 F.",
+      "Table B-2 labels its liquid quadratic column c2 x 10^4. The row is c3 and a 10^-5 scale is required to reproduce the published condenser duty; 10^-4 violates the published energy balances by millions of Btu/h.",
+      "Holland L10=196.97 is liquid continuing below the 25 lb-mol/h draw. V3 tray-9 state liquid is therefore 221.97 before withdrawal."
+    ]
+  },
+  "basePressurePsia": 300.0,
+  "feedPlateNumber": 6,
+  "v3FeedTrayNumber": 4,
+  "sideDrawPlateNumber": 10,
+  "v3SideDrawTrayNumber": 9,
+  "sideDrawLbMolPerHour": 25.0,
+  "publishedDistillateLbMolPerHour": 32.298,
+  "publishedRefluxRatioToVaporDistillate": 2.25,
+  "components": [
+    {"id":"CH4","feed":2.0,"kScaled":[32.718139,-9.6951405,6.9229334,-47.361298],"liquidHScaled":[-17.899210,1.7395763,-3.7596114],"vaporHScaled":[44.445874,501.04559,7.3207219],"products":[2.0000,3.2125e-7,3.0273e-10]},
+    {"id":"C2H6","feed":10.0,"kScaled":[-9.8400210,67.545943,-37.459290,-9.0732459],"liquidHScaled":[-8.4857000,1.6286636,-1.9498601],"vaporHScaled":[61.334520,588.75430,11.948654],"products":[9.9985,1.5077e-3,1.9926e-5]},
+    {"id":"C3H6","feed":6.0,"kScaled":[-25.098770,102.39287,-75.221710,153.84709],"liquidHScaled":[-12.427900,1.8834652,-2.4839140],"vaporHScaled":[71.828480,658.55130,11.299585],"products":[5.9356,6.1044e-2,3.3848e-3]},
+    {"id":"C3H8","feed":12.5,"kScaled":[-14.512474,53.638924,-5.3051604,-173.58329],"liquidHScaled":[-14.500060,1.9802223,-2.9048837],"vaporHScaled":[81.795910,389.81919,36.470900],"products":[12.224,0.24742,1.8230e-2]},
+    {"id":"iC4H10","feed":3.5,"kScaled":[-18.967651,61.239667,-17.891649,-90.855512],"liquidHScaled":[-16.5534050,2.1618650,-3.1476209],"vaporHScaled":[147.65414,-1185.2942,152.87778],"products":[1.1119,1.9577,0.43043]},
+    {"id":"nC4H10","feed":15.0,"kScaled":[-14.181715,36.866353,16.521412,-248.23843],"liquidHScaled":[-20.298110,2.3005743,-3.8663417],"vaporHScaled":[152.66798,-1153.4842,146.64125],"products":[1.0242,10.428,3.5483]},
+    {"id":"nC5H12","feed":15.2,"kScaled":[-7.5435390,2.0584231,59.138344,-413.12409],"liquidHScaled":[-24.371540,2.5636200,-4.6499694],"vaporHScaled":[128.90152,2.0509603,64.501496],"products":[3.6429e-3,6.4835,8.7129]},
+    {"id":"nC6H14","feed":11.3,"kScaled":[1.1506919,-33.885839,97.795401,-542.35941],"liquidHScaled":[-23.870410,2.6768089,-4.4197793],"vaporHScaled":[85.834950,1522.3917,-34.018595],"products":[1.8929e-5,2.5252,8.7747]},
+    {"id":"nC7H16","feed":9.0,"kScaled":[5.5692758,-50.705967,112.17338,-574.89350],"liquidHScaled":[-25.314530,2.8246389,-4.5418718],"vaporHScaled":[94.682620,1479.5387,-19.105299],"products":[1.5019e-7,1.3819,7.6181]},
+    {"id":"nC8H18","feed":8.5,"kScaled":[7.1714400,-52.608530,103.72034,-496.46551],"liquidHScaled":[-22.235050,2.8478429,-3.8850819],"vaporHScaled":[106.32806,1328.3949,1.6230737],"products":[1.2374e-9,1.0969,7.4031]},
+    {"id":"heavy400","feed":7.0,"kScaled":[2.5278960,-17.311330,33.502879,-126.25039],"liquidHScaled":[-203.32192,6.3932857,-21.611909],"vaporHScaled":[72.328160,1893.3822,-59.003314],"products":[1.4162e-12,0.80727,6.1927]}
+  ],
+  "publishedSolution": {
+    "temperatureFahrenheit":[114.13,145.45,165.40,183.47,217.13,239.30,253.55,264.68,276.18,292.27,319.29,363.18,446.41],
+    "reportedTable3TemperatureFahrenheit":[114.13,145.45,165.40,183.47,217.13,239.30,253.55,264.68,276.18,292.27,319.29,363.18,456.41],
+    "v3LiquidStateLbMolPerHour":[72.671,71.302,68.080,58.993,194.95,212.35,222.45,227.36,227.38,221.97,186.10,164.71,42.702],
+    "reportedTable3LiquidLbMolPerHour":[72.671,61.302,68.080,58.993,194.95,212.35,222.45,227.36,227.38,196.97,186.10,164.71,42.702],
+    "vaporLbMolPerHour":[32.298,104.97,103.60,100.38,91.291,127.25,144.65,154.75,159.66,159.67,154.27,143.39,122.01],
+    "condenserDutyBtuPerHour":472430.0,
+    "reboilerDutyBtuPerHour":1551900.0
+  }
+}

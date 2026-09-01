@@ -168,6 +168,21 @@ tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
 
+tasks.register('v3HollandBenchmark', Test) {
+    group = 'verification'
+    description = 'Runs the scan-verified Holland Example 3-2 independent-oracle and V3 accuracy benchmark.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching 'com.wormzjl.createcheme.science.column.v3.HollandExample32BenchmarkTest'
+    }
+    def hollandReport = providers.gradleProperty('v3HollandReport').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-holland-example-3-2.json').get().asFile.absolutePath)
+    systemProperty 'v3HollandReport', hollandReport
+    outputs.file(hollandReport)
+    outputs.upToDateWhen { false }
+}
+
 tasks.register('legacyColumnBenchmark', JavaExec) {
     group = 'verification'
     description = 'Measures legacy column scopes and writes a durable diagnostic report.'
