@@ -51,6 +51,9 @@ final class V3ColumnInitializer {
         if (!problem.input().componentBasis().equals(thermo.componentBasis())) {
             throw new IllegalArgumentException("V3 initializer thermodynamic basis differs from the resolved problem basis");
         }
+        if (mode == Mode.SEQUENTIAL_MATERIAL_VLE && problem.hasSteamFeeds()) {
+            throw new IllegalArgumentException("V3 sequential material/VLE initialization is dry-only; use the steam continuation ramp");
+        }
         int components = problem.activeComponentBasis().componentCount();
         double[] publicFeed = problem.input().feedComponentMolarFlowsMolPerSecond();
         double totalFeed = 0.0;

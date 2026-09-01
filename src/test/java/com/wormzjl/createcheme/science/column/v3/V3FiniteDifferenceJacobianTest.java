@@ -21,7 +21,7 @@ class V3FiniteDifferenceJacobianTest {
                 450.0, 4, 2, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(1.0),
-                        new V3ColumnSpecification.ReboilerDuty(0.0))), V3CondenserPhaseBranch.TWO_PHASE);
+                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL))), V3CondenserPhaseBranch.TWO_PHASE);
         LinearThermo thermo = new LinearThermo();
         V3DryMeshState state = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace()).state();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);

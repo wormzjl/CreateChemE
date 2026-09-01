@@ -4,6 +4,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -108,10 +109,11 @@ final class V3MeshResidualEvaluator {
 
     private double equilibriumResidual(int node, int component, NodeProperties properties) {
         int publicComponent = activeComponentBasis.publicIndex(component);
-        return Math.log(properties.vaporComposition()[publicComponent])
+        double residual = Math.log(properties.vaporComposition()[publicComponent])
                 + properties.vaporResult().logFugacityCoefficient(publicComponent)
                 - Math.log(properties.liquidComposition()[publicComponent])
                 - properties.liquidResult().logFugacityCoefficient(publicComponent);
+        return problem.hasSteamFeeds() ? residual + waterDilutionLogTerm(node, properties.vaporTotal()) : residual;
     }
 
     private double energyResidual(V3DryMeshState state, int node, NodeProperties[] properties) {
@@ -122,11 +124,11 @@ final class V3MeshResidualEvaluator {
                     : (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties);
             double vaporIn = phaseEnergy(state, node + 1, false, properties);
             double feed = node == topology.feedTrayNumber() ? totalFeedFlow * feedMolarEnthalpyJoulesPerMol : 0.0;
-            return liquidIn + vaporIn + feed - phaseEnergy(state, node, true, properties)
+            return liquidIn + vaporIn + feed + problem.steamFeedEnthalpyWatts(node) - phaseEnergy(state, node, true, properties)
                     - phaseEnergy(state, node, false, properties);
         }
         return (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
-                - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
+                + problem.steamFeedEnthalpyWatts(node) - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
     }
 
     private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties[] properties) {
@@ -136,8 +138,12 @@ final class V3MeshResidualEvaluator {
     private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties properties) {
         double totalFlow = phaseTotal(state, node, liquid);
         if (totalFlow == 0.0) return 0.0;
-        return totalFlow * (liquid ? properties.liquidResult().molarEnthalpyJoulesPerMol()
+        double energy = totalFlow * (liquid ? properties.liquidResult().molarEnthalpyJoulesPerMol()
                 : properties.vaporResult().molarEnthalpyJoulesPerMol());
+        if (!liquid && problem.hasSteamFeeds()) {
+            energy += waterVaporFlow(state, node, totalFlow) * V3WaterProperties.vaporMolarEnthalpy(state.temperatureKelvin(node));
+        }
+        return energy;
     }
 
     /** Builds immutable per-node property snapshots once per residual evaluation. */
@@ -164,7 +170,8 @@ final class V3MeshResidualEvaluator {
             liquidComposition = normalizedPublicPhaseComposition(state, node, true);
             liquidResult = thermo.fugacity(temperature, pressure, liquidComposition, V3Phase.LIQUID, workspace);
         }
-        return new NodeProperties(liquidComposition, vaporComposition, liquidResult, vaporResult);
+        return new NodeProperties(liquidComposition, vaporComposition, liquidResult, vaporResult,
+                problem.topology().hasVaporPhase(node) ? phaseTotal(state, node, false) : 0.0);
     }
 
     private double[] normalizedPublicPhaseComposition(V3DryMeshState state, int node, boolean liquid) {
@@ -196,6 +203,26 @@ final class V3MeshResidualEvaluator {
         return total;
     }
 
+    private double waterVaporFlow(V3DryMeshState state, int node, double hydrocarbonVaporTotal) {
+        if (node != problem.topology().condenserNode()) return problem.waterVaporFlowMolPerSecond(node);
+        return switch (problem.waterCondenserRegime()) {
+            case NONE, FREE_WATER -> problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
+                    ? problem.waterVaporSlipCoefficient() * hydrocarbonVaporTotal : 0.0;
+            case ALL_VAPOR -> problem.waterVaporFlowMolPerSecond(1);
+        };
+    }
+
+    private double waterDilutionLogTerm(int node, double hydrocarbonVaporTotal) {
+        double water = node == problem.topology().condenserNode()
+                ? switch (problem.waterCondenserRegime()) {
+                    case NONE, FREE_WATER -> problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
+                            ? problem.waterVaporSlipCoefficient() * hydrocarbonVaporTotal : 0.0;
+                    case ALL_VAPOR -> problem.waterVaporFlowMolPerSecond(1);
+                }
+                : problem.waterVaporFlowMolPerSecond(node);
+        return water == 0.0 ? 0.0 : Math.log(hydrocarbonVaporTotal / (hydrocarbonVaporTotal + water));
+    }
+
     private double scale(V3DegreeOfFreedomLedger.EquationId equation) {
         return switch (equation.family()) {
             case COMPONENT_MATERIAL_BALANCE -> Math.max(
@@ -218,7 +245,8 @@ final class V3MeshResidualEvaluator {
             double[] liquidComposition,
             double[] vaporComposition,
             V3FugacityResult liquidResult,
-            V3FugacityResult vaporResult) {}
+            V3FugacityResult vaporResult,
+            double vaporTotal) {}
 
     /** Package-local response of one node to a local coordinate perturbation. */
     record LocalNodeTerms(double[] equilibriumResiduals, double liquidPhaseEnergy, double vaporPhaseEnergy) {

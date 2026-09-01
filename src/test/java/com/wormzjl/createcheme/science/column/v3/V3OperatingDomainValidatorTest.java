@@ -75,6 +75,6 @@ class V3OperatingDomainValidatorTest {
                 thermo.componentBasis(), feed, 550.0, 30, 24, topPressurePascal, stageDropPascal, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(323.15),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
-                        new V3ColumnSpecification.ReboilerDuty(0.0)));
+                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
     }
 }

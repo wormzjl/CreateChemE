@@ -89,6 +89,6 @@ class V3ColumnCommandTest {
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, thermo.packageId(), "test:command-snapshot",
                 thermo.componentBasis(), flows, 550.0, 2, 1, 250_000.0, 750.0, List.of(
                 new V3ColumnSpecification.CondenserOutletTemperature(300.0),
-                new V3ColumnSpecification.OrganicRefluxRatio(2.0), new V3ColumnSpecification.ReboilerDuty(0.0)));
+                new V3ColumnSpecification.OrganicRefluxRatio(2.0), new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
     }
 }

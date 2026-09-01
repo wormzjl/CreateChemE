@@ -19,7 +19,7 @@ class V3ColumnDisplayResultTest {
                 feedFlows, 550.0, 2, 1, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
-                        new V3ColumnSpecification.ReboilerDuty(0.0)));
+                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
 
         V3ColumnOutcome.Success success = (V3ColumnOutcome.Success) V3ColumnCalculator.calculate(input);
         V3ColumnDisplayResult view = V3ColumnDisplayResult.fromAccepted(success);

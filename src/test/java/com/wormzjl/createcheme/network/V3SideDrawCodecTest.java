@@ -61,8 +61,29 @@ class V3SideDrawCodecTest {
     }
 
     @Test
-    void sixStreamCertificateRoundTripsThroughWireAndNbtAndRejectsASeventhStream() throws Exception {
-        List<V3ColumnStreamProperties> streams = java.util.stream.IntStream.range(0, 6).mapToObj(index ->
+    void wireAndNbtRoundTripSteamFeedsAndMigrateTheAbsentList() throws Exception {
+        V3ColumnInput base = input(1);
+        V3ColumnInput steam = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(), base.componentBasis(),
+                base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(), base.stageCount(), base.feedStageNumber(),
+                base.topPressurePascal(), base.stagePressureDropPascal(), base.specifications(), base.sideDraws(),
+                List.of(new V3SteamFeedSpec(5, 3.0, 450.0), new V3SteamFeedSpec(2, 1.0, 450.0)));
+        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        try {
+            invoke(ColumnV3Network.class, "writeInput", new Class<?>[] {RegistryFriendlyByteBuf.class, V3ColumnInput.class}, buffer, steam);
+            assertEquals(steam, invoke(ColumnV3Network.class, "readInput", new Class<?>[] {RegistryFriendlyByteBuf.class}, buffer));
+        } finally {
+            buffer.release();
+        }
+        CompoundTag tag = (CompoundTag) invoke(ColumnCalculatorV3BlockEntity.class, "writeInput",
+                new Class<?>[] {V3ColumnInput.class}, steam);
+        assertEquals(steam, readNbt(tag));
+        tag.remove("SteamFeeds");
+        assertEquals(input(1), readNbt(tag));
+    }
+
+    @Test
+    void sevenStreamCertificateRoundTripsThroughWireAndNbtAndRejectsAnEighthStream() throws Exception {
+        List<V3ColumnStreamProperties> streams = java.util.stream.IntStream.range(0, 7).mapToObj(index ->
                 new V3ColumnStreamProperties("product_" + index, "Product " + index, "LIQUID", 10, 1, 400, 250_000, 0,
                         List.of(new V3ColumnStreamProperties.ComponentFraction("a", 1, 1)))).toList();
         V3ColumnDisplayResult result = new V3ColumnDisplayResult("0".repeat(64), "mesh", "assumptions", "data", 2, 0, 6, streams);

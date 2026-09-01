@@ -163,7 +163,7 @@ class V3ExactWarmStartSweepTest {
                 thermo.componentBasis(), feedFlows, feedTemperature, 2, 1, topPressure, pressureDrop, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
                         new V3ColumnSpecification.OrganicRefluxRatio(reflux),
-                        new V3ColumnSpecification.ReboilerDuty(reboilerDuty)));
+                        new V3ColumnSpecification.ReboilerDuty(reboilerDuty == 0.0 ? Double.MIN_NORMAL : reboilerDuty)));
     }
 
     private record ColdAttempt(V3SimultaneousColumnSolver.Attempt attempt, V3AcceptanceAudit audit) {}

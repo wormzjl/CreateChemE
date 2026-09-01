@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Objects;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 
 /** SHA-256 digest of the resolved scientific input and explicitly supplied revision identifiers. */
 public record V3InputDigest(String hexadecimalSha256) {
@@ -51,6 +52,15 @@ public record V3InputDigest(String hexadecimalSha256) {
         for (V3SideDrawSpec draw : input.sideDraws()) {
             put(digest, "side-draw-tray", draw.trayNumber());
             put(digest, "side-draw-rate-bits", canonicalBits(draw.molarFlowMolPerSecond()));
+        }
+        // Empty-list placement is intentional: dry digests retain their historical byte stream.
+        if (!input.steamFeeds().isEmpty()) {
+            put(digest, "water-data-revision", V3WaterProperties.DATA_REVISION);
+            for (V3SteamFeedSpec steam : input.steamFeeds()) {
+                put(digest, "steam-stage", steam.stageNumber());
+                put(digest, "steam-rate-bits", canonicalBits(steam.molarFlowMolPerSecond()));
+                put(digest, "steam-temperature-bits", canonicalBits(steam.temperatureKelvin()));
+            }
         }
         put(digest, "top-pressure-bits", canonicalBits(input.topPressurePascal()));
         put(digest, "stage-drop-bits", canonicalBits(input.stagePressureDropPascal()));

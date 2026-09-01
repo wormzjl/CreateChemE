@@ -4,6 +4,7 @@ import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
+import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
@@ -44,7 +45,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 5;
+    public static final int DATA_VERSION = 6;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
     private static final int DEFAULT_STAGE_COUNT = 29;
     private static final int DEFAULT_FEED_STAGE = 24;
@@ -226,7 +227,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                     ? tag.getLong(TAG_RESULT_REVISION) : -1L;
             if (resultRevision < -1L) throw new IllegalArgumentException("Invalid V3 result revision");
             stateRevision = nonNegative(tag.getLong(TAG_STATE_REVISION));
-            // Version 5 adds optional SideDraws; version 4 inputs migrate unchanged with an empty list.
+            // Version 6 adds optional SteamFeeds; version 5 inputs migrate unchanged with an empty list.
             if (dataVersion < 4 && currentInput.equals(priorUnqualifiedDefaultInput())) {
                 currentInput = defaultInput();
                 displayResult = null;
@@ -421,6 +422,15 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             draws.add(drawTag);
         }
         tag.put("SideDraws", draws);
+        ListTag steamFeeds = new ListTag();
+        for (V3SteamFeedSpec steam : input.steamFeeds()) {
+            CompoundTag steamTag = new CompoundTag();
+            steamTag.putInt("Stage", steam.stageNumber());
+            steamTag.putDouble("Rate", steam.molarFlowMolPerSecond());
+            steamTag.putDouble("Temperature", steam.temperatureKelvin());
+            steamFeeds.add(steamTag);
+        }
+        tag.put("SteamFeeds", steamFeeds);
         return tag;
     }
 
@@ -459,10 +469,26 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             CompoundTag draw = drawTags.getCompound(index);
             draws.add(new V3SideDrawSpec(draw.getInt("Stage"), draw.getDouble("Rate")));
         }
+        if (tag.contains("SteamFeeds") && !tag.contains("SteamFeeds", Tag.TAG_LIST)) {
+            throw new IllegalArgumentException("Invalid V3 steam feed list");
+        }
+        ListTag steamTags = tag.getList("SteamFeeds", Tag.TAG_COMPOUND);
+        if (tag.get("SteamFeeds") instanceof ListTag stored && !stored.isEmpty()
+                && stored.getElementType() != Tag.TAG_COMPOUND) {
+            throw new IllegalArgumentException("Invalid V3 steam feed entries");
+        }
+        if (steamTags.size() > V3ColumnInput.MAX_STEAM_FEEDS) throw new IllegalArgumentException("Too many V3 steam feeds");
+        List<V3SteamFeedSpec> steamFeeds = new ArrayList<>(steamTags.size());
+        for (int index = 0; index < steamTags.size(); index++) {
+            CompoundTag steam = steamTags.getCompound(index);
+            steamFeeds.add(new V3SteamFeedSpec(steam.getInt("Stage"), steam.getDouble("Rate"),
+                    steam.getDouble("Temperature")));
+        }
         V3ColumnInput input = new V3ColumnInput(
                 tag.getInt("Schema"), tag.getString("Package"), tag.getString("Assay"), new V3ComponentBasis(axis),
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
-                tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws);
+                tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws,
+                steamFeeds);
         V3ColumnProblemResolver.validateInput(input);
         return input;
     }

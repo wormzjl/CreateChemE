@@ -9,6 +9,7 @@ import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnRequest;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
+import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
@@ -48,7 +49,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 5;
+    public static final int WIRE_SCHEMA_VERSION = 6;
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -583,6 +584,12 @@ public final class ColumnV3Network {
             buffer.writeVarInt(draw.trayNumber());
             buffer.writeDouble(draw.molarFlowMolPerSecond());
         }
+        buffer.writeVarInt(input.steamFeeds().size());
+        for (V3SteamFeedSpec steam : input.steamFeeds()) {
+            buffer.writeVarInt(steam.stageNumber());
+            buffer.writeDouble(steam.molarFlowMolPerSecond());
+            buffer.writeDouble(steam.temperatureKelvin());
+        }
     }
 
     private static V3ColumnInput readInput(RegistryFriendlyByteBuf buffer) {
@@ -619,8 +626,14 @@ public final class ColumnV3Network {
             for (int index = 0; index < drawCount; index++) {
                 draws.add(new V3SideDrawSpec(buffer.readVarInt(), finite(buffer.readDouble(), "side draw rate")));
             }
+            int steamCount = readCount(buffer, V3ColumnInput.MAX_STEAM_FEEDS, "steam feed");
+            List<V3SteamFeedSpec> steam = new ArrayList<>(steamCount);
+            for (int index = 0; index < steamCount; index++) {
+                steam.add(new V3SteamFeedSpec(buffer.readVarInt(), finite(buffer.readDouble(), "steam rate"),
+                        finite(buffer.readDouble(), "steam temperature")));
+            }
             return new V3ColumnInput(schemaVersion, packageId, assayId, new V3ComponentBasis(componentIds), flows,
-                    feedTemperature, stages, feedStage, topPressure, pressureDrop, specifications, draws);
+                    feedTemperature, stages, feedStage, topPressure, pressureDrop, specifications, draws, steam);
         } catch (DecoderException invalidWire) {
             throw invalidWire;
         } catch (IllegalArgumentException | NullPointerException invalid) {

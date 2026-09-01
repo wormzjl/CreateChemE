@@ -96,7 +96,8 @@ class V3ColdStartSweepTest {
                 List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
                         new V3ColumnSpecification.OrganicRefluxRatio(reflux),
-                        new V3ColumnSpecification.ReboilerDuty(reboilerDutyMegawatt * 1_000_000.0)))));
+                        new V3ColumnSpecification.ReboilerDuty(reboilerDutyMegawatt == 0.0
+                                ? Double.MIN_NORMAL : reboilerDutyMegawatt * 1_000_000.0)))));
     }
 
     private static String summary(V3ColumnOutcome outcome) {

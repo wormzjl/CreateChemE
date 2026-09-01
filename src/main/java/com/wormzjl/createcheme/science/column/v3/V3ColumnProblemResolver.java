@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.Objects;
 
 /** Resolves topology, generated pressures, and the M0 degree-of-freedom proof before a solve. */
@@ -84,6 +85,39 @@ public final class V3ColumnProblemResolver {
                 + (input.stageCount() - 1) * input.stagePressureDropPascal();
         if (!Double.isFinite(bottomPressure) || bottomPressure <= 0.0) {
             throw new IllegalArgumentException("V3 generated pressure profile is not finite and positive");
+        }
+        double totalSteam = 0.0;
+        for (V3SteamFeedSpec feed : input.steamFeeds()) {
+            if (feed.stageNumber() > input.stageCount() + 1) {
+                throw new IllegalArgumentException("V3 steam stage is outside the column");
+            }
+            if (feed.temperatureKelvin() < V3WaterProperties.TRIPLE_POINT_KELVIN
+                    || feed.temperatureKelvin() > V3WaterProperties.MAX_ENTHALPY_TEMPERATURE_KELVIN) {
+                throw new IllegalArgumentException("V3 steam temperature is outside the water-property envelope");
+            }
+            double injectionPressure = input.topPressurePascal()
+                    + (Math.min(feed.stageNumber(), input.stageCount()) - 1) * input.stagePressureDropPascal();
+            double saturationTemperature = V3WaterProperties.saturationTemperatureKelvin(injectionPressure);
+            if (feed.temperatureKelvin() < saturationTemperature + 5.0) {
+                throw new IllegalArgumentException("V3 steam must be superheated vapor at the injection pressure");
+            }
+            totalSteam += feed.molarFlowMolPerSecond();
+        }
+        if (totalSteam > totalFeed) {
+            throw new IllegalArgumentException("V3 total steam rate must not exceed the feed rate");
+        }
+        double reboilerDuty = input.specifications().stream().filter(V3ColumnSpecification.ReboilerDuty.class::isInstance)
+                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst().orElseThrow().watts();
+        if (reboilerDuty == 0.0 && !V3SteamFeeds.hasSumpFeed(input)) {
+            throw new IllegalArgumentException("V3 zero reboiler duty requires sump steam (stage N+1) or positive duty");
+        }
+        if (!input.steamFeeds().isEmpty()) {
+            double condenserTemperature = input.specifications().stream()
+                    .filter(V3ColumnSpecification.CondenserOutletTemperature.class::isInstance)
+                    .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst().orElseThrow().kelvin();
+            if (condenserTemperature < V3WaterProperties.TRIPLE_POINT_KELVIN) {
+                throw new IllegalArgumentException("V3 free-water condenser temperature is below the ice-free property envelope");
+            }
         }
     }
 

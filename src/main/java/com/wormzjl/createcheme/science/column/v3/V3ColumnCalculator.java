@@ -6,6 +6,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -25,6 +26,7 @@ public final class V3ColumnCalculator {
     public static final String FORMULATION_REVISION = "v3-dry-mesh-r4-flash-trace";
     private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r2";
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r4";
+    public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r1";
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
     private static final double PRESSURE_CONTINUATION_TRIGGER_PASCAL = 100_000.0;
@@ -120,7 +122,7 @@ public final class V3ColumnCalculator {
         control.checkpoint();
         try {
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-            V3ColumnInput noDrawInput = withoutSideDraws(input);
+            V3ColumnInput noDrawInput = withoutSteamWithSurrogateDuty(withoutSideDraws(input));
             V3ColumnInput probeInput = noDrawInput.stageCount() <= 4 ? noDrawInput : withStageGeometry(noDrawInput, 4);
             V3ColumnProblem probe = V3ColumnProblemResolver.resolve(probeInput, V3CondenserPhaseBranch.TWO_PHASE);
             if (V3OperatingDomainValidator.assess(probe, thermo) instanceof V3OperatingDomainValidator.Assessment.Rejected) {
@@ -195,6 +197,15 @@ public final class V3ColumnCalculator {
                             pass = withPriorSupportNotes(pass, recovered);
                         }
                     }
+                    // The material-closed fallback may rescue the dry surrogate after an early stage rung
+                    // fails. It is still only a seed for a steam-bearing authored request and must never
+                    // publish in place of the final free-water ramp.
+                    if (!input.steamFeeds().isEmpty() && publishesSuccess(pass.attempt(), pass.audit())
+                            && !pass.prepared().problem().hasSteamFeeds()) {
+                        V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
+                                pass.prepared().problem().topology().condenserPhaseBranch());
+                        pass = recoverWithDrawRamp(requested, thermo, pass, control, policy, condenserAttempts);
+                    }
                 }
             } else {
                 pass = solveSingleProblem(problem, thermo,
@@ -245,6 +256,7 @@ public final class V3ColumnCalculator {
                 solvePath += "/liquid-only-condenser";
             }
             if (input.sideDraws().size() > 0) solvePath += "/draws-" + input.sideDraws().size();
+            if (!input.steamFeeds().isEmpty()) solvePath += "/steam-" + input.steamFeeds().size();
             List<String> solverEvents = policy.attemptCutoff() > 0.0
                     ? mergedEvents(List.of(stageTraceEvent(selected.support(), attempt.state(), selected.problem())), pass.solverEvents())
                     : pass.solverEvents();
@@ -252,7 +264,7 @@ public final class V3ColumnCalculator {
             if (pass.reachedRequestedProblem()
                     && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()) {
                 V3InputDigest digest = V3InputDigest.of(selected.problem(), formulationRevision(input, policy.requestedCutoff()),
-                        thermo.datasetRevision(), ASSUMPTIONS_REVISION, policy.requestedCutoff());
+                        thermo.datasetRevision(), assumptionsRevision(input), policy.requestedCutoff());
                 V3ColumnResult result = V3ColumnResult.accepted(
                         selected.problem(), digest, audit, converged.evidence().convergenceEvidence(), converged.state(), thermo,
                         formulationRevision(input, policy.requestedCutoff()));
@@ -269,15 +281,17 @@ public final class V3ColumnCalculator {
                         + failure.evidence().iterations() + " Newton iterations; maximum scaled residual "
                         + failure.evidence().maximumScaledResidual() + ": " + failure.evidence().termination()
                         : failure.evidence().termination();
-                String drawDetail = sideDrawDiagnostic(selected.problem(), attempt.state(), input.stageCount());
-                if (!drawDetail.isEmpty() && detail.length() + drawDetail.length() > 512) {
-                    detail = detail.substring(0, Math.max(0, 512 - drawDetail.length()));
+                String operatingDetail = sideDrawDiagnostic(selected.problem(), attempt.state(), input.stageCount())
+                        + waterDiagnostic(selected.problem(), attempt.state());
+                if (!operatingDetail.isEmpty() && detail.length() + operatingDetail.length() > 512) {
+                    detail = detail.substring(0, Math.max(0, 512 - operatingDetail.length()));
                 }
-                return new V3ColumnOutcome.Failure(failureCode(failure.code()), detail + drawDetail, diagnostics);
+                return new V3ColumnOutcome.Failure(failureCode(failure.code()), detail + operatingDetail, diagnostics);
             }
             return new V3ColumnOutcome.Failure(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE,
                     "The fresh V3 acceptance audit rejected the converged candidate"
-                            + sideDrawDiagnostic(selected.problem(), attempt.state(), input.stageCount()), diagnostics);
+                            + sideDrawDiagnostic(selected.problem(), attempt.state(), input.stageCount())
+                            + waterDiagnostic(selected.problem(), attempt.state()), diagnostics);
         } catch (CancellationException cancelled) {
             throw cancelled;
         } catch (InitializationFailure initialization) {
@@ -313,10 +327,12 @@ public final class V3ColumnCalculator {
         String stagePath = dwsimStagePath(stageCounts);
         V3DryMeshState previousState = null;
         V3SolvePass lastPass = null;
+        boolean featureRampRequired = !input.sideDraws().isEmpty() || !input.steamFeeds().isEmpty();
+        V3ColumnInput continuationInput = input.steamFeeds().isEmpty() ? input : withoutSteamWithSurrogateDuty(input);
         for (int stageCount : stageCounts) {
             control.checkpoint();
-            V3ColumnInput stageInput = input.sideDraws().isEmpty() && stageCount == input.stageCount()
-                    ? input : withStageGeometry(input, stageCount);
+            V3ColumnInput stageInput = !featureRampRequired && stageCount == input.stageCount()
+                    ? continuationInput : withStageGeometry(continuationInput, stageCount);
             V3CondenserPhaseBranch currentBranch = lastPass == null ? condenserBranch
                     : lastPass.prepared().problem().topology().condenserPhaseBranch();
             V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, currentBranch);
@@ -348,7 +364,7 @@ public final class V3ColumnCalculator {
             previousState = lastPass.attempt().state();
         }
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
-        if (!input.sideDraws().isEmpty()) {
+        if (featureRampRequired) {
             V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
                     lastPass.prepared().problem().topology().condenserPhaseBranch());
             lastPass = recoverWithDrawRamp(requested, thermo, lastPass, control, policy, condenserAttempts);
@@ -376,8 +392,11 @@ public final class V3ColumnCalculator {
         if (input.topPressurePascal() > PRESSURE_CONTINUATION_TRIGGER_PASCAL) {
             throw new IllegalArgumentException("V3 pressure continuation was requested outside its low-pressure lane");
         }
-        boolean finePressureSteps = !input.sideDraws().isEmpty();
-        V3ColumnInput anchorInput = withTopPressure(input, PRESSURE_CONTINUATION_ANCHOR_PASCAL);
+        boolean steamRampRequired = !input.steamFeeds().isEmpty();
+        V3ColumnInput continuationInput = steamRampRequired
+                ? withoutSideDraws(withoutSteamWithSurrogateDuty(input)) : input;
+        boolean finePressureSteps = !input.sideDraws().isEmpty() || steamRampRequired;
+        V3ColumnInput anchorInput = withTopPressure(continuationInput, PRESSURE_CONTINUATION_ANCHOR_PASCAL);
         V3SolvePass pass = solveDwsimStageContinuation(anchorInput, thermo, control, condenserBranch, policy, condenserAttempts);
         List<String> pressureEvents = new ArrayList<>();
         String pressurePath = dwsimPressurePath(input.topPressurePascal(), finePressureSteps);
@@ -389,7 +408,7 @@ public final class V3ColumnCalculator {
         }
         for (double pressure : dwsimPressureSteps(input.topPressurePascal(), finePressureSteps)) {
             control.checkpoint();
-            V3ColumnInput stepInput = withTopPressure(input, pressure);
+            V3ColumnInput stepInput = withTopPressure(continuationInput, pressure);
             V3ColumnProblem stepProblem = V3ColumnProblemResolver.resolve(stepInput,
                     pass.prepared().problem().topology().condenserPhaseBranch());
             V3DryMeshState seed = pass.attempt().state();
@@ -419,6 +438,16 @@ public final class V3ColumnCalculator {
                             pass.recoverySeed(), input.stageCount(), false, attemptedRequestedProblem, false,
                             mergedEvents(pressureEvents, pass.solverEvents()), pass.prepared());
                 }
+            }
+        }
+        if (steamRampRequired) {
+            V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
+                    pass.prepared().problem().topology().condenserPhaseBranch());
+            pass = recoverWithDrawRamp(requested, thermo, pass, control, policy, condenserAttempts);
+            if (!publishesSuccess(pass.attempt(), pass.audit())) {
+                return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
+                        "cold/dwsim-pressure/" + pressurePath + "/wet-ramp-failed", pass.recoverySeed(),
+                        input.stageCount(), false, true, false, mergedEvents(pressureEvents, pass.solverEvents()), pass.prepared());
             }
         }
         return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
@@ -653,15 +682,15 @@ public final class V3ColumnCalculator {
         boolean allowsColdRecovery() { return !unresolvedPhaseMismatch && !requestedDrawRampFailed; }
     }
 
-    /** Bounded extra continuation axis, attempted only after a draw-bearing grid fails. */
+    /** Bounded authored-parameter ramp from a dry surrogate seed to liquid draws and free-water steam. */
     private static V3SolvePass recoverWithDrawRamp(
             V3ColumnProblem requested, V3PengRobinsonThermo thermo, V3SolvePass seedBase,
             V3SolveControl control, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
         V3ColumnInput input = requested.input();
         seedBase = Objects.requireNonNull(seedBase, "seedBase");
         if (!publishesSuccess(seedBase.attempt(), seedBase.audit())
-                || seedBase.prepared().problem().hasSideDraws()) {
-            throw new IllegalArgumentException("V3 draw ramp requires an accepted no-draw seed at requested geometry");
+                || seedBase.prepared().problem().hasSideDraws() || seedBase.prepared().problem().hasSteamFeeds()) {
+            throw new IllegalArgumentException("V3 feature ramp requires an accepted dry no-draw seed at requested geometry");
         }
         String rampPath = seedBase.solvePath();
         V3SolvePass previous = seedBase;
@@ -677,10 +706,15 @@ public final class V3ColumnCalculator {
             control.checkpoint();
             List<V3SideDrawSpec> draws = input.sideDraws().stream()
                     .map(draw -> new V3SideDrawSpec(draw.trayNumber(), fraction * draw.molarFlowMolPerSecond())).toList();
+            List<V3SteamFeedSpec> steam = input.steamFeeds().stream()
+                    .map(feed -> new V3SteamFeedSpec(feed.stageNumber(), fraction * feed.molarFlowMolPerSecond(),
+                            feed.temperatureKelvin())).toList();
+            double reboilerDuty = reboilerDutyWatts(input)
+                    + (1.0 - fraction) * surrogateSteamDutyWatts(input);
             V3ColumnInput rampInput = new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(),
                     input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
                     input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
-                    input.specifications(), draws);
+                    withReboilerDuty(input, reboilerDuty), draws, steam);
             V3CondenserPhaseBranch branch = previous.prepared().problem().topology().condenserPhaseBranch();
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(rampInput, branch);
             rampAttempts.recordAttempt(branch);
@@ -689,7 +723,7 @@ public final class V3ColumnCalculator {
                     : previous.attempt().state();
             TruncationPolicy rampPolicy = fraction == 1.0 ? policy : TruncationPolicy.OFF;
             V3SolvePass pass = solveSingleProblem(problem, thermo, seed, control,
-                    rampPath + "/draw-ramp-" + fraction, ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                    rampPath + "/wet-ramp-" + fraction, ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
                     fraction == 1.0 ? DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS
                             : DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS, rampPolicy);
             pass = correctCondenserPhase(pass, thermo, control, rampPolicy, rampAttempts).pass();
@@ -697,11 +731,11 @@ public final class V3ColumnCalculator {
                 if (fraction == 1.0) {
                     condenserAttempts.recordRequestedDrawRampFailure();
                     rampEvents.add(boundedEvent(
-                            "side-draw ramp reached 1.0 and failed: " + rampEvidence(pass)));
+                            "wet ramp reached 1.0 and failed: " + rampEvidence(pass)));
                     V3SolvePass annotated = withRampEvents(pass, rampEvents);
                     return withPriorSupportNotes(seedBase, annotated);
                 }
-                String event = "side-draw ramp stopped at " + fraction + ": " + rampEvidence(pass)
+                String event = "wet ramp stopped at " + fraction + ": " + rampEvidence(pass)
                         + "; failed checks=" + pass.audit().checks().stream().filter(check -> !check.passed())
                         .map(V3AcceptanceAudit.Check::family).toList();
                 rampEvents.add(boundedEvent(event));
@@ -742,9 +776,17 @@ public final class V3ColumnCalculator {
     }
 
     static String formulationRevision(V3ColumnInput input, double requestedCutoff) {
-        if (input.sideDraws().isEmpty()) return formulationRevision(requestedCutoff);
         V3TruncationSupport.requireCutoff(requestedCutoff);
+        if (!input.steamFeeds().isEmpty()) {
+            return "v3-wet-mesh-r6-steam" + (!input.sideDraws().isEmpty() ? "-side-draws" : "")
+                    + (requestedCutoff > 0.0 ? "-flash-trace" : "");
+        }
+        if (input.sideDraws().isEmpty()) return formulationRevision(requestedCutoff);
         return "v3-dry-mesh-r5-side-draws" + (requestedCutoff > 0.0 ? "-flash-trace" : "");
+    }
+
+    static String assumptionsRevision(V3ColumnInput input) {
+        return input.steamFeeds().isEmpty() ? ASSUMPTIONS_REVISION : WET_ASSUMPTIONS_REVISION;
     }
 
     private static String sideDrawDiagnostic(
@@ -770,6 +812,21 @@ public final class V3ColumnCalculator {
         return String.format(Locale.ROOT,
                 "; side draw on %s requests %.6g kmol/h; final internal liquid %.6g kmol/h (withdrawal %.5g)",
                 geometry, worst.molarFlowMolPerSecond() * 3.6, worstLiquid * 3.6, largestFraction);
+    }
+
+    private static String waterDiagnostic(V3ColumnProblem problem, V3DryMeshState state) {
+        if (!problem.hasSteamFeeds()) return "";
+        double maximumRatio = 0.0;
+        for (int node = 1; node <= problem.topology().reboilerNode(); node++) {
+            double water = problem.waterVaporFlowMolPerSecond(node);
+            double temperature = state.temperatureKelvin(node);
+            if (water == 0.0 || temperature >= 640.0 || temperature < V3WaterProperties.TRIPLE_POINT_KELVIN) continue;
+            double hydrocarbon = 0.0;
+            for (int component = 0; component < state.componentCount(); component++) hydrocarbon += state.vaporFlow(node, component);
+            maximumRatio = Math.max(maximumRatio, problem.nodePressurePascal(node) * water / (hydrocarbon + water)
+                    / V3WaterProperties.saturationPressurePascal(temperature));
+        }
+        return String.format(Locale.ROOT, "; water dew-point saturation ratio %.5g (<= 1 required)", maximumRatio);
     }
 
     private static V3SolvePass withPriorSupportNotes(V3SolvePass previous, V3SolvePass next) {
@@ -884,7 +941,32 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
-                input.specifications(), List.of());
+                input.specifications(), List.of(), input.steamFeeds());
+    }
+
+    /** Supplies a dry boilup surrogate only for continuation seeds; publication always returns to authored duty. */
+    private static V3ColumnInput withoutSteamWithSurrogateDuty(V3ColumnInput input) {
+        if (input.steamFeeds().isEmpty()) return input;
+        return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
+                input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
+                input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                withReboilerDuty(input, reboilerDutyWatts(input)
+                        + surrogateSteamDutyWatts(input)), input.sideDraws(), List.of());
+    }
+
+    private static double surrogateSteamDutyWatts(V3ColumnInput input) {
+        return input.steamFeeds().stream().mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum()
+                * V3WaterProperties.vaporizationEnthalpy(450.0);
+    }
+
+    private static List<V3ColumnSpecification> withReboilerDuty(V3ColumnInput input, double watts) {
+        return input.specifications().stream().map(specification -> specification instanceof V3ColumnSpecification.ReboilerDuty
+                ? new V3ColumnSpecification.ReboilerDuty(watts) : specification).toList();
+    }
+
+    private static double reboilerDutyWatts(V3ColumnInput input) {
+        return input.specifications().stream().filter(V3ColumnSpecification.ReboilerDuty.class::isInstance)
+                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst().orElseThrow().watts();
     }
 
     private static V3DryMeshState initializeForSolve(
@@ -906,7 +988,8 @@ public final class V3ColumnCalculator {
         }
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
-                input.feedStageNumber(), topPressurePascal, input.stagePressureDropPascal(), input.specifications(), input.sideDraws());
+                input.feedStageNumber(), topPressurePascal, input.stagePressureDropPascal(), input.specifications(),
+                input.sideDraws(), input.steamFeeds());
     }
 
     private static List<Double> dwsimPressureSteps(double requestedTopPressurePascal) {

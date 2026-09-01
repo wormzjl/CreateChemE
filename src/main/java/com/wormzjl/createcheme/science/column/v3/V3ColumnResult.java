@@ -38,7 +38,7 @@ public final class V3ColumnResult {
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence) {
         return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence, List.of(),
-                V3ColumnCalculator.formulationRevision(problem.truncationSupport().cutoffMoleFraction()));
+                V3ColumnCalculator.formulationRevision(problem.input(), problem.truncationSupport().cutoffMoleFraction()));
     }
 
     /** Extracts product properties only from the rigorously accepted final MESH state. */

@@ -132,7 +132,7 @@ class V3CondenserPhaseTransitionTest {
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:phase-transition", "test:binary",
                 new V3ComponentBasis(List.of("component-a", "inactive", "component-b")), new double[] {10.0, 0.0, 5.0},
                 638.15, 2, 1, 110000.0, 750.0, List.of(new V3ColumnSpecification.CondenserOutletTemperature(323.15),
-                        new V3ColumnSpecification.OrganicRefluxRatio(2.0), new V3ColumnSpecification.ReboilerDuty(0.0)));
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0), new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
         return V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.LIQUID_ONLY);
     }
 
