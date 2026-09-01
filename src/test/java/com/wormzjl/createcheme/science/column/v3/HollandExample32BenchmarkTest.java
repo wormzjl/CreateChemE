@@ -26,6 +26,21 @@ class HollandExample32BenchmarkTest {
     private static final double CONDENSER_DUTY_RELATIVE_TOLERANCE = 0.01;
 
     @Test
+    void inGamePresetRunsTheOracleSeededV3PathAndPublishesStreams() {
+        V3ColumnInput input = V3HollandExample32.input();
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class,
+                V3HollandExample32.calculate(input, V3SolveControl.UNBOUNDED));
+
+        assertEquals(V3HollandExample32.PACKAGE_ID, success.result().problem().input().packageId());
+        assertEquals(V3HollandExample32.FORMULATION_REVISION, success.result().formulationRevision());
+        assertEquals(4, success.result().streams().size());
+        assertTrue(success.diagnostics().events().stream()
+                .anyMatch(event -> event.contains("seven known source-table conflicts")));
+        assertTrue(success.result().acceptanceAudit().checks().stream()
+                .anyMatch(check -> check.family().equals("HOLLAND_INDEPENDENT_FLOW") && check.passed()));
+    }
+
+    @Test
     void solverMatchesIndependentOracleAndReportsPublishedTableConflicts() throws IOException {
         HollandExample32Data data = HollandExample32Data.INSTANCE;
         assertEquals(List.of(95, 99, 100, 596, 597), Arrays.stream(data.source().verifiedPrintedPages()).boxed().toList());

@@ -8,7 +8,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import java.util.Objects;
 
-/** Test-only implementation of Holland's Appendix B ideal-solution K and enthalpy fits. */
+/** Benchmark-only implementation of Holland's Appendix B ideal-solution K and enthalpy fits. */
 final class HollandB12Thermo implements V3ThermoModel {
     private static final double MINIMUM_TEMPERATURE_KELVIN = 300.0;
     private static final double MAXIMUM_TEMPERATURE_KELVIN = 550.0;

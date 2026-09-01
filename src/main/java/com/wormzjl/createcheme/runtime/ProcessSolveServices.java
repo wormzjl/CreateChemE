@@ -8,6 +8,7 @@ import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnSolveOutcom
 import com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
+import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorBlockEntity.CalculationTicket;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Operation;
 import net.minecraft.core.BlockPos;
@@ -341,8 +342,10 @@ public final class ProcessSolveServices {
         @Override
         public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken) {
             cancellationToken.throwIfCancellationRequested();
-            V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input,
-                    cancellationToken::throwIfCancellationRequested, stageTraceCutoffMoleFraction);
+            V3ColumnOutcome outcome = V3HollandExample32.isPackage(input.packageId())
+                    ? V3HollandExample32.calculate(input, cancellationToken::throwIfCancellationRequested)
+                    : V3ColumnCalculator.calculate(input,
+                            cancellationToken::throwIfCancellationRequested, stageTraceCutoffMoleFraction);
             cancellationToken.throwIfCancellationRequested();
             return new V3ColumnSolveResult(outcome);
         }

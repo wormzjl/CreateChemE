@@ -4,6 +4,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntToDoubleFunction;
 
 /**
  * Immutable, physical stream summary extracted only after an accepted V3 MESH solve.
@@ -67,9 +68,31 @@ public record V3ColumnStreamProperties(
 
     static List<V3ColumnStreamProperties> fromAccepted(
             V3ColumnProblem problem, V3DryMeshState state, V3PengRobinsonThermo thermo) {
+        thermo = Objects.requireNonNull(thermo, "thermo");
+        return fromAccepted(problem, state, thermo::componentMolecularWeightKgPerMol);
+    }
+
+    static List<V3ColumnStreamProperties> fromAccepted(
+            V3ColumnProblem problem, V3DryMeshState state, double[] molecularWeightsKgPerMol) {
+        molecularWeightsKgPerMol = Objects.requireNonNull(
+                molecularWeightsKgPerMol, "molecularWeightsKgPerMol").clone();
+        if (molecularWeightsKgPerMol.length != problem.input().componentBasis().componentCount()) {
+            throw new IllegalArgumentException("V3 molecular-weight axis differs from the public component basis");
+        }
+        for (double molecularWeight : molecularWeightsKgPerMol) {
+            if (!Double.isFinite(molecularWeight) || molecularWeight <= 0.0) {
+                throw new IllegalArgumentException("V3 molecular weights must be finite and positive");
+            }
+        }
+        double[] weights = molecularWeightsKgPerMol;
+        return fromAccepted(problem, state, component -> weights[component]);
+    }
+
+    private static List<V3ColumnStreamProperties> fromAccepted(
+            V3ColumnProblem problem, V3DryMeshState state, IntToDoubleFunction molecularWeight) {
         Objects.requireNonNull(problem, "problem");
         Objects.requireNonNull(state, "state");
-        thermo = Objects.requireNonNull(thermo, "thermo");
+        molecularWeight = Objects.requireNonNull(molecularWeight, "molecularWeight");
         V3ColumnTopology topology = problem.topology();
         if (!topology.hasLiquidPhase(topology.condenserNode())) {
             throw new IllegalArgumentException("V3 presentation streams require an accepted condenser liquid phase");
@@ -81,18 +104,18 @@ public record V3ColumnStreamProperties(
         }
         List<V3ColumnStreamProperties> streams = new ArrayList<>(MAX_STREAMS);
         if (topology.hasVaporPhase(topology.condenserNode())) {
-            streams.add(stream(problem, state, thermo, topology.condenserNode(), false, 1.0,
+            streams.add(stream(problem, state, molecularWeight, topology.condenserNode(), false, 1.0,
                     "overhead_vapor", "Overhead vapor", "VAPOR"));
         }
-        streams.add(stream(problem, state, thermo, topology.condenserNode(), true, liquidProductScale,
+        streams.add(stream(problem, state, molecularWeight, topology.condenserNode(), true, liquidProductScale,
                 "distillate_liquid", "Liquid distillate", "LIQUID"));
         for (V3SideDrawSpec draw : problem.input().sideDraws()) {
-            streams.add(stream(problem, state, thermo, draw.trayNumber(), true,
+            streams.add(stream(problem, state, molecularWeight, draw.trayNumber(), true,
                     problem.liquidWithdrawalFraction(state, draw.trayNumber()),
                     String.format(java.util.Locale.ROOT, "side_liquid_tray_%02d", draw.trayNumber()),
                     "Side draw (tray " + draw.trayNumber() + ")", "LIQUID"));
         }
-        streams.add(stream(problem, state, thermo, topology.reboilerNode(), true, 1.0,
+        streams.add(stream(problem, state, molecularWeight, topology.reboilerNode(), true, 1.0,
                 "bottoms_liquid", "Bottoms liquid", "LIQUID"));
         return List.copyOf(streams);
     }
@@ -100,7 +123,7 @@ public record V3ColumnStreamProperties(
     private static V3ColumnStreamProperties stream(
             V3ColumnProblem problem,
             V3DryMeshState state,
-            V3PengRobinsonThermo thermo,
+            IntToDoubleFunction molecularWeight,
             int node,
             boolean liquid,
             double flowScale,
@@ -115,7 +138,7 @@ public record V3ColumnStreamProperties(
             publicFlows[publicComponent] = flowScale * (liquid
                     ? state.liquidFlow(node, component) : state.vaporFlow(node, component));
             publicMassFlows[publicComponent] = publicFlows[publicComponent]
-                    * thermo.componentMolecularWeightKgPerMol(publicComponent);
+                    * molecularWeight.applyAsDouble(publicComponent);
         }
         double total = 0.0;
         double totalMass = 0.0;

@@ -7,6 +7,7 @@ import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
+import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3State;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Status;
@@ -60,6 +61,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private Button inputsTab;
     private Button streamsTab;
     private Button convergenceTab;
+    private Button preset;
     private Button run;
     private Button previousStreamPage;
     private Button nextStreamPage;
@@ -97,6 +99,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 .bounds(leftPos + 86, tabY, 72, 20).build());
         convergenceTab = addRenderableWidget(Button.builder(Component.literal("Convergence"), button -> selectPage(Page.CONVERGENCE))
                 .bounds(leftPos + 162, tabY, 96, 20).build());
+        preset = addRenderableWidget(Button.builder(Component.literal("Load Holland 3-2"), button -> requestPreset())
+                .bounds(leftPos + 264, tabY, 128, 20).build());
         run = addRenderableWidget(Button.builder(Component.literal("Run V3"), button -> requestCalculation())
                 .bounds(leftPos + 10, topPos + imageHeight - 29, 82, 20).build());
         previousStreamPage = addRenderableWidget(Button.builder(Component.literal("Previous streams"), button -> {
@@ -216,20 +220,25 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         boolean showInputs = page == Page.INPUTS;
         boolean calculating = calculationRequested
                 || serverState != null && serverState.status() == V3Status.CALCULATING;
+        boolean holland = isHolland();
         for (EditBox editor : coreEditors) {
             editor.visible = showInputs;
-            editor.active = showInputs && !calculating && serverState != null;
+            editor.active = showInputs && !calculating && serverState != null && !holland;
         }
         for (SideDrawFields side : sideDrawFields) {
             side.stage().visible = showInputs;
             side.rate().visible = showInputs;
-            side.stage().active = showInputs && !calculating && serverState != null;
-            side.rate().active = showInputs && !calculating && serverState != null;
+            side.stage().active = showInputs && !calculating && serverState != null && !holland;
+            side.rate().active = showInputs && !calculating && serverState != null && !holland;
         }
         inputsTab.active = !showInputs;
         streamsTab.active = page != Page.STREAMS;
         convergenceTab.active = page != Page.CONVERGENCE;
+        preset.visible = showInputs;
+        preset.active = showInputs && !calculating && serverState != null;
+        preset.setMessage(Component.literal(holland ? "Load Tia Juana" : "Load Holland 3-2"));
         run.visible = showInputs;
+        run.setMessage(Component.literal(holland ? "Run Holland" : "Run V3"));
         run.active = showInputs && !calculating && draftInput() != null;
         int count = serverState == null || serverState.displayResult().isEmpty() ? 0
                 : serverState.displayResult().orElseThrow().streams().size();
@@ -249,11 +258,21 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         refreshControls();
     }
 
+    private void requestPreset() {
+        if (serverState == null) return;
+        ColumnV3Network.sendPreset(menu.blockPos(), serverState.inputRevision(), !isHolland());
+        calculationRequested = true;
+        validation = "Loading server-owned V3 preset...";
+        refreshControls();
+    }
+
     private void validateDraft() {
         if (serverState == null) {
             validation = "Waiting for server-owned V3 state...";
         } else if (draftInput() != null) {
-            validation = "Scientific draft is valid; Run V3 performs authoritative DWSIM-path solving.";
+            validation = isHolland()
+                    ? "Fixed benchmark is valid; Run Holland compares V3 with the independent literature oracle."
+                    : "Scientific draft is valid; Run V3 performs authoritative DWSIM-path solving.";
         } else {
             validation = draftValidationDetail;
         }
@@ -262,6 +281,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private V3ColumnInput draftInput() {
         if (serverState == null || coreEditors.size() != CORE_EDITOR_COUNT) return null;
+        if (isHolland()) return serverState.input();
         try {
             V3ColumnScalarDraft.Values scalar = V3ColumnScalarDraft.parse(
                     coreEditors.stream().map(EditBox::getValue).toList());
@@ -304,7 +324,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, "Column Calculator V3 (Experimental)", 10, 8, TEXT, false);
-        graphics.drawString(font, "Registered Tia Juana Light PR package | server-authoritative dry V3", 10, 20, MUTED, false);
+        graphics.drawString(font, isHolland()
+                ? "Holland (1981) Example 3-2 | independent-oracle-seeded V3 benchmark"
+                : "Registered Tia Juana Light PR package | server-authoritative dry V3", 10, 20, MUTED, false);
         switch (page) {
             case INPUTS -> renderInputs(graphics);
             case STREAMS -> renderStreams(graphics);
@@ -334,9 +356,13 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             return;
         }
         V3ColumnInput input = serverState.input();
-        graphics.drawString(font, "Liquid side draws: tray and kmol/h. Blank or zero rate disables a row.",
+        graphics.drawString(font, isHolland()
+                        ? "Fixed scan-verified input: 11 plates, bubble-point feed, and one 25 lbmol/h liquid draw."
+                        : "Liquid side draws: tray and kmol/h. Blank or zero rate disables a row.",
                 10, CONTENT_TOP + 159, NOTICE, false);
-        graphics.drawString(font, "Draws require positive liquid downflow; the solver reports infeasible operating points.",
+        graphics.drawString(font, isHolland()
+                        ? "Uses the independent near-root initializer; the known V3 cold-start failure remains reported."
+                        : "Draws require positive liquid downflow; the solver reports infeasible operating points.",
                 10, CONTENT_TOP + 173, MUTED, false);
         graphics.drawString(font, "Input revision " + serverState.inputRevision() + " • state " + serverState.stateRevision()
                         + " • V3 assay " + input.assayId(),
@@ -467,8 +493,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         throw new IllegalArgumentException("Missing V3 specification " + wanted);
     }
 
+    private boolean isHolland() {
+        return serverState != null && V3HollandExample32.isPackage(serverState.input().packageId());
+    }
+
     private static String compactDraft(double value) {
-        return String.format(Locale.ROOT, "%.6f", value).replaceFirst("0+$", "").replaceFirst("\\.$", "");
+        return String.format(Locale.ROOT, "%.3f", value).replaceFirst("0+$", "").replaceFirst("\\.$", "");
     }
 
     private static String compactSideDrawDraft(double value) {

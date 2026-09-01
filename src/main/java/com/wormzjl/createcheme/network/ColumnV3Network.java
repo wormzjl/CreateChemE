@@ -15,6 +15,7 @@ import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
+import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity;
@@ -47,7 +48,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 4;
+    public static final int WIRE_SCHEMA_VERSION = 5;
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -65,6 +66,7 @@ public final class ColumnV3Network {
 
     static void register(PayloadRegistrar registrar) {
         registrar.playToServer(CalculatePayload.TYPE, CalculatePayload.STREAM_CODEC, ColumnV3Network::handleCalculate);
+        registrar.playToServer(PresetPayload.TYPE, PresetPayload.STREAM_CODEC, ColumnV3Network::handlePreset);
         registrar.playToServer(StateRequestPayload.TYPE, StateRequestPayload.STREAM_CODEC,
                 ColumnV3Network::handleStateRequest);
         registrar.playToClient(StatePayload.TYPE, StatePayload.STREAM_CODEC, ColumnV3Network::handleState);
@@ -83,6 +85,13 @@ public final class ColumnV3Network {
     public static long sendCalculate(BlockPos blockPos, long expectedInputRevision, V3ColumnInput input) {
         long nonce = CLIENT_NONCE_SEQUENCE.incrementAndGet();
         PacketDistributor.sendToServer(new CalculatePayload(blockPos, nonce, expectedInputRevision, input));
+        return nonce;
+    }
+
+    /** Requests either fixed Holland Example 3-2 or the production Tia Juana draft from the server. */
+    public static long sendPreset(BlockPos blockPos, long expectedInputRevision, boolean holland) {
+        long nonce = CLIENT_NONCE_SEQUENCE.incrementAndGet();
+        PacketDistributor.sendToServer(new PresetPayload(blockPos, nonce, expectedInputRevision, holland));
         return nonce;
     }
 
@@ -149,6 +158,38 @@ public final class ColumnV3Network {
         reply(context, payload.blockPos(), calculator.state(payload.clientNonce()));
     }
 
+    private static void handlePreset(PresetPayload payload, IPayloadContext context) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            reject(context, payload.blockPos(), payload.clientNonce(), "REJECTED_CONTEXT");
+            return;
+        }
+        ColumnCalculatorV3BlockEntity calculator = resolveCalculator(player, payload.blockPos());
+        if (calculator == null || !(player.containerMenu instanceof ColumnCalculatorV3Menu menu)
+                || !menu.blockPos().equals(payload.blockPos()) || !menu.stillValid(player)) {
+            reject(context, payload.blockPos(), payload.clientNonce(), "REJECTED_CONTEXT");
+            return;
+        }
+        V3ColumnInput preset = payload.holland()
+                ? V3HollandExample32.input() : ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        try {
+            validateResolvedInput(preset);
+        } catch (IllegalArgumentException invalid) {
+            reject(context, payload.blockPos(), payload.clientNonce(),
+                    "REJECTED_PRESET: " + bounded(invalid.getMessage()));
+            return;
+        }
+        String detail = payload.holland()
+                ? "Loaded fixed Holland (1981) Example 3-2 benchmark"
+                : "Loaded Tia Juana Light production draft";
+        if (!calculator.tryLoadPreset(payload.expectedInputRevision(), preset, detail)) {
+            reject(context, payload.blockPos(), payload.clientNonce(), "STALE_REVISION_OR_BUSY");
+            return;
+        }
+        ColumnTarget target = new ColumnTarget(player.serverLevel().dimension(), payload.blockPos());
+        reply(context, payload.blockPos(), calculator.state(payload.clientNonce()));
+        pushToViewers(player.getServer(), target, calculator.state(0L));
+    }
+
     /** Called solely by {@link ProcessSolveCoordinator} on the server thread when a worker completion drains. */
     static void handleRoutedCompletion(MinecraftServer server, V3ColumnCompletion job) {
         Objects.requireNonNull(server, "server");
@@ -195,9 +236,13 @@ public final class ColumnV3Network {
         if (input.schemaVersion() != V3ColumnInput.SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported V3 scientific input schema");
         }
-        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-        if (!thermo.componentBasis().equals(input.componentBasis())) {
-            throw new IllegalArgumentException("V3 component axis does not match the server property package");
+        if (V3HollandExample32.isPackage(input.packageId())) {
+            V3HollandExample32.validateInput(input);
+        } else {
+            V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
+            if (!thermo.componentBasis().equals(input.componentBasis())) {
+                throw new IllegalArgumentException("V3 component axis does not match the server property package");
+            }
         }
         EnumSet<V3ControlledQuantity> controls = EnumSet.noneOf(V3ControlledQuantity.class);
         for (V3ColumnSpecification specification : input.specifications()) controls.add(specification.controlledQuantity());
@@ -335,6 +380,43 @@ public final class ColumnV3Network {
             blockPos = Objects.requireNonNull(blockPos, "blockPos");
             if (clientNonce < 0L || expectedInputRevision < 0L) throw new IllegalArgumentException("Invalid V3 request revision");
             input = Objects.requireNonNull(input, "input");
+        }
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    private record PresetPayload(
+            BlockPos blockPos, long clientNonce, long expectedInputRevision, boolean holland)
+            implements CustomPacketPayload {
+        private static final Type<PresetPayload> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(CreateChemE.MOD_ID, "load_column_v3_preset"));
+        private static final StreamCodec<RegistryFriendlyByteBuf, PresetPayload> STREAM_CODEC = new StreamCodec<>() {
+            @Override
+            public PresetPayload decode(RegistryFriendlyByteBuf buffer) {
+                requireWireSchema(buffer);
+                return new PresetPayload(buffer.readBlockPos(),
+                        nonNegative(buffer.readVarLong(), "client nonce"),
+                        nonNegative(buffer.readVarLong(), "input revision"), buffer.readBoolean());
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buffer, PresetPayload payload) {
+                writeWireSchema(buffer);
+                buffer.writeBlockPos(payload.blockPos());
+                buffer.writeVarLong(payload.clientNonce());
+                buffer.writeVarLong(payload.expectedInputRevision());
+                buffer.writeBoolean(payload.holland());
+            }
+        };
+
+        private PresetPayload {
+            blockPos = Objects.requireNonNull(blockPos, "blockPos");
+            if (clientNonce < 0L || expectedInputRevision < 0L) {
+                throw new IllegalArgumentException("Invalid V3 preset request revision");
+            }
         }
 
         @Override

@@ -10,6 +10,7 @@ import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
+import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
@@ -108,7 +109,9 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             displayResult = V3ColumnDisplayResult.fromAccepted(success);
             resultRevision = Math.incrementExact(resultRevision);
             status = V3Status.SUCCESS;
-            detail = "Success: accepted residual " + success.diagnostics().maximumScaledResidual();
+            detail = V3HollandExample32.isPackage(operation.input().packageId())
+                    ? "Success: Holland oracle and V3 audit agree; seven printed-table conflicts remain advisory"
+                    : "Success: accepted residual " + success.diagnostics().maximumScaledResidual();
         } else if (outcome instanceof V3ColumnOutcome.Failure failure) {
             status = V3Status.FAILED;
             detail = bounded(failure.code().name() + ": " + failure.summary());
@@ -128,6 +131,29 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         status = V3Status.FAILED;
         detail = bounded(failureDetail);
         stateRevision = Math.incrementExact(stateRevision);
+        setChanged();
+        return true;
+    }
+
+    /** Replaces the idle draft with one server-owned preset and invalidates any prior display certificate. */
+    public boolean tryLoadPreset(long expectedInputRevision, V3ColumnInput preset, String presetDetail) {
+        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null) {
+            return false;
+        }
+        preset = Objects.requireNonNull(preset, "preset");
+        try {
+            inputRevision = Math.incrementExact(inputRevision);
+            stateRevision = Math.incrementExact(stateRevision);
+        } catch (ArithmeticException overflow) {
+            status = V3Status.FAILED;
+            detail = "V3 revision space is exhausted";
+            setChanged();
+            return false;
+        }
+        currentInput = preset;
+        displayResult = null;
+        status = V3Status.DIRTY;
+        detail = bounded(presetDetail);
         setChanged();
         return true;
     }
@@ -320,6 +346,11 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
 
     private static V3ColumnInput defaultInput() {
         return defaultInput(400.0, 2.0, DEFAULT_STAGE_COUNT, DEFAULT_TOP_PRESSURE_PASCAL, defaultSideDraws());
+    }
+
+    /** Fresh server-owned production preset used when leaving the fixed Holland benchmark. */
+    public static V3ColumnInput pilotPresetInput() {
+        return defaultInput();
     }
 
     private static V3ColumnInput priorUnqualifiedDefaultInput() {

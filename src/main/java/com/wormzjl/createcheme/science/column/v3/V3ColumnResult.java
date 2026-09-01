@@ -57,6 +57,15 @@ public final class V3ColumnResult {
                 V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision);
     }
 
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state,
+            double[] molecularWeightsKgPerMol, String formulationRevision) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
+                V3ColumnStreamProperties.fromAccepted(problem, state, molecularWeightsKgPerMol),
+                formulationRevision);
+    }
+
     public V3ColumnProblem problem() {
         return problem;
     }

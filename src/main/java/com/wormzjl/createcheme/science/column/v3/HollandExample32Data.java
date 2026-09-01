@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-/** Scan-verified, test-only transcription of Holland (1981), Example 3-2 and Tables B-1/B-2. */
+/** Scan-verified transcription of Holland (1981), Example 3-2 and Tables B-1/B-2. */
 final class HollandExample32Data {
     static final double LB_MOL_PER_HOUR_TO_MOL_PER_SECOND = 453.59237 / 3_600.0;
     static final double BTU_PER_HOUR_TO_WATT = 1_055.05585262 / 3_600.0;

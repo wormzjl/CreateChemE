@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Independent test-only MESH implementation for Holland Example 3-2.
+ * Independent benchmark MESH implementation for Holland Example 3-2.
  *
  * <p>It deliberately does not call V3 topology, residual, thermodynamic, coordinate, Jacobian,
  * linear-solver, or audit code. The only shared input is the scan-transcribed fixture.</p>
@@ -50,23 +50,30 @@ final class IndependentHollandMeshOracle {
     }
 
     SolveResult solve(int maximumIterations, double scaledTolerance) {
+        return solve(maximumIterations, scaledTolerance, V3SolveControl.UNBOUNDED);
+    }
+
+    SolveResult solve(int maximumIterations, double scaledTolerance, V3SolveControl control) {
         if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0) {
             throw new IllegalArgumentException("Independent Holland solve limits are invalid");
         }
+        control = Objects.requireNonNull(control, "control");
         double[] coordinates = coordinatesOf(initialState());
         for (int iteration = 0; iteration <= maximumIterations; iteration++) {
+            control.checkpoint();
             double[] residual = residual(coordinates);
             double maximum = maximumAbsolute(residual);
             if (maximum <= scaledTolerance) {
                 return new SolveResult(stateOf(coordinates), residual, iteration);
             }
             if (iteration == maximumIterations) break;
-            double[][] jacobian = finiteDifferenceJacobian(coordinates);
+            double[][] jacobian = finiteDifferenceJacobian(coordinates, control);
             double[] correction = densePivotedSolve(jacobian, negate(residual));
             double merit = squaredNorm(residual);
             boolean accepted = false;
             double fraction = 1.0;
             for (int lineSearch = 0; lineSearch < MAXIMUM_LINE_SEARCH_STEPS; lineSearch++) {
+                control.checkpoint();
                 double[] candidate = addScaled(coordinates, correction, fraction);
                 try {
                     double[] candidateResidual = residual(candidate);
@@ -212,10 +219,11 @@ final class IndependentHollandMeshOracle {
         return residual;
     }
 
-    private double[][] finiteDifferenceJacobian(double[] coordinates) {
+    private double[][] finiteDifferenceJacobian(double[] coordinates, V3SolveControl control) {
         double[][] jacobian = new double[coordinates.length][coordinates.length];
         int flowCoordinates = 2 * NODE_COUNT * componentCount;
         for (int column = 0; column < coordinates.length; column++) {
+            control.checkpoint();
             double step = column < flowCoordinates ? 1.0e-6
                     : Math.max(1.0e-4, Math.abs(coordinates[column]) * 1.0e-6);
             double[] higher = coordinates.clone();
