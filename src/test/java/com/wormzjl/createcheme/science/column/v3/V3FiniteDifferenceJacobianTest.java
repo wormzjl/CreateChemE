@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
@@ -39,6 +40,52 @@ class V3FiniteDifferenceJacobianTest {
                         "row=" + row + " column=" + column);
             }
         }
+    }
+
+    @Test
+    void scalarReadsAndArraySnapshotsDoNotExposeTheJacobianStorage() {
+        V3ColumnProblem problem = V3TruncationSupportTest.problem(V3CondenserPhaseBranch.TWO_PHASE, 0.0, 2);
+        int size = problem.degreeOfFreedomLedger().unknownCount();
+        double[][] values = new double[size][size];
+        values[0][0] = 3.5;
+        values[1][0] = -0.0;
+        V3FiniteDifferenceJacobian.Jacobian jacobian = jacobian(problem, values);
+        values[0][0] = 99.0;
+        values[1] = new double[size];
+        double[][] snapshot = jacobian.values();
+        snapshot[0][0] = -99.0;
+        snapshot[1] = new double[size];
+
+        assertEquals(3.5, jacobian.value(0, 0));
+        assertEquals(Double.doubleToRawLongBits(-0.0), Double.doubleToRawLongBits(jacobian.value(1, 0)));
+        assertEquals(3.5, jacobian.values()[0][0]);
+        assertEquals(Double.doubleToRawLongBits(-0.0), Double.doubleToRawLongBits(jacobian.values()[1][0]));
+    }
+
+    @Test
+    void malformedAndNonfiniteJacobianMatricesAreRejectedBeforeScalarReads() {
+        V3ColumnProblem problem = V3TruncationSupportTest.problem(V3CondenserPhaseBranch.TWO_PHASE, 0.0, 2);
+        int size = problem.degreeOfFreedomLedger().unknownCount();
+        assertThrows(NullPointerException.class, () -> jacobian(problem, null));
+        assertThrows(IllegalArgumentException.class, () -> jacobian(problem, new double[size - 1][size]));
+        double[][] jagged = new double[size][size];
+        jagged[size - 1] = new double[size - 1];
+        assertThrows(IllegalArgumentException.class, () -> jacobian(problem, jagged));
+        double[][] nullRow = new double[size][size];
+        nullRow[size - 1] = null;
+        assertThrows(NullPointerException.class, () -> jacobian(problem, nullRow));
+        for (double invalid : new double[] {Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY}) {
+            double[][] values = new double[size][size];
+            values[size - 1][size - 1] = invalid;
+            assertThrows(IllegalArgumentException.class, () -> jacobian(problem, values));
+        }
+    }
+
+    private static V3FiniteDifferenceJacobian.Jacobian jacobian(V3ColumnProblem problem, double[][] values) {
+        V3DegreeOfFreedomLedger ledger = problem.degreeOfFreedomLedger();
+        return new V3FiniteDifferenceJacobian.Jacobian(
+                ledger.equations().stream().map(V3DegreeOfFreedomLedger.Equation::id).toList(),
+                ledger.unknowns().stream().map(V3DegreeOfFreedomLedger.Unknown::id).toList(), values);
     }
 
     private static final class LinearThermo implements V3ThermoModel {

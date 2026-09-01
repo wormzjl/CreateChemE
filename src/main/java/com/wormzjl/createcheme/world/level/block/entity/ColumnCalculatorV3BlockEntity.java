@@ -1,14 +1,17 @@
 package com.wormzjl.createcheme.world.level.block.entity;
 
-import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
+import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
+import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
@@ -42,10 +45,12 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 4;
+    public static final int DATA_VERSION = 6;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
-    private static final int DEFAULT_STAGE_COUNT = 30;
+    private static final int DEFAULT_STAGE_COUNT = 29;
     private static final int DEFAULT_FEED_STAGE = 24;
+    private static final double DEFAULT_FEED_KMOL_PER_HOUR = 2_610.7;
+    private static final double DEFAULT_TOP_PRESSURE_PASCAL = 150_000.0;
 
     private static final String TAG_DATA_VERSION = "V3DataVersion";
     private static final String TAG_INPUT_REVISION = "InputRevision";
@@ -70,12 +75,11 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     /**
      * Atomically freezes a validated server-resolved input for one worker operation.
      *
-     * <p>Must run on the logical server thread. A stale editor revision, disabled rollout, or existing operation is
+     * <p>Must run on the logical server thread. A stale editor revision or existing operation is
      * rejected without changing the block state.</p>
      */
     public Optional<V3Operation> tryBegin(long expectedInputRevision, long operationId, V3ColumnInput input) {
-        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null
-                || CreateChemE.columnV3Rollout() == CreateChemE.V3Rollout.DISABLED) {
+        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null) {
             return Optional.empty();
         }
         input = Objects.requireNonNull(input, "input");
@@ -106,7 +110,9 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             displayResult = V3ColumnDisplayResult.fromAccepted(success);
             resultRevision = Math.incrementExact(resultRevision);
             status = V3Status.SUCCESS;
-            detail = "Success: accepted residual " + success.diagnostics().maximumScaledResidual();
+            detail = V3HollandExample32.isPackage(operation.input().packageId())
+                    ? "Success: Holland oracle and V3 audit agree; seven printed-table conflicts remain advisory"
+                    : "Success: accepted residual " + success.diagnostics().maximumScaledResidual();
         } else if (outcome instanceof V3ColumnOutcome.Failure failure) {
             status = V3Status.FAILED;
             detail = bounded(failure.code().name() + ": " + failure.summary());
@@ -126,6 +132,29 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         status = V3Status.FAILED;
         detail = bounded(failureDetail);
         stateRevision = Math.incrementExact(stateRevision);
+        setChanged();
+        return true;
+    }
+
+    /** Replaces the idle draft with one server-owned preset and invalidates any prior display certificate. */
+    public boolean tryLoadPreset(long expectedInputRevision, V3ColumnInput preset, String presetDetail) {
+        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null) {
+            return false;
+        }
+        preset = Objects.requireNonNull(preset, "preset");
+        try {
+            inputRevision = Math.incrementExact(inputRevision);
+            stateRevision = Math.incrementExact(stateRevision);
+        } catch (ArithmeticException overflow) {
+            status = V3Status.FAILED;
+            detail = "V3 revision space is exhausted";
+            setChanged();
+            return false;
+        }
+        currentInput = preset;
+        displayResult = null;
+        status = V3Status.DIRTY;
+        detail = bounded(presetDetail);
         setChanged();
         return true;
     }
@@ -198,12 +227,13 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                     ? tag.getLong(TAG_RESULT_REVISION) : -1L;
             if (resultRevision < -1L) throw new IllegalArgumentException("Invalid V3 result revision");
             stateRevision = nonNegative(tag.getLong(TAG_STATE_REVISION));
-            if (dataVersion < DATA_VERSION && currentInput.equals(priorUnqualifiedDefaultInput())) {
+            // Version 6 adds optional SteamFeeds; version 5 inputs migrate unchanged with an empty list.
+            if (dataVersion < 4 && currentInput.equals(priorUnqualifiedDefaultInput())) {
                 currentInput = defaultInput();
                 displayResult = null;
                 resultRevision = -1L;
                 status = V3Status.DIRTY;
-                detail = "Updated untouched V3 draft to the DWSIM-qualified 30-stage default";
+                detail = "Updated untouched V3 draft to the literature-qualified side-draw default";
                 return;
             }
             if (dataVersion < 4 && tag.contains(TAG_RESULT, Tag.TAG_COMPOUND)) {
@@ -316,27 +346,48 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     }
 
     private static V3ColumnInput defaultInput() {
-        return defaultInput(400.0, 2.0);
+        return defaultInput(400.0, 2.0, DEFAULT_STAGE_COUNT, DEFAULT_TOP_PRESSURE_PASCAL, defaultSideDraws());
+    }
+
+    /** Fresh server-owned production preset used when leaving the fixed Holland benchmark. */
+    public static V3ColumnInput pilotPresetInput() {
+        return defaultInput();
     }
 
     private static V3ColumnInput priorUnqualifiedDefaultInput() {
-        return defaultInput(332.15, 4.17);
+        return defaultInput(332.15, 4.17, 30, 250_000.0, List.of());
     }
 
-    private static V3ColumnInput defaultInput(double condenserTemperatureKelvin, double refluxRatio) {
+    private static V3ColumnInput defaultInput(
+            double condenserTemperatureKelvin, double refluxRatio, int stageCount, double topPressurePascal,
+            List<V3SideDrawSpec> sideDraws) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PILOT_PACKAGE);
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
         double[] feedFlows = crude.moleFractions();
-        double totalFlowMolPerSecond = 2_610.7 * 1_000.0 / 3_600.0;
+        double totalFlowMolPerSecond = DEFAULT_FEED_KMOL_PER_HOUR * 1_000.0 / 3_600.0;
         for (int component = 0; component < feedFlows.length; component++) {
             feedFlows[component] *= totalFlowMolPerSecond;
         }
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
-                crude.componentBasis(), feedFlows, 365.0 + 273.15, DEFAULT_STAGE_COUNT, DEFAULT_FEED_STAGE,
-                250_000.0, 750.0, List.of(
+                crude.componentBasis(), feedFlows, 365.0 + 273.15, stageCount, DEFAULT_FEED_STAGE,
+                topPressurePascal, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperatureKelvin),
                         new V3ColumnSpecification.OrganicRefluxRatio(refluxRatio),
-                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), sideDraws);
+    }
+
+    private static List<V3SideDrawSpec> defaultSideDraws() {
+        // 25% dry-model qualification of Sotelo et al. (2019), doi:10.2507/IJSIMM18(2)465.
+        return List.of(
+                defaultSideDraw(13, 14_000.0),
+                defaultSideDraw(17, 20_000.0),
+                defaultSideDraw(22, 5_000.0));
+    }
+
+    private static V3SideDrawSpec defaultSideDraw(int trayNumber, double sourceBarrelsPerDay) {
+        double kmolPerHour = DEFAULT_FEED_KMOL_PER_HOUR * sourceBarrelsPerDay / 99_000.0 * 0.25;
+        kmolPerHour = Math.round(kmolPerHour * 100.0) / 100.0;
+        return new V3SideDrawSpec(trayNumber, kmolPerHour / 3.6);
     }
 
     private static CompoundTag writeInput(V3ColumnInput input) {
@@ -363,6 +414,23 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             specifications.add(specificationTag);
         }
         tag.put("Specifications", specifications);
+        ListTag draws = new ListTag();
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            CompoundTag drawTag = new CompoundTag();
+            drawTag.putInt("Stage", draw.trayNumber());
+            drawTag.putDouble("Rate", draw.molarFlowMolPerSecond());
+            draws.add(drawTag);
+        }
+        tag.put("SideDraws", draws);
+        ListTag steamFeeds = new ListTag();
+        for (V3SteamFeedSpec steam : input.steamFeeds()) {
+            CompoundTag steamTag = new CompoundTag();
+            steamTag.putInt("Stage", steam.stageNumber());
+            steamTag.putDouble("Rate", steam.molarFlowMolPerSecond());
+            steamTag.putDouble("Temperature", steam.temperatureKelvin());
+            steamFeeds.add(steamTag);
+        }
+        tag.put("SteamFeeds", steamFeeds);
         return tag;
     }
 
@@ -388,10 +456,41 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         if (flowTags.size() != axis.size()) throw new IllegalArgumentException("Invalid V3 feed-flow axis");
         double[] feedFlows = new double[flowTags.size()];
         for (int index = 0; index < feedFlows.length; index++) feedFlows[index] = flowTags.getDouble(index);
-        return new V3ColumnInput(
+        if (tag.contains("SideDraws") && !tag.contains("SideDraws", Tag.TAG_LIST)) {
+            throw new IllegalArgumentException("Invalid V3 side draw list");
+        }
+        ListTag drawTags = tag.getList("SideDraws", Tag.TAG_COMPOUND);
+        if (tag.get("SideDraws") instanceof ListTag stored && !stored.isEmpty() && stored.getElementType() != Tag.TAG_COMPOUND) {
+            throw new IllegalArgumentException("Invalid V3 side draw entries");
+        }
+        if (drawTags.size() > V3ColumnInput.MAX_SIDE_DRAWS) throw new IllegalArgumentException("Too many V3 side draws");
+        List<V3SideDrawSpec> draws = new ArrayList<>(drawTags.size());
+        for (int index = 0; index < drawTags.size(); index++) {
+            CompoundTag draw = drawTags.getCompound(index);
+            draws.add(new V3SideDrawSpec(draw.getInt("Stage"), draw.getDouble("Rate")));
+        }
+        if (tag.contains("SteamFeeds") && !tag.contains("SteamFeeds", Tag.TAG_LIST)) {
+            throw new IllegalArgumentException("Invalid V3 steam feed list");
+        }
+        ListTag steamTags = tag.getList("SteamFeeds", Tag.TAG_COMPOUND);
+        if (tag.get("SteamFeeds") instanceof ListTag stored && !stored.isEmpty()
+                && stored.getElementType() != Tag.TAG_COMPOUND) {
+            throw new IllegalArgumentException("Invalid V3 steam feed entries");
+        }
+        if (steamTags.size() > V3ColumnInput.MAX_STEAM_FEEDS) throw new IllegalArgumentException("Too many V3 steam feeds");
+        List<V3SteamFeedSpec> steamFeeds = new ArrayList<>(steamTags.size());
+        for (int index = 0; index < steamTags.size(); index++) {
+            CompoundTag steam = steamTags.getCompound(index);
+            steamFeeds.add(new V3SteamFeedSpec(steam.getInt("Stage"), steam.getDouble("Rate"),
+                    steam.getDouble("Temperature")));
+        }
+        V3ColumnInput input = new V3ColumnInput(
                 tag.getInt("Schema"), tag.getString("Package"), tag.getString("Assay"), new V3ComponentBasis(axis),
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
-                tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications);
+                tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws,
+                steamFeeds);
+        V3ColumnProblemResolver.validateInput(input);
+        return input;
     }
 
     private static CompoundTag writeDisplayResult(V3ColumnDisplayResult result) {

@@ -11,15 +11,20 @@ public final class V3ColumnResult {
     private final V3AcceptanceAudit acceptanceAudit;
     private final V3ConvergenceEvidence convergenceEvidence;
     private final List<V3ColumnStreamProperties> streams;
+    private final String formulationRevision;
 
     private V3ColumnResult(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
-            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams) {
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision) {
         this.problem = Objects.requireNonNull(problem, "problem");
         this.inputDigest = Objects.requireNonNull(inputDigest, "inputDigest");
         this.acceptanceAudit = Objects.requireNonNull(acceptanceAudit, "acceptanceAudit");
         this.convergenceEvidence = Objects.requireNonNull(convergenceEvidence, "convergenceEvidence");
         this.streams = List.copyOf(Objects.requireNonNull(streams, "streams"));
+        this.formulationRevision = Objects.requireNonNull(formulationRevision, "formulationRevision");
+        if (formulationRevision.isBlank() || formulationRevision.length() > 128) {
+            throw new IllegalArgumentException("V3 result formulation revision is outside the bounded contract");
+        }
         if (this.streams.size() > V3ColumnStreamProperties.MAX_STREAMS) {
             throw new IllegalArgumentException("V3 result exceeds the bounded accepted stream contract");
         }
@@ -32,15 +37,33 @@ public final class V3ColumnResult {
     static V3ColumnResult accepted(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence) {
-        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence, List.of());
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence, List.of(),
+                V3ColumnCalculator.formulationRevision(problem.input(), problem.truncationSupport().cutoffMoleFraction()));
     }
 
     /** Extracts product properties only from the rigorously accepted final MESH state. */
     static V3ColumnResult accepted(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo) {
+        return accepted(problem, inputDigest, acceptanceAudit, convergenceEvidence, state, thermo,
+                V3ColumnCalculator.formulationRevision(problem.truncationSupport().cutoffMoleFraction()));
+    }
+
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
+            String formulationRevision) {
         return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
-                V3ColumnStreamProperties.fromAccepted(problem, state, thermo));
+                V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision);
+    }
+
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state,
+            double[] molecularWeightsKgPerMol, String formulationRevision) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
+                V3ColumnStreamProperties.fromAccepted(problem, state, molecularWeightsKgPerMol),
+                formulationRevision);
     }
 
     public V3ColumnProblem problem() {
@@ -49,6 +72,11 @@ public final class V3ColumnResult {
 
     public V3InputDigest inputDigest() {
         return inputDigest;
+    }
+
+    /** Revision used for this result's digest, including a cutoff-enabled request's untruncated retry. */
+    public String formulationRevision() {
+        return formulationRevision;
     }
 
     public V3AcceptanceAudit acceptanceAudit() {

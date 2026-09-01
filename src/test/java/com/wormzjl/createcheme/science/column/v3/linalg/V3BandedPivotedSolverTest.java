@@ -12,6 +12,44 @@ import org.junit.jupiter.api.Test;
 
 class V3BandedPivotedSolverTest {
     @Test
+    void subnormalRowsCanBeScaledWithoutOverflowingTheirReciprocals() {
+        V3BandedMatrix matrix = new V3BandedMatrix(2, 0, 0);
+        matrix.set(0, 0, Double.MIN_VALUE);
+        matrix.set(1, 1, 2.0 * Double.MIN_VALUE);
+
+        V3BandedPivotedSolver.Result.Success result = assertInstanceOf(V3BandedPivotedSolver.Result.Success.class,
+                V3BandedPivotedSolver.solve(matrix, new double[] {Double.MIN_VALUE, 2.0 * Double.MIN_VALUE}));
+
+        assertArrayEquals(new double[] {1.0, 1.0}, result.solution());
+        assertEquals(0.0, result.backwardError());
+        assertEquals(Double.MIN_VALUE, matrix.get(0, 0));
+    }
+
+    @Test
+    void subnormalColumnScalingAndZeroSolutionUnscalingRemainFinite() {
+        V3BandedMatrix matrix = new V3BandedMatrix(2, 1, 1);
+        matrix.set(0, 0, 1.0); matrix.set(0, 1, Double.MIN_VALUE);
+        matrix.set(1, 0, 1.0); matrix.set(1, 1, 2.0 * Double.MIN_VALUE);
+
+        V3BandedPivotedSolver.Result.Success result = assertInstanceOf(V3BandedPivotedSolver.Result.Success.class,
+                V3BandedPivotedSolver.solve(matrix, new double[] {1.0, 1.0}));
+
+        assertArrayEquals(new double[] {1.0, 0.0}, result.solution());
+        assertEquals(0.0, result.backwardError());
+    }
+
+    @Test
+    void unrepresentableScaledRightHandSideReturnsATypedFailure() {
+        V3BandedMatrix matrix = new V3BandedMatrix(1, 0, 0);
+        matrix.set(0, 0, Double.MIN_VALUE);
+
+        V3BandedPivotedSolver.Result.Failure result = assertInstanceOf(V3BandedPivotedSolver.Result.Failure.class,
+                V3BandedPivotedSolver.solve(matrix, new double[] {1.0}));
+
+        assertEquals(V3BandedPivotedSolver.FailureCode.ILL_CONDITIONED, result.code());
+    }
+
+    @Test
     void pivotedTridiagonalCorrectionMatchesAnIndependentDensePartialPivotSolve() {
         V3BandedMatrix matrix = new V3BandedMatrix(3, 1, 1);
         matrix.set(0, 0, 0.0); matrix.set(0, 1, 2.0);

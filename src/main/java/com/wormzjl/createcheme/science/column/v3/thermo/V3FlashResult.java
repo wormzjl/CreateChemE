@@ -1,6 +1,5 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /** Immutable feed-flash outcome with an explicit normal single- or two-phase classification. */
@@ -12,10 +11,19 @@ public final class V3FlashResult {
     private final double[] vaporComposition;
     private final double molarEnthalpyJoulesPerMol;
     private final String detail;
+    private final V3FlashTruncationEvidence truncationEvidence;
 
     public V3FlashResult(
             V3FeedPhase phase, int iterations, double vaporFraction, double[] liquidComposition,
             double[] vaporComposition, double molarEnthalpyJoulesPerMol, String detail) {
+        this(phase, iterations, vaporFraction, liquidComposition, vaporComposition,
+                molarEnthalpyJoulesPerMol, detail, V3FlashTruncationEvidence.DISABLED);
+    }
+
+    private V3FlashResult(
+            V3FeedPhase phase, int iterations, double vaporFraction, double[] liquidComposition,
+            double[] vaporComposition, double molarEnthalpyJoulesPerMol, String detail,
+            V3FlashTruncationEvidence truncationEvidence) {
         this.phase = Objects.requireNonNull(phase, "phase");
         this.iterations = iterations;
         this.vaporFraction = vaporFraction;
@@ -23,6 +31,7 @@ public final class V3FlashResult {
         this.vaporComposition = copyNormalized(vaporComposition, "vaporComposition");
         this.molarEnthalpyJoulesPerMol = molarEnthalpyJoulesPerMol;
         this.detail = bounded(detail, "detail", 256);
+        this.truncationEvidence = Objects.requireNonNull(truncationEvidence, "truncationEvidence");
         if (iterations < 0 || !Double.isFinite(vaporFraction) || vaporFraction < 0.0 || vaporFraction > 1.0
                 || !Double.isFinite(molarEnthalpyJoulesPerMol)) {
             throw new IllegalArgumentException("V3 flash result has invalid numerical evidence");
@@ -63,6 +72,22 @@ public final class V3FlashResult {
     public double[] vaporComposition() { return vaporComposition.clone(); }
     public double molarEnthalpyJoulesPerMol() { return molarEnthalpyJoulesPerMol; }
     public String detail() { return detail; }
+    public V3FlashTruncationEvidence truncationEvidence() { return truncationEvidence; }
+
+    /** Full-reference feed enthalpy remains available independently of an optional approximate candidate. */
+    public double referenceMolarEnthalpyJoulesPerMol() {
+        return truncationEvidence.status() == V3FlashTruncationEvidence.Status.DISABLED
+                ? molarEnthalpyJoulesPerMol : truncationEvidence.referenceMolarEnthalpyJoulesPerMol();
+    }
+
+    /** Adds immutable evidence without modifying phase allocations, enthalpy, or the result detail. */
+    V3FlashResult withTruncationEvidence(V3FlashTruncationEvidence evidence) {
+        Objects.requireNonNull(evidence, "evidence");
+        int totalIterations = evidence.status() == V3FlashTruncationEvidence.Status.DISABLED ? iterations
+                : Math.addExact(evidence.referenceIterations(), evidence.reducedIterations());
+        return new V3FlashResult(phase, totalIterations, vaporFraction, liquidComposition, vaporComposition,
+                molarEnthalpyJoulesPerMol, detail, evidence);
+    }
 
     private static double[] copyNormalized(double[] composition, String name) {
         composition = Objects.requireNonNull(composition, name).clone();

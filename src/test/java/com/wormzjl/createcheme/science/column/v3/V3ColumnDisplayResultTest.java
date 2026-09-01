@@ -29,7 +29,7 @@ class V3ColumnDisplayResultTest {
         assertEquals(success.diagnostics().maximumScaledResidual(), view.maximumScaledResidual());
         assertTrue(view.acceptanceCheckCount() > 0);
         assertEquals(success.result().streams(), view.streams());
-        assertEquals(3, view.streams().size());
+        assertEquals(2, view.streams().size());
         for (V3ColumnStreamProperties stream : view.streams()) {
             assertTrue(stream.molarFlowMolPerSecond() > 0.0);
             assertTrue(stream.massFlowKgPerSecond() > 0.0);

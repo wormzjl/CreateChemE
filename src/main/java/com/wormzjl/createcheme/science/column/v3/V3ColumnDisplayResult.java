@@ -40,13 +40,19 @@ public record V3ColumnDisplayResult(
         V3ColumnResult result = success.result();
         return new V3ColumnDisplayResult(
                 result.inputDigest().hexadecimalSha256(),
-                V3ColumnCalculator.FORMULATION_REVISION,
-                V3ColumnCalculator.ASSUMPTIONS_REVISION,
-                V3PengRobinsonThermo.fromRegisteredPackage(result.problem().input().packageId()).datasetRevision(),
+                result.formulationRevision(),
+                V3ColumnCalculator.assumptionsRevision(result.problem().input()),
+                datasetRevision(result.problem().input().packageId()),
                 success.diagnostics().newtonIterations(),
                 success.diagnostics().maximumScaledResidual(),
                 result.acceptanceAudit().checks().size(),
                 result.streams());
+    }
+
+    private static String datasetRevision(String packageId) {
+        return V3HollandExample32.isPackage(packageId)
+                ? V3HollandExample32.DATASET_REVISION
+                : V3PengRobinsonThermo.fromRegisteredPackage(packageId).datasetRevision();
     }
 
     private static String boundedDigest(String value) {

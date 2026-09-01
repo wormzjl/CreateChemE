@@ -22,7 +22,7 @@ final class V3SimultaneousColumnSolver {
     private static final String NEWTON_OFF_BAND_MESSAGE =
             "V3 Newton Jacobian contains an unexpected off-band coupling";
     private static final String DAMPED_NORMAL_OFF_BAND_MESSAGE =
-            "V3 damped normal matrix contains an unexpected off-band coupling";
+            V3NormalEquations.OFF_BAND_MESSAGE;
 
     private V3SimultaneousColumnSolver() {}
 
@@ -380,11 +380,12 @@ final class V3SimultaneousColumnSolver {
                         scaledTolerance, merit, success.solution(), success.backwardError());
                 if (direct != null) return direct;
             }
+            V3NormalEquations normal = V3NormalEquations.prepare(jacobian, residual, layout, control);
             double damping = INITIAL_GAUSS_NEWTON_DAMPING;
             for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
                 control.checkpoint();
                 V3BandedPivotedSolver.Result regularized = V3BandedPivotedSolver.solve(
-                        dampedNormalMatrix(jacobian, layout, damping, control), negativeGradient(residual, jacobian));
+                        normal.dampedMatrix(damping, control), normal.negativeGradient());
                 if (regularized instanceof V3BandedPivotedSolver.Result.Success success) {
                     VerifiedFinalNewton verified = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
                             scaledTolerance, merit, success.solution(), success.backwardError());
@@ -498,11 +499,12 @@ final class V3SimultaneousColumnSolver {
 
     private static double[] normalizedNegativeGradient(
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, V3DryMeshCoordinateMap coordinates) {
-        double[][] values = jacobian.values();
-        double[] direction = new double[values[0].length];
-        for (int row = 0; row < values.length; row++) {
+        double[] direction = new double[jacobian.unknowns().size()];
+        for (int row = 0; row < direction.length; row++) {
             double scaledResidual = residual.rows().get(row).scaledValue();
-            for (int column = 0; column < direction.length; column++) direction[column] -= values[row][column] * scaledResidual;
+            for (int column = 0; column < direction.length; column++) {
+                direction[column] -= jacobian.value(row, column) * scaledResidual;
+            }
         }
         double maximumLogFlowMagnitude = 0.0;
         double maximumTemperatureMagnitude = 0.0;
@@ -530,13 +532,21 @@ final class V3SimultaneousColumnSolver {
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double merit,
             V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             int maximumLineSearchSteps, V3SolveControl control) {
+        V3NormalEquations normal;
+        try {
+            normal = V3NormalEquations.prepare(jacobian, residual, layout, control);
+        } catch (IllegalStateException unavailable) {
+            if (!DAMPED_NORMAL_OFF_BAND_MESSAGE.equals(unavailable.getMessage())) throw unavailable;
+            // Preserve the optional fallback's existing off-band rejection before trying gradient descent.
+            return null;
+        }
         double damping = INITIAL_GAUSS_NEWTON_DAMPING;
         for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
             control.checkpoint();
             V3BandedPivotedSolver.Result result;
             try {
                 result = V3BandedPivotedSolver.solve(
-                        dampedNormalMatrix(jacobian, layout, damping, control), negativeGradient(residual, jacobian));
+                        normal.dampedMatrix(damping, control), normal.negativeGradient());
             } catch (IllegalStateException unavailable) {
                 if (!DAMPED_NORMAL_OFF_BAND_MESSAGE.equals(unavailable.getMessage())) throw unavailable;
                 // The normal-equation fallback is optional. Its finite-difference off-band noise must not turn a
@@ -552,36 +562,6 @@ final class V3SimultaneousColumnSolver {
             damping *= 10.0;
         }
         return null;
-    }
-
-    private static V3BandedMatrix dampedNormalMatrix(
-            V3FiniteDifferenceJacobian.Jacobian jacobian,
-            V3StageBlockLayout layout,
-            double damping,
-            V3SolveControl control) {
-        double[][] values = jacobian.values();
-        double[][] normal = new double[values.length][values.length];
-        for (int row = 0; row < normal.length; row++) {
-            control.checkpoint();
-            for (int column = row; column < normal.length; column++) {
-                double value = 0.0;
-                for (double[] jacobianRow : values) value += jacobianRow[row] * jacobianRow[column];
-                normal[row][column] = value;
-                normal[column][row] = value;
-            }
-            normal[row][row] += damping * Math.max(1.0, normal[row][row]);
-        }
-        return stageBandedMatrix(normal, layout, 2, DAMPED_NORMAL_OFF_BAND_MESSAGE);
-    }
-
-    private static double[] negativeGradient(V3MeshResidual residual, V3FiniteDifferenceJacobian.Jacobian jacobian) {
-        double[][] values = jacobian.values();
-        double[] gradient = new double[values[0].length];
-        for (int row = 0; row < values.length; row++) {
-            double scaledResidual = residual.rows().get(row).scaledValue();
-            for (int column = 0; column < gradient.length; column++) gradient[column] -= values[row][column] * scaledResidual;
-        }
-        return gradient;
     }
 
     private static V3ConvergenceEvidence convergenceEvidence(

@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Objects;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 
 /** SHA-256 digest of the resolved scientific input and explicitly supplied revision identifiers. */
 public record V3InputDigest(String hexadecimalSha256) {
@@ -18,12 +19,26 @@ public record V3InputDigest(String hexadecimalSha256) {
     public static V3InputDigest of(
             V3ColumnProblem problem, String formulationRevision, String propertyDataRevision,
             String assumptionsRevision) {
+        return of(problem, formulationRevision, propertyDataRevision, assumptionsRevision, 0.0);
+    }
+
+    /**
+     * Identifies an authored cutoff request, including when its attempt ultimately retries untruncated.
+     * Zero preserves the existing digest byte stream; a positive cutoff is hashed as a named field.
+     */
+    public static V3InputDigest of(
+            V3ColumnProblem problem, String formulationRevision, String propertyDataRevision,
+            String assumptionsRevision, double stageTraceCutoffMoleFraction) {
+        V3TruncationSupport.requireCutoff(stageTraceCutoffMoleFraction);
         problem = Objects.requireNonNull(problem, "problem");
         MessageDigest digest = sha256();
         put(digest, "v3-input-digest-schema", V3ColumnInput.SCHEMA_VERSION);
         put(digest, "formulation-revision", revision(formulationRevision, "formulationRevision"));
         put(digest, "property-data-revision", revision(propertyDataRevision, "propertyDataRevision"));
         put(digest, "assumptions-revision", revision(assumptionsRevision, "assumptionsRevision"));
+        if (stageTraceCutoffMoleFraction > 0.0) {
+            put(digest, "stage-trace-cutoff-mole-fraction-bits", canonicalBits(stageTraceCutoffMoleFraction));
+        }
         V3ColumnInput input = problem.input();
         put(digest, "input-schema", input.schemaVersion());
         put(digest, "package-id", input.packageId());
@@ -34,6 +49,19 @@ public record V3InputDigest(String hexadecimalSha256) {
         put(digest, "feed-temperature-bits", canonicalBits(input.feedTemperatureKelvin()));
         put(digest, "tray-count", input.stageCount());
         put(digest, "feed-tray", input.feedStageNumber());
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            put(digest, "side-draw-tray", draw.trayNumber());
+            put(digest, "side-draw-rate-bits", canonicalBits(draw.molarFlowMolPerSecond()));
+        }
+        // Empty-list placement is intentional: dry digests retain their historical byte stream.
+        if (!input.steamFeeds().isEmpty()) {
+            put(digest, "water-data-revision", V3WaterProperties.DATA_REVISION);
+            for (V3SteamFeedSpec steam : input.steamFeeds()) {
+                put(digest, "steam-stage", steam.stageNumber());
+                put(digest, "steam-rate-bits", canonicalBits(steam.molarFlowMolPerSecond()));
+                put(digest, "steam-temperature-bits", canonicalBits(steam.temperatureKelvin()));
+            }
+        }
         put(digest, "top-pressure-bits", canonicalBits(input.topPressurePascal()));
         put(digest, "stage-drop-bits", canonicalBits(input.stagePressureDropPascal()));
         put(digest, "condenser-branch", problem.topology().condenserPhaseBranch().name());

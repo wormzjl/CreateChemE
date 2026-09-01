@@ -16,6 +16,10 @@ final class V3HybridPreconditioner {
         request = Objects.requireNonNull(request, "request");
         thermo = Objects.requireNonNull(thermo, "thermo");
         workspace = Objects.requireNonNull(workspace, "workspace");
+        if (request.problem().hasSideDraws()) {
+            return new V3SequentialPreconditioner.Result.NotApplicable(V3SequentialPreconditioner.Failure.INVALID_STATE,
+                    new V3SequentialPreconditioner.Evidence(V3SequentialPreconditioner.Id.SUM_RATES, 0, "side draws"));
+        }
         Selection selection = select(request.problem(), thermo, workspace, request.seed());
         V3SequentialPreconditioner.Result last = null;
         for (V3SequentialPreconditioner.Id id : selection.order()) {

@@ -52,6 +52,14 @@ final class V3FeedFlash {
                 workspace.nextLogK[component] = 0.5 * (workspace.logK[component] + target);
             }
             if (maximumLogKChange <= LOG_K_TOLERANCE) {
+                // PR updates can move an initial Wilson two-phase bracket onto the liquid endpoint.
+                // Bisection otherwise leaves a tiny positive vapor fraction and mislabels the single phase.
+                if (rachfordRiceResidual(workspace.normalizedOverall, workspace.logK, 0.0) <= PHASE_ENDPOINT_TOLERANCE) {
+                    model.evaluateInto(temperatureKelvin, pressurePascal, workspace.normalizedOverall, V3Phase.LIQUID, workspace);
+                    return V3FlashResult.liquid(iteration, workspace.normalizedOverall,
+                            model.phaseMolarEnthalpy(temperatureKelvin, workspace.normalizedOverall, V3Phase.LIQUID, workspace),
+                            "all-liquid converged PR endpoint classification");
+                }
                 double liquidEnthalpy = model.phaseMolarEnthalpy(temperatureKelvin, workspace.liquidComposition,
                         V3Phase.LIQUID, workspace);
                 double vaporEnthalpy = model.phaseMolarEnthalpy(temperatureKelvin, workspace.vaporComposition,
@@ -82,8 +90,11 @@ final class V3FeedFlash {
     private static double rachfordRiceResidual(double[] composition, double[] logK, double vaporFraction) {
         double residual = 0.0;
         for (int component = 0; component < composition.length; component++) {
-            double kMinusOne = Math.exp(logK[component]) - 1.0;
-            double denominator = 1.0 + vaporFraction * kMinusOne;
+            if (composition[component] == 0.0) continue;
+            double k = Math.exp(logK[component]);
+            double kMinusOne = Math.expm1(logK[component]);
+            // Keep a tiny positive K at beta=1 instead of cancelling it in 1 + (K - 1).
+            double denominator = (1.0 - vaporFraction) + vaporFraction * k;
             if (!(denominator > 0.0) || !Double.isFinite(denominator)) return Double.NaN;
             residual += composition[component] * kMinusOne / denominator;
         }
@@ -95,8 +106,13 @@ final class V3FeedFlash {
         double liquidTotal = 0.0;
         double vaporTotal = 0.0;
         for (int component = 0; component < overall.length; component++) {
+            if (overall[component] == 0.0) {
+                liquid[component] = 0.0;
+                vapor[component] = 0.0;
+                continue;
+            }
             double k = Math.exp(logK[component]);
-            liquid[component] = overall[component] / (1.0 + vaporFraction * (k - 1.0));
+            liquid[component] = overall[component] / ((1.0 - vaporFraction) + vaporFraction * k);
             vapor[component] = k * liquid[component];
             liquidTotal += liquid[component];
             vaporTotal += vapor[component];

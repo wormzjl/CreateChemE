@@ -1,10 +1,16 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationEvidence;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
 
@@ -16,8 +22,11 @@ import java.util.concurrent.CancellationException;
  * {@link V3ColumnOutcome.Success} can be returned.</p>
  */
 public final class V3ColumnCalculator {
-    public static final String FORMULATION_REVISION = "v3-dry-mesh-r1";
-    public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r2";
+    /** Cutoff-enabled formulation; the exact-off path retains the legacy revision in its digest. */
+    public static final String FORMULATION_REVISION = "v3-dry-mesh-r4-flash-trace";
+    private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r2";
+    public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r4";
+    public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r1";
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
     private static final double PRESSURE_CONTINUATION_TRIGGER_PASCAL = 100_000.0;
@@ -27,6 +36,9 @@ public final class V3ColumnCalculator {
     private static final double PRESSURE_CONTINUATION_FINE_STEP_FROM_PASCAL = 110_000.0;
     private static final int PRESSURE_CONTINUATION_CORRECTOR_MAXIMUM_ITERATIONS = 12;
     private static final int PRESSURE_CONTINUATION_RECOVERY_MAXIMUM_ITERATIONS = 24;
+    private static final int CONDENSER_PHASE_CORRECTOR_MAXIMUM_ITERATIONS = 24;
+    private static final int DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS = 40;
+    private static final int DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS = 32;
 
     private enum ContinuationJacobianPolicy {
         NONE,
@@ -36,7 +48,7 @@ public final class V3ColumnCalculator {
 
     private V3ColumnCalculator() {}
 
-    /** Calculates one dry two-phase-condenser V3 problem without sharing mutable numerical state across callers. */
+    /** Calculates one dry V3 problem without sharing mutable numerical state across callers. */
     public static V3ColumnOutcome calculate(V3ColumnInput input) {
         return calculate(input, V3SolveControl.UNBOUNDED);
     }
@@ -52,64 +64,186 @@ public final class V3ColumnCalculator {
         return calculate(input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE);
     }
 
+    /**
+     * Calculates with frozen per-attempt stage support and an audited molar defect. The cutoff is a mole
+     * fraction in [0, 0.01], not a feed filter. Zero uses the exact legacy path. A failed truncated chain
+     * retries once untruncated, except for admission failures and caller-owned cancellation.
+     *
+     * @throws IllegalArgumentException if the cutoff is nonfinite or outside [0, 0.01]
+     */
+    public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control, double stageTraceCutoffMoleFraction) {
+        Objects.requireNonNull(input, "input");
+        Objects.requireNonNull(control, "control");
+        V3TruncationSupport.requireCutoff(stageTraceCutoffMoleFraction);
+        if (stageTraceCutoffMoleFraction == 0.0) return calculate(input, control);
+        return V3TruncationFallback.calculate(stageTraceCutoffMoleFraction, attemptCutoff -> calculate(
+                input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
+                new TruncationPolicy(stageTraceCutoffMoleFraction, attemptCutoff)));
+    }
+
     /** Package-private cold-start qualifier for reviewed initializer modes; production uses the sequential MESH path. */
     static V3ColumnOutcome calculate(
             V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode) {
+        return calculate(input, control, initializerMode, TruncationPolicy.OFF);
+    }
+
+    private static V3ColumnOutcome calculate(
+            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode, TruncationPolicy policy) {
+        Objects.requireNonNull(input, "input");
+        Objects.requireNonNull(control, "control");
+        Objects.requireNonNull(initializerMode, "initializerMode");
+        double totalDraw = input.sideDraws().stream().mapToDouble(V3SideDrawSpec::molarFlowMolPerSecond).sum();
+        double totalFeed = java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum();
+        if (totalDraw >= totalFeed) {
+            return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
+                    "V3 total side draw rate must be less than the feed rate", "input/draws-" + input.sideDraws().size(), List.of());
+        }
+        CondenserAttempts condenserAttempts = new CondenserAttempts();
+        if (initializerMode != V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
+            return calculateBranch(input, control, initializerMode, V3CondenserPhaseBranch.TWO_PHASE, policy, condenserAttempts);
+        }
+        V3CondenserPhaseBranch preferred = preferredCondenserBranch(input, control);
+        V3ColumnOutcome outcome = calculateBranch(input, control, initializerMode, preferred, policy, condenserAttempts);
+        if (outcome instanceof V3ColumnOutcome.Success
+                || outcome instanceof V3ColumnOutcome.Failure failure
+                && (failure.code() == V3SolverFailureCode.INVALID_INPUT
+                || failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE)) return outcome;
+        V3CondenserPhaseBranch alternate = preferred == V3CondenserPhaseBranch.LIQUID_ONLY
+                ? V3CondenserPhaseBranch.TWO_PHASE : V3CondenserPhaseBranch.LIQUID_ONLY;
+        // A known phase mismatch has its bounded same-rung warm correction. Restarting either branch
+        // from the smallest grid discards that useful profile and can revisit an inappropriate phase.
+        if (!condenserAttempts.allowsColdRecovery() || condenserAttempts.hasAttempted(alternate)) return outcome;
+        V3ColumnOutcome alternative = calculateBranch(input, control, initializerMode, alternate, policy, condenserAttempts);
+        return alternative instanceof V3ColumnOutcome.Success ? alternative : outcome;
+    }
+
+    /** A seed flash only orders the branch attempts; the solved liquid outlet is independently audited. */
+    private static V3CondenserPhaseBranch preferredCondenserBranch(V3ColumnInput input, V3SolveControl control) {
+        control.checkpoint();
+        try {
+            V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
+            V3ColumnInput noDrawInput = withoutSteamWithSurrogateDuty(withoutSideDraws(input));
+            V3ColumnInput probeInput = noDrawInput.stageCount() <= 4 ? noDrawInput : withStageGeometry(noDrawInput, 4);
+            V3ColumnProblem probe = V3ColumnProblemResolver.resolve(probeInput, V3CondenserPhaseBranch.TWO_PHASE);
+            if (V3OperatingDomainValidator.assess(probe, thermo) instanceof V3OperatingDomainValidator.Assessment.Rejected) {
+                return V3CondenserPhaseBranch.TWO_PHASE;
+            }
+            V3DryMeshState seed = V3ColumnInitializer.initialize(probe, thermo, thermo.newWorkspace(),
+                    V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state();
+            double[] overhead = new double[input.componentBasis().componentCount()];
+            for (int component = 0; component < seed.componentCount(); component++) {
+                overhead[probe.activeComponentBasis().publicIndex(component)] = seed.vaporFlow(1, component);
+            }
+            control.checkpoint();
+            V3FlashResult flash = thermo.flashTP(seed.temperatureKelvin(0), probe.nodePressurePascal(0),
+                    overhead, thermo.newWorkspace());
+            return flash.phase() == V3FeedPhase.LIQUID
+                    ? V3CondenserPhaseBranch.LIQUID_ONLY : V3CondenserPhaseBranch.TWO_PHASE;
+        } catch (V3ThermoException | IllegalArgumentException unavailableSeedFlash) {
+            return V3CondenserPhaseBranch.TWO_PHASE;
+        }
+    }
+
+    private static V3ColumnOutcome calculateBranch(
+            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode,
+            V3CondenserPhaseBranch condenserBranch, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
         input = Objects.requireNonNull(input, "input");
         control = Objects.requireNonNull(control, "control");
         initializerMode = Objects.requireNonNull(initializerMode, "initializerMode");
+        List<String> advisoryEvidence = List.of();
+        boolean admitted = false;
         try {
+            condenserAttempts.recordAttempt(condenserBranch);
             control.checkpoint();
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+            advisoryEvidence = thermo.advisoryEvidence();
+            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, condenserBranch);
             V3OperatingDomainValidator.Assessment admission = V3OperatingDomainValidator.assess(problem, thermo);
             if (admission instanceof V3OperatingDomainValidator.Assessment.Rejected rejected) {
-                return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(), "admission");
+                return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(), "admission", advisoryEvidence);
             }
-            V3InputDigest digest = V3InputDigest.of(
-                    problem, FORMULATION_REVISION, thermo.datasetRevision(), ASSUMPTIONS_REVISION);
+            admitted = true;
             V3SolvePass pass;
             if (initializerMode == V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
                 pass = requiresPressureContinuation(admission)
-                        ? solveDwsimPressureContinuation(input, thermo, control)
-                        : solveDwsimStageContinuation(input, thermo, control);
+                        ? solveDwsimPressureContinuation(input, thermo, control, condenserBranch, policy, condenserAttempts)
+                        : solveDwsimStageContinuation(input, thermo, control, condenserBranch, policy, condenserAttempts);
                 if (!publishesSuccess(pass.attempt(), pass.audit())
+                        && !hasCondenserPhaseMismatch(pass)
+                        && condenserAttempts.allowsColdRecovery()
                         && pass.attemptedRequestedProblem()
                         && pass.terminalStageCount() >= input.stageCount()
                         && pass.allowsFreshMaterialClosedFallback()) {
+                    problem = originalProblem(pass);
                     // The sequential material/VLE preconditioner is deliberately optional. It must not turn an
                     // otherwise solvable MESH problem into a failure; this is a fresh V3 material-closed seed,
                     // never a V1 approximation or a retained warm state.
-                    V3DryMeshState fallbackSeed = V3ColumnInitializer.initialize(
-                            problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.MATERIAL_CLOSED).state();
-                    pass = solveSingleProblem(problem, thermo, fallbackSeed,
-                            control, "cold/dwsim-material-closed-fallback/fine-fd");
+                    V3DryMeshState fallbackSeed = initializeForSolve(
+                            problem, thermo, V3ColumnInitializer.Mode.MATERIAL_CLOSED);
+                    pass = withPriorSupportNotes(pass, solveSingleProblem(problem, thermo, fallbackSeed,
+                            control, "cold/dwsim-material-closed-fallback/fine-fd", policy));
+                    PhaseCorrection fallbackPhase = correctCondenserPhase(pass, thermo, control, policy, condenserAttempts);
+                    pass = fallbackPhase.pass();
+                    if (!publishesSuccess(pass.attempt(), pass.audit())
+                            && !fallbackPhase.attempted() && !hasCondenserPhaseMismatch(pass)) {
+                        V3SolvePass recovered = recoverWithBubblePointProjection(
+                                problem, thermo, pass.attempt().state(), control,
+                                "cold/dwsim-material-closed-fallback/material-vle-recovery/fine-fd",
+                                ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS, MAXIMUM_NEWTON_ITERATIONS, policy);
+                        recovered = correctCondenserPhase(recovered, thermo, control, policy, condenserAttempts).pass();
+                        if (publishesSuccess(recovered.attempt(), recovered.audit())
+                                || recovered.attempt().evidence().maximumScaledResidual()
+                                < pass.attempt().evidence().maximumScaledResidual()) {
+                            pass = withPriorSupportNotes(pass, recovered);
+                        }
+                    }
+                    // The material-closed fallback may rescue the dry surrogate after an early stage rung
+                    // fails. It is still only a seed for a steam-bearing authored request and must never
+                    // publish in place of the final free-water ramp.
+                    if (!input.steamFeeds().isEmpty() && publishesSuccess(pass.attempt(), pass.audit())
+                            && !pass.prepared().problem().hasSteamFeeds()) {
+                        V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
+                                pass.prepared().problem().topology().condenserPhaseBranch());
+                        pass = recoverWithDrawRamp(requested, thermo, pass, control, policy, condenserAttempts);
+                    }
                 }
             } else {
                 pass = solveSingleProblem(problem, thermo,
-                        V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace(), initializerMode).state(),
-                        control, "cold/fine-fd");
+                        initializeForSolve(problem, thermo, initializerMode),
+                        control, "cold/fine-fd", policy);
             }
             V3SimultaneousColumnSolver.Attempt attempt = pass.attempt();
             V3AcceptanceAudit audit = pass.audit();
             String solvePath = pass.solvePath();
-            if (pass.reachedRequestedProblem() && !publishesSuccess(attempt, audit)) {
+            PreparedAttempt selected = pass.prepared();
+            if (pass.reachedRequestedProblem() && !publishesSuccess(attempt, audit)
+                    && !hasCondenserPhaseMismatch(pass) && condenserAttempts.allowsColdRecovery()) {
                 try {
                     control.checkpoint();
+                    PreparedAttempt coarsePrepared = prepareAttempt(originalProblem(pass), pass.recoverySeed(), policy);
                     V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
-                            problem, thermo, pass.feedMolarEnthalpyJoulesPerMol());
+                            coarsePrepared.problem(), thermo, pass.feedMolarEnthalpyJoulesPerMol());
                     V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
-                            problem, evaluator, new V3DryMeshCoordinateMap(problem), pass.recoverySeed(), thermo::newWorkspace,
+                            coarsePrepared.problem(), evaluator, new V3DryMeshCoordinateMap(coarsePrepared.problem()),
+                            coarsePrepared.seed(), thermo::newWorkspace,
                             V3ConvergenceEvidence.unavailable(), MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE,
                             V3FiniteDifferenceJacobian.DifferenceScale.COARSE, control);
                     control.checkpoint();
                     V3AcceptanceAudit coarseAudit = audit(
-                            problem, thermo, pass.feedMolarEnthalpyJoulesPerMol(), coarseAttempt.state(), control);
-                    if (publishesSuccess(coarseAttempt, coarseAudit)
-                            || coarseAttempt.evidence().maximumScaledResidual() < attempt.evidence().maximumScaledResidual()) {
-                        attempt = coarseAttempt;
-                        audit = coarseAudit;
-                        solvePath = "cold/coarse-fd-recovery";
+                            coarsePrepared.problem(), thermo, pass.feedMolarEnthalpyJoulesPerMol(), coarseAttempt.state(), control);
+                    V3SolvePass coarsePass = withPriorSupportNotes(pass, new V3SolvePass(coarseAttempt, coarseAudit,
+                            pass.feedMolarEnthalpyJoulesPerMol(), "cold/coarse-fd-recovery", pass.recoverySeed(),
+                            pass.terminalStageCount(), pass.reachedRequestedProblem(), pass.attemptedRequestedProblem(),
+                            pass.allowsFreshMaterialClosedFallback(), List.of("coarse finite-difference recovery"), coarsePrepared));
+                    PhaseCorrection coarsePhase = correctCondenserPhase(coarsePass, thermo, control, policy, condenserAttempts);
+                    coarsePass = coarsePhase.pass();
+                    if (coarsePhase.attempted() || publishesSuccess(coarsePass.attempt(), coarsePass.audit())
+                            || coarsePass.attempt().evidence().maximumScaledResidual() < attempt.evidence().maximumScaledResidual()) {
+                        pass = coarsePass;
+                        attempt = coarsePass.attempt();
+                        audit = coarsePass.audit();
+                        solvePath = coarsePass.solvePath();
+                        selected = coarsePass.prepared();
                     }
                 } catch (CancellationException cancelled) {
                     throw cancelled;
@@ -118,15 +252,26 @@ public final class V3ColumnCalculator {
                     // the band-structure guard because of finite-difference noise.
                 }
             }
-            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, pass.solverEvents());
+            if (selected.problem().topology().condenserPhaseBranch() == V3CondenserPhaseBranch.LIQUID_ONLY) {
+                solvePath += "/liquid-only-condenser";
+            }
+            if (input.sideDraws().size() > 0) solvePath += "/draws-" + input.sideDraws().size();
+            if (!input.steamFeeds().isEmpty()) solvePath += "/steam-" + input.steamFeeds().size();
+            List<String> solverEvents = policy.attemptCutoff() > 0.0
+                    ? mergedEvents(List.of(stageTraceEvent(selected.support(), attempt.state(), selected.problem())), pass.solverEvents())
+                    : pass.solverEvents();
+            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, solverEvents);
             if (pass.reachedRequestedProblem()
                     && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()) {
+                V3InputDigest digest = V3InputDigest.of(selected.problem(), formulationRevision(input, policy.requestedCutoff()),
+                        thermo.datasetRevision(), assumptionsRevision(input), policy.requestedCutoff());
                 V3ColumnResult result = V3ColumnResult.accepted(
-                        problem, digest, audit, converged.evidence().convergenceEvidence(), converged.state(), thermo);
+                        selected.problem(), digest, audit, converged.evidence().convergenceEvidence(), converged.state(), thermo,
+                        formulationRevision(input, policy.requestedCutoff()));
                 return new V3ColumnOutcome.Success(result, diagnostics);
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
-                String detail = !pass.attemptedRequestedProblem()
+                String detail = !pass.attemptedRequestedProblem() && pass.terminalStageCount() >= input.stageCount()
                         ? "DWSIM pressure continuation stalled before the requested operating point at "
                         + pass.solvePath() + " after " + failure.evidence().iterations()
                         + " Newton iterations; maximum scaled residual "
@@ -136,18 +281,30 @@ public final class V3ColumnCalculator {
                         + failure.evidence().iterations() + " Newton iterations; maximum scaled residual "
                         + failure.evidence().maximumScaledResidual() + ": " + failure.evidence().termination()
                         : failure.evidence().termination();
-                return new V3ColumnOutcome.Failure(failureCode(failure.code()), detail, diagnostics);
+                String operatingDetail = sideDrawDiagnostic(selected.problem(), attempt.state(), input.stageCount())
+                        + waterDiagnostic(selected.problem(), attempt.state());
+                if (!operatingDetail.isEmpty() && detail.length() + operatingDetail.length() > 512) {
+                    detail = detail.substring(0, Math.max(0, 512 - operatingDetail.length()));
+                }
+                return new V3ColumnOutcome.Failure(failureCode(failure.code()), detail + operatingDetail, diagnostics);
             }
             return new V3ColumnOutcome.Failure(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE,
-                    "The fresh V3 acceptance audit rejected the converged candidate", diagnostics);
+                    "The fresh V3 acceptance audit rejected the converged candidate"
+                            + sideDrawDiagnostic(selected.problem(), attempt.state(), input.stageCount())
+                            + waterDiagnostic(selected.problem(), attempt.state()), diagnostics);
         } catch (CancellationException cancelled) {
             throw cancelled;
+        } catch (InitializationFailure initialization) {
+            return terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE,
+                    initialization.getMessage(), "initialization", advisoryEvidence);
         } catch (V3ThermoException thermoFailure) {
-            return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property");
+            return terminalFailure(admitted && policy.attemptCutoff() > 0.0 ? V3SolverFailureCode.NONCONVERGENCE
+                    : V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property", advisoryEvidence);
         } catch (IllegalArgumentException invalid) {
-            return terminalFailure(V3SolverFailureCode.INVALID_INPUT, invalid.getMessage(), "input");
+            return terminalFailure(admitted && policy.attemptCutoff() > 0.0 ? V3SolverFailureCode.NONCONVERGENCE
+                    : V3SolverFailureCode.INVALID_INPUT, invalid.getMessage(), "input", advisoryEvidence);
         } catch (IllegalStateException internal) {
-            return terminalFailure(V3SolverFailureCode.INTERNAL_ERROR, internal.getMessage(), "internal");
+            return terminalFailure(V3SolverFailureCode.INTERNAL_ERROR, internal.getMessage(), "internal", advisoryEvidence);
         }
     }
 
@@ -164,38 +321,63 @@ public final class V3ColumnCalculator {
      * workspaces are retained after this calculation returns.</p>
      */
     private static V3SolvePass solveDwsimStageContinuation(
-            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control) {
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control,
+            V3CondenserPhaseBranch condenserBranch, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
         List<Integer> stageCounts = dwsimStageCounts(input.stageCount());
         String stagePath = dwsimStagePath(stageCounts);
         V3DryMeshState previousState = null;
         V3SolvePass lastPass = null;
+        boolean featureRampRequired = !input.sideDraws().isEmpty() || !input.steamFeeds().isEmpty();
+        V3ColumnInput continuationInput = input.steamFeeds().isEmpty() ? input : withoutSteamWithSurrogateDuty(input);
         for (int stageCount : stageCounts) {
             control.checkpoint();
-            V3ColumnInput stageInput = stageCount == input.stageCount()
-                    ? input : withStageGeometry(input, stageCount);
-            V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, V3CondenserPhaseBranch.TWO_PHASE);
+            V3ColumnInput stageInput = !featureRampRequired && stageCount == input.stageCount()
+                    ? continuationInput : withStageGeometry(continuationInput, stageCount);
+            V3CondenserPhaseBranch currentBranch = lastPass == null ? condenserBranch
+                    : lastPass.prepared().problem().topology().condenserPhaseBranch();
+            V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, currentBranch);
             V3DryMeshState seed = previousState == null
-                    ? V3ColumnInitializer.initialize(stageProblem, thermo, thermo.newWorkspace(),
-                            V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state()
+                    ? initializeForSolve(stageProblem, thermo, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE)
                     : continuationSeed(stageProblem, previousState, thermo, control);
+            V3SolvePass preceding = lastPass;
             lastPass = solveSingleProblem(stageProblem, thermo,
                     seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd",
-                    ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS);
+                    ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS, policy);
+            if (preceding != null) lastPass = withPriorSupportNotes(preceding, lastPass);
+            PhaseCorrection phaseCorrection = correctCondenserPhase(lastPass, thermo, control, policy, condenserAttempts);
+            lastPass = phaseCorrection.pass();
             if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
-                lastPass = recoverDwsimContinuationStage(stageProblem, thermo, lastPass, control, stagePath, stageCount);
+                if (!phaseCorrection.attempted() && !hasCondenserPhaseMismatch(lastPass)) {
+                    lastPass = withPriorSupportNotes(lastPass,
+                            recoverDwsimContinuationStage(originalProblem(lastPass), thermo, lastPass, control, stagePath, stageCount, policy));
+                    phaseCorrection = correctCondenserPhase(lastPass, thermo, control, policy, condenserAttempts);
+                    lastPass = phaseCorrection.pass();
+                }
                 if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
                     return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
                             "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + stageCount,
                             lastPass.recoverySeed(), stageCount, false, stageCount == input.stageCount(),
-                            stageCount == input.stageCount(), lastPass.solverEvents());
+                            stageCount == input.stageCount() && !phaseCorrection.attempted()
+                                    && !hasCondenserPhaseMismatch(lastPass), lastPass.solverEvents(), lastPass.prepared());
                 }
             }
             previousState = lastPass.attempt().state();
         }
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
+        if (featureRampRequired) {
+            V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
+                    lastPass.prepared().problem().topology().condenserPhaseBranch());
+            lastPass = recoverWithDrawRamp(requested, thermo, lastPass, control, policy, condenserAttempts);
+            if (!publishesSuccess(lastPass.attempt(), lastPass.audit())) {
+                return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
+                        "cold/dwsim-sequential/" + stagePath + "/failed-stage-" + input.stageCount(),
+                        lastPass.recoverySeed(), input.stageCount(), false, true, false,
+                        lastPass.solverEvents(), lastPass.prepared());
+            }
+        }
         return new V3SolvePass(lastPass.attempt(), lastPass.audit(), lastPass.feedMolarEnthalpyJoulesPerMol(),
                 lastPass.solvePath(), lastPass.recoverySeed(), lastPass.terminalStageCount(), true, true, false,
-                lastPass.solverEvents());
+                lastPass.solverEvents(), lastPass.prepared());
     }
 
     /**
@@ -205,51 +387,72 @@ public final class V3ColumnCalculator {
      * seed the next leg. No accepted state survives this calculation call.</p>
      */
     private static V3SolvePass solveDwsimPressureContinuation(
-            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control) {
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control,
+            V3CondenserPhaseBranch condenserBranch, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
         if (input.topPressurePascal() > PRESSURE_CONTINUATION_TRIGGER_PASCAL) {
             throw new IllegalArgumentException("V3 pressure continuation was requested outside its low-pressure lane");
         }
-        V3ColumnInput anchorInput = withTopPressure(input, PRESSURE_CONTINUATION_ANCHOR_PASCAL);
-        V3SolvePass pass = solveDwsimStageContinuation(anchorInput, thermo, control);
+        boolean steamRampRequired = !input.steamFeeds().isEmpty();
+        V3ColumnInput continuationInput = steamRampRequired
+                ? withoutSideDraws(withoutSteamWithSurrogateDuty(input)) : input;
+        boolean finePressureSteps = !input.sideDraws().isEmpty() || steamRampRequired;
+        V3ColumnInput anchorInput = withTopPressure(continuationInput, PRESSURE_CONTINUATION_ANCHOR_PASCAL);
+        V3SolvePass pass = solveDwsimStageContinuation(anchorInput, thermo, control, condenserBranch, policy, condenserAttempts);
         List<String> pressureEvents = new ArrayList<>();
-        String pressurePath = dwsimPressurePath(input.topPressurePascal());
+        String pressurePath = dwsimPressurePath(input.topPressurePascal(), finePressureSteps);
         if (!publishesSuccess(pass.attempt(), pass.audit())) {
             return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
                     "cold/dwsim-pressure/" + pressurePath + "/anchor-failed", pass.recoverySeed(),
                     pass.terminalStageCount(), false, false, false,
-                    mergedEvents(pressureEvents, pass.solverEvents()));
+                    mergedEvents(pressureEvents, pass.solverEvents()), pass.prepared());
         }
-        for (double pressure : dwsimPressureSteps(input.topPressurePascal())) {
+        for (double pressure : dwsimPressureSteps(input.topPressurePascal(), finePressureSteps)) {
             control.checkpoint();
-            V3ColumnInput stepInput = withTopPressure(input, pressure);
-            V3ColumnProblem stepProblem = V3ColumnProblemResolver.resolve(stepInput, V3CondenserPhaseBranch.TWO_PHASE);
+            V3ColumnInput stepInput = withTopPressure(continuationInput, pressure);
+            V3ColumnProblem stepProblem = V3ColumnProblemResolver.resolve(stepInput,
+                    pass.prepared().problem().topology().condenserPhaseBranch());
             V3DryMeshState seed = pass.attempt().state();
             String stepPath = "cold/dwsim-pressure/" + pressurePath + "/top-"
                     + Math.round(pressure / 1_000.0) + "kpa/fine-fd";
-            pass = solveSingleProblem(stepProblem, thermo, seed, control, stepPath,
+            pass = withPriorSupportNotes(pass, solveSingleProblem(stepProblem, thermo, seed, control, stepPath,
                     ContinuationJacobianPolicy.PRESSURE_LOCAL_PREDICTOR,
-                    PRESSURE_CONTINUATION_CORRECTOR_MAXIMUM_ITERATIONS);
+                    PRESSURE_CONTINUATION_CORRECTOR_MAXIMUM_ITERATIONS, policy));
             pressureEvents.add(pressureEvent(pressure, "predictor", pass));
+            PhaseCorrection phaseCorrection = correctCondenserPhase(pass, thermo, control, policy, condenserAttempts);
+            pass = phaseCorrection.pass();
             if (!publishesSuccess(pass.attempt(), pass.audit())) {
-                pass = recoverWithBubblePointProjection(stepProblem, thermo, seed, control,
-                        "cold/dwsim-pressure/" + pressurePath + "/top-"
-                                + Math.round(pressure / 1_000.0) + "kpa/material-vle-recovery/fine-fd",
-                        ContinuationJacobianPolicy.PRESSURE_LOCAL_PREDICTOR,
-                        PRESSURE_CONTINUATION_RECOVERY_MAXIMUM_ITERATIONS);
-                pressureEvents.add(pressureEvent(pressure, "Wang-Henke material/VLE recovery", pass));
+                if (!phaseCorrection.attempted() && !hasCondenserPhaseMismatch(pass)) {
+                    pass = withPriorSupportNotes(pass, recoverWithBubblePointProjection(stepProblem, thermo, seed, control,
+                            "cold/dwsim-pressure/" + pressurePath + "/top-"
+                                    + Math.round(pressure / 1_000.0) + "kpa/material-vle-recovery/fine-fd",
+                            ContinuationJacobianPolicy.PRESSURE_LOCAL_PREDICTOR,
+                            PRESSURE_CONTINUATION_RECOVERY_MAXIMUM_ITERATIONS, policy));
+                    pressureEvents.add(pressureEvent(pressure, "Wang-Henke material/VLE recovery", pass));
+                    pass = correctCondenserPhase(pass, thermo, control, policy, condenserAttempts).pass();
+                }
                 if (!publishesSuccess(pass.attempt(), pass.audit())) {
                     boolean attemptedRequestedProblem = Double.compare(pressure, input.topPressurePascal()) == 0;
                     return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
                             "cold/dwsim-pressure/" + pressurePath + "/failed-top-"
                                     + Math.round(pressure / 1_000.0) + "kpa",
                             pass.recoverySeed(), input.stageCount(), false, attemptedRequestedProblem, false,
-                            mergedEvents(pressureEvents, pass.solverEvents()));
+                            mergedEvents(pressureEvents, pass.solverEvents()), pass.prepared());
                 }
+            }
+        }
+        if (steamRampRequired) {
+            V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
+                    pass.prepared().problem().topology().condenserPhaseBranch());
+            pass = recoverWithDrawRamp(requested, thermo, pass, control, policy, condenserAttempts);
+            if (!publishesSuccess(pass.attempt(), pass.audit())) {
+                return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
+                        "cold/dwsim-pressure/" + pressurePath + "/wet-ramp-failed", pass.recoverySeed(),
+                        input.stageCount(), false, true, false, mergedEvents(pressureEvents, pass.solverEvents()), pass.prepared());
             }
         }
         return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(),
                 pass.solvePath(), pass.recoverySeed(), input.stageCount(), true, true, false,
-                mergedEvents(pressureEvents, pass.solverEvents()));
+                mergedEvents(pressureEvents, pass.solverEvents()), pass.prepared());
     }
 
     /** Applies the material/VLE hand-off projection only in the qualified low-pressure operating region. */
@@ -282,9 +485,11 @@ public final class V3ColumnCalculator {
         for (int node = 0; node < state.nodeCount(); node++) {
             if (!Double.isFinite(state.temperatureKelvin(node)) || state.temperatureKelvin(node) <= 0.0) return false;
             for (int component = 0; component < state.componentCount(); component++) {
-                if (!Double.isFinite(state.vaporFlow(node, component)) || state.vaporFlow(node, component) <= 0.0) {
+                boolean vaporPhase = problem.topology().hasVaporPhase(node);
+                if (vaporPhase && (!Double.isFinite(state.vaporFlow(node, component)) || state.vaporFlow(node, component) <= 0.0)) {
                     return false;
                 }
+                if (!vaporPhase && state.vaporFlow(node, component) != 0.0) return false;
                 boolean liquidPhase = problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component);
                 if (liquidPhase && (!Double.isFinite(state.liquidFlow(node, component))
                         || state.liquidFlow(node, component) <= 0.0)) {
@@ -309,12 +514,13 @@ public final class V3ColumnCalculator {
             V3SolvePass failedPass,
             V3SolveControl control,
             String stagePath,
-        int stageCount) {
+            int stageCount,
+            TruncationPolicy policy) {
         control.checkpoint();
         return recoverWithBubblePointProjection(problem, thermo, failedPass.attempt().state(), control,
                 "cold/dwsim-sequential/" + stagePath + "/material-vle-recovery-stage-" + stageCount + "/fine-fd",
                 ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
-                MAXIMUM_NEWTON_ITERATIONS);
+                MAXIMUM_NEWTON_ITERATIONS, policy);
     }
 
     private static V3SolvePass recoverWithBubblePointProjection(
@@ -324,19 +530,11 @@ public final class V3ColumnCalculator {
             V3SolveControl control,
             String solvePath,
             ContinuationJacobianPolicy jacobianPolicy,
-            int maximumIterations) {
+            int maximumIterations,
+            TruncationPolicy policy) {
         control.checkpoint();
         V3DryMeshState projected = projectedSeedOrPrevious(problem, thermo, projectionSource, control);
-        return solveSingleProblem(problem, thermo, projected, control, solvePath, jacobianPolicy, maximumIterations);
-    }
-
-    private static V3SolvePass solveSingleProblem(
-            V3ColumnProblem problem,
-            V3PengRobinsonThermo thermo,
-            V3DryMeshState seed,
-            V3SolveControl control,
-            String solvePath) {
-        return solveSingleProblem(problem, thermo, seed, control, solvePath, ContinuationJacobianPolicy.NONE);
+        return solveSingleProblem(problem, thermo, projected, control, solvePath, jacobianPolicy, maximumIterations, policy);
     }
 
     private static V3SolvePass solveSingleProblem(
@@ -345,9 +543,8 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed,
             V3SolveControl control,
             String solvePath,
-            ContinuationJacobianPolicy jacobianPolicy) {
-        return solveSingleProblem(problem, thermo, seed, control, solvePath, jacobianPolicy,
-                MAXIMUM_NEWTON_ITERATIONS);
+            TruncationPolicy policy) {
+        return solveSingleProblem(problem, thermo, seed, control, solvePath, ContinuationJacobianPolicy.NONE, policy);
     }
 
     private static V3SolvePass solveSingleProblem(
@@ -357,17 +554,41 @@ public final class V3ColumnCalculator {
             V3SolveControl control,
             String solvePath,
             ContinuationJacobianPolicy jacobianPolicy,
-            int maximumIterations) {
+            TruncationPolicy policy) {
+        return solveSingleProblem(problem, thermo, seed, control, solvePath, jacobianPolicy,
+                MAXIMUM_NEWTON_ITERATIONS, policy);
+    }
+
+    private static V3SolvePass solveSingleProblem(
+            V3ColumnProblem problem,
+            V3PengRobinsonThermo thermo,
+            V3DryMeshState seed,
+            V3SolveControl control,
+            String solvePath,
+            ContinuationJacobianPolicy jacobianPolicy,
+            int maximumIterations,
+            TruncationPolicy policy) {
         if (maximumIterations < 1 || maximumIterations > MAXIMUM_NEWTON_ITERATIONS) {
             throw new IllegalArgumentException("V3 simultaneous solve iteration limit is invalid");
         }
         jacobianPolicy = Objects.requireNonNull(jacobianPolicy, "jacobianPolicy");
         control.checkpoint();
-        V3FlashResult feedFlash = thermo.flashTP(problem.input().feedTemperatureKelvin(),
-                problem.nodePressurePascal(problem.topology().feedTrayNumber()),
-                problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
+        V3FlashResult feedFlash = policy.attemptCutoff() > 0.0
+                ? thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
+                        problem.input().feedComponentMolarFlowsMolPerSecond(), V3TraceTruncationPolicy.of(policy.attemptCutoff()),
+                        thermo.newWorkspace(), control::checkpoint)
+                : thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
+                        problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
+        // A phase-allocation approximation must never change the authored feed's physical energy.
+        double feedMolarEnthalpy = feedFlash.referenceMolarEnthalpyJoulesPerMol();
+        V3DryMeshState recoverySeed = seed;
+        PreparedAttempt prepared = prepareAttempt(problem, seed, policy);
+        problem = prepared.problem();
+        seed = prepared.seed();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
-                problem, thermo, feedFlash.molarEnthalpyJoulesPerMol());
+                problem, thermo, feedMolarEnthalpy);
         SolveTelemetry telemetry = new SolveTelemetry(problem);
         V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
         V3SimultaneousColumnSolver.Attempt attempt = switch (jacobianPolicy) {
@@ -383,9 +604,365 @@ public final class V3ColumnCalculator {
                     maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
         };
         control.checkpoint();
-        V3AcceptanceAudit audit = audit(problem, thermo, feedFlash.molarEnthalpyJoulesPerMol(), attempt.state(), control);
-        return new V3SolvePass(attempt, audit, feedFlash.molarEnthalpyJoulesPerMol(), solvePath,
-                seed, problem.input().stageCount(), true, true, true, telemetry.events());
+        V3AcceptanceAudit audit = audit(problem, thermo, feedMolarEnthalpy, attempt.state(), control);
+        List<String> events = telemetry.events();
+        if (policy.attemptCutoff() > 0.0) events = mergedEvents(List.of(flashTraceEvent(feedFlash)), events);
+        if (!prepared.support().note().isEmpty()) {
+            events = mergedEvents(List.of("stage-trace support: " + prepared.support().note()), events);
+        }
+        return new V3SolvePass(attempt, audit, feedMolarEnthalpy, solvePath,
+                recoverySeed, problem.input().stageCount(), true, true, true, events, prepared);
+    }
+
+    private static boolean hasCondenserPhaseMismatch(V3SolvePass pass) {
+        return pass.attempt() instanceof V3SimultaneousColumnSolver.Attempt.Converged
+                && pass.audit().checks().stream().anyMatch(check -> check.family().equals("CONDENSER_PHASE") && !check.passed());
+    }
+
+    /** Resolve the current branch without carrying an earlier attempt's frozen truncation support. */
+    private static V3ColumnProblem originalProblem(V3SolvePass pass) {
+        V3ColumnProblem selected = pass.prepared().problem();
+        return V3ColumnProblemResolver.resolve(selected.input(), selected.topology().condenserPhaseBranch());
+    }
+
+    /** One warm condenser flash correction per rung; its candidate still needs the full fresh audit. */
+    private static PhaseCorrection correctCondenserPhase(
+            V3SolvePass pass, V3PengRobinsonThermo thermo, V3SolveControl control,
+            TruncationPolicy policy, CondenserAttempts condenserAttempts) {
+        if (!hasCondenserPhaseMismatch(pass)) return new PhaseCorrection(pass, false);
+        condenserAttempts.beginPhaseCorrection();
+        if (!pass.attempt().evidence().convergenceEvidence().satisfiesGates()
+                || pass.audit().checks().stream().anyMatch(check -> !check.family().equals("CONDENSER_PHASE") && !check.passed())) {
+            return new PhaseCorrection(withPhaseEvents(pass,
+                    "condenser phase transition unavailable: other convergence or audit gates also failed"), true);
+        }
+        V3CondenserPhaseTransition.Prepared transition;
+        try {
+            transition = V3CondenserPhaseTransition.prepare(pass.prepared().problem(), pass.attempt().state(), thermo, control);
+        } catch (CancellationException cancelled) {
+            throw cancelled;
+        } catch (V3ThermoException | IllegalArgumentException unavailable) {
+            String detail = "condenser phase transition unavailable: " + unavailable.getMessage();
+            return new PhaseCorrection(withPhaseEvents(pass, detail.length() <= 256 ? detail : detail.substring(0, 256)), true);
+        }
+        V3CondenserPhaseBranch sourceBranch = pass.prepared().problem().topology().condenserPhaseBranch();
+        V3CondenserPhaseBranch targetBranch = transition.problem().topology().condenserPhaseBranch();
+        condenserAttempts.recordAttempt(targetBranch);
+        String event = "condenser phase transition: " + sourceBranch + " -> " + targetBranch
+                + "; overhead flash vapor fraction=" + transition.vaporFraction();
+        V3SolvePass corrected = solveSingleProblem(transition.problem(), thermo, transition.seed(), control,
+                pass.solvePath() + "/condenser-phase-correction",
+                ContinuationJacobianPolicy.PRESSURE_LOCAL_PREDICTOR,
+                CONDENSER_PHASE_CORRECTOR_MAXIMUM_ITERATIONS, policy);
+        condenserAttempts.finishPhaseCorrection(publishesSuccess(corrected.attempt(), corrected.audit()));
+        return new PhaseCorrection(withPhaseEvents(withPriorSupportNotes(pass, corrected), event), true);
+    }
+
+    private static V3SolvePass withPhaseEvents(V3SolvePass pass, String event) {
+        return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(), pass.solvePath(),
+                pass.recoverySeed(), pass.terminalStageCount(), pass.reachedRequestedProblem(),
+                pass.attemptedRequestedProblem(), false, mergedEvents(List.of(event), pass.solverEvents()), pass.prepared());
+    }
+
+    private record PhaseCorrection(V3SolvePass pass, boolean attempted) {}
+
+    /** One immutable authored-feature continuation point. */
+    private record RampStep(double steamFraction, double drawFraction, String pathLabel, String description) {
+        private RampStep {
+            if (!Double.isFinite(steamFraction) || steamFraction < 0.0 || steamFraction > 1.0
+                    || !Double.isFinite(drawFraction) || drawFraction < 0.0 || drawFraction > 1.0) {
+                throw new IllegalArgumentException("V3 continuation ramp fractions must be finite and within zero to one");
+            }
+            pathLabel = Objects.requireNonNull(pathLabel, "pathLabel");
+            description = Objects.requireNonNull(description, "description");
+        }
+
+        boolean requested(V3ColumnInput input) {
+            return (input.steamFeeds().isEmpty() || steamFraction == 1.0)
+                    && (input.sideDraws().isEmpty() || drawFraction == 1.0);
+        }
+
+        double progress() {
+            return Math.max(steamFraction, drawFraction);
+        }
+    }
+
+    /** Solve-confined attempt history; prevents duplicate cold branch restarts after a phase correction. */
+    static final class CondenserAttempts {
+        private final EnumSet<V3CondenserPhaseBranch> branches = EnumSet.noneOf(V3CondenserPhaseBranch.class);
+        private boolean unresolvedPhaseMismatch;
+        private boolean requestedDrawRampFailed;
+
+        void recordAttempt(V3CondenserPhaseBranch branch) { branches.add(Objects.requireNonNull(branch, "branch")); }
+        boolean hasAttempted(V3CondenserPhaseBranch branch) { return branches.contains(branch); }
+        void beginPhaseCorrection() { unresolvedPhaseMismatch = true; }
+        void finishPhaseCorrection(boolean auditedSuccess) {
+            if (auditedSuccess) unresolvedPhaseMismatch = false;
+        }
+        void recordRequestedDrawRampFailure() { requestedDrawRampFailed = true; }
+        boolean allowsColdRecovery() { return !unresolvedPhaseMismatch && !requestedDrawRampFailed; }
+    }
+
+    /** Bounded authored-parameter ramp from a dry surrogate seed to liquid draws and free-water steam. */
+    private static V3SolvePass recoverWithDrawRamp(
+            V3ColumnProblem requested, V3PengRobinsonThermo thermo, V3SolvePass seedBase,
+            V3SolveControl control, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
+        V3ColumnInput input = requested.input();
+        seedBase = Objects.requireNonNull(seedBase, "seedBase");
+        if (!publishesSuccess(seedBase.attempt(), seedBase.audit())
+                || seedBase.prepared().problem().hasSideDraws() || seedBase.prepared().problem().hasSteamFeeds()) {
+            throw new IllegalArgumentException("V3 feature ramp requires an accepted dry no-draw seed at requested geometry");
+        }
+        String rampPath = seedBase.solvePath();
+        V3SolvePass previous = seedBase;
+        CondenserAttempts rampAttempts = new CondenserAttempts();
+        List<String> rampEvents = new ArrayList<>();
+        boolean intermediateFailed = false;
+        // The first fixed-geometry handoff uses the material projection. Later parameter rungs retain the
+        // accepted state directly; reprojecting every rung was measured to cause residual stagnation.
+        double totalSteamMolPerSecond = input.steamFeeds().stream()
+                .mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum();
+        // Keep each water-flow continuation rung at or below 4 mol/s. A four-rung path is
+        // sufficient for normal stripping rates; higher rates need smaller physical increments
+        // to cross the condenser water/phase boundary without a branch jump.
+        int steamRampSteps = Math.max(4, Math.min(12, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
+        List<RampStep> rampSteps = rampSteps(input, steamRampSteps);
+        for (RampStep rampStep : rampSteps) {
+            if (intermediateFailed && !rampStep.requested(input)) continue;
+            control.checkpoint();
+            List<V3SideDrawSpec> draws = rampStep.drawFraction() == 0.0 ? List.of() : input.sideDraws().stream()
+                    .map(draw -> new V3SideDrawSpec(draw.trayNumber(),
+                            rampStep.drawFraction() * draw.molarFlowMolPerSecond())).toList();
+            List<V3SteamFeedSpec> steam = rampStep.steamFraction() == 0.0 ? List.of() : input.steamFeeds().stream()
+                    .map(feed -> new V3SteamFeedSpec(feed.stageNumber(),
+                            rampStep.steamFraction() * feed.molarFlowMolPerSecond(),
+                            feed.temperatureKelvin())).toList();
+            double reboilerDuty = reboilerDutyWatts(input)
+                    + (1.0 - rampStep.steamFraction()) * surrogateSteamDutyWatts(input);
+            V3ColumnInput rampInput = new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(),
+                    input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
+                    input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                    withReboilerDuty(input, reboilerDuty), draws, steam);
+            V3CondenserPhaseBranch branch = previous.prepared().problem().topology().condenserPhaseBranch();
+            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(rampInput, branch);
+            rampAttempts.recordAttempt(branch);
+            V3DryMeshState seed = previous == seedBase
+                    ? continuationSeed(problem, previous.attempt().state(), thermo, control)
+                    : previous.attempt().state();
+            TruncationPolicy rampPolicy = rampStep.requested(input) ? policy : TruncationPolicy.OFF;
+            V3SolvePass pass = solveSingleProblem(problem, thermo, seed, control,
+                    rampPath + "/" + rampStep.pathLabel() + "-" + rampStep.progress(),
+                    ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                    rampStep.requested(input) ? DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS
+                            : DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS, rampPolicy);
+            pass = correctCondenserPhase(pass, thermo, control, rampPolicy, rampAttempts).pass();
+            if (!publishesSuccess(pass.attempt(), pass.audit())) {
+                if (rampStep.requested(input)) {
+                    condenserAttempts.recordRequestedDrawRampFailure();
+                    rampEvents.add(boundedEvent(
+                            rampStep.description() + " reached the requested input and failed: " + rampEvidence(pass)));
+                    V3SolvePass annotated = withRampEvents(pass, rampEvents);
+                    return withPriorSupportNotes(seedBase, annotated);
+                }
+                String event = rampStep.description() + " stopped at " + rampStep.progress() + ": " + rampEvidence(pass)
+                        + "; failed checks=" + pass.audit().checks().stream().filter(check -> !check.passed())
+                        .map(V3AcceptanceAudit.Check::family).toList();
+                rampEvents.add(boundedEvent(event));
+                // A failed intermediate fraction is still a finite fixed-geometry seed. The authored
+                // full-rate problem must be attempted before returning a terminal diagnostic.
+                previous = pass;
+                intermediateFailed = true;
+                continue;
+            }
+            previous = pass;
+        }
+        condenserAttempts.recordAttempt(previous.prepared().problem().topology().condenserPhaseBranch());
+        condenserAttempts.finishPhaseCorrection(true);
+        return withPriorSupportNotes(seedBase, withRampEvents(previous, rampEvents));
+    }
+
+    /** Separates water/phase continuation from draw withdrawal when both authored features are present. */
+    private static List<RampStep> rampSteps(V3ColumnInput input, int steamRampSteps) {
+        boolean hasSteam = !input.steamFeeds().isEmpty();
+        boolean hasDraws = !input.sideDraws().isEmpty();
+        if (hasSteam && hasDraws) {
+            List<RampStep> steps = new ArrayList<>(steamRampSteps + 4);
+            for (int step = 1; step <= steamRampSteps; step++) {
+                steps.add(new RampStep(step / (double) steamRampSteps, 0.0, "steam-ramp", "steam ramp"));
+            }
+            for (int step = 1; step <= 4; step++) {
+                steps.add(new RampStep(1.0, step / 4.0, "draw-ramp", "side-draw ramp"));
+            }
+            return List.copyOf(steps);
+        }
+        int steps = hasSteam ? steamRampSteps : 4;
+        List<RampStep> result = new ArrayList<>(steps);
+        String pathLabel = hasSteam ? "wet-ramp" : "draw-ramp";
+        String description = hasSteam ? "wet ramp" : "side-draw ramp";
+        for (int step = 1; step <= steps; step++) {
+            double fraction = step / (double) steps;
+            result.add(new RampStep(hasSteam ? fraction : 0.0, hasDraws ? fraction : 0.0,
+                    pathLabel, description));
+        }
+        return List.copyOf(result);
+    }
+
+    private static V3SolvePass withRampEvents(V3SolvePass pass, List<String> events) {
+        if (events.isEmpty()) return pass;
+        return new V3SolvePass(pass.attempt(), pass.audit(), pass.feedMolarEnthalpyJoulesPerMol(), pass.solvePath(),
+                pass.recoverySeed(), pass.terminalStageCount(), pass.reachedRequestedProblem(),
+                pass.attemptedRequestedProblem(), pass.allowsFreshMaterialClosedFallback(),
+                mergedEvents(events, pass.solverEvents()), pass.prepared());
+    }
+
+    private static String boundedEvent(String event) {
+        return event.length() <= 256 ? event : event.substring(0, 256);
+    }
+
+    private static String rampEvidence(V3SolvePass pass) {
+        V3SimultaneousColumnSolver.Evidence evidence = pass.attempt().evidence();
+        return evidence.termination() + ", iterations=" + evidence.iterations()
+                + ", residual=" + evidence.maximumScaledResidual();
+    }
+
+    static String formulationRevision(double requestedCutoff) {
+        V3TruncationSupport.requireCutoff(requestedCutoff);
+        return requestedCutoff == 0.0 ? LEGACY_FORMULATION_REVISION : FORMULATION_REVISION;
+    }
+
+    static String formulationRevision(V3ColumnInput input, double requestedCutoff) {
+        V3TruncationSupport.requireCutoff(requestedCutoff);
+        if (!input.steamFeeds().isEmpty()) {
+            return "v3-wet-mesh-r6-steam" + (!input.sideDraws().isEmpty() ? "-side-draws" : "")
+                    + (requestedCutoff > 0.0 ? "-flash-trace" : "");
+        }
+        if (input.sideDraws().isEmpty()) return formulationRevision(requestedCutoff);
+        return "v3-dry-mesh-r5-side-draws" + (requestedCutoff > 0.0 ? "-flash-trace" : "");
+    }
+
+    static String assumptionsRevision(V3ColumnInput input) {
+        return input.steamFeeds().isEmpty() ? ASSUMPTIONS_REVISION : WET_ASSUMPTIONS_REVISION;
+    }
+
+    private static String sideDrawDiagnostic(
+            V3ColumnProblem problem, V3DryMeshState state, int requestedStageCount) {
+        V3SideDrawSpec worst = null;
+        double worstLiquid = 0.0;
+        double largestFraction = -1.0;
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            double liquid = V3SideDraws.liquidTotal(state, draw.trayNumber());
+            double fraction = liquid > 0.0 && Double.isFinite(liquid)
+                    ? draw.molarFlowMolPerSecond() / liquid : Double.MAX_VALUE;
+            if (fraction > largestFraction) {
+                worst = draw;
+                worstLiquid = liquid;
+                largestFraction = fraction;
+            }
+        }
+        if (worst == null) return "";
+        String geometry = problem.topology().trayCount() == requestedStageCount
+                ? "authored tray " + worst.trayNumber()
+                : "tray " + worst.trayNumber() + " at the " + problem.topology().trayCount()
+                        + "-tray continuation grid (requested " + requestedStageCount + " trays)";
+        return String.format(Locale.ROOT,
+                "; side draw on %s requests %.6g kmol/h; final internal liquid %.6g kmol/h (withdrawal %.5g)",
+                geometry, worst.molarFlowMolPerSecond() * 3.6, worstLiquid * 3.6, largestFraction);
+    }
+
+    private static String waterDiagnostic(V3ColumnProblem problem, V3DryMeshState state) {
+        if (!problem.hasSteamFeeds()) return "";
+        double maximumRatio = 0.0;
+        for (int node = 1; node <= problem.topology().reboilerNode(); node++) {
+            double water = problem.waterVaporFlowMolPerSecond(node);
+            double temperature = state.temperatureKelvin(node);
+            if (water == 0.0 || temperature >= 640.0 || temperature < V3WaterProperties.TRIPLE_POINT_KELVIN) continue;
+            double hydrocarbon = 0.0;
+            for (int component = 0; component < state.componentCount(); component++) hydrocarbon += state.vaporFlow(node, component);
+            maximumRatio = Math.max(maximumRatio, problem.nodePressurePascal(node) * water / (hydrocarbon + water)
+                    / V3WaterProperties.saturationPressurePascal(temperature));
+        }
+        return String.format(Locale.ROOT, "; water dew-point saturation ratio %.5g (<= 1 required)", maximumRatio);
+    }
+
+    private static V3SolvePass withPriorSupportNotes(V3SolvePass previous, V3SolvePass next) {
+        // Preserve availability and phase-transition evidence without retaining earlier numerical states.
+        List<String> notes = null;
+        for (String event : previous.solverEvents()) {
+            if (!event.startsWith("stage-trace support:") && !event.startsWith("condenser phase transition")
+                    && !event.startsWith("flash-trace ")) continue;
+            if (notes == null) notes = new ArrayList<>();
+            if (!notes.contains(event) && !next.solverEvents().contains(event)) notes.add(event);
+        }
+        if (notes == null || notes.isEmpty()) return next;
+        return new V3SolvePass(next.attempt(), next.audit(), next.feedMolarEnthalpyJoulesPerMol(), next.solvePath(),
+                next.recoverySeed(), next.terminalStageCount(), next.reachedRequestedProblem(),
+                next.attemptedRequestedProblem(), next.allowsFreshMaterialClosedFallback(),
+                mergedEvents(notes, next.solverEvents()), next.prepared());
+    }
+
+    /** The deciding seed is final here: interpolation/preconditioning happens outside this frozen attempt. */
+    private static PreparedAttempt prepareAttempt(V3ColumnProblem original, V3DryMeshState seed, TruncationPolicy policy) {
+        V3TruncationSupport support = V3TruncationSupport.derive(original, policy.attemptCutoff(), seed);
+        V3ColumnProblem problem;
+        try {
+            problem = V3ColumnProblemResolver.withTruncation(original, support);
+        } catch (IllegalArgumentException invalidLedger) {
+            support = support.fallbackToIdentity(original,
+                    "Stage-trace support fell back to identity: reduced ledger validation failed");
+            problem = original;
+        }
+        return new PreparedAttempt(problem, support, support.projectSeed(original, seed));
+    }
+
+    private static String stageTraceEvent(V3TruncationSupport support, V3DryMeshState state, V3ColumnProblem problem) {
+        String defect;
+        try {
+            defect = String.format(Locale.ROOT, "%.6g", support.massDefectMolPerSecond(state)
+                    / problem.activeComponentBasis().totalFeedFlowMolPerSecond());
+        } catch (IllegalArgumentException unavailable) {
+            defect = "unavailable";
+        }
+        String event = "stage-trace cutoff=" + support.cutoffMoleFraction() + "; truncated="
+                + support.truncatedPointCount() + "/" + support.totalPointCount() + "; closure-pruned="
+                + support.closurePrunedCount() + "; defect/feed=" + defect
+                + (support.note().isEmpty() ? "" : "; " + support.note());
+        return event.length() <= 256 ? event : event.substring(0, 256);
+    }
+
+    private static String flashTraceEvent(V3FlashResult flash) {
+        V3FlashTruncationEvidence evidence = flash.truncationEvidence();
+        String event = String.format(Locale.ROOT,
+                "flash-trace cutoff=%.6g; status=%s; omitted=%dL/%dV; it=%d/%d",
+                evidence.cutoffMoleFraction(), evidence.status(), evidence.omittedLiquidComponents(),
+                evidence.omittedVaporComponents(), evidence.referenceIterations(), evidence.reducedIterations());
+        event += evidence.errorsEvaluated() ? String.format(Locale.ROOT,
+                "; alloc=%.3g; beta=%.3g; x/y=%.3g; mass=%.3g; dH=%.3g J/mol",
+                evidence.allocationError(), evidence.betaError(), evidence.maxPhaseCompositionError(),
+                evidence.maxMaterialClosureError(), evidence.enthalpyErrorJoulesPerMol()) : "; errors=not-evaluated";
+        event += "; feed-H=reference";
+        return event.length() <= 256 ? event : event.substring(0, 256);
+    }
+
+    /** Immutable per-chain policy separates scientific request provenance from an untruncated retry. */
+    private record TruncationPolicy(double requestedCutoff, double attemptCutoff) {
+        private static final TruncationPolicy OFF = new TruncationPolicy(0.0, 0.0);
+
+        private TruncationPolicy {
+            V3TruncationSupport.requireCutoff(requestedCutoff);
+            V3TruncationSupport.requireCutoff(attemptCutoff);
+            if (attemptCutoff != 0.0 && attemptCutoff != requestedCutoff) {
+                throw new IllegalArgumentException("V3 attempt cutoff must match the request or be disabled for fallback");
+            }
+        }
+    }
+
+    /** Keeps the frozen problem/support/seed together through correction, audit and publication. */
+    private record PreparedAttempt(V3ColumnProblem problem, V3TruncationSupport support, V3DryMeshState seed) {
+        private PreparedAttempt {
+            Objects.requireNonNull(problem, "problem");
+            Objects.requireNonNull(support, "support");
+            Objects.requireNonNull(seed, "seed");
+        }
     }
 
     private static List<Integer> dwsimStageCounts(int requestedStageCount) {
@@ -406,12 +983,59 @@ public final class V3ColumnCalculator {
         return path.toString();
     }
 
-    private static V3ColumnInput withStageGeometry(V3ColumnInput input, int stageCount) {
+    static V3ColumnInput withStageGeometry(V3ColumnInput input, int stageCount) {
         int feedStage = Math.clamp((int) Math.round(
                 stageCount * input.feedStageNumber() / (double) input.stageCount()), 1, stageCount);
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), stageCount, feedStage,
-                input.topPressurePascal(), input.stagePressureDropPascal(), input.specifications());
+                input.topPressurePascal(), input.stagePressureDropPascal(), input.specifications(), List.of());
+    }
+
+    private static V3ColumnInput withoutSideDraws(V3ColumnInput input) {
+        if (input.sideDraws().isEmpty()) return input;
+        return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
+                input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
+                input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                input.specifications(), List.of(), input.steamFeeds());
+    }
+
+    /** Supplies a dry boilup surrogate only for continuation seeds; publication always returns to authored duty. */
+    private static V3ColumnInput withoutSteamWithSurrogateDuty(V3ColumnInput input) {
+        if (input.steamFeeds().isEmpty()) return input;
+        return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
+                input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
+                input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                withReboilerDuty(input, reboilerDutyWatts(input)
+                        + surrogateSteamDutyWatts(input)), input.sideDraws(), List.of());
+    }
+
+    private static double surrogateSteamDutyWatts(V3ColumnInput input) {
+        return input.steamFeeds().stream().mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum()
+                * V3WaterProperties.vaporizationEnthalpy(450.0);
+    }
+
+    private static List<V3ColumnSpecification> withReboilerDuty(V3ColumnInput input, double watts) {
+        return input.specifications().stream().map(specification -> specification instanceof V3ColumnSpecification.ReboilerDuty
+                ? new V3ColumnSpecification.ReboilerDuty(watts) : specification).toList();
+    }
+
+    private static double reboilerDutyWatts(V3ColumnInput input) {
+        return input.specifications().stream().filter(V3ColumnSpecification.ReboilerDuty.class::isInstance)
+                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("V3 input is missing a reboiler-duty specification")).watts();
+    }
+
+    private static V3DryMeshState initializeForSolve(
+            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3ColumnInitializer.Mode mode) {
+        try {
+            return V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace(), mode).state();
+        } catch (V3ThermoException | IllegalArgumentException failure) {
+            String draws = problem.input().sideDraws().isEmpty() ? ""
+                    : "; authored side-draw trays=" + problem.input().sideDraws().stream()
+                            .map(V3SideDrawSpec::trayNumber).toList();
+            throw new InitializationFailure("V3 initialization failed for " + problem.topology().trayCount()
+                    + " trays" + draws + ": " + boundedSummary(failure.getMessage()), failure);
+        }
     }
 
     private static V3ColumnInput withTopPressure(V3ColumnInput input, double topPressurePascal) {
@@ -420,14 +1044,20 @@ public final class V3ColumnCalculator {
         }
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
-                input.feedStageNumber(), topPressurePascal, input.stagePressureDropPascal(), input.specifications());
+                input.feedStageNumber(), topPressurePascal, input.stagePressureDropPascal(), input.specifications(),
+                input.sideDraws(), input.steamFeeds());
     }
 
     private static List<Double> dwsimPressureSteps(double requestedTopPressurePascal) {
+        return dwsimPressureSteps(requestedTopPressurePascal, false);
+    }
+
+    private static List<Double> dwsimPressureSteps(
+            double requestedTopPressurePascal, boolean fineStepsFromAnchor) {
         List<Double> pressures = new java.util.ArrayList<>();
         double pressure = PRESSURE_CONTINUATION_ANCHOR_PASCAL;
         while (pressure > requestedTopPressurePascal) {
-            double step = pressure > PRESSURE_CONTINUATION_FINE_STEP_FROM_PASCAL
+            double step = !fineStepsFromAnchor && pressure > PRESSURE_CONTINUATION_FINE_STEP_FROM_PASCAL
                     ? PRESSURE_CONTINUATION_STEP_PASCAL : PRESSURE_CONTINUATION_FINE_STEP_PASCAL;
             pressure = Math.max(requestedTopPressurePascal, pressure - step);
             pressures.add(pressure);
@@ -436,9 +1066,13 @@ public final class V3ColumnCalculator {
     }
 
     private static String dwsimPressurePath(double requestedTopPressurePascal) {
+        return dwsimPressurePath(requestedTopPressurePascal, false);
+    }
+
+    private static String dwsimPressurePath(double requestedTopPressurePascal, boolean fineStepsFromAnchor) {
         StringBuilder path = new StringBuilder();
         path.append(Math.round(PRESSURE_CONTINUATION_ANCHOR_PASCAL / 1_000.0));
-        for (double pressure : dwsimPressureSteps(requestedTopPressurePascal)) {
+        for (double pressure : dwsimPressureSteps(requestedTopPressurePascal, fineStepsFromAnchor)) {
             path.append('-').append(Math.round(pressure / 1_000.0));
         }
         return path.toString();
@@ -509,16 +1143,21 @@ public final class V3ColumnCalculator {
     }
 
     private static V3ColumnOutcome.Failure terminalFailure(
-            V3SolverFailureCode code, String detail, String solvePath) {
+            V3SolverFailureCode code, String detail, String solvePath, List<String> advisoryEvidence) {
         String summary = boundedSummary(detail);
-        V3AcceptanceAudit audit = failedAudit("UNAVAILABLE", summary);
+        V3AcceptanceAudit audit = failedAudit("UNAVAILABLE", summary, advisoryEvidence);
         V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, solvePath, List.of(summary),
                 audit, V3ConvergenceEvidence.unavailable());
         return new V3ColumnOutcome.Failure(code, summary, diagnostics);
     }
 
     private static V3AcceptanceAudit failedAudit(String family, String detail) {
-        return new V3AcceptanceAudit(List.of(V3AcceptanceAudit.Check.fail(family, 1.0, 0.0, boundedSummary(detail))));
+        return failedAudit(family, detail, List.of());
+    }
+
+    private static V3AcceptanceAudit failedAudit(String family, String detail, List<String> advisoryEvidence) {
+        return new V3AcceptanceAudit(List.of(V3AcceptanceAudit.Check.fail(family, 1.0, 0.0, boundedSummary(detail))),
+                advisoryEvidence);
     }
 
     private static V3SolverFailureCode failureCode(String code) {
@@ -547,11 +1186,13 @@ public final class V3ColumnCalculator {
             boolean reachedRequestedProblem,
             boolean attemptedRequestedProblem,
             boolean allowsFreshMaterialClosedFallback,
-            List<String> solverEvents) {
+            List<String> solverEvents,
+            PreparedAttempt prepared) {
         private V3SolvePass {
             attempt = Objects.requireNonNull(attempt, "attempt");
             audit = Objects.requireNonNull(audit, "audit");
             recoverySeed = Objects.requireNonNull(recoverySeed, "recoverySeed");
+            prepared = Objects.requireNonNull(prepared, "prepared");
             solverEvents = List.copyOf(Objects.requireNonNull(solverEvents, "solverEvents"));
             if (!Double.isFinite(feedMolarEnthalpyJoulesPerMol) || solvePath == null || solvePath.isBlank()
                     || terminalStageCount < V3ColumnInput.MIN_STAGE_COUNT
@@ -559,6 +1200,13 @@ public final class V3ColumnCalculator {
                     || solverEvents.stream().anyMatch(event -> event == null || event.length() > 256)) {
                 throw new IllegalArgumentException("V3 solve pass evidence is invalid");
             }
+        }
+    }
+
+    /** Distinguishes numerical seed construction from malformed authored input. */
+    private static final class InitializationFailure extends RuntimeException {
+        private InitializationFailure(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 

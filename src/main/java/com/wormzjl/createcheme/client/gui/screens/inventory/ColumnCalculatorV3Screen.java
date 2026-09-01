@@ -3,9 +3,12 @@ package com.wormzjl.createcheme.client.gui.screens.inventory;
 import com.wormzjl.createcheme.network.ColumnV3Network;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
+import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
+import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3State;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Status;
@@ -50,15 +53,21 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private final List<EditBox> coreEditors = new ArrayList<>();
     private final List<SideDrawFields> sideDrawFields = new ArrayList<>();
+    private SteamFields steamFields;
     private Page page = Page.INPUTS;
     private V3State serverState;
     private long latestStateRevision = -1L;
     private boolean calculationRequested;
     private String validation = "Waiting for server-owned V3 state...";
+    private String draftValidationDetail = "Enter all scalar inputs.";
     private Button inputsTab;
     private Button streamsTab;
     private Button convergenceTab;
+    private Button preset;
     private Button run;
+    private Button previousStreamPage;
+    private Button nextStreamPage;
+    private int streamPage;
 
     public ColumnCalculatorV3Screen(ColumnCalculatorV3Menu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -70,8 +79,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     @Override
     protected void init() {
         String[] scalarDraft = editorDraft();
-        String[] sideStageDrafts = {"8", "15", "22"};
-        String[] sideRateDrafts = {"496", "653", "149"};
+        String[] sideStageDrafts = {"13", "17", "22"};
+        String[] sideRateDrafts = {"92.3", "131.85", "32.96"};
+        String[] steamDrafts = steamFields == null ? new String[] {"", "", "", "", ""}
+                : new String[] {steamFields.sumpRate().getValue(), steamFields.sumpTemperature().getValue(),
+                        steamFields.trayStage().getValue(), steamFields.trayRate().getValue(),
+                        steamFields.trayTemperature().getValue()};
         for (int index = 0; index < Math.min(sideDrawFields.size(), SIDE_DRAW_COUNT); index++) {
             sideStageDrafts[index] = sideDrawFields.get(index).stage().getValue();
             sideRateDrafts[index] = sideDrawFields.get(index).rate().getValue();
@@ -84,6 +97,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         titleLabelY = -1_000;
         coreEditors.clear();
         sideDrawFields.clear();
+        steamFields = null;
 
         int tabY = topPos + 28;
         inputsTab = addRenderableWidget(Button.builder(Component.literal("Inputs"), button -> selectPage(Page.INPUTS))
@@ -92,10 +106,20 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 .bounds(leftPos + 86, tabY, 72, 20).build());
         convergenceTab = addRenderableWidget(Button.builder(Component.literal("Convergence"), button -> selectPage(Page.CONVERGENCE))
                 .bounds(leftPos + 162, tabY, 96, 20).build());
+        preset = addRenderableWidget(Button.builder(Component.literal("Load Holland 3-2"), button -> requestPreset())
+                .bounds(leftPos + 264, tabY, 128, 20).build());
         run = addRenderableWidget(Button.builder(Component.literal("Run V3"), button -> requestCalculation())
                 .bounds(leftPos + 10, topPos + imageHeight - 29, 82, 20).build());
+        previousStreamPage = addRenderableWidget(Button.builder(Component.literal("Previous streams"), button -> {
+            streamPage = Math.max(0, streamPage - 1);
+            refreshControls();
+        }).bounds(leftPos + 10, topPos + imageHeight - 29, 112, 20).build());
+        nextStreamPage = addRenderableWidget(Button.builder(Component.literal("Next streams"), button -> {
+            streamPage++;
+            refreshControls();
+        }).bounds(leftPos + 128, topPos + imageHeight - 29, 100, 20).build());
 
-        buildEditors(scalarDraft, sideStageDrafts, sideRateDrafts);
+        buildEditors(scalarDraft, sideStageDrafts, sideRateDrafts, steamDrafts);
         if (serverState != null) loadInput(serverState.input());
         ColumnV3Network.setClientStateConsumer(this::applyServerState);
         ColumnV3Network.setClientRejectionConsumer(this::applyRejection);
@@ -111,9 +135,10 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         super.onClose();
     }
 
-    private void buildEditors(String[] scalarDraft, String[] sideStageDrafts, String[] sideRateDrafts) {
+    private void buildEditors(
+            String[] scalarDraft, String[] sideStageDrafts, String[] sideRateDrafts, String[] steamDrafts) {
         int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
-        String[] defaults = {"2610.7", "365", "30", "24", "126.85", "8", "2", "2.5", "0.75"};
+        String[] defaults = {"2610.7", "365", "29", "24", "126.85", "8", "2", "1.5", "0.75"};
         for (int index = 0; index < CORE_EDITOR_COUNT; index++) {
             int column = index % 3;
             int row = index / 3;
@@ -130,17 +155,36 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             int groupX = leftPos + 10 + index * scalarColumnWidth;
             int stageWidth = Math.max(28, Math.min(44, scalarColumnWidth / 3));
             int rateWidth = Math.max(42, Math.min(78, scalarColumnWidth - stageWidth - 14));
-            EditBox stage = new EditBox(font, groupX, sideY, stageWidth, 20, Component.literal("Reference side stage"));
+            EditBox stage = new EditBox(font, groupX, sideY, stageWidth, 20, Component.literal("Side draw tray"));
             EditBox rate = new EditBox(font, groupX + stageWidth + 6, sideY, rateWidth, 20,
-                    Component.literal("Reference side rate"));
+                    Component.literal("Side draw rate (kmol/h)"));
             stage.setValue(sideStageDrafts[index]);
             rate.setValue(sideRateDrafts[index]);
-            stage.setEditable(false);
-            rate.setEditable(false);
-            stage.active = false;
-            rate.active = false;
+            stage.setMaxLength(3);
+            rate.setMaxLength(20);
+            stage.setResponder(value -> validateDraft());
+            rate.setResponder(value -> validateDraft());
             sideDrawFields.add(new SideDrawFields(addRenderableWidget(stage), addRenderableWidget(rate)));
         }
+        int steamY = topPos + CONTENT_TOP + 178;
+        int sumpRateWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
+        int temperatureWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
+        EditBox sumpRate = steamEditor(leftPos + 10, steamY, sumpRateWidth, "Sump steam rate", steamDrafts[0], 20);
+        EditBox sumpTemperature = steamEditor(leftPos + 16 + sumpRateWidth, steamY, temperatureWidth,
+                "Sump steam temperature", steamDrafts[1], 20);
+        int trayX = leftPos + 10 + scalarColumnWidth;
+        EditBox trayStage = steamEditor(trayX, steamY, 42, "Tray steam stage", steamDrafts[2], 3);
+        EditBox trayRate = steamEditor(trayX + 48, steamY, 72, "Tray steam rate", steamDrafts[3], 20);
+        EditBox trayTemperature = steamEditor(trayX + 126, steamY, 72, "Tray steam temperature", steamDrafts[4], 20);
+        steamFields = new SteamFields(sumpRate, sumpTemperature, trayStage, trayRate, trayTemperature);
+    }
+
+    private EditBox steamEditor(int x, int y, int width, String description, String value, int maximumLength) {
+        EditBox editor = new EditBox(font, x, y, width, 20, Component.literal(description));
+        editor.setMaxLength(maximumLength);
+        editor.setValue(value);
+        editor.setResponder(ignored -> validateDraft());
+        return addRenderableWidget(editor);
     }
 
     private void applyServerState(net.minecraft.core.BlockPos blockPos, V3State state) {
@@ -149,7 +193,6 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         serverState = state;
         calculationRequested = false;
         loadInput(state.input());
-        validation = state.diagnostics().isEmpty() ? "Server state received" : state.diagnostics().getFirst();
         validateDraft();
         refreshControls();
     }
@@ -157,7 +200,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private void applyRejection(net.minecraft.core.BlockPos blockPos, long clientNonce, String reason) {
         if (!menu.blockPos().equals(blockPos)) return;
         calculationRequested = false;
-        validation = "Server rejected request: " + reason;
+        validation = "Calculation request was not accepted. Check the calculator and try again.";
         refreshControls();
     }
 
@@ -172,19 +215,41 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         double total = 0.0;
         for (double flow : input.feedComponentMolarFlowsMolPerSecond()) total += flow;
         String[] values = {
-                compactDraft(total * MOL_PER_SECOND_TO_KMOL_PER_HOUR),
-                compactDraft(input.feedTemperatureKelvin() - CELSIUS_TO_KELVIN),
+                compactDraft(total * MOL_PER_SECOND_TO_KMOL_PER_HOUR, 1),
+                compactDraft(input.feedTemperatureKelvin() - CELSIUS_TO_KELVIN, 1),
                 Integer.toString(input.stageCount()),
                 Integer.toString(input.feedStageNumber()),
                 compactDraft(specificationValue(input, V3ControlledQuantity.CONDENSER_OUTLET_TEMPERATURE)
-                        - CELSIUS_TO_KELVIN),
-                compactDraft(specificationValue(input, V3ControlledQuantity.REBOILER_DUTY) / 1_000_000.0),
-                compactDraft(specificationValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO)),
-                compactDraft(input.topPressurePascal() * PASCAL_TO_BAR),
-                compactDraft(input.stagePressureDropPascal() / 1_000.0)
+                        - CELSIUS_TO_KELVIN, 1),
+                compactDraft(specificationValue(input, V3ControlledQuantity.REBOILER_DUTY) / 1_000_000.0, 1),
+                compactDraft(specificationValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO), 2),
+                compactDraft(input.topPressurePascal() * PASCAL_TO_BAR, 2),
+                compactDraft(input.stagePressureDropPascal() / 1_000.0, 2)
         };
         if (coreEditors.size() == CORE_EDITOR_COUNT) {
             for (int index = 0; index < values.length; index++) coreEditors.get(index).setValue(values[index]);
+        }
+        for (int index = 0; index < sideDrawFields.size(); index++) {
+            V3SideDrawSpec draw = index < input.sideDraws().size() ? input.sideDraws().get(index) : null;
+            sideDrawFields.get(index).stage().setValue(draw == null ? "" : Integer.toString(draw.trayNumber()));
+            sideDrawFields.get(index).rate().setValue(
+                    draw == null ? "" : compactDraft(draw.molarFlowMolPerSecond() * 3.6, 1));
+        }
+        V3SteamFeedSpec sump = input.steamFeeds().stream()
+                .filter(feed -> feed.stageNumber() == input.stageCount() + 1).findFirst().orElse(null);
+        V3SteamFeedSpec traySteam = input.steamFeeds().stream()
+                .filter(feed -> feed.stageNumber() <= input.stageCount()).findFirst().orElse(null);
+        if (steamFields != null) {
+            steamFields.sumpRate().setValue(sump == null ? ""
+                    : compactDraft(sump.molarFlowMolPerSecond() * 3.6, 1));
+            steamFields.sumpTemperature().setValue(sump == null ? ""
+                    : compactDraft(sump.temperatureKelvin() - CELSIUS_TO_KELVIN, 1));
+            steamFields.trayStage().setValue(traySteam == null ? ""
+                    : Integer.toString(traySteam.stageNumber()));
+            steamFields.trayRate().setValue(traySteam == null ? ""
+                    : compactDraft(traySteam.molarFlowMolPerSecond() * 3.6, 1));
+            steamFields.trayTemperature().setValue(traySteam == null ? ""
+                    : compactDraft(traySteam.temperatureKelvin() - CELSIUS_TO_KELVIN, 1));
         }
     }
 
@@ -197,21 +262,39 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         boolean showInputs = page == Page.INPUTS;
         boolean calculating = calculationRequested
                 || serverState != null && serverState.status() == V3Status.CALCULATING;
+        boolean holland = isHolland();
         for (EditBox editor : coreEditors) {
             editor.visible = showInputs;
-            editor.active = showInputs && !calculating && serverState != null;
+            editor.active = showInputs && !calculating && serverState != null && !holland;
         }
         for (SideDrawFields side : sideDrawFields) {
             side.stage().visible = showInputs;
             side.rate().visible = showInputs;
-            side.stage().active = false;
-            side.rate().active = false;
+            side.stage().active = showInputs && !calculating && serverState != null && !holland;
+            side.rate().active = showInputs && !calculating && serverState != null && !holland;
+        }
+        if (steamFields != null) {
+            for (EditBox editor : steamFields.editors()) {
+                editor.visible = showInputs;
+                editor.active = showInputs && !calculating && serverState != null && !holland;
+            }
         }
         inputsTab.active = !showInputs;
         streamsTab.active = page != Page.STREAMS;
         convergenceTab.active = page != Page.CONVERGENCE;
+        preset.visible = showInputs;
+        preset.active = showInputs && !calculating && serverState != null;
+        preset.setMessage(Component.literal(holland ? "Load Tia Juana" : "Load Holland 3-2"));
         run.visible = showInputs;
+        run.setMessage(Component.literal(holland ? "Run Holland" : "Run V3"));
         run.active = showInputs && !calculating && draftInput() != null;
+        int count = serverState == null || serverState.displayResult().isEmpty() ? 0
+                : serverState.displayResult().orElseThrow().streams().size();
+        int perPage = streamsPerPage();
+        streamPage = Math.clamp(streamPage, 0, Math.max(0, (count - 1) / perPage));
+        previousStreamPage.visible = nextStreamPage.visible = page == Page.STREAMS && count > perPage;
+        previousStreamPage.active = streamPage > 0;
+        nextStreamPage.active = (streamPage + 1) * perPage < count;
     }
 
     private void requestCalculation() {
@@ -219,65 +302,78 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         if (serverState == null || input == null) return;
         ColumnV3Network.sendCalculate(menu.blockPos(), serverState.inputRevision(), input);
         calculationRequested = true;
-        validation = "Submitting immutable V3 input to the server...";
+        validation = "Calculating...";
+        refreshControls();
+    }
+
+    private void requestPreset() {
+        if (serverState == null) return;
+        ColumnV3Network.sendPreset(menu.blockPos(), serverState.inputRevision(), !isHolland());
+        calculationRequested = true;
+        validation = "Loading server-owned V3 preset...";
         refreshControls();
     }
 
     private void validateDraft() {
         if (serverState == null) {
             validation = "Waiting for server-owned V3 state...";
-        } else if (draftInput() != null) {
-            validation = "Scientific draft is valid; Run V3 performs authoritative DWSIM-path solving.";
+        } else if (calculationRequested || serverState.status() == V3Status.CALCULATING) {
+            validation = "Calculating...";
+        } else if (draftInput() == null) {
+            validation = draftValidationDetail;
         } else {
-            validation = "Enter finite V1-unit values within V3 dry-input bounds.";
+            validation = switch (serverState.status()) {
+                case SUCCESS -> "Calculation complete — see Streams.";
+                case FAILED -> "Last calculation failed — see Convergence.";
+                default -> "Ready to calculate.";
+            };
         }
+        if (run != null && previousStreamPage != null && nextStreamPage != null) refreshControls();
     }
 
     private V3ColumnInput draftInput() {
         if (serverState == null || coreEditors.size() != CORE_EDITOR_COUNT) return null;
+        if (isHolland()) return serverState.input();
         try {
-            double totalFlow = decimal(0) * KMOL_PER_HOUR_TO_MOL_PER_SECOND;
-            double feedTemperature = decimal(1) + CELSIUS_TO_KELVIN;
-            int stages = integer(2);
-            int feedStage = integer(3);
-            double condenserTemperature = decimal(4) + CELSIUS_TO_KELVIN;
-            double reboilerDuty = decimal(5) * 1_000_000.0;
-            double reflux = decimal(6);
-            double topPressure = decimal(7) / PASCAL_TO_BAR;
-            double pressureDrop = decimal(8) * 1_000.0;
-            if (totalFlow <= 0.0 || feedTemperature <= 0.0 || stages < V3ColumnInput.MIN_STAGE_COUNT
-                    || stages > V3ColumnInput.MAX_STAGE_COUNT || feedStage < 1 || feedStage > stages
-                    || condenserTemperature <= 0.0 || reboilerDuty < 0.0 || reflux < 0.0
-                    || topPressure <= 0.0 || pressureDrop < 0.0) {
-                return null;
-            }
+            V3ColumnScalarDraft.Values scalar = V3ColumnScalarDraft.parse(
+                    coreEditors.stream().map(EditBox::getValue).toList());
             V3ColumnInput base = serverState.input();
             double[] existingFlows = base.feedComponentMolarFlowsMolPerSecond();
             double existingTotal = 0.0;
             for (double flow : existingFlows) existingTotal += flow;
             if (!Double.isFinite(existingTotal) || existingTotal <= 0.0) return null;
             double[] scaledFlows = new double[existingFlows.length];
-            double scale = totalFlow / existingTotal;
+            double scale = scalar.feedMolPerSecond() / existingTotal;
             for (int index = 0; index < scaledFlows.length; index++) scaledFlows[index] = existingFlows[index] * scale;
+            List<V3SideDrawSpec> draws;
+            try {
+                draws = V3SideDrawDraft.parse(sideDrawFields.stream()
+                        .map(fields -> new V3SideDrawDraft.Row(fields.stage().getValue(), fields.rate().getValue())).toList(),
+                        scalar.stageCount(), scalar.feedMolPerSecond());
+            } catch (IllegalArgumentException invalidDraws) {
+                throw new IllegalArgumentException("Side draws: " + invalidDraws.getMessage(), invalidDraws);
+            }
+            List<V3SteamFeedSpec> steam;
+            try {
+                steam = V3SteamFeedDraft.parse(new V3SteamFeedDraft.Row("", steamFields.sumpRate().getValue(),
+                                steamFields.sumpTemperature().getValue()),
+                        new V3SteamFeedDraft.Row(steamFields.trayStage().getValue(), steamFields.trayRate().getValue(),
+                                steamFields.trayTemperature().getValue()), scalar.stageCount(), scalar.feedMolPerSecond());
+            } catch (IllegalArgumentException invalidSteam) {
+                throw new IllegalArgumentException("Steam: " + invalidSteam.getMessage(), invalidSteam);
+            }
             return new V3ColumnInput(
                     V3ColumnInput.SCHEMA_VERSION, base.packageId(), base.assayId(), base.componentBasis(), scaledFlows,
-                    feedTemperature, stages, feedStage, topPressure, pressureDrop, List.of(
-                            new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
-                            new V3ColumnSpecification.OrganicRefluxRatio(reflux),
-                            new V3ColumnSpecification.ReboilerDuty(reboilerDuty)));
+                    scalar.feedTemperatureKelvin(), scalar.stageCount(), scalar.feedStage(),
+                    scalar.topPressurePascal(), scalar.pressureDropPascal(), List.of(
+                            new V3ColumnSpecification.CondenserOutletTemperature(scalar.condenserTemperatureKelvin()),
+                            new V3ColumnSpecification.OrganicRefluxRatio(scalar.refluxRatio()),
+                            new V3ColumnSpecification.ReboilerDuty(scalar.reboilerDutyWatts())), draws, steam);
         } catch (IllegalArgumentException invalid) {
+            draftValidationDetail = invalid.getMessage() == null || invalid.getMessage().isBlank()
+                    ? "Invalid scientific draft." : invalid.getMessage();
             return null;
         }
-    }
-
-    private double decimal(int editor) {
-        double value = Double.parseDouble(coreEditors.get(editor).getValue());
-        if (!Double.isFinite(value)) throw new NumberFormatException("non-finite value");
-        return value;
-    }
-
-    private int integer(int editor) {
-        return Integer.parseInt(coreEditors.get(editor).getValue());
     }
 
     @Override
@@ -289,7 +385,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, "Column Calculator V3 (Experimental)", 10, 8, TEXT, false);
-        graphics.drawString(font, "Registered Tia Juana Light PR package | server-authoritative dry V3", 10, 20, MUTED, false);
+        graphics.drawString(font, isHolland()
+                ? "Holland (1981) Example 3-2 | independent-oracle-seeded V3 benchmark"
+                : "Registered Tia Juana Light PR package | server-authoritative free-water V3", 10, 20, MUTED, false);
         switch (page) {
             case INPUTS -> renderInputs(graphics);
             case STREAMS -> renderStreams(graphics);
@@ -314,19 +412,36 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             graphics.drawString(font, "Side " + (index + 1) + "  stage / kmol/h", 10 + index * scalarColumnWidth,
                     CONTENT_TOP + 114, MUTED, false);
         }
+        int sumpRateWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
+        int temperatureWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
+        int sumpTemperatureX = 16 + sumpRateWidth;
+        int trayX = 10 + scalarColumnWidth;
+        graphics.drawString(font, "Sump steam: below bottom tray", 10, CONTENT_TOP + 152, NOTICE, false);
+        graphics.drawString(font, "Rate (kmol/h)", 10, CONTENT_TOP + 166, MUTED, false);
+        graphics.drawString(font, "Temp (°C)", sumpTemperatureX, CONTENT_TOP + 166, MUTED, false);
+        graphics.drawString(font, "Tray steam: optional stage injection", trayX, CONTENT_TOP + 152, NOTICE, false);
+        graphics.drawString(font, "Stage", trayX, CONTENT_TOP + 166, MUTED, false);
+        graphics.drawString(font, "Rate (kmol/h)", trayX + 48, CONTENT_TOP + 166, MUTED, false);
+        graphics.drawString(font, "Temp (°C)", trayX + 126, CONTENT_TOP + 166, MUTED, false);
         if (serverState == null) {
-            graphics.drawString(font, "Waiting for server V3 calculator state.", 10, CONTENT_TOP + 159, NOTICE, false);
+            graphics.drawString(font, "Waiting for server V3 calculator state.", 10, CONTENT_TOP + 209, NOTICE, false);
             return;
         }
         V3ColumnInput input = serverState.input();
-        graphics.drawString(font, "Reference side draws are display-only: the current V3 dry MESH contract has no side-draw equations.",
-                10, CONTENT_TOP + 159, NOTICE, false);
-        graphics.drawString(font, "All nine scientific inputs are editable; server validation owns the accepted snapshot.",
-                10, CONTENT_TOP + 173, MUTED, false);
+        graphics.drawString(font, isHolland()
+                        ? "Fixed scan-verified input: 11 plates, bubble-point feed, and one 25 lbmol/h liquid draw."
+                : "Optional steam: leave rate blank or 0 to keep this dry. Suggested sump: 28.8 kmol/h at 176.9°C.",
+                10, CONTENT_TOP + 209, NOTICE, false);
+        graphics.drawString(font, isHolland()
+                        ? "Uses the independent near-root initializer; the known V3 cold-start failure remains reported."
+                : "Tray steam is disabled at 0 kmol/h. Stage 1 is the top tray; stage N is the bottom tray.",
+                10, CONTENT_TOP + 223, MUTED, false);
         graphics.drawString(font, "Input revision " + serverState.inputRevision() + " • state " + serverState.stateRevision()
                         + " • V3 assay " + input.assayId(),
-                10, CONTENT_TOP + 187, MUTED, false);
-        int statusColor = run != null && run.active ? SUCCESS : NOTICE;
+                10, CONTENT_TOP + 237, MUTED, false);
+        boolean calculating = calculationRequested || serverState.status() == V3Status.CALCULATING;
+        int statusColor = calculating ? NOTICE : serverState.status() == V3Status.FAILED ? FAILURE
+                : run != null && run.active ? SUCCESS : NOTICE;
         graphics.drawString(font, abbreviate(validation, 82), 101, imageHeight - 24, statusColor, false);
     }
 
@@ -344,21 +459,27 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         graphics.drawString(font, "Result revision " + serverState.resultRevision() + " • " + resultState,
                 10, CONTENT_TOP + 14, serverState.status() == V3Status.SUCCESS ? SUCCESS : NOTICE, false);
         List<V3ColumnStreamProperties> streams = result.streams();
-        int streamWidth = Math.max(1, (imageWidth - 20) / streams.size());
-        for (int index = 0; index < streams.size(); index++) {
-            renderStreamReport(graphics, 10 + index * streamWidth, streamWidth, CONTENT_TOP + 29, streams.get(index));
+        int first = streamPage * streamsPerPage();
+        int visible = Math.min(streamsPerPage(), streams.size() - first);
+        int streamWidth = Math.max(1, (imageWidth - 20) / visible);
+        for (int index = 0; index < visible; index++) {
+            renderStreamReport(graphics, 10 + index * streamWidth, streamWidth, CONTENT_TOP + 29, streams.get(first + index));
         }
+    }
+
+    private int streamsPerPage() {
+        return Math.clamp((imageWidth - 20) / 200, 1, 3);
     }
 
     private void renderStreamReport(
             GuiGraphics graphics, int x, int width, int y, V3ColumnStreamProperties stream) {
         graphics.drawString(font, abbreviateToWidth(stream.displayName() + " • " + stream.phase(), width - 2), x, y, TEXT, false);
-        graphics.drawString(font, "F " + compact(stream.molarFlowMolPerSecond() * MOL_PER_SECOND_TO_KMOL_PER_HOUR)
-                        + " kmol/h | " + compact(stream.massFlowKgPerSecond() * 3_600.0) + " kg/h",
+        graphics.drawString(font, abbreviateToWidth("F " + compact(stream.molarFlowMolPerSecond() * MOL_PER_SECOND_TO_KMOL_PER_HOUR)
+                        + " kmol/h | " + compact(stream.massFlowKgPerSecond() * 3_600.0) + " kg/h", width - 4),
                 x, y + 12, MUTED, false);
-        graphics.drawString(font, "T " + compact(stream.temperatureKelvin() - CELSIUS_TO_KELVIN) + " C | P "
+        graphics.drawString(font, abbreviateToWidth("T " + compact(stream.temperatureKelvin() - CELSIUS_TO_KELVIN) + " C | P "
                         + compact(stream.pressurePascal() * PASCAL_TO_BAR) + " bar | V/F "
-                        + compact(stream.vaporMoleFraction()),
+                        + compact(stream.vaporMoleFraction()), width - 4),
                 x, y + 23, MUTED, false);
         int[] widths = distributedWidths(width, new double[] {0.42, 0.29, 0.29});
         int tableY = y + 35;
@@ -367,7 +488,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         for (int index = 0; index < fractions.size(); index++) {
             V3ColumnStreamProperties.ComponentFraction fraction = fractions.get(index);
             drawTableRow(graphics, x, tableY + 12 * (index + 1), 12, widths, new String[] {
-                    fraction.componentId(), compact(fraction.moleFraction() * 100.0), compact(fraction.massFraction() * 100.0)
+                    fraction.componentId(), formatPercentage(fraction.moleFraction()), formatPercentage(fraction.massFraction())
             }, false);
         }
     }
@@ -446,12 +567,23 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         throw new IllegalArgumentException("Missing V3 specification " + wanted);
     }
 
-    private static String compactDraft(double value) {
-        return String.format(Locale.ROOT, "%.6f", value).replaceFirst("0+$", "").replaceFirst("\\.$", "");
+    private boolean isHolland() {
+        return serverState != null && V3HollandExample32.isPackage(serverState.input().packageId());
+    }
+
+    private static String compactDraft(double value, int decimalPlaces) {
+        if (decimalPlaces < 0 || decimalPlaces > 3) throw new IllegalArgumentException("Invalid V3 GUI decimal precision");
+        return String.format(Locale.ROOT, "%." + decimalPlaces + "f", value)
+                .replaceFirst("0+$", "").replaceFirst("\\.$", "");
     }
 
     private static String compact(double value) {
-        return Double.isFinite(value) ? String.format(Locale.ROOT, "%.5g", value) : "--";
+        return Double.isFinite(value) ? String.format(Locale.ROOT, "%.4g", value) : "--";
+    }
+
+    /** Fixed-width composition cells deliberately avoid exponent notation and clipped trailing digits. */
+    private static String formatPercentage(double fraction) {
+        return Double.isFinite(fraction) ? String.format(Locale.ROOT, "%.3f", 100.0 * fraction) : "--";
     }
 
     private static String abbreviate(String value, int maximumCharacters) {
@@ -473,5 +605,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     }
 
     private record SideDrawFields(EditBox stage, EditBox rate) {
+    }
+
+    private record SteamFields(
+            EditBox sumpRate, EditBox sumpTemperature, EditBox trayStage, EditBox trayRate, EditBox trayTemperature) {
+        List<EditBox> editors() {
+            return List.of(sumpRate, sumpTemperature, trayStage, trayRate, trayTemperature);
+        }
     }
 }

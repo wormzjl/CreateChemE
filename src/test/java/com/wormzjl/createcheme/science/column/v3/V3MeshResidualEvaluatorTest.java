@@ -76,6 +76,38 @@ class V3MeshResidualEvaluatorTest {
         double[][] illegalLiquid = liquidFlows();
         assertThrows(IllegalArgumentException.class,
                 () -> new V3DryMeshState(vaporOnly, 2, illegalLiquid, vaporFlows(), temperatures()));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3DryMeshState(V3ColumnTopology.liquidOnly(4, 2), 2, liquidFlows(), vaporFlows(), temperatures()));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {1, 2, 4})
+    void sideDrawChangesOnlyTheMaterialAndEnergyRowsBelowItsTray(int tray) {
+        V3ColumnProblem plain = problem();
+        V3ColumnInput input = plain.input();
+        V3ColumnProblem drawn = V3ColumnProblemResolver.resolve(new V3ColumnInput(input.schemaVersion(), input.packageId(),
+                input.assayId(), input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
+                input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                input.specifications(), List.of(new V3SideDrawSpec(tray, 4.0))), V3CondenserPhaseBranch.TWO_PHASE);
+        AffineEnthalpyThermo thermo = new AffineEnthalpyThermo();
+        V3DryMeshState state = manufacturedState(plain.topology());
+        V3MeshResidual baseline = new V3MeshResidualEvaluator(plain, thermo, 0).evaluate(state, thermo.newWorkspace());
+        V3MeshResidual withDraw = new V3MeshResidualEvaluator(drawn, thermo, 0).evaluate(state, thermo.newWorkspace());
+        double[] liquid = liquidFlows()[tray];
+        double total = liquid[0] + liquid[1];
+        for (int row = 0; row < baseline.rows().size(); row++) {
+            var original = baseline.rows().get(row);
+            double delta = 0.0;
+            if (original.equation().node() == tray + 1) {
+                delta = switch (original.equation().family()) {
+                    case COMPONENT_MATERIAL_BALANCE -> -4.0 * liquid[original.equation().component()] / total;
+                    case ENERGY_BALANCE -> -4.0 * temperatures()[tray] * (30 * liquid[0] + 40 * liquid[1]) / total;
+                    default -> 0.0;
+                };
+            }
+            org.junit.jupiter.api.Assertions.assertEquals(original.physicalValue() + delta,
+                    withDraw.rows().get(row).physicalValue(), 1e-8);
+        }
     }
 
     private static V3ColumnProblem problem() {

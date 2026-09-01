@@ -5,6 +5,7 @@ import java.util.Objects;
 
 /** Immutable V3 hydrocarbon PR78 façade backed by a solve-local one-way property-session adapter. */
 public final class V3PengRobinsonThermo implements V3ThermoModel {
+    private static final Runnable NO_CHECKPOINT = () -> { };
     private final V3PengRobinsonSession session;
 
     private V3PengRobinsonThermo(V3PengRobinsonSession session) {
@@ -22,6 +23,11 @@ public final class V3PengRobinsonThermo implements V3ThermoModel {
 
     public String datasetRevision() {
         return session.datasetRevision();
+    }
+
+    /** Returns immutable, non-blocking dataset evidence for audits and solver diagnostics. */
+    public java.util.List<String> advisoryEvidence() {
+        return session.advisoryEvidence();
     }
 
     /** Returns the inclusive lower temperature bound declared by the selected property package. */
@@ -92,6 +98,50 @@ public final class V3PengRobinsonThermo implements V3ThermoModel {
             double temperatureKelvin, double pressurePascal, double[] overallComposition, V3ThermoWorkspace workspace) {
         normalizeInto(overallComposition, workspace.normalizedOverall, workspace);
         return V3FeedFlash.resolve(this, temperatureKelvin, pressurePascal, workspace);
+    }
+
+    /**
+     * Opts into reference-validated phase truncation. The existing four-argument method remains
+     * unrestricted for independent audits. Zero cutoff follows exactly that original numerical path.
+     */
+    public V3FlashResult flashTP(double temperatureKelvin, double pressurePascal, double[] overallComposition,
+                                 V3TraceTruncationPolicy policy, V3ThermoWorkspace workspace) {
+        return flashTP(temperatureKelvin, pressurePascal, overallComposition, policy, workspace, NO_CHECKPOINT);
+    }
+
+    /**
+     * Caller-confined, bounded phase truncation with cooperative cancellation checkpoints.
+     * A failed unrestricted reference or a cancellation is never converted into approximate success.
+     * Returned evidence distinguishes disabled/identity/reduced/fallback paths and counts their iterations.
+     */
+    public V3FlashResult flashTP(double temperatureKelvin, double pressurePascal, double[] overallComposition,
+                                 V3TraceTruncationPolicy policy, V3ThermoWorkspace workspace, Runnable checkpoint) {
+        Objects.requireNonNull(policy, "policy");
+        Objects.requireNonNull(checkpoint, "checkpoint");
+        normalizeInto(overallComposition, workspace.normalizedOverall, workspace);
+        // Preserve callback provenance even if a caller happens to throw the same exception
+        // type as an EOS failure. It must not become an approximate-solve fallback.
+        Runnable guardedCheckpoint = () -> {
+            try {
+                checkpoint.run();
+            } catch (V3ThermoException callbackFailure) {
+                throw new FlashCheckpointFailure(callbackFailure);
+            }
+        };
+        try {
+            return V3TruncatedFlash.resolve(this, temperatureKelvin, pressurePascal, workspace, policy, guardedCheckpoint);
+        } catch (FlashCheckpointFailure callbackFailure) {
+            throw callbackFailure.original;
+        }
+    }
+
+    private static final class FlashCheckpointFailure extends RuntimeException {
+        private final V3ThermoException original;
+
+        private FlashCheckpointFailure(V3ThermoException original) {
+            super(null, original, false, false);
+            this.original = original;
+        }
     }
 
     void evaluateInto(

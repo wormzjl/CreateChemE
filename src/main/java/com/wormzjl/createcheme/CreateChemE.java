@@ -36,7 +36,7 @@ public final class CreateChemE {
     private static final ModConfigSpec.IntValue SOLVER_DEADLINE_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
-    private static final ModConfigSpec.EnumValue<V3Rollout> COLUMN_V3_ROLLOUT;
+    private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -61,9 +61,13 @@ public final class CreateChemE {
                 .defineInRange("forcedShutdownMilliseconds", 1_000, 0, 10_000);
         builder.pop();
         builder.push("columnV3");
-        COLUMN_V3_ROLLOUT = builder
-                .comment("V3 calculator product rollout. DISABLED hides normal discovery; EXPERIMENTAL exposes the creative item.")
-                .defineEnum("rollout", V3Rollout.DISABLED);
+        COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT = builder
+                .comment("V3 stage-level trace cutoff in mol% (not a feed filter).",
+                        "Components below this cutoff in every testable phase at a stage may be structurally removed there.",
+                        "Feed trays are retained; removed inflows form an audited molar defect. Failed truncated solves retry untruncated.",
+                        "0 is the exact off switch. Default remains 0 pending accuracy/performance evaluation.",
+                        "Captured at admission; config reloads do not change in-flight solves.")
+                .defineInRange("stageTraceCutoffMolPercent", 0.0, 0.0, 1.0);
         builder.pop();
         CONFIG_SPEC = builder.build();
     }
@@ -89,14 +93,15 @@ public final class CreateChemE {
         return CALCULATION_LOGGING.getAsBoolean();
     }
 
-    public static V3Rollout columnV3Rollout() {
-        return COLUMN_V3_ROLLOUT.get();
+    /** Read on the server thread when admitting a V3 request, never from its worker. */
+    public static double columnV3StageTraceCutoffMolPercent() {
+        return COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT.get();
     }
 
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.COLUMN_CALCULATOR.get());
-            if (columnV3Rollout() != V3Rollout.DISABLED) event.accept(ModItems.COLUMN_CALCULATOR_V3.get());
+            event.accept(ModItems.COLUMN_CALCULATOR_V3.get());
         }
     }
 
@@ -167,10 +172,4 @@ public final class CreateChemE {
                 Duration.ofMillis(SOLVER_FORCED_SHUTDOWN_MILLISECONDS.getAsInt()));
     }
 
-    /** Server-start rollout mode for the additive V3 product family. */
-    public enum V3Rollout {
-        DISABLED,
-        EXPERIMENTAL,
-        ENABLED
-    }
 }

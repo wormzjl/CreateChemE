@@ -11,16 +11,31 @@ runs/
 # Local IDE metadata
 .idea/
 *.iml
+# Share the workspace setup; keep any developer-specific VS Code files local.
 .vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 .classpath
 .project
 .settings/
 bin/
+!/.claude/bin/
+!/.claude/bin/codex-bridge.sh
+!/.claude/bin/codex-bridge.ps1
 
 # Local scratch output
 .science-compile/
 src/generated/resources/.cache/
 *.log
+logs/
 
 # Local design and research notes
 documentation/
+benchmarks/
+
+# Claude × Codex collaboration runtime files
+.collab/
+CLAUDE.md
+.claude/

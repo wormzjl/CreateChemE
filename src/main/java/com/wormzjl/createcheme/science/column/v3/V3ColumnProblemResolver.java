@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.Objects;
 
 /** Resolves topology, generated pressures, and the M0 degree-of-freedom proof before a solve. */
@@ -9,8 +10,7 @@ public final class V3ColumnProblemResolver {
     /**
      * Resolves one candidate condenser branch.
      *
-     * <p>A future endpoint flash selects this branch; it is not a user control.  Keeping it
-     * explicit in M0 allows both branch contracts to be tested before thermodynamics exists.</p>
+     * <p>The calculation selects and validates this branch; it is not a user control.</p>
      *
      * @throws IllegalArgumentException if the input/schema/branch cannot form a closed V3 problem
      */
@@ -18,21 +18,49 @@ public final class V3ColumnProblemResolver {
         input = Objects.requireNonNull(input, "input");
         condenserPhaseBranch = Objects.requireNonNull(condenserPhaseBranch, "condenserPhaseBranch");
         validateInput(input);
-        V3ColumnTopology topology = condenserPhaseBranch == V3CondenserPhaseBranch.TWO_PHASE
-                ? V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber())
-                : V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
+        V3ColumnTopology topology = switch (condenserPhaseBranch) {
+            case TWO_PHASE -> V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber());
+            case VAPOR_ONLY -> V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
+            case LIQUID_ONLY -> V3ColumnTopology.liquidOnly(input.stageCount(), input.feedStageNumber());
+        };
         V3ActiveComponentBasis activeComponentBasis = V3ActiveComponentBasis.from(input);
         V3CondenserComponentPhases condenserComponentPhases = V3CondenserComponentPhases.from(activeComponentBasis);
         V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(
-                topology, activeComponentBasis.componentCount(), input.specifications(), condenserComponentPhases);
+                topology, activeComponentBasis.componentCount(), input.specifications(), condenserComponentPhases,
+                V3TruncationSupport.identity(topology, activeComponentBasis.componentCount()), input.sideDraws());
         if (!ledger.isValid()) {
             throw new IllegalArgumentException("Invalid V3 degree-of-freedom contract: " + ledger.humanReadableDiagnostic());
         }
         return new V3ColumnProblem(input, topology, activeComponentBasis, condenserComponentPhases,
-                pressureProfile(input, topology), ledger);
+                pressureProfile(input, topology), ledger, ledger.truncationSupport());
     }
 
-    private static void validateInput(V3ColumnInput input) {
+    /**
+     * Attaches fixed support without changing authored inputs. Identity returns the original problem
+     * and ledger. An invalid reduced ledger is rejected for the attempt orchestrator to retry unmasked.
+     */
+    static V3ColumnProblem withTruncation(V3ColumnProblem problem, V3TruncationSupport support) {
+        Objects.requireNonNull(problem, "problem");
+        Objects.requireNonNull(support, "support");
+        support.requireCompatible(problem);
+        if (!problem.truncationSupport().isIdentity()) {
+            throw new IllegalArgumentException("V3 truncation requires the original untruncated problem");
+        }
+        if (support.isIdentity()) return problem;
+        V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(problem.topology(),
+                problem.activeComponentBasis().componentCount(), problem.input().specifications(),
+                problem.condenserComponentPhases(), support, problem.input().sideDraws());
+        if (!ledger.isValid()) {
+            throw new IllegalArgumentException("Invalid V3 reduced degree-of-freedom contract: "
+                    + ledger.humanReadableDiagnostic());
+        }
+        return new V3ColumnProblem(problem.input(), problem.topology(), problem.activeComponentBasis(),
+                problem.condenserComponentPhases(), problem.nodePressuresPascal(), ledger, support);
+    }
+
+    /** Validates the authored geometry and rates without assembling a numerical ledger or calling properties. */
+    public static void validateInput(V3ColumnInput input) {
+        Objects.requireNonNull(input, "input");
         if (input.schemaVersion() != V3ColumnInput.SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported V3 input schema revision " + input.schemaVersion());
         }
@@ -42,10 +70,57 @@ public final class V3ColumnProblemResolver {
         if (input.feedStageNumber() < 1 || input.feedStageNumber() > input.stageCount()) {
             throw new IllegalArgumentException("V3 feed tray is outside the equilibrium-tray range");
         }
+        double totalDraw = 0.0;
+        for (V3SideDrawSpec draw : input.sideDraws()) {
+            if (draw.trayNumber() > input.stageCount()) {
+                throw new IllegalArgumentException("V3 side draw tray is outside the equilibrium-tray range");
+            }
+            totalDraw += draw.molarFlowMolPerSecond();
+        }
+        double totalFeed = java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum();
+        if (totalDraw >= totalFeed) {
+            throw new IllegalArgumentException("V3 total side draw rate must be less than the feed rate");
+        }
         double bottomPressure = input.topPressurePascal()
                 + (input.stageCount() - 1) * input.stagePressureDropPascal();
         if (!Double.isFinite(bottomPressure) || bottomPressure <= 0.0) {
             throw new IllegalArgumentException("V3 generated pressure profile is not finite and positive");
+        }
+        double totalSteam = 0.0;
+        for (V3SteamFeedSpec feed : input.steamFeeds()) {
+            if (feed.stageNumber() > input.stageCount() + 1) {
+                throw new IllegalArgumentException("V3 steam stage is outside the column");
+            }
+            if (feed.temperatureKelvin() < V3WaterProperties.TRIPLE_POINT_KELVIN
+                    || feed.temperatureKelvin() > V3WaterProperties.MAX_ENTHALPY_TEMPERATURE_KELVIN) {
+                throw new IllegalArgumentException("V3 steam temperature is outside the water-property envelope");
+            }
+            double injectionPressure = input.topPressurePascal()
+                    + (Math.min(feed.stageNumber(), input.stageCount()) - 1) * input.stagePressureDropPascal();
+            double saturationTemperature = V3WaterProperties.saturationTemperatureKelvin(injectionPressure);
+            if (feed.temperatureKelvin() < saturationTemperature + 5.0) {
+                throw new IllegalArgumentException("V3 steam must be superheated vapor at the injection pressure");
+            }
+            totalSteam += feed.molarFlowMolPerSecond();
+        }
+        if (totalSteam > totalFeed) {
+            throw new IllegalArgumentException("V3 total steam rate must not exceed the feed rate");
+        }
+        double reboilerDuty = input.specifications().stream().filter(V3ColumnSpecification.ReboilerDuty.class::isInstance)
+                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("V3 input is missing a reboiler-duty specification")).watts();
+        if (!input.steamFeeds().isEmpty() && reboilerDuty == 0.0 && !V3SteamFeeds.hasSumpFeed(input)) {
+            throw new IllegalArgumentException("V3 zero reboiler duty requires sump steam (stage N+1) or positive duty");
+        }
+        if (!input.steamFeeds().isEmpty()) {
+            double condenserTemperature = input.specifications().stream()
+                    .filter(V3ColumnSpecification.CondenserOutletTemperature.class::isInstance)
+                    .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "V3 steam input is missing a condenser-temperature specification")).kelvin();
+            if (condenserTemperature < V3WaterProperties.TRIPLE_POINT_KELVIN) {
+                throw new IllegalArgumentException("V3 free-water condenser temperature is below the ice-free property envelope");
+            }
         }
     }
 

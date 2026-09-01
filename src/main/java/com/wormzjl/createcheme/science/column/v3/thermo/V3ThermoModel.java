@@ -2,7 +2,7 @@ package com.wormzjl.createcheme.science.column.v3.thermo;
 
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 
-/** Narrow immutable hydrocarbon thermodynamic boundary for V3; water is intentionally excluded. */
+/** Narrow immutable hydrocarbon thermodynamic boundary for V3; free-water steam is handled by {@link V3WaterProperties}. */
 public interface V3ThermoModel {
     V3ComponentBasis componentBasis();
 

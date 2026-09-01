@@ -87,7 +87,7 @@ final class V3BlockJacobianAssembler {
                 V3DegreeOfFreedomLedger.UnknownId unknown = coordinates.unknowns().get(column).id();
                 LocalProbe probe = localProbe(evaluator, coordinates, baseCoordinates, column, unknown.node(),
                         workspaceFactory, differenceScale, control);
-                assembleLocalThermodynamicColumn(problem, baseResidual, equationIndexes, layout,
+                assembleLocalThermodynamicColumn(problem, state, unknown, baseResidual, equationIndexes, layout,
                         lower, diagonal, upper, node, column, baseTerms[node], probe);
             }
         }
@@ -142,6 +142,17 @@ final class V3BlockJacobianAssembler {
             if (equation.family() != V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE) continue;
             int node = equation.node();
             int component = equation.component();
+            if (node > 1 && problem.nodeSideDrawMolPerSecond(node - 1) > 0.0) {
+                double withdrawal = problem.liquidWithdrawalFraction(state, node - 1);
+                double total = V3SideDraws.liquidTotal(state, node - 1);
+                for (int k = 0; k < state.componentCount(); k++) {
+                    addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                            lower, diagonal, upper, row,
+                            new V3DegreeOfFreedomLedger.UnknownId(
+                                    V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, k),
+                            withdrawal * state.liquidFlow(node - 1, component) / total);
+                }
+            }
             if (node == topology.condenserNode()) {
                 addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
                         lower, diagonal, upper, row,
@@ -172,7 +183,8 @@ final class V3BlockJacobianAssembler {
                     addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
                             lower, diagonal, upper, row,
                             new V3DegreeOfFreedomLedger.UnknownId(
-                                    V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component), 1.0);
+                                    V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component),
+                            1.0 - problem.liquidWithdrawalFraction(state, node - 1));
                 }
                 addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
                         lower, diagonal, upper, row,
@@ -191,7 +203,8 @@ final class V3BlockJacobianAssembler {
             addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
                     lower, diagonal, upper, row,
                     new V3DegreeOfFreedomLedger.UnknownId(
-                            V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component), 1.0);
+                            V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component),
+                    1.0 - problem.liquidWithdrawalFraction(state, node - 1));
             addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
                     lower, diagonal, upper, row,
                     new V3DegreeOfFreedomLedger.UnknownId(
@@ -268,6 +281,8 @@ final class V3BlockJacobianAssembler {
 
     private static void assembleLocalThermodynamicColumn(
             V3ColumnProblem problem,
+            V3DryMeshState state,
+            V3DegreeOfFreedomLedger.UnknownId unknown,
             V3MeshResidual baseResidual,
             Map<V3DegreeOfFreedomLedger.EquationId, Integer> equationIndexes,
             V3StageBlockLayout layout,
@@ -297,9 +312,13 @@ final class V3BlockJacobianAssembler {
                 node, column, node, -(liquidDerivative + vaporDerivative));
         if (node + 1 <= problem.topology().reboilerNode()) {
             double liquidInCoefficient = node == problem.topology().condenserNode()
-                    ? organicRefluxFraction(problem) : 1.0;
+                    ? organicRefluxFraction(problem) : 1.0 - problem.liquidWithdrawalFraction(state, node);
+            double splitDerivative = problem.nodeSideDrawMolPerSecond(node) > 0.0
+                    && unknown.family() == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW
+                    ? problem.liquidWithdrawalFraction(state, node) * state.liquidFlow(node, unknown.component())
+                            / V3SideDraws.liquidTotal(state, node) * base.liquidPhaseEnergy() : 0.0;
             addEnergyDerivative(problem, baseResidual, equationIndexes, layout, lower, diagonal, upper,
-                    node + 1, column, node, liquidInCoefficient * liquidDerivative);
+                    node + 1, column, node, liquidInCoefficient * liquidDerivative + splitDerivative);
         }
         if (node >= 2) {
             addEnergyDerivative(problem, baseResidual, equationIndexes, layout, lower, diagonal, upper,

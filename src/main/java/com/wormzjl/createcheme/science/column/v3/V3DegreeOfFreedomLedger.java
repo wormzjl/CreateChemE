@@ -20,6 +20,7 @@ import java.util.Set;
 public final class V3DegreeOfFreedomLedger {
     private final V3ColumnTopology topology;
     private final int componentCount;
+    private final V3TruncationSupport truncationSupport;
     private final List<V3ColumnSpecification> specifications;
     private final List<Unknown> unknowns;
     private final List<Equation> equations;
@@ -30,9 +31,10 @@ public final class V3DegreeOfFreedomLedger {
     private V3DegreeOfFreedomLedger(
             V3ColumnTopology topology, int componentCount, List<V3ColumnSpecification> specifications,
             List<Unknown> unknowns, List<Equation> equations, List<V3CalculatedQuantity> calculatedQuantities,
-            List<V3ContractDiagnostic> diagnostics, int structuralRank) {
+            List<V3ContractDiagnostic> diagnostics, int structuralRank, V3TruncationSupport truncationSupport) {
         this.topology = topology;
         this.componentCount = componentCount;
+        this.truncationSupport = truncationSupport;
         this.specifications = List.copyOf(specifications);
         this.unknowns = List.copyOf(unknowns);
         this.equations = List.copyOf(equations);
@@ -52,8 +54,27 @@ public final class V3DegreeOfFreedomLedger {
             int componentCount,
             List<V3ColumnSpecification> specifications,
             V3CondenserComponentPhases condenserComponentPhases) {
+        return create(topology, componentCount, specifications, condenserComponentPhases,
+                V3TruncationSupport.identity(topology, componentCount));
+    }
+
+    static V3DegreeOfFreedomLedger create(
+            V3ColumnTopology topology,
+            int componentCount,
+            List<V3ColumnSpecification> specifications,
+            V3CondenserComponentPhases condenserComponentPhases,
+            V3TruncationSupport truncationSupport) {
+        return create(topology, componentCount, specifications, condenserComponentPhases, truncationSupport, List.of());
+    }
+
+    static V3DegreeOfFreedomLedger create(
+            V3ColumnTopology topology, int componentCount, List<V3ColumnSpecification> specifications,
+            V3CondenserComponentPhases condenserComponentPhases, V3TruncationSupport truncationSupport,
+            List<V3SideDrawSpec> sideDraws) {
         topology = Objects.requireNonNull(topology, "topology");
         condenserComponentPhases = Objects.requireNonNull(condenserComponentPhases, "condenserComponentPhases");
+        truncationSupport = Objects.requireNonNull(truncationSupport, "truncationSupport");
+        truncationSupport.requireCompatible(topology, componentCount);
         if (componentCount < 1 || componentCount > V3ComponentBasis.MAX_COMPONENTS) {
             throw new IllegalArgumentException("V3 component count is outside the supported contract range");
         }
@@ -63,9 +84,9 @@ public final class V3DegreeOfFreedomLedger {
         }
 
         List<V3ContractDiagnostic> diagnostics = specificationDiagnostics(topology, specifications);
-        List<Unknown> unknowns = enumerateUnknowns(topology, componentCount, condenserComponentPhases);
+        List<Unknown> unknowns = enumerateUnknowns(topology, componentCount, condenserComponentPhases, truncationSupport);
         List<Equation> equations = enumerateEquations(topology, componentCount, unknowns, diagnostics,
-                condenserComponentPhases);
+                condenserComponentPhases, truncationSupport, sideDraws);
         int structuralRank = maximumBipartiteMatching(equations, unknowns);
         if (unknowns.size() != equations.size()) {
             diagnostics.add(new V3ContractDiagnostic("DOF_COUNT_MISMATCH", "V3 unknown and equation counts differ"));
@@ -79,7 +100,7 @@ public final class V3DegreeOfFreedomLedger {
                         V3CalculatedQuantity.BOTTOMS_COMPONENT_FLOWS,
                         V3CalculatedQuantity.STAGE_LIQUID_COMPONENT_FLOWS,
                         V3CalculatedQuantity.STAGE_VAPOR_COMPONENT_FLOWS),
-                diagnostics, structuralRank);
+                diagnostics, structuralRank, truncationSupport);
     }
 
     public V3ColumnTopology topology() {
@@ -88,6 +109,10 @@ public final class V3DegreeOfFreedomLedger {
 
     public int componentCount() {
         return componentCount;
+    }
+
+    V3TruncationSupport truncationSupport() {
+        return truncationSupport;
     }
 
     public List<V3ColumnSpecification> specifications() {
@@ -164,14 +189,18 @@ public final class V3DegreeOfFreedomLedger {
     }
 
     private static List<Unknown> enumerateUnknowns(
-            V3ColumnTopology topology, int componentCount, V3CondenserComponentPhases condenserComponentPhases) {
+            V3ColumnTopology topology, int componentCount, V3CondenserComponentPhases condenserComponentPhases,
+            V3TruncationSupport truncationSupport) {
         List<Unknown> unknowns = new ArrayList<>();
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < componentCount; component++) {
+                if (!truncationSupport.retains(node, component)) continue;
                 if (condenserComponentPhases.hasLiquid(topology, node, component)) {
                     unknowns.add(new Unknown(new UnknownId(UnknownFamily.LIQUID_COMPONENT_FLOW, node, component)));
                 }
-                unknowns.add(new Unknown(new UnknownId(UnknownFamily.VAPOR_COMPONENT_FLOW, node, component)));
+                if (topology.hasVaporPhase(node)) {
+                    unknowns.add(new Unknown(new UnknownId(UnknownFamily.VAPOR_COMPONENT_FLOW, node, component)));
+                }
             }
             if (topology.hasTemperatureUnknown(node)) {
                 unknowns.add(new Unknown(new UnknownId(UnknownFamily.TEMPERATURE, node, -1)));
@@ -182,13 +211,17 @@ public final class V3DegreeOfFreedomLedger {
 
     private static List<Equation> enumerateEquations(
             V3ColumnTopology topology, int componentCount, List<Unknown> unknowns,
-            List<V3ContractDiagnostic> diagnostics, V3CondenserComponentPhases condenserComponentPhases) {
+            List<V3ContractDiagnostic> diagnostics, V3CondenserComponentPhases condenserComponentPhases,
+            V3TruncationSupport truncationSupport, List<V3SideDrawSpec> sideDraws) {
+        boolean[] drawTrays = new boolean[topology.nodeCount()];
+        for (V3SideDrawSpec draw : sideDraws) drawTrays[draw.trayNumber()] = true;
         Set<UnknownId> activeUnknowns = new HashSet<>(unknowns.stream().map(Unknown::id).toList());
         List<Equation> equations = new ArrayList<>();
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < componentCount; component++) {
+                if (!truncationSupport.retains(node, component)) continue;
                 equations.add(new Equation(new EquationId(EquationFamily.COMPONENT_MATERIAL_BALANCE, node, component),
-                        materialReferences(topology, node, component, activeUnknowns)));
+                        materialReferences(topology, node, component, componentCount, drawTrays, activeUnknowns)));
                 if (condenserComponentPhases.hasVaporLiquidEquilibrium(topology, node, component)) {
                     equations.add(new Equation(new EquationId(EquationFamily.VAPOR_LIQUID_EQUILIBRIUM, node, component),
                             equilibriumReferences(topology, node, component, componentCount, activeUnknowns)));
@@ -215,12 +248,18 @@ public final class V3DegreeOfFreedomLedger {
     }
 
     private static List<UnknownId> materialReferences(
-            V3ColumnTopology topology, int node, int component, Set<UnknownId> activeUnknowns) {
+            V3ColumnTopology topology, int node, int component, int componentCount, boolean[] drawTrays,
+            Set<UnknownId> activeUnknowns) {
         Set<UnknownId> references = new HashSet<>();
         addIfActive(references, activeUnknowns, UnknownFamily.LIQUID_COMPONENT_FLOW, node, component);
         addIfActive(references, activeUnknowns, UnknownFamily.VAPOR_COMPONENT_FLOW, node, component);
         if (node > topology.condenserNode()) {
             addIfActive(references, activeUnknowns, UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component);
+            if (drawTrays[node - 1]) {
+                for (int k = 0; k < componentCount; k++) {
+                    addIfActive(references, activeUnknowns, UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, k);
+                }
+            }
         }
         if (node < topology.reboilerNode()) {
             addIfActive(references, activeUnknowns, UnknownFamily.VAPOR_COMPONENT_FLOW, node + 1, component);

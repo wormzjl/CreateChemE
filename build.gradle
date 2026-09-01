@@ -24,6 +24,11 @@ sourceSets.main.resources {
 }
 
 sourceSets {
+    // Exercise the actual Minecraft wire/NBT codecs in regression tests as well as the pure science layer.
+    test {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
     // Benchmarks remain outside main and test source sets: they are runnable diagnostics,
     // never production dependencies and never timing assertions in CI.
     benchmark {
@@ -163,6 +168,21 @@ tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
 
+tasks.register('v3HollandBenchmark', Test) {
+    group = 'verification'
+    description = 'Runs the scan-verified Holland Example 3-2 independent-oracle and V3 accuracy benchmark.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching 'com.wormzjl.createcheme.science.column.v3.HollandExample32BenchmarkTest'
+    }
+    def hollandReport = providers.gradleProperty('v3HollandReport').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-holland-example-3-2.json').get().asFile.absolutePath)
+    systemProperty 'v3HollandReport', hollandReport
+    outputs.file(hollandReport)
+    outputs.upToDateWhen { false }
+}
+
 tasks.register('legacyColumnBenchmark', JavaExec) {
     group = 'verification'
     description = 'Measures legacy column scopes and writes a durable diagnostic report.'
@@ -193,6 +213,108 @@ tasks.register('legacyColumnBenchmarkHarnessTest', JavaExec) {
     classpath = sourceSets.benchmark.runtimeClasspath
     mainClass = 'com.wormzjl.createcheme.benchmarks.LegacyColumnBenchmark'
     args '--self-test'
+}
+
+tasks.register('v3TimeoutBenchmark', JavaExec) {
+    group = 'verification'
+    description = 'Serial V3 timeout diagnostics with optional per-case JFR, CPU, allocation and outcome reports.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--samples=' + providers.gradleProperty('v3Samples').getOrElse('1')
+    args '--warmup=' + providers.gradleProperty('v3Warmup').getOrElse('1')
+    args '--deadlineSeconds=' + providers.gradleProperty('v3DeadlineSeconds').getOrElse('90')
+    args '--cases=' + providers.gradleProperty('v3Cases').getOrElse('150-off,110-off,110-on,100-off,110-test-feed,110-matched-duty')
+    args '--profile=' + providers.gradleProperty('v3Profile').getOrElse('false')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-timeout.json').get().asFile.absolutePath)
+}
+
+tasks.register('v3TimeoutBenchmarkHarnessTest', JavaExec) {
+    group = 'verification'
+    description = 'Checks V3 timeout benchmark argument validation and timeout report serialization.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3TimeoutBenchmark'
+    args '--self-test'
+}
+
+tasks.register('v3FlashFailureCapture', JavaExec) {
+    group = 'verification'
+    description = 'Captures flash failure inputs and caught exception stacks in an owned debugger JVM.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3FlashFailureCapture'
+    jvmArgs '--add-modules=jdk.jdi'
+    args '--pressureKpa=' + providers.gradleProperty('flashPressureKpa').getOrElse('100')
+    args '--cutoff=' + providers.gradleProperty('flashCutoff').getOrElse('0')
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-capture.json')
+}
+
+tasks.register('v3FlashReplayProbe', JavaExec) {
+    group = 'verification'
+    description = 'Replays captured TP-flash inputs with diagnostic iteration traces and explicit counterfactual controls.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.thermo.V3FlashReplayProbe'
+    args '--input=' + providers.gradleProperty('flashInput').getOrElse('benchmarks/results/v3-flash-investigation/100-off-capture.json')
+    args '--event=' + providers.gradleProperty('flashEvent').getOrElse('0')
+    args '--maxIterations=' + providers.gradleProperty('flashMaxIterations').getOrElse('64')
+    args '--relaxation=' + providers.gradleProperty('flashRelaxation').getOrElse('0.5')
+    args '--skipInactiveConvergence=' + providers.gradleProperty('flashSkipInactive').getOrElse('false')
+    args '--polishRoots=' + providers.gradleProperty('flashPolishRoots').getOrElse('false')
+    if (providers.gradleProperty('flashReplayPressurePascal').isPresent()) {
+        args '--pressurePascal=' + providers.gradleProperty('flashReplayPressurePascal').get()
+    }
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-replay.json')
+}
+
+tasks.register('v3FlashTruncationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Records strict/reference-validated flash pairs and conservation evidence; not a timing benchmark.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationProbe'
+    args '--report=' + providers.gradleProperty('flashReport').getOrElse('build/reports/benchmarks/v3-flash-truncation.json')
+}
+
+tasks.register('v3ContinuationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Traces the first V3 continuation path without recovery; diagnostic counterfactuals only.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3ContinuationProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--mode=' + providers.gradleProperty('v3ProbeMode').getOrElse('stage-local')
+    args '--branch=' + providers.gradleProperty('v3ProbeBranch').getOrElse('preferred')
+    args '--linearDiagnostics=' + providers.gradleProperty('v3LinearDiagnostics').getOrElse('0')
+    args '--deadlineSeconds=' + providers.gradleProperty('v3DeadlineSeconds').getOrElse('90')
+    args '--feedKmolH=' + providers.gradleProperty('v3FeedKmolH').getOrElse('2610.7')
+    args '--pressureKpa=' + providers.gradleProperty('v3PressureKpa').getOrElse('110')
+    args '--dutyMW=' + providers.gradleProperty('v3DutyMW').getOrElse('8')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-continuation-probe.json').get().asFile.absolutePath)
+}
+
+tasks.register('v3LowPressureProbe', JavaExec) {
+    group = 'verification'
+    description = 'Replays the actual 60-to-55 kPa pressure failure and tests numerical counterfactuals without production changes.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3LowPressureProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse('build/reports/benchmarks/v3-low-pressure.json')
+    if (providers.gradleProperty('v3SmallSteps').isPresent()) args '--smallSteps'
+    if (providers.gradleProperty('v3Adaptive').isPresent()) args '--adaptive'
+    if (providers.gradleProperty('v3TruncatedProbe').isPresent()) args '--truncated'
+}
+
+tasks.register('v3LowPressureLinearProbe', JavaExec) {
+    group = 'verification'
+    description = 'Inspects captured low-pressure Jacobians and Newton line searches without production edits.'
+    classpath = sourceSets.benchmark.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3LowPressureLinearProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '2g'
+    args '--input=' + providers.gradleProperty('v3LinearInput').getOrElse('benchmarks/results/v3-low-pressure/replay-counterfactuals.json')
+    args '--report=' + providers.gradleProperty('v3Report').getOrElse('build/reports/benchmarks/v3-low-pressure-linear.json')
 }
 
 tasks.named('wrapper', Wrapper).configure {

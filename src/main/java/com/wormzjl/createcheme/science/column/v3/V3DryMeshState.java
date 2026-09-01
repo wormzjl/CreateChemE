@@ -47,6 +47,9 @@ final class V3DryMeshState {
                 if (liquid && !topology.hasLiquidPhase(node) && value != 0.0) {
                     throw new IllegalArgumentException("V3 dry MESH state supplies liquid flow for an absent condenser phase");
                 }
+                if (!liquid && !topology.hasVaporPhase(node) && value != 0.0) {
+                    throw new IllegalArgumentException("V3 dry MESH state supplies vapor flow for an absent condenser phase");
+                }
                 copy[node][component] = value;
             }
         }

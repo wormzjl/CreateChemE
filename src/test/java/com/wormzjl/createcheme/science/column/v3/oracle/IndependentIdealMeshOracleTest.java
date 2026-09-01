@@ -54,6 +54,27 @@ class IndependentIdealMeshOracleTest {
     }
 
     @Test
+    void independentSideDrawSolveClosesAllMeshRowsAndExternalComponentBalances() {
+        var problem = IndependentIdealMeshOracle.manufacturedFourTrayProblem();
+        double[] draws = {0, 0, 5, 0, 3, 0};
+        IndependentIdealMeshOracle oracle = new IndependentIdealMeshOracle(problem, draws);
+        var result = oracle.solve(IndependentIdealMeshOracle.deliberatelyPerturbedCoordinates(oracle), 40, 1e-11);
+        var state = result.state();
+        assertTrue(result.evaluation().maximumAbsoluteScaledResidual() < 1e-11);
+        for (int component = 0; component < problem.componentCount(); component++) {
+            double products = state.vaporComponentFlows()[0][component]
+                    + state.liquidComponentFlows()[0][component] / (1 + problem.organicRefluxRatio())
+                    + state.liquidComponentFlows()[problem.nodeCount() - 1][component];
+            for (int tray = 1; tray <= problem.trayCount(); tray++) {
+                double liquidTotal = Arrays.stream(state.liquidComponentFlows()[tray]).sum();
+                assertTrue(liquidTotal > draws[tray]);
+                products += draws[tray] * state.liquidComponentFlows()[tray][component] / liquidTotal;
+            }
+            assertEquals(problem.feedComponentFlowsMolPerSecond()[component], products, 1e-7);
+        }
+    }
+
+    @Test
     void fixtureResourceRecordsItsManufacturedAuthorityAndNoDwsimClaim() throws IOException {
         try (var stream = getClass().getResourceAsStream("/column/v3/manufactured-two-component-four-tray.json")) {
             assertTrue(stream != null);

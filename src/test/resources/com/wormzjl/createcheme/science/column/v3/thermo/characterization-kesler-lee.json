@@ -1,0 +1,14 @@
+[
+  {"id":"PC01","normalBoilingPointKelvin":315.82,"specificGravity":0.7289757934633029,"criticalTemperatureKelvin":492.55999480578146,"criticalPressurePascal":4178434.84448104,"acentricFactor":0.22608738401077633,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC02","normalBoilingPointKelvin":345.55,"specificGravity":0.7490563028147272,"criticalTemperatureKelvin":527.8025186583332,"criticalPressurePascal":3751314.491605433,"acentricFactor":0.26472342901494617,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC03","normalBoilingPointKelvin":383.49,"specificGravity":0.7690578062276705,"criticalTemperatureKelvin":569.3692139045123,"criticalPressurePascal":3246675.3539700373,"acentricFactor":0.3244879676576933,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC04","normalBoilingPointKelvin":419.35,"specificGravity":0.7890593096406139,"criticalTemperatureKelvin":607.073597206833,"criticalPressurePascal":2864575.194282997,"acentricFactor":0.38669548789930985,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC05","normalBoilingPointKelvin":456.08,"specificGravity":0.8090608130535573,"criticalTemperatureKelvin":644.2216792479735,"criticalPressurePascal":2534536.7251496073,"acentricFactor":0.4553983265416594,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC06","normalBoilingPointKelvin":504.5,"specificGravity":0.8290623164665004,"criticalTemperatureKelvin":689.6851072684117,"criticalPressurePascal":2132757.407375936,"acentricFactor":0.557980993981746,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC07","normalBoilingPointKelvin":553.53,"specificGravity":0.850063895050091,"criticalTemperatureKelvin":734.3987838516796,"criticalPressurePascal":1810605.5611405328,"acentricFactor":0.6678184664239446,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC08","normalBoilingPointKelvin":602.38,"specificGravity":0.8710654736336814,"criticalTemperatureKelvin":777.8713772906234,"criticalPressurePascal":1549949.2600690369,"acentricFactor":0.7824175712678637,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC09","normalBoilingPointKelvin":650.99,"specificGravity":0.892067052217272,"criticalTemperatureKelvin":820.377320000774,"criticalPressurePascal":1336780.4757975033,"acentricFactor":0.9004393215980728,"omegaBranch":"VAPOR_PRESSURE"},
+  {"id":"PC10","normalBoilingPointKelvin":709.04,"specificGravity":0.9140687059715096,"criticalTemperatureKelvin":869.1971815576578,"criticalPressurePascal":1114480.0231325733,"acentricFactor":1.039341380087733,"omegaBranch":"WATSON_FACTOR"},
+  {"id":"PC11","normalBoilingPointKelvin":823.04,"specificGravity":0.9590460866961953,"criticalTemperatureKelvin":964.0847894556182,"criticalPressurePascal":797049.0014191915,"acentricFactor":1.2856950852172864,"omegaBranch":"WATSON_FACTOR"},
+  {"id":"PC12","normalBoilingPointKelvin":1035.975246548323,"specificGravity":1.0100759223536375,"criticalTemperatureKelvin":1123.1845142260979,"criticalPressurePascal":371673.1106204441,"acentricFactor":1.7310713641908377,"omegaBranch":"WATSON_FACTOR"}
+]

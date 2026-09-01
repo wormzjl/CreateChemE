@@ -34,6 +34,10 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
         thermo = Objects.requireNonNull(thermo, "thermo");
         workspace = Objects.requireNonNull(workspace, "workspace");
         request.control().checkpoint();
+        if (request.problem().hasSideDraws()) {
+            return new V3SequentialPreconditioner.Result.NotApplicable(V3SequentialPreconditioner.Failure.INVALID_STATE,
+                    new V3SequentialPreconditioner.Evidence(id(), 0, "side draws"));
+        }
         try {
             V3FlashResult feedFlash = thermo.flashTP(request.problem().input().feedTemperatureKelvin(),
                     request.problem().nodePressurePascal(request.problem().topology().feedTrayNumber()),

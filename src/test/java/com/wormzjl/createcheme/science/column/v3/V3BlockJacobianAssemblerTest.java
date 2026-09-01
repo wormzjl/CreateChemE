@@ -13,11 +13,32 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import com.wormzjl.createcheme.science.column.v3.linalg.V3BandedMatrix;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 class V3BlockJacobianAssemblerTest {
-    @Test
-    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleAndHaveNoOffBandCoupling() {
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {0, 1, 2, 4})
+    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleAndHaveNoOffBandCoupling(int drawTray) {
         V3ColumnProblem problem = problem();
+        if (drawTray > 0) {
+            V3ColumnInput input = problem.input();
+            problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(),
+                    input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
+                    input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                    input.specifications(), List.of(new V3SideDrawSpec(drawTray, 3.0))), V3CondenserPhaseBranch.TWO_PHASE);
+        }
+        assertLocalBlocksMatchFiniteDifference(problem);
+    }
+
+    @Test
+    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleWithSumpSteam() {
+        V3ColumnProblem problem = problem(List.of(new V3SteamFeedSpec(5, 1.0, 450.0)));
+
+        assertLocalBlocksMatchFiniteDifference(problem);
+    }
+
+    private static void assertLocalBlocksMatchFiniteDifference(V3ColumnProblem problem) {
         SmoothThermo thermo = new SmoothThermo();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
         V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
@@ -56,12 +77,13 @@ class V3BlockJacobianAssemblerTest {
         }
     }
 
-    @Test
-    void localStageBlocksMatchTheColoredReferenceForTheRealCrudePartialCondenser() {
+    @ParameterizedTest
+    @EnumSource(value = V3CondenserPhaseBranch.class, names = {"TWO_PHASE", "LIQUID_ONLY"})
+    void localStageBlocksMatchTheColoredReferenceForRealCrudeCondenserBranches(V3CondenserPhaseBranch branch) {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
         V3ColumnInput input = realCrudeInput(crude, 100_000.0);
-        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, branch);
         V3DryMeshState state = V3ColumnInitializer.initialize(
                 problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE).state();
         V3FlashResult feed = thermo.flashTP(input.feedTemperatureKelvin(),
@@ -119,12 +141,16 @@ class V3BlockJacobianAssemblerTest {
     }
 
     private static V3ColumnProblem problem() {
+        return problem(List.of());
+    }
+
+    private static V3ColumnProblem problem(List<V3SteamFeedSpec> steamFeeds) {
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:manufactured", "test:binary",
                 new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30.0, 60.0}, 400.0,
-                4, 2, 250_000.0, 750.0, List.of(
+                4, 2, steamFeeds.isEmpty() ? 250_000.0 : 150_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(1.0),
-                        new V3ColumnSpecification.ReboilerDuty(0.0)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)), List.of(), steamFeeds);
         return V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
     }
 

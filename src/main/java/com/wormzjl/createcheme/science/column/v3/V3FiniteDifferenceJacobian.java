@@ -251,6 +251,9 @@ final class V3FiniteDifferenceJacobian {
 
         @Override public double[][] values() { return copy(values); }
 
+        /** Read-only scalar access for numerical kernels that must not allocate a dense defensive copy. */
+        double value(int row, int column) { return values[row][column]; }
+
         private static double[][] copy(double[][] values) {
             values = Objects.requireNonNull(values, "values");
             double[][] copy = new double[values.length][];
