@@ -121,6 +121,6 @@ class V3StageTraceCalculatorTest {
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, thermo.packageId(), "test:registered-pr-binary",
                 thermo.componentBasis(), flows, 550, 2, 1, 250_000, 750, List.of(
                 new V3ColumnSpecification.CondenserOutletTemperature(300),
-                new V3ColumnSpecification.OrganicRefluxRatio(2), new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                new V3ColumnSpecification.OrganicRefluxRatio(2), new V3ColumnSpecification.ReboilerDuty(0)));
     }
 }

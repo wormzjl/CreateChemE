@@ -72,7 +72,7 @@ class V3DryMeshCoordinateMapTest {
                 4, 2, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(1.0),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
         return V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
     }
 

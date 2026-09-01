@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,6 +12,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
@@ -77,6 +79,47 @@ class V3CondenserPhaseAuditTest {
     }
 
     @Test
+    void independentlyRejectsAWetCondenserPartitionThatTheWetResidualWouldOtherwiseShare() {
+        V3TruncationNumericsTest.Fixture fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
+        V3ColumnProblem wetProblem = wetProblem(fixture, 150_000.0);
+        V3ThermoModel wetThermo = withWetEquilibrium(fixture, wetProblem);
+        V3AcceptanceAudit exactAudit = new V3AcceptanceAuditor(wetProblem, wetThermo, 0.0)
+                .audit(fixture.exact(), wetThermo.newWorkspace());
+        assertTrue(phaseCheck(exactAudit).passed(), phaseCheck(exactAudit)::toString);
+
+        double[][] liquid = V3TruncationNumericsTest.copyFlows(fixture.exact(), true);
+        double[][] vapor = V3TruncationNumericsTest.copyFlows(fixture.exact(), false);
+        liquid[0][0] = 12.0;
+        liquid[0][1] = 8.0;
+        vapor[0][0] = 6.0;
+        vapor[0][1] = 4.0;
+        V3DryMeshState wrongPartition = new V3DryMeshState(wetProblem.topology(), 3, liquid, vapor,
+                V3TruncationNumericsTest.temperatures());
+        V3AcceptanceAudit wrongAudit = new V3AcceptanceAuditor(wetProblem, wetThermo, 0.0)
+                .audit(wrongPartition, wetThermo.newWorkspace());
+
+        assertFalse(phaseCheck(wrongAudit).passed());
+    }
+
+    @Test
+    void waterLimitedOverheadRetainsAllSteamAsMixedVaporInsteadOfMakingNegativeFreeWater() {
+        V3TruncationNumericsTest.Fixture fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
+        V3ColumnProblem wetProblem = wetProblem(fixture, 250_000.0);
+        V3ThermoModel wetThermo = withWetEquilibrium(fixture, wetProblem);
+
+        V3AcceptanceAudit audit = new V3AcceptanceAuditor(wetProblem, wetThermo, 0.0)
+                .audit(fixture.exact(), wetThermo.newWorkspace());
+        V3AcceptanceAudit.Check freeWater = audit.checks().stream()
+                .filter(check -> check.family().equals("FREE_WATER_SPLIT")).findFirst().orElseThrow();
+
+        assertTrue(freeWater.passed());
+        assertEquals(0.0, freeWater.value());
+        V3ColumnProblem.WaterCondenserSplit split = wetProblem.waterCondenserSplit(fixture.exact());
+        assertEquals(wetProblem.waterVaporFlowMolPerSecond(1), split.vaporFlowMolPerSecond());
+        assertEquals(0.0, split.freeWaterFlowMolPerSecond());
+    }
+
+    @Test
     void cancellationAfterTheIndependentFlashEscapesUnchanged() {
         V3TruncationNumericsTest.Fixture fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
         AtomicBoolean flashed = new AtomicBoolean();
@@ -112,6 +155,52 @@ class V3CondenserPhaseAuditTest {
                 return delegate.molarEnthalpy(t, p, z, phase, workspace);
             }
             @Override public V3FlashResult flashTP(double t, double p, double[] z, V3ThermoWorkspace workspace) { return flash; }
+        };
+    }
+
+    private static V3ColumnProblem wetProblem(V3TruncationNumericsTest.Fixture fixture, double topPressurePascal) {
+        V3ColumnInput dry = fixture.original().input();
+        V3ColumnInput wet = new V3ColumnInput(dry.schemaVersion(), dry.packageId(), dry.assayId(), dry.componentBasis(),
+                dry.feedComponentMolarFlowsMolPerSecond(), dry.feedTemperatureKelvin(), dry.stageCount(), dry.feedStageNumber(),
+                topPressurePascal, dry.stagePressureDropPascal(), dry.specifications(), dry.sideDraws(),
+                List.of(new V3SteamFeedSpec(dry.stageCount() + 1, 4.0, 450.0)));
+        V3ColumnProblem untruncated = V3ColumnProblemResolver.resolve(wet, V3CondenserPhaseBranch.TWO_PHASE);
+        return V3ColumnProblemResolver.withTruncation(untruncated, fixture.problem().truncationSupport());
+    }
+
+    private static V3ThermoModel withWetEquilibrium(
+            V3TruncationNumericsTest.Fixture fixture, V3ColumnProblem wetProblem) {
+        return new V3ThermoModel() {
+            @Override public V3ComponentBasis componentBasis() { return fixture.thermo().componentBasis(); }
+            @Override public V3ThermoWorkspace newWorkspace() { return fixture.thermo().newWorkspace(); }
+
+            @Override
+            public V3FugacityResult fugacity(double temperature, double pressure, double[] composition,
+                                              V3Phase phase, V3ThermoWorkspace workspace) {
+                V3FugacityResult result = fixture.thermo().fugacity(temperature, pressure, composition, phase, workspace);
+                if (phase != V3Phase.LIQUID) return result;
+                int node = (int) Math.round((temperature - 400.0) / 10.0);
+                double hydrocarbon = 0.0;
+                for (int component = 0; component < fixture.exact().componentCount(); component++) {
+                    hydrocarbon += fixture.exact().vaporFlow(node, component);
+                }
+                double water = node == wetProblem.topology().condenserNode()
+                        ? wetProblem.waterCondenserSplit(fixture.exact()).vaporFlowMolPerSecond()
+                        : wetProblem.waterVaporFlowMolPerSecond(node);
+                double[] logPhi = result.logFugacityCoefficients();
+                double dilution = Math.log(hydrocarbon / (hydrocarbon + water));
+                for (int component = 0; component < logPhi.length; component++) logPhi[component] += dilution;
+                return new V3FugacityResult(phase, logPhi, result.compressibilityFactor(),
+                        result.molarEnthalpyJoulesPerMol(), result.physicalRootCount(), result.rootSeparation());
+            }
+
+            @Override public double molarEnthalpy(double t, double p, double[] z, V3Phase phase, V3ThermoWorkspace workspace) {
+                return fixture.thermo().molarEnthalpy(t, p, z, phase, workspace);
+            }
+
+            @Override public V3FlashResult flashTP(double t, double p, double[] z, V3ThermoWorkspace workspace) {
+                return fixture.thermo().flashTP(t, p, z, workspace);
+            }
         };
     }
 }

@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.science.column.v3;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.Objects;
 
 /** Request-local, material-conserving condenser flash projection; never an accepted column result. */
@@ -36,7 +37,21 @@ final class V3CondenserPhaseTransition {
         if (!Double.isFinite(total) || total <= 0.0) {
             throw new IllegalArgumentException("Condenser transition has no finite incoming overhead");
         }
-        V3FlashResult flash = thermo.flashTP(state.temperatureKelvin(0), source.nodePressurePascal(0),
+        double totalPressure = source.nodePressurePascal(0);
+        double hydrocarbonPressure = totalPressure;
+        if (source.hasFreeWaterCondenser()
+                && source.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.LIQUID_ONLY) {
+            // A liquid-only candidate has no hydrocarbon vapor flow from which to infer water
+            // slip, but an existing water boot still fixes the vapor pressure at saturation.
+            hydrocarbonPressure -= V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(0));
+        } else if (source.hasSteamFeeds()) {
+            double vaporWater = source.waterCondenserSplit(state).vaporFlowMolPerSecond();
+            hydrocarbonPressure = totalPressure * total / (total + vaporWater);
+        }
+        if (!Double.isFinite(hydrocarbonPressure) || hydrocarbonPressure <= 0.0) {
+            throw new IllegalArgumentException("Condenser transition has no finite positive hydrocarbon partial pressure");
+        }
+        V3FlashResult flash = thermo.flashTP(state.temperatureKelvin(0), hydrocarbonPressure,
                 overhead, thermo.newWorkspace());
         control.checkpoint();
         if (flash.phase() == V3FeedPhase.VAPOR) {

@@ -39,13 +39,6 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private static final double MOL_PER_SECOND_TO_KMOL_PER_HOUR = 3.6;
     private static final double CELSIUS_TO_KELVIN = 273.15;
     private static final double PASCAL_TO_BAR = 1.0e-5;
-    /** Mild CDU stripping-steam starting point: 8 mol/s, superheated to 450 K. */
-    private static final String DEFAULT_SUMP_STEAM_RATE_KMOL_PER_HOUR = "28.8";
-    private static final String DEFAULT_SUMP_STEAM_TEMPERATURE_CELSIUS = "176.9";
-    /** A visible but disabled optional tray-injection starter; a positive rate enables it. */
-    private static final String DEFAULT_TRAY_STEAM_STAGE = "18";
-    private static final String DEFAULT_TRAY_STEAM_RATE_KMOL_PER_HOUR = "0";
-    private static final String DEFAULT_TRAY_STEAM_TEMPERATURE_CELSIUS = "176.9";
     private static final int BACKGROUND = 0xFF20252B;
     private static final int BORDER = 0xFF59636E;
     private static final int TABLE_HEADER = 0xFF343C45;
@@ -88,10 +81,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         String[] scalarDraft = editorDraft();
         String[] sideStageDrafts = {"13", "17", "22"};
         String[] sideRateDrafts = {"92.3", "131.85", "32.96"};
-        String[] steamDrafts = steamFields == null ? new String[] {
-                DEFAULT_SUMP_STEAM_RATE_KMOL_PER_HOUR, DEFAULT_SUMP_STEAM_TEMPERATURE_CELSIUS,
-                DEFAULT_TRAY_STEAM_STAGE, DEFAULT_TRAY_STEAM_RATE_KMOL_PER_HOUR,
-                DEFAULT_TRAY_STEAM_TEMPERATURE_CELSIUS}
+        String[] steamDrafts = steamFields == null ? new String[] {"", "", "", "", ""}
                 : new String[] {steamFields.sumpRate().getValue(), steamFields.sumpTemperature().getValue(),
                         steamFields.trayStage().getValue(), steamFields.trayRate().getValue(),
                         steamFields.trayTemperature().getValue()};
@@ -250,15 +240,15 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         V3SteamFeedSpec traySteam = input.steamFeeds().stream()
                 .filter(feed -> feed.stageNumber() <= input.stageCount()).findFirst().orElse(null);
         if (steamFields != null) {
-            steamFields.sumpRate().setValue(sump == null ? DEFAULT_SUMP_STEAM_RATE_KMOL_PER_HOUR
+            steamFields.sumpRate().setValue(sump == null ? ""
                     : compactDraft(sump.molarFlowMolPerSecond() * 3.6, 1));
-            steamFields.sumpTemperature().setValue(sump == null ? DEFAULT_SUMP_STEAM_TEMPERATURE_CELSIUS
+            steamFields.sumpTemperature().setValue(sump == null ? ""
                     : compactDraft(sump.temperatureKelvin() - CELSIUS_TO_KELVIN, 1));
-            steamFields.trayStage().setValue(traySteam == null ? DEFAULT_TRAY_STEAM_STAGE
+            steamFields.trayStage().setValue(traySteam == null ? ""
                     : Integer.toString(traySteam.stageNumber()));
-            steamFields.trayRate().setValue(traySteam == null ? DEFAULT_TRAY_STEAM_RATE_KMOL_PER_HOUR
+            steamFields.trayRate().setValue(traySteam == null ? ""
                     : compactDraft(traySteam.molarFlowMolPerSecond() * 3.6, 1));
-            steamFields.trayTemperature().setValue(traySteam == null ? DEFAULT_TRAY_STEAM_TEMPERATURE_CELSIUS
+            steamFields.trayTemperature().setValue(traySteam == null ? ""
                     : compactDraft(traySteam.temperatureKelvin() - CELSIUS_TO_KELVIN, 1));
         }
     }
@@ -440,7 +430,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         V3ColumnInput input = serverState.input();
         graphics.drawString(font, isHolland()
                         ? "Fixed scan-verified input: 11 plates, bubble-point feed, and one 25 lbmol/h liquid draw."
-                : "Steam strips with reduced or zero reboiler duty; sump steam enters below the bottom tray.",
+                : "Optional steam: leave rate blank or 0 to keep this dry. Suggested sump: 28.8 kmol/h at 176.9°C.",
                 10, CONTENT_TOP + 209, NOTICE, false);
         graphics.drawString(font, isHolland()
                         ? "Uses the independent near-root initializer; the known V3 cold-start failure remains reported."

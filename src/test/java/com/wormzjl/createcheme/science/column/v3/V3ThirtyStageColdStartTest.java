@@ -19,7 +19,7 @@ class V3ThirtyStageColdStartTest {
                 "test:registered-pr-binary", thermo.componentBasis(), flows, 550.0, 30, 24, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
 
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
         System.out.println("V3 30-stage cold outcome: " + outcome);

@@ -666,6 +666,27 @@ public final class V3ColumnCalculator {
 
     private record PhaseCorrection(V3SolvePass pass, boolean attempted) {}
 
+    /** One immutable authored-feature continuation point. */
+    private record RampStep(double steamFraction, double drawFraction, String pathLabel, String description) {
+        private RampStep {
+            if (!Double.isFinite(steamFraction) || steamFraction < 0.0 || steamFraction > 1.0
+                    || !Double.isFinite(drawFraction) || drawFraction < 0.0 || drawFraction > 1.0) {
+                throw new IllegalArgumentException("V3 continuation ramp fractions must be finite and within zero to one");
+            }
+            pathLabel = Objects.requireNonNull(pathLabel, "pathLabel");
+            description = Objects.requireNonNull(description, "description");
+        }
+
+        boolean requested(V3ColumnInput input) {
+            return (input.steamFeeds().isEmpty() || steamFraction == 1.0)
+                    && (input.sideDraws().isEmpty() || drawFraction == 1.0);
+        }
+
+        double progress() {
+            return Math.max(steamFraction, drawFraction);
+        }
+    }
+
     /** Solve-confined attempt history; prevents duplicate cold branch restarts after a phase correction. */
     static final class CondenserAttempts {
         private final EnumSet<V3CondenserPhaseBranch> branches = EnumSet.noneOf(V3CondenserPhaseBranch.class);
@@ -699,18 +720,25 @@ public final class V3ColumnCalculator {
         boolean intermediateFailed = false;
         // The first fixed-geometry handoff uses the material projection. Later parameter rungs retain the
         // accepted state directly; reprojecting every rung was measured to cause residual stagnation.
-        int rampSteps = 4;
-        for (int rampStep = 1; rampStep <= rampSteps; rampStep++) {
-            double fraction = rampStep / (double) rampSteps;
-            if (intermediateFailed && fraction < 1.0) continue;
+        double totalSteamMolPerSecond = input.steamFeeds().stream()
+                .mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum();
+        // Keep each water-flow continuation rung at or below 4 mol/s. A four-rung path is
+        // sufficient for normal stripping rates; higher rates need smaller physical increments
+        // to cross the condenser water/phase boundary without a branch jump.
+        int steamRampSteps = Math.max(4, Math.min(12, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
+        List<RampStep> rampSteps = rampSteps(input, steamRampSteps);
+        for (RampStep rampStep : rampSteps) {
+            if (intermediateFailed && !rampStep.requested(input)) continue;
             control.checkpoint();
-            List<V3SideDrawSpec> draws = input.sideDraws().stream()
-                    .map(draw -> new V3SideDrawSpec(draw.trayNumber(), fraction * draw.molarFlowMolPerSecond())).toList();
-            List<V3SteamFeedSpec> steam = input.steamFeeds().stream()
-                    .map(feed -> new V3SteamFeedSpec(feed.stageNumber(), fraction * feed.molarFlowMolPerSecond(),
+            List<V3SideDrawSpec> draws = rampStep.drawFraction() == 0.0 ? List.of() : input.sideDraws().stream()
+                    .map(draw -> new V3SideDrawSpec(draw.trayNumber(),
+                            rampStep.drawFraction() * draw.molarFlowMolPerSecond())).toList();
+            List<V3SteamFeedSpec> steam = rampStep.steamFraction() == 0.0 ? List.of() : input.steamFeeds().stream()
+                    .map(feed -> new V3SteamFeedSpec(feed.stageNumber(),
+                            rampStep.steamFraction() * feed.molarFlowMolPerSecond(),
                             feed.temperatureKelvin())).toList();
             double reboilerDuty = reboilerDutyWatts(input)
-                    + (1.0 - fraction) * surrogateSteamDutyWatts(input);
+                    + (1.0 - rampStep.steamFraction()) * surrogateSteamDutyWatts(input);
             V3ColumnInput rampInput = new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(),
                     input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
                     input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
@@ -721,21 +749,22 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed = previous == seedBase
                     ? continuationSeed(problem, previous.attempt().state(), thermo, control)
                     : previous.attempt().state();
-            TruncationPolicy rampPolicy = fraction == 1.0 ? policy : TruncationPolicy.OFF;
+            TruncationPolicy rampPolicy = rampStep.requested(input) ? policy : TruncationPolicy.OFF;
             V3SolvePass pass = solveSingleProblem(problem, thermo, seed, control,
-                    rampPath + "/wet-ramp-" + fraction, ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
-                    fraction == 1.0 ? DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS
+                    rampPath + "/" + rampStep.pathLabel() + "-" + rampStep.progress(),
+                    ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                    rampStep.requested(input) ? DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS
                             : DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS, rampPolicy);
             pass = correctCondenserPhase(pass, thermo, control, rampPolicy, rampAttempts).pass();
             if (!publishesSuccess(pass.attempt(), pass.audit())) {
-                if (fraction == 1.0) {
+                if (rampStep.requested(input)) {
                     condenserAttempts.recordRequestedDrawRampFailure();
                     rampEvents.add(boundedEvent(
-                            "wet ramp reached 1.0 and failed: " + rampEvidence(pass)));
+                            rampStep.description() + " reached the requested input and failed: " + rampEvidence(pass)));
                     V3SolvePass annotated = withRampEvents(pass, rampEvents);
                     return withPriorSupportNotes(seedBase, annotated);
                 }
-                String event = "wet ramp stopped at " + fraction + ": " + rampEvidence(pass)
+                String event = rampStep.description() + " stopped at " + rampStep.progress() + ": " + rampEvidence(pass)
                         + "; failed checks=" + pass.audit().checks().stream().filter(check -> !check.passed())
                         .map(V3AcceptanceAudit.Check::family).toList();
                 rampEvents.add(boundedEvent(event));
@@ -750,6 +779,32 @@ public final class V3ColumnCalculator {
         condenserAttempts.recordAttempt(previous.prepared().problem().topology().condenserPhaseBranch());
         condenserAttempts.finishPhaseCorrection(true);
         return withPriorSupportNotes(seedBase, withRampEvents(previous, rampEvents));
+    }
+
+    /** Separates water/phase continuation from draw withdrawal when both authored features are present. */
+    private static List<RampStep> rampSteps(V3ColumnInput input, int steamRampSteps) {
+        boolean hasSteam = !input.steamFeeds().isEmpty();
+        boolean hasDraws = !input.sideDraws().isEmpty();
+        if (hasSteam && hasDraws) {
+            List<RampStep> steps = new ArrayList<>(steamRampSteps + 4);
+            for (int step = 1; step <= steamRampSteps; step++) {
+                steps.add(new RampStep(step / (double) steamRampSteps, 0.0, "steam-ramp", "steam ramp"));
+            }
+            for (int step = 1; step <= 4; step++) {
+                steps.add(new RampStep(1.0, step / 4.0, "draw-ramp", "side-draw ramp"));
+            }
+            return List.copyOf(steps);
+        }
+        int steps = hasSteam ? steamRampSteps : 4;
+        List<RampStep> result = new ArrayList<>(steps);
+        String pathLabel = hasSteam ? "wet-ramp" : "draw-ramp";
+        String description = hasSteam ? "wet ramp" : "side-draw ramp";
+        for (int step = 1; step <= steps; step++) {
+            double fraction = step / (double) steps;
+            result.add(new RampStep(hasSteam ? fraction : 0.0, hasDraws ? fraction : 0.0,
+                    pathLabel, description));
+        }
+        return List.copyOf(result);
     }
 
     private static V3SolvePass withRampEvents(V3SolvePass pass, List<String> events) {
@@ -966,7 +1021,8 @@ public final class V3ColumnCalculator {
 
     private static double reboilerDutyWatts(V3ColumnInput input) {
         return input.specifications().stream().filter(V3ColumnSpecification.ReboilerDuty.class::isInstance)
-                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst().orElseThrow().watts();
+                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("V3 input is missing a reboiler-duty specification")).watts();
     }
 
     private static V3DryMeshState initializeForSolve(

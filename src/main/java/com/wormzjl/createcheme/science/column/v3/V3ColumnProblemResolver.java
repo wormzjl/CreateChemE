@@ -107,14 +107,17 @@ public final class V3ColumnProblemResolver {
             throw new IllegalArgumentException("V3 total steam rate must not exceed the feed rate");
         }
         double reboilerDuty = input.specifications().stream().filter(V3ColumnSpecification.ReboilerDuty.class::isInstance)
-                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst().orElseThrow().watts();
-        if (reboilerDuty == 0.0 && !V3SteamFeeds.hasSumpFeed(input)) {
+                .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("V3 input is missing a reboiler-duty specification")).watts();
+        if (!input.steamFeeds().isEmpty() && reboilerDuty == 0.0 && !V3SteamFeeds.hasSumpFeed(input)) {
             throw new IllegalArgumentException("V3 zero reboiler duty requires sump steam (stage N+1) or positive duty");
         }
         if (!input.steamFeeds().isEmpty()) {
             double condenserTemperature = input.specifications().stream()
                     .filter(V3ColumnSpecification.CondenserOutletTemperature.class::isInstance)
-                    .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst().orElseThrow().kelvin();
+                    .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "V3 steam input is missing a condenser-temperature specification")).kelvin();
             if (condenserTemperature < V3WaterProperties.TRIPLE_POINT_KELVIN) {
                 throw new IllegalArgumentException("V3 free-water condenser temperature is below the ice-free property envelope");
             }

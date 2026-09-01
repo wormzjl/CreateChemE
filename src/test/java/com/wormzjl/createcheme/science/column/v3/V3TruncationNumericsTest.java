@@ -186,7 +186,7 @@ class V3TruncationNumericsTest {
                 new double[] {30.0, 0.0, 60.0, traceFeed}, 400.0, 4, 2, 250_000.0, 750.0, List.of(
                 new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                 new V3ColumnSpecification.OrganicRefluxRatio(branch == V3CondenserPhaseBranch.VAPOR_ONLY ? 0.0 : 1.0),
-                new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                new V3ColumnSpecification.ReboilerDuty(0.0)));
         V3ColumnProblem original = V3ColumnProblemResolver.resolve(input, branch);
         double[][] liquid = {{10, 10, 0}, {5, 5, 0}, {35, 65, traceFeed * 0.6},
                 {35, 65, 0}, {35, 65, 0}, {17, 53, 0}};

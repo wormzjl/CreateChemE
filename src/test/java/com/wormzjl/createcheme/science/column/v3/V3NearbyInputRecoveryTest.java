@@ -20,7 +20,7 @@ class V3NearbyInputRecoveryTest {
                 "test:registered-pr-binary", thermo.componentBasis(), flows, 551.0, 2, 1, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
 
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
         V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);

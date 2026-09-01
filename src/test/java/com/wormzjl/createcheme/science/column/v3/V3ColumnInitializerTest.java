@@ -115,7 +115,7 @@ class V3ColumnInitializerTest {
                 new V3ComponentBasis(List.of("component-a", "component-b")), feed, 460.0, 4, 2, 250_000.0, 750.0,
                 List.of(new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(refluxRatio),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
         return V3ColumnProblemResolver.resolve(input, branch);
     }
 

@@ -78,7 +78,8 @@ class V3SideDrawCalculatorTest {
                     tray -> failure.summary().contains("authored tray " + tray)), failure::summary);
             assertFalse(failure.summary().contains("continuation grid"), failure::summary);
             assertTrue(failure.diagnostics().events().stream().anyMatch(
-                    event -> event.contains("ramp reached 1.0")), failure.diagnostics().events()::toString);
+                    event -> event.contains("side-draw ramp reached the requested input")),
+                    failure.diagnostics().events()::toString);
         }
     }
 
@@ -92,7 +93,7 @@ class V3SideDrawCalculatorTest {
                 thermo.componentBasis(), feed, 550, 2, 1, 250_000, 750, List.of(
                 new V3ColumnSpecification.CondenserOutletTemperature(300),
                 new V3ColumnSpecification.OrganicRefluxRatio(2),
-                new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)), List.of(new V3SideDrawSpec(1, 99)));
+                new V3ColumnSpecification.ReboilerDuty(0)), List.of(new V3SideDrawSpec(1, 99)));
 
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
         if (outcome instanceof V3ColumnOutcome.Failure failure) {

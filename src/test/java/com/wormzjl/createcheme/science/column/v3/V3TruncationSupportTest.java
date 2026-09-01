@@ -184,7 +184,7 @@ class V3TruncationSupportTest {
                 4, feedTray, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(reflux),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
         return V3ColumnProblemResolver.resolve(input, branch);
     }
 
