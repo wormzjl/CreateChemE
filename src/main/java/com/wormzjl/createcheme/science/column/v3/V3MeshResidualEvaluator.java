@@ -49,7 +49,7 @@ final class V3MeshResidualEvaluator {
             V3DegreeOfFreedomLedger.EquationId id = equation.id();
             double physicalValue = switch (id.family()) {
                 case COMPONENT_MATERIAL_BALANCE -> materialResidual(state, id.node(), id.component());
-                case VAPOR_LIQUID_EQUILIBRIUM -> equilibriumResidual(id.node(), id.component(), properties[id.node()]);
+                case VAPOR_LIQUID_EQUILIBRIUM -> equilibriumResidual(state, id.node(), id.component(), properties[id.node()]);
                 case ENERGY_BALANCE -> energyResidual(state, id.node(), properties);
             };
             rows.add(new V3MeshResidual.Row(id, physicalValue, scale(id)));
@@ -78,7 +78,7 @@ final class V3MeshResidualEvaluator {
         for (int component = 0; component < equilibrium.length; component++) {
             if (problem.truncationSupport().retains(node, component)
                     && problem.condenserComponentPhases().hasVaporLiquidEquilibrium(problem.topology(), node, component)) {
-                equilibrium[component] = equilibriumResidual(node, component, properties);
+                equilibrium[component] = equilibriumResidual(state, node, component, properties);
             }
         }
         double liquidEnergy = problem.topology().hasLiquidPhase(node)
@@ -107,13 +107,13 @@ final class V3MeshResidualEvaluator {
                 - state.liquidFlow(node, component) - state.vaporFlow(node, component);
     }
 
-    private double equilibriumResidual(int node, int component, NodeProperties properties) {
+    private double equilibriumResidual(V3DryMeshState state, int node, int component, NodeProperties properties) {
         int publicComponent = activeComponentBasis.publicIndex(component);
         double residual = Math.log(properties.vaporComposition()[publicComponent])
                 + properties.vaporResult().logFugacityCoefficient(publicComponent)
                 - Math.log(properties.liquidComposition()[publicComponent])
                 - properties.liquidResult().logFugacityCoefficient(publicComponent);
-        return problem.hasSteamFeeds() ? residual + waterDilutionLogTerm(node, properties.vaporTotal()) : residual;
+        return problem.hasSteamFeeds() ? residual + waterDilutionLogTerm(state, node, properties.vaporTotal()) : residual;
     }
 
     private double energyResidual(V3DryMeshState state, int node, NodeProperties[] properties) {
@@ -141,7 +141,7 @@ final class V3MeshResidualEvaluator {
         double energy = totalFlow * (liquid ? properties.liquidResult().molarEnthalpyJoulesPerMol()
                 : properties.vaporResult().molarEnthalpyJoulesPerMol());
         if (!liquid && problem.hasSteamFeeds()) {
-            energy += waterVaporFlow(state, node, totalFlow) * V3WaterProperties.vaporMolarEnthalpy(state.temperatureKelvin(node));
+            energy += waterVaporFlow(state, node) * V3WaterProperties.vaporMolarEnthalpy(state.temperatureKelvin(node));
         }
         return energy;
     }
@@ -203,23 +203,14 @@ final class V3MeshResidualEvaluator {
         return total;
     }
 
-    private double waterVaporFlow(V3DryMeshState state, int node, double hydrocarbonVaporTotal) {
-        if (node != problem.topology().condenserNode()) return problem.waterVaporFlowMolPerSecond(node);
-        return switch (problem.waterCondenserRegime()) {
-            case NONE, FREE_WATER -> problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
-                    ? problem.waterVaporSlipCoefficient() * hydrocarbonVaporTotal : 0.0;
-            case ALL_VAPOR -> problem.waterVaporFlowMolPerSecond(1);
-        };
+    private double waterVaporFlow(V3DryMeshState state, int node) {
+        return node == problem.topology().condenserNode()
+                ? problem.waterCondenserSplit(state).vaporFlowMolPerSecond()
+                : problem.waterVaporFlowMolPerSecond(node);
     }
 
-    private double waterDilutionLogTerm(int node, double hydrocarbonVaporTotal) {
-        double water = node == problem.topology().condenserNode()
-                ? switch (problem.waterCondenserRegime()) {
-                    case NONE, FREE_WATER -> problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
-                            ? problem.waterVaporSlipCoefficient() * hydrocarbonVaporTotal : 0.0;
-                    case ALL_VAPOR -> problem.waterVaporFlowMolPerSecond(1);
-                }
-                : problem.waterVaporFlowMolPerSecond(node);
+    private double waterDilutionLogTerm(V3DryMeshState state, int node, double hydrocarbonVaporTotal) {
+        double water = waterVaporFlow(state, node);
         return water == 0.0 ? 0.0 : Math.log(hydrocarbonVaporTotal / (hydrocarbonVaporTotal + water));
     }
 

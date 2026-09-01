@@ -28,6 +28,17 @@ class V3BlockJacobianAssemblerTest {
                     input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
                     input.specifications(), List.of(new V3SideDrawSpec(drawTray, 3.0))), V3CondenserPhaseBranch.TWO_PHASE);
         }
+        assertLocalBlocksMatchFiniteDifference(problem);
+    }
+
+    @Test
+    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleWithSumpSteam() {
+        V3ColumnProblem problem = problem(List.of(new V3SteamFeedSpec(5, 1.0, 450.0)));
+
+        assertLocalBlocksMatchFiniteDifference(problem);
+    }
+
+    private static void assertLocalBlocksMatchFiniteDifference(V3ColumnProblem problem) {
         SmoothThermo thermo = new SmoothThermo();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
         V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
@@ -130,12 +141,16 @@ class V3BlockJacobianAssemblerTest {
     }
 
     private static V3ColumnProblem problem() {
+        return problem(List.of());
+    }
+
+    private static V3ColumnProblem problem(List<V3SteamFeedSpec> steamFeeds) {
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:manufactured", "test:binary",
                 new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30.0, 60.0}, 400.0,
-                4, 2, 250_000.0, 750.0, List.of(
+                4, 2, steamFeeds.isEmpty() ? 250_000.0 : 150_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(1.0),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)), List.of(), steamFeeds);
         return V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
     }
 

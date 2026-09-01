@@ -121,7 +121,7 @@ public record V3ColumnStreamProperties(
         streams.add(stream(problem, state, molecularWeight, topology.reboilerNode(), true, 1.0,
                 "bottoms_liquid", "Bottoms liquid", "LIQUID"));
         if (problem.hasSteamFeeds()) {
-            double freeWater = freeWaterFlow(problem, state);
+            double freeWater = problem.waterCondenserSplit(state).freeWaterFlowMolPerSecond();
             if (freeWater > 0.0) streams.add(freeWaterStream(problem, state, freeWater));
         }
         return List.copyOf(streams);
@@ -142,7 +142,9 @@ public record V3ColumnStreamProperties(
             hydrocarbonTotal += hydrocarbon[publicComponent];
             hydrocarbonMass += hydrocarbon[publicComponent] * molecularWeight.applyAsDouble(publicComponent);
         }
-        double water = waterVaporFlow(problem, state, node, hydrocarbonTotal);
+        double water = node == problem.topology().condenserNode()
+                ? problem.waterCondenserSplit(state).vaporFlowMolPerSecond()
+                : problem.waterVaporFlowMolPerSecond(node);
         double total = hydrocarbonTotal + water;
         double totalMass = hydrocarbonMass + water * V3WaterProperties.MOLAR_MASS_KG_PER_MOL;
         // H2O belongs to the molecular vapor mixture here. It is deliberately absent from every
@@ -167,35 +169,10 @@ public record V3ColumnStreamProperties(
 
     private static V3ColumnStreamProperties waterVaporProduct(V3ColumnProblem problem, V3DryMeshState state) {
         int node = problem.topology().condenserNode();
-        double flow = problem.waterVaporFlowMolPerSecond(1);
+        double flow = problem.waterCondenserSplit(state).vaporFlowMolPerSecond();
         return new V3ColumnStreamProperties("overhead_vapor", "Overhead steam", "VAPOR", flow,
                 flow * V3WaterProperties.MOLAR_MASS_KG_PER_MOL, state.temperatureKelvin(node),
                 problem.nodePressurePascal(node), 1.0, List.of(new ComponentFraction("h2o", 1.0, 1.0)));
-    }
-
-    private static double freeWaterFlow(V3ColumnProblem problem, V3DryMeshState state) {
-        if (!problem.hasFreeWaterCondenser()) return 0.0;
-        double water = problem.waterVaporFlowMolPerSecond(1);
-        return problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
-                ? water - problem.waterVaporSlipCoefficient()
-                        * hydrocarbonVaporTotal(state, problem.topology().condenserNode())
-                : water;
-    }
-
-    private static double waterVaporFlow(V3ColumnProblem problem, V3DryMeshState state, int node, double hydrocarbon) {
-        if (node != problem.topology().condenserNode()) return problem.waterVaporFlowMolPerSecond(node);
-        return switch (problem.waterCondenserRegime()) {
-            case NONE -> 0.0;
-            case ALL_VAPOR -> problem.waterVaporFlowMolPerSecond(1);
-            case FREE_WATER -> problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
-                    ? problem.waterVaporSlipCoefficient() * hydrocarbon : 0.0;
-        };
-    }
-
-    private static double hydrocarbonVaporTotal(V3DryMeshState state, int node) {
-        double total = 0.0;
-        for (int component = 0; component < state.componentCount(); component++) total += state.vaporFlow(node, component);
-        return total;
     }
 
     private static V3ColumnStreamProperties stream(

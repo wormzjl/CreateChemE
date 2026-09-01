@@ -134,6 +134,37 @@ public final class V3ColumnProblem {
         return waterCondenserRegime == V3WaterCondenserRegime.ALL_VAPOR;
     }
 
+    /**
+     * Splits the known condenser-arriving water between the molecular overhead vapor and a
+     * separate free-water product. The molecular vapor allocation is capped by arriving water:
+     * an unsaturated overhead cannot create water that was never fed to the column.
+     */
+    WaterCondenserSplit waterCondenserSplit(V3DryMeshState state) {
+        state = Objects.requireNonNull(state, "state");
+        int condenser = topology.condenserNode();
+        double arrivingWater = waterVaporFlowMolPerSecond(1);
+        return switch (waterCondenserRegime) {
+            case NONE -> new WaterCondenserSplit(0.0, 0.0);
+            case ALL_VAPOR -> new WaterCondenserSplit(arrivingWater, 0.0);
+            case FREE_WATER -> {
+                double vaporWater = topology.condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
+                        ? Math.min(arrivingWater, waterVaporSlipCoefficient * hydrocarbonVaporTotal(state, condenser)) : 0.0;
+                yield new WaterCondenserSplit(vaporWater, arrivingWater - vaporWater);
+            }
+        };
+    }
+
+    private static double hydrocarbonVaporTotal(V3DryMeshState state, int node) {
+        double total = 0.0;
+        for (int component = 0; component < state.componentCount(); component++) {
+            total += state.vaporFlow(node, component);
+        }
+        return total;
+    }
+
+    /** Candidate-derived molecular-vapor/free-water allocation at the condenser. */
+    record WaterCondenserSplit(double vaporFlowMolPerSecond, double freeWaterFlowMolPerSecond) {}
+
     private static V3WaterCondenserRegime waterCondenserRegime(
             V3ColumnInput input, V3ColumnTopology topology, double[] pressures) {
         if (input.steamFeeds().isEmpty()) return V3WaterCondenserRegime.NONE;

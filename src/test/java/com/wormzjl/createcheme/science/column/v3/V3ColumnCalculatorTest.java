@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +38,7 @@ class V3ColumnCalculatorTest {
                 new V3ComponentBasis(List.of("component-a")), new double[] {1.0}, 400.0, 2, 1, 250_000.0, 0.0,
                 List.of(new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(1.0),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
 
         V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class,
                 V3ColumnCalculator.calculate(invalid));
@@ -74,6 +75,135 @@ class V3ColumnCalculatorTest {
         assertTrue(success.diagnostics().solvePath().contains("dwsim-sequential/4-8-15-30"));
         assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
+    }
+
+    @Test
+    void registeredPilotWithSumpSteamPublishesAuditedWetVapor() {
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(registeredSteamStrippingPilot(), () -> {
+                    if (System.nanoTime() - started >= 60_000_000_000L) {
+                        throw new AssertionError("registered steam-stripping pilot exceeded its cold-test budget");
+                    }
+                });
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.result().convergenceEvidence().satisfiesGates());
+        assertTrue(success.result().problem().hasSteamFeeds());
+        assertTrue(success.result().acceptanceAudit().checks().stream()
+                .anyMatch(check -> check.family().equals("WATER_PROFILE") && check.passed()));
+        V3ColumnStreamProperties overhead = success.result().streams().stream()
+                .filter(stream -> stream.streamId().equals("overhead_vapor")).findFirst().orElseThrow();
+        assertTrue(overhead.moleFractions().stream()
+                .anyMatch(fraction -> fraction.componentId().equals("h2o") && fraction.moleFraction() > 0.0));
+    }
+
+    @Test
+    void registeredPilotWithSumpSteamAndColdCondenserPublishesFreeWater() {
+        long started = System.nanoTime();
+        V3ColumnInput preset = ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        V3ColumnInput cold = new V3ColumnInput(preset.schemaVersion(), preset.packageId(), preset.assayId(),
+                preset.componentBasis(), preset.feedComponentMolarFlowsMolPerSecond(), preset.feedTemperatureKelvin(),
+                preset.stageCount(), preset.feedStageNumber(), preset.topPressurePascal(), preset.stagePressureDropPascal(),
+                List.of(new V3ColumnSpecification.CondenserOutletTemperature(323.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), preset.sideDraws(),
+                List.of(new V3SteamFeedSpec(preset.stageCount() + 1, 8.0, 450.0)));
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(cold, () -> {
+            if (System.nanoTime() - started >= 60_000_000_000L) {
+                throw new AssertionError("registered cold steam-stripping pilot exceeded its cold-test budget");
+            }
+        });
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertEquals(V3CondenserPhaseBranch.LIQUID_ONLY, success.result().problem().topology().condenserPhaseBranch());
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("free_water")
+                && stream.molarFlowMolPerSecond() > 0.0));
+    }
+
+    @Test
+    void registeredPilotWithIntermediateSumpSteamTemperaturePublishesMixedWaterVapor() {
+        long started = System.nanoTime();
+        V3ColumnInput base = registeredSteamStrippingPilot();
+        V3ColumnInput waterLimited = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(),
+                base.componentBasis(), base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(),
+                base.stageCount(), base.feedStageNumber(), base.topPressurePascal(), base.stagePressureDropPascal(),
+                List.of(new V3ColumnSpecification.CondenserOutletTemperature(343.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), base.sideDraws(), base.steamFeeds());
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(waterLimited, () -> {
+            if (System.nanoTime() - started >= 60_000_000_000L) {
+                throw new AssertionError("registered water-limited steam pilot exceeded its cold-test budget");
+            }
+        });
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")
+                && stream.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("h2o")
+                && fraction.moleFraction() > 0.0)));
+        assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("free_water")));
+    }
+
+    @Test
+    void registeredPilotWithWaterLimitedSumpSteamPublishesMixedOverheadVapor() {
+        long started = System.nanoTime();
+        V3ColumnInput base = registeredSteamStrippingPilot();
+        V3ColumnInput hotter = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(),
+                base.componentBasis(), base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(),
+                base.stageCount(), base.feedStageNumber(), base.topPressurePascal(), base.stagePressureDropPascal(),
+                List.of(new V3ColumnSpecification.CondenserOutletTemperature(353.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), base.sideDraws(), base.steamFeeds());
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(hotter, () -> {
+            if (System.nanoTime() - started >= 60_000_000_000L) {
+                throw new AssertionError("registered water-limited steam pilot exceeded its cold-test budget");
+            }
+        });
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
+        assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")
+                && stream.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("h2o")
+                && fraction.moleFraction() > 0.0)));
+        assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("free_water")));
+    }
+
+    @Test
+    void registeredPilotWithEightyKmolPerHourSteamAtSeventyCelsiusPublishesWaterInBothPhases() {
+        long started = System.nanoTime();
+        V3ColumnInput base = registeredSteamStrippingPilot();
+        V3ColumnInput highSteam = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(),
+                base.componentBasis(), base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(),
+                base.stageCount(), base.feedStageNumber(), base.topPressurePascal(), base.stagePressureDropPascal(),
+                List.of(new V3ColumnSpecification.CondenserOutletTemperature(343.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), base.sideDraws(),
+                List.of(new V3SteamFeedSpec(base.stageCount() + 1, 80.0 / 3.6, 450.0)));
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(highSteam, () -> {
+            if (System.nanoTime() - started >= 60_000_000_000L) {
+                throw new AssertionError("80 kmol/h steam pilot exceeded its cold-test budget");
+            }
+        });
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
+        V3ColumnStreamProperties overhead = success.result().streams().stream()
+                .filter(stream -> stream.streamId().equals("overhead_vapor")).findFirst().orElseThrow();
+        V3ColumnStreamProperties freeWater = success.result().streams().stream()
+                .filter(stream -> stream.streamId().equals("free_water")).findFirst().orElseThrow();
+        double vaporWater = overhead.molarFlowMolPerSecond() * overhead.moleFractions().stream()
+                .filter(fraction -> fraction.componentId().equals("h2o"))
+                .findFirst().orElseThrow().moleFraction();
+
+        assertTrue(vaporWater > 0.0, "the overhead vapor must carry molecular water");
+        assertTrue(freeWater.molarFlowMolPerSecond() > 0.0, "the condenser drum must decant free water");
+        assertEquals(80.0 / 3.6, vaporWater + freeWater.molarFlowMolPerSecond(), 1.0e-8,
+                "all authored steam must be allocated between vapor water and free water");
     }
 
     @ParameterizedTest
@@ -139,7 +269,7 @@ class V3ColumnCalculatorTest {
                 thermo.componentBasis(), feedFlows, 550.0, 2, 1, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
     }
 
     private static V3ColumnInput registeredRealCrudeThirtyStagePilot() {
@@ -153,6 +283,14 @@ class V3ColumnCalculatorTest {
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
+    }
+
+    private static V3ColumnInput registeredSteamStrippingPilot() {
+        V3ColumnInput dryPilot = ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        return new V3ColumnInput(dryPilot.schemaVersion(), dryPilot.packageId(), dryPilot.assayId(),
+                dryPilot.componentBasis(), dryPilot.feedComponentMolarFlowsMolPerSecond(), dryPilot.feedTemperatureKelvin(),
+                dryPilot.stageCount(), dryPilot.feedStageNumber(), dryPilot.topPressurePascal(), dryPilot.stagePressureDropPascal(),
+                dryPilot.specifications(), dryPilot.sideDraws(), List.of(new V3SteamFeedSpec(dryPilot.stageCount() + 1, 8.0, 450.0)));
     }
 
     private static V3ColumnInput realCrudePilot(double condenserTemperatureKelvin, double methaneFeedFlow) {

@@ -312,7 +312,7 @@ public final class ColumnV3Network {
         V3ColumnInput input = job.request().operation().input();
         CreateChemE.LOGGER.info(
                 "column_v3 request={} status={} input_revision={} stages={} feed_stage={} feed_mol_s={} feed_k={} "
-                        + "top_kpa={} drop_kpa={} condenser_k={} reflux={} reboiler_mw={} detail={}",
+                        + "steam_kmol_h={} top_kpa={} drop_kpa={} condenser_k={} reflux={} reboiler_mw={} detail={}",
                 job.request().requestId(),
                 status,
                 job.request().inputRevision(),
@@ -320,6 +320,7 @@ public final class ColumnV3Network {
                 input.feedStageNumber(),
                 totalFeedFlow(input),
                 input.feedTemperatureKelvin(),
+                totalSteamFlow(input) * 3.6,
                 input.topPressurePascal() / 1_000.0,
                 input.stagePressureDropPascal() / 1_000.0,
                 specifiedValue(input, V3ControlledQuantity.CONDENSER_OUTLET_TEMPERATURE),
@@ -339,6 +340,10 @@ public final class ColumnV3Network {
         double total = 0.0;
         for (double flow : input.feedComponentMolarFlowsMolPerSecond()) total += flow;
         return total;
+    }
+
+    private static double totalSteamFlow(V3ColumnInput input) {
+        return input.steamFeeds().stream().mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum();
     }
 
     private static double specifiedValue(V3ColumnInput input, V3ControlledQuantity wanted) {

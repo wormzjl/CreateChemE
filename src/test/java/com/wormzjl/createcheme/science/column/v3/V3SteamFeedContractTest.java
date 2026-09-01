@@ -24,9 +24,11 @@ class V3SteamFeedContractTest {
     }
 
     @Test
-    void rejectsStructuralInvalidSteamAndZeroDutyWithoutSumpSteam() {
+    void acceptsDryZeroDutyButRejectsSteamWithoutAZeroDutySumpSource() {
         assertThrows(IllegalArgumentException.class, () -> new V3SteamFeedSpec(0, 1.0, 450.0));
-        assertThrows(IllegalArgumentException.class, () -> V3ColumnProblemResolver.validateInput(input(0.0, List.of())));
+        assertDoesNotThrow(() -> V3ColumnProblemResolver.validateInput(input(0.0, List.of())));
+        assertThrows(IllegalArgumentException.class, () -> V3ColumnProblemResolver.validateInput(
+                input(0.0, List.of(new V3SteamFeedSpec(2, 1.0, 450.0)))));
         assertThrows(IllegalArgumentException.class, () -> V3ColumnProblemResolver.validateInput(
                 input(0.0, List.of(new V3SteamFeedSpec(6, 1.0, 450.0)))));
         assertThrows(IllegalArgumentException.class, () -> V3ColumnProblemResolver.validateInput(

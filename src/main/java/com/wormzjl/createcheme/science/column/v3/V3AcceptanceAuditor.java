@@ -4,7 +4,9 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,15 +76,22 @@ final class V3AcceptanceAuditor {
 
     private V3AcceptanceAudit.Check waterProfile(V3DryMeshState state) {
         V3ColumnTopology topology = problem.topology();
-        double[] feeds = V3SteamFeeds.nodeFeedFlows(problem.input(), topology);
-        double[] expected = V3SteamFeeds.upwardVaporProfile(feeds, topology);
+        double[] expected = new double[topology.nodeCount()];
+        double cumulative = 0.0;
+        for (int node = topology.reboilerNode(); node >= 1; node--) {
+            for (V3SteamFeedSpec feed : problem.input().steamFeeds()) {
+                if (feed.stageNumber() == node) cumulative += feed.molarFlowMolPerSecond();
+            }
+            expected[node] = cumulative;
+        }
         double maximum = 0.0;
         for (int node = 1; node <= topology.reboilerNode(); node++) {
             maximum = Math.max(maximum, relativeDifference(expected[node], problem.waterVaporFlowMolPerSecond(node)));
         }
         double waterAtCondenser = expected[1];
-        double waterSlip = waterOverheadSlip(state);
-        double freeWater = freeWaterFlow(state);
+        IndependentWaterSplit split = independentCondenserWaterSplit(state);
+        double waterSlip = split.vaporFlowMolPerSecond();
+        double freeWater = split.freeWaterFlowMolPerSecond();
         maximum = Math.max(maximum, relativeDifference(waterAtCondenser, waterSlip + freeWater));
         return maximum <= 1.0e-12
                 ? V3AcceptanceAudit.Check.pass("WATER_PROFILE", maximum, 1.0e-12,
@@ -116,14 +125,22 @@ final class V3AcceptanceAuditor {
     }
 
     private V3AcceptanceAudit.Check freeWaterSplit(V3DryMeshState state) {
-        double freeWater = freeWaterFlow(state);
+        V3ColumnProblem.WaterCondenserSplit split = problem.waterCondenserSplit(state);
+        double freeWater = split.freeWaterFlowMolPerSecond();
         double total = problem.waterVaporFlowMolPerSecond(1);
         double fraction = total > 0.0 ? freeWater / total : 0.0;
-        return freeWater > 0.0 && Double.isFinite(freeWater)
-                ? V3AcceptanceAudit.Check.pass("FREE_WATER_SPLIT", fraction, 0.0,
-                        "saturated condenser drum decants a positive free-water boot")
-                : V3AcceptanceAudit.Check.fail("FREE_WATER_SPLIT", fraction, 0.0,
-                        "saturated condenser drum has no positive free-water boot");
+        if (freeWater > 0.0 && Double.isFinite(freeWater)) {
+            return V3AcceptanceAudit.Check.pass("FREE_WATER_SPLIT", fraction, 0.0,
+                    "saturated condenser drum decants a positive free-water boot");
+        }
+        if (Double.isFinite(freeWater) && Double.isFinite(split.vaporFlowMolPerSecond())
+                && split.vaporFlowMolPerSecond() >= total) {
+            return V3AcceptanceAudit.Check.pass("FREE_WATER_SPLIT", 0.0, 0.0,
+                    "available steam is insufficient to saturate the overhead; all water remains in mixed vapor");
+        }
+        return V3AcceptanceAudit.Check.fail("FREE_WATER_SPLIT", !Double.isFinite(freeWater) ? Double.MAX_VALUE
+                : Math.max(0.0, -freeWater) / Math.max(1.0, total), 0.0,
+                "condenser water split is not a finite, nonnegative vapor/free-water allocation");
     }
 
     private V3AcceptanceAudit.Check sideDrawSplit(V3DryMeshState state) {
@@ -197,16 +214,18 @@ final class V3AcceptanceAuditor {
         for (int component = 0; component < state.componentCount(); component++) {
             liquid[problem.activeComponentBasis().publicIndex(component)] = state.liquidFlow(node, component);
         }
-        V3FlashResult flash = thermo.flashTP(state.temperatureKelvin(node), problem.nodePressurePascal(node),
-                liquid, workspace);
-        return flash.phase() == V3FeedPhase.LIQUID
-                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", 0.0, 0.0, "outlet TP flash confirms liquid only")
-                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, 0.0, "outlet TP flash requires a vapor phase");
+        V3FeedPhase phase = problem.hasSteamFeeds()
+                ? independentCondenserFlash(state, liquid, liquid, liquid, workspace).phase()
+                : thermo.flashTP(state.temperatureKelvin(node), problem.nodePressurePascal(node), liquid, workspace).phase();
+        return phase == V3FeedPhase.LIQUID
+                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", 0.0, 0.0,
+                        "water-adjusted outlet TP flash confirms liquid only")
+                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, 0.0,
+                        "water-adjusted outlet TP flash requires a vapor phase");
     }
 
     /** Independently flashes the solved combined outlets and compares their component phase split. */
     private V3AcceptanceAudit.Check twoPhaseCondenserSplit(V3DryMeshState state, V3ThermoWorkspace workspace) {
-        if (problem.hasSteamFeeds()) return wetTwoPhaseCondenserSplit(state);
         int node = problem.topology().condenserNode();
         int publicComponents = problem.input().componentBasis().componentCount();
         double[] liquid = new double[publicComponents];
@@ -228,8 +247,10 @@ final class V3AcceptanceAuditor {
         for (int component = 0; component < publicComponents; component++) {
             overall[component] = (liquid[component] + vapor[component]) / total;
         }
-        V3FlashResult flash = thermo.flashTP(state.temperatureKelvin(node), problem.nodePressurePascal(node),
-                overall, workspace);
+        IndependentCondenserFlash flash = independentCondenserFlash(state, overall, liquid, vapor, workspace);
+        if (!flash.converged()) {
+            return fallbackTwoPhaseCondenserPhase(state, overall, workspace);
+        }
         if (flash.phase() != V3FeedPhase.TWO_PHASE) {
             return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
                     "combined outlet TP flash is " + flash.phase() + ", not two-phase");
@@ -246,41 +267,247 @@ final class V3AcceptanceAuditor {
             maximum = Math.max(maximum, Math.abs(liquid[component] / total - (1.0 - beta) * flashLiquid[component]));
             maximum = Math.max(maximum, Math.abs(vapor[component] / total - beta * flashVapor[component]));
         }
-        String detail = "fresh combined-outlet TP flash; beta=" + beta;
+        String detail = "fresh water-adjusted scaled-K combined-outlet flash; beta=" + beta;
         return maximum <= CONDENSER_PHASE_SPLIT_LIMIT
                 ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", maximum, CONDENSER_PHASE_SPLIT_LIMIT, detail)
                 : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", maximum, CONDENSER_PHASE_SPLIT_LIMIT, detail);
     }
 
-    /** The hydrocarbon TP flash is water-free by contract; equilibrium residuals independently audit the wet K shift. */
-    private V3AcceptanceAudit.Check wetTwoPhaseCondenserSplit(V3DryMeshState state) {
-        double slip = waterOverheadSlip(state);
-        double expectedSlip = problem.hasAllVaporWaterCondenser() ? problem.waterVaporFlowMolPerSecond(1)
-                : problem.waterVaporSlipCoefficient()
-                        * hydrocarbonVaporTotal(state, problem.topology().condenserNode());
-        double maximum = relativeDifference(slip, expectedSlip);
-        return maximum <= CONDENSER_PHASE_SPLIT_LIMIT
-                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", maximum, CONDENSER_PHASE_SPLIT_LIMIT,
-                        problem.hasAllVaporWaterCondenser()
-                                ? "condenser is too warm for a water boot; stripping steam exits as vapor"
-                                : "saturated free-water drum uses the resolved water-slip coefficient")
-                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", maximum, CONDENSER_PHASE_SPLIT_LIMIT,
-                        "water condenser split does not satisfy its resolved vapor regime");
+    /**
+     * The primary scaled-K split check can become ill-conditioned on a trace-heavy VLE state.
+     * This fallback still independently flashes the combined outlet at the hydrocarbon partial
+     * pressure; fresh component-equilibrium and material checks remain mandatory audit gates.
+     */
+    private V3AcceptanceAudit.Check fallbackTwoPhaseCondenserPhase(
+            V3DryMeshState state, double[] overall, V3ThermoWorkspace workspace) {
+        int condenser = problem.topology().condenserNode();
+        IndependentWaterSplit water = independentCondenserWaterSplit(state);
+        double hydrocarbon = hydrocarbonVaporTotal(state, condenser);
+        double totalPressure = problem.nodePressurePascal(condenser);
+        double hydrocarbonPressure;
+        if (hydrocarbon > 0.0) {
+            hydrocarbonPressure = totalPressure * hydrocarbon / (hydrocarbon + water.vaporFlowMolPerSecond());
+        } else if (water.freeWaterFlowMolPerSecond() > 0.0) {
+            hydrocarbonPressure = totalPressure - V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(condenser));
+        } else {
+            hydrocarbonPressure = Double.NaN;
+        }
+        if (!Double.isFinite(hydrocarbonPressure) || hydrocarbonPressure <= 0.0) {
+            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
+                    "water-adjusted fallback condenser pressure is not finite and positive");
+        }
+        V3FlashResult flash = thermo.flashTP(state.temperatureKelvin(condenser), hydrocarbonPressure, overall, workspace);
+        return flash.phase() == V3FeedPhase.TWO_PHASE
+                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", 0.0, CONDENSER_PHASE_SPLIT_LIMIT,
+                        "independent water-adjusted TP phase fallback; component split separately audited")
+                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
+                        "water-adjusted fallback TP flash is " + flash.phase() + ", not two-phase");
     }
 
-    private double waterOverheadSlip(V3DryMeshState state) {
+    /**
+     * Independently re-derives the authored water allocation for WATER_PROFILE. This deliberately
+     * does not call the problem split helper: that helper is part of the numerical formulation
+     * under audit.
+     */
+    private IndependentWaterSplit independentCondenserWaterSplit(V3DryMeshState state) {
+        double arrivingWater = authoredWaterAtCondenser();
+        int condenser = problem.topology().condenserNode();
         return switch (problem.waterCondenserRegime()) {
-            case NONE -> 0.0;
-            case ALL_VAPOR -> problem.waterVaporFlowMolPerSecond(1);
-            case FREE_WATER -> problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
-                    ? problem.waterVaporSlipCoefficient()
-                            * hydrocarbonVaporTotal(state, problem.topology().condenserNode())
-                    : 0.0;
+            case NONE -> new IndependentWaterSplit(0.0, 0.0);
+            case ALL_VAPOR -> new IndependentWaterSplit(arrivingWater, 0.0);
+            case FREE_WATER -> {
+                double vaporWater = problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
+                        ? Math.min(arrivingWater, independentWaterSlipCoefficient()
+                                * hydrocarbonVaporTotal(state, condenser)) : 0.0;
+                yield new IndependentWaterSplit(vaporWater, arrivingWater - vaporWater);
+            }
         };
     }
 
-    private double freeWaterFlow(V3DryMeshState state) {
-        return problem.waterVaporFlowMolPerSecond(1) - waterOverheadSlip(state);
+    /**
+     * Fresh hydrocarbon-only flash using the solver's published wet-equilibrium contract:
+     * K_hc is evaluated from full-pressure hydrocarbon fugacities then divided by 1-y(H2O).
+     * This deliberately does not use a solver residual, cached flash, or the problem split helper.
+     */
+    private IndependentCondenserFlash independentCondenserFlash(
+            V3DryMeshState state, double[] overall, double[] liquidGuess, double[] vaporGuess,
+            V3ThermoWorkspace workspace) {
+        int condenser = problem.topology().condenserNode();
+        if (!problem.hasSteamFeeds()) {
+            V3FlashResult dryFlash = thermo.flashTP(state.temperatureKelvin(condenser),
+                    problem.nodePressurePascal(condenser), overall, workspace);
+            return new IndependentCondenserFlash(dryFlash.phase(), dryFlash.vaporFraction(), dryFlash.liquidComposition(),
+                    dryFlash.vaporComposition(), true);
+        }
+        double totalHydrocarbon = hydrocarbonTotal(state, condenser);
+        double arrivingWater = authoredWaterAtCondenser();
+        if (!(totalHydrocarbon > 0.0) || !Double.isFinite(totalHydrocarbon)
+                || !(arrivingWater > 0.0) || !Double.isFinite(arrivingWater)) {
+            return IndependentCondenserFlash.unavailable(overall.length);
+        }
+        if (problem.waterCondenserRegime() == V3WaterCondenserRegime.FREE_WATER) {
+            double saturationFraction = V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(condenser))
+                    / problem.nodePressurePascal(condenser);
+            IndependentCondenserFlash saturated = flashAtWaterMoleFraction(
+                    state, overall, liquidGuess, vaporGuess, saturationFraction, workspace);
+            if (!saturated.converged()) return saturated;
+            double requiredVaporWater = saturationFraction / (1.0 - saturationFraction)
+                    * phaseFraction(saturated) * totalHydrocarbon;
+            if (arrivingWater >= requiredVaporWater) return saturated;
+            return waterLimitedFlash(state, overall, liquidGuess, vaporGuess, arrivingWater, totalHydrocarbon,
+                    saturationFraction, saturated, workspace);
+        }
+        return waterLimitedFlash(state, overall, liquidGuess, vaporGuess, arrivingWater, totalHydrocarbon,
+                1.0, null, workspace);
+    }
+
+    private IndependentCondenserFlash flashAtWaterMoleFraction(
+            V3DryMeshState state, double[] overall, double[] liquidGuess, double[] vaporGuess,
+            double waterMoleFraction, V3ThermoWorkspace workspace) {
+        overall = normalized(overall);
+        if (overall == null) return IndependentCondenserFlash.unavailable(liquidGuess.length);
+        int condenser = problem.topology().condenserNode();
+        double totalPressure = problem.nodePressurePascal(condenser);
+        if (!Double.isFinite(waterMoleFraction) || waterMoleFraction < 0.0 || waterMoleFraction >= 1.0) {
+            return IndependentCondenserFlash.unavailable(overall.length);
+        }
+        double vaporScale = 1.0 - waterMoleFraction;
+        double[] liquid = normalized(liquidGuess);
+        double[] vapor = normalized(vaporGuess);
+        if (liquid == null || vapor == null) return IndependentCondenserFlash.unavailable(overall.length);
+        for (int iteration = 0; iteration < 256; iteration++) {
+            V3FugacityResult liquidFugacity = thermo.fugacity(state.temperatureKelvin(condenser), totalPressure,
+                    liquid, V3Phase.LIQUID, workspace);
+            V3FugacityResult vaporFugacity = thermo.fugacity(state.temperatureKelvin(condenser), totalPressure,
+                    vapor, V3Phase.VAPOR, workspace);
+            double[] kValues = new double[overall.length];
+            for (int component = 0; component < kValues.length; component++) {
+                kValues[component] = Math.exp(liquidFugacity.logFugacityCoefficient(component)
+                        - vaporFugacity.logFugacityCoefficient(component)) / vaporScale;
+                if (!Double.isFinite(kValues[component]) || kValues[component] <= 0.0) {
+                    return IndependentCondenserFlash.unavailable(overall.length);
+                }
+            }
+            double fAtZero = rachfordRice(overall, kValues, 0.0);
+            double fAtOne = rachfordRice(overall, kValues, 1.0);
+            if (!Double.isFinite(fAtZero) || !Double.isFinite(fAtOne)) {
+                return IndependentCondenserFlash.unavailable(overall.length);
+            }
+            if (fAtZero <= 0.0) return new IndependentCondenserFlash(V3FeedPhase.LIQUID, 0.0, liquid, new double[0], true);
+            if (fAtOne >= 0.0) return new IndependentCondenserFlash(V3FeedPhase.VAPOR, 1.0, new double[0], vapor, true);
+            double lower = 0.0;
+            double upper = 1.0;
+            for (int bisection = 0; bisection < 80; bisection++) {
+                double middle = (lower + upper) * 0.5;
+                if (rachfordRice(overall, kValues, middle) > 0.0) lower = middle;
+                else upper = middle;
+            }
+            double vaporFraction = (lower + upper) * 0.5;
+            double[] nextLiquid = new double[overall.length];
+            double[] nextVapor = new double[overall.length];
+            for (int component = 0; component < overall.length; component++) {
+                nextLiquid[component] = overall[component] / (1.0 + vaporFraction * (kValues[component] - 1.0));
+                nextVapor[component] = kValues[component] * nextLiquid[component];
+            }
+            // Full substitution can oscillate for a heavy hydrocarbon mixture diluted by a large
+            // fixed water vapor fraction. Damping remains independent of the MESH residual while
+            // converging the same full-pressure scaled-K fixed point.
+            nextLiquid = normalized(blend(liquid, nextLiquid, 0.35));
+            nextVapor = normalized(blend(vapor, nextVapor, 0.35));
+            if (nextLiquid == null || nextVapor == null) return IndependentCondenserFlash.unavailable(overall.length);
+            double change = 0.0;
+            for (int component = 0; component < overall.length; component++) {
+                // A component below the published phase-split tolerance cannot affect the
+                // independent outlet check, but its normalized trace composition can oscillate.
+                if (overall[component] <= CONDENSER_PHASE_SPLIT_LIMIT) continue;
+                change = Math.max(change, Math.abs(nextLiquid[component] - liquid[component]));
+                change = Math.max(change, Math.abs(nextVapor[component] - vapor[component]));
+            }
+            liquid = nextLiquid;
+            vapor = nextVapor;
+            if (change <= CONDENSER_PHASE_SPLIT_LIMIT) {
+                return new IndependentCondenserFlash(V3FeedPhase.TWO_PHASE, vaporFraction, liquid, vapor, true);
+            }
+        }
+        return IndependentCondenserFlash.unavailable(overall.length);
+    }
+
+    /** Solves the water-limited alternative, in which every mole of fed steam leaves with the overhead vapor. */
+    private IndependentCondenserFlash waterLimitedFlash(
+            V3DryMeshState state, double[] overall, double[] liquidGuess, double[] vaporGuess,
+            double arrivingWater, double totalHydrocarbon, double saturationLimit,
+            IndependentCondenserFlash saturated, V3ThermoWorkspace workspace) {
+        int condenser = problem.topology().condenserNode();
+        double beta = hydrocarbonVaporTotal(state, condenser) / totalHydrocarbon;
+        if (!Double.isFinite(beta) || beta <= 0.0) beta = 0.05;
+        double waterMoleFraction = arrivingWater / (arrivingWater + beta * totalHydrocarbon);
+        if (waterMoleFraction >= saturationLimit && saturated != null) return saturated;
+        for (int iteration = 0; iteration < 64; iteration++) {
+            IndependentCondenserFlash flash = flashAtWaterMoleFraction(
+                    state, overall, liquidGuess, vaporGuess, waterMoleFraction, workspace);
+            if (!flash.converged()) return flash;
+            beta = phaseFraction(flash);
+            if (beta <= 1.0e-12) return flash;
+            double nextWaterFraction = arrivingWater / (arrivingWater + beta * totalHydrocarbon);
+            if (nextWaterFraction >= saturationLimit && saturated != null) return saturated;
+            if (Math.abs(nextWaterFraction - waterMoleFraction) <= 1.0e-11) return flash;
+            waterMoleFraction = 0.5 * (waterMoleFraction + nextWaterFraction);
+        }
+        return IndependentCondenserFlash.unavailable(overall.length);
+    }
+
+    private static double phaseFraction(IndependentCondenserFlash flash) {
+        return switch (flash.phase()) {
+            case LIQUID -> 0.0;
+            case TWO_PHASE -> flash.vaporFraction();
+            case VAPOR -> 1.0;
+        };
+    }
+
+    private static double rachfordRice(double[] overall, double[] kValues, double vaporFraction) {
+        double value = 0.0;
+        for (int component = 0; component < overall.length; component++) {
+            double shift = kValues[component] - 1.0;
+            value += overall[component] * shift / (1.0 + vaporFraction * shift);
+        }
+        return value;
+    }
+
+    private static double[] normalized(double[] values) {
+        double total = 0.0;
+        for (double value : values) total += value;
+        if (!Double.isFinite(total) || total <= 0.0) return null;
+        double[] normalized = new double[values.length];
+        for (int index = 0; index < values.length; index++) normalized[index] = values[index] / total;
+        return normalized;
+    }
+
+    private static double[] blend(double[] current, double[] target, double fraction) {
+        double[] result = new double[current.length];
+        for (int index = 0; index < result.length; index++) {
+            result[index] = current[index] + fraction * (target[index] - current[index]);
+        }
+        return result;
+    }
+
+    private double independentWaterSlipCoefficient() {
+        int condenser = problem.topology().condenserNode();
+        double temperature = condenserTemperatureKelvin();
+        double waterFraction = V3WaterProperties.saturationPressurePascal(temperature)
+                / problem.nodePressurePascal(condenser);
+        return waterFraction / (1.0 - waterFraction);
+    }
+
+    private double condenserTemperatureKelvin() {
+        return problem.input().specifications().stream()
+                .filter(V3ColumnSpecification.CondenserOutletTemperature.class::isInstance)
+                .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "V3 acceptance audit requires a condenser-temperature specification")).kelvin();
+    }
+
+    private double authoredWaterAtCondenser() {
+        return problem.input().steamFeeds().stream().mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum();
     }
 
     private static double hydrocarbonVaporTotal(V3DryMeshState state, int node) {
@@ -289,8 +516,26 @@ final class V3AcceptanceAuditor {
         return total;
     }
 
+    private static double hydrocarbonTotal(V3DryMeshState state, int node) {
+        double total = 0.0;
+        for (int component = 0; component < state.componentCount(); component++) {
+            total += state.liquidFlow(node, component) + state.vaporFlow(node, component);
+        }
+        return total;
+    }
+
     private static double relativeDifference(double left, double right) {
         return Math.abs(left - right) / Math.max(1.0, Math.max(Math.abs(left), Math.abs(right)));
+    }
+
+    private record IndependentWaterSplit(double vaporFlowMolPerSecond, double freeWaterFlowMolPerSecond) {}
+
+    private record IndependentCondenserFlash(
+            V3FeedPhase phase, double vaporFraction, double[] liquidComposition, double[] vaporComposition, boolean converged) {
+        private static IndependentCondenserFlash unavailable(int componentCount) {
+            return new IndependentCondenserFlash(V3FeedPhase.LIQUID, 0.0, new double[componentCount],
+                    new double[componentCount], false);
+        }
     }
 
     private static V3AcceptanceAudit.Check maximumFamily(

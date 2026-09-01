@@ -65,8 +65,7 @@ class V3DwsimRealCrudeOperatingMapTest {
                 flows, sample.feedTemperatureKelvin(), 2, 1, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(sample.condenserTemperatureKelvin()),
                         new V3ColumnSpecification.OrganicRefluxRatio(sample.refluxRatio()),
-                        new V3ColumnSpecification.ReboilerDuty(sample.reboilerDutyMegawatt() == 0.0
-                                ? Double.MIN_NORMAL : sample.reboilerDutyMegawatt() * 1_000_000.0)));
+                        new V3ColumnSpecification.ReboilerDuty(sample.reboilerDutyMegawatt() * 1_000_000.0)));
     }
 
     private record Case(

@@ -82,6 +82,6 @@ class V3FlashTruncationColumnTest {
                 thermo.componentBasis(), flows, 550.0, 2, 1, 250000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(300.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(2.0),
-                        new V3ColumnSpecification.ReboilerDuty(Double.MIN_NORMAL)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)));
     }
 }
