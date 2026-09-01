@@ -76,7 +76,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     protected void init() {
         String[] scalarDraft = editorDraft();
         String[] sideStageDrafts = {"13", "17", "22"};
-        String[] sideRateDrafts = {"92.2974747474748", "131.853535353535", "32.9633838383838"};
+        String[] sideRateDrafts = {"92.3", "131.85", "32.96"};
         for (int index = 0; index < Math.min(sideDrawFields.size(), SIDE_DRAW_COUNT); index++) {
             sideStageDrafts[index] = sideDrawFields.get(index).stage().getValue();
             sideRateDrafts[index] = sideDrawFields.get(index).rate().getValue();
@@ -202,7 +202,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         for (int index = 0; index < sideDrawFields.size(); index++) {
             V3SideDrawSpec draw = index < input.sideDraws().size() ? input.sideDraws().get(index) : null;
             sideDrawFields.get(index).stage().setValue(draw == null ? "" : Integer.toString(draw.trayNumber()));
-            sideDrawFields.get(index).rate().setValue(draw == null ? "" : compactDraft(draw.molarFlowMolPerSecond() * 3.6));
+            sideDrawFields.get(index).rate().setValue(
+                    draw == null ? "" : compactSideDrawDraft(draw.molarFlowMolPerSecond() * 3.6));
         }
     }
 
@@ -468,6 +469,10 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private static String compactDraft(double value) {
         return String.format(Locale.ROOT, "%.6f", value).replaceFirst("0+$", "").replaceFirst("\\.$", "");
+    }
+
+    private static String compactSideDrawDraft(double value) {
+        return String.format(Locale.ROOT, "%.2f", value).replaceFirst("0+$", "").replaceFirst("\\.$", "");
     }
 
     private static String compact(double value) {

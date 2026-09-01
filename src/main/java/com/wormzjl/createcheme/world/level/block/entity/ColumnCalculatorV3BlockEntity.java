@@ -354,6 +354,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
 
     private static V3SideDrawSpec defaultSideDraw(int trayNumber, double sourceBarrelsPerDay) {
         double kmolPerHour = DEFAULT_FEED_KMOL_PER_HOUR * sourceBarrelsPerDay / 99_000.0 * 0.25;
+        kmolPerHour = Math.round(kmolPerHour * 100.0) / 100.0;
         return new V3SideDrawSpec(trayNumber, kmolPerHour / 3.6);
     }
 

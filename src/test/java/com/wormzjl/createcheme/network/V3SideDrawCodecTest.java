@@ -18,16 +18,26 @@ import org.junit.jupiter.api.Test;
 
 class V3SideDrawCodecTest {
     @Test
-    void serverDefaultPublishesTheQualifiedLiteratureSideDraws() throws Exception {
+    void roundedServerDefaultPublishesAndSolvesTheQualifiedLiteratureSideDraws() throws Exception {
         V3ColumnInput input = (V3ColumnInput) invoke(
                 ColumnCalculatorV3BlockEntity.class, "defaultInput", new Class<?>[0]);
 
         assertEquals(29, input.stageCount());
         assertEquals(150_000.0, input.topPressurePascal());
         assertEquals(List.of(13, 17, 22), input.sideDraws().stream().map(V3SideDrawSpec::trayNumber).toList());
-        assertArrayEquals(new double[] {92.2974747474748, 131.853535353535, 32.9633838383838},
+        assertArrayEquals(new double[] {92.3, 131.85, 32.96},
                 input.sideDraws().stream().mapToDouble(draw -> draw.molarFlowMolPerSecond() * 3.6).toArray(),
                 1.0e-12);
+
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, () -> {
+            if (System.nanoTime() - started > 45_000_000_000L) {
+                throw new AssertionError("rounded GUI default exceeded 45 seconds");
+            }
+        });
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.result().convergenceEvidence().satisfiesGates());
     }
 
     @Test
