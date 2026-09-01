@@ -56,6 +56,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private long latestStateRevision = -1L;
     private boolean calculationRequested;
     private String validation = "Waiting for server-owned V3 state...";
+    private String draftValidationDetail = "Enter all scalar inputs.";
     private Button inputsTab;
     private Button streamsTab;
     private Button convergenceTab;
@@ -253,7 +254,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         } else if (draftInput() != null) {
             validation = "Scientific draft is valid; Run V3 performs authoritative DWSIM-path solving.";
         } else {
-            validation = "Check inputs and draws: distinct trays, positive rates, total draws below feed (blank/0 disables).";
+            validation = draftValidationDetail;
         }
         if (run != null && previousStreamPage != null && nextStreamPage != null) refreshControls();
     }
@@ -261,51 +262,36 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private V3ColumnInput draftInput() {
         if (serverState == null || coreEditors.size() != CORE_EDITOR_COUNT) return null;
         try {
-            double totalFlow = decimal(0) * KMOL_PER_HOUR_TO_MOL_PER_SECOND;
-            double feedTemperature = decimal(1) + CELSIUS_TO_KELVIN;
-            int stages = integer(2);
-            int feedStage = integer(3);
-            double condenserTemperature = decimal(4) + CELSIUS_TO_KELVIN;
-            double reboilerDuty = decimal(5) * 1_000_000.0;
-            double reflux = decimal(6);
-            double topPressure = decimal(7) / PASCAL_TO_BAR;
-            double pressureDrop = decimal(8) * 1_000.0;
-            if (totalFlow <= 0.0 || feedTemperature <= 0.0 || stages < V3ColumnInput.MIN_STAGE_COUNT
-                    || stages > V3ColumnInput.MAX_STAGE_COUNT || feedStage < 1 || feedStage > stages
-                    || condenserTemperature <= 0.0 || reboilerDuty < 0.0 || reflux < 0.0
-                    || topPressure <= 0.0 || pressureDrop < 0.0) {
-                return null;
-            }
+            V3ColumnScalarDraft.Values scalar = V3ColumnScalarDraft.parse(
+                    coreEditors.stream().map(EditBox::getValue).toList());
             V3ColumnInput base = serverState.input();
             double[] existingFlows = base.feedComponentMolarFlowsMolPerSecond();
             double existingTotal = 0.0;
             for (double flow : existingFlows) existingTotal += flow;
             if (!Double.isFinite(existingTotal) || existingTotal <= 0.0) return null;
             double[] scaledFlows = new double[existingFlows.length];
-            double scale = totalFlow / existingTotal;
+            double scale = scalar.feedMolPerSecond() / existingTotal;
             for (int index = 0; index < scaledFlows.length; index++) scaledFlows[index] = existingFlows[index] * scale;
-            List<V3SideDrawSpec> draws = V3SideDrawDraft.parse(sideDrawFields.stream()
-                    .map(fields -> new V3SideDrawDraft.Row(fields.stage().getValue(), fields.rate().getValue())).toList(),
-                    stages, totalFlow);
+            List<V3SideDrawSpec> draws;
+            try {
+                draws = V3SideDrawDraft.parse(sideDrawFields.stream()
+                        .map(fields -> new V3SideDrawDraft.Row(fields.stage().getValue(), fields.rate().getValue())).toList(),
+                        scalar.stageCount(), scalar.feedMolPerSecond());
+            } catch (IllegalArgumentException invalidDraws) {
+                throw new IllegalArgumentException("Side draws: " + invalidDraws.getMessage(), invalidDraws);
+            }
             return new V3ColumnInput(
                     V3ColumnInput.SCHEMA_VERSION, base.packageId(), base.assayId(), base.componentBasis(), scaledFlows,
-                    feedTemperature, stages, feedStage, topPressure, pressureDrop, List.of(
-                            new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
-                            new V3ColumnSpecification.OrganicRefluxRatio(reflux),
-                            new V3ColumnSpecification.ReboilerDuty(reboilerDuty)), draws);
+                    scalar.feedTemperatureKelvin(), scalar.stageCount(), scalar.feedStage(),
+                    scalar.topPressurePascal(), scalar.pressureDropPascal(), List.of(
+                            new V3ColumnSpecification.CondenserOutletTemperature(scalar.condenserTemperatureKelvin()),
+                            new V3ColumnSpecification.OrganicRefluxRatio(scalar.refluxRatio()),
+                            new V3ColumnSpecification.ReboilerDuty(scalar.reboilerDutyWatts())), draws);
         } catch (IllegalArgumentException invalid) {
+            draftValidationDetail = invalid.getMessage() == null || invalid.getMessage().isBlank()
+                    ? "Invalid scientific draft." : invalid.getMessage();
             return null;
         }
-    }
-
-    private double decimal(int editor) {
-        double value = Double.parseDouble(coreEditors.get(editor).getValue());
-        if (!Double.isFinite(value)) throw new NumberFormatException("non-finite value");
-        return value;
-    }
-
-    private int integer(int editor) {
-        return Integer.parseInt(coreEditors.get(editor).getValue());
     }
 
     @Override

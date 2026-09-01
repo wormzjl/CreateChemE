@@ -67,13 +67,15 @@ final class V3AcceptanceAuditor {
         double maximum = 0.0;
         boolean valid = true;
         for (V3SideDrawSpec draw : problem.input().sideDraws()) {
-            double liquid = 0.0;
-            for (int component = 0; component < state.componentCount(); component++) {
-                liquid += state.liquidFlow(draw.trayNumber(), component);
+            try {
+                V3SideDraws.Withdrawal withdrawal = V3SideDraws.withdrawal(
+                        state, draw.trayNumber(), draw.molarFlowMolPerSecond());
+                valid &= withdrawal.liquidTotalMolPerSecond() > draw.molarFlowMolPerSecond();
+                maximum = Math.max(maximum, withdrawal.fraction());
+            } catch (IllegalArgumentException invalidSplit) {
+                valid = false;
+                maximum = Double.MAX_VALUE;
             }
-            double fraction = draw.molarFlowMolPerSecond() / liquid;
-            valid &= Double.isFinite(liquid) && Double.isFinite(fraction) && liquid > draw.molarFlowMolPerSecond();
-            maximum = Math.max(maximum, Double.isFinite(fraction) ? fraction : Double.MAX_VALUE);
         }
         return valid ? V3AcceptanceAudit.Check.pass("SIDE_DRAW_SPLIT", maximum, 1.0, "all side draws leave positive liquid downflow")
                 : V3AcceptanceAudit.Check.fail("SIDE_DRAW_SPLIT", maximum, 1.0, "side draw exhausts the tray liquid; positive downflow required");

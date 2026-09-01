@@ -89,13 +89,6 @@ public final class V3ColumnProblem {
     double liquidWithdrawalFraction(V3DryMeshState state, int node) {
         double rate = nodeSideDrawMolPerSecond[node];
         if (rate == 0.0) return 0.0;
-        double total = 0.0;
-        for (int component = 0; component < state.componentCount(); component++) {
-            total += state.liquidFlow(node, component);
-        }
-        if (!(total > 0.0) || !Double.isFinite(total)) {
-            throw new IllegalArgumentException("V3 side draw on tray " + node + " has no finite positive liquid flow");
-        }
-        return rate / total;
+        return V3SideDraws.withdrawal(state, node, rate).fraction();
     }
 }

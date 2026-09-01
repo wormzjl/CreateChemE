@@ -62,14 +62,45 @@ class V3SideDrawCalculatorTest {
     }
 
     @Test
-    void originalLargeDrawCaseReturnsAnHonestTrayDiagnostic() {
+    void originalLargeDrawCaseAttemptsRequestedGeometryAndNamesAnAuthoredTray() {
         long started = System.nanoTime();
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(canonicalInput(150_000), () -> {
             if (System.nanoTime() - started > 45_000_000_000L) throw new AssertionError("large-draw failure exceeded 45 seconds");
         });
-        V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
-        assertTrue(failure.summary().contains("side draw on tray"));
-        assertTrue(failure.diagnostics().events().stream().anyMatch(event -> event.contains("ramp stopped")));
+        if (outcome instanceof V3ColumnOutcome.Success success) {
+            assertTrue(success.result().acceptanceAudit().accepted());
+            assertEquals(30, success.result().problem().topology().trayCount());
+        } else {
+            V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome);
+            assertTrue(failure.diagnostics().solvePath().contains("stage-30"), failure.diagnostics()::solvePath);
+            assertTrue(failure.summary().contains("authored tray"), failure::summary);
+            assertTrue(List.of(8, 15, 22).stream().anyMatch(
+                    tray -> failure.summary().contains("authored tray " + tray)), failure::summary);
+            assertFalse(failure.summary().contains("continuation grid"), failure::summary);
+            assertTrue(failure.diagnostics().events().stream().anyMatch(
+                    event -> event.contains("ramp reached 1.0")), failure.diagnostics().events()::toString);
+        }
+    }
+
+    @Test
+    void legalNearFeedDrawNeverBecomesInvalidInputWhenTheDrawBlindSeedIsAvailable() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
+        double[] feed = new double[thermo.componentBasis().componentCount()];
+        feed[6] = 50;
+        feed[13] = 50;
+        V3ColumnInput input = new V3ColumnInput(1, thermo.packageId(), "test:near-feed-draw",
+                thermo.componentBasis(), feed, 550, 2, 1, 250_000, 750, List.of(
+                new V3ColumnSpecification.CondenserOutletTemperature(300),
+                new V3ColumnSpecification.OrganicRefluxRatio(2),
+                new V3ColumnSpecification.ReboilerDuty(0)), List.of(new V3SideDrawSpec(1, 99)));
+
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
+        if (outcome instanceof V3ColumnOutcome.Failure failure) {
+            assertNotEquals(V3SolverFailureCode.INVALID_INPUT, failure.code());
+            assertTrue(failure.summary().contains("authored tray 1"), failure::summary);
+        } else {
+            assertTrue(((V3ColumnOutcome.Success) outcome).result().acceptanceAudit().accepted());
+        }
     }
 
     static V3ColumnInput canonicalInput(double pressure) {
