@@ -99,7 +99,7 @@ class V3TruncationSupportTest {
     }
 
     @Test
-    void zeroRefluxPrunesTrayOneThenCondenserOnTheNextFixpointPass() {
+    void disconnectedUpperGroupIsPrunedEvenWhenPositiveRefluxCreatesACycle() {
         V3ColumnProblem noReflux = problem(V3CondenserPhaseBranch.TWO_PHASE, 0.0, 3);
         double[][] flows = uniformFlows(noReflux);
         flows[2] = new double[] {0.1, 99.9};
@@ -114,11 +114,58 @@ class V3TruncationSupportTest {
 
         V3ColumnProblem reflux = problem(V3CondenserPhaseBranch.TWO_PHASE, 1.0, 3);
         V3TruncationSupport withReflux = V3TruncationSupport.derive(reflux, 0.01, state(reflux, flows, flows));
-        assertTrue(withReflux.retains(0, 0));
-        assertTrue(withReflux.retains(1, 0));
-        assertEquals(0, withReflux.closurePrunedCount());
+        // Condenser and tray one exchange material, but neither has a path from the feed at tray three.
+        assertFalse(withReflux.retains(0, 0));
+        assertFalse(withReflux.retains(1, 0));
+        assertFalse(withReflux.retains(2, 0));
+        assertTrue(withReflux.retains(3, 0));
+        assertEquals(2, withReflux.closurePrunedCount());
+        assertEquals(3, withReflux.truncatedPointCount());
+        V3DryMeshState projected = withReflux.projectSeed(reflux, state(reflux, flows, flows));
+        for (int node = 0; node <= 2; node++) {
+            assertEquals(0.0, projected.liquidFlow(node, 0));
+            assertEquals(0.0, projected.vaporFlow(node, 0));
+        }
         assertThrows(IllegalArgumentException.class,
                 () -> V3ColumnProblemResolver.withTruncation(noReflux, withReflux));
+    }
+
+    @ParameterizedTest
+    @EnumSource(V3CondenserPhaseBranch.class)
+    void disconnectedLowerGroupCannotUseItsOwnLiquidVaporCycleAsAFeed(V3CondenserPhaseBranch branch) {
+        V3ColumnProblem problem = problem(branch, 0.0, 2);
+        double[][] flows = uniformFlows(problem);
+        flows[3] = new double[] {0.1, 99.9};
+        V3DryMeshState seed = state(problem, flows, flows);
+        V3TruncationSupport support = V3TruncationSupport.derive(problem, 0.01, seed);
+
+        for (int node = 0; node <= 2; node++) assertTrue(support.retains(node, 0));
+        for (int node = 3; node <= 5; node++) assertFalse(support.retains(node, 0));
+        for (int node = 0; node <= 5; node++) assertTrue(support.retains(node, 1));
+        assertEquals(2, support.closurePrunedCount());
+        assertEquals(3, support.truncatedPointCount());
+        V3DryMeshState projected = support.projectSeed(problem, seed);
+        for (int node = 3; node <= 5; node++) {
+            assertEquals(0.0, projected.liquidFlow(node, 0));
+            assertEquals(0.0, projected.vaporFlow(node, 0));
+        }
+        assertTrue(V3ColumnProblemResolver.withTruncation(problem, support).degreeOfFreedomLedger().isValid());
+    }
+
+    @Test
+    void sideDrawSupplyPathsKeepTraceComponentsConnectedAboveAndBelowTheFeed() {
+        V3ColumnProblem problem = problem(V3CondenserPhaseBranch.TWO_PHASE, 1.0, 2,
+                List.of(new V3SideDrawSpec(1, 1.0), new V3SideDrawSpec(4, 1.0)));
+        double[][] flows = uniformFlows(problem);
+        for (int node = 0; node < flows.length; node++) flows[node] = new double[] {0.1, 99.9};
+        V3TruncationSupport support = V3TruncationSupport.derive(problem, 0.01, state(problem, flows, flows));
+
+        assertFalse(support.retains(0, 0));
+        for (int node = 1; node <= 4; node++) assertTrue(support.retains(node, 0));
+        assertFalse(support.retains(5, 0));
+        assertEquals(0, support.closurePrunedCount());
+        assertEquals(2, support.truncatedPointCount());
+        assertTrue(V3ColumnProblemResolver.withTruncation(problem, support).degreeOfFreedomLedger().isValid());
     }
 
     @Test
@@ -179,12 +226,17 @@ class V3TruncationSupportTest {
     }
 
     static V3ColumnProblem problem(V3CondenserPhaseBranch branch, double reflux, int feedTray) {
+        return problem(branch, reflux, feedTray, List.of());
+    }
+
+    private static V3ColumnProblem problem(V3CondenserPhaseBranch branch, double reflux, int feedTray,
+                                           List<V3SideDrawSpec> sideDraws) {
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:manufactured", "test:binary",
                 new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {1.0e-6, 100.0}, 400.0,
                 4, feedTray, 250_000.0, 750.0, List.of(
                         new V3ColumnSpecification.CondenserOutletTemperature(400.0),
                         new V3ColumnSpecification.OrganicRefluxRatio(reflux),
-                        new V3ColumnSpecification.ReboilerDuty(0.0)));
+                        new V3ColumnSpecification.ReboilerDuty(0.0)), sideDraws);
         return V3ColumnProblemResolver.resolve(input, branch);
     }
 

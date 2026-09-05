@@ -115,11 +115,7 @@ public final class V3BandedPivotedSolver {
             rightHandSide[row] = Double.isFinite(scale) ? rightHandSide[row] * scale : rightHandSide[row] / maximum;
             if (!Double.isFinite(rightHandSide[row])) return false;
         }
-        for (int column = 0; column < work.size(); column++) {
-            double maximum = work.columnMaximum(column);
-            if (maximum == 0.0) continue;
-            work.divideColumn(column, maximum);
-        }
+        work.scaleColumns();
         return true;
     }
 
@@ -227,7 +223,6 @@ public final class V3BandedPivotedSolver {
             rows = new TreeMap[size];
             for (int row = 0; row < size; row++) rows[row] = new TreeMap<>();
             columnDivisors = new double[size];
-            java.util.Arrays.fill(columnDivisors, 1.0);
         }
 
         static SparseRows copyOf(V3BandedMatrix matrix) {
@@ -259,11 +254,6 @@ public final class V3BandedPivotedSolver {
             for (double value : rows[row].values()) maximum = Math.max(maximum, Math.abs(value));
             return maximum;
         }
-        double columnMaximum(int column) {
-            double maximum = 0.0;
-            for (TreeMap<Integer, Double> row : rows) maximum = Math.max(maximum, Math.abs(row.getOrDefault(column, 0.0)));
-            return maximum;
-        }
         void divideRow(int row, double divisor) {
             double scale = 1.0 / divisor;
             for (Map.Entry<Integer, Double> entry : rows[row].entrySet()) {
@@ -271,12 +261,27 @@ public final class V3BandedPivotedSolver {
                 entry.setValue(Double.isFinite(scale) ? entry.getValue() * scale : entry.getValue() / divisor);
             }
         }
-        void divideColumn(int column, double divisor) {
-            columnDivisors[column] = divisor;
-            double scale = 1.0 / divisor;
+        void scaleColumns() {
+            // Rows are still in their original order. Visit only stored entries instead of searching every row
+            // for every column, keeping equilibration linear in the number of band entries.
             for (TreeMap<Integer, Double> row : rows) {
-                Double value = row.get(column);
-                if (value != null) row.put(column, Double.isFinite(scale) ? value * scale : value / divisor);
+                for (Map.Entry<Integer, Double> entry : row.entrySet()) {
+                    int column = entry.getKey();
+                    columnDivisors[column] = Math.max(columnDivisors[column], Math.abs(entry.getValue()));
+                }
+            }
+            double[] scales = new double[size()];
+            for (int column = 0; column < size(); column++) {
+                if (columnDivisors[column] == 0.0) columnDivisors[column] = 1.0;
+                scales[column] = 1.0 / columnDivisors[column];
+            }
+            for (TreeMap<Integer, Double> row : rows) {
+                for (Map.Entry<Integer, Double> entry : row.entrySet()) {
+                    int column = entry.getKey();
+                    double scale = scales[column];
+                    entry.setValue(Double.isFinite(scale)
+                            ? entry.getValue() * scale : entry.getValue() / columnDivisors[column]);
+                }
             }
         }
         double maximumAbsoluteValue() {

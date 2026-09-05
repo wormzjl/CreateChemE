@@ -39,6 +39,33 @@ class V3BandedPivotedSolverTest {
     }
 
     @Test
+    void independentRowAndColumnScalesRecoverTheKnownSolution() {
+        int[] rowExponents = {-300, 100, 0, -100, 300};
+        int[] columnExponents = {250, -250, 150, -150, 0};
+        double[] expected = {1.0, -2.0, 3.0, -4.0, 5.0};
+        V3BandedMatrix matrix = new V3BandedMatrix(expected.length, expected.length - 1, expected.length - 1);
+        double[] rightHandSide = new double[expected.length];
+        for (int row = 0; row < expected.length; row++) {
+            double total = 0.0;
+            for (int column = 0; column < expected.length; column++) {
+                double coefficient = row == column ? 8.0 : -1.0;
+                matrix.set(row, column, Math.scalb(coefficient, rowExponents[row] + columnExponents[column]));
+                total += coefficient * expected[column];
+            }
+            rightHandSide[row] = Math.scalb(total, rowExponents[row]);
+        }
+
+        V3BandedPivotedSolver.Result.Success result = assertInstanceOf(V3BandedPivotedSolver.Result.Success.class,
+                V3BandedPivotedSolver.solve(matrix, rightHandSide));
+
+        double[] solution = result.solution();
+        for (int column = 0; column < solution.length; column++) {
+            assertEquals(expected[column], Math.scalb(solution[column], columnExponents[column]), 1.0e-12);
+        }
+        assertTrue(result.backwardError() <= 1.0e-12);
+    }
+
+    @Test
     void unrepresentableScaledRightHandSideReturnsATypedFailure() {
         V3BandedMatrix matrix = new V3BandedMatrix(1, 0, 0);
         matrix.set(0, 0, Double.MIN_VALUE);

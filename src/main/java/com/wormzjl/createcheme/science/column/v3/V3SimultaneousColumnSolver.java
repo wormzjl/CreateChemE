@@ -420,42 +420,42 @@ final class V3SimultaneousColumnSolver {
         return new VerifiedFinalNewton(candidate, maximumResidual, candidateMerit, 1.0, backwardError, evidence);
     }
 
-    private static V3BandedMatrix toBandedMatrix(
+    /** Keeps every coefficient in the declared adjacent-stage coupling, independent of its magnitude. */
+    static V3BandedMatrix toBandedMatrix(
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3StageBlockLayout layout) {
-        return stageBandedMatrix(jacobian.values(), layout, 1, NEWTON_OFF_BAND_MESSAGE);
-    }
-
-    private static V3BandedMatrix stageBandedMatrix(
-            double[][] values, V3StageBlockLayout layout, int maximumNodeSpan, String offBandMessage) {
+        int lastNode = layout.nodeCount() - 1;
+        int size = layout.start(lastNode) + layout.size(lastNode);
+        if (jacobian.unknowns().size() != size) {
+            throw new IllegalArgumentException("V3 Newton Jacobian does not match its stage layout");
+        }
         int lowerBandwidth = 0;
         int upperBandwidth = 0;
-        for (int row = 0; row < values.length; row++) {
-            int rowNode = nodeFor(row, layout);
-            for (int column = 0; column < values.length; column++) {
-                double value = values[row][column];
-                int columnNode = nodeFor(column, layout);
-                if (Math.abs(columnNode - rowNode) > maximumNodeSpan && Math.abs(value) > OFF_BAND_TOLERANCE) {
-                    throw new IllegalStateException(offBandMessage);
-                }
-                if (Math.abs(value) <= OFF_BAND_TOLERANCE) continue;
-                if (row >= column) lowerBandwidth = Math.max(lowerBandwidth, row - column);
-                else upperBandwidth = Math.max(upperBandwidth, column - row);
-            }
+        for (int node = 0; node <= lastNode; node++) {
+            int firstCoupled = layout.start(Math.max(0, node - 1));
+            int lastCoupledNode = Math.min(lastNode, node + 1);
+            int coupledEnd = layout.start(lastCoupledNode) + layout.size(lastCoupledNode);
+            lowerBandwidth = Math.max(lowerBandwidth, layout.start(node) + layout.size(node) - 1 - firstCoupled);
+            upperBandwidth = Math.max(upperBandwidth, coupledEnd - 1 - layout.start(node));
         }
-        V3BandedMatrix matrix = new V3BandedMatrix(values.length, lowerBandwidth, upperBandwidth);
-        for (int row = 0; row < values.length; row++) {
-            for (int column = Math.max(0, row - lowerBandwidth); column <= Math.min(values.length - 1, row + upperBandwidth); column++) {
-                matrix.set(row, column, values[row][column]);
+        V3BandedMatrix matrix = new V3BandedMatrix(size, lowerBandwidth, upperBandwidth);
+        for (int node = 0; node <= lastNode; node++) {
+            int firstCoupled = layout.start(Math.max(0, node - 1));
+            int lastCoupledNode = Math.min(lastNode, node + 1);
+            int coupledEnd = layout.start(lastCoupledNode) + layout.size(lastCoupledNode);
+            int rowEnd = layout.start(node) + layout.size(node);
+            for (int row = layout.start(node); row < rowEnd; row++) {
+                for (int column = 0; column < size; column++) {
+                    double value = jacobian.value(row, column);
+                    if (column >= firstCoupled && column < coupledEnd) {
+                        matrix.set(row, column, value);
+                    } else if (Math.abs(value) > OFF_BAND_TOLERANCE) {
+                        throw new IllegalStateException(NEWTON_OFF_BAND_MESSAGE);
+                    }
+                    // Nonadjacent stages have no physical coupling; only their FD noise is discarded.
+                }
             }
         }
         return matrix;
-    }
-
-    private static int nodeFor(int index, V3StageBlockLayout layout) {
-        for (int node = 0; node < layout.nodeCount(); node++) {
-            if (index >= layout.start(node) && index < layout.start(node) + layout.size(node)) return node;
-        }
-        throw new IllegalArgumentException("V3 Newton Jacobian index is outside the stage layout");
     }
 
     private static double[] negativeScaledResidual(V3MeshResidual residual) {

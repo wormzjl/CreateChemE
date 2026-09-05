@@ -113,19 +113,19 @@ final class V3TruncationSupport {
                         || (testVapor && decidingState.vaporFlow(node, component) / vaporTotal >= cutoffMoleFraction);
             }
         }
-        int pruned = pruneUnsupported(problem, retained);
+        int pruned = pruneUnreachable(problem, retained);
         for (V3SideDrawSpec draw : problem.input().sideDraws()) {
             if (draw.trayNumber() == topology.feedTrayNumber()) continue;
             for (int component = 0; component < components; component++) {
-                if (!hasRetainedInflow(problem, retained, refluxRatio(problem), draw.trayNumber(), component)) {
+                if (!retained[draw.trayNumber()][component]) {
                     return new V3TruncationSupport(problem, cutoffMoleFraction, null, pruned,
-                            "Stage-trace support fell back to identity: a forced side-draw point has no retained inflow");
+                            "Stage-trace support fell back to identity: a forced side-draw point has no retained feed path");
                 }
             }
         }
         if (!phasesNonempty(problem, retained)) {
             return new V3TruncationSupport(problem, cutoffMoleFraction, null, pruned,
-                    "Stage-trace support fell back to identity: inflow closure emptied a structural phase");
+                    "Stage-trace support fell back to identity: feed reachability emptied a structural phase");
         }
         return new V3TruncationSupport(problem, cutoffMoleFraction, retained, pruned, "");
     }
@@ -259,6 +259,7 @@ final class V3TruncationSupport {
         if (refluxRatio != organicRefluxRatio) {
             throw new IllegalArgumentException("V3 truncation support has a different reflux control");
         }
+        boolean[][] reachable = reachableFromFeed(problem, retained, refluxRatio);
         for (int node = 0; node < topology.nodeCount(); node++) {
             if (nodeSideDrawRates[node] != problem.nodeSideDrawMolPerSecond(node)) {
                 throw new IllegalArgumentException("V3 truncation support has different side draw rates");
@@ -272,8 +273,8 @@ final class V3TruncationSupport {
                         throw new IllegalArgumentException("V3 truncation support cannot remove a feed-tray point");
                     }
                 } else if (retains(node, component)
-                        && !hasRetainedInflow(problem, retained, refluxRatio, node, component)) {
-                    throw new IllegalArgumentException("V3 retained point has no retained inflow source");
+                        && !reachable[node][component]) {
+                    throw new IllegalArgumentException("V3 retained point has no retained path from the feed");
                 }
             }
         }
@@ -308,36 +309,50 @@ final class V3TruncationSupport {
         return total;
     }
 
-    private static int pruneUnsupported(V3ColumnProblem problem, boolean[][] retained) {
+    private static int pruneUnreachable(V3ColumnProblem problem, boolean[][] retained) {
+        boolean[][] reachable = reachableFromFeed(problem, retained, refluxRatio(problem));
         int pruned = 0;
-        boolean changed;
-        double refluxRatio = refluxRatio(problem);
-        do {
-            changed = false;
-            for (int node = 0; node < retained.length; node++) {
-                if (node == problem.topology().feedTrayNumber() || problem.nodeSideDrawMolPerSecond(node) > 0.0) continue;
-                for (int component = 0; component < retained[node].length; component++) {
-                    if (retained[node][component]
-                            && !hasRetainedInflow(problem, retained, refluxRatio, node, component)) {
-                        retained[node][component] = false;
-                        pruned++;
-                        changed = true;
-                    }
+        for (int node = 0; node < retained.length; node++) {
+            for (int component = 0; component < retained[node].length; component++) {
+                if (retained[node][component] && !reachable[node][component]) {
+                    retained[node][component] = false;
+                    pruned++;
                 }
             }
-        } while (changed);
+        }
         return pruned;
     }
 
-    private static boolean hasRetainedInflow(V3ColumnProblem problem, boolean[][] retained,
-                                             double refluxRatio, int node, int component) {
+    /** A recirculating group cannot supply itself: every retained point needs a directed path from the feed. */
+    private static boolean[][] reachableFromFeed(V3ColumnProblem problem, boolean[][] retained, double refluxRatio) {
         V3ColumnTopology topology = problem.topology();
-        boolean fromAbove = node > topology.condenserNode() && retained[node - 1][component]
-                && problem.condenserComponentPhases().hasLiquid(topology, node - 1, component)
-                && (node != 1 || refluxRatio > 0.0);
-        boolean fromBelow = node < topology.reboilerNode() && retained[node + 1][component]
-                && topology.hasVaporPhase(node + 1);
-        return fromAbove || fromBelow;
+        int components = problem.activeComponentBasis().componentCount();
+        boolean[][] reachable = new boolean[topology.nodeCount()][components];
+        int[] pending = new int[topology.nodeCount()];
+        for (int component = 0; component < components; component++) {
+            int feed = topology.feedTrayNumber();
+            if (!retained[feed][component]) continue;
+            int next = 0;
+            int count = 1;
+            pending[0] = feed;
+            reachable[feed][component] = true;
+            while (next < count) {
+                int node = pending[next++];
+                if (node > topology.condenserNode() && topology.hasVaporPhase(node)
+                        && retained[node - 1][component] && !reachable[node - 1][component]) {
+                    reachable[node - 1][component] = true;
+                    pending[count++] = node - 1;
+                }
+                if (node < topology.reboilerNode()
+                        && problem.condenserComponentPhases().hasLiquid(topology, node, component)
+                        && (node != topology.condenserNode() || refluxRatio > 0.0)
+                        && retained[node + 1][component] && !reachable[node + 1][component]) {
+                    reachable[node + 1][component] = true;
+                    pending[count++] = node + 1;
+                }
+            }
+        }
+        return reachable;
     }
 
     private static boolean phasesNonempty(V3ColumnProblem problem, boolean[][] retained) {
