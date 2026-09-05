@@ -3,6 +3,8 @@
 build/
 out/
 *.class
+__pycache__/
+*.pyc
 
 # NeoForge development runs
 run/

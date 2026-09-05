@@ -1,0 +1,3982 @@
+{
+  "schemaVersion": 1,
+  "benchmark": "V3 cold core benchmark v1",
+  "status": "DEFAULT_SUITE_EXECUTED",
+  "executionReport": "documentation/V3_COLD_CORE_BENCHMARK_RESULTS.md",
+  "lastRunId": "v3-cold-core-run-20260905-01",
+  "baseline": {
+    "ref": "main",
+    "commit": "bdfeff1"
+  },
+  "candidate": {
+    "branch": "codex/v3-solver-core-fixes",
+    "baseCommit": "bdfeff1",
+    "dirtyWorkingTree": true,
+    "requireFullSourceAndPatchHashes": true
+  },
+  "dataset": {
+    "packageId": "createcheme:cdu17_tjl_acs2018",
+    "assayId": "createcheme:tia_juana_light",
+    "expectedDatasetRevision": "cdu17-tjl-kl1976-r2",
+    "feedComposition": "Load registered assay and persist its ordered component IDs and full flow vector before executing either revision."
+  },
+  "execution": {
+    "coldNumericalState": true,
+    "warmupCaseIds": [
+      "A150-quarter-off",
+      "A100-quarter-on",
+      "A250-wet-slowdown-off"
+    ],
+    "screenRepetitions": 1,
+    "screenWorkers": 12,
+    "calculatorDeadlineSeconds": 60,
+    "lateReturnIsSuccess": false,
+    "externalWatchdogSecondsAfterCallStarted": 75,
+    "calculatorBudgetFlagSeconds": 45,
+    "seed": 20260905,
+    "timingPairsPerCase": 3,
+    "maxPrimaryTimingCases": 12,
+    "slowdownReviewThresholdPercent": 10,
+    "slowdownConfirmationAdditionalPairs": 5,
+    "screenWorkerMode": "Isolated JVM processes; one CPU solve at a time in each; 12 is the combined cap across both revisions.",
+    "screenWorkerJvmArgs": [
+      "-Xms128m",
+      "-Xmx1536m",
+      "-XX:ActiveProcessorCount=1",
+      "-XX:+UseSerialGC"
+    ],
+    "timingWorkerJvmArgs": [
+      "-Xms512m",
+      "-Xmx2g",
+      "-XX:ActiveProcessorCount=16",
+      "-XX:+UseG1GC"
+    ],
+    "timingConcurrentSolves": 1,
+    "availableMemoryReserveGiB": 6,
+    "estimatedMemoryBudgetGiBPerScreenWorker": 2,
+    "screenWorkerSizing": "min(12, floor((availableMemoryGiB - 6)/2)); round down to even for equal revision pools, falling back to one serial worker if needed",
+    "observedHost": {
+      "logicalProcessors": 16,
+      "totalMemoryGiB": 47.6,
+      "availableMemoryGiB": 30.7,
+      "measuredOn": "2026-09-05",
+      "recheckBeforeExecution": true
+    },
+    "parallelTimeoutNeedsSerialConfirmation": true,
+    "outcomeChangeNeedsSerialConfirmation": true,
+    "timingPriorityCaseIds": [
+      "A150-quarter-off",
+      "A150-quarter-on",
+      "A100-quarter-off",
+      "A100-quarter-on",
+      "A250-wet-slowdown-off",
+      "A250-wet-slowdown-on",
+      "F09-dry-off",
+      "F09-dry-on",
+      "F09-wet-off",
+      "F09-wet-on",
+      "N64-off",
+      "N64-on"
+    ],
+    "unsupportedMetricsAreNull": [
+      "requestInitializerIterations",
+      "requestResidualEvaluations",
+      "requestLinearSolves",
+      "rawNewtonCertificateVerified"
+    ]
+  },
+  "designValidation": {
+    "oldQuantitativeRank": 2,
+    "oldWithInterceptRank": 3,
+    "oldNullVector": [
+      1,
+      1,
+      1
+    ],
+    "newQuantitativeRank": 3,
+    "newWithInterceptRank": 4
+  },
+  "suites": {
+    "default": [
+      "F01-dry-off",
+      "F01-dry-on",
+      "F01-wet-off",
+      "F01-wet-on",
+      "F02-dry-off",
+      "F02-dry-on",
+      "F02-wet-off",
+      "F02-wet-on",
+      "F03-dry-off",
+      "F03-dry-on",
+      "F03-wet-off",
+      "F03-wet-on",
+      "F04-dry-off",
+      "F04-dry-on",
+      "F04-wet-off",
+      "F04-wet-on",
+      "F05-dry-off",
+      "F05-dry-on",
+      "F05-wet-off",
+      "F05-wet-on",
+      "F06-dry-off",
+      "F06-dry-on",
+      "F06-wet-off",
+      "F06-wet-on",
+      "F07-dry-off",
+      "F07-dry-on",
+      "F07-wet-off",
+      "F07-wet-on",
+      "F08-dry-off",
+      "F08-dry-on",
+      "F08-wet-off",
+      "F08-wet-on",
+      "F09-dry-off",
+      "F09-dry-on",
+      "F09-wet-off",
+      "F09-wet-on",
+      "P99-dry-off",
+      "P99-dry-on",
+      "P99-wet-off",
+      "P99-wet-on",
+      "P100-dry-off",
+      "P100-dry-on",
+      "P100-wet-off",
+      "P100-wet-on",
+      "P101-dry-off",
+      "P101-dry-on",
+      "P101-wet-off",
+      "P101-wet-on",
+      "N4-off",
+      "N4-on",
+      "N8-off",
+      "N8-on",
+      "N15-off",
+      "N15-on",
+      "N30-off",
+      "N30-on",
+      "N64-off",
+      "N64-on",
+      "A150-quarter-off",
+      "A150-quarter-on",
+      "A100-quarter-off",
+      "A100-quarter-on",
+      "A250-wet-slowdown-off",
+      "A250-wet-slowdown-on"
+    ],
+    "factorial": [
+      "F01-dry-off",
+      "F01-dry-on",
+      "F01-wet-off",
+      "F01-wet-on",
+      "F02-dry-off",
+      "F02-dry-on",
+      "F02-wet-off",
+      "F02-wet-on",
+      "F03-dry-off",
+      "F03-dry-on",
+      "F03-wet-off",
+      "F03-wet-on",
+      "F04-dry-off",
+      "F04-dry-on",
+      "F04-wet-off",
+      "F04-wet-on",
+      "F05-dry-off",
+      "F05-dry-on",
+      "F05-wet-off",
+      "F05-wet-on",
+      "F06-dry-off",
+      "F06-dry-on",
+      "F06-wet-off",
+      "F06-wet-on",
+      "F07-dry-off",
+      "F07-dry-on",
+      "F07-wet-off",
+      "F07-wet-on",
+      "F08-dry-off",
+      "F08-dry-on",
+      "F08-wet-off",
+      "F08-wet-on",
+      "F09-dry-off",
+      "F09-dry-on",
+      "F09-wet-off",
+      "F09-wet-on"
+    ],
+    "pressure_boundary": [
+      "P99-dry-off",
+      "P99-dry-on",
+      "P99-wet-off",
+      "P99-wet-on",
+      "P100-dry-off",
+      "P100-dry-on",
+      "P100-wet-off",
+      "P100-wet-on",
+      "P101-dry-off",
+      "P101-dry-on",
+      "P101-wet-off",
+      "P101-wet-on"
+    ],
+    "size_controls": [
+      "N4-off",
+      "N4-on",
+      "N8-off",
+      "N8-on",
+      "N15-off",
+      "N15-on",
+      "N30-off",
+      "N30-on",
+      "N64-off",
+      "N64-on"
+    ],
+    "performance_anchors": [
+      "A150-quarter-off",
+      "A150-quarter-on",
+      "A100-quarter-off",
+      "A100-quarter-on",
+      "A250-wet-slowdown-off",
+      "A250-wet-slowdown-on"
+    ],
+    "historical_replay": [
+      "L00",
+      "L01",
+      "L02",
+      "L03",
+      "L04",
+      "L05",
+      "F09-dry-off",
+      "L07",
+      "L08",
+      "L09",
+      "L10",
+      "L11",
+      "A250-wet-slowdown-off",
+      "F09-wet-off",
+      "L14",
+      "L15",
+      "L16",
+      "P99-dry-off",
+      "P100-dry-off",
+      "P101-dry-off",
+      "L20",
+      "L21",
+      "L22",
+      "L23",
+      "P99-wet-off",
+      "P100-wet-off",
+      "P101-wet-off",
+      "L27",
+      "L28",
+      "L29",
+      "L30",
+      "L31",
+      "L32",
+      "L33",
+      "L34",
+      "L35"
+    ],
+    "trace_walls": [
+      "W60-85-off",
+      "W60-85-on",
+      "W60-90-off",
+      "W60-90-on",
+      "W60-95-off",
+      "W60-95-on"
+    ],
+    "extended": [
+      "F01-dry-off",
+      "F01-dry-on",
+      "F01-wet-off",
+      "F01-wet-on",
+      "F02-dry-off",
+      "F02-dry-on",
+      "F02-wet-off",
+      "F02-wet-on",
+      "F03-dry-off",
+      "F03-dry-on",
+      "F03-wet-off",
+      "F03-wet-on",
+      "F04-dry-off",
+      "F04-dry-on",
+      "F04-wet-off",
+      "F04-wet-on",
+      "F05-dry-off",
+      "F05-dry-on",
+      "F05-wet-off",
+      "F05-wet-on",
+      "F06-dry-off",
+      "F06-dry-on",
+      "F06-wet-off",
+      "F06-wet-on",
+      "F07-dry-off",
+      "F07-dry-on",
+      "F07-wet-off",
+      "F07-wet-on",
+      "F08-dry-off",
+      "F08-dry-on",
+      "F08-wet-off",
+      "F08-wet-on",
+      "F09-dry-off",
+      "F09-dry-on",
+      "F09-wet-off",
+      "F09-wet-on",
+      "P99-dry-off",
+      "P99-dry-on",
+      "P99-wet-off",
+      "P99-wet-on",
+      "P100-dry-off",
+      "P100-dry-on",
+      "P100-wet-off",
+      "P100-wet-on",
+      "P101-dry-off",
+      "P101-dry-on",
+      "P101-wet-off",
+      "P101-wet-on",
+      "N4-off",
+      "N4-on",
+      "N8-off",
+      "N8-on",
+      "N15-off",
+      "N15-on",
+      "N30-off",
+      "N30-on",
+      "N64-off",
+      "N64-on",
+      "A150-quarter-off",
+      "A150-quarter-on",
+      "A100-quarter-off",
+      "A100-quarter-on",
+      "A250-wet-slowdown-off",
+      "A250-wet-slowdown-on",
+      "W60-85-off",
+      "W60-85-on",
+      "W60-90-off",
+      "W60-90-on",
+      "W60-95-off",
+      "W60-95-on",
+      "L00",
+      "L01",
+      "L02",
+      "L03",
+      "L04",
+      "L05",
+      "L07",
+      "L08",
+      "L09",
+      "L10",
+      "L11",
+      "L14",
+      "L15",
+      "L16",
+      "L20",
+      "L21",
+      "L22",
+      "L23",
+      "L27",
+      "L28",
+      "L29",
+      "L30",
+      "L31",
+      "L32",
+      "L33",
+      "L34",
+      "L35"
+    ]
+  },
+  "cases": [
+    {
+      "id": "F01-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F01-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F01-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F01-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F02-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F02-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F02-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F02-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F03-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F03-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F03-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F03-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F04-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F04-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F04-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F04-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F05-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F05-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F05-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F05-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F06-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F06-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F06-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F06-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F07-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F07-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F07-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F07-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F08-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F08-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F08-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F08-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F09-dry-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F09-dry-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "F09-wet-off",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "F09-wet-on",
+      "panel": "factorial",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "P99-dry-off",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 99000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "P99-dry-on",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 99000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "P99-wet-off",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 99000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "P99-wet-on",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 99000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "P100-dry-off",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "P100-dry-on",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "P100-wet-off",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "P100-wet-on",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "P101-dry-off",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 101000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "P101-dry-on",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 101000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "P101-wet-off",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 101000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "P101-wet-on",
+      "panel": "pressure_boundary",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 101000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "N4-off",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 4,
+        "feedStageNumber": 3,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 4650,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N4-on",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 4,
+        "feedStageNumber": 3,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 4650,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N8-off",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 8,
+        "feedStageNumber": 6,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 2583.3333333333335,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N8-on",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 8,
+        "feedStageNumber": 6,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 2583.3333333333335,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N15-off",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 15,
+        "feedStageNumber": 12,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 1453.125,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N15-on",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 15,
+        "feedStageNumber": 12,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 1453.125,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N30-off",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N30-on",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N64-off",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 64,
+        "feedStageNumber": 51,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 357.6923076923077,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "N64-on",
+      "panel": "size_controls",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 64,
+        "feedStageNumber": 51,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 357.6923076923077,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "A150-quarter-off",
+      "panel": "performance_anchors",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.12429616577929292,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 150000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 400,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 34.44444444444444
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 45.34722222222222
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 10.347222222222221
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "A150-quarter-on",
+      "panel": "performance_anchors",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.12429616577929292,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 150000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 400,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 34.44444444444444
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 45.34722222222222
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 10.347222222222221
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "A100-quarter-off",
+      "panel": "performance_anchors",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.12429616577929292,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 400,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 34.44444444444444
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 45.34722222222222
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 10.347222222222221
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "A100-quarter-on",
+      "panel": "performance_anchors",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.12429616577929292,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 400,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 34.44444444444444
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 45.34722222222222
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 10.347222222222221
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "A250-wet-slowdown-off",
+      "panel": "performance_anchors",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "A250-wet-slowdown-on",
+      "panel": "performance_anchors",
+      "enabledByDefault": true,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "W60-85-off",
+      "panel": "trace_walls",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 358.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "W60-85-on",
+      "panel": "trace_walls",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 358.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "W60-90-off",
+      "panel": "trace_walls",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 363.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "W60-90-on",
+      "panel": "trace_walls",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 363.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "W60-95-off",
+      "panel": "trace_walls",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 368.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "W60-95-on",
+      "panel": "trace_walls",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0.000001,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 368.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L00",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L01",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L02",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L03",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L04",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L05",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L07",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L08",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 155000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L09",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 250000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L10",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L11",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 60000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L14",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 80000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L15",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 90000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L16",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 95000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L20",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 105000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L21",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 80000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L22",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 90000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L23",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 95000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L27",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.225,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 105000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 348.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 62.35107858243451
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 82.08720627889059
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 18.730465138674884
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L28",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L29",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L30",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L31",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": []
+      }
+    },
+    {
+      "id": "L32",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L33",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 323.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L34",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.05,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 13.855795240541
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 18.24160139530902
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 4.162325586372195
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    },
+    {
+      "id": "L35",
+      "panel": "historical_replay",
+      "enabledByDefault": false,
+      "requestedCutoffMoleFraction": 0,
+      "combinedDrawLoadingFraction": 0.4,
+      "input": {
+        "schemaVersion": 1,
+        "packageId": "createcheme:cdu17_tjl_acs2018",
+        "assayId": "createcheme:tia_juana_light",
+        "feedMolarFlowMolPerSecond": 725.1944444444443,
+        "feedTemperatureKelvin": 638.15,
+        "stageCount": 30,
+        "feedStageNumber": 24,
+        "topPressurePascal": 100000,
+        "stagePressureDropPascal": 750,
+        "condenserTemperatureKelvin": 373.15,
+        "organicRefluxRatio": 2,
+        "reboilerDutyWatts": 8000000,
+        "sideDraws": [
+          {
+            "trayNumber": 8,
+            "molarFlowMolPerSecond": 110.846361924328
+          },
+          {
+            "trayNumber": 15,
+            "molarFlowMolPerSecond": 145.93281116247215
+          },
+          {
+            "trayNumber": 22,
+            "molarFlowMolPerSecond": 33.29860469097756
+          }
+        ],
+        "steamFeeds": [
+          {
+            "stageNumber": 31,
+            "molarFlowMolPerSecond": 8,
+            "temperatureKelvin": 450
+          }
+        ]
+      }
+    }
+  ]
+}
