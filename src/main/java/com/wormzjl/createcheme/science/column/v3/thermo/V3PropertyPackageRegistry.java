@@ -5,7 +5,8 @@ import java.util.Map;
 /** Fixed first-party V3 property-package registry; runtime package loading is intentionally unsupported. */
 final class V3PropertyPackageRegistry {
     private static final Map<String, V3PropertyPackage> PACKAGES = Map.of(
-            V3Cdu17TiaJuanaPackage.PACKAGE_ID, V3Cdu17TiaJuanaPackage.INSTANCE);
+            V3Cdu17TiaJuanaPackage.PACKAGE_ID, V3Cdu17TiaJuanaPackage.INSTANCE,
+            V3Tjl19DwsimPackage.PACKAGE_ID, V3Tjl19DwsimPackage.INSTANCE);
 
     private V3PropertyPackageRegistry() {}
 
