@@ -62,6 +62,16 @@ public record V3InputDigest(String hexadecimalSha256) {
                 put(digest, "steam-temperature-bits", canonicalBits(steam.temperatureKelvin()));
             }
         }
+        // Empty-list placement is intentional: heat-free digests retain their historical byte stream.
+        if (!input.pumparounds().isEmpty()) {
+            put(digest, "pumparound-split-rule-revision", V3Pumparounds.SPLIT_RULE_REVISION);
+            for (V3PumparoundSpec pumparound : input.pumparounds()) {
+                put(digest, "pumparound-return", pumparound.returnTray());
+                put(digest, "pumparound-draw", pumparound.drawTray());
+                put(digest, "pumparound-duty-bits", canonicalBits(pumparound.dutyWatts()));
+                put(digest, "pumparound-split", pumparound.split().name());
+            }
+        }
         put(digest, "top-pressure-bits", canonicalBits(input.topPressurePascal()));
         put(digest, "stage-drop-bits", canonicalBits(input.stagePressureDropPascal()));
         put(digest, "condenser-branch", problem.topology().condenserPhaseBranch().name());

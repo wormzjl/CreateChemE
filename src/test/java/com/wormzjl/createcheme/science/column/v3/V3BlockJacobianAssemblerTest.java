@@ -38,6 +38,19 @@ class V3BlockJacobianAssemblerTest {
         assertLocalBlocksMatchFiniteDifference(problem);
     }
 
+    @Test
+    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleWithPrescribedStageHeat() {
+        V3ColumnInput plain = problem().input();
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(plain.schemaVersion(),
+                plain.packageId(), plain.assayId(), plain.componentBasis(), plain.feedComponentMolarFlowsMolPerSecond(),
+                plain.feedTemperatureKelvin(), plain.stageCount(), plain.feedStageNumber(), plain.topPressurePascal(),
+                plain.stagePressureDropPascal(), plain.specifications(), List.of(), List.of(),
+                List.of(new V3PumparoundSpec(2, 4, -750_000.0, V3PumparoundSpec.Split.UNIFORM))),
+                V3CondenserPhaseBranch.TWO_PHASE);
+
+        assertLocalBlocksMatchFiniteDifference(problem);
+    }
+
     private static void assertLocalBlocksMatchFiniteDifference(V3ColumnProblem problem) {
         SmoothThermo thermo = new SmoothThermo();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);

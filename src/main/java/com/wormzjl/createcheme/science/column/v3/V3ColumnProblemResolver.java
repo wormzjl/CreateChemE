@@ -81,6 +81,11 @@ public final class V3ColumnProblemResolver {
         if (totalDraw >= totalFeed) {
             throw new IllegalArgumentException("V3 total side draw rate must be less than the feed rate");
         }
+        for (V3PumparoundSpec pumparound : input.pumparounds()) {
+            if (pumparound.drawTray() > input.stageCount()) {
+                throw new IllegalArgumentException("V3 pumparound tray is outside the equilibrium-tray range");
+            }
+        }
         double bottomPressure = input.topPressurePascal()
                 + (input.stageCount() - 1) * input.stagePressureDropPascal();
         if (!Double.isFinite(bottomPressure) || bottomPressure <= 0.0) {

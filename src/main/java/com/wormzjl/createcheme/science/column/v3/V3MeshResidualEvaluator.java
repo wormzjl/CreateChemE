@@ -124,8 +124,10 @@ final class V3MeshResidualEvaluator {
                     : (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties);
             double vaporIn = phaseEnergy(state, node + 1, false, properties);
             double feed = node == topology.feedTrayNumber() ? totalFeedFlow * feedMolarEnthalpyJoulesPerMol : 0.0;
-            return liquidIn + vaporIn + feed + problem.steamFeedEnthalpyWatts(node) - phaseEnergy(state, node, true, properties)
-                    - phaseEnergy(state, node, false, properties);
+            // A prescribed pumparound duty is a constant source term with no state derivative, so no
+            // unknown, equation, or Jacobian block changes when it is present.
+            return liquidIn + vaporIn + feed + problem.steamFeedEnthalpyWatts(node) + problem.stageHeatWatts(node)
+                    - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
         }
         return (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
                 + problem.steamFeedEnthalpyWatts(node) - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);

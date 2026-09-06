@@ -25,12 +25,14 @@ public record V3ColumnInput(
         double stagePressureDropPascal,
         List<V3ColumnSpecification> specifications,
         List<V3SideDrawSpec> sideDraws,
-        List<V3SteamFeedSpec> steamFeeds) {
+        List<V3SteamFeedSpec> steamFeeds,
+        List<V3PumparoundSpec> pumparounds) {
     public static final int SCHEMA_VERSION = 1;
     public static final int MIN_STAGE_COUNT = 2;
     public static final int MAX_STAGE_COUNT = 64;
     public static final int MAX_SIDE_DRAWS = 3;
     public static final int MAX_STEAM_FEEDS = 2;
+    public static final int MAX_PUMPAROUNDS = 3;
 
     /** Legacy no-draw input; preserves the existing schema and digest representation. */
     public V3ColumnInput(
@@ -40,7 +42,7 @@ public record V3ColumnInput(
             List<V3ColumnSpecification> specifications) {
         this(schemaVersion, packageId, assayId, componentBasis, feedComponentMolarFlowsMolPerSecond,
                 feedTemperatureKelvin, stageCount, feedStageNumber, topPressurePascal, stagePressureDropPascal,
-                specifications, List.of(), List.of());
+                specifications, List.of(), List.of(), List.of());
     }
 
     /** Legacy side-draw input; preserves all dry callers and their empty steam contract. */
@@ -51,7 +53,19 @@ public record V3ColumnInput(
             List<V3ColumnSpecification> specifications, List<V3SideDrawSpec> sideDraws) {
         this(schemaVersion, packageId, assayId, componentBasis, feedComponentMolarFlowsMolPerSecond,
                 feedTemperatureKelvin, stageCount, feedStageNumber, topPressurePascal, stagePressureDropPascal,
-                specifications, sideDraws, List.of());
+                specifications, sideDraws, List.of(), List.of());
+    }
+
+    /** Legacy steam input; preserves every existing wire and persistence caller with no stage heat. */
+    public V3ColumnInput(
+            int schemaVersion, String packageId, String assayId, V3ComponentBasis componentBasis,
+            double[] feedComponentMolarFlowsMolPerSecond, double feedTemperatureKelvin, int stageCount,
+            int feedStageNumber, double topPressurePascal, double stagePressureDropPascal,
+            List<V3ColumnSpecification> specifications, List<V3SideDrawSpec> sideDraws,
+            List<V3SteamFeedSpec> steamFeeds) {
+        this(schemaVersion, packageId, assayId, componentBasis, feedComponentMolarFlowsMolPerSecond,
+                feedTemperatureKelvin, stageCount, feedStageNumber, topPressurePascal, stagePressureDropPascal,
+                specifications, sideDraws, steamFeeds, List.of());
     }
 
     public V3ColumnInput {
@@ -68,6 +82,7 @@ public record V3ColumnInput(
         specifications = canonicalSpecifications(specifications);
         sideDraws = canonicalSideDraws(sideDraws);
         steamFeeds = canonicalSteamFeeds(steamFeeds);
+        pumparounds = canonicalPumparounds(pumparounds);
     }
 
     @Override
@@ -90,13 +105,15 @@ public record V3ColumnInput(
                 && Arrays.equals(feedComponentMolarFlowsMolPerSecond, input.feedComponentMolarFlowsMolPerSecond)
                 && specifications.equals(input.specifications)
                 && sideDraws.equals(input.sideDraws)
-                && steamFeeds.equals(input.steamFeeds);
+                && steamFeeds.equals(input.steamFeeds)
+                && pumparounds.equals(input.pumparounds);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(schemaVersion, packageId, assayId, componentBasis, feedTemperatureKelvin, stageCount,
-                feedStageNumber, topPressurePascal, stagePressureDropPascal, specifications, sideDraws, steamFeeds);
+                feedStageNumber, topPressurePascal, stagePressureDropPascal, specifications, sideDraws, steamFeeds,
+                pumparounds);
         return 31 * result + Arrays.hashCode(feedComponentMolarFlowsMolPerSecond);
     }
 
@@ -104,7 +121,8 @@ public record V3ColumnInput(
     public String toString() {
         return "V3ColumnInput[packageId=" + packageId + ", assayId=" + assayId + ", componentCount="
                 + componentBasis.componentCount() + ", stageCount=" + stageCount + ", feedStageNumber="
-                + feedStageNumber + ", sideDraws=" + sideDraws + ", steamFeeds=" + steamFeeds + "]";
+                + feedStageNumber + ", sideDraws=" + sideDraws + ", steamFeeds=" + steamFeeds
+                + ", pumparounds=" + pumparounds + "]";
     }
 
     private static double[] copyAndValidateFeed(double[] feed, int componentCount) {
@@ -158,6 +176,22 @@ public record V3ColumnInput(
         for (int i = 1; i < copy.size(); i++) {
             if (copy.get(i - 1).stageNumber() == copy.get(i).stageNumber()) {
                 throw new IllegalArgumentException("V3 permits only one steam feed per stage");
+            }
+        }
+        return List.copyOf(copy);
+    }
+
+    private static List<V3PumparoundSpec> canonicalPumparounds(List<V3PumparoundSpec> pumparounds) {
+        if (pumparounds == null || pumparounds.size() > MAX_PUMPAROUNDS || pumparounds.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("V3 pumparounds must be a non-null list of at most " + MAX_PUMPAROUNDS);
+        }
+        List<V3PumparoundSpec> copy = new ArrayList<>(pumparounds);
+        copy.sort(Comparator.comparingInt(V3PumparoundSpec::returnTray)
+                .thenComparingInt(V3PumparoundSpec::drawTray));
+        for (int i = 1; i < copy.size(); i++) {
+            if (copy.get(i - 1).returnTray() == copy.get(i).returnTray()
+                    && copy.get(i - 1).drawTray() == copy.get(i).drawTray()) {
+                throw new IllegalArgumentException("V3 permits only one pumparound per return/draw tray pair");
             }
         }
         return List.copyOf(copy);

@@ -13,6 +13,7 @@ public final class V3ColumnProblem {
     private final double[] nodeSideDrawMolPerSecond;
     private final double[] nodeSteamFeedMolPerSecond;
     private final double[] nodeSteamFeedEnthalpyWatts;
+    private final double[] nodeHeatDutyWatts;
     private final double[] waterVaporFlowMolPerSecond;
     private final V3WaterCondenserRegime waterCondenserRegime;
     private final double waterVaporSlipCoefficient;
@@ -38,6 +39,7 @@ public final class V3ColumnProblem {
             this.nodeSteamFeedEnthalpyWatts[feed.stageNumber()] = feed.molarFlowMolPerSecond()
                     * V3WaterProperties.vaporMolarEnthalpy(feed.temperatureKelvin());
         }
+        this.nodeHeatDutyWatts = V3Pumparounds.nodeDutyWatts(input, topology);
         this.waterVaporFlowMolPerSecond = V3SteamFeeds.upwardVaporProfile(nodeSteamFeedMolPerSecond, topology);
         this.waterCondenserRegime = waterCondenserRegime(input, topology, this.nodePressuresPascal);
         this.waterVaporSlipCoefficient = condenserSlipCoefficient(topology, waterCondenserRegime, input,
@@ -111,6 +113,15 @@ public final class V3ColumnProblem {
 
     public double steamFeedEnthalpyWatts(int node) {
         return nodeSteamFeedEnthalpyWatts[node];
+    }
+
+    public boolean hasPumparounds() {
+        return !input.pumparounds().isEmpty();
+    }
+
+    /** Prescribed constant stage heat, positive into the column; zero on every node without a pumparound. */
+    public double stageHeatWatts(int node) {
+        return nodeHeatDutyWatts[node];
     }
 
     /** Known upward water-vapor profile for tray and sump nodes; condenser slip is state-dependent. */

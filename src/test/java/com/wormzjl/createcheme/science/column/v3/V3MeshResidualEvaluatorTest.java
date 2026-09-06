@@ -110,6 +110,38 @@ class V3MeshResidualEvaluatorTest {
         }
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {1, 2, 4})
+    void prescribedStageHeatShiftsOnlyThatTrayEnergyRowByTheAuthoredDuty(int tray) {
+        V3ColumnProblem plain = problem();
+        V3ColumnInput input = plain.input();
+        double duty = -1_250_000.0;
+        V3ColumnProblem heated = V3ColumnProblemResolver.resolve(new V3ColumnInput(input.schemaVersion(), input.packageId(),
+                input.assayId(), input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
+                input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                input.specifications(), List.of(), List.of(),
+                List.of(new V3PumparoundSpec(tray, tray, duty, V3PumparoundSpec.Split.RETURN_TRAY))),
+                V3CondenserPhaseBranch.TWO_PHASE);
+        AffineEnthalpyThermo thermo = new AffineEnthalpyThermo();
+        V3DryMeshState state = manufacturedState(plain.topology());
+
+        V3MeshResidual baseline = new V3MeshResidualEvaluator(plain, thermo, 0).evaluate(state, thermo.newWorkspace());
+        V3MeshResidual heatedResidual = new V3MeshResidualEvaluator(heated, thermo, 0).evaluate(state, thermo.newWorkspace());
+
+        assertEquals(plain.degreeOfFreedomLedger().unknownCount(), heated.degreeOfFreedomLedger().unknownCount());
+        assertEquals(baseline.rows().size(), heatedResidual.rows().size());
+        double scale = Math.max(1.0, 90.0 * 100_000.0);
+        for (int row = 0; row < baseline.rows().size(); row++) {
+            var original = baseline.rows().get(row);
+            var heatedRow = heatedResidual.rows().get(row);
+            assertEquals(original.equation(), heatedRow.equation());
+            boolean heatedEnergyRow = original.equation().node() == tray
+                    && original.equation().family() == V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE;
+            assertEquals(original.physicalValue() + (heatedEnergyRow ? duty : 0.0), heatedRow.physicalValue(), 1.0e-9);
+            assertEquals(original.scaledValue() + (heatedEnergyRow ? duty / scale : 0.0), heatedRow.scaledValue(), 1.0e-15);
+        }
+    }
+
     private static V3ColumnProblem problem() {
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:manufactured", "test:binary",
                 new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30.0, 60.0}, 400.0,
