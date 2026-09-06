@@ -27,6 +27,16 @@ public final class V3ColumnCalculator {
     private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r2";
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r4";
     public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r1";
+    /**
+     * Prescribed stage heat: a signed duty with positive adding heat, no circulating pumparound stream,
+     * no return-temperature specification, and the {@link V3PumparoundSpec.Split} tray placement rule.
+     */
+    public static final String HEAT_ASSUMPTIONS_REVISION = "v3-heat-assumptions-r1";
+    private static final String HEAT_FORMULATION_SUFFIX = "-stage-heat";
+    private static final String HEAT_RAMP_LABEL = "heat-ramp";
+    private static final int HEAT_RAMP_STEPS = 4;
+    private static final int MAXIMUM_HEAT_SUBDIVISIONS = 4;
+    private static final int MAXIMUM_HEAT_SUBDIVISIONS_PER_RUNG = 2;
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
     private static final double PRESSURE_CONTINUATION_TRIGGER_PASCAL = 100_000.0;
@@ -98,6 +108,8 @@ public final class V3ColumnCalculator {
             return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
                     "V3 total side draw rate must be less than the feed rate", "input/draws-" + input.sideDraws().size(), List.of());
         }
+        V3ColumnOutcome.Failure inadmissibleCooling = staticCoolingAdmission(input);
+        if (inadmissibleCooling != null) return inadmissibleCooling;
         CondenserAttempts condenserAttempts = new CondenserAttempts();
         if (initializerMode != V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
             return calculateBranch(input, control, initializerMode, V3CondenserPhaseBranch.TWO_PHASE, policy, condenserAttempts);
@@ -107,7 +119,8 @@ public final class V3ColumnCalculator {
         if (outcome instanceof V3ColumnOutcome.Success
                 || outcome instanceof V3ColumnOutcome.Failure failure
                 && (failure.code() == V3SolverFailureCode.INVALID_INPUT
-                || failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE)) return outcome;
+                || failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
+                || failure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION)) return outcome;
         V3CondenserPhaseBranch alternate = preferred == V3CondenserPhaseBranch.LIQUID_ONLY
                 ? V3CondenserPhaseBranch.TWO_PHASE : V3CondenserPhaseBranch.LIQUID_ONLY;
         // A known phase mismatch has its bounded same-rung warm correction. Restarting either branch
@@ -117,12 +130,35 @@ public final class V3ColumnCalculator {
         return alternative instanceof V3ColumnOutcome.Success ? alternative : outcome;
     }
 
+    /**
+     * Necessary static bound on the authored cooling, evaluated with one feed flash before any solve.
+     *
+     * <p>Returns {@code null} when the input is admissible or when the property package is unavailable; in the
+     * latter case the ordinary admission path publishes the typed property failure instead.</p>
+     */
+    private static V3ColumnOutcome.Failure staticCoolingAdmission(V3ColumnInput input) {
+        if (input.pumparounds().isEmpty()) return null;
+        double cooling = -V3Pumparounds.totalCoolingWatts(input);
+        if (!(cooling > 0.0)) return null;
+        double available;
+        try {
+            available = V3HeatFeasibility.availableCoolingWatts(
+                    input, V3PengRobinsonThermo.fromRegisteredPackage(input.packageId()));
+        } catch (V3ThermoException | IllegalArgumentException unavailableProperties) {
+            return null;
+        }
+        if (!Double.isFinite(available) || cooling <= available) return null;
+        return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
+                V3HeatFeasibility.staticAdmissionDetail(cooling, available),
+                "input/heat-" + input.pumparounds().size(), List.of());
+    }
+
     /** A seed flash only orders the branch attempts; the solved liquid outlet is independently audited. */
     private static V3CondenserPhaseBranch preferredCondenserBranch(V3ColumnInput input, V3SolveControl control) {
         control.checkpoint();
         try {
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-            V3ColumnInput noDrawInput = withoutSteamWithSurrogateDuty(withoutSideDraws(input));
+            V3ColumnInput noDrawInput = withoutPumparounds(withoutSteamWithSurrogateDuty(withoutSideDraws(input)));
             V3ColumnInput probeInput = noDrawInput.stageCount() <= 4 ? noDrawInput : withStageGeometry(noDrawInput, 4);
             V3ColumnProblem probe = V3ColumnProblemResolver.resolve(probeInput, V3CondenserPhaseBranch.TWO_PHASE);
             if (V3OperatingDomainValidator.assess(probe, thermo) instanceof V3OperatingDomainValidator.Assessment.Rejected) {
@@ -200,8 +236,10 @@ public final class V3ColumnCalculator {
                     // The material-closed fallback may rescue the dry surrogate after an early stage rung
                     // fails. It is still only a seed for a steam-bearing authored request and must never
                     // publish in place of the final free-water ramp.
-                    if (!input.steamFeeds().isEmpty() && publishesSuccess(pass.attempt(), pass.audit())
-                            && !pass.prepared().problem().hasSteamFeeds()) {
+                    if ((!input.steamFeeds().isEmpty() || !input.pumparounds().isEmpty())
+                            && publishesSuccess(pass.attempt(), pass.audit())
+                            && !pass.prepared().problem().hasSteamFeeds()
+                            && !pass.prepared().problem().hasPumparounds()) {
                         V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
                                 pass.prepared().problem().topology().condenserPhaseBranch());
                         pass = recoverWithDrawRamp(requested, thermo, pass, control, policy, condenserAttempts);
@@ -257,6 +295,7 @@ public final class V3ColumnCalculator {
             }
             if (input.sideDraws().size() > 0) solvePath += "/draws-" + input.sideDraws().size();
             if (!input.steamFeeds().isEmpty()) solvePath += "/steam-" + input.steamFeeds().size();
+            if (!input.pumparounds().isEmpty()) solvePath += "/heat-" + input.pumparounds().size();
             List<String> solverEvents = policy.attemptCutoff() > 0.0
                     ? mergedEvents(List.of(stageTraceEvent(selected.support(), attempt.state(), selected.problem())), pass.solverEvents())
                     : pass.solverEvents();
@@ -267,7 +306,9 @@ public final class V3ColumnCalculator {
                         thermo.datasetRevision(), assumptionsRevision(input), policy.requestedCutoff());
                 V3ColumnResult result = V3ColumnResult.accepted(
                         selected.problem(), digest, audit, converged.evidence().convergenceEvidence(), converged.state(), thermo,
-                        formulationRevision(input, policy.requestedCutoff()));
+                        formulationRevision(input, policy.requestedCutoff()),
+                        V3ColumnDutyLedger.fromAccepted(selected.problem(), converged.state(), thermo,
+                                pass.feedMolarEnthalpyJoulesPerMol()));
                 return new V3ColumnOutcome.Success(result, diagnostics);
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
@@ -297,6 +338,9 @@ public final class V3ColumnCalculator {
         } catch (InitializationFailure initialization) {
             return terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE,
                     initialization.getMessage(), "initialization", advisoryEvidence);
+        } catch (InfeasibleSpecification infeasible) {
+            return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, infeasible.getMessage(),
+                    infeasible.solvePath(), advisoryEvidence);
         } catch (V3ThermoException thermoFailure) {
             return terminalFailure(admitted && policy.attemptCutoff() > 0.0 ? V3SolverFailureCode.NONCONVERGENCE
                     : V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property", advisoryEvidence);
@@ -327,8 +371,9 @@ public final class V3ColumnCalculator {
         String stagePath = dwsimStagePath(stageCounts);
         V3DryMeshState previousState = null;
         V3SolvePass lastPass = null;
-        boolean featureRampRequired = !input.sideDraws().isEmpty() || !input.steamFeeds().isEmpty();
-        V3ColumnInput continuationInput = input.steamFeeds().isEmpty() ? input : withoutSteamWithSurrogateDuty(input);
+        boolean featureRampRequired = featureRampRequired(input);
+        V3ColumnInput continuationInput = withoutPumparounds(
+                input.steamFeeds().isEmpty() ? input : withoutSteamWithSurrogateDuty(input));
         for (int stageCount : stageCounts) {
             control.checkpoint();
             V3ColumnInput stageInput = !featureRampRequired && stageCount == input.stageCount()
@@ -392,9 +437,9 @@ public final class V3ColumnCalculator {
         if (input.topPressurePascal() > PRESSURE_CONTINUATION_TRIGGER_PASCAL) {
             throw new IllegalArgumentException("V3 pressure continuation was requested outside its low-pressure lane");
         }
-        boolean steamRampRequired = !input.steamFeeds().isEmpty();
+        boolean steamRampRequired = !input.steamFeeds().isEmpty() || !input.pumparounds().isEmpty();
         V3ColumnInput continuationInput = steamRampRequired
-                ? withoutSideDraws(withoutSteamWithSurrogateDuty(input)) : input;
+                ? withoutPumparounds(withoutSideDraws(withoutSteamWithSurrogateDuty(input))) : input;
         boolean finePressureSteps = !input.sideDraws().isEmpty() || steamRampRequired;
         V3ColumnInput anchorInput = withTopPressure(continuationInput, PRESSURE_CONTINUATION_ANCHOR_PASCAL);
         V3SolvePass pass = solveDwsimStageContinuation(anchorInput, thermo, control, condenserBranch, policy, condenserAttempts);
@@ -667,23 +712,38 @@ public final class V3ColumnCalculator {
     private record PhaseCorrection(V3SolvePass pass, boolean attempted) {}
 
     /** One immutable authored-feature continuation point. */
-    private record RampStep(double steamFraction, double drawFraction, String pathLabel, String description) {
+    private record RampStep(
+            double steamFraction, double heatFraction, double drawFraction, double labelFraction,
+            String pathLabel, String description) {
         private RampStep {
             if (!Double.isFinite(steamFraction) || steamFraction < 0.0 || steamFraction > 1.0
-                    || !Double.isFinite(drawFraction) || drawFraction < 0.0 || drawFraction > 1.0) {
+                    || !Double.isFinite(heatFraction) || heatFraction < 0.0 || heatFraction > 1.0
+                    || !Double.isFinite(drawFraction) || drawFraction < 0.0 || drawFraction > 1.0
+                    || !Double.isFinite(labelFraction) || labelFraction < 0.0 || labelFraction > 1.0) {
                 throw new IllegalArgumentException("V3 continuation ramp fractions must be finite and within zero to one");
             }
             pathLabel = Objects.requireNonNull(pathLabel, "pathLabel");
             description = Objects.requireNonNull(description, "description");
         }
 
+        /** Heat-free continuation point; the label fraction preserves the historical path strings. */
+        private static RampStep legacy(double steamFraction, double drawFraction, String pathLabel, String description) {
+            return new RampStep(steamFraction, 0.0, drawFraction,
+                    Math.max(steamFraction, drawFraction), pathLabel, description);
+        }
+
         boolean requested(V3ColumnInput input) {
             return (input.steamFeeds().isEmpty() || steamFraction == 1.0)
+                    && (input.pumparounds().isEmpty() || heatFraction == 1.0)
                     && (input.sideDraws().isEmpty() || drawFraction == 1.0);
         }
 
+        boolean heatRung() {
+            return pathLabel.equals(HEAT_RAMP_LABEL);
+        }
+
         double progress() {
-            return Math.max(steamFraction, drawFraction);
+            return labelFraction;
         }
     }
 
@@ -710,9 +770,11 @@ public final class V3ColumnCalculator {
         V3ColumnInput input = requested.input();
         seedBase = Objects.requireNonNull(seedBase, "seedBase");
         if (!publishesSuccess(seedBase.attempt(), seedBase.audit())
-                || seedBase.prepared().problem().hasSideDraws() || seedBase.prepared().problem().hasSteamFeeds()) {
+                || seedBase.prepared().problem().hasSideDraws() || seedBase.prepared().problem().hasSteamFeeds()
+                || seedBase.prepared().problem().hasPumparounds()) {
             throw new IllegalArgumentException("V3 feature ramp requires an accepted dry no-draw seed at requested geometry");
         }
+        if (!input.pumparounds().isEmpty()) requireCoolingBelowBaseCondenserDuty(input, thermo, seedBase);
         String rampPath = seedBase.solvePath();
         V3SolvePass previous = seedBase;
         CondenserAttempts rampAttempts = new CondenserAttempts();
@@ -726,10 +788,31 @@ public final class V3ColumnCalculator {
         // sufficient for normal stripping rates; higher rates need smaller physical increments
         // to cross the condenser water/phase boundary without a branch jump.
         int steamRampSteps = Math.max(4, Math.min(12, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
-        List<RampStep> rampSteps = rampSteps(input, steamRampSteps);
-        for (RampStep rampStep : rampSteps) {
+        List<RampStep> rampSteps = new ArrayList<>(rampSteps(input, steamRampSteps));
+        HeatSubdivisions subdivisions = new HeatSubdivisions();
+        double acceptedHeatFraction = 0.0;
+        for (int index = 0; index < rampSteps.size(); index++) {
+            RampStep rampStep = rampSteps.get(index);
             if (intermediateFailed && !rampStep.requested(input)) continue;
             control.checkpoint();
+            if (rampStep.heatRung()) {
+                int cappedTray = condensationCappedTray(previous, thermo, input, rampStep.heatFraction());
+                if (cappedTray > 0) {
+                    RampStep midpoint = midpointHeatStep(rampStep, acceptedHeatFraction);
+                    if (midpoint != null && subdivisions.allows(rampStep.heatFraction())) {
+                        subdivisions.record(rampStep.heatFraction());
+                        rampEvents.add(boundedEvent("stage-heat ramp subdivided at " + rampStep.heatFraction()
+                                + ": tray " + cappedTray + " condensation cap"));
+                        rampSteps.add(index, midpoint);
+                        index--;
+                        continue;
+                    }
+                    throw new InfeasibleSpecification(V3HeatFeasibility.condensationCapDetail(cappedTray,
+                            condensationCapacityWatts(previous, thermo, cappedTray),
+                            rampStep.heatFraction() * trayDutyWatts(input, cappedTray)),
+                            "cold/heat-cap/heat-" + input.pumparounds().size());
+                }
+            }
             List<V3SideDrawSpec> draws = rampStep.drawFraction() == 0.0 ? List.of() : input.sideDraws().stream()
                     .map(draw -> new V3SideDrawSpec(draw.trayNumber(),
                             rampStep.drawFraction() * draw.molarFlowMolPerSecond())).toList();
@@ -737,12 +820,13 @@ public final class V3ColumnCalculator {
                     .map(feed -> new V3SteamFeedSpec(feed.stageNumber(),
                             rampStep.steamFraction() * feed.molarFlowMolPerSecond(),
                             feed.temperatureKelvin())).toList();
+            List<V3PumparoundSpec> heat = V3Pumparounds.scaled(input, rampStep.heatFraction());
             double reboilerDuty = reboilerDutyWatts(input)
                     + (1.0 - rampStep.steamFraction()) * surrogateSteamDutyWatts(input);
             V3ColumnInput rampInput = new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(),
                     input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
                     input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
-                    withReboilerDuty(input, reboilerDuty), draws, steam);
+                    withReboilerDuty(input, reboilerDuty), draws, steam, heat);
             V3CondenserPhaseBranch branch = previous.prepared().problem().topology().condenserPhaseBranch();
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(rampInput, branch);
             rampAttempts.recordAttempt(branch);
@@ -768,6 +852,14 @@ public final class V3ColumnCalculator {
                         + "; failed checks=" + pass.audit().checks().stream().filter(check -> !check.passed())
                         .map(V3AcceptanceAudit.Check::family).toList();
                 rampEvents.add(boundedEvent(event));
+                RampStep midpoint = rampStep.heatRung() ? midpointHeatStep(rampStep, acceptedHeatFraction) : null;
+                if (midpoint != null && subdivisions.allows(rampStep.heatFraction())) {
+                    // The last accepted state is still the better seed; retry the smaller heat increment.
+                    subdivisions.record(rampStep.heatFraction());
+                    rampSteps.add(index, midpoint);
+                    index--;
+                    continue;
+                }
                 // A failed intermediate fraction is still a finite fixed-geometry seed. The authored
                 // full-rate problem must be attempted before returning a terminal diagnostic.
                 previous = pass;
@@ -775,6 +867,7 @@ public final class V3ColumnCalculator {
                 continue;
             }
             previous = pass;
+            if (rampStep.heatRung()) acceptedHeatFraction = rampStep.heatFraction();
         }
         condenserAttempts.recordAttempt(previous.prepared().problem().topology().condenserPhaseBranch());
         condenserAttempts.finishPhaseCorrection(true);
@@ -783,15 +876,16 @@ public final class V3ColumnCalculator {
 
     /** Separates water/phase continuation from draw withdrawal when both authored features are present. */
     private static List<RampStep> rampSteps(V3ColumnInput input, int steamRampSteps) {
+        if (!input.pumparounds().isEmpty()) return heatBearingRampSteps(input, steamRampSteps);
         boolean hasSteam = !input.steamFeeds().isEmpty();
         boolean hasDraws = !input.sideDraws().isEmpty();
         if (hasSteam && hasDraws) {
             List<RampStep> steps = new ArrayList<>(steamRampSteps + 4);
             for (int step = 1; step <= steamRampSteps; step++) {
-                steps.add(new RampStep(step / (double) steamRampSteps, 0.0, "steam-ramp", "steam ramp"));
+                steps.add(RampStep.legacy(step / (double) steamRampSteps, 0.0, "steam-ramp", "steam ramp"));
             }
             for (int step = 1; step <= 4; step++) {
-                steps.add(new RampStep(1.0, step / 4.0, "draw-ramp", "side-draw ramp"));
+                steps.add(RampStep.legacy(1.0, step / 4.0, "draw-ramp", "side-draw ramp"));
             }
             return List.copyOf(steps);
         }
@@ -801,10 +895,113 @@ public final class V3ColumnCalculator {
         String description = hasSteam ? "wet ramp" : "side-draw ramp";
         for (int step = 1; step <= steps; step++) {
             double fraction = step / (double) steps;
-            result.add(new RampStep(hasSteam ? fraction : 0.0, hasDraws ? fraction : 0.0,
+            result.add(RampStep.legacy(hasSteam ? fraction : 0.0, hasDraws ? fraction : 0.0,
                     pathLabel, description));
         }
         return List.copyOf(result);
+    }
+
+    /**
+     * Rung order for an authored stage heat: steam, then heat, then draws.
+     *
+     * <p>The surrogate boilup must be removed before anything else changes, and cooling above a draw tray
+     * increases the liquid arriving there, which is what the draws need.</p>
+     */
+    private static List<RampStep> heatBearingRampSteps(V3ColumnInput input, int steamRampSteps) {
+        boolean hasSteam = !input.steamFeeds().isEmpty();
+        boolean hasDraws = !input.sideDraws().isEmpty();
+        List<RampStep> steps = new ArrayList<>(steamRampSteps + 2 * HEAT_RAMP_STEPS);
+        if (hasSteam) {
+            for (int step = 1; step <= steamRampSteps; step++) {
+                double fraction = step / (double) steamRampSteps;
+                steps.add(new RampStep(fraction, 0.0, 0.0, fraction, "steam-ramp", "steam ramp"));
+            }
+        }
+        for (int step = 1; step <= HEAT_RAMP_STEPS; step++) {
+            double fraction = step / (double) HEAT_RAMP_STEPS;
+            steps.add(new RampStep(hasSteam ? 1.0 : 0.0, fraction, 0.0, fraction, HEAT_RAMP_LABEL, "stage-heat ramp"));
+        }
+        if (hasDraws) {
+            for (int step = 1; step <= 4; step++) {
+                double fraction = step / 4.0;
+                steps.add(new RampStep(hasSteam ? 1.0 : 0.0, 1.0, fraction, fraction, "draw-ramp", "side-draw ramp"));
+            }
+        }
+        return List.copyOf(steps);
+    }
+
+    /** Halves the remaining heat increment; null when the increment can no longer be split. */
+    private static RampStep midpointHeatStep(RampStep failed, double acceptedHeatFraction) {
+        double midpoint = 0.5 * (acceptedHeatFraction + failed.heatFraction());
+        if (!(midpoint > acceptedHeatFraction) || !(midpoint < failed.heatFraction())) return null;
+        return new RampStep(failed.steamFraction(), midpoint, failed.drawFraction(), midpoint,
+                failed.pathLabel(), failed.description());
+    }
+
+    /** Bounded midpoint budget: at most two subdivisions of one rung and four in a whole ramp. */
+    private static final class HeatSubdivisions {
+        private final java.util.Map<Double, Integer> perRung = new java.util.HashMap<>();
+        private int total;
+
+        boolean allows(double heatFraction) {
+            return total < MAXIMUM_HEAT_SUBDIVISIONS
+                    && perRung.getOrDefault(heatFraction, 0) < MAXIMUM_HEAT_SUBDIVISIONS_PER_RUNG;
+        }
+
+        void record(double heatFraction) {
+            perRung.merge(heatFraction, 1, Integer::sum);
+            total++;
+        }
+    }
+
+    /**
+     * Rejects an authored cooling that is not below the base condenser duty of the same column without heat.
+     *
+     * <p>{@code Q_cond0} is recomputed from the accepted no-feature state at the requested geometry, so this
+     * is a state-based bound rather than a correlation.</p>
+     */
+    private static void requireCoolingBelowBaseCondenserDuty(
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolvePass seedBase) {
+        double cooling = -V3Pumparounds.totalCoolingWatts(input);
+        if (!(cooling > 0.0)) return;
+        V3ColumnProblem base = seedBase.prepared().problem();
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
+                base, thermo, seedBase.feedMolarEnthalpyJoulesPerMol());
+        double baseCondenserDuty = V3ColumnDutyLedger.condenserDutyWatts(
+                base, seedBase.attempt().state(), evaluator, thermo.newWorkspace());
+        if (!Double.isFinite(baseCondenserDuty) || cooling < Math.abs(baseCondenserDuty)) return;
+        throw new InfeasibleSpecification(V3HeatFeasibility.condenserBoundDetail(cooling, baseCondenserDuty),
+                "cold/heat-condenser-bound/heat-" + input.pumparounds().size());
+    }
+
+    /** First tray whose arriving vapor cannot release the duty of the next heat rung; zero when none. */
+    private static int condensationCappedTray(
+            V3SolvePass accepted, V3PengRobinsonThermo thermo, V3ColumnInput input, double heatFraction) {
+        V3ColumnProblem problem = accepted.prepared().problem();
+        var workspace = thermo.newWorkspace();
+        for (int tray = 1; tray <= Math.min(problem.topology().trayCount(), input.stageCount()); tray++) {
+            double duty = heatFraction * trayDutyWatts(input, tray);
+            if (duty >= 0.0) continue;
+            double capacity = V3HeatFeasibility.condensationCapacityWatts(
+                    problem, accepted.attempt().state(), thermo, workspace, tray);
+            if (-duty > capacity) return tray;
+        }
+        return 0;
+    }
+
+    private static double condensationCapacityWatts(V3SolvePass accepted, V3PengRobinsonThermo thermo, int tray) {
+        return V3HeatFeasibility.condensationCapacityWatts(accepted.prepared().problem(), accepted.attempt().state(),
+                thermo, thermo.newWorkspace(), tray);
+    }
+
+    private static double trayDutyWatts(V3ColumnInput input, int trayNumber) {
+        double duty = 0.0;
+        for (V3PumparoundSpec pumparound : input.pumparounds()) duty += pumparound.trayDutyWatts(trayNumber);
+        return duty;
+    }
+
+    private static boolean featureRampRequired(V3ColumnInput input) {
+        return !input.sideDraws().isEmpty() || !input.steamFeeds().isEmpty() || !input.pumparounds().isEmpty();
     }
 
     private static V3SolvePass withRampEvents(V3SolvePass pass, List<String> events) {
@@ -832,16 +1029,24 @@ public final class V3ColumnCalculator {
 
     static String formulationRevision(V3ColumnInput input, double requestedCutoff) {
         V3TruncationSupport.requireCutoff(requestedCutoff);
+        boolean heat = !input.pumparounds().isEmpty();
+        String trace = requestedCutoff > 0.0 ? "-flash-trace" : "";
         if (!input.steamFeeds().isEmpty()) {
-            return "v3-wet-mesh-r6-steam" + (!input.sideDraws().isEmpty() ? "-side-draws" : "")
-                    + (requestedCutoff > 0.0 ? "-flash-trace" : "");
+            return (heat ? "v3-wet-mesh-r7-steam" : "v3-wet-mesh-r6-steam")
+                    + (!input.sideDraws().isEmpty() ? "-side-draws" : "") + trace
+                    + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
-        if (input.sideDraws().isEmpty()) return formulationRevision(requestedCutoff);
-        return "v3-dry-mesh-r5-side-draws" + (requestedCutoff > 0.0 ? "-flash-trace" : "");
+        if (!input.sideDraws().isEmpty()) {
+            return (heat ? "v3-dry-mesh-r6-side-draws" : "v3-dry-mesh-r5-side-draws") + trace
+                    + (heat ? HEAT_FORMULATION_SUFFIX : "");
+        }
+        if (!heat) return formulationRevision(requestedCutoff);
+        return "v3-dry-mesh-r6" + trace + HEAT_FORMULATION_SUFFIX;
     }
 
     static String assumptionsRevision(V3ColumnInput input) {
-        return input.steamFeeds().isEmpty() ? ASSUMPTIONS_REVISION : WET_ASSUMPTIONS_REVISION;
+        String base = input.steamFeeds().isEmpty() ? ASSUMPTIONS_REVISION : WET_ASSUMPTIONS_REVISION;
+        return input.pumparounds().isEmpty() ? base : base + "+" + HEAT_ASSUMPTIONS_REVISION;
     }
 
     private static String sideDrawDiagnostic(
@@ -996,7 +1201,16 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
-                input.specifications(), List.of(), input.steamFeeds());
+                input.specifications(), List.of(), input.steamFeeds(), input.pumparounds());
+    }
+
+    /** Stage heat is never present in a cold seed; it is introduced only by continuation from an accepted state. */
+    private static V3ColumnInput withoutPumparounds(V3ColumnInput input) {
+        if (input.pumparounds().isEmpty()) return input;
+        return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
+                input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
+                input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
+                input.specifications(), input.sideDraws(), input.steamFeeds(), List.of());
     }
 
     /** Supplies a dry boilup surrogate only for continuation seeds; publication always returns to authored duty. */
@@ -1006,7 +1220,7 @@ public final class V3ColumnCalculator {
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
                 withReboilerDuty(input, reboilerDutyWatts(input)
-                        + surrogateSteamDutyWatts(input)), input.sideDraws(), List.of());
+                        + surrogateSteamDutyWatts(input)), input.sideDraws(), List.of(), input.pumparounds());
     }
 
     private static double surrogateSteamDutyWatts(V3ColumnInput input) {
@@ -1045,7 +1259,7 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), topPressurePascal, input.stagePressureDropPascal(), input.specifications(),
-                input.sideDraws(), input.steamFeeds());
+                input.sideDraws(), input.steamFeeds(), input.pumparounds());
     }
 
     private static List<Double> dwsimPressureSteps(double requestedTopPressurePascal) {
@@ -1207,6 +1421,20 @@ public final class V3ColumnCalculator {
     private static final class InitializationFailure extends RuntimeException {
         private InitializationFailure(String message, Throwable cause) {
             super(message, cause);
+        }
+    }
+
+    /** A physically impossible authored duty; reported as a typed specification failure, not nonconvergence. */
+    private static final class InfeasibleSpecification extends RuntimeException {
+        private final String solvePath;
+
+        private InfeasibleSpecification(String message, String solvePath) {
+            super(message);
+            this.solvePath = Objects.requireNonNull(solvePath, "solvePath");
+        }
+
+        private String solvePath() {
+            return solvePath;
         }
     }
 

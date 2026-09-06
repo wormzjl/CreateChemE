@@ -10,6 +10,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /** Recomputes dry physical acceptance from a candidate state; it never accepts a solver-cached residual vector. */
@@ -41,8 +42,8 @@ final class V3AcceptanceAuditor {
         workspace = Objects.requireNonNull(workspace, "workspace");
         control = Objects.requireNonNull(control, "control");
         control.checkpoint();
-        V3MeshResidual residual = new V3MeshResidualEvaluator(problem, thermo, feedMolarEnthalpyJoulesPerMol)
-                .evaluate(state, workspace);
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, feedMolarEnthalpyJoulesPerMol);
+        V3MeshResidual residual = evaluator.evaluate(state, workspace);
         control.checkpoint();
         List<V3AcceptanceAudit.Check> checks = new ArrayList<>();
         checks.add(finitenessAndTopology(state));
@@ -68,10 +69,93 @@ final class V3AcceptanceAuditor {
         } else if (problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE) {
             checks.add(twoPhaseCondenserSplit(state, workspace));
         }
+        if (problem.hasPumparounds()) checks.add(globalEnergyBalance(state, evaluator, workspace));
         control.checkpoint();
         List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
                 ? registeredPackage.advisoryEvidence() : List.of();
+        if (problem.hasPumparounds()) advisoryEvidence = withCooledTrayAdvisory(advisoryEvidence, state);
         return new V3AcceptanceAudit(checks, advisoryEvidence);
+    }
+
+    /**
+     * Independently closes the whole-column energy balance from boundary streams only.
+     *
+     * <p>The prescribed stage heat is re-expanded from the authored input with the documented sign, so a
+     * residual assembled with the opposite sign cannot pass here: the row-residual {@code ENERGY_BALANCE}
+     * check would be consistently wrong on both sides of every tray equation and could not detect it.</p>
+     */
+    private V3AcceptanceAudit.Check globalEnergyBalance(
+            V3DryMeshState state, V3MeshResidualEvaluator evaluator, V3ThermoWorkspace workspace) {
+        V3ColumnTopology topology = problem.topology();
+        double[] liquidEnergy = new double[topology.nodeCount()];
+        double[] vaporEnergy = new double[topology.nodeCount()];
+        for (int node = 0; node < topology.nodeCount(); node++) {
+            V3MeshResidualEvaluator.LocalNodeTerms terms = evaluator.localTerms(state, node, workspace);
+            liquidEnergy[node] = terms.liquidPhaseEnergy();
+            vaporEnergy[node] = terms.vaporPhaseEnergy();
+        }
+        double[] stageHeat = V3Pumparounds.nodeDutyWatts(problem.input(), topology);
+        double stageHeatTotal = 0.0;
+        for (double duty : stageHeat) stageHeatTotal += duty;
+        double freeWater = V3ColumnDutyLedger.freeWaterEnergyWatts(problem, state);
+        double condenser = liquidEnergy[0] + vaporEnergy[0] + freeWater - vaporEnergy[1];
+        double reflux = refluxRatio() / (1.0 + refluxRatio());
+        double feed = problem.activeComponentBasis().totalFeedFlowMolPerSecond() * feedMolarEnthalpyJoulesPerMol;
+        double reboiler = V3ColumnDutyLedger.reboilerDutyWatts(problem);
+        double steam = V3ColumnDutyLedger.steamEnthalpyWatts(problem);
+        double distillate = (1.0 - reflux) * liquidEnergy[0];
+        double bottoms = liquidEnergy[topology.reboilerNode()];
+        double sideDraws = 0.0;
+        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
+            sideDraws += V3SideDraws.withdrawal(state, draw.trayNumber(), draw.molarFlowMolPerSecond()).fraction()
+                    * liquidEnergy[draw.trayNumber()];
+        }
+        double closure = feed + reboiler + steam + stageHeatTotal + condenser
+                - distillate - vaporEnergy[0] - freeWater - sideDraws - bottoms;
+        double largest = 0.0;
+        for (double term : new double[] {feed, reboiler, steam, stageHeatTotal, condenser, distillate,
+                vaporEnergy[0], freeWater, sideDraws, bottoms}) {
+            largest = Math.max(largest, Math.abs(term));
+        }
+        double limit = Math.max(1.0, 1.0e-6 * largest);
+        double magnitude = Math.abs(closure);
+        String detail = String.format(Locale.ROOT,
+                "fresh boundary closure %.6g W; condenser=%.6g W, stage heat=%.6g W", closure, condenser, stageHeatTotal);
+        return Double.isFinite(magnitude) && magnitude <= limit
+                ? V3AcceptanceAudit.Check.pass("GLOBAL_ENERGY_BALANCE", magnitude, limit, detail)
+                : V3AcceptanceAudit.Check.fail("GLOBAL_ENERGY_BALANCE",
+                        Double.isFinite(magnitude) ? magnitude : Double.MAX_VALUE, limit, detail);
+    }
+
+    /** Advisory only: a cooled tray that condenses nearly all of its arriving vapor is at its physical cap. */
+    private List<String> withCooledTrayAdvisory(List<String> advisoryEvidence, V3DryMeshState state) {
+        int cappedTray = 0;
+        double smallestRatio = Double.MAX_VALUE;
+        for (int tray = 1; tray <= problem.topology().trayCount(); tray++) {
+            if (problem.stageHeatWatts(tray) >= 0.0) continue;
+            double entering = hydrocarbonVaporTotal(state, tray + 1);
+            if (!(entering > 0.0)) continue;
+            double ratio = hydrocarbonVaporTotal(state, tray) / entering;
+            if (ratio < smallestRatio) {
+                smallestRatio = ratio;
+                cappedTray = tray;
+            }
+        }
+        if (cappedTray == 0 || advisoryEvidence.size() >= 16) return advisoryEvidence;
+        List<String> evidence = new ArrayList<>(advisoryEvidence);
+        evidence.add(String.format(Locale.ROOT, smallestRatio < 1.0e-3
+                        ? "cooled tray %d is condensation-capped: vapor leaving/entering %.4g"
+                        : "smallest cooled-tray vapor leaving/entering ratio: tray %d at %.4g",
+                cappedTray, smallestRatio));
+        return List.copyOf(evidence);
+    }
+
+    private double refluxRatio() {
+        return problem.input().specifications().stream()
+                .filter(V3ColumnSpecification.OrganicRefluxRatio.class::isInstance)
+                .map(V3ColumnSpecification.OrganicRefluxRatio.class::cast).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("V3 acceptance audit requires a reflux specification"))
+                .ratio();
     }
 
     private V3AcceptanceAudit.Check waterProfile(V3DryMeshState state) {

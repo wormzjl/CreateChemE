@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.science.column.v3;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Compact, immutable presentation certificate for a committed accepted V3 result.
@@ -18,8 +19,19 @@ public record V3ColumnDisplayResult(
         int newtonIterations,
         double maximumScaledResidual,
         int acceptanceCheckCount,
-        List<V3ColumnStreamProperties> streams) {
+        List<V3ColumnStreamProperties> streams,
+        Optional<V3ColumnDutyLedger> dutyLedger) {
+    /** Legacy certificate without a duty ledger; older persisted and wire results decode through here. */
+    public V3ColumnDisplayResult(
+            String inputDigest, String formulationRevision, String assumptionsRevision, String datasetRevision,
+            int newtonIterations, double maximumScaledResidual, int acceptanceCheckCount,
+            List<V3ColumnStreamProperties> streams) {
+        this(inputDigest, formulationRevision, assumptionsRevision, datasetRevision, newtonIterations,
+                maximumScaledResidual, acceptanceCheckCount, streams, Optional.empty());
+    }
+
     public V3ColumnDisplayResult {
+        Objects.requireNonNull(dutyLedger, "dutyLedger");
         inputDigest = boundedDigest(inputDigest);
         formulationRevision = boundedRevision(formulationRevision, "formulationRevision");
         assumptionsRevision = boundedRevision(assumptionsRevision, "assumptionsRevision");
@@ -46,7 +58,8 @@ public record V3ColumnDisplayResult(
                 success.diagnostics().newtonIterations(),
                 success.diagnostics().maximumScaledResidual(),
                 result.acceptanceAudit().checks().size(),
-                result.streams());
+                result.streams(),
+                result.dutyLedger());
     }
 
     private static String datasetRevision(String packageId) {

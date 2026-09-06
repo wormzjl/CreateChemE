@@ -3,6 +3,7 @@ package com.wormzjl.createcheme.science.column.v3;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.Objects;
 import java.util.List;
+import java.util.Optional;
 
 /** Minimal immutable accepted-result envelope; physical profiles are added with the MESH solver. */
 public final class V3ColumnResult {
@@ -12,10 +13,19 @@ public final class V3ColumnResult {
     private final V3ConvergenceEvidence convergenceEvidence;
     private final List<V3ColumnStreamProperties> streams;
     private final String formulationRevision;
+    private final V3ColumnDutyLedger dutyLedger;
 
     private V3ColumnResult(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision) {
+        this(problem, inputDigest, acceptanceAudit, convergenceEvidence, streams, formulationRevision, null);
+    }
+
+    private V3ColumnResult(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision,
+            V3ColumnDutyLedger dutyLedger) {
+        this.dutyLedger = dutyLedger;
         this.problem = Objects.requireNonNull(problem, "problem");
         this.inputDigest = Objects.requireNonNull(inputDigest, "inputDigest");
         this.acceptanceAudit = Objects.requireNonNull(acceptanceAudit, "acceptanceAudit");
@@ -57,6 +67,16 @@ public final class V3ColumnResult {
                 V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision);
     }
 
+    /** Publication path that also carries the recomputed boundary duties of the accepted state. */
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
+            String formulationRevision, V3ColumnDutyLedger dutyLedger) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
+                V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision,
+                Objects.requireNonNull(dutyLedger, "dutyLedger"));
+    }
+
     static V3ColumnResult accepted(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state,
@@ -89,5 +109,10 @@ public final class V3ColumnResult {
 
     public List<V3ColumnStreamProperties> streams() {
         return streams;
+    }
+
+    /** Recomputed boundary duties; absent only on the result paths that carry no property model. */
+    public Optional<V3ColumnDutyLedger> dutyLedger() {
+        return Optional.ofNullable(dutyLedger);
     }
 }
