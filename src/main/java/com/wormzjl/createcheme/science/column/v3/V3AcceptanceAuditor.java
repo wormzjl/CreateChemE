@@ -69,7 +69,12 @@ final class V3AcceptanceAuditor {
         } else if (problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE) {
             checks.add(twoPhaseCondenserSplit(state, workspace));
         }
-        if (problem.hasPumparounds()) checks.add(globalEnergyBalance(state, evaluator, workspace));
+        // The whole-column boundary closure guards the stage-heat sign and, on a wet column, the steam
+        // enthalpy in against the free water and water-vapor slip out. Both are boundary terms that the
+        // per-row ENERGY_BALANCE check cannot see.
+        if (problem.hasPumparounds() || problem.hasSteamFeeds()) {
+            checks.add(globalEnergyBalance(state, evaluator, workspace));
+        }
         control.checkpoint();
         List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
                 ? registeredPackage.advisoryEvidence() : List.of();
@@ -83,6 +88,10 @@ final class V3AcceptanceAuditor {
      * <p>The prescribed stage heat is re-expanded from the authored input with the documented sign, so a
      * residual assembled with the opposite sign cannot pass here: the row-residual {@code ENERGY_BALANCE}
      * check would be consistently wrong on both sides of every tray equation and could not detect it.</p>
+     *
+     * <p>On a wet column the same closure carries the authored steam enthalpy in against the decanted free
+     * water and the molecular water-vapor slip out, so a dropped or double-counted water boundary term
+     * fails here rather than silently shifting the condenser duty.</p>
      */
     private V3AcceptanceAudit.Check globalEnergyBalance(
             V3DryMeshState state, V3MeshResidualEvaluator evaluator, V3ThermoWorkspace workspace) {

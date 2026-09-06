@@ -35,6 +35,8 @@ public final class V3ColumnCalculator {
     private static final String HEAT_FORMULATION_SUFFIX = "-stage-heat";
     private static final String HEAT_RAMP_LABEL = "heat-ramp";
     private static final int HEAT_RAMP_STEPS = 4;
+    /** Side-draw rungs once a stage heat is authored; a cooled zone needs finer withdrawal increments. */
+    private static final int HEAT_BEARING_DRAW_RAMP_STEPS = 8;
     private static final int MAXIMUM_HEAT_SUBDIVISIONS = 4;
     private static final int MAXIMUM_HEAT_SUBDIVISIONS_PER_RUNG = 2;
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
@@ -774,7 +776,6 @@ public final class V3ColumnCalculator {
                 || seedBase.prepared().problem().hasPumparounds()) {
             throw new IllegalArgumentException("V3 feature ramp requires an accepted dry no-draw seed at requested geometry");
         }
-        if (!input.pumparounds().isEmpty()) requireCoolingBelowBaseCondenserDuty(input, thermo, seedBase);
         String rampPath = seedBase.solvePath();
         V3SolvePass previous = seedBase;
         CondenserAttempts rampAttempts = new CondenserAttempts();
@@ -784,17 +785,30 @@ public final class V3ColumnCalculator {
         // accepted state directly; reprojecting every rung was measured to cause residual stagnation.
         double totalSteamMolPerSecond = input.steamFeeds().stream()
                 .mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum();
-        // Keep each water-flow continuation rung at or below 4 mol/s. A four-rung path is
-        // sufficient for normal stripping rates; higher rates need smaller physical increments
-        // to cross the condenser water/phase boundary without a branch jump.
-        int steamRampSteps = Math.max(4, Math.min(12, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
+        // Water is a known profile, so a rung adds its whole increment to the VLE dilution term and the
+        // condenser split at once: aim for 4 mol/s per rung. The count is capped so a large stripping rate
+        // cannot make the ramp unbounded, and at the cap the physical increment grows again. Twelve rungs
+        // put 27.8 mol/s on the first rung of a 1200 kmol/h sump-steam column and diverged there whenever
+        // the authored reboiler duty was small enough that the boilup surrogate dominated it; twenty-four
+        // rungs halve that increment and converge, at about three seconds of extra continuation.
+        int steamRampSteps = Math.max(4, Math.min(24, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
         List<RampStep> rampSteps = new ArrayList<>(rampSteps(input, steamRampSteps));
         HeatSubdivisions subdivisions = new HeatSubdivisions();
         double acceptedHeatFraction = 0.0;
+        boolean condenserBoundChecked = false;
         for (int index = 0; index < rampSteps.size(); index++) {
             RampStep rampStep = rampSteps.get(index);
             if (intermediateFailed && !rampStep.requested(input)) continue;
             control.checkpoint();
+            // Q_cond0 is the condenser duty of the same column without stage heat, which on a wet column
+            // includes the water-vapor slip and the decanted free water. The dry surrogate seed carries a
+            // replacement boilup and no condenser water at all, so the bound is taken from the last
+            // accepted heat-free rung: for a steam-free input that is still the seed itself.
+            if (!condenserBoundChecked && rampStep.heatFraction() > 0.0
+                    && publishesSuccess(previous.attempt(), previous.audit())) {
+                condenserBoundChecked = true;
+                requireCoolingBelowBaseCondenserDuty(input, thermo, previous);
+            }
             if (rampStep.heatRung()) {
                 int cappedTray = condensationCappedTray(previous, thermo, input, rampStep.heatFraction());
                 if (cappedTray > 0) {
@@ -922,8 +936,12 @@ public final class V3ColumnCalculator {
             steps.add(new RampStep(hasSteam ? 1.0 : 0.0, fraction, 0.0, fraction, HEAT_RAMP_LABEL, "stage-heat ramp"));
         }
         if (hasDraws) {
-            for (int step = 1; step <= 4; step++) {
-                double fraction = step / 4.0;
+            // Cooling has already changed the liquid traffic arriving at every draw tray, so a quarter of the
+            // authored withdrawal is a larger perturbation here than on a heat-free column. The 30-stage CDU17
+            // column with sump steam, three pumparounds and the three preset draws stalls at 1.5e-2 on the
+            // last of four rungs and converges on eight.
+            for (int step = 1; step <= HEAT_BEARING_DRAW_RAMP_STEPS; step++) {
+                double fraction = step / (double) HEAT_BEARING_DRAW_RAMP_STEPS;
                 steps.add(new RampStep(hasSteam ? 1.0 : 0.0, 1.0, fraction, fraction, "draw-ramp", "side-draw ramp"));
             }
         }
@@ -957,18 +975,22 @@ public final class V3ColumnCalculator {
     /**
      * Rejects an authored cooling that is not below the base condenser duty of the same column without heat.
      *
-     * <p>{@code Q_cond0} is recomputed from the accepted no-feature state at the requested geometry, so this
-     * is a state-based bound rather than a correlation.</p>
+     * <p>{@code Q_cond0} is recomputed from the last accepted heat-free state at the requested geometry, so
+     * this is a state-based bound rather than a correlation. On a wet column that state already carries the
+     * authored steam, so the duty includes the water-vapor slip and the free water leaving the drum.</p>
      */
     private static void requireCoolingBelowBaseCondenserDuty(
-            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolvePass seedBase) {
+            V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolvePass heatFreeBase) {
         double cooling = -V3Pumparounds.totalCoolingWatts(input);
         if (!(cooling > 0.0)) return;
-        V3ColumnProblem base = seedBase.prepared().problem();
+        V3ColumnProblem base = heatFreeBase.prepared().problem();
+        if (base.hasPumparounds()) {
+            throw new IllegalStateException("V3 base condenser duty requires a heat-free continuation state");
+        }
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
-                base, thermo, seedBase.feedMolarEnthalpyJoulesPerMol());
+                base, thermo, heatFreeBase.feedMolarEnthalpyJoulesPerMol());
         double baseCondenserDuty = V3ColumnDutyLedger.condenserDutyWatts(
-                base, seedBase.attempt().state(), evaluator, thermo.newWorkspace());
+                base, heatFreeBase.attempt().state(), evaluator, thermo.newWorkspace());
         if (!Double.isFinite(baseCondenserDuty) || cooling < Math.abs(baseCondenserDuty)) return;
         throw new InfeasibleSpecification(V3HeatFeasibility.condenserBoundDetail(cooling, baseCondenserDuty),
                 "cold/heat-condenser-bound/heat-" + input.pumparounds().size());
