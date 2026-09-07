@@ -117,23 +117,21 @@ class V3PumparoundSteamCalculatorTest {
     }
 
     @Test
-    void tjl19WithSumpSteamAndSideDrawsStaysInsideTheTypedFailureContract() {
-        // The TJL19 package does not reach the requested point on this column when sump steam and side
-        // draws are both authored. Measured on the same worktree, the identical input with no pumparound
-        // at all fails the same way (steam rung 0.375 stalls at residual 5.3e-2, then the requested rung
-        // stalls at 1.0e-2 on a trace component whose liquid flow is 8e-64 mol/s), so this is the known
-        // wet side-draw wall and not a stage-heat interaction. The contract, not the outcome, is pinned.
+    void tjl19WithSumpSteamAndSideDrawsConverges() {
+        // This case used to be a pinned NONCONVERGENCE. The column was physically converged; a spike in the
+        // TJL_PC09 liquid profile was invisible under feed-scaled material balances while the equilibrated
+        // banded LU gave it full weight and turned singular. Local-throughput scaling plus the relative flow
+        // floor removes both halves of that mismatch; see V3TraceFloorSupportTest for the pinned state.
         Run probe = run("tjl19-wet-three-pumparounds-three-draws", wetInput(TJL19, DEFAULT_REBOILER_DUTY_WATTS,
                 threePumparounds(), ColumnCalculatorV3BlockEntity.pilotPresetInput().sideDraws()));
 
-        if (probe.outcome() instanceof V3ColumnOutcome.Failure failure) {
-            assertEquals(V3SolverFailureCode.NONCONVERGENCE, failure.code(), failure::toString);
-            assertTrue(failure.diagnostics().events().stream().anyMatch(event -> event.contains("ramp")),
-                    () -> String.valueOf(failure.diagnostics().events()));
-        } else {
-            assertPassed(probe.success(), "GLOBAL_ENERGY_BALANCE");
-            assertLedgerCloses(probe.success());
-        }
+        V3ColumnOutcome.Success success = probe.success();
+        assertTrue(success.diagnostics().solvePath().contains("/draws-3"), success.diagnostics()::solvePath);
+        assertTrue(success.diagnostics().solvePath().contains("/steam-1"), success.diagnostics()::solvePath);
+        assertTrue(success.diagnostics().solvePath().contains("/heat-3"), success.diagnostics()::solvePath);
+        assertPassed(success, "GLOBAL_ENERGY_BALANCE");
+        assertEquals(-15.0e6, success.result().dutyLedger().orElseThrow().stageHeatTotalWatts(), 1.0);
+        assertLedgerCloses(success);
     }
 
     @Test

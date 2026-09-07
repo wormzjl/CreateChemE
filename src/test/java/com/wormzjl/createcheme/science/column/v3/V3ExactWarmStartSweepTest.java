@@ -129,6 +129,25 @@ class V3ExactWarmStartSweepTest {
                 audit = coarseAudit;
             }
         }
+        if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged certified
+                && certified.evidence().convergenceEvidence().satisfiesGates()
+                && (branch == V3CondenserPhaseBranch.TWO_PHASE || audit.accepted()))) {
+            // Production's cold policy ends in a fresh material-closed seed when the sequential material/VLE
+            // preconditioner leaves a stage dry; on this two-tray point that is the strategy that reaches the
+            // accepted liquid-only state, in the calculator as well as here.
+            V3ColumnInitializer.Seed materialClosed = V3ColumnInitializer.initialize(
+                    problem, thermo, thermo.newWorkspace(), V3ColumnInitializer.Mode.MATERIAL_CLOSED);
+            V3SimultaneousColumnSolver.Attempt closedAttempt = V3SimultaneousColumnSolver.solve(
+                    problem, evaluator, new V3DryMeshCoordinateMap(problem), materialClosed.state(),
+                    thermo::newWorkspace, 128, 1.0e-8);
+            V3AcceptanceAudit closedAudit = auditor.audit(closedAttempt.state(), thermo.newWorkspace());
+            if (closedAttempt instanceof V3SimultaneousColumnSolver.Attempt.Converged closedConverged
+                    && closedConverged.evidence().convergenceEvidence().satisfiesGates()
+                    && (branch == V3CondenserPhaseBranch.TWO_PHASE || closedAudit.accepted())) {
+                attempt = closedAttempt;
+                audit = closedAudit;
+            }
+        }
         return new ColdAttempt(attempt, audit);
     }
 

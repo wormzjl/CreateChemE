@@ -362,7 +362,10 @@ final class V3AcceptanceAuditor {
             };
             fraction += flow / totalFeed;
         }
-        double limit = TRUNCATION_DEFECT_BUDGET * problem.truncationSupport().cutoffMoleFraction();
+        // Two independent budgets: the authored mole-fraction cutoff, and the always-on relative flow floor
+        // whose omitted material is bounded by one component floor per sink edge.
+        double limit = TRUNCATION_DEFECT_BUDGET * problem.truncationSupport().cutoffMoleFraction()
+                + problem.truncationSupport().floorDefectBoundFraction();
         return fraction >= 0.0 && fraction <= limit
                 ? V3AcceptanceAudit.Check.pass("TRUNCATION_MASS_DEFECT", fraction, limit, "fresh sink-edge defect as a fraction of authored feed")
                 : V3AcceptanceAudit.Check.fail("TRUNCATION_MASS_DEFECT", Double.isFinite(fraction) ? Math.max(0.0, fraction) : Double.MAX_VALUE,

@@ -17,9 +17,9 @@ class V3StageTraceCalculatorTest {
         assertEquals(original.result().inputDigest(), zero.result().inputDigest());
         assertEquals(original.result().streams(), zero.result().streams());
         assertEquals(original.diagnostics(), zero.diagnostics());
-        assertEquals("v3-dry-mesh-r2", V3ColumnDisplayResult.fromAccepted(zero).formulationRevision());
+        assertEquals("v3-dry-mesh-r9", V3ColumnDisplayResult.fromAccepted(zero).formulationRevision());
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-        assertEquals(V3InputDigest.of(zero.result().problem(), "v3-dry-mesh-r2", thermo.datasetRevision(),
+        assertEquals(V3InputDigest.of(zero.result().problem(), "v3-dry-mesh-r9", thermo.datasetRevision(),
                 V3ColumnCalculator.ASSUMPTIONS_REVISION), zero.result().inputDigest());
         assertTrue(zero.result().problem().truncationSupport().isIdentity());
         assertTrue(zero.diagnostics().events().stream().noneMatch(event -> event.startsWith("stage-trace")));
@@ -72,23 +72,31 @@ class V3StageTraceCalculatorTest {
         }
     }
 
+    /**
+     * The hot condenser path used to lose its mask to the mass-defect budget and retry untruncated. Support
+     * refresh now reinserts any removed point that a retained neighbour is still feeding, so the frozen mask
+     * of this input stays inside its recomputed budget and is accepted on the first chain. The retry policy
+     * itself is covered directly in {@code V3TruncationFallbackTest}.
+     */
     @Test
-    void hotCondenserPhasePathRetriesUntruncatedWhenTheFrozenMaskExceedsItsMassBudget() {
+    void hotCondenserPhasePathKeepsItsFrozenMaskInsideTheRecomputedMassBudget() {
         V3ColumnInput input = crudeInput(400.0);
         V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class,
                 V3ColumnCalculator.calculate(input, V3SolveControl.UNBOUNDED, 1.0e-6));
 
-        // Phase-aware continuation changes the deciding seed. A mask is not entitled to acceptance:
-        // the same strict defect budget must reject it and preserve the authored feed on full retry.
-        assertTrue(success.result().problem().truncationSupport().isIdentity());
+        // A mask is still not entitled to acceptance: the defect is recomputed from the candidate and must
+        // sit inside the cutoff budget plus the floor's own per-sink-edge construction bound.
+        assertEquals(1.0e-6, success.result().problem().truncationSupport().cutoffMoleFraction());
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
-        assertTrue(success.diagnostics().events().stream().anyMatch(event -> event.startsWith("stage-trace fallback:")
-                && event.contains("TRUNCATION_MASS_DEFECT")), () -> success.diagnostics().events().toString());
+        V3AcceptanceAudit.Check defect = success.result().acceptanceAudit().checks().stream()
+                .filter(check -> check.family().equals("TRUNCATION_MASS_DEFECT")).findFirst().orElseThrow();
+        assertTrue(defect.passed() && defect.value() <= defect.limit(), defect::toString);
         assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
+        // The published products are short of the authored feed by exactly the audited sink-edge defect.
         double feed = success.result().problem().activeComponentBasis().totalFeedFlowMolPerSecond();
         double products = success.result().streams().stream().mapToDouble(V3ColumnStreamProperties::molarFlowMolPerSecond).sum();
-        assertEquals(feed, products, feed * 1.0e-8);
+        assertEquals(defect.value(), (feed - products) / feed, 1.0e-8);
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
         assertEquals(V3InputDigest.of(success.result().problem(), V3ColumnCalculator.FORMULATION_REVISION,
                 thermo.datasetRevision(), V3ColumnCalculator.ASSUMPTIONS_REVISION, 1.0e-6), success.result().inputDigest());

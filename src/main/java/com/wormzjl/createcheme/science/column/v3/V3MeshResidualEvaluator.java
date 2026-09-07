@@ -45,14 +45,28 @@ final class V3MeshResidualEvaluator {
         }
         NodeProperties[] properties = nodeProperties(state, workspace);
         List<V3MeshResidual.Row> rows = new ArrayList<>(problem.degreeOfFreedomLedger().equationCount());
+        double[] balance = new double[2];
         for (V3DegreeOfFreedomLedger.Equation equation : problem.degreeOfFreedomLedger().equations()) {
             V3DegreeOfFreedomLedger.EquationId id = equation.id();
-            double physicalValue = switch (id.family()) {
-                case COMPONENT_MATERIAL_BALANCE -> materialResidual(state, id.node(), id.component());
-                case VAPOR_LIQUID_EQUILIBRIUM -> equilibriumResidual(state, id.node(), id.component(), properties[id.node()]);
-                case ENERGY_BALANCE -> energyResidual(state, id.node(), properties);
-            };
-            rows.add(new V3MeshResidual.Row(id, physicalValue, scale(id)));
+            double physicalValue;
+            double scale;
+            switch (id.family()) {
+                case COMPONENT_MATERIAL_BALANCE -> {
+                    materialBalance(state, id.node(), id.component(), balance);
+                    physicalValue = balance[0];
+                    scale = materialScale(balance[1], id.component());
+                }
+                case VAPOR_LIQUID_EQUILIBRIUM -> {
+                    physicalValue = equilibriumResidual(state, id.node(), id.component(), properties[id.node()]);
+                    scale = 1.0;
+                }
+                case ENERGY_BALANCE -> {
+                    physicalValue = energyResidual(state, id.node(), properties);
+                    scale = energyScale();
+                }
+                default -> throw new IllegalStateException("V3 MESH equation family is unhandled");
+            }
+            rows.add(new V3MeshResidual.Row(id, physicalValue, scale));
         }
         return new V3MeshResidual(rows);
     }
@@ -87,24 +101,52 @@ final class V3MeshResidualEvaluator {
         return new LocalNodeTerms(equilibrium, liquidEnergy, vaporEnergy);
     }
 
-    private double materialResidual(V3DryMeshState state, int node, int component) {
+    /**
+     * Writes the component material imbalance into {@code balance[0]} and its local throughput into {@code balance[1]}.
+     *
+     * <p>The throughput is the largest absolute term of the same balance at this state: liquid arriving from
+     * above after any side-draw withdrawal, vapour arriving from below, the feed term on the feed tray, and the
+     * two outlets. It is the natural denominator of a relative material closure, and it is what makes a trace
+     * component's imbalance visible: an imbalance is small only when it is small against the flows that produce
+     * it, not when it is small against the component's feed.</p>
+     */
+    private void materialBalance(V3DryMeshState state, int node, int component, double[] balance) {
         V3ColumnTopology topology = problem.topology();
         if (node == topology.condenserNode()) {
-            return state.vaporFlow(1, component) - state.vaporFlow(0, component)
-                    - (problem.condenserComponentPhases().hasLiquid(topology, 0, component)
-                    ? state.liquidFlow(0, component) : 0.0);
+            double vaporIn = state.vaporFlow(1, component);
+            double vaporOut = state.vaporFlow(0, component);
+            double liquidOut = problem.condenserComponentPhases().hasLiquid(topology, 0, component)
+                    ? state.liquidFlow(0, component) : 0.0;
+            balance[0] = vaporIn - vaporOut - liquidOut;
+            balance[1] = largest(vaporIn, vaporOut, liquidOut, 0.0, 0.0);
+            return;
         }
         if (node <= topology.trayCount()) {
             double liquidIn = node == 1
                     ? (problem.condenserComponentPhases().hasLiquid(topology, 0, component)
                     ? organicRefluxFraction() * state.liquidFlow(0, component) : 0.0)
                     : (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * state.liquidFlow(node - 1, component);
+            double vaporIn = state.vaporFlow(node + 1, component);
             double feed = node == topology.feedTrayNumber() ? activeComponentBasis.feedFlowMolPerSecond(component) : 0.0;
-            return liquidIn + state.vaporFlow(node + 1, component) + feed - state.liquidFlow(node, component)
-                    - state.vaporFlow(node, component);
+            double liquidOut = state.liquidFlow(node, component);
+            double vaporOut = state.vaporFlow(node, component);
+            balance[0] = liquidIn + vaporIn + feed - liquidOut - vaporOut;
+            balance[1] = largest(liquidIn, vaporIn, feed, liquidOut, vaporOut);
+            return;
         }
-        return (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * state.liquidFlow(node - 1, component)
-                - state.liquidFlow(node, component) - state.vaporFlow(node, component);
+        double liquidIn = (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * state.liquidFlow(node - 1, component);
+        double liquidOut = state.liquidFlow(node, component);
+        double vaporOut = state.vaporFlow(node, component);
+        balance[0] = liquidIn - liquidOut - vaporOut;
+        balance[1] = largest(liquidIn, liquidOut, vaporOut, 0.0, 0.0);
+    }
+
+    private static double largest(double first, double second, double third, double fourth, double fifth) {
+        double maximum = Math.abs(first);
+        maximum = Math.max(maximum, Math.abs(second));
+        maximum = Math.max(maximum, Math.abs(third));
+        maximum = Math.max(maximum, Math.abs(fourth));
+        return Math.max(maximum, Math.abs(fifth));
     }
 
     private double equilibriumResidual(V3DryMeshState state, int node, int component, NodeProperties properties) {
@@ -219,13 +261,40 @@ final class V3MeshResidualEvaluator {
         return water == 0.0 ? 0.0 : Math.log(hydrocarbonVaporTotal / (hydrocarbonVaporTotal + water));
     }
 
-    private double scale(V3DegreeOfFreedomLedger.EquationId equation) {
-        return switch (equation.family()) {
-            case COMPONENT_MATERIAL_BALANCE -> Math.max(
-                    Math.abs(activeComponentBasis.feedFlowMolPerSecond(equation.component())), totalFeedFlow * 1.0e-12);
-            case VAPOR_LIQUID_EQUILIBRIUM -> 1.0;
-            case ENERGY_BALANCE -> Math.max(1.0, totalFeedFlow * 100_000.0);
-        };
+    /**
+     * Relative denominator of one component material balance: its own local throughput, floored.
+     *
+     * <p>A state-dependent scale cannot be gamed by inflating a flow. The denominator is the largest single
+     * term of the balance, so growing that term by {@code d} moves the numerator by the same {@code d} unless
+     * the remaining terms absorb it: a balanced row stays balanced only if the material actually goes
+     * somewhere. Multiplying every term of a row by a common factor leaves the ratio unchanged, and that is
+     * the intended reading — the row is closed to a relative precision, exactly as the tolerance claims. The
+     * flows themselves are not free to move: the same coordinates carry the neighbouring balances, the
+     * equilibrium rows and the energy rows, which are scaled by constants.</p>
+     *
+     * <p>The denominator is the smaller of that throughput and the component's flow scale — its authored feed
+     * flow, with the existing {@code F_total * 1e-12} guard for a negligible feed — and is floored at
+     * {@link V3TruncationSupport#TRACE_FLOOR_FRACTION} of the same flow scale. Taking the smaller of the two
+     * makes this a strict tightening of the former feed-only scale: internal traffic exceeds the feed
+     * wherever a component is concentrated by the reflux, and relaxing those rows in proportion would move
+     * weight out of the bulk material balances and into the equilibrium and energy rows, which are scaled by
+     * constants. Where a component is locally depleted the throughput is the smaller number and the row
+     * becomes as strict as the material actually passing through the point, which is the whole point: an
+     * imbalance is small only when it is small against the flows that produce it.</p>
+     *
+     * <p>The floor keeps a physically empty balance from becoming an order-one demand. A retained point is
+     * above it by construction of the support, so it binds only for the points the support is forced to
+     * retain regardless of flow (the feed tray, the side-draw trays and the band between them) and for a
+     * point whose flows are collapsing inside a continuation rung. None of this affects the linear algebra:
+     * the banded solver equilibrates every row by its own maximum, so row scaling cancels before pivoting.</p>
+     */
+    private double materialScale(double localThroughput, int component) {
+        double flowScale = activeComponentBasis.flowScale(component);
+        return Math.max(Math.min(localThroughput, flowScale), flowScale * V3TruncationSupport.TRACE_FLOOR_FRACTION);
+    }
+
+    private double energyScale() {
+        return Math.max(1.0, totalFeedFlow * 100_000.0);
     }
 
     private double organicRefluxFraction() {

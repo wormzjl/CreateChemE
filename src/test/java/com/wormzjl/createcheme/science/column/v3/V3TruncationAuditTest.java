@@ -14,7 +14,8 @@ class V3TruncationAuditTest {
         assertTrue(audit.accepted(), audit::toString);
         V3AcceptanceAudit.Check defect = defectCheck(audit);
         assertEquals(0.01 / 90.01, defect.value(), 1.0e-16);
-        assertEquals(0.08, defect.limit());
+        // The floor support adds its own per-sink-edge construction bound to the cutoff budget: 4.4e-13 here.
+        assertEquals(0.08, defect.limit(), 1.0e-9);
         assertSame(support, fixture.problem().truncationSupport());
         assertEquals(5, support.truncatedPointCount());
     }

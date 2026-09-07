@@ -63,7 +63,10 @@ class V3DryMeshCoordinateMapTest {
                 V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE, 0, 0));
         int trayOneVapor = jacobian.unknowns().indexOf(new V3DegreeOfFreedomLedger.UnknownId(
                 V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW, 1, 0));
-        assertEquals(18.0 / 30.0, jacobian.values()[condenserMaterial][trayOneVapor], 1.0e-6);
+        // The condenser balance of component a is 18 in, 8 out as vapor and 10 out as liquid. Its scale is the
+        // largest of those terms, so the derivative with respect to that term's own log flow is exactly one:
+        // every material row now carries a unit entry, which is what keeps the equilibrated LU well posed.
+        assertEquals(1.0, jacobian.values()[condenserMaterial][trayOneVapor], 1.0e-6);
     }
 
     private static V3ColumnProblem problem() {

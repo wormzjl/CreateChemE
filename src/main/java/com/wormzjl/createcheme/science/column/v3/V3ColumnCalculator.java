@@ -23,8 +23,8 @@ import java.util.concurrent.CancellationException;
  */
 public final class V3ColumnCalculator {
     /** Cutoff-enabled formulation; the exact-off path retains the legacy revision in its digest. */
-    public static final String FORMULATION_REVISION = "v3-dry-mesh-r4-flash-trace";
-    private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r2";
+    public static final String FORMULATION_REVISION = "v3-dry-mesh-r10-flash-trace";
+    private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r9";
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r4";
     public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r1";
     /**
@@ -51,6 +51,10 @@ public final class V3ColumnCalculator {
     private static final int CONDENSER_PHASE_CORRECTOR_MAXIMUM_ITERATIONS = 24;
     private static final int DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS = 40;
     private static final int DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS = 32;
+    /** Bounded reinsertion/removal passes over the always-on relative flow floor within one attempt. */
+    private static final int MAXIMUM_FLOOR_SUPPORT_REFRESHES = 3;
+    /** Only one of those passes may follow a stalled attempt; a second stall in a row is not new information. */
+    private static final int MAXIMUM_STALLED_FLOOR_SUPPORT_REFRESHES = 1;
 
     private enum ContinuationJacobianPolicy {
         NONE,
@@ -236,10 +240,12 @@ public final class V3ColumnCalculator {
                         }
                     }
                     // The material-closed fallback may rescue the dry surrogate after an early stage rung
-                    // fails. It is still only a seed for a steam-bearing authored request and must never
-                    // publish in place of the final free-water ramp.
-                    if ((!input.steamFeeds().isEmpty() || !input.pumparounds().isEmpty())
+                    // fails. It is still only a seed for an authored request that carries draws, steam or
+                    // stage heat, and must never publish a no-draw, dry surrogate in place of that ramp.
+                    if ((!input.steamFeeds().isEmpty() || !input.pumparounds().isEmpty()
+                            || !input.sideDraws().isEmpty())
                             && publishesSuccess(pass.attempt(), pass.audit())
+                            && !pass.prepared().problem().hasSideDraws()
                             && !pass.prepared().problem().hasSteamFeeds()
                             && !pass.prepared().problem().hasPumparounds()) {
                         V3ColumnProblem requested = V3ColumnProblemResolver.resolve(input,
@@ -298,7 +304,7 @@ public final class V3ColumnCalculator {
             if (input.sideDraws().size() > 0) solvePath += "/draws-" + input.sideDraws().size();
             if (!input.steamFeeds().isEmpty()) solvePath += "/steam-" + input.steamFeeds().size();
             if (!input.pumparounds().isEmpty()) solvePath += "/heat-" + input.pumparounds().size();
-            List<String> solverEvents = policy.attemptCutoff() > 0.0
+            List<String> solverEvents = !selected.support().isIdentity()
                     ? mergedEvents(List.of(stageTraceEvent(selected.support(), attempt.state(), selected.problem())), pass.solverEvents())
                     : pass.solverEvents();
             V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, solverEvents);
@@ -631,28 +637,62 @@ public final class V3ColumnCalculator {
         // A phase-allocation approximation must never change the authored feed's physical energy.
         double feedMolarEnthalpy = feedFlash.referenceMolarEnthalpyJoulesPerMol();
         V3DryMeshState recoverySeed = seed;
-        PreparedAttempt prepared = prepareAttempt(problem, seed, policy);
+        V3ColumnProblem untruncated = problem;
+        PreparedAttempt prepared = prepareAttempt(untruncated, seed, policy);
+        SolveTelemetry telemetry;
+        V3SimultaneousColumnSolver.Attempt attempt;
+        V3AcceptanceAudit audit;
+        int refreshes = 0;
+        int stalledRefreshes = 0;
+        // The floor support is frozen for the length of one Newton solve, so it is re-derived from the
+        // solved state afterwards: a point that fell below the floor is dropped, and a removed point whose
+        // retained neighbours now deliver at least its floor is reinserted at the floor and the solve is
+        // repeated from that state. Without the reinsertion pass the omitted mass would not be bounded;
+        // with it, the audited sink-edge defect can never exceed one floor per edge.
+        while (true) {
+            V3ColumnProblem attemptProblem = prepared.problem();
+            V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
+                    attemptProblem, thermo, feedMolarEnthalpy);
+            telemetry = new SolveTelemetry(attemptProblem);
+            V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(attemptProblem);
+            V3DryMeshState attemptSeed = prepared.seed();
+            attempt = switch (jacobianPolicy) {
+                case NONE -> V3SimultaneousColumnSolver.solve(
+                        attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
+                        V3ConvergenceEvidence.unavailable(), maximumIterations, SCALED_RESIDUAL_TOLERANCE,
+                        V3FiniteDifferenceJacobian.DifferenceScale.FINE, control, telemetry);
+                case STAGE_LOCAL_BLOCKS -> V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
+                        attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
+                        maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+                case PRESSURE_LOCAL_PREDICTOR -> V3SimultaneousColumnSolver.solveWithOneLocalBlockPredictor(
+                        attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
+                        maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+            };
+            control.checkpoint();
+            audit = audit(attemptProblem, thermo, feedMolarEnthalpy, attempt.state(), control);
+            // A stalled attempt is refreshed too, and measurably must be: a stall is often exactly the state
+            // that has just dried a point out or started feeding a removed one, and one repeat from the
+            // corrected support is what converges the rung. Only one, though: a second stall in a row is a
+            // rung the continuation is going to subdivide or abandon anyway, and re-solving it three times
+            // triples the cost of every case that is on its way to a typed failure.
+            boolean converged = attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged;
+            if (refreshes >= MAXIMUM_FLOOR_SUPPORT_REFRESHES
+                    || (!converged && stalledRefreshes >= MAXIMUM_STALLED_FLOOR_SUPPORT_REFRESHES)) {
+                break;
+            }
+            PreparedAttempt refreshed = refreshFloorSupport(untruncated, prepared, attempt.state(), policy);
+            if (refreshed == null) break;
+            refreshes++;
+            if (!converged) stalledRefreshes++;
+            prepared = refreshed;
+        }
         problem = prepared.problem();
-        seed = prepared.seed();
-        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
-                problem, thermo, feedMolarEnthalpy);
-        SolveTelemetry telemetry = new SolveTelemetry(problem);
-        V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
-        V3SimultaneousColumnSolver.Attempt attempt = switch (jacobianPolicy) {
-            case NONE -> V3SimultaneousColumnSolver.solve(
-                    problem, evaluator, coordinates, seed, thermo::newWorkspace,
-                    V3ConvergenceEvidence.unavailable(), maximumIterations, SCALED_RESIDUAL_TOLERANCE,
-                    V3FiniteDifferenceJacobian.DifferenceScale.FINE, control, telemetry);
-            case STAGE_LOCAL_BLOCKS -> V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
-                    problem, evaluator, coordinates, seed, thermo::newWorkspace,
-                    maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
-            case PRESSURE_LOCAL_PREDICTOR -> V3SimultaneousColumnSolver.solveWithOneLocalBlockPredictor(
-                    problem, evaluator, coordinates, seed, thermo::newWorkspace,
-                    maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
-        };
-        control.checkpoint();
-        V3AcceptanceAudit audit = audit(problem, thermo, feedMolarEnthalpy, attempt.state(), control);
         List<String> events = telemetry.events();
+        if (refreshes > 0) {
+            events = mergedEvents(List.of("floor support refreshed " + refreshes + " time(s); retained="
+                    + (prepared.support().totalPointCount() - prepared.support().truncatedPointCount())
+                    + "/" + prepared.support().totalPointCount()), events);
+        }
         if (policy.attemptCutoff() > 0.0) events = mergedEvents(List.of(flashTraceEvent(feedFlash)), events);
         if (!prepared.support().note().isEmpty()) {
             events = mergedEvents(List.of("stage-trace support: " + prepared.support().note()), events);
@@ -1049,6 +1089,14 @@ public final class V3ColumnCalculator {
         return requestedCutoff == 0.0 ? LEGACY_FORMULATION_REVISION : FORMULATION_REVISION;
     }
 
+    /**
+     * Formulation label of one authored input.
+     *
+     * <p>r9 to r15 replace r2 to r8 across every family: component material balances are scaled by their own
+     * local throughput instead of by the component's feed flow, and every stage point whose flow is below
+     * {@link V3TruncationSupport#TRACE_FLOOR_FRACTION} of that component's feed is removed from the unknowns
+     * and equations. Accepted trace profiles differ, so the digest must differ.</p>
+     */
     static String formulationRevision(V3ColumnInput input, double requestedCutoff) {
         V3TruncationSupport.requireCutoff(requestedCutoff);
         boolean heat = !input.pumparounds().isEmpty();
@@ -1056,16 +1104,16 @@ public final class V3ColumnCalculator {
         if (!input.steamFeeds().isEmpty()) {
             // r7/r8: the condenser vapor outlet carries the ALL_VAPOR steam product enthalpy even when the
             // hydrocarbon vapor is absent (LIQUID_ONLY branch), which changes the published wet condenser duty.
-            return (heat ? "v3-wet-mesh-r8-steam" : "v3-wet-mesh-r7-steam")
+            return (heat ? "v3-wet-mesh-r15-steam" : "v3-wet-mesh-r14-steam")
                     + (!input.sideDraws().isEmpty() ? "-side-draws" : "") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
         if (!input.sideDraws().isEmpty()) {
-            return (heat ? "v3-dry-mesh-r6-side-draws" : "v3-dry-mesh-r5-side-draws") + trace
+            return (heat ? "v3-dry-mesh-r12-side-draws" : "v3-dry-mesh-r11-side-draws") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
         if (!heat) return formulationRevision(requestedCutoff);
-        return "v3-dry-mesh-r6" + trace + HEAT_FORMULATION_SUFFIX;
+        return "v3-dry-mesh-r13" + trace + HEAT_FORMULATION_SUFFIX;
     }
 
     static String assumptionsRevision(V3ColumnInput input) {
@@ -1129,9 +1177,17 @@ public final class V3ColumnCalculator {
                 mergedEvents(notes, next.solverEvents()), next.prepared());
     }
 
-    /** The deciding seed is final here: interpolation/preconditioning happens outside this frozen attempt. */
+    /**
+     * The deciding seed is final here: interpolation/preconditioning happens outside this frozen attempt.
+     *
+     * <p>The seed is lifted first. A point removed by an earlier attempt or an earlier continuation grid
+     * holds exact zeros, so it could never re-enter from the state alone; lifting restores every point whose
+     * retained neighbours are delivering material to it before the support is derived, which keeps the
+     * decision self-consistent at every rung instead of only at a refresh.</p>
+     */
     private static PreparedAttempt prepareAttempt(V3ColumnProblem original, V3DryMeshState seed, TruncationPolicy policy) {
-        V3TruncationSupport support = V3TruncationSupport.derive(original, policy.attemptCutoff(), seed);
+        V3DryMeshState lifted = liftFloorInflow(original, seed);
+        V3TruncationSupport support = V3TruncationSupport.derive(original, policy.attemptCutoff(), lifted);
         V3ColumnProblem problem;
         try {
             problem = V3ColumnProblemResolver.withTruncation(original, support);
@@ -1140,7 +1196,76 @@ public final class V3ColumnCalculator {
                     "Stage-trace support fell back to identity: reduced ledger validation failed");
             problem = original;
         }
-        return new PreparedAttempt(problem, support, support.projectSeed(original, seed));
+        return new PreparedAttempt(problem, support, support.projectSeed(original, lifted));
+    }
+
+    /** Re-derives the floor support from a solved state, or returns null when the retained set is unchanged. */
+    private static PreparedAttempt refreshFloorSupport(
+            V3ColumnProblem untruncated, PreparedAttempt prepared, V3DryMeshState state, TruncationPolicy policy) {
+        PreparedAttempt refreshed = prepareAttempt(untruncated, state, policy);
+        return refreshed.support().sameRetention(prepared.support()) ? null : refreshed;
+    }
+
+    /**
+     * Restores every point below the support floor whose retained neighbours deliver at least
+     * {@link V3TruncationSupport#FLOOR_REINSERTION_FACTOR} floors into it.
+     *
+     * <p>At steady state a point's own flow in either phase is bounded by the material delivered into it, so
+     * this one material-balance test covers both phases and is the reinsertion criterion. The delivered
+     * material is split evenly over the point's present outlets, so a restored point arrives with its own
+     * balance already closed instead of as a fresh order-one residual.</p>
+     */
+    private static V3DryMeshState liftFloorInflow(V3ColumnProblem problem, V3DryMeshState state) {
+        V3ColumnTopology topology = problem.topology();
+        int components = problem.activeComponentBasis().componentCount();
+        double refluxRatio = problem.input().specifications().stream()
+                .filter(V3ColumnSpecification.OrganicRefluxRatio.class::isInstance)
+                .map(V3ColumnSpecification.OrganicRefluxRatio.class::cast).findFirst().orElseThrow().ratio();
+        double refluxFraction = refluxRatio / (1.0 + refluxRatio);
+        double[][] liquid = new double[topology.nodeCount()][components];
+        double[][] vapor = new double[topology.nodeCount()][components];
+        double[] temperatures = new double[topology.nodeCount()];
+        for (int node = 0; node < topology.nodeCount(); node++) {
+            temperatures[node] = state.temperatureKelvin(node);
+            for (int component = 0; component < components; component++) {
+                liquid[node][component] = state.liquidFlow(node, component);
+                vapor[node][component] = state.vaporFlow(node, component);
+            }
+        }
+        for (int node = 0; node < topology.nodeCount(); node++) {
+            for (int component = 0; component < components; component++) {
+                double floor = problem.activeComponentBasis().flowScale(component)
+                        * V3TruncationSupport.TRACE_FLOOR_FRACTION;
+                boolean hasLiquid = problem.condenserComponentPhases().hasLiquid(topology, node, component);
+                boolean hasVapor = topology.hasVaporPhase(node);
+                // Only a point the floor would remove is a reinsertion candidate; a point that is already
+                // above the floor in a present phase is retained on its own flow and must not be touched.
+                if ((hasLiquid && liquid[node][component] >= floor)
+                        || (hasVapor && vapor[node][component] >= floor)) {
+                    continue;
+                }
+                double inflow;
+                if (node == topology.condenserNode()) {
+                    inflow = state.vaporFlow(1, component);
+                } else {
+                    inflow = node == 1
+                            ? refluxFraction * state.liquidFlow(0, component)
+                            : (1.0 - problem.liquidWithdrawalFraction(state, node - 1))
+                                    * state.liquidFlow(node - 1, component);
+                    if (node < topology.reboilerNode()) inflow += state.vaporFlow(node + 1, component);
+                    if (node == topology.feedTrayNumber()) {
+                        inflow += problem.activeComponentBasis().feedFlowMolPerSecond(component);
+                    }
+                }
+                if (inflow < V3TruncationSupport.FLOOR_REINSERTION_FACTOR * floor) continue;
+                // Split the delivered material evenly over the present outlets, so the reinserted point's own
+                // balance is already closed at the seed instead of arriving as a fresh order-one residual.
+                double reinserted = Math.max(floor, hasLiquid && hasVapor ? 0.5 * inflow : inflow);
+                if (hasLiquid) liquid[node][component] = Math.max(liquid[node][component], reinserted);
+                if (hasVapor) vapor[node][component] = Math.max(vapor[node][component], reinserted);
+            }
+        }
+        return new V3DryMeshState(topology, components, liquid, vapor, temperatures);
     }
 
     private static String stageTraceEvent(V3TruncationSupport support, V3DryMeshState state, V3ColumnProblem problem) {

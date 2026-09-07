@@ -13,13 +13,18 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 class V3TruncationSupportTest {
+    /**
+     * The relative flow floor is always on, so a zero cutoff now inspects the seed. It still reuses the
+     * problem's identity support, and rebuilds nothing, whenever no point is below the floor.
+     */
     @Test
-    void zeroCutoffReusesIdentityWithoutInspectingASeedOrRebuildingTheProblem() {
+    void zeroCutoffStillAppliesTheFlowFloorAndReusesIdentityWhenNothingIsBelowIt() {
         V3ColumnProblem problem = problem(V3CondenserPhaseBranch.TWO_PHASE, 1.0, 2);
-        V3TruncationSupport support = V3TruncationSupport.derive(problem, 0.0, null);
+        V3DryMeshState populated = state(problem, uniformFlows(problem), uniformFlows(problem));
+        V3TruncationSupport support = V3TruncationSupport.derive(problem, 0.0, populated);
 
         assertSame(problem.truncationSupport(), support);
-        assertSame(support, V3TruncationSupport.derive(problem, -0.0, null));
+        assertSame(support, V3TruncationSupport.derive(problem, -0.0, populated));
         assertSame(problem, V3ColumnProblemResolver.withTruncation(problem, support));
         assertSame(problem.degreeOfFreedomLedger(),
                 V3ColumnProblemResolver.withTruncation(problem, support).degreeOfFreedomLedger());
