@@ -199,6 +199,9 @@ final class V3SimultaneousColumnSolver {
             }
             control.checkpoint();
             double maximumResidual = residual.maximumAbsoluteScaledResidual();
+            // Every merit comparison inside one iteration is taken against this state's row scales. The
+            // convergence gate above uses each state's own scales, as the independent acceptance audit does.
+            double[] frozenScales = residual.scales();
             double merit = scaledSquaredNorm(residual);
             trace.sampledState(iteration, state, residual, merit);
             if (maximumResidual <= scaledTolerance && lastConvergenceEvidence.satisfiesGates()) {
@@ -207,7 +210,8 @@ final class V3SimultaneousColumnSolver {
             }
             if (maximumResidual <= scaledTolerance) {
                 VerifiedFinalNewton verified = verifyFinalNewtonCorrection(
-                        evaluator, coordinates, state, residual, merit, workspaceFactory, layout, control, scaledTolerance);
+                        evaluator, coordinates, state, residual, frozenScales, merit, workspaceFactory, layout, control,
+                        scaledTolerance);
                 if (verified != null) {
                     return new Attempt.Converged(verified.state(), new Evidence(iteration,
                             verified.maximumScaledResidual(), verified.merit(), verified.step(),
@@ -232,7 +236,7 @@ final class V3SimultaneousColumnSolver {
                     if (localLinear instanceof V3BandedPivotedSolver.Result.Success localSuccess) {
                         double[] baseCoordinates = coordinates.encode(state);
                         AcceptedTrial localTrial = armijoTrial(
-                                evaluator, coordinates, baseCoordinates, localSuccess.solution(), merit, workspaceFactory,
+                                evaluator, coordinates, baseCoordinates, localSuccess.solution(), frozenScales, merit, workspaceFactory,
                                 maximumLineSearchSteps, control);
                         if (localTrial != null) {
                             localBlockAccepted = true;
@@ -288,11 +292,11 @@ final class V3SimultaneousColumnSolver {
                 V3BandedPivotedSolver.Result.Failure failure = (V3BandedPivotedSolver.Result.Failure) linearResult;
                 double[] baseCoordinates = coordinates.encode(state);
                 AcceptedTrial descentTrial = dampedGaussNewtonTrial(
-                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory,
+                        evaluator, coordinates, baseCoordinates, jacobian, residual, frozenScales, merit, layout, workspaceFactory,
                         maximumLineSearchSteps, control);
                 if (descentTrial == null) {
                     descentTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
-                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory,
+                            normalizedNegativeGradient(jacobian, residual, coordinates), frozenScales, merit, workspaceFactory,
                             maximumLineSearchSteps, control);
                 }
                 if (descentTrial == null) {
@@ -307,7 +311,7 @@ final class V3SimultaneousColumnSolver {
             }
             double[] baseCoordinates = coordinates.encode(state);
             AcceptedTrial acceptedTrial = armijoTrial(
-                    evaluator, coordinates, baseCoordinates, linearSuccess.solution(), merit, workspaceFactory,
+                    evaluator, coordinates, baseCoordinates, linearSuccess.solution(), frozenScales, merit, workspaceFactory,
                     maximumLineSearchSteps, control);
             boolean usedDescentFallback = acceptedTrial == null;
             if (usedDescentFallback && usesFrozenFineJacobian) {
@@ -318,11 +322,11 @@ final class V3SimultaneousColumnSolver {
             }
             if (usedDescentFallback) {
                 acceptedTrial = dampedGaussNewtonTrial(
-                        evaluator, coordinates, baseCoordinates, jacobian, residual, merit, layout, workspaceFactory,
+                        evaluator, coordinates, baseCoordinates, jacobian, residual, frozenScales, merit, layout, workspaceFactory,
                         maximumLineSearchSteps, control);
                 if (acceptedTrial == null) {
                     acceptedTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
-                            normalizedNegativeGradient(jacobian, residual, coordinates), merit, workspaceFactory,
+                            normalizedNegativeGradient(jacobian, residual, coordinates), frozenScales, merit, workspaceFactory,
                             maximumLineSearchSteps, control);
                 }
             }
@@ -364,6 +368,7 @@ final class V3SimultaneousColumnSolver {
             V3DryMeshCoordinateMap coordinates,
             V3DryMeshState state,
             V3MeshResidual residual,
+            double[] frozenScales,
             double merit,
             V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             V3StageBlockLayout layout,
@@ -377,7 +382,7 @@ final class V3SimultaneousColumnSolver {
                     toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
             if (linear instanceof V3BandedPivotedSolver.Result.Success success) {
                 VerifiedFinalNewton direct = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
-                        scaledTolerance, merit, success.solution(), success.backwardError());
+                        scaledTolerance, frozenScales, merit, success.solution(), success.backwardError());
                 if (direct != null) return direct;
             }
             V3NormalEquations normal = V3NormalEquations.prepare(jacobian, residual, layout, control);
@@ -388,7 +393,7 @@ final class V3SimultaneousColumnSolver {
                         normal.dampedMatrix(damping, control), normal.negativeGradient());
                 if (regularized instanceof V3BandedPivotedSolver.Result.Success success) {
                     VerifiedFinalNewton verified = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
-                            scaledTolerance, merit, success.solution(), success.backwardError());
+                            scaledTolerance, frozenScales, merit, success.solution(), success.backwardError());
                     if (verified != null) return verified;
                 }
                 damping *= 10.0;
@@ -405,6 +410,7 @@ final class V3SimultaneousColumnSolver {
             V3DryMeshState state,
             V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             double scaledTolerance,
+            double[] frozenScales,
             double merit,
             double[] correction,
             double backwardError) {
@@ -470,15 +476,34 @@ final class V3SimultaneousColumnSolver {
         return norm;
     }
 
+    /** Merit of a candidate state measured with the scales of the state the Jacobian was assembled at. */
+    private static double frozenSquaredNorm(V3MeshResidual residual, double[] frozenScales) {
+        double norm = 0.0;
+        for (int row = 0; row < frozenScales.length; row++) {
+            double scaled = residual.rows().get(row).physicalValue() / frozenScales[row];
+            norm += scaled * scaled;
+        }
+        return norm;
+    }
+
     private static double[] addScaled(double[] base, double[] correction, double step) {
         double[] candidate = base.clone();
         for (int index = 0; index < candidate.length; index++) candidate[index] += step * correction[index];
         return candidate;
     }
 
+    /**
+     * Armijo backtracking against the base state's row scales.
+     *
+     * <p>{@code merit} is the base merit under {@code frozenScales}, and every candidate is measured with the
+     * same scales, so the sufficient-decrease test compares like with like on the system the Jacobian was
+     * assembled for. Re-scaling each candidate by its own local throughput would let a step be accepted for
+     * enlarging a denominator instead of closing a balance.</p>
+     */
     private static AcceptedTrial armijoTrial(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
-            double[] direction, double merit, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            double[] direction, double[] frozenScales, double merit,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             int maximumLineSearchSteps, V3SolveControl control) {
         for (int lineSearch = 0; lineSearch < maximumLineSearchSteps; lineSearch++) {
             control.checkpoint();
@@ -486,7 +511,8 @@ final class V3SimultaneousColumnSolver {
             try {
                 double[] candidateCoordinates = addScaled(baseCoordinates, direction, step);
                 V3DryMeshState candidate = coordinates.decode(candidateCoordinates);
-                double candidateMerit = scaledSquaredNorm(evaluator.evaluate(candidate, workspaceFactory.newWorkspace()));
+                double candidateMerit = frozenSquaredNorm(
+                        evaluator.evaluate(candidate, workspaceFactory.newWorkspace()), frozenScales);
                 if (candidateMerit <= merit * (1.0 - ARMIJO_COEFFICIENT * step)) {
                     return new AcceptedTrial(candidate, candidateCoordinates, candidateMerit, step);
                 }
@@ -529,7 +555,7 @@ final class V3SimultaneousColumnSolver {
 
     private static AcceptedTrial dampedGaussNewtonTrial(
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
-            V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double merit,
+            V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double[] frozenScales, double merit,
             V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             int maximumLineSearchSteps, V3SolveControl control) {
         V3NormalEquations normal;
@@ -555,7 +581,7 @@ final class V3SimultaneousColumnSolver {
             }
             if (result instanceof V3BandedPivotedSolver.Result.Success success) {
                 AcceptedTrial trial = armijoTrial(
-                        evaluator, coordinates, baseCoordinates, success.solution(), merit, workspaceFactory,
+                        evaluator, coordinates, baseCoordinates, success.solution(), frozenScales, merit, workspaceFactory,
                         maximumLineSearchSteps, control);
                 if (trial != null) return trial;
             }

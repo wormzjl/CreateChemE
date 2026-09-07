@@ -73,10 +73,11 @@ final class V3FiniteDifferenceJacobian {
             V3SolveControl control) {
         int rows = baseResidual.rows().size();
         double[][] values = new double[rows][base.length];
+        double[] frozenScales = baseResidual.scales();
         for (int column = 0; column < base.length; column++) {
             control.checkpoint();
-            populateCentralColumn(evaluator, coordinates, base, baseResidual, workspaceFactory, differenceScale, control,
-                    values, column);
+            populateCentralColumn(evaluator, coordinates, base, baseResidual, frozenScales, workspaceFactory,
+                    differenceScale, control, values, column);
         }
         return jacobian(baseResidual, coordinates, values);
     }
@@ -94,6 +95,7 @@ final class V3FiniteDifferenceJacobian {
             DifferenceScale differenceScale,
             V3SolveControl control) {
         double[][] values = new double[base.length][base.length];
+        double[] frozenScales = baseResidual.scales();
         Map<ColorSlot, List<Integer>> groups = new LinkedHashMap<>();
         for (int column = 0; column < base.length; column++) {
             V3DegreeOfFreedomLedger.UnknownId id = coordinates.unknowns().get(column).id();
@@ -113,8 +115,8 @@ final class V3FiniteDifferenceJacobian {
             V3MeshResidual lowerResidual = feasibleResidual(evaluator, coordinates, lower, workspaceFactory, control);
             if (higherResidual == null && lowerResidual == null) {
                 for (int column : group) {
-                    populateCentralColumn(evaluator, coordinates, base, baseResidual, workspaceFactory, differenceScale,
-                            control, values, column);
+                    populateCentralColumn(evaluator, coordinates, base, baseResidual, frozenScales, workspaceFactory,
+                            differenceScale, control, values, column);
                 }
                 continue;
             }
@@ -125,13 +127,13 @@ final class V3FiniteDifferenceJacobian {
                 for (int row = 0; row < base.length; row++) {
                     if (Math.abs(baseResidual.rows().get(row).equation().node() - columnNode) > 1) continue;
                     values[row][column] = higherResidual != null && lowerResidual != null
-                            ? (higherResidual.rows().get(row).scaledValue() - lowerResidual.rows().get(row).scaledValue())
+                            ? (frozen(higherResidual, row, frozenScales) - frozen(lowerResidual, row, frozenScales))
                                     / (2.0 * step)
                             : higherResidual != null
-                                    ? (higherResidual.rows().get(row).scaledValue()
-                                    - baseResidual.rows().get(row).scaledValue()) / step
-                                    : (baseResidual.rows().get(row).scaledValue()
-                                    - lowerResidual.rows().get(row).scaledValue()) / step;
+                                    ? (frozen(higherResidual, row, frozenScales)
+                                    - frozen(baseResidual, row, frozenScales)) / step
+                                    : (frozen(baseResidual, row, frozenScales)
+                                    - frozen(lowerResidual, row, frozenScales)) / step;
                     requireFinite(values[row][column]);
                 }
             }
@@ -144,6 +146,7 @@ final class V3FiniteDifferenceJacobian {
             V3DryMeshCoordinateMap coordinates,
             double[] base,
             V3MeshResidual baseResidual,
+            double[] frozenScales,
             V3ThermoWorkspaceFactory workspaceFactory,
             DifferenceScale differenceScale,
             V3SolveControl control,
@@ -162,10 +165,10 @@ final class V3FiniteDifferenceJacobian {
         requireSameOrdering(baseResidual, higherResidual, lowerResidual);
         for (int row = 0; row < baseResidual.rows().size(); row++) {
             values[row][column] = higherResidual != null && lowerResidual != null
-                    ? (higherResidual.rows().get(row).scaledValue() - lowerResidual.rows().get(row).scaledValue()) / (2.0 * step)
+                    ? (frozen(higherResidual, row, frozenScales) - frozen(lowerResidual, row, frozenScales)) / (2.0 * step)
                     : higherResidual != null
-                            ? (higherResidual.rows().get(row).scaledValue() - baseResidual.rows().get(row).scaledValue()) / step
-                            : (baseResidual.rows().get(row).scaledValue() - lowerResidual.rows().get(row).scaledValue()) / step;
+                            ? (frozen(higherResidual, row, frozenScales) - frozen(baseResidual, row, frozenScales)) / step
+                            : (frozen(baseResidual, row, frozenScales) - frozen(lowerResidual, row, frozenScales)) / step;
             requireFinite(values[row][column]);
         }
     }
@@ -178,6 +181,19 @@ final class V3FiniteDifferenceJacobian {
                 throw new IllegalStateException("V3 MESH residual ordering changed during finite differentiation");
             }
         }
+    }
+
+    /**
+     * Scales a probe row by the base state's scale rather than by its own.
+     *
+     * <p>This Jacobian differentiates {@code r(x) / s(x0)} with the row scale frozen at the base state, so a
+     * row scale that is itself a function of the state cannot leak into it. Freezing keeps every row scaling a pure
+     * left preconditioner of the same Newton system, keeps the exact log-flow material derivatives assembled
+     * in {@link V3BlockJacobianAssembler} identical to this oracle, and drops only the {@code -r ds/dx / s}
+     * term, which is zero at a solution and finite-difference noise away from one.</p>
+     */
+    private static double frozen(V3MeshResidual residual, int row, double[] frozenScales) {
+        return residual.rows().get(row).physicalValue() / frozenScales[row];
     }
 
     private static void requireFinite(double value) {
