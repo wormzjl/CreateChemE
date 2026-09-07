@@ -149,20 +149,65 @@ class V3PumparoundCalculatorTest {
         assertEquals(-3.0e6, cooled.success().result().dutyLedger().orElseThrow().stageHeatTotalWatts(), 1.0);
     }
 
+    /**
+     * The large-duty qualification is the arrangement the source actually uses.
+     *
+     * <p>Ledezma-Martinez, <em>Design of Crude Oil Distillation Systems with Preflash Units</em> (University of
+     * Manchester, 2019), section 1.2 and tables A4/A6: the column carries three pumparounds, each drawn at a
+     * side-product stage and returned two to four stages above it, of 12.84, 17.89 and 11.20 MW — 41.93 MW in
+     * total spread over three sections, never on one tray. Transferred to the 30-tray CDU17 column the draw
+     * stages are 8, 15 and 22 and the returns are 6, 13 and 20.</p>
+     *
+     * <p>Measured on this column at the thesis operating point: with the side draws the whole 41.93 MW
+     * converges, because the draws remove hot liquid and shrink the internal recycle the coolers would
+     * otherwise have to re-evaporate. Without the draws the same arrangement stalls on the heat ramp, which is
+     * the energy-shift valley the rung temperature predictor addresses.</p>
+     */
     @Test
-    void aLargeSingleTrayDutyStaysWithinTheTypedFailureContract() {
-        // Exercises the per-tray condensation cap and the bounded midpoint subdivision it triggers. The
-        // outcome is deliberately not pinned: only the typed contract is.
-        Run probe = run("return-tray-40-MW", v1ScaleInput("createcheme:cdu17_tjl_acs2018",
-                List.of(new V3PumparoundSpec(8, 12, -40.0e6, V3PumparoundSpec.Split.RETURN_TRAY))));
+    void theThesisThreeCoolerArrangementCarriesItsWholeDutyWithTheSideDraws() {
+        Run base = run("base", v1ScaleInput("createcheme:cdu17_tjl_acs2018", List.of()));
+        Run arranged = run("thesis-3-coolers-plus-draws", thesisArrangedInput());
 
-        if (probe.outcome() instanceof V3ColumnOutcome.Failure failure) {
-            assertTrue(failure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION
-                    || failure.code() == V3SolverFailureCode.NONCONVERGENCE
-                    || failure.code() == V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE, failure::toString);
-        } else {
-            assertPassed(probe.success(), "GLOBAL_ENERGY_BALANCE");
+        V3ColumnDutyLedger ledger = arranged.success().result().dutyLedger().orElseThrow();
+        double baseCondenser = base.success().result().dutyLedger().orElseThrow().condenserWatts();
+        System.out.printf(Locale.ROOT,
+                "thesis arrangement: stage heat=%.4g MW, Q_cond=%.4g MW versus heat-free %.4g MW%n",
+                ledger.stageHeatTotalWatts() / 1.0e6, ledger.condenserWatts() / 1.0e6, baseCondenser / 1.0e6);
+
+        assertTrue(arranged.success().diagnostics().solvePath().contains("/draws-3"),
+                arranged.success().diagnostics()::solvePath);
+        assertTrue(arranged.success().diagnostics().solvePath().contains("/heat-3"),
+                arranged.success().diagnostics()::solvePath);
+        assertPassed(arranged.success(), "GLOBAL_ENERGY_BALANCE");
+        assertEquals(-41.93e6, ledger.stageHeatTotalWatts(), 1.0);
+        assertEquals(3 + 3 + 3, ledger.stageDuties().size());
+        assertTrue(Math.abs(ledger.condenserWatts()) < Math.abs(baseCondenser),
+                () -> "the three coolers must take duty off the condenser: " + ledger.condenserWatts()
+                        + " W against a heat-free " + baseCondenser + " W");
+    }
+
+    /**
+     * The thesis arrangement transferred to the 30-tray CDU17 column: coolers drawn at the side-product stages
+     * 8, 15 and 22 and returned two stages above, at the thesis duties, with the preset draw rates on those
+     * same stages. The preset itself authors its three draws on trays 13, 17 and 22; the rates are the
+     * preset's, moved onto the stages the thesis pairs each cooler with.
+     */
+    private static V3ColumnInput thesisArrangedInput() {
+        List<V3SideDrawSpec> presetRates = ColumnCalculatorV3BlockEntity.pilotPresetInput().sideDraws();
+        int[] thesisStages = {8, 15, 22};
+        List<V3SideDrawSpec> draws = new java.util.ArrayList<>();
+        for (int index = 0; index < thesisStages.length; index++) {
+            draws.add(new V3SideDrawSpec(thesisStages[index], presetRates.get(index).molarFlowMolPerSecond()));
         }
+        V3ColumnInput heated = v1ScaleInput("createcheme:cdu17_tjl_acs2018", List.of(
+                new V3PumparoundSpec(6, 8, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
+                new V3PumparoundSpec(13, 15, -17.89e6, V3PumparoundSpec.Split.UNIFORM),
+                new V3PumparoundSpec(20, 22, -11.20e6, V3PumparoundSpec.Split.UNIFORM)));
+        return new V3ColumnInput(heated.schemaVersion(), heated.packageId(), heated.assayId(),
+                heated.componentBasis(), heated.feedComponentMolarFlowsMolPerSecond(), heated.feedTemperatureKelvin(),
+                heated.stageCount(), heated.feedStageNumber(), heated.topPressurePascal(),
+                heated.stagePressureDropPascal(), heated.specifications(), List.copyOf(draws), List.of(),
+                heated.pumparounds());
     }
 
     /**
@@ -177,11 +222,11 @@ class V3PumparoundCalculatorTest {
      * repeat. Measured on JDK 21 with per-phase support: 1 080 557 checkpoints with a full repeat budget,
      * 881 492 with the bounded one. The pinned ceiling is the bounded number with a 10% margin.</p>
      *
-     * <p>The outcome of this case is deliberately not pinned, exactly as in
-     * {@link #aLargeSingleTrayDutyStaysWithinTheTypedFailureContract}: a 40 MW duty on one tray of a column
-     * whose whole condenser removes 46 MW sits on a condenser phase transition that the heat ramp subdivides
-     * three times and then jumps past, and which side of that jump it lands on is not a property of the
-     * support rule.</p>
+     * <p>The outcome of this case is deliberately not pinned: a 40 MW duty on one tray is a configuration the
+     * source arrangement never uses (it distributes 41.93 MW over three coolers in three sections, see
+     * {@link #theThesisThreeCoolerArrangementCarriesItsWholeDutyWithTheSideDraws}), and it sits on a condenser
+     * phase transition that the heat ramp subdivides and then jumps past. Which side of that jump it lands on
+     * is not a property of the support rule this test measures.</p>
      */
     @Test
     void aStalledDropOnlyFloorRefreshCostsABoundedRepeatOnTheFortyMegawattCase() {

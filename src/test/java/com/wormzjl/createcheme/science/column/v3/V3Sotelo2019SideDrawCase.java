@@ -20,6 +20,21 @@ final class V3Sotelo2019SideDrawCase {
     static final double SOURCE_DIESEL_BARRELS_PER_DAY = 20_000.0;
     static final double SOURCE_AGO_BARRELS_PER_DAY = 5_000.0;
     static final double MODEL_FEED_KMOL_PER_HOUR = 2_610.7;
+
+    /**
+     * Draw scale of the qualified dry lane.
+     *
+     * <p>0.25 is the largest scale a draws-only column at reflux ratio 2.0 and a 400 K condenser supports, and
+     * the limit is the internal mass balance rather than the solver. That condenser and reflux send about 59%
+     * of the feed moles overhead, so a draw scale of 0.75 (37% of the feed) or 1.0 (49.7%) asks for more
+     * product than there is feed: those two specifications are invalid, not merely hard. They also exceed the
+     * source arrangements — Sotelo et al. (2019) and Ledezma-Martinez (2019, table A5) both draw about 40 to
+     * 46% from the side, and both do it with pumparounds that condense vapour back into the sections the draws
+     * empty. Between 0.25 and 1.0 the failure is a starved tray below the lowest draw, which cooling fixes:
+     * with the source pumparound arrangement the same column converges at 0.40, which
+     * {@code V3SideDrawCalculatorTest.theThesisArrangedFortyPercentDrawsConvergeWithTheirPumparounds}
+     * qualifies. Dry V3 has no pumparound in this fixture, so the dry lane stays at 0.25.</p>
+     */
     static final double DRY_QUALIFICATION_SCALE = 0.25;
 
     private V3Sotelo2019SideDrawCase() {}

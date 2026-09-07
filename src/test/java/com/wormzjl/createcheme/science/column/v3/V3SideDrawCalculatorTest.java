@@ -61,8 +61,19 @@ class V3SideDrawCalculatorTest {
         }
     }
 
+    /**
+     * An over-specified product slate: the requested overhead plus the requested side draws exceed the feed.
+     *
+     * <p>The three draws of 496 / 653 / 149 kmol/h are 1 298 kmol/h, 49.7% of the feed moles, and this column
+     * at a 400 K condenser and reflux ratio 2.0 sends about 59% of the feed overhead, so the specification
+     * asks for more product than there is feed. The source arrangement (Ledezma-Martinez 2019, table A5) draws
+     * 45.6% of the moles from the side and 32.4% overhead. This case therefore qualifies the typed-failure
+     * contract — requested geometry attempted, the exhausted authored tray named, no continuation-grid excuse
+     * — and nothing about convergence; the qualified draw lanes are the 0.25x draws-only case above and the
+     * 0.40x draws-plus-coolers case below.</p>
+     */
     @Test
-    void originalLargeDrawCaseAttemptsRequestedGeometryAndNamesAnAuthoredTray() {
+    void anOverSpecifiedProductSlateAttemptsRequestedGeometryAndNamesAnAuthoredTray() {
         long started = System.nanoTime();
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(canonicalInput(150_000), () -> {
             if (System.nanoTime() - started > 45_000_000_000L) throw new AssertionError("large-draw failure exceeded 45 seconds");
@@ -80,6 +91,59 @@ class V3SideDrawCalculatorTest {
             assertTrue(failure.diagnostics().events().stream().anyMatch(
                     event -> event.contains("side-draw ramp reached the requested input")),
                     failure.diagnostics().events()::toString);
+        }
+    }
+
+    /**
+     * The draws-plus-coolers qualification: 0.40x of the sweep's draw rates with the source's own pumparound
+     * arrangement, one cooler per draw, drawn at the product stage and returned two stages above, duties
+     * scaled with the draws (0.40 x 12.84 / 17.89 / 11.20 MW).
+     *
+     * <p>The draws-only sweep stops converging above 0.25x for a mass-balance reason and not a solver one: at
+     * reflux ratio 2.0 nothing below the condenser condenses vapour to replace the liquid the draws remove, so
+     * at 0.40x the tray below the lowest draw is left with 0.8 mol/s of liquid and its heaviest components
+     * cannot meet their balances and their bubble point together. The coolers put that liquid back — measured
+     * with the reflection probe on this exact input: tray 23 holds 57 mol/s and the three withdrawal fractions
+     * are 0.18, 0.28 and 0.13, against 0.15, 0.45 and 0.75 without the coolers. Literature draw rates need
+     * their literature pumparounds.</p>
+     */
+    @Test
+    void theThesisArrangedFortyPercentDrawsConvergeWithTheirPumparounds() {
+        V3ColumnInput canonical = canonicalInput(150_000);
+        List<V3SideDrawSpec> draws = canonical.sideDraws().stream()
+                .map(draw -> new V3SideDrawSpec(draw.trayNumber(), 0.40 * draw.molarFlowMolPerSecond())).toList();
+        V3ColumnInput input = new V3ColumnInput(canonical.schemaVersion(), canonical.packageId(),
+                canonical.assayId(), canonical.componentBasis(), canonical.feedComponentMolarFlowsMolPerSecond(),
+                canonical.feedTemperatureKelvin(), canonical.stageCount(), canonical.feedStageNumber(),
+                canonical.topPressurePascal(), canonical.stagePressureDropPascal(), canonical.specifications(),
+                draws, List.of(), List.of(
+                        new V3PumparoundSpec(6, 8, -0.40 * 12.84e6, V3PumparoundSpec.Split.UNIFORM),
+                        new V3PumparoundSpec(13, 15, -0.40 * 17.89e6, V3PumparoundSpec.Split.UNIFORM),
+                        new V3PumparoundSpec(20, 22, -0.40 * 11.20e6, V3PumparoundSpec.Split.UNIFORM)));
+
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, () -> {
+            if (System.nanoTime() - started > 90_000_000_000L) {
+                throw new AssertionError("the thesis-arranged 0.40x case exceeded 90 seconds");
+            }
+        });
+        System.out.println("Thesis-arranged 0.40x draws: " + (System.nanoTime() - started) / 1e9 + " s; " + outcome);
+
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.diagnostics().solvePath().contains("draws-3"), success.diagnostics()::solvePath);
+        assertTrue(success.diagnostics().solvePath().contains("heat-3"), success.diagnostics()::solvePath);
+        assertEquals(-0.40 * 41.93e6, success.result().dutyLedger().orElseThrow().stageHeatTotalWatts(), 1.0);
+        V3AcceptanceAudit.Check split = success.result().acceptanceAudit().checks().stream()
+                .filter(check -> check.family().equals("SIDE_DRAW_SPLIT")).findFirst().orElseThrow();
+        assertTrue(split.passed(), split::toString);
+        assertTrue(split.value() < 0.5,
+                () -> "every draw must leave most of its tray's liquid behind; largest withdrawal " + split.value());
+        for (V3SideDrawSpec draw : draws) {
+            V3ColumnStreamProperties stream = success.result().streams().stream()
+                    .filter(candidate -> candidate.displayName().equals("Side draw (tray " + draw.trayNumber() + ")"))
+                    .findFirst().orElseThrow();
+            assertEquals(draw.molarFlowMolPerSecond(), stream.molarFlowMolPerSecond(), 1e-8);
         }
     }
 
