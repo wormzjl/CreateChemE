@@ -105,23 +105,64 @@ public final class V3ColumnCalculator {
      * @throws IllegalArgumentException if the cutoff is nonfinite or outside [0, 0.01]
      */
     public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control, double stageTraceCutoffMoleFraction) {
+        return calculate(input, control, stageTraceCutoffMoleFraction, 0.0);
+    }
+
+    /**
+     * Calculates at an authored convergence closure.
+     *
+     * <p>{@code convergenceClosureFraction} is the relative closure every residual row must reach: a component
+     * balance closes to that fraction of its own local throughput, an equilibrium row to that difference in log
+     * composition, a tray energy row to that fraction of {@code F_total * 1e5 W}. Zero selects the frozen
+     * default {@link V3ConvergenceEvidence#MAXIMUM_LOG_FLOW_CHANGE} and reproduces the default path bit for
+     * bit, including its digest and formulation label. A positive value loosens the Newton stop, the final-step
+     * gate, the equilibrium and condenser-split audit limits and the two energy-closure audit limits together,
+     * and appends a closure suffix to the formulation label so an accepted result at one closure can never be
+     * mistaken for one at another.</p>
+     *
+     * @throws IllegalArgumentException if the cutoff is nonfinite or outside [0, 0.01], or if the closure is
+     *         nonfinite or outside [0, {@link V3ConvergenceEvidence#MAXIMUM_CLOSURE_TOLERANCE}]
+     */
+    public static V3ColumnOutcome calculate(
+            V3ColumnInput input, V3SolveControl control, double stageTraceCutoffMoleFraction,
+            double convergenceClosureFraction) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         V3TruncationSupport.requireCutoff(stageTraceCutoffMoleFraction);
-        if (stageTraceCutoffMoleFraction == 0.0) return calculate(input, control);
+        double closure = closureTolerance(convergenceClosureFraction);
+        if (stageTraceCutoffMoleFraction == 0.0) {
+            return closure == V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE
+                    ? calculate(input, control)
+                    : calculate(input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
+                            new SolvePolicy(0.0, 0.0, closure));
+        }
         return V3TruncationFallback.calculate(stageTraceCutoffMoleFraction, attemptCutoff -> calculate(
                 input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
-                new TruncationPolicy(stageTraceCutoffMoleFraction, attemptCutoff)));
+                new SolvePolicy(stageTraceCutoffMoleFraction, attemptCutoff, closure)));
+    }
+
+    /**
+     * Converts an authored closure request into the tolerance every gate uses.
+     *
+     * @throws IllegalArgumentException if the request is nonfinite or outside
+     *         [0, {@link V3ConvergenceEvidence#MAXIMUM_CLOSURE_TOLERANCE}]
+     */
+    public static double closureTolerance(double convergenceClosureFraction) {
+        if (!Double.isFinite(convergenceClosureFraction) || convergenceClosureFraction < 0.0
+                || convergenceClosureFraction > V3ConvergenceEvidence.MAXIMUM_CLOSURE_TOLERANCE) {
+            throw new IllegalArgumentException("V3 convergence closure fraction must be finite and in [0, 1e-3]");
+        }
+        return Math.max(V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE, convergenceClosureFraction);
     }
 
     /** Package-private cold-start qualifier for reviewed initializer modes; production uses the sequential MESH path. */
     static V3ColumnOutcome calculate(
             V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode) {
-        return calculate(input, control, initializerMode, TruncationPolicy.OFF);
+        return calculate(input, control, initializerMode, SolvePolicy.OFF);
     }
 
     private static V3ColumnOutcome calculate(
-            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode, TruncationPolicy policy) {
+            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode, SolvePolicy policy) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         Objects.requireNonNull(initializerMode, "initializerMode");
@@ -205,7 +246,7 @@ public final class V3ColumnCalculator {
 
     private static V3ColumnOutcome calculateBranch(
             V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode,
-            V3CondenserPhaseBranch condenserBranch, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
+            V3CondenserPhaseBranch condenserBranch, SolvePolicy policy, CondenserAttempts condenserAttempts) {
         input = Objects.requireNonNull(input, "input");
         control = Objects.requireNonNull(control, "control");
         initializerMode = Objects.requireNonNull(initializerMode, "initializerMode");
@@ -289,11 +330,12 @@ public final class V3ColumnCalculator {
                     V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
                             coarsePrepared.problem(), evaluator, new V3DryMeshCoordinateMap(coarsePrepared.problem()),
                             coarsePrepared.seed(), thermo::newWorkspace,
-                            V3ConvergenceEvidence.unavailable(), MAXIMUM_NEWTON_ITERATIONS, SCALED_RESIDUAL_TOLERANCE,
+                            V3ConvergenceEvidence.unavailable(policy.closureTolerance()), MAXIMUM_NEWTON_ITERATIONS,
+                            policy.closureTolerance(),
                             V3FiniteDifferenceJacobian.DifferenceScale.COARSE, control);
                     control.checkpoint();
-                    V3AcceptanceAudit coarseAudit = audit(
-                            coarsePrepared.problem(), thermo, pass.feedMolarEnthalpyJoulesPerMol(), coarseAttempt.state(), control);
+                    V3AcceptanceAudit coarseAudit = audit(coarsePrepared.problem(), thermo,
+                            pass.feedMolarEnthalpyJoulesPerMol(), coarseAttempt.state(), control, policy);
                     V3SolvePass coarsePass = withPriorSupportNotes(pass, new V3SolvePass(coarseAttempt, coarseAudit,
                             pass.feedMolarEnthalpyJoulesPerMol(), "cold/coarse-fd-recovery", pass.recoverySeed(),
                             pass.terminalStageCount(), pass.reachedRequestedProblem(), pass.attemptedRequestedProblem(),
@@ -324,14 +366,17 @@ public final class V3ColumnCalculator {
             List<String> solverEvents = !selected.support().isIdentity()
                     ? mergedEvents(List.of(stageTraceEvent(selected.support(), attempt.state(), selected.problem())), pass.solverEvents())
                     : pass.solverEvents();
-            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, solverEvents);
+            V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, solverEvents, policy);
             if (pass.reachedRequestedProblem()
-                    && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()) {
-                V3InputDigest digest = V3InputDigest.of(selected.problem(), formulationRevision(input, policy.requestedCutoff()),
-                        thermo.datasetRevision(), assumptionsRevision(input), policy.requestedCutoff());
+                    && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()
+                    && converged.evidence().convergenceEvidence().satisfiesGates(policy.closureTolerance())) {
+                String revision = formulationRevision(input, policy.requestedCutoff(), policy.closureTolerance());
+                V3InputDigest digest = V3InputDigest.of(selected.problem(), revision,
+                        thermo.datasetRevision(), assumptionsRevision(input), policy.requestedCutoff(),
+                        policy.closureTolerance());
                 V3ColumnResult result = V3ColumnResult.accepted(
                         selected.problem(), digest, audit, converged.evidence().convergenceEvidence(), converged.state(), thermo,
-                        formulationRevision(input, policy.requestedCutoff()),
+                        revision,
                         V3ColumnDutyLedger.fromAccepted(selected.problem(), converged.state(), thermo,
                                 pass.feedMolarEnthalpyJoulesPerMol()));
                 return new V3ColumnOutcome.Success(result, diagnostics);
@@ -391,7 +436,7 @@ public final class V3ColumnCalculator {
      */
     private static V3SolvePass solveDwsimStageContinuation(
             V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control,
-            V3CondenserPhaseBranch condenserBranch, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
+            V3CondenserPhaseBranch condenserBranch, SolvePolicy policy, CondenserAttempts condenserAttempts) {
         List<Integer> stageCounts = dwsimStageCounts(input.stageCount());
         String stagePath = dwsimStagePath(stageCounts);
         V3DryMeshState previousState = null;
@@ -458,7 +503,7 @@ public final class V3ColumnCalculator {
      */
     private static V3SolvePass solveDwsimPressureContinuation(
             V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolveControl control,
-            V3CondenserPhaseBranch condenserBranch, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
+            V3CondenserPhaseBranch condenserBranch, SolvePolicy policy, CondenserAttempts condenserAttempts) {
         if (input.topPressurePascal() > PRESSURE_CONTINUATION_TRIGGER_PASCAL) {
             throw new IllegalArgumentException("V3 pressure continuation was requested outside its low-pressure lane");
         }
@@ -585,7 +630,7 @@ public final class V3ColumnCalculator {
             V3SolveControl control,
             String stagePath,
             int stageCount,
-            TruncationPolicy policy) {
+            SolvePolicy policy) {
         control.checkpoint();
         return recoverWithBubblePointProjection(problem, thermo, failedPass.attempt().state(), control,
                 "cold/dwsim-sequential/" + stagePath + "/material-vle-recovery-stage-" + stageCount + "/fine-fd",
@@ -601,7 +646,7 @@ public final class V3ColumnCalculator {
             String solvePath,
             ContinuationJacobianPolicy jacobianPolicy,
             int maximumIterations,
-            TruncationPolicy policy) {
+            SolvePolicy policy) {
         control.checkpoint();
         V3DryMeshState projected = projectedSeedOrPrevious(problem, thermo, projectionSource, control);
         return solveSingleProblem(problem, thermo, projected, control, solvePath, jacobianPolicy, maximumIterations, policy);
@@ -613,7 +658,7 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed,
             V3SolveControl control,
             String solvePath,
-            TruncationPolicy policy) {
+            SolvePolicy policy) {
         return solveSingleProblem(problem, thermo, seed, control, solvePath, ContinuationJacobianPolicy.NONE, policy);
     }
 
@@ -624,7 +669,7 @@ public final class V3ColumnCalculator {
             V3SolveControl control,
             String solvePath,
             ContinuationJacobianPolicy jacobianPolicy,
-            TruncationPolicy policy) {
+            SolvePolicy policy) {
         return solveSingleProblem(problem, thermo, seed, control, solvePath, jacobianPolicy,
                 MAXIMUM_NEWTON_ITERATIONS, policy);
     }
@@ -637,7 +682,7 @@ public final class V3ColumnCalculator {
             String solvePath,
             ContinuationJacobianPolicy jacobianPolicy,
             int maximumIterations,
-            TruncationPolicy policy) {
+            SolvePolicy policy) {
         if (maximumIterations < 1 || maximumIterations > MAXIMUM_NEWTON_ITERATIONS) {
             throw new IllegalArgumentException("V3 simultaneous solve iteration limit is invalid");
         }
@@ -677,17 +722,18 @@ public final class V3ColumnCalculator {
             attempt = switch (jacobianPolicy) {
                 case NONE -> V3SimultaneousColumnSolver.solve(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        V3ConvergenceEvidence.unavailable(), nextIterations, SCALED_RESIDUAL_TOLERANCE,
+                        V3ConvergenceEvidence.unavailable(policy.closureTolerance()), nextIterations,
+                        policy.closureTolerance(),
                         V3FiniteDifferenceJacobian.DifferenceScale.FINE, control, telemetry);
                 case STAGE_LOCAL_BLOCKS -> V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        nextIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+                        nextIterations, policy.closureTolerance(), control, telemetry);
                 case PRESSURE_LOCAL_PREDICTOR -> V3SimultaneousColumnSolver.solveWithOneLocalBlockPredictor(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        nextIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+                        nextIterations, policy.closureTolerance(), control, telemetry);
             };
             control.checkpoint();
-            audit = audit(attemptProblem, thermo, feedMolarEnthalpy, attempt.state(), control);
+            audit = audit(attemptProblem, thermo, feedMolarEnthalpy, attempt.state(), control, policy);
             // A stalled attempt is refreshed too, and measurably must be: a stall is often exactly the state
             // that has just dried a point out or started feeding a removed one, and one repeat from the
             // corrected support is what converges the rung. Only one, though: a second stall in a row is a
@@ -739,7 +785,7 @@ public final class V3ColumnCalculator {
     /** One warm condenser flash correction per rung; its candidate still needs the full fresh audit. */
     private static PhaseCorrection correctCondenserPhase(
             V3SolvePass pass, V3PengRobinsonThermo thermo, V3SolveControl control,
-            TruncationPolicy policy, CondenserAttempts condenserAttempts) {
+            SolvePolicy policy, CondenserAttempts condenserAttempts) {
         if (!hasCondenserPhaseMismatch(pass)) return new PhaseCorrection(pass, false);
         condenserAttempts.beginPhaseCorrection();
         if (!pass.attempt().evidence().convergenceEvidence().satisfiesGates()
@@ -832,7 +878,7 @@ public final class V3ColumnCalculator {
     /** Bounded authored-parameter ramp from a dry surrogate seed to liquid draws and free-water steam. */
     private static V3SolvePass recoverWithDrawRamp(
             V3ColumnProblem requested, V3PengRobinsonThermo thermo, V3SolvePass seedBase,
-            V3SolveControl control, TruncationPolicy policy, CondenserAttempts condenserAttempts) {
+            V3SolveControl control, SolvePolicy policy, CondenserAttempts condenserAttempts) {
         V3ColumnInput input = requested.input();
         seedBase = Objects.requireNonNull(seedBase, "seedBase");
         if (!publishesSuccess(seedBase.attempt(), seedBase.audit())
@@ -911,7 +957,7 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed = previous == seedBase
                     ? continuationSeed(problem, previous.attempt().state(), thermo, control)
                     : previous.attempt().state();
-            TruncationPolicy rampPolicy = rampStep.requested(input) ? policy : TruncationPolicy.OFF;
+            SolvePolicy rampPolicy = rampStep.requested(input) ? policy : policy.withoutCutoff();
             V3SolvePass pass = solveSingleProblem(problem, thermo, seed, control,
                     rampPath + "/" + rampStep.pathLabel() + "-" + rampStep.progress(),
                     ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
@@ -1122,6 +1168,33 @@ public final class V3ColumnCalculator {
      * and equations. Accepted trace profiles differ, so the digest must differ.</p>
      */
     static String formulationRevision(V3ColumnInput input, double requestedCutoff) {
+        return formulationRevision(input, requestedCutoff, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
+    }
+
+    /**
+     * Formulation label of one authored input solved at {@code closureTolerance}.
+     *
+     * <p>A closure above the frozen default appends {@code -closure<mantissa>e<exponent>} (for example
+     * {@code -closure1e-3}). Accepted states differ between closures — the whole point of the knob is that a
+     * looser one accepts a state the default rejects — so the label, and therefore the digest, must differ.
+     * The default closure appends nothing and keeps every historical label byte for byte.</p>
+     */
+    static String formulationRevision(V3ColumnInput input, double requestedCutoff, double closureTolerance) {
+        return formulationRevisionWithoutClosure(input, requestedCutoff) + closureSuffix(closureTolerance);
+    }
+
+    /** Canonical {@code -closureMeN} suffix, or the empty string at the frozen default closure. */
+    static String closureSuffix(double closureTolerance) {
+        V3ConvergenceEvidence.requireClosure(closureTolerance);
+        if (closureTolerance <= V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE) return "";
+        int exponent = (int) Math.floor(Math.log10(closureTolerance));
+        double mantissa = closureTolerance / Math.pow(10.0, exponent);
+        String digits = new java.math.BigDecimal(mantissa)
+                .round(new java.math.MathContext(6)).stripTrailingZeros().toPlainString();
+        return "-closure" + digits + "e" + exponent;
+    }
+
+    private static String formulationRevisionWithoutClosure(V3ColumnInput input, double requestedCutoff) {
         V3TruncationSupport.requireCutoff(requestedCutoff);
         boolean heat = !input.pumparounds().isEmpty();
         String trace = requestedCutoff > 0.0 ? "-flash-trace" : "";
@@ -1210,7 +1283,7 @@ public final class V3ColumnCalculator {
      * decision self-consistent at every rung instead of only at a refresh.</p>
      */
     private static PreparedAttempt prepareAttempt(
-            V3ColumnProblem original, V3PengRobinsonThermo thermo, V3DryMeshState seed, TruncationPolicy policy) {
+            V3ColumnProblem original, V3PengRobinsonThermo thermo, V3DryMeshState seed, SolvePolicy policy) {
         V3DryMeshState lifted = liftFloorSupport(original, thermo, seed);
         V3TruncationSupport support = V3TruncationSupport.derive(original, policy.attemptCutoff(), lifted);
         V3ColumnProblem problem;
@@ -1227,7 +1300,7 @@ public final class V3ColumnCalculator {
     /** Re-derives the floor support from a solved state, or returns null when the retained set is unchanged. */
     private static PreparedAttempt refreshFloorSupport(
             V3ColumnProblem untruncated, V3PengRobinsonThermo thermo, PreparedAttempt prepared,
-            V3DryMeshState state, TruncationPolicy policy) {
+            V3DryMeshState state, SolvePolicy policy) {
         PreparedAttempt refreshed = prepareAttempt(untruncated, thermo, state, policy);
         return refreshed.support().sameRetention(prepared.support()) ? null : refreshed;
     }
@@ -1405,15 +1478,31 @@ public final class V3ColumnCalculator {
     }
 
     /** Immutable per-chain policy separates scientific request provenance from an untruncated retry. */
-    private record TruncationPolicy(double requestedCutoff, double attemptCutoff) {
-        private static final TruncationPolicy OFF = new TruncationPolicy(0.0, 0.0);
+    /**
+     * Per-chain solve policy: the authored stage-trace cutoff and the convergence closure.
+     *
+     * <p>Both travel together into every {@code solveSingleProblem}, ramp rung, continuation stage, recovery,
+     * condenser-phase correction and warm-start solve, so that no solve on a chain can be run at a different
+     * closure from the one the chain publishes. The cutoff can be disabled for one rung
+     * ({@link #withoutCutoff()}); the closure never can.</p>
+     */
+    private record SolvePolicy(double requestedCutoff, double attemptCutoff, double closureTolerance) {
+        private static final SolvePolicy OFF =
+                new SolvePolicy(0.0, 0.0, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
 
-        private TruncationPolicy {
+        private SolvePolicy {
             V3TruncationSupport.requireCutoff(requestedCutoff);
             V3TruncationSupport.requireCutoff(attemptCutoff);
+            V3ConvergenceEvidence.requireClosure(closureTolerance);
             if (attemptCutoff != 0.0 && attemptCutoff != requestedCutoff) {
                 throw new IllegalArgumentException("V3 attempt cutoff must match the request or be disabled for fallback");
             }
+        }
+
+        /** Same closure, no stage-trace cutoff; the ramp's intermediate rungs run untruncated by design. */
+        private SolvePolicy withoutCutoff() {
+            return requestedCutoff == 0.0 && attemptCutoff == 0.0
+                    ? this : new SolvePolicy(0.0, 0.0, closureTolerance);
         }
     }
 
@@ -1583,9 +1672,11 @@ public final class V3ColumnCalculator {
             V3PengRobinsonThermo thermo,
             double feedMolarEnthalpy,
             V3DryMeshState state,
-            V3SolveControl control) {
+            V3SolveControl control,
+            SolvePolicy policy) {
         try {
-            return new V3AcceptanceAuditor(problem, thermo, feedMolarEnthalpy).audit(state, thermo.newWorkspace(), control);
+            return new V3AcceptanceAuditor(problem, thermo, feedMolarEnthalpy, policy.closureTolerance())
+                    .audit(state, thermo.newWorkspace(), control);
         } catch (CancellationException cancelled) {
             throw cancelled;
         } catch (RuntimeException unavailable) {
@@ -1602,14 +1693,15 @@ public final class V3ColumnCalculator {
             V3SimultaneousColumnSolver.Attempt attempt,
             V3AcceptanceAudit audit,
             String solvePath,
-            List<String> solverEvents) {
+            List<String> solverEvents,
+            SolvePolicy policy) {
         V3SimultaneousColumnSolver.Evidence evidence = attempt.evidence();
         double finalStepNorm = Math.max(evidence.convergenceEvidence().maximumLogFlowChange(),
                 evidence.convergenceEvidence().maximumTemperatureChangeKelvin());
         List<String> events = new ArrayList<>(solverEvents);
         if (events.size() < V3SolverDiagnostics.MAX_EVENTS) events.add(evidence.termination());
         return new V3SolverDiagnostics(0, evidence.iterations(), 0, 0, evidence.maximumScaledResidual(), finalStepNorm,
-                solvePath, events, audit, evidence.convergenceEvidence());
+                solvePath, events, audit, evidence.convergenceEvidence(), policy.closureTolerance());
     }
 
     private static V3ColumnOutcome.Failure terminalFailure(

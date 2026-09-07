@@ -14,10 +14,22 @@ public record V3SolverDiagnostics(
         String solvePath,
         List<String> events,
         V3AcceptanceAudit acceptanceAudit,
-        V3ConvergenceEvidence convergenceEvidence) {
+        V3ConvergenceEvidence convergenceEvidence,
+        double closureTolerance) {
     public static final int MAX_EVENTS = 32;
 
+    /** Diagnostics of a solve at the frozen default convergence closure. */
+    public V3SolverDiagnostics(
+            int initializerIterations, int newtonIterations, int residualEvaluations, int linearSolves,
+            double maximumScaledResidual, double finalStepNorm, String solvePath, List<String> events,
+            V3AcceptanceAudit acceptanceAudit, V3ConvergenceEvidence convergenceEvidence) {
+        this(initializerIterations, newtonIterations, residualEvaluations, linearSolves, maximumScaledResidual,
+                finalStepNorm, solvePath, events, acceptanceAudit, convergenceEvidence,
+                V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
+    }
+
     public V3SolverDiagnostics {
+        V3ConvergenceEvidence.requireClosure(closureTolerance);
         if (initializerIterations < 0 || newtonIterations < 0 || residualEvaluations < 0 || linearSolves < 0) {
             throw new IllegalArgumentException("V3 iteration and evaluation counters cannot be negative");
         }

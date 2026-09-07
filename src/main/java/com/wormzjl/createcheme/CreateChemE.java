@@ -37,6 +37,7 @@ public final class CreateChemE {
     private static final ModConfigSpec.IntValue SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
+    private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -68,6 +69,15 @@ public final class CreateChemE {
                         "0 is the exact off switch. Default remains 0 pending accuracy/performance evaluation.",
                         "Captured at admission; config reloads do not change in-flight solves.")
                 .defineInRange("stageTraceCutoffMolPercent", 0.0, 0.0, 1.0);
+        COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT = builder
+                .comment("V3 convergence closure in percent: how tightly every residual row must close.",
+                        "A component balance closes to this fraction of its own tray throughput, equilibrium to this",
+                        "difference in log composition, and each tray's energy to this fraction of a reference flow.",
+                        "The acceptance audit's equilibrium, condenser-split and energy-closure limits move with it.",
+                        "0 is the exact off switch and keeps the frozen 1e-8 closure; 0.1 is the loosest admitted.",
+                        "A nonzero value changes the accepted state, so it is part of the result digest and label.",
+                        "Captured at admission; config reloads do not change in-flight solves.")
+                .defineInRange("columnV3ConvergenceClosurePercent", 0.0, 0.0, 0.1);
         builder.pop();
         CONFIG_SPEC = builder.build();
     }
@@ -96,6 +106,11 @@ public final class CreateChemE {
     /** Read on the server thread when admitting a V3 request, never from its worker. */
     public static double columnV3StageTraceCutoffMolPercent() {
         return COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT.get();
+    }
+
+    /** Read on the server thread when admitting a V3 request, never from its worker. */
+    public static double columnV3ConvergenceClosurePercent() {
+        return COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT.get();
     }
 
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {

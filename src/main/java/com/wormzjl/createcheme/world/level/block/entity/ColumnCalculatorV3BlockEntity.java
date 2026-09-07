@@ -12,6 +12,7 @@ import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
+import com.wormzjl.createcheme.science.column.v3.V3ConvergenceEvidence;
 import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
 import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
@@ -47,7 +48,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 7;
+    public static final int DATA_VERSION = 8;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
     private static final int DEFAULT_STAGE_COUNT = 29;
     private static final int DEFAULT_FEED_STAGE = 24;
@@ -232,6 +233,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             // Version 6 adds optional SteamFeeds; version 5 inputs migrate unchanged with an empty list.
             // Version 7 adds optional Pumparounds and an optional result DutyLedger; version 6 states migrate
             // unchanged with an empty pumparound list and an absent ledger, and keep their persisted result.
+            // Version 8 adds the result's ClosureTolerance; a version 7 result has no key and reads as the
+            // frozen default closure, which is exactly the closure every version 7 result was accepted at.
             if (dataVersion < 4 && currentInput.equals(priorUnqualifiedDefaultInput())) {
                 currentInput = defaultInput();
                 displayResult = null;
@@ -558,6 +561,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         }
         tag.put("Streams", streams);
         result.dutyLedger().ifPresent(ledger -> tag.put("DutyLedger", writeDutyLedger(ledger)));
+        tag.putDouble("ClosureTolerance", result.closureTolerance());
         return tag;
     }
 
@@ -631,10 +635,12 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         }
         Optional<V3ColumnDutyLedger> ledger = tag.contains("DutyLedger", Tag.TAG_COMPOUND)
                 ? Optional.of(readDutyLedger(tag.getCompound("DutyLedger"))) : Optional.empty();
+        double closure = tag.contains("ClosureTolerance", Tag.TAG_DOUBLE)
+                ? tag.getDouble("ClosureTolerance") : V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE;
         return new V3ColumnDisplayResult(
                 tag.getString("Digest"), tag.getString("Formulation"), tag.getString("Assumptions"),
                 tag.getString("Dataset"), tag.getInt("NewtonIterations"), tag.getDouble("MaximumResidual"),
-                tag.getInt("AcceptanceChecks"), streams, ledger);
+                tag.getInt("AcceptanceChecks"), streams, ledger, closure);
     }
 
     private static V3ColumnSpecification specification(V3ControlledQuantity quantity, double value) {

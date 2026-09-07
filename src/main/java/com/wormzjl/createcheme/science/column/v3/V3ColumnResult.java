@@ -107,6 +107,16 @@ public final class V3ColumnResult {
         return convergenceEvidence;
     }
 
+    /**
+     * Relative convergence closure this result was accepted at.
+     *
+     * <p>Read from the certificate itself rather than stored twice: the closure a state was solved to is a
+     * property of its final Newton step, and a second copy could disagree with the gate that admitted it.</p>
+     */
+    public double closureTolerance() {
+        return convergenceEvidence.closureTolerance();
+    }
+
     public List<V3ColumnStreamProperties> streams() {
         return streams;
     }

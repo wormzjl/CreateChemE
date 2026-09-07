@@ -43,7 +43,8 @@ final class V3TruncationFallback {
         V3SolverDiagnostics previous = outcome.diagnostics();
         V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(previous.initializerIterations(), previous.newtonIterations(),
                 previous.residualEvaluations(), previous.linearSolves(), previous.maximumScaledResidual(), previous.finalStepNorm(),
-                previous.solvePath(), events, previous.acceptanceAudit(), previous.convergenceEvidence());
+                previous.solvePath(), events, previous.acceptanceAudit(), previous.convergenceEvidence(),
+                previous.closureTolerance());
         return outcome instanceof V3ColumnOutcome.Success success ? new V3ColumnOutcome.Success(success.result(), diagnostics)
                 : new V3ColumnOutcome.Failure(((V3ColumnOutcome.Failure) outcome).code(),
                         ((V3ColumnOutcome.Failure) outcome).summary(), diagnostics);

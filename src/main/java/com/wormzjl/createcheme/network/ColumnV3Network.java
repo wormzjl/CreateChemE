@@ -51,7 +51,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 7;
+    public static final int WIRE_SCHEMA_VERSION = 8;
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -690,6 +690,8 @@ public final class ColumnV3Network {
                 buffer.writeDouble(fraction.massFraction());
             }
         }
+        // The optional duty ledger stays the trailing block of this record.
+        buffer.writeDouble(result.closureTolerance());
         buffer.writeBoolean(result.dutyLedger().isPresent());
         result.dutyLedger().ifPresent(ledger -> writeDutyLedger(buffer, ledger));
     }
@@ -761,10 +763,12 @@ public final class ColumnV3Network {
                 streams.add(new V3ColumnStreamProperties(
                         streamId, displayName, phase, flow, massFlow, temperature, pressure, vaporMoleFraction, fractions));
             }
+            double closure = finite(buffer.readDouble(), "closure tolerance");
             Optional<V3ColumnDutyLedger> ledger = buffer.readBoolean()
                     ? Optional.of(readDutyLedger(buffer)) : Optional.empty();
             return new V3ColumnDisplayResult(
-                    digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams, ledger);
+                    digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams, ledger,
+                    closure);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 display result", invalid);
         }

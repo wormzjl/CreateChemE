@@ -29,7 +29,21 @@ public record V3InputDigest(String hexadecimalSha256) {
     public static V3InputDigest of(
             V3ColumnProblem problem, String formulationRevision, String propertyDataRevision,
             String assumptionsRevision, double stageTraceCutoffMoleFraction) {
+        return of(problem, formulationRevision, propertyDataRevision, assumptionsRevision,
+                stageTraceCutoffMoleFraction, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
+    }
+
+    /**
+     * Identifies an authored cutoff request and an authored convergence closure.
+     *
+     * <p>The frozen default closure preserves the existing digest byte stream exactly; a looser one is hashed
+     * as a named field, because the accepted state it admits is a different state.</p>
+     */
+    public static V3InputDigest of(
+            V3ColumnProblem problem, String formulationRevision, String propertyDataRevision,
+            String assumptionsRevision, double stageTraceCutoffMoleFraction, double closureTolerance) {
         V3TruncationSupport.requireCutoff(stageTraceCutoffMoleFraction);
+        V3ConvergenceEvidence.requireClosure(closureTolerance);
         problem = Objects.requireNonNull(problem, "problem");
         MessageDigest digest = sha256();
         put(digest, "v3-input-digest-schema", V3ColumnInput.SCHEMA_VERSION);
@@ -38,6 +52,9 @@ public record V3InputDigest(String hexadecimalSha256) {
         put(digest, "assumptions-revision", revision(assumptionsRevision, "assumptionsRevision"));
         if (stageTraceCutoffMoleFraction > 0.0) {
             put(digest, "stage-trace-cutoff-mole-fraction-bits", canonicalBits(stageTraceCutoffMoleFraction));
+        }
+        if (closureTolerance > V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE) {
+            put(digest, "convergence-closure-bits", canonicalBits(closureTolerance));
         }
         V3ColumnInput input = problem.input();
         put(digest, "input-schema", input.schemaVersion());

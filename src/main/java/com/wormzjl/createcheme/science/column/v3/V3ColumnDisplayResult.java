@@ -20,7 +20,8 @@ public record V3ColumnDisplayResult(
         double maximumScaledResidual,
         int acceptanceCheckCount,
         List<V3ColumnStreamProperties> streams,
-        Optional<V3ColumnDutyLedger> dutyLedger) {
+        Optional<V3ColumnDutyLedger> dutyLedger,
+        double closureTolerance) {
     /** Legacy certificate without a duty ledger; older persisted and wire results decode through here. */
     public V3ColumnDisplayResult(
             String inputDigest, String formulationRevision, String assumptionsRevision, String datasetRevision,
@@ -30,8 +31,19 @@ public record V3ColumnDisplayResult(
                 maximumScaledResidual, acceptanceCheckCount, streams, Optional.empty());
     }
 
+    /** Certificate without a recorded closure; a version 7 persisted or wire result reads as the default. */
+    public V3ColumnDisplayResult(
+            String inputDigest, String formulationRevision, String assumptionsRevision, String datasetRevision,
+            int newtonIterations, double maximumScaledResidual, int acceptanceCheckCount,
+            List<V3ColumnStreamProperties> streams, Optional<V3ColumnDutyLedger> dutyLedger) {
+        this(inputDigest, formulationRevision, assumptionsRevision, datasetRevision, newtonIterations,
+                maximumScaledResidual, acceptanceCheckCount, streams, dutyLedger,
+                V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
+    }
+
     public V3ColumnDisplayResult {
         Objects.requireNonNull(dutyLedger, "dutyLedger");
+        V3ConvergenceEvidence.requireClosure(closureTolerance);
         inputDigest = boundedDigest(inputDigest);
         formulationRevision = boundedRevision(formulationRevision, "formulationRevision");
         assumptionsRevision = boundedRevision(assumptionsRevision, "assumptionsRevision");
@@ -59,7 +71,8 @@ public record V3ColumnDisplayResult(
                 success.diagnostics().maximumScaledResidual(),
                 result.acceptanceAudit().checks().size(),
                 result.streams(),
-                result.dutyLedger());
+                result.dutyLedger(),
+                result.closureTolerance());
     }
 
     private static String datasetRevision(String packageId) {

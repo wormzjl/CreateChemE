@@ -101,7 +101,9 @@ public final class ProcessSolveServices {
         requireServerThread(server);
         Objects.requireNonNull(request, "request");
         double stageTraceCutoffMoleFraction = CreateChemE.columnV3StageTraceCutoffMolPercent() / 100.0;
-        return submit(server, request, new V3ColumnCommand(request.operation().input(), stageTraceCutoffMoleFraction),
+        double convergenceClosureFraction = CreateChemE.columnV3ConvergenceClosurePercent() / 100.0;
+        return submit(server, request, new V3ColumnCommand(request.operation().input(),
+                        stageTraceCutoffMoleFraction, convergenceClosureFraction),
                 request.operation().input().packageId());
     }
 
@@ -330,12 +332,23 @@ public final class ProcessSolveServices {
     }
 
     /** Immutable worker snapshot; configuration has already been read and converted by server-thread admission. */
-    record V3ColumnCommand(V3ColumnInput input, double stageTraceCutoffMoleFraction) implements ProcessSolveCommand {
+    record V3ColumnCommand(
+            V3ColumnInput input, double stageTraceCutoffMoleFraction, double convergenceClosureFraction)
+            implements ProcessSolveCommand {
+        /** Cutoff-only snapshot at the frozen default convergence closure. */
+        V3ColumnCommand(V3ColumnInput input, double stageTraceCutoffMoleFraction) {
+            this(input, stageTraceCutoffMoleFraction, 0.0);
+        }
+
         V3ColumnCommand {
             Objects.requireNonNull(input, "input");
             if (!Double.isFinite(stageTraceCutoffMoleFraction) || stageTraceCutoffMoleFraction < 0.0
                     || stageTraceCutoffMoleFraction > 0.01) {
                 throw new IllegalArgumentException("V3 stage-trace cutoff must be finite and in [0, 0.01] mole fraction");
+            }
+            if (!Double.isFinite(convergenceClosureFraction) || convergenceClosureFraction < 0.0
+                    || convergenceClosureFraction > 1.0e-3) {
+                throw new IllegalArgumentException("V3 convergence closure must be finite and in [0, 1e-3]");
             }
         }
 
@@ -344,8 +357,8 @@ public final class ProcessSolveServices {
             cancellationToken.throwIfCancellationRequested();
             V3ColumnOutcome outcome = V3HollandExample32.isPackage(input.packageId())
                     ? V3HollandExample32.calculate(input, cancellationToken::throwIfCancellationRequested)
-                    : V3ColumnCalculator.calculate(input,
-                            cancellationToken::throwIfCancellationRequested, stageTraceCutoffMoleFraction);
+                    : V3ColumnCalculator.calculate(input, cancellationToken::throwIfCancellationRequested,
+                            stageTraceCutoffMoleFraction, convergenceClosureFraction);
             cancellationToken.throwIfCancellationRequested();
             return new V3ColumnSolveResult(outcome);
         }

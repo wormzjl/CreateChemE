@@ -60,6 +60,32 @@ class V3ColumnCommandTest {
     }
 
     @Test
+    void immutableCommandRevalidatesTheClosureAndCarriesItIntoTheFacade() {
+        for (double invalid : new double[] {-Double.MIN_VALUE, Math.nextUp(1.0e-3), 1.0, Double.NaN,
+                Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY}) {
+            assertThrows(IllegalArgumentException.class,
+                    () -> new ProcessSolveServices.V3ColumnCommand(input(), 0.0, invalid));
+        }
+        assertDoesNotThrow(() -> new ProcessSolveServices.V3ColumnCommand(input(), 0.0, 0.0));
+        assertDoesNotThrow(() -> new ProcessSolveServices.V3ColumnCommand(input(), 0.0, 1.0e-3));
+        assertEquals(0.0, new ProcessSolveServices.V3ColumnCommand(input(), 0.0).convergenceClosureFraction());
+
+        V3ColumnInput input = input();
+        ProcessSolveServices.V3ColumnCommand command =
+                new ProcessSolveServices.V3ColumnCommand(input, 0.0, 1.0e-3);
+        V3ColumnOutcome.Success loose = assertInstanceOf(V3ColumnOutcome.Success.class,
+                assertInstanceOf(ProcessSolveServices.V3ColumnSolveResult.class, command.solve(unbounded())).outcome());
+        V3ColumnOutcome.Success frozen = assertInstanceOf(V3ColumnOutcome.Success.class,
+                V3ColumnCalculator.calculate(input));
+        assertEquals(1.0e-3, loose.result().closureTolerance());
+        assertTrue(loose.result().formulationRevision().endsWith("-closure1e-3"));
+        assertNotEquals(frozen.result().inputDigest(), loose.result().inputDigest());
+        assertEquals(V3ColumnCalculator.calculate(input, () -> {}, 0.0, 1.0e-3) instanceof V3ColumnOutcome.Success
+                        expected ? expected.result().inputDigest() : null,
+                loose.result().inputDigest());
+    }
+
+    @Test
     void callerCancellationStillEscapesBeforeScientificWork() {
         CancellationException cancellation = new CancellationException("cancelled worker");
         BoundedCpuSolveService.CancellationToken token = new BoundedCpuSolveService.CancellationToken() {

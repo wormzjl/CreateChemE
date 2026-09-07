@@ -204,7 +204,7 @@ final class V3SimultaneousColumnSolver {
             double[] frozenScales = residual.scales();
             double merit = scaledSquaredNorm(residual);
             trace.sampledState(iteration, state, residual, merit);
-            if (maximumResidual <= scaledTolerance && lastConvergenceEvidence.satisfiesGates()) {
+            if (maximumResidual <= scaledTolerance && lastConvergenceEvidence.satisfiesGates(scaledTolerance)) {
                 return new Attempt.Converged(state, new Evidence(iteration, maximumResidual, merit, 0.0, 0.0,
                         "residual and final-step tolerances", lastConvergenceEvidence));
             }
@@ -245,7 +245,7 @@ final class V3SimultaneousColumnSolver {
                             lastMerit = localTrial.merit();
                             cachedFineJacobian = null;
                             frozenFineJacobianSteps = 0;
-                            lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+                            lastConvergenceEvidence = V3ConvergenceEvidence.unavailable(V3ConvergenceEvidence.closureOf(scaledTolerance));
                             continue;
                         }
                     }
@@ -306,7 +306,7 @@ final class V3SimultaneousColumnSolver {
                 }
                 state = descentTrial.state();
                 lastMerit = descentTrial.merit();
-                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable(V3ConvergenceEvidence.closureOf(scaledTolerance));
                 continue;
             }
             double[] baseCoordinates = coordinates.encode(state);
@@ -340,13 +340,14 @@ final class V3SimultaneousColumnSolver {
             if (usedDescentFallback) {
                 cachedFineJacobian = null;
                 frozenFineJacobianSteps = 0;
-                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable(V3ConvergenceEvidence.closureOf(scaledTolerance));
             } else if (usesFrozenFineJacobian) {
                 frozenFineJacobianSteps++;
-                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable();
+                lastConvergenceEvidence = V3ConvergenceEvidence.unavailable(V3ConvergenceEvidence.closureOf(scaledTolerance));
             } else {
                 lastConvergenceEvidence = convergenceEvidence(
-                        coordinates, baseCoordinates, acceptedTrial.coordinates(), linearSuccess.backwardError());
+                        coordinates, baseCoordinates, acceptedTrial.coordinates(), linearSuccess.backwardError(),
+                        scaledTolerance);
             }
             double acceptedStep = acceptedTrial.step();
             if (!Double.isFinite(lastMerit)) {
@@ -421,8 +422,10 @@ final class V3SimultaneousColumnSolver {
         double maximumResidual = candidateResidual.maximumAbsoluteScaledResidual();
         double candidateMerit = scaledSquaredNorm(candidateResidual);
         V3ConvergenceEvidence evidence = convergenceEvidence(
-                coordinates, baseCoordinates, candidateCoordinates, backwardError);
-        if (maximumResidual > scaledTolerance || candidateMerit > merit || !evidence.satisfiesGates()) return null;
+                coordinates, baseCoordinates, candidateCoordinates, backwardError, scaledTolerance);
+        if (maximumResidual > scaledTolerance || candidateMerit > merit || !evidence.satisfiesGates(scaledTolerance)) {
+            return null;
+        }
         return new VerifiedFinalNewton(candidate, maximumResidual, candidateMerit, 1.0, backwardError, evidence);
     }
 
@@ -592,7 +595,7 @@ final class V3SimultaneousColumnSolver {
 
     private static V3ConvergenceEvidence convergenceEvidence(
             V3DryMeshCoordinateMap coordinates, double[] baseCoordinates, double[] candidateCoordinates,
-            double backwardError) {
+            double backwardError, double scaledTolerance) {
         double maximumLogFlowChange = 0.0;
         double maximumTemperatureChange = 0.0;
         double maximumTemperatureStepRatio = 0.0;
@@ -608,7 +611,7 @@ final class V3SimultaneousColumnSolver {
             }
         }
         return new V3ConvergenceEvidence(true, backwardError, maximumLogFlowChange, maximumTemperatureChange,
-                maximumTemperatureStepRatio);
+                maximumTemperatureStepRatio, V3ConvergenceEvidence.closureOf(scaledTolerance));
     }
 
     private record AcceptedTrial(V3DryMeshState state, double[] coordinates, double merit, double step) {}

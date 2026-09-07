@@ -23,14 +23,40 @@ final class V3AcceptanceAuditor {
     private final V3ColumnProblem problem;
     private final V3ThermoModel thermo;
     private final double feedMolarEnthalpyJoulesPerMol;
+    private final double closureTolerance;
 
     V3AcceptanceAuditor(V3ColumnProblem problem, V3ThermoModel thermo, double feedMolarEnthalpyJoulesPerMol) {
+        this(problem, thermo, feedMolarEnthalpyJoulesPerMol, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
+    }
+
+    /**
+     * Audits against the convergence closure the candidate was solved to.
+     *
+     * <p>Only the limits that are closure statements move with it: the equilibrium row family, the condenser
+     * phase split, and the two independently recomputed energy closures. The local component and tray energy
+     * row families keep their limit of one, and the two truncation defect budgets are mass budgets of the
+     * flow floor, not of the Newton stop, and keep theirs.</p>
+     */
+    V3AcceptanceAuditor(
+            V3ColumnProblem problem, V3ThermoModel thermo, double feedMolarEnthalpyJoulesPerMol,
+            double closureTolerance) {
         this.problem = Objects.requireNonNull(problem, "problem");
         this.thermo = Objects.requireNonNull(thermo, "thermo");
         if (!problem.input().componentBasis().equals(thermo.componentBasis()) || !Double.isFinite(feedMolarEnthalpyJoulesPerMol)) {
             throw new IllegalArgumentException("V3 acceptance auditor does not match its problem and thermodynamic model");
         }
         this.feedMolarEnthalpyJoulesPerMol = feedMolarEnthalpyJoulesPerMol;
+        this.closureTolerance = V3ConvergenceEvidence.requireClosure(closureTolerance);
+    }
+
+    /** Equilibrium and condenser-split limit: the frozen absolute floor, loosened only by an authored closure. */
+    private double closureLimit() {
+        return Math.max(EQUILIBRIUM_LIMIT, closureTolerance);
+    }
+
+    /** The residual evaluator's own energy row scale, {@code max(1, F_total * 1e5 W)}. */
+    private double energyScale() {
+        return Math.max(1.0, problem.activeComponentBasis().totalFeedFlowMolPerSecond() * 100_000.0);
     }
 
     V3AcceptanceAudit audit(V3DryMeshState state, V3ThermoWorkspace workspace) {
@@ -59,7 +85,7 @@ final class V3AcceptanceAuditor {
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE,
                 "LOCAL_COMPONENT_BALANCE", 1.0));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM,
-                "EQUILIBRIUM", EQUILIBRIUM_LIMIT));
+                "EQUILIBRIUM", closureLimit()));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE,
                 "ENERGY_BALANCE", 1.0));
         if (problem.truncationSupport().truncatedPointCount() > 0) checks.add(truncationMassDefect(state));
@@ -80,7 +106,7 @@ final class V3AcceptanceAuditor {
         }
         if (problem.hasSteamFeeds()) {
             checks.add(condenserEnergyBalance(problem, thermo, state, workspace,
-                    V3ColumnDutyLedger.condenserDutyWatts(problem, state, evaluator, workspace)));
+                    V3ColumnDutyLedger.condenserDutyWatts(problem, state, evaluator, workspace), closureTolerance));
         }
         control.checkpoint();
         List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
@@ -135,7 +161,10 @@ final class V3AcceptanceAuditor {
                 vaporEnergy[0], freeWater, sideDraws, bottoms}) {
             largest = Math.max(largest, Math.abs(term));
         }
-        double limit = Math.max(1.0, 1.0e-6 * largest);
+        // The boundary closure is the sum of the tray closures, so an authored convergence closure of tau on
+        // every one of the nodeCount energy rows admits up to nodeCount * tau * (the row scale) here.
+        double limit = Math.max(Math.max(1.0, 1.0e-6 * largest),
+                topology.nodeCount() * closureTolerance * energyScale());
         double magnitude = Math.abs(closure);
         String detail = String.format(Locale.ROOT,
                 "fresh boundary closure %.6g W; condenser=%.6g W, stage heat=%.6g W", closure, condenser, stageHeatTotal);
@@ -158,6 +187,14 @@ final class V3AcceptanceAuditor {
     static V3AcceptanceAudit.Check condenserEnergyBalance(
             V3ColumnProblem problem, V3ThermoModel thermo, V3DryMeshState state, V3ThermoWorkspace workspace,
             double publishedCondenserWatts) {
+        return condenserEnergyBalance(problem, thermo, state, workspace, publishedCondenserWatts,
+                V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
+    }
+
+    static V3AcceptanceAudit.Check condenserEnergyBalance(
+            V3ColumnProblem problem, V3ThermoModel thermo, V3DryMeshState state, V3ThermoWorkspace workspace,
+            double publishedCondenserWatts, double closureTolerance) {
+        V3ConvergenceEvidence.requireClosure(closureTolerance);
         V3ColumnTopology topology = problem.topology();
         int condenser = topology.condenserNode();
         double outletTemperature = state.temperatureKelvin(condenser);
@@ -178,7 +215,8 @@ final class V3AcceptanceAuditor {
         for (double term : new double[] {liquidOut, vaporOut, waterVaporOut, freeWaterOut, vaporIn, publishedCondenserWatts}) {
             largest = Math.max(largest, Math.abs(term));
         }
-        double limit = Math.max(1.0, 1.0e-6 * largest);
+        // One node's closure, so one tau of its own largest term rather than the whole-column sum.
+        double limit = Math.max(Math.max(1.0, 1.0e-6 * largest), closureTolerance * largest);
         double magnitude = Math.abs(expected - publishedCondenserWatts);
         String detail = String.format(Locale.ROOT,
                 "fresh condenser-node closure %.6g W vs published %.6g W; water vapor out=%.6g W, free water out=%.6g W",
@@ -443,7 +481,7 @@ final class V3AcceptanceAuditor {
             vaporTotal += vapor[publicComponent];
         }
         if (!(total > 0.0) || !Double.isFinite(total) || !Double.isFinite(vaporTotal)) {
-            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
+            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, closureLimit(),
                     "combined condenser outlet has no finite positive total flow");
         }
         double[] overall = new double[publicComponents];
@@ -455,13 +493,13 @@ final class V3AcceptanceAuditor {
             return fallbackTwoPhaseCondenserPhase(state, overall, workspace);
         }
         if (flash.phase() != V3FeedPhase.TWO_PHASE) {
-            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
+            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, closureLimit(),
                     "combined outlet TP flash is " + flash.phase() + ", not two-phase");
         }
         double[] flashLiquid = flash.liquidComposition();
         double[] flashVapor = flash.vaporComposition();
         if (flashLiquid.length != publicComponents || flashVapor.length != publicComponents) {
-            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
+            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, closureLimit(),
                     "combined outlet TP flash has a different component basis");
         }
         double beta = flash.vaporFraction();
@@ -471,9 +509,9 @@ final class V3AcceptanceAuditor {
             maximum = Math.max(maximum, Math.abs(vapor[component] / total - beta * flashVapor[component]));
         }
         String detail = "fresh water-adjusted scaled-K combined-outlet flash; beta=" + beta;
-        return maximum <= CONDENSER_PHASE_SPLIT_LIMIT
-                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", maximum, CONDENSER_PHASE_SPLIT_LIMIT, detail)
-                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", maximum, CONDENSER_PHASE_SPLIT_LIMIT, detail);
+        return maximum <= closureLimit()
+                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", maximum, closureLimit(), detail)
+                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", maximum, closureLimit(), detail);
     }
 
     /**
@@ -496,14 +534,14 @@ final class V3AcceptanceAuditor {
             hydrocarbonPressure = Double.NaN;
         }
         if (!Double.isFinite(hydrocarbonPressure) || hydrocarbonPressure <= 0.0) {
-            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
+            return V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, closureLimit(),
                     "water-adjusted fallback condenser pressure is not finite and positive");
         }
         V3FlashResult flash = thermo.flashTP(state.temperatureKelvin(condenser), hydrocarbonPressure, overall, workspace);
         return flash.phase() == V3FeedPhase.TWO_PHASE
-                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", 0.0, CONDENSER_PHASE_SPLIT_LIMIT,
+                ? V3AcceptanceAudit.Check.pass("CONDENSER_PHASE", 0.0, closureLimit(),
                         "independent water-adjusted TP phase fallback; component split separately audited")
-                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, CONDENSER_PHASE_SPLIT_LIMIT,
+                : V3AcceptanceAudit.Check.fail("CONDENSER_PHASE", 1.0, closureLimit(),
                         "water-adjusted fallback TP flash is " + flash.phase() + ", not two-phase");
     }
 
