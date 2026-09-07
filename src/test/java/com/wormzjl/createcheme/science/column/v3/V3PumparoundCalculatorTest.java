@@ -26,10 +26,10 @@ class V3PumparoundCalculatorTest {
         V3ColumnInput heated = v1ScaleInput("createcheme:cdu17_tjl_acs2018",
                 List.of(new V3PumparoundSpec(8, 12, -5.0e6, V3PumparoundSpec.Split.UNIFORM)));
 
-        assertEquals("v3-dry-mesh-r16", V3ColumnCalculator.formulationRevision(heatFree, 0.0));
-        assertEquals("v3-dry-mesh-r17-flash-trace", V3ColumnCalculator.formulationRevision(heatFree, 1.0e-6));
-        assertEquals("v3-dry-mesh-r20-stage-heat", V3ColumnCalculator.formulationRevision(heated, 0.0));
-        assertEquals("v3-dry-mesh-r20-flash-trace-stage-heat", V3ColumnCalculator.formulationRevision(heated, 1.0e-6));
+        assertEquals("v3-dry-mesh-r23", V3ColumnCalculator.formulationRevision(heatFree, 0.0));
+        assertEquals("v3-dry-mesh-r24-flash-trace", V3ColumnCalculator.formulationRevision(heatFree, 1.0e-6));
+        assertEquals("v3-dry-mesh-r27-stage-heat", V3ColumnCalculator.formulationRevision(heated, 0.0));
+        assertEquals("v3-dry-mesh-r27-flash-trace-stage-heat", V3ColumnCalculator.formulationRevision(heated, 1.0e-6));
         assertEquals(V3ColumnCalculator.ASSUMPTIONS_REVISION, V3ColumnCalculator.assumptionsRevision(heatFree));
         assertEquals(V3ColumnCalculator.ASSUMPTIONS_REVISION + "+" + V3ColumnCalculator.HEAT_ASSUMPTIONS_REVISION,
                 V3ColumnCalculator.assumptionsRevision(heated));

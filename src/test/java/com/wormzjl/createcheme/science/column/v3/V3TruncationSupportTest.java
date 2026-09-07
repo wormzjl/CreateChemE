@@ -157,19 +157,31 @@ class V3TruncationSupportTest {
         assertTrue(V3ColumnProblemResolver.withTruncation(problem, support).degreeOfFreedomLedger().isValid());
     }
 
+    /**
+     * A side draw keeps the liquid it receives, and only that.
+     *
+     * <p>The forced product-path band from the feed tray to the outermost draw tray is gone. What is left is
+     * a per-draw-tray guarantee over the liquid the tray above actually delivers: the draw on tray three,
+     * directly below the feed tray, keeps the component in its liquid, while the draw on tray one has no
+     * retained liquid arriving from the condenser and is decided by the flow rule like any other tray.</p>
+     */
     @Test
-    void sideDrawSupplyPathsKeepTraceComponentsConnectedAboveAndBelowTheFeed() {
+    void aSideDrawTrayKeepsTheLiquidItReceivesAndNotAWholeBandBackToTheFeed() {
         V3ColumnProblem problem = problem(V3CondenserPhaseBranch.TWO_PHASE, 1.0, 2,
-                List.of(new V3SideDrawSpec(1, 1.0), new V3SideDrawSpec(4, 1.0)));
+                List.of(new V3SideDrawSpec(1, 1.0), new V3SideDrawSpec(3, 1.0)));
         double[][] flows = uniformFlows(problem);
         for (int node = 0; node < flows.length; node++) flows[node] = new double[] {0.1, 99.9};
         V3TruncationSupport support = V3TruncationSupport.derive(problem, 0.01, state(problem, flows, flows));
 
-        assertFalse(support.retains(0, 0));
-        for (int node = 1; node <= 4; node++) assertTrue(support.retains(node, 0));
-        assertFalse(support.retains(5, 0));
+        assertTrue(support.retains(2, 0), "the feed tray is still retained whole");
+        assertTrue(support.retainsLiquid(3, 0), "the draw tray keeps the liquid the feed tray delivers");
+        assertFalse(support.retainsVapor(3, 0), "and only the liquid: the vapor is below the floor");
+        assertFalse(support.retains(1, 0), "the upper draw receives no retained liquid and is not forced");
+        for (int node : new int[] {0, 4, 5}) assertFalse(support.retains(node, 0));
+        for (int node = 0; node <= 5; node++) assertTrue(support.retains(node, 1));
         assertEquals(0, support.closurePrunedCount());
-        assertEquals(2, support.truncatedPointCount());
+        assertEquals(4, support.truncatedPointCount());
+        assertEquals(1, support.onePhasePointCount());
         assertTrue(V3ColumnProblemResolver.withTruncation(problem, support).degreeOfFreedomLedger().isValid());
     }
 

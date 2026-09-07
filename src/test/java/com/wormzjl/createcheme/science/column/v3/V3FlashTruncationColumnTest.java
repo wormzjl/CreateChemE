@@ -41,7 +41,7 @@ class V3FlashTruncationColumnTest {
                 && event.contains("feed-H=reference")));
         assertTrue(success.diagnostics().events().size() <= V3SolverDiagnostics.MAX_EVENTS);
         assertTrue(success.diagnostics().events().stream().allMatch(event -> event.length() <= 256));
-        assertEquals("v3-dry-mesh-r17-flash-trace", success.result().formulationRevision());
+        assertEquals("v3-dry-mesh-r24-flash-trace", success.result().formulationRevision());
         assertEquals(V3InputDigest.of(success.result().problem(), V3ColumnCalculator.FORMULATION_REVISION,
                 thermo.datasetRevision(), V3ColumnCalculator.ASSUMPTIONS_REVISION, 1.0e-6), success.result().inputDigest());
         assertArrayEquals(flows, input.feedComponentMolarFlowsMolPerSecond(), 0.0);
@@ -56,7 +56,7 @@ class V3FlashTruncationColumnTest {
         assertEquals(strict.result().inputDigest(), zero.result().inputDigest());
         assertEquals(strict.result().streams(), zero.result().streams());
         assertEquals(strict.diagnostics(), zero.diagnostics());
-        assertEquals("v3-dry-mesh-r16", zero.result().formulationRevision());
+        assertEquals("v3-dry-mesh-r23", zero.result().formulationRevision());
         assertTrue(zero.diagnostics().events().stream().noneMatch(event -> event.startsWith("flash-trace ")));
     }
 

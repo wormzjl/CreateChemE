@@ -25,17 +25,19 @@ class V3ConvergenceClosureTest {
     private static final double LOOSE_CLOSURE = 1.0e-3;
 
     /**
-     * Every case at the default closure, pinned from the run at {@code f245b39} that precedes this knob.
+     * Every case at the default closure.
      *
-     * <p>The digest is checked by recomputing the pre-closure byte stream from the accepted problem rather
-     * than by a hex literal: the default must produce exactly the digest of a build that has no closure
-     * field at all. The published hex values are recorded in
-     * {@code documentation/V3_CLOSURE_AND_BAND_REVIEW.md}.</p>
+     * <p>The counts were pinned from the run at {@code f245b39} that precedes this knob, and case B's
+     * published iteration count was re-pinned from 4 to 2 by the product-path band work package, which
+     * changes the accepted state of every case that has a side draw. The digest is checked by recomputing
+     * the pre-closure byte stream from the accepted problem rather than by a hex literal: the default must
+     * produce exactly the digest of a build that has no closure field at all. The published hex values are
+     * recorded in {@code documentation/V3_CLOSURE_AND_BAND_REVIEW.md}.</p>
      */
     @ParameterizedTest
     @CsvSource({
             "A, SUCCESS, 0, cold/dwsim-sequential/4-8-15-30/fine-fd/liquid-only-condenser",
-            "B, SUCCESS, 4, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/heat-1",
+            "B, SUCCESS, 2, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/heat-1",
             "C, SUCCESS, 3, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/steam-1/heat-3",
             "D, NONCONVERGENCE, 16, cold/dwsim-sequential/4-8-15-30/failed-stage-30/liquid-only-condenser/heat-1",
             "E, SUCCESS, 3, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3"})
@@ -64,7 +66,7 @@ class V3ConvergenceClosureTest {
      * above any admitted closure, which the plan already predicted a closure cannot fix.
      */
     @ParameterizedTest
-    @CsvSource({"A, 0", "B, 4", "C, 3", "E, 3"})
+    @CsvSource({"A, 0", "B, 2", "C, 3", "E, 3"})
     void aLooseClosureAcceptsEveryCaseWithinItsOwnScaledLimits(String label, int defaultNewtonIterations) {
         V3ColumnInput input = evaluationCase(label);
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, boundedControl(), 0.0, LOOSE_CLOSURE);

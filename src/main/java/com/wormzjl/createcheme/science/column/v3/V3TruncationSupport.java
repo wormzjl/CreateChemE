@@ -188,19 +188,15 @@ final class V3TruncationSupport {
             throw new IllegalArgumentException("V3 deciding state does not match the truncation support");
         }
         byte[][] phases = new byte[topology.nodeCount()][components];
-        // A specified draw needs a material path back to the feed, including trace components.
-        // Retaining isolated draw points makes later grids expand abruptly to the full problem.
-        int firstProductPathNode = topology.feedTrayNumber();
-        int lastProductPathNode = topology.feedTrayNumber();
-        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
-            firstProductPathNode = Math.min(firstProductPathNode, draw.trayNumber());
-            lastProductPathNode = Math.max(lastProductPathNode, draw.trayNumber());
-        }
         for (int node = 0; node < topology.nodeCount(); node++) {
             double liquidTotal = phaseTotal(problem, decidingState, node, true);
             double vaporTotal = phaseTotal(problem, decidingState, node, false);
             for (int component = 0; component < components; component++) {
-                if (node >= firstProductPathNode && node <= lastProductPathNode) {
+                // The feed tray is the root of every material path and is retained whole, whatever its
+                // flows are. The trays between it and a side draw are decided by the flow like any other
+                // tray: the draw's own supply is guaranteed by keeping the liquid it receives from above
+                // (see ensureSideDrawLiquid), and the path back to the feed by reachability pruning.
+                if (node == topology.feedTrayNumber()) {
                     phases[node][component] = PointPhases.BOTH.mask();
                     continue;
                 }
@@ -226,15 +222,11 @@ final class V3TruncationSupport {
         breakEquilibriumFreeCycles(problem, phases);
         restoreEmptiedPhases(problem, phases);
         int pruned = pruneUnreachable(problem, phases);
-        for (V3SideDrawSpec draw : problem.input().sideDraws()) {
-            if (draw.trayNumber() == topology.feedTrayNumber()) continue;
-            for (int component = 0; component < components; component++) {
-                if (phases[draw.trayNumber()][component] == PointPhases.ABSENT.mask()) {
-                    return new V3TruncationSupport(problem, cutoffMoleFraction, null, pruned,
-                            "Stage-trace support fell back to identity: a forced side-draw point has no retained feed path");
-                }
-            }
-        }
+        // Reachability has to be settled first: the guarantee is over the liquid the tray above actually
+        // keeps, and pruning is what decides that. The repair only adds phases, so nothing it writes can
+        // become unreachable, and a point it lifts out of ABSENT is reachable by the very edge that lifted it.
+        ensureSideDrawLiquid(problem, phases);
+        breakEquilibriumFreeCycles(problem, phases);
         if (!phasesNonempty(problem, phases)) {
             return new V3TruncationSupport(problem, cutoffMoleFraction, null, pruned,
                     "Stage-trace support fell back to identity: feed reachability emptied a structural phase");
@@ -482,8 +474,13 @@ final class V3TruncationSupport {
                 throw new IllegalArgumentException("V3 truncation support has different side draw rates");
             }
             for (int component = 0; component < componentCount; component++) {
-                if (nodeSideDrawRates[node] > 0.0 && !retains(node, component)) {
-                    throw new IllegalArgumentException("V3 truncation support cannot remove a side-draw tray point");
+                // A side-draw tray keeps the liquid it receives, not every point on the way to the feed.
+                if (nodeSideDrawRates[node] > 0.0
+                        && requiresSideDrawLiquid(topology, problem.condenserComponentPhases(), phases,
+                                refluxRatio, node, component)
+                        && !retainsLiquid(node, component)) {
+                    throw new IllegalArgumentException(
+                            "V3 truncation support cannot remove the liquid a side-draw tray receives");
                 }
                 if (node == topology.feedTrayNumber()) {
                     if (!retains(node, component)) {
@@ -607,6 +604,53 @@ final class V3TruncationSupport {
                         point.retainsVapor() || restoreVapor).mask();
             }
         }
+    }
+
+    /**
+     * A side draw keeps every component the tray above delivers to it in the liquid.
+     *
+     * <p>This replaces the forced product-path band. The band retained every point on every tray from the
+     * feed tray to the outermost draw tray in both phases regardless of flow, which was measured at 36 to 59
+     * below-floor points on a case with draws — the largest single block of trace unknowns left, and the only
+     * points the flow floor could not remove, hence the only place the trace-pair rank deficiency could still
+     * form. The draw's actual requirement is narrower: what a liquid side draw withdraws is a share of the
+     * liquid arriving from the tray above, so exactly those components must stay in that tray's liquid, and
+     * only on the draw tray itself. Everything else on the path is a reachability question, which
+     * {@link #pruneUnreachable} already answers.</p>
+     *
+     * <p>The sweep runs downward so that a component lifted onto one draw tray is seen by the next draw tray
+     * below it. The pass only ever adds a liquid phase.</p>
+     */
+    private static void ensureSideDrawLiquid(V3ColumnProblem problem, byte[][] phases) {
+        V3ColumnTopology topology = problem.topology();
+        V3CondenserComponentPhases condenserPhases = problem.condenserComponentPhases();
+        double refluxRatio = refluxRatio(problem);
+        for (int node = 0; node < topology.nodeCount(); node++) {
+            if (!(problem.nodeSideDrawMolPerSecond(node) > 0.0)) continue;
+            for (int component = 0; component < phases[node].length; component++) {
+                if (!requiresSideDrawLiquid(topology, condenserPhases, phases, refluxRatio, node, component)) continue;
+                PointPhases point = PointPhases.ofMask(phases[node][component]);
+                phases[node][component] = PointPhases.of(true, point.retainsVapor()).mask();
+            }
+        }
+    }
+
+    /**
+     * The side-draw rule, as one predicate shared by {@link #ensureSideDrawLiquid} and
+     * {@link #requireCompatible(V3ColumnProblem)} so that the two can never disagree.
+     */
+    private static boolean requiresSideDrawLiquid(
+            V3ColumnTopology topology, V3CondenserComponentPhases condenserPhases, byte[][] phases,
+            double refluxRatio, int node, int component) {
+        int above = node - 1;
+        if (above < 0 || !topology.hasLiquidPhase(node)
+                || !condenserPhases.hasLiquid(topology, node, component)) {
+            return false;
+        }
+        if (above == topology.condenserNode() && !(refluxRatio > 0.0)) return false;
+        return topology.hasLiquidPhase(above)
+                && condenserPhases.hasLiquid(topology, above, component)
+                && PointPhases.ofMask(phases[above][component]).retainsLiquid();
     }
 
     private static int pruneUnreachable(V3ColumnProblem problem, byte[][] phases) {

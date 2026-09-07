@@ -24,8 +24,8 @@ import java.util.concurrent.CancellationException;
  */
 public final class V3ColumnCalculator {
     /** Cutoff-enabled formulation; the exact-off path retains the legacy revision in its digest. */
-    public static final String FORMULATION_REVISION = "v3-dry-mesh-r17-flash-trace";
-    private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r16";
+    public static final String FORMULATION_REVISION = "v3-dry-mesh-r24-flash-trace";
+    private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r23";
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r4";
     public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r1";
     /**
@@ -1162,10 +1162,13 @@ public final class V3ColumnCalculator {
     /**
      * Formulation label of one authored input.
      *
-     * <p>r9 to r15 replace r2 to r8 across every family: component material balances are scaled by their own
+     * <p>r9 to r15 replaced r2 to r8 across every family: component material balances are scaled by their own
      * local throughput instead of by the component's feed flow, and every stage point whose flow is below
      * {@link V3TruncationSupport#TRACE_FLOOR_FRACTION} of that component's feed is removed from the unknowns
-     * and equations. Accepted trace profiles differ, so the digest must differ.</p>
+     * and equations. r16 to r22 made that presence per phase. r23 to r29 retire the forced product-path
+     * band: the trays between the feed tray and a side draw are decided by the flow like any other tray, and
+     * a draw tray keeps the liquid it receives from above. Accepted trace profiles differ at each step, so
+     * the digest must differ.</p>
      */
     static String formulationRevision(V3ColumnInput input, double requestedCutoff) {
         return formulationRevision(input, requestedCutoff, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
@@ -1201,16 +1204,16 @@ public final class V3ColumnCalculator {
         if (!input.steamFeeds().isEmpty()) {
             // r7/r8: the condenser vapor outlet carries the ALL_VAPOR steam product enthalpy even when the
             // hydrocarbon vapor is absent (LIQUID_ONLY branch), which changes the published wet condenser duty.
-            return (heat ? "v3-wet-mesh-r22-steam" : "v3-wet-mesh-r21-steam")
+            return (heat ? "v3-wet-mesh-r29-steam" : "v3-wet-mesh-r28-steam")
                     + (!input.sideDraws().isEmpty() ? "-side-draws" : "") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
         if (!input.sideDraws().isEmpty()) {
-            return (heat ? "v3-dry-mesh-r19-side-draws" : "v3-dry-mesh-r18-side-draws") + trace
+            return (heat ? "v3-dry-mesh-r26-side-draws" : "v3-dry-mesh-r25-side-draws") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
         if (!heat) return formulationRevision(requestedCutoff);
-        return "v3-dry-mesh-r20" + trace + HEAT_FORMULATION_SUFFIX;
+        return "v3-dry-mesh-r27" + trace + HEAT_FORMULATION_SUFFIX;
     }
 
     static String assumptionsRevision(V3ColumnInput input) {

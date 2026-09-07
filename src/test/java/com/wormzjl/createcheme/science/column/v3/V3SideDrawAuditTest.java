@@ -46,31 +46,41 @@ class V3SideDrawAuditTest {
         }
     }
 
+    /**
+     * A draw one tray below the feed keeps the trace; a draw two trays below does not receive it at all.
+     *
+     * <p>The product-path band used to force every point from the feed tray to the outermost draw tray into
+     * both phases regardless of flow. The rule now is the draw tray's own liquid supply: on tray three the
+     * feed tray above still carries the trace, so the draw keeps it (in the liquid only — its vapor is
+     * below the floor); on tray four the intervening tray three carries none, so nothing reaches the draw
+     * and the point is removed like any other, with its inflow counted by the sink-edge defect audit.</p>
+     */
     @Test
-    void nonFeedDrawTrayRetainsItsMaterialPathWithoutExpandingTheWholeColumn() {
+    void aDrawTrayKeepsOnlyTheTraceItsOwnLiquidSupplyDelivers() {
         var fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
         V3ColumnProblem connected = drawn(fixture.original(), 3, 5);
         V3TruncationSupport support = V3TruncationSupport.derive(connected, 0.01, fixture.exact());
         assertFalse(support.isIdentity());
-        assertTrue(support.retains(3, 2));
+        assertTrue(support.retainsLiquid(3, 2));
+        assertFalse(support.retainsVapor(3, 2));
         assertFalse(support.retains(4, 2));
         assertTrue(V3ColumnProblemResolver.withTruncation(connected, support).degreeOfFreedomLedger().isValid());
+
         V3ColumnProblem distant = drawn(fixture.original(), 4, 5);
         V3TruncationSupport path = V3TruncationSupport.derive(distant, 0.01, fixture.exact());
         assertFalse(path.isIdentity());
-        for (int tray = 2; tray <= 4; tray++) assertTrue(path.retains(tray, 2));
-        assertFalse(path.retains(0, 2));
-        assertFalse(path.retains(1, 2));
-        assertFalse(path.retains(5, 2));
+        assertTrue(path.retains(2, 2), "the feed tray is still retained whole");
+        for (int tray : new int[] {0, 1, 3, 4, 5}) assertFalse(path.retains(tray, 2), "tray " + tray);
         assertEquals("", path.note());
         assertTrue(V3ColumnProblemResolver.withTruncation(distant, path).degreeOfFreedomLedger().isValid());
         V3DryMeshState projected = path.projectSeed(distant, fixture.exact());
-        assertTrue(projected.liquidFlow(3, 2) > 0);
-        assertTrue(projected.vaporFlow(3, 2) > 0);
+        assertEquals(0.0, projected.liquidFlow(3, 2));
+        assertEquals(0.0, projected.vaporFlow(3, 2));
     }
 
+    /** A draw above the feed is decided the same way, over the liquid the tray above it keeps. */
     @Test
-    void drawAboveFeedRetainsItsVaporSupplyPathAsWellAsTheLiquidDrawPoint() {
+    void aDrawAboveTheFeedIsDecidedByItsOwnLiquidSupplyToo() {
         var fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
         V3ColumnInput base = fixture.original().input();
         V3ColumnProblem problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(base.schemaVersion(), base.packageId(),
@@ -80,10 +90,10 @@ class V3SideDrawAuditTest {
         V3TruncationSupport support = V3TruncationSupport.derive(problem, 0.01, fixture.exact());
         assertFalse(support.isIdentity());
         for (int tray = 1; tray <= 4; tray++) {
-            for (int component = 0; component < 3; component++) assertTrue(support.retains(tray, component));
+            for (int component = 0; component < 2; component++) assertTrue(support.retains(tray, component));
         }
-        assertFalse(support.retains(0, 2));
-        assertFalse(support.retains(5, 2));
+        assertTrue(support.retains(4, 2), "the feed tray is still retained whole");
+        for (int tray : new int[] {0, 1, 2, 3, 5}) assertFalse(support.retains(tray, 2), "tray " + tray);
         assertTrue(V3ColumnProblemResolver.withTruncation(problem, support).degreeOfFreedomLedger().isValid());
     }
 
