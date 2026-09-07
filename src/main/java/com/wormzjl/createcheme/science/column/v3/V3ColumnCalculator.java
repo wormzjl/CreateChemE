@@ -5,6 +5,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationEvidenc
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.ArrayList;
@@ -1210,7 +1211,7 @@ public final class V3ColumnCalculator {
      */
     private static PreparedAttempt prepareAttempt(
             V3ColumnProblem original, V3PengRobinsonThermo thermo, V3DryMeshState seed, TruncationPolicy policy) {
-        V3DryMeshState lifted = liftFloorInflow(original, thermo, seed);
+        V3DryMeshState lifted = liftFloorSupport(original, thermo, seed);
         V3TruncationSupport support = V3TruncationSupport.derive(original, policy.attemptCutoff(), lifted);
         V3ColumnProblem problem;
         try {
@@ -1232,16 +1233,29 @@ public final class V3ColumnCalculator {
     }
 
     /**
-     * Restores every point below the support floor whose retained neighbours deliver at least
-     * {@link V3TruncationSupport#FLOOR_REINSERTION_FACTOR} floors into it.
+     * Restores every phase the support floor removed that the current state says would carry material again.
      *
-     * <p>At steady state a point's own flow in either phase is bounded by the material delivered into it, so
-     * this one material-balance test covers both phases and is the reinsertion criterion. The delivered
-     * material is split evenly over the point's present outlets, so a restored point arrives with its own
-     * balance already closed instead of as a fresh order-one residual.</p>
+     * <p>Two rules, because a removed point and a removed phase are decided by different quantities.</p>
+     *
+     * <p>A point that is below the floor in both phases carries only what its retained neighbours deliver,
+     * so the material inflow is the criterion, and the delivered material {@code I} is split by the local
+     * equilibrium rather than evenly: {@code l = I / (1 + K_c V/L)}, {@code v = I − l}. The reinserted point
+     * then satisfies its material row <em>and</em> its equilibrium row at the seed, so the refresh that
+     * follows is the same one-to-three-iteration polish a drop is, instead of the five-to-eleven-iteration
+     * restart an even split produced (measured: every reinsertion used to begin above a scaled residual of
+     * two). Where the split gives one phase less than a floor the point simply re-enters as a one-phase
+     * point, which is consistent: the same comparison decides it again in {@code derive}.</p>
+     *
+     * <p>The points are swept in flow direction, downward for the liquid the tray above delivers and then
+     * upward for the vapour the tray below delivers, each pass reading the values the earlier lifts wrote.
+     * A profile that re-enters over several trays is therefore restored in one pass; reading the unlifted
+     * state instead made reinsertion a front that could only advance one tray per refresh, which is what
+     * exhausted the refresh cap on the wet TJL19 case and lost it entirely at a cap of one.</p>
+     *
+     * <p>A one-phase point is different and is lifted first, by {@link #liftAbsentPhase}.</p>
      */
-    private static V3DryMeshState liftFloorInflow(
-            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState state) {
+    static V3DryMeshState liftFloorSupport(
+            V3ColumnProblem problem, V3ThermoModel thermo, V3DryMeshState state) {
         V3ColumnTopology topology = problem.topology();
         int components = problem.activeComponentBasis().componentCount();
         double refluxRatio = problem.input().specifications().stream()
@@ -1260,43 +1274,81 @@ public final class V3ColumnCalculator {
         }
         V3StageEquilibriumRatios equilibrium =
                 V3StageEquilibriumRatios.of(problem, thermo, state, thermo.newWorkspace());
+        double[] withdrawalRetained = new double[topology.nodeCount()];
+        for (int node = 0; node < topology.nodeCount(); node++) {
+            withdrawalRetained[node] = 1.0 - problem.liquidWithdrawalFraction(state, node);
+        }
+        // One-phase points first: a phase restored here can feed a removed neighbour in the sweeps below.
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < components; component++) {
-                double floor = problem.activeComponentBasis().flowScale(component)
-                        * V3TruncationSupport.TRACE_FLOOR_FRACTION;
-                boolean hasLiquid = topology.hasLiquidPhase(node)
-                        && problem.condenserComponentPhases().hasLiquid(topology, node, component);
+                double floor = componentFloor(problem, component);
+                boolean hasLiquid = hasLiquidPhase(problem, node, component);
                 boolean hasVapor = topology.hasVaporPhase(node);
                 boolean liquidAbove = hasLiquid && liquid[node][component] >= floor;
                 boolean vaporAbove = hasVapor && vapor[node][component] >= floor;
-                if (liquidAbove && vaporAbove) continue;
-                if (liquidAbove || vaporAbove) {
-                    liftAbsentPhase(problem, equilibrium.node(node), liquid, vapor, node, component, floor,
-                            hasLiquid, hasVapor, liquidAbove);
-                    continue;
-                }
-                double inflow;
-                if (node == topology.condenserNode()) {
-                    inflow = state.vaporFlow(1, component);
-                } else {
-                    inflow = node == 1
-                            ? refluxFraction * state.liquidFlow(0, component)
-                            : (1.0 - problem.liquidWithdrawalFraction(state, node - 1))
-                                    * state.liquidFlow(node - 1, component);
-                    if (node < topology.reboilerNode()) inflow += state.vaporFlow(node + 1, component);
-                    if (node == topology.feedTrayNumber()) {
-                        inflow += problem.activeComponentBasis().feedFlowMolPerSecond(component);
+                if (liquidAbove == vaporAbove) continue;
+                liftAbsentPhase(equilibrium.node(node), liquid, vapor, node, component, floor,
+                        hasLiquid, hasVapor, liquidAbove);
+            }
+        }
+        for (boolean downward : new boolean[] {true, false}) {
+            for (int index = 0; index < topology.nodeCount(); index++) {
+                int node = downward ? index : topology.nodeCount() - 1 - index;
+                for (int component = 0; component < components; component++) {
+                    double floor = componentFloor(problem, component);
+                    boolean hasLiquid = hasLiquidPhase(problem, node, component);
+                    boolean hasVapor = topology.hasVaporPhase(node);
+                    if ((hasLiquid && liquid[node][component] >= floor)
+                            || (hasVapor && vapor[node][component] >= floor)) {
+                        continue;
                     }
+                    double inflow;
+                    if (node == topology.condenserNode()) {
+                        inflow = vapor[1][component];
+                    } else {
+                        inflow = node == 1
+                                ? refluxFraction * liquid[0][component]
+                                : withdrawalRetained[node - 1] * liquid[node - 1][component];
+                        if (node < topology.reboilerNode()) inflow += vapor[node + 1][component];
+                        if (node == topology.feedTrayNumber()) {
+                            inflow += problem.activeComponentBasis().feedFlowMolPerSecond(component);
+                        }
+                    }
+                    if (inflow < V3TruncationSupport.FLOOR_REINSERTION_FACTOR * floor) continue;
+                    reinsertRemovedPoint(equilibrium.node(node), liquid, vapor, node, component, inflow,
+                            hasLiquid, hasVapor);
                 }
-                if (inflow < V3TruncationSupport.FLOOR_REINSERTION_FACTOR * floor) continue;
-                // Split the delivered material evenly over the present outlets, so the reinserted point's own
-                // balance is already closed at the seed instead of arriving as a fresh order-one residual.
-                double reinserted = Math.max(floor, hasLiquid && hasVapor ? 0.5 * inflow : inflow);
-                if (hasLiquid) liquid[node][component] = Math.max(liquid[node][component], reinserted);
-                if (hasVapor) vapor[node][component] = Math.max(vapor[node][component], reinserted);
             }
         }
         return new V3DryMeshState(topology, components, liquid, vapor, temperatures);
+    }
+
+    /** Splits the delivered material over the point's present phases the way its equilibrium row would. */
+    private static void reinsertRemovedPoint(
+            V3StageEquilibriumRatios.Node ratios, double[][] liquid, double[][] vapor, int node, int component,
+            double inflow, boolean hasLiquid, boolean hasVapor) {
+        if (!hasLiquid || !hasVapor) {
+            if (hasLiquid) liquid[node][component] = Math.max(liquid[node][component], inflow);
+            if (hasVapor) vapor[node][component] = Math.max(vapor[node][component], inflow);
+            return;
+        }
+        // Without properties the even split is the only defensible allocation, as it was before.
+        double liquidShare = ratios == null ? 0.5 * inflow
+                : inflow / (1.0 + ratios.equilibriumRatio(component) * ratios.vaporTotalMolPerSecond()
+                        / ratios.liquidTotalMolPerSecond());
+        if (!Double.isFinite(liquidShare) || liquidShare < 0.0) liquidShare = 0.0;
+        liquidShare = Math.min(liquidShare, inflow);
+        liquid[node][component] = Math.max(liquid[node][component], liquidShare);
+        vapor[node][component] = Math.max(vapor[node][component], inflow - liquidShare);
+    }
+
+    private static double componentFloor(V3ColumnProblem problem, int component) {
+        return problem.activeComponentBasis().flowScale(component) * V3TruncationSupport.TRACE_FLOOR_FRACTION;
+    }
+
+    private static boolean hasLiquidPhase(V3ColumnProblem problem, int node, int component) {
+        return problem.topology().hasLiquidPhase(node)
+                && problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component);
     }
 
     /**
@@ -1311,7 +1363,7 @@ public final class V3ColumnCalculator {
      * audits, so a phase this rule declines to restore is one the audit can bound.</p>
      */
     private static void liftAbsentPhase(
-            V3ColumnProblem problem, V3StageEquilibriumRatios.Node ratios, double[][] liquid, double[][] vapor,
+            V3StageEquilibriumRatios.Node ratios, double[][] liquid, double[][] vapor,
             int node, int component, double floor, boolean hasLiquid, boolean hasVapor, boolean liquidAbove) {
         if (ratios == null || !hasLiquid || !hasVapor) return;
         double implied = liquidAbove

@@ -230,6 +230,88 @@ class V3PhaseTruncationTest {
         assertTrue(pointOnlyAudit.checks().stream().noneMatch(check -> check.family().equals("PHASE_TRUNCATION_DEFECT")));
     }
 
+    /**
+     * A trace profile that left the column entirely re-enters over all of its trays in one lift, and every
+     * reinserted point arrives with its material row and its equilibrium row already closed.
+     *
+     * <p>Reading the unlifted state instead made reinsertion a front that advanced one tray per refresh, and
+     * splitting the delivered material evenly instead of by the local equilibrium made every reinsertion
+     * restart from a scaled residual of two to five.</p>
+     */
+    @Test
+    void aRemovedTraceProfileIsRestoredAcrossAllOfItsTraysInOneSweep() {
+        V3ColumnProblem original = original();
+        // The trace exists on the feed tray only; the reboiler side and the condenser side are exact zeros.
+        double[][] liquid = {{10, 10, 0}, {5, 5, 0}, {35, 65, 0.006}, {35, 65, 0}, {35, 65, 0}, {17, 53, 0}};
+        double[][] vapor = {{8, 2, 0}, {18, 12, 0}, {18, 12, 0.004}, {18, 12, 0}, {18, 12, 0}, {18, 12, 0}};
+        V3DryMeshState removed = new V3DryMeshState(original.topology(), 3, liquid, vapor,
+                V3TruncationNumericsTest.temperatures());
+        V3TruncationNumericsTest.ManufacturedThermo thermo =
+                new V3TruncationNumericsTest.ManufacturedThermo(original.input().componentBasis(), removed);
+
+        V3DryMeshState lifted = V3ColumnCalculator.liftFloorSupport(original, thermo, removed);
+
+        double floor = TRACE_FEED * V3TruncationSupport.TRACE_FLOOR_FRACTION;
+        for (int node = 0; node < 6; node++) {
+            assertTrue(lifted.liquidFlow(node, TRACE) >= floor,
+                    () -> "liquid restored above the floor on every tray in one sweep");
+            assertTrue(lifted.vaporFlow(node, TRACE) >= floor,
+                    () -> "vapour restored above the floor on every tray in one sweep");
+        }
+        // Tray three: the whole liquid the feed tray sends down leaves again, split the way its own
+        // equilibrium row would split it. The manufactured ratio of an untouched node is one.
+        double delivered = removed.liquidFlow(2, TRACE);
+        assertEquals(delivered, lifted.liquidFlow(3, TRACE) + lifted.vaporFlow(3, TRACE), 1.0e-18);
+        double vaporTotal = 18.0 + 12.0;
+        double liquidTotal = 35.0 + 65.0 + lifted.liquidFlow(3, TRACE);
+        assertEquals(vaporTotal / liquidTotal, lifted.vaporFlow(3, TRACE) / lifted.liquidFlow(3, TRACE), 1.0e-3);
+        // Tray four is fed only by the value tray three was just lifted to, which is what "in one sweep" means.
+        assertEquals(lifted.liquidFlow(3, TRACE),
+                lifted.liquidFlow(4, TRACE) + lifted.vaporFlow(4, TRACE), 1.0e-18);
+        // The condenser is reached by the upward pass, from the vapour the downward pass gave tray one.
+        assertEquals(lifted.vaporFlow(1, TRACE),
+                lifted.liquidFlow(0, TRACE) + lifted.vaporFlow(0, TRACE), 1.0e-18);
+    }
+
+    /**
+     * A one-phase point is lifted by the flow its own equilibrium row would give the absent phase, and only
+     * once that reaches {@link V3TruncationSupport#FLOOR_REINSERTION_FACTOR} floors.
+     */
+    @Test
+    void aOnePhasePointIsLiftedOnlyWhenItsImpliedAbsentFlowReachesTenFloors() {
+        V3ColumnProblem original = original();
+        // Calibration state: the trace is in equilibrium on trays three and four, so the manufactured ratio
+        // there is L/V and the implied absent vapour of a liquid-only point is its own liquid flow.
+        double[][] calibrationLiquid = {{10, 10, 0}, {5, 5, 0}, {35, 65, 0.006}, {35, 65, 0.004},
+                {35, 65, 0.004}, {17, 53, 0}};
+        double[][] calibrationVapor = {{8, 2, 0}, {18, 12, 0}, {18, 12, 0.004}, {18, 12, 0.004},
+                {18, 12, 0.004}, {18, 12, 0}};
+        V3TruncationNumericsTest.ManufacturedThermo thermo =
+                new V3TruncationNumericsTest.ManufacturedThermo(original.input().componentBasis(),
+                        new V3DryMeshState(original.topology(), 3, calibrationLiquid, calibrationVapor,
+                                V3TruncationNumericsTest.temperatures()));
+        double floor = TRACE_FEED * V3TruncationSupport.TRACE_FLOOR_FRACTION;
+        // Tray three implies 0.004 mol/s of vapour, far above ten floors; tray four implies half a floor.
+        double[][] liquid = {{10, 10, 0}, {5, 5, 0}, {35, 65, 0.006}, {35, 65, 0.004},
+                {35, 65, 5.0 * floor}, {17, 53, 0}};
+        double[][] vapor = {{8, 2, 0}, {18, 12, 0}, {18, 12, 0.004}, {18, 12, 1.0e-15},
+                {18, 12, 1.0e-15}, {18, 12, 0}};
+        V3DryMeshState onePhase = new V3DryMeshState(original.topology(), 3, liquid, vapor,
+                V3TruncationNumericsTest.temperatures());
+
+        V3DryMeshState lifted = V3ColumnCalculator.liftFloorSupport(original, thermo, onePhase);
+
+        // The calibrated ratio carries the calibration state's own vapour total, which held 0.004 mol/s of
+        // trace that the lifted state does not, so the implied flow reproduces it to one part in ten thousand.
+        assertEquals(0.004, lifted.vaporFlow(3, TRACE), 1.0e-3 * 0.004);
+        assertEquals(1.0e-15, lifted.vaporFlow(4, TRACE));
+        assertEquals(5.0 * floor, lifted.liquidFlow(4, TRACE));
+        assertEquals(V3TruncationSupport.PointPhases.BOTH,
+                V3TruncationSupport.derive(original, 0.0, lifted).pointPhases(3, TRACE));
+        assertEquals(V3TruncationSupport.PointPhases.LIQUID_ONLY,
+                V3TruncationSupport.derive(original, 0.0, lifted).pointPhases(4, TRACE));
+    }
+
     private static List<V3DegreeOfFreedomLedger.UnknownId> traceUnknowns(V3DegreeOfFreedomLedger ledger) {
         return ledger.unknowns().stream().map(V3DegreeOfFreedomLedger.Unknown::id)
                 .filter(id -> id.component() == TRACE).toList();
