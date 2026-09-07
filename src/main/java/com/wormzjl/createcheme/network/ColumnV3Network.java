@@ -7,7 +7,9 @@ import com.wormzjl.createcheme.runtime.ProcessSolveServices.ColumnTarget;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnCompletion;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnRequest;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnDutyLedger;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3PumparoundSpec;
 import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
 import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
@@ -49,7 +51,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 6;
+    public static final int WIRE_SCHEMA_VERSION = 7;
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -595,6 +597,14 @@ public final class ColumnV3Network {
             buffer.writeDouble(steam.molarFlowMolPerSecond());
             buffer.writeDouble(steam.temperatureKelvin());
         }
+        buffer.writeVarInt(input.pumparounds().size());
+        for (V3PumparoundSpec pumparound : input.pumparounds()) {
+            buffer.writeVarInt(pumparound.returnTray());
+            buffer.writeVarInt(pumparound.drawTray());
+            // The signed duty crosses the wire exactly as authored; a cooling pumparound stays negative.
+            buffer.writeDouble(pumparound.dutyWatts());
+            buffer.writeVarInt(pumparound.split().ordinal());
+        }
     }
 
     private static V3ColumnInput readInput(RegistryFriendlyByteBuf buffer) {
@@ -637,8 +647,17 @@ public final class ColumnV3Network {
                 steam.add(new V3SteamFeedSpec(buffer.readVarInt(), finite(buffer.readDouble(), "steam rate"),
                         finite(buffer.readDouble(), "steam temperature")));
             }
+            int pumparoundCount = readCount(buffer, V3ColumnInput.MAX_PUMPAROUNDS, "pumparound");
+            List<V3PumparoundSpec> pumparounds = new ArrayList<>(pumparoundCount);
+            for (int index = 0; index < pumparoundCount; index++) {
+                int returnTray = buffer.readVarInt();
+                int drawTray = buffer.readVarInt();
+                double duty = finite(buffer.readDouble(), "pumparound duty");
+                pumparounds.add(new V3PumparoundSpec(returnTray, drawTray, duty, splitOrdinal(buffer.readVarInt())));
+            }
             return new V3ColumnInput(schemaVersion, packageId, assayId, new V3ComponentBasis(componentIds), flows,
-                    feedTemperature, stages, feedStage, topPressure, pressureDrop, specifications, draws, steam);
+                    feedTemperature, stages, feedStage, topPressure, pressureDrop, specifications, draws, steam,
+                    pumparounds);
         } catch (DecoderException invalidWire) {
             throw invalidWire;
         } catch (IllegalArgumentException | NullPointerException invalid) {
@@ -671,6 +690,43 @@ public final class ColumnV3Network {
                 buffer.writeDouble(fraction.massFraction());
             }
         }
+        buffer.writeBoolean(result.dutyLedger().isPresent());
+        result.dutyLedger().ifPresent(ledger -> writeDutyLedger(buffer, ledger));
+    }
+
+    /** Signed duties, positive into the column, cross the wire exactly as calculated. */
+    private static void writeDutyLedger(RegistryFriendlyByteBuf buffer, V3ColumnDutyLedger ledger) {
+        buffer.writeDouble(ledger.condenserWatts());
+        buffer.writeDouble(ledger.reboilerWatts());
+        buffer.writeDouble(ledger.stageHeatTotalWatts());
+        buffer.writeDouble(ledger.feedEnthalpyWatts());
+        buffer.writeDouble(ledger.steamEnthalpyWatts());
+        buffer.writeVarInt(ledger.stageDuties().size());
+        for (V3ColumnDutyLedger.StageDuty duty : ledger.stageDuties()) {
+            buffer.writeVarInt(duty.trayNumber());
+            buffer.writeDouble(duty.dutyWatts());
+        }
+    }
+
+    private static V3ColumnDutyLedger readDutyLedger(RegistryFriendlyByteBuf buffer) {
+        double condenser = finite(buffer.readDouble(), "condenser duty");
+        double reboiler = finite(buffer.readDouble(), "reboiler duty");
+        double stageHeatTotal = finite(buffer.readDouble(), "stage heat total");
+        double feedEnthalpy = finite(buffer.readDouble(), "feed enthalpy");
+        double steamEnthalpy = finite(buffer.readDouble(), "steam enthalpy");
+        int dutyCount = readCount(buffer, V3ColumnDutyLedger.MAX_STAGE_DUTIES, "stage duty");
+        List<V3ColumnDutyLedger.StageDuty> duties = new ArrayList<>(dutyCount);
+        for (int index = 0; index < dutyCount; index++) {
+            duties.add(new V3ColumnDutyLedger.StageDuty(
+                    buffer.readVarInt(), finite(buffer.readDouble(), "stage duty")));
+        }
+        return new V3ColumnDutyLedger(condenser, reboiler, stageHeatTotal, duties, feedEnthalpy, steamEnthalpy);
+    }
+
+    private static V3PumparoundSpec.Split splitOrdinal(int ordinal) {
+        V3PumparoundSpec.Split[] splits = V3PumparoundSpec.Split.values();
+        if (ordinal < 0 || ordinal >= splits.length) throw new DecoderException("Unknown V3 pumparound split");
+        return splits[ordinal];
     }
 
     private static V3ColumnDisplayResult readDisplayResult(RegistryFriendlyByteBuf buffer) {
@@ -705,8 +761,10 @@ public final class ColumnV3Network {
                 streams.add(new V3ColumnStreamProperties(
                         streamId, displayName, phase, flow, massFlow, temperature, pressure, vaporMoleFraction, fractions));
             }
+            Optional<V3ColumnDutyLedger> ledger = buffer.readBoolean()
+                    ? Optional.of(readDutyLedger(buffer)) : Optional.empty();
             return new V3ColumnDisplayResult(
-                    digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams);
+                    digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams, ledger);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 display result", invalid);
         }

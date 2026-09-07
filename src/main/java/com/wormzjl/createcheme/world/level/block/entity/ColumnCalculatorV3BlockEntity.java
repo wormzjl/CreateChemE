@@ -2,7 +2,9 @@ package com.wormzjl.createcheme.world.level.block.entity;
 
 import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnDutyLedger;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
+import com.wormzjl.createcheme.science.column.v3.V3PumparoundSpec;
 import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
 import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
@@ -45,7 +47,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 6;
+    public static final int DATA_VERSION = 7;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
     private static final int DEFAULT_STAGE_COUNT = 29;
     private static final int DEFAULT_FEED_STAGE = 24;
@@ -228,6 +230,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             if (resultRevision < -1L) throw new IllegalArgumentException("Invalid V3 result revision");
             stateRevision = nonNegative(tag.getLong(TAG_STATE_REVISION));
             // Version 6 adds optional SteamFeeds; version 5 inputs migrate unchanged with an empty list.
+            // Version 7 adds optional Pumparounds and an optional result DutyLedger; version 6 states migrate
+            // unchanged with an empty pumparound list and an absent ledger, and keep their persisted result.
             if (dataVersion < 4 && currentInput.equals(priorUnqualifiedDefaultInput())) {
                 currentInput = defaultInput();
                 displayResult = null;
@@ -431,6 +435,17 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             steamFeeds.add(steamTag);
         }
         tag.put("SteamFeeds", steamFeeds);
+        ListTag pumparounds = new ListTag();
+        for (V3PumparoundSpec pumparound : input.pumparounds()) {
+            CompoundTag pumparoundTag = new CompoundTag();
+            pumparoundTag.putInt("Return", pumparound.returnTray());
+            pumparoundTag.putInt("Draw", pumparound.drawTray());
+            // The signed duty is stored exactly as authored; a cooling pumparound stays negative.
+            pumparoundTag.putDouble("DutyWatts", pumparound.dutyWatts());
+            pumparoundTag.putString("Split", pumparound.split().name());
+            pumparounds.add(pumparoundTag);
+        }
+        tag.put("Pumparounds", pumparounds);
         return tag;
     }
 
@@ -484,11 +499,28 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             steamFeeds.add(new V3SteamFeedSpec(steam.getInt("Stage"), steam.getDouble("Rate"),
                     steam.getDouble("Temperature")));
         }
+        if (tag.contains("Pumparounds") && !tag.contains("Pumparounds", Tag.TAG_LIST)) {
+            throw new IllegalArgumentException("Invalid V3 pumparound list");
+        }
+        ListTag pumparoundTags = tag.getList("Pumparounds", Tag.TAG_COMPOUND);
+        if (tag.get("Pumparounds") instanceof ListTag stored && !stored.isEmpty()
+                && stored.getElementType() != Tag.TAG_COMPOUND) {
+            throw new IllegalArgumentException("Invalid V3 pumparound entries");
+        }
+        if (pumparoundTags.size() > V3ColumnInput.MAX_PUMPAROUNDS) {
+            throw new IllegalArgumentException("Too many V3 pumparounds");
+        }
+        List<V3PumparoundSpec> pumparounds = new ArrayList<>(pumparoundTags.size());
+        for (int index = 0; index < pumparoundTags.size(); index++) {
+            CompoundTag pumparound = pumparoundTags.getCompound(index);
+            pumparounds.add(new V3PumparoundSpec(pumparound.getInt("Return"), pumparound.getInt("Draw"),
+                    pumparound.getDouble("DutyWatts"), V3PumparoundSpec.Split.valueOf(pumparound.getString("Split"))));
+        }
         V3ColumnInput input = new V3ColumnInput(
                 tag.getInt("Schema"), tag.getString("Package"), tag.getString("Assay"), new V3ComponentBasis(axis),
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
                 tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws,
-                steamFeeds);
+                steamFeeds, pumparounds);
         V3ColumnProblemResolver.validateInput(input);
         return input;
     }
@@ -525,7 +557,49 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             streams.add(streamTag);
         }
         tag.put("Streams", streams);
+        result.dutyLedger().ifPresent(ledger -> tag.put("DutyLedger", writeDutyLedger(ledger)));
         return tag;
+    }
+
+    /** Signed duties, positive into the column, are stored exactly as calculated. */
+    private static CompoundTag writeDutyLedger(V3ColumnDutyLedger ledger) {
+        CompoundTag tag = new CompoundTag();
+        tag.putDouble("Condenser", ledger.condenserWatts());
+        tag.putDouble("Reboiler", ledger.reboilerWatts());
+        tag.putDouble("StageHeatTotal", ledger.stageHeatTotalWatts());
+        tag.putDouble("FeedEnthalpy", ledger.feedEnthalpyWatts());
+        tag.putDouble("SteamEnthalpy", ledger.steamEnthalpyWatts());
+        ListTag stageDuties = new ListTag();
+        for (V3ColumnDutyLedger.StageDuty duty : ledger.stageDuties()) {
+            CompoundTag dutyTag = new CompoundTag();
+            dutyTag.putInt("Tray", duty.trayNumber());
+            dutyTag.putDouble("DutyWatts", duty.dutyWatts());
+            stageDuties.add(dutyTag);
+        }
+        tag.put("StageDuties", stageDuties);
+        return tag;
+    }
+
+    private static V3ColumnDutyLedger readDutyLedger(CompoundTag tag) {
+        if (tag.contains("StageDuties") && !tag.contains("StageDuties", Tag.TAG_LIST)) {
+            throw new IllegalArgumentException("Invalid V3 stage duty list");
+        }
+        ListTag dutyTags = tag.getList("StageDuties", Tag.TAG_COMPOUND);
+        if (tag.get("StageDuties") instanceof ListTag stored && !stored.isEmpty()
+                && stored.getElementType() != Tag.TAG_COMPOUND) {
+            throw new IllegalArgumentException("Invalid V3 stage duty entries");
+        }
+        if (dutyTags.size() > V3ColumnDutyLedger.MAX_STAGE_DUTIES) {
+            throw new IllegalArgumentException("Persisted V3 stage duty count exceeds the display contract");
+        }
+        List<V3ColumnDutyLedger.StageDuty> duties = new ArrayList<>(dutyTags.size());
+        for (int index = 0; index < dutyTags.size(); index++) {
+            CompoundTag dutyTag = dutyTags.getCompound(index);
+            duties.add(new V3ColumnDutyLedger.StageDuty(dutyTag.getInt("Tray"), dutyTag.getDouble("DutyWatts")));
+        }
+        return new V3ColumnDutyLedger(tag.getDouble("Condenser"), tag.getDouble("Reboiler"),
+                tag.getDouble("StageHeatTotal"), duties, tag.getDouble("FeedEnthalpy"),
+                tag.getDouble("SteamEnthalpy"));
     }
 
     private static V3ColumnDisplayResult readDisplayResult(CompoundTag tag) {
@@ -552,10 +626,15 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                     streamTag.getDouble("Flow"), streamTag.getDouble("MassFlow"), streamTag.getDouble("Temperature"),
                     streamTag.getDouble("Pressure"), streamTag.getDouble("VaporMoleFraction"), fractions));
         }
+        if (tag.contains("DutyLedger") && !tag.contains("DutyLedger", Tag.TAG_COMPOUND)) {
+            throw new IllegalArgumentException("Invalid V3 duty ledger");
+        }
+        Optional<V3ColumnDutyLedger> ledger = tag.contains("DutyLedger", Tag.TAG_COMPOUND)
+                ? Optional.of(readDutyLedger(tag.getCompound("DutyLedger"))) : Optional.empty();
         return new V3ColumnDisplayResult(
                 tag.getString("Digest"), tag.getString("Formulation"), tag.getString("Assumptions"),
                 tag.getString("Dataset"), tag.getInt("NewtonIterations"), tag.getDouble("MaximumResidual"),
-                tag.getInt("AcceptanceChecks"), streams);
+                tag.getInt("AcceptanceChecks"), streams, ledger);
     }
 
     private static V3ColumnSpecification specification(V3ControlledQuantity quantity, double value) {
