@@ -21,9 +21,8 @@ final class V3StageBlockLayout {
             starts[node] = offset;
             int expected = topology.hasTemperatureUnknown(node) ? 1 : 0;
             for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
-                if (!problem.truncationSupport().retains(node, component)) continue;
-                if (topology.hasVaporPhase(node)) expected++;
-                if (problem.condenserComponentPhases().hasLiquid(topology, node, component)) expected++;
+                if (problem.hasVaporUnknown(node, component)) expected++;
+                if (problem.hasLiquidUnknown(node, component)) expected++;
             }
             if (expected <= 0 || offset + expected > unknowns.size()) {
                 throw new IllegalArgumentException("V3 MESH ledger block size is invalid");
@@ -42,7 +41,6 @@ final class V3StageBlockLayout {
 
     private static void validateUnknownBlock(
             List<V3DegreeOfFreedomLedger.Unknown> unknowns, V3ColumnProblem problem, int node, int start, int size) {
-        V3ColumnTopology topology = problem.topology();
         for (int index = start; index < start + size; index++) {
             if (unknowns.get(index).id().node() != node) {
                 throw new IllegalArgumentException("V3 MESH unknown ledger is not contiguous by node");
@@ -50,9 +48,8 @@ final class V3StageBlockLayout {
         }
         for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
             int activeComponent = component;
-            boolean retained = problem.truncationSupport().retains(node, component);
-            boolean expectedLiquid = retained && problem.condenserComponentPhases().hasLiquid(topology, node, component);
-            boolean expectedVapor = retained && topology.hasVaporPhase(node);
+            boolean expectedLiquid = problem.hasLiquidUnknown(node, component);
+            boolean expectedVapor = problem.hasVaporUnknown(node, component);
             boolean foundLiquid = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
                     == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW
                     && unknown.id().component() == activeComponent);
@@ -67,7 +64,6 @@ final class V3StageBlockLayout {
 
     private static void validateEquationBlock(
             List<V3DegreeOfFreedomLedger.Equation> equations, V3ColumnProblem problem, int node, int start, int size) {
-        V3ColumnTopology topology = problem.topology();
         for (int index = start; index < start + size; index++) {
             if (equations.get(index).id().node() != node) {
                 throw new IllegalArgumentException("V3 MESH equation ledger is not contiguous by node");
@@ -76,8 +72,7 @@ final class V3StageBlockLayout {
         for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
             int activeComponent = component;
             boolean retained = problem.truncationSupport().retains(node, component);
-            boolean expectedVle = retained
-                    && problem.condenserComponentPhases().hasVaporLiquidEquilibrium(topology, node, component);
+            boolean expectedVle = problem.hasEquilibriumRow(node, component);
             boolean foundMaterial = equations.subList(start, start + size).stream().anyMatch(equation -> equation.id().family()
                     == V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE
                     && equation.id().component() == activeComponent);

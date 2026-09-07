@@ -235,10 +235,12 @@ class V3TruncationNumericsTest {
     static final class ManufacturedThermo implements V3ThermoModel {
         private final V3ComponentBasis basis;
         private final double[][] logK = new double[6][4];
+        private final boolean[] traceNodes = new boolean[6];
 
         ManufacturedThermo(V3ComponentBasis basis, V3DryMeshState exact) {
             this.basis = basis;
             for (int node = 0; node < 6; node++) {
+                traceNodes[node] = exact.liquidFlow(node, 2) > 0.0 || exact.vaporFlow(node, 2) > 0.0;
                 double liquidTotal = Arrays.stream(copyFlows(exact, true)[node]).sum();
                 double vaporTotal = Arrays.stream(copyFlows(exact, false)[node]).sum();
                 for (int component = 0; component < 3; component++) {
@@ -258,7 +260,7 @@ class V3TruncationNumericsTest {
                                                  V3Phase phase, V3ThermoWorkspace workspace) {
             int node = (int) Math.round((temperature - 400.0) / 10.0);
             assertEquals(0.0, composition[1]);
-            if (node != 2) assertEquals(0.0, composition[3]);
+            if (!traceNodes[node]) assertEquals(0.0, composition[3]);
             assertEquals(1.0, Arrays.stream(composition).sum(), 1.0e-12);
             double[] logPhi = new double[4];
             if (phase == V3Phase.LIQUID) {

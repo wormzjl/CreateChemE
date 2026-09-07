@@ -62,7 +62,10 @@ final class V3AcceptanceAuditor {
                 "EQUILIBRIUM", EQUILIBRIUM_LIMIT));
         checks.add(maximumFamily(residual, V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE,
                 "ENERGY_BALANCE", 1.0));
-        if (!problem.truncationSupport().isIdentity()) checks.add(truncationMassDefect(state));
+        if (problem.truncationSupport().truncatedPointCount() > 0) checks.add(truncationMassDefect(state));
+        if (problem.truncationSupport().onePhasePointCount() > 0) {
+            checks.add(phaseTruncationDefect(state, workspace));
+        }
         control.checkpoint();
         if (problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.LIQUID_ONLY) {
             checks.add(liquidCondenserPhase(state, workspace));
@@ -327,18 +330,14 @@ final class V3AcceptanceAuditor {
         for (int node = 0; node < state.nodeCount(); node++) {
             valid &= Double.isFinite(state.temperatureKelvin(node)) && state.temperatureKelvin(node) > 0.0;
             for (int component = 0; component < state.componentCount(); component++) {
-                if (!problem.truncationSupport().retains(node, component)) {
-                    valid &= state.liquidFlow(node, component) == 0.0 && state.vaporFlow(node, component) == 0.0;
-                    continue;
-                }
-                valid &= problem.topology().hasVaporPhase(node)
+                // Absent is absent whether the support removed one phase of the point or the whole point:
+                // the flow must be an exact zero, never a small positive number standing in for one.
+                valid &= problem.hasVaporUnknown(node, component)
                         ? Double.isFinite(state.vaporFlow(node, component)) && state.vaporFlow(node, component) > 0.0
                         : state.vaporFlow(node, component) == 0.0;
-                if (problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component)) {
-                    valid &= Double.isFinite(state.liquidFlow(node, component)) && state.liquidFlow(node, component) > 0.0;
-                } else {
-                    valid &= state.liquidFlow(node, component) == 0.0;
-                }
+                valid &= problem.hasLiquidUnknown(node, component)
+                        ? Double.isFinite(state.liquidFlow(node, component)) && state.liquidFlow(node, component) > 0.0
+                        : state.liquidFlow(node, component) == 0.0;
             }
         }
         double value = valid ? 0.0 : 1.0;
@@ -370,6 +369,46 @@ final class V3AcceptanceAuditor {
                 ? V3AcceptanceAudit.Check.pass("TRUNCATION_MASS_DEFECT", fraction, limit, "fresh sink-edge defect as a fraction of authored feed")
                 : V3AcceptanceAudit.Check.fail("TRUNCATION_MASS_DEFECT", Double.isFinite(fraction) ? Math.max(0.0, fraction) : Double.MAX_VALUE,
                         limit, "sink-edge defect is negative or exceeds the stage-trace mass budget");
+    }
+
+    /**
+     * Bounds what a one-phase point approximates away, recomputed from the candidate.
+     *
+     * <p>A one-phase point loses no mass: its material row conserves the component into the phase that is
+     * present, so it has no sink edge and the {@code TRUNCATION_MASS_DEFECT} budget says nothing about it.
+     * What it does assume is that the absent phase would carry nothing worth solving for, and the quantity
+     * that makes that true or false is the flow the equilibrium row would have given it,
+     * {@code v* = K_c (V/L) l} for a liquid-only point and {@code l* = v L / (K_c V)} for a vapour-only one.
+     * The reinsertion rule restores a phase once that reaches {@link V3TruncationSupport#FLOOR_REINSERTION_FACTOR}
+     * floors, so a published state cannot exceed it by more than the roundoff slack.</p>
+     */
+    private V3AcceptanceAudit.Check phaseTruncationDefect(V3DryMeshState state, V3ThermoWorkspace workspace) {
+        V3TruncationSupport support = problem.truncationSupport();
+        double limit = support.phaseDefectBoundFraction();
+        double worst = 0.0;
+        V3StageEquilibriumRatios equilibrium = V3StageEquilibriumRatios.of(problem, thermo, state, workspace);
+        for (int node = 0; node < state.nodeCount(); node++) {
+            V3StageEquilibriumRatios.Node ratios = equilibrium.node(node);
+            for (int component = 0; component < state.componentCount(); component++) {
+                V3TruncationSupport.PointPhases point = support.pointPhases(node, component);
+                if (!point.isOnePhase()) continue;
+                if (ratios == null) {
+                    return V3AcceptanceAudit.Check.fail("PHASE_TRUNCATION_DEFECT", Double.MAX_VALUE, limit,
+                            "candidate has no evaluable equilibrium ratio for a one-phase stage point");
+                }
+                double implied = point == V3TruncationSupport.PointPhases.LIQUID_ONLY
+                        ? ratios.impliedVaporFlowMolPerSecond(component, state.liquidFlow(node, component))
+                        : ratios.impliedLiquidFlowMolPerSecond(component, state.vaporFlow(node, component));
+                double scale = problem.activeComponentBasis().flowScale(component);
+                worst = Math.max(worst, scale > 0.0 ? implied / scale : Double.MAX_VALUE);
+            }
+        }
+        return Double.isFinite(worst) && worst >= 0.0 && worst <= limit
+                ? V3AcceptanceAudit.Check.pass("PHASE_TRUNCATION_DEFECT", worst, limit,
+                        "largest equilibrium-implied absent-phase flow as a fraction of its component feed")
+                : V3AcceptanceAudit.Check.fail("PHASE_TRUNCATION_DEFECT",
+                        Double.isFinite(worst) ? Math.max(0.0, worst) : Double.MAX_VALUE, limit,
+                        "a one-phase stage point implies more absent-phase flow than the reinsertion threshold");
     }
 
     private V3AcceptanceAudit.Check liquidCondenserPhase(V3DryMeshState state, V3ThermoWorkspace workspace) {

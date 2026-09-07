@@ -17,9 +17,9 @@ class V3StageTraceCalculatorTest {
         assertEquals(original.result().inputDigest(), zero.result().inputDigest());
         assertEquals(original.result().streams(), zero.result().streams());
         assertEquals(original.diagnostics(), zero.diagnostics());
-        assertEquals("v3-dry-mesh-r9", V3ColumnDisplayResult.fromAccepted(zero).formulationRevision());
+        assertEquals("v3-dry-mesh-r16", V3ColumnDisplayResult.fromAccepted(zero).formulationRevision());
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
-        assertEquals(V3InputDigest.of(zero.result().problem(), "v3-dry-mesh-r9", thermo.datasetRevision(),
+        assertEquals(V3InputDigest.of(zero.result().problem(), "v3-dry-mesh-r16", thermo.datasetRevision(),
                 V3ColumnCalculator.ASSUMPTIONS_REVISION), zero.result().inputDigest());
         assertTrue(zero.result().problem().truncationSupport().isIdentity());
         assertTrue(zero.diagnostics().events().stream().noneMatch(event -> event.startsWith("stage-trace")));

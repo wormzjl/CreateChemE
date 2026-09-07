@@ -90,8 +90,7 @@ final class V3MeshResidualEvaluator {
         double[] equilibrium = new double[state.componentCount()];
         Arrays.fill(equilibrium, Double.NaN);
         for (int component = 0; component < equilibrium.length; component++) {
-            if (problem.truncationSupport().retains(node, component)
-                    && problem.condenserComponentPhases().hasVaporLiquidEquilibrium(problem.topology(), node, component)) {
+            if (problem.hasEquilibriumRow(node, component)) {
                 equilibrium[component] = equilibriumResidual(state, node, component, properties);
             }
         }
@@ -115,15 +114,14 @@ final class V3MeshResidualEvaluator {
         if (node == topology.condenserNode()) {
             double vaporIn = state.vaporFlow(1, component);
             double vaporOut = state.vaporFlow(0, component);
-            double liquidOut = problem.condenserComponentPhases().hasLiquid(topology, 0, component)
-                    ? state.liquidFlow(0, component) : 0.0;
+            double liquidOut = problem.hasLiquidUnknown(0, component) ? state.liquidFlow(0, component) : 0.0;
             balance[0] = vaporIn - vaporOut - liquidOut;
             balance[1] = largest(vaporIn, vaporOut, liquidOut, 0.0, 0.0);
             return;
         }
         if (node <= topology.trayCount()) {
             double liquidIn = node == 1
-                    ? (problem.condenserComponentPhases().hasLiquid(topology, 0, component)
+                    ? (problem.hasLiquidUnknown(0, component)
                     ? organicRefluxFraction() * state.liquidFlow(0, component) : 0.0)
                     : (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * state.liquidFlow(node - 1, component);
             double vaporIn = state.vaporFlow(node + 1, component);
@@ -229,7 +227,10 @@ final class V3MeshResidualEvaluator {
         double[] composition = new double[problem.input().componentBasis().componentCount()];
         for (int component = 0; component < state.componentCount(); component++) {
             double flow = liquid ? state.liquidFlow(node, component) : state.vaporFlow(node, component);
-            if (!problem.truncationSupport().retains(node, component)) {
+            // A phase the support removed — one of a one-phase point, or both of an ABSENT point — carries
+            // exactly zero and contributes nothing to this phase's composition.
+            if (!(liquid ? problem.truncationSupport().retainsLiquid(node, component)
+                    : problem.truncationSupport().retainsVapor(node, component))) {
                 if (flow != 0.0) throw new IllegalArgumentException("V3 truncated component flow must be exactly zero");
                 continue;
             }

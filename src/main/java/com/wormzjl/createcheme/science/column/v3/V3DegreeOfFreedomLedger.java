@@ -194,11 +194,10 @@ public final class V3DegreeOfFreedomLedger {
         List<Unknown> unknowns = new ArrayList<>();
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < componentCount; component++) {
-                if (!truncationSupport.retains(node, component)) continue;
-                if (condenserComponentPhases.hasLiquid(topology, node, component)) {
+                if (truncationSupport.hasLiquidUnknown(condenserComponentPhases, node, component)) {
                     unknowns.add(new Unknown(new UnknownId(UnknownFamily.LIQUID_COMPONENT_FLOW, node, component)));
                 }
-                if (topology.hasVaporPhase(node)) {
+                if (truncationSupport.hasVaporUnknown(node, component)) {
                     unknowns.add(new Unknown(new UnknownId(UnknownFamily.VAPOR_COMPONENT_FLOW, node, component)));
                 }
             }
@@ -220,9 +219,11 @@ public final class V3DegreeOfFreedomLedger {
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < componentCount; component++) {
                 if (!truncationSupport.retains(node, component)) continue;
+                // A one-phase point keeps its material row: the component is conserved into the phase that
+                // is present, and only its equilibrium row goes away with the absent phase.
                 equations.add(new Equation(new EquationId(EquationFamily.COMPONENT_MATERIAL_BALANCE, node, component),
                         materialReferences(topology, node, component, componentCount, drawTrays, activeUnknowns)));
-                if (condenserComponentPhases.hasVaporLiquidEquilibrium(topology, node, component)) {
+                if (truncationSupport.hasEquilibriumRow(condenserComponentPhases, node, component)) {
                     equations.add(new Equation(new EquationId(EquationFamily.VAPOR_LIQUID_EQUILIBRIUM, node, component),
                             equilibriumReferences(topology, node, component, componentCount, activeUnknowns)));
                 }

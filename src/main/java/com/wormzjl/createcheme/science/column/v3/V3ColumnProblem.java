@@ -83,6 +83,28 @@ public final class V3ColumnProblem {
         return truncationSupport;
     }
 
+    /**
+     * Whether this point's liquid flow is an unknown of the resolved problem.
+     *
+     * <p>Three rules compose here and nothing in the package may consult them separately: the node's
+     * structural liquid phase, the per-component condenser phase rule, and the attempt-local support mask,
+     * which can remove one phase of a point ({@code LIQUID_ONLY} / {@code VAPOR_ONLY}) or the point as a
+     * whole.</p>
+     */
+    boolean hasLiquidUnknown(int node, int component) {
+        return truncationSupport.hasLiquidUnknown(condenserComponentPhases, node, component);
+    }
+
+    /** Whether this point's vapour flow is an unknown of the resolved problem. */
+    boolean hasVaporUnknown(int node, int component) {
+        return truncationSupport.hasVaporUnknown(node, component);
+    }
+
+    /** A vapour-liquid equilibrium row exists exactly where both phases of the point are unknowns. */
+    boolean hasEquilibriumRow(int node, int component) {
+        return truncationSupport.hasEquilibriumRow(condenserComponentPhases, node, component);
+    }
+
     public double[] nodePressuresPascal() {
         return nodePressuresPascal.clone();
     }

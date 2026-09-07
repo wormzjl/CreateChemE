@@ -23,8 +23,8 @@ import java.util.concurrent.CancellationException;
  */
 public final class V3ColumnCalculator {
     /** Cutoff-enabled formulation; the exact-off path retains the legacy revision in its digest. */
-    public static final String FORMULATION_REVISION = "v3-dry-mesh-r10-flash-trace";
-    private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r9";
+    public static final String FORMULATION_REVISION = "v3-dry-mesh-r17-flash-trace";
+    private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r16";
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r4";
     public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r1";
     /**
@@ -282,7 +282,7 @@ public final class V3ColumnCalculator {
                     && !hasCondenserPhaseMismatch(pass) && condenserAttempts.allowsColdRecovery()) {
                 try {
                     control.checkpoint();
-                    PreparedAttempt coarsePrepared = prepareAttempt(originalProblem(pass), pass.recoverySeed(), policy);
+                    PreparedAttempt coarsePrepared = prepareAttempt(originalProblem(pass), thermo, pass.recoverySeed(), policy);
                     V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                             coarsePrepared.problem(), thermo, pass.feedMolarEnthalpyJoulesPerMol());
                     V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
@@ -554,12 +554,12 @@ public final class V3ColumnCalculator {
         for (int node = 0; node < state.nodeCount(); node++) {
             if (!Double.isFinite(state.temperatureKelvin(node)) || state.temperatureKelvin(node) <= 0.0) return false;
             for (int component = 0; component < state.componentCount(); component++) {
-                boolean vaporPhase = problem.topology().hasVaporPhase(node);
+                boolean vaporPhase = problem.hasVaporUnknown(node, component);
                 if (vaporPhase && (!Double.isFinite(state.vaporFlow(node, component)) || state.vaporFlow(node, component) <= 0.0)) {
                     return false;
                 }
                 if (!vaporPhase && state.vaporFlow(node, component) != 0.0) return false;
-                boolean liquidPhase = problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component);
+                boolean liquidPhase = problem.hasLiquidUnknown(node, component);
                 if (liquidPhase && (!Double.isFinite(state.liquidFlow(node, component))
                         || state.liquidFlow(node, component) <= 0.0)) {
                     return false;
@@ -654,7 +654,7 @@ public final class V3ColumnCalculator {
         double feedMolarEnthalpy = feedFlash.referenceMolarEnthalpyJoulesPerMol();
         V3DryMeshState recoverySeed = seed;
         V3ColumnProblem untruncated = problem;
-        PreparedAttempt prepared = prepareAttempt(untruncated, seed, policy);
+        PreparedAttempt prepared = prepareAttempt(untruncated, thermo, seed, policy);
         SolveTelemetry telemetry;
         V3SimultaneousColumnSolver.Attempt attempt;
         V3AcceptanceAudit audit;
@@ -697,12 +697,12 @@ public final class V3ColumnCalculator {
                     || (!converged && stalledRefreshes >= MAXIMUM_STALLED_FLOOR_SUPPORT_REFRESHES)) {
                 break;
             }
-            PreparedAttempt refreshed = refreshFloorSupport(untruncated, prepared, attempt.state(), policy);
+            PreparedAttempt refreshed = refreshFloorSupport(untruncated, thermo, prepared, attempt.state(), policy);
             if (refreshed == null) break;
             // See STALLED_DROP_REFRESH_ITERATIONS: a refresh that only removes points from a stalled attempt
             // is a bounded polish, not a second full Newton solve.
             nextIterations = !converged
-                    && refreshed.support().retainedPointCount() <= prepared.support().retainedPointCount()
+                    && refreshed.support().presentPhaseCount() <= prepared.support().presentPhaseCount()
                     ? Math.min(maximumIterations, STALLED_DROP_REFRESH_ITERATIONS)
                     : maximumIterations;
             refreshes++;
@@ -1127,16 +1127,16 @@ public final class V3ColumnCalculator {
         if (!input.steamFeeds().isEmpty()) {
             // r7/r8: the condenser vapor outlet carries the ALL_VAPOR steam product enthalpy even when the
             // hydrocarbon vapor is absent (LIQUID_ONLY branch), which changes the published wet condenser duty.
-            return (heat ? "v3-wet-mesh-r15-steam" : "v3-wet-mesh-r14-steam")
+            return (heat ? "v3-wet-mesh-r22-steam" : "v3-wet-mesh-r21-steam")
                     + (!input.sideDraws().isEmpty() ? "-side-draws" : "") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
         if (!input.sideDraws().isEmpty()) {
-            return (heat ? "v3-dry-mesh-r12-side-draws" : "v3-dry-mesh-r11-side-draws") + trace
+            return (heat ? "v3-dry-mesh-r19-side-draws" : "v3-dry-mesh-r18-side-draws") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
         if (!heat) return formulationRevision(requestedCutoff);
-        return "v3-dry-mesh-r13" + trace + HEAT_FORMULATION_SUFFIX;
+        return "v3-dry-mesh-r20" + trace + HEAT_FORMULATION_SUFFIX;
     }
 
     static String assumptionsRevision(V3ColumnInput input) {
@@ -1208,8 +1208,9 @@ public final class V3ColumnCalculator {
      * retained neighbours are delivering material to it before the support is derived, which keeps the
      * decision self-consistent at every rung instead of only at a refresh.</p>
      */
-    private static PreparedAttempt prepareAttempt(V3ColumnProblem original, V3DryMeshState seed, TruncationPolicy policy) {
-        V3DryMeshState lifted = liftFloorInflow(original, seed);
+    private static PreparedAttempt prepareAttempt(
+            V3ColumnProblem original, V3PengRobinsonThermo thermo, V3DryMeshState seed, TruncationPolicy policy) {
+        V3DryMeshState lifted = liftFloorInflow(original, thermo, seed);
         V3TruncationSupport support = V3TruncationSupport.derive(original, policy.attemptCutoff(), lifted);
         V3ColumnProblem problem;
         try {
@@ -1224,8 +1225,9 @@ public final class V3ColumnCalculator {
 
     /** Re-derives the floor support from a solved state, or returns null when the retained set is unchanged. */
     private static PreparedAttempt refreshFloorSupport(
-            V3ColumnProblem untruncated, PreparedAttempt prepared, V3DryMeshState state, TruncationPolicy policy) {
-        PreparedAttempt refreshed = prepareAttempt(untruncated, state, policy);
+            V3ColumnProblem untruncated, V3PengRobinsonThermo thermo, PreparedAttempt prepared,
+            V3DryMeshState state, TruncationPolicy policy) {
+        PreparedAttempt refreshed = prepareAttempt(untruncated, thermo, state, policy);
         return refreshed.support().sameRetention(prepared.support()) ? null : refreshed;
     }
 
@@ -1238,7 +1240,8 @@ public final class V3ColumnCalculator {
      * material is split evenly over the point's present outlets, so a restored point arrives with its own
      * balance already closed instead of as a fresh order-one residual.</p>
      */
-    private static V3DryMeshState liftFloorInflow(V3ColumnProblem problem, V3DryMeshState state) {
+    private static V3DryMeshState liftFloorInflow(
+            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState state) {
         V3ColumnTopology topology = problem.topology();
         int components = problem.activeComponentBasis().componentCount();
         double refluxRatio = problem.input().specifications().stream()
@@ -1255,16 +1258,21 @@ public final class V3ColumnCalculator {
                 vapor[node][component] = state.vaporFlow(node, component);
             }
         }
+        V3StageEquilibriumRatios equilibrium =
+                V3StageEquilibriumRatios.of(problem, thermo, state, thermo.newWorkspace());
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < components; component++) {
                 double floor = problem.activeComponentBasis().flowScale(component)
                         * V3TruncationSupport.TRACE_FLOOR_FRACTION;
-                boolean hasLiquid = problem.condenserComponentPhases().hasLiquid(topology, node, component);
+                boolean hasLiquid = topology.hasLiquidPhase(node)
+                        && problem.condenserComponentPhases().hasLiquid(topology, node, component);
                 boolean hasVapor = topology.hasVaporPhase(node);
-                // Only a point the floor would remove is a reinsertion candidate; a point that is already
-                // above the floor in a present phase is retained on its own flow and must not be touched.
-                if ((hasLiquid && liquid[node][component] >= floor)
-                        || (hasVapor && vapor[node][component] >= floor)) {
+                boolean liquidAbove = hasLiquid && liquid[node][component] >= floor;
+                boolean vaporAbove = hasVapor && vapor[node][component] >= floor;
+                if (liquidAbove && vaporAbove) continue;
+                if (liquidAbove || vaporAbove) {
+                    liftAbsentPhase(problem, equilibrium.node(node), liquid, vapor, node, component, floor,
+                            hasLiquid, hasVapor, liquidAbove);
                     continue;
                 }
                 double inflow;
@@ -1291,6 +1299,29 @@ public final class V3ColumnCalculator {
         return new V3DryMeshState(topology, components, liquid, vapor, temperatures);
     }
 
+    /**
+     * Restores the absent phase of a one-phase point when equilibrium implies it would carry ten floors.
+     *
+     * <p>An inflow test is the wrong criterion here and the delivered material is the wrong value: the phase
+     * that is present already carries the whole inflow, so splitting it again would put a bulk flow into a
+     * phase the state says is empty. What decides a one-phase point is the flow its own equilibrium row
+     * would give the absent phase — {@code v* = K_c (V/L) l}, or {@code l* = v L / (K_c V)} — and lifting to
+     * exactly that value leaves the point's material row off by {@code v*} against a throughput of order
+     * {@code l}, which is small by construction. It is also the quantity {@code PHASE_TRUNCATION_DEFECT}
+     * audits, so a phase this rule declines to restore is one the audit can bound.</p>
+     */
+    private static void liftAbsentPhase(
+            V3ColumnProblem problem, V3StageEquilibriumRatios.Node ratios, double[][] liquid, double[][] vapor,
+            int node, int component, double floor, boolean hasLiquid, boolean hasVapor, boolean liquidAbove) {
+        if (ratios == null || !hasLiquid || !hasVapor) return;
+        double implied = liquidAbove
+                ? ratios.impliedVaporFlowMolPerSecond(component, liquid[node][component])
+                : ratios.impliedLiquidFlowMolPerSecond(component, vapor[node][component]);
+        if (implied < V3TruncationSupport.FLOOR_REINSERTION_FACTOR * floor) return;
+        if (liquidAbove) vapor[node][component] = Math.max(vapor[node][component], implied);
+        else liquid[node][component] = Math.max(liquid[node][component], implied);
+    }
+
     private static String stageTraceEvent(V3TruncationSupport support, V3DryMeshState state, V3ColumnProblem problem) {
         String defect;
         try {
@@ -1300,7 +1331,8 @@ public final class V3ColumnCalculator {
             defect = "unavailable";
         }
         String event = "stage-trace cutoff=" + support.cutoffMoleFraction() + "; truncated="
-                + support.truncatedPointCount() + "/" + support.totalPointCount() + "; closure-pruned="
+                + support.truncatedPointCount() + "/" + support.totalPointCount() + "; one-phase="
+                + support.onePhasePointCount() + "; closure-pruned="
                 + support.closurePrunedCount() + "; defect/feed=" + defect
                 + (support.note().isEmpty() ? "" : "; " + support.note());
         return event.length() <= 256 ? event : event.substring(0, 256);
