@@ -2,6 +2,11 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -113,6 +118,91 @@ class V3SteamFeedContractTest {
         assertFalse(distillate.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("h2o")));
     }
 
+    @Test
+    void lowPressureAllVaporWaterOnALiquidOnlyCondenserLeavesAsSteamProductEnthalpy() {
+        // Psat(360 K) ~ 62 kPa exceeds a 50 kPa overhead, so the water regime is ALL_VAPOR even though the
+        // hydrocarbon condenser branch is LIQUID_ONLY: the arriving steam is published as a pure-water
+        // "overhead_vapor" product and its enthalpy must leave the condenser node with it.
+        double topPressure = 50_000.0;
+        double condenserTemperature = 360.0;
+        assertTrue(V3WaterProperties.saturationPressurePascal(condenserTemperature) >= topPressure);
+        V3ColumnInput input = new V3ColumnInput(1, "test:ideal_binary", "test:low-pressure-steam",
+                new V3ComponentBasis(List.of("methane", "n-pentane")), new double[] {40.0, 60.0}, 450.0,
+                4, 2, topPressure, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0), new V3ColumnSpecification.ReboilerDuty(0.0)),
+                List.of(), List.of(new V3SteamFeedSpec(5, 4.0, 450.0)));
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.LIQUID_ONLY);
+        assertEquals(V3WaterCondenserRegime.ALL_VAPOR, problem.waterCondenserRegime());
+        assertEquals(V3CondenserPhaseBranch.LIQUID_ONLY, problem.topology().condenserPhaseBranch());
+        assertFalse(problem.topology().hasVaporPhase(problem.topology().condenserNode()));
+        V3DryMeshState state = manufacturedWetState(problem, condenserTemperature);
+        assertEquals(4.0, problem.waterCondenserSplit(state).vaporFlowMolPerSecond());
+        assertEquals(0.0, problem.waterCondenserSplit(state).freeWaterFlowMolPerSecond());
+
+        List<V3ColumnStreamProperties> streams = V3ColumnStreamProperties.fromAccepted(problem, state,
+                new double[] {0.016, 0.072});
+        V3ColumnStreamProperties overhead = streams.stream().filter(stream -> stream.streamId().equals("overhead_vapor"))
+                .findFirst().orElseThrow(() -> new AssertionError("streams=" + streams));
+        assertEquals(4.0, overhead.molarFlowMolPerSecond());
+        assertEquals(List.of(new V3ColumnStreamProperties.ComponentFraction("h2o", 1.0, 1.0)), overhead.moleFractions());
+        assertFalse(streams.stream().anyMatch(stream -> stream.streamId().equals("free_water")));
+
+        ZeroEnthalpyThermo thermo = new ZeroEnthalpyThermo(input.componentBasis());
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
+        V3ThermoWorkspace workspace = thermo.newWorkspace();
+        double steamProductEnergy = 4.0 * V3WaterProperties.vaporMolarEnthalpy(condenserTemperature);
+        double arrivingWaterEnergy = 4.0 * V3WaterProperties.vaporMolarEnthalpy(450.0);
+        V3MeshResidualEvaluator.LocalNodeTerms condenser = evaluator.localTerms(state, 0, workspace);
+        assertEquals(0.0, condenser.liquidPhaseEnergy());
+        assertEquals(steamProductEnergy, condenser.vaporPhaseEnergy(), 1.0e-9 * steamProductEnergy);
+        assertEquals(steamProductEnergy - arrivingWaterEnergy,
+                V3ColumnDutyLedger.condenserDutyWatts(problem, state, evaluator, workspace), 1.0e-9 * arrivingWaterEnergy);
+
+        // The tray energy rows never see the condenser vapor term, so the wet MESH residual is unaffected.
+        V3MeshResidual residual = evaluator.evaluate(state, workspace);
+        for (V3MeshResidual.Row row : residual.rows()) {
+            if (row.equation().family() == V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE) {
+                assertEquals(0.0, row.physicalValue(), 1.0e-9 * arrivingWaterEnergy, row::toString);
+            }
+        }
+        // The whole-column closure adds the condenser vapor outlet inside the condenser duty and subtracts it again
+        // as a product, so it is blind to this term and passes with or without the fix; the condenser-duty
+        // assertion above is the guard for the published number.
+        V3AcceptanceAudit audit = new V3AcceptanceAuditor(problem, thermo, 0.0).audit(state, workspace);
+        V3AcceptanceAudit.Check closure = audit.checks().stream()
+                .filter(check -> check.family().equals("GLOBAL_ENERGY_BALANCE")).findFirst().orElseThrow();
+        assertTrue(closure.passed(), closure::toString);
+        assertEquals(0.0, closure.value(), 1.0e-9 * arrivingWaterEnergy);
+    }
+
+    /** Hydrocarbon phases carry no enthalpy, so every energy term in the column is water. */
+    private static final class ZeroEnthalpyThermo implements V3ThermoModel {
+        private final V3ComponentBasis basis;
+
+        private ZeroEnthalpyThermo(V3ComponentBasis basis) {
+            this.basis = basis;
+        }
+
+        @Override public V3ComponentBasis componentBasis() { return basis; }
+        @Override public V3ThermoWorkspace newWorkspace() { return new V3ThermoWorkspace(basis.componentCount()); }
+
+        @Override
+        public V3FugacityResult fugacity(double t, double p, double[] z, V3Phase phase, V3ThermoWorkspace workspace) {
+            return new V3FugacityResult(phase, new double[basis.componentCount()], 1.0, 0.0, 1, 0.0);
+        }
+
+        @Override
+        public double molarEnthalpy(double t, double p, double[] z, V3Phase phase, V3ThermoWorkspace workspace) {
+            return 0.0;
+        }
+
+        @Override
+        public V3FlashResult flashTP(double t, double p, double[] z, V3ThermoWorkspace workspace) {
+            throw new UnsupportedOperationException("The zero-enthalpy steam test model does not implement a flash");
+        }
+    }
+
     private static V3DryMeshState manufacturedWetState(V3ColumnProblem problem, double condenserTemperature) {
         int nodes = problem.topology().nodeCount();
         double[][] liquid = new double[nodes][2];
@@ -120,7 +210,7 @@ class V3SteamFeedContractTest {
         double[] temperatures = new double[nodes];
         for (int node = 0; node < nodes; node++) {
             liquid[node] = new double[] {4.0, 6.0};
-            vapor[node] = new double[] {4.0, 6.0};
+            vapor[node] = problem.topology().hasVaporPhase(node) ? new double[] {4.0, 6.0} : new double[2];
             temperatures[node] = node == 0 ? condenserTemperature : 450.0;
         }
         return new V3DryMeshState(problem.topology(), 2, liquid, vapor, temperatures);

@@ -139,11 +139,14 @@ final class V3MeshResidualEvaluator {
 
     private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties properties) {
         double totalFlow = phaseTotal(state, node, liquid);
-        if (totalFlow == 0.0) return 0.0;
-        double energy = totalFlow * (liquid ? properties.liquidResult().molarEnthalpyJoulesPerMol()
+        double energy = totalFlow == 0.0 ? 0.0 : totalFlow * (liquid ? properties.liquidResult().molarEnthalpyJoulesPerMol()
                 : properties.vaporResult().molarEnthalpyJoulesPerMol());
+        // Water vapor is carried outside the hydrocarbon basis and must leave the node even when the hydrocarbon
+        // vapor is absent: an ALL_VAPOR condenser on the LIQUID_ONLY branch publishes the arriving steam as a
+        // pure-water overhead product, and that product's enthalpy belongs to the condenser vapor outlet.
         if (!liquid && problem.hasSteamFeeds()) {
-            energy += waterVaporFlow(state, node) * V3WaterProperties.vaporMolarEnthalpy(state.temperatureKelvin(node));
+            double water = waterVaporFlow(state, node);
+            if (water != 0.0) energy += water * V3WaterProperties.vaporMolarEnthalpy(state.temperatureKelvin(node));
         }
         return energy;
     }

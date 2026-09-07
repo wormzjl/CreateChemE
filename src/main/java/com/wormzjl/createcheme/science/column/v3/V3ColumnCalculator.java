@@ -1054,7 +1054,9 @@ public final class V3ColumnCalculator {
         boolean heat = !input.pumparounds().isEmpty();
         String trace = requestedCutoff > 0.0 ? "-flash-trace" : "";
         if (!input.steamFeeds().isEmpty()) {
-            return (heat ? "v3-wet-mesh-r7-steam" : "v3-wet-mesh-r6-steam")
+            // r7/r8: the condenser vapor outlet carries the ALL_VAPOR steam product enthalpy even when the
+            // hydrocarbon vapor is absent (LIQUID_ONLY branch), which changes the published wet condenser duty.
+            return (heat ? "v3-wet-mesh-r8-steam" : "v3-wet-mesh-r7-steam")
                     + (!input.sideDraws().isEmpty() ? "-side-draws" : "") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
