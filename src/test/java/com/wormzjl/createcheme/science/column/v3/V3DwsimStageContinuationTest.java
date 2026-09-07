@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,6 +15,7 @@ class V3DwsimStageContinuationTest {
     private static final long TARGET_BUDGET_NANOS = 15_000_000_000L;
     private static final long FIFTEEN_STAGE_BUDGET_NANOS = 30_000_000_000L;
     private static final long THIRTY_STAGE_BUDGET_NANOS = 60_000_000_000L;
+    private static final long FORTY_STAGE_BUDGET_NANOS = 60_000_000_000L;
 
     @Test
     void acceptedFourStageRealCrudeProfileCanSeedAFreshEightStageCorrection() {
@@ -103,6 +105,63 @@ class V3DwsimStageContinuationTest {
         System.out.println("V3 DWSIM continuation 4->8->15->30: " + convergedThirtyStage + "; audit=" + audit);
         assertTrue(convergedThirtyStage.evidence().convergenceEvidence().satisfiesGates());
         assertTrue(audit.accepted());
+    }
+
+    @Test
+    void theGridScheduleDoublesFromFifteenAndIsUnchangedAtOrBelowThirtyStages() {
+        for (int request = V3ColumnInput.MIN_STAGE_COUNT; request <= 30; request++) {
+            List<Integer> legacy = new java.util.ArrayList<>();
+            for (int seed : new int[] {4, 8, 15}) if (seed < request) legacy.add(seed);
+            legacy.add(request);
+            assertEquals(legacy, V3ColumnCalculator.dwsimStageCounts(request),
+                    () -> "the schedule of a request at or below 30 stages must not move");
+        }
+
+        assertEquals(List.of(4, 8, 15, 30, 31), V3ColumnCalculator.dwsimStageCounts(31));
+        assertEquals(List.of(4, 8, 15, 30, 40), V3ColumnCalculator.dwsimStageCounts(40));
+        assertEquals(List.of(4, 8, 15, 30, 60), V3ColumnCalculator.dwsimStageCounts(60));
+        assertEquals(List.of(4, 8, 15, 30, 60, 61), V3ColumnCalculator.dwsimStageCounts(61));
+        assertEquals(List.of(4, 8, 15, 30, 60, 64), V3ColumnCalculator.dwsimStageCounts(V3ColumnInput.MAX_STAGE_COUNT));
+
+        for (int request = V3ColumnInput.MIN_STAGE_COUNT; request <= V3ColumnInput.MAX_STAGE_COUNT; request++) {
+            List<Integer> schedule = V3ColumnCalculator.dwsimStageCounts(request);
+            assertEquals(request, schedule.get(schedule.size() - 1), "the schedule must end on the request");
+            for (int index = 1; index < schedule.size(); index++) {
+                assertTrue(schedule.get(index) > schedule.get(index - 1), schedule::toString);
+                assertTrue(schedule.get(index) <= 2 * schedule.get(index - 1) || schedule.get(index - 1) < 15,
+                        () -> "no grid above 15 may more than double its predecessor: " + schedule);
+            }
+        }
+    }
+
+    /**
+     * The plain 40-tray literature column: the geometry of Ledezma-Martinez (2019) without its draws, steam or
+     * pumparounds. On the 4-8-15-40 schedule the 15 to 40 jump was rejected by the line search at iteration 0
+     * and the request failed after 287 s; the 30-stage grid the doubling rule adds converges it in about 5 s.
+     */
+    @Test
+    void thePlainFortyTrayLiteratureColumnConvergesOnTheDoubledSchedule() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl19_dwsim");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] flows = crude.moleFractions();
+        for (int component = 0; component < flows.length; component++) flows[component] *= 737.6996333000835;
+        V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
+                crude.componentBasis(), flows, 638.15, 40, 37, 250_000.0, 0.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(332.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(4.17),
+                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)));
+
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, () -> {
+            if (System.nanoTime() - started >= FORTY_STAGE_BUDGET_NANOS) {
+                throw new AssertionError("the plain 40-tray literature column exceeded its 60-second cold budget");
+            }
+        });
+        System.out.println("V3 plain 40-tray literature column: " + (System.nanoTime() - started) / 1.0e9 + " s; " + outcome);
+
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.diagnostics().solvePath().contains("4-8-15-30-40"), success.diagnostics()::solvePath);
     }
 
     private static V3SimultaneousColumnSolver.Attempt solve(

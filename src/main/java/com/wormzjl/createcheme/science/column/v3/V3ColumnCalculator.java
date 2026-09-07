@@ -1518,11 +1518,27 @@ public final class V3ColumnCalculator {
         }
     }
 
-    private static List<Integer> dwsimStageCounts(int requestedStageCount) {
+    /**
+     * Grid schedule of the stage continuation: the seed grids 4, 8 and 15 where they are below the request,
+     * then a doubling of 15 for as long as the doubled grid is strictly below the request, and the request
+     * itself last.
+     *
+     * <p>A request of 30 or fewer stages therefore produces exactly the historical {@code {4, 8, 15}} prefix
+     * plus the request, because the first doubled grid is already 30: no digest, solve path or timing of an
+     * existing case moves. Above 30 the schedule gains 30, then 60: a request of 40 becomes 4-8-15-30-40 and
+     * a request of 64 becomes 4-8-15-30-60-64.</p>
+     *
+     * <p>Measured on the plain TJL19 40-tray literature column (feed tray 37, 250 kPa, reflux 4.17, condenser
+     * 332.15 K, 8 MW reboiler): the 15 to 40 jump hands Newton a seed whose energy rows are all short by the
+     * same 285 kW and whose first direction the line search rejects at iteration 0, so the request fails after
+     * 287 s. With the intermediate 30-stage grid the same column converges in 5.4 s.</p>
+     */
+    static List<Integer> dwsimStageCounts(int requestedStageCount) {
         List<Integer> result = new java.util.ArrayList<>();
         for (int stageCount : new int[] {4, 8, 15}) {
             if (stageCount < requestedStageCount) result.add(stageCount);
         }
+        for (int stageCount = 30; stageCount < requestedStageCount; stageCount *= 2) result.add(stageCount);
         result.add(requestedStageCount);
         return List.copyOf(result);
     }
