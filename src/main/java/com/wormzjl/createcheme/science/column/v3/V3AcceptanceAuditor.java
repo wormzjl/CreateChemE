@@ -70,10 +70,14 @@ final class V3AcceptanceAuditor {
             checks.add(twoPhaseCondenserSplit(state, workspace));
         }
         // The whole-column boundary closure guards the stage-heat sign and, on a wet column, the steam
-        // enthalpy in against the free water and water-vapor slip out. Both are boundary terms that the
-        // per-row ENERGY_BALANCE check cannot see.
+        // enthalpy in against the water leaving tray one. The condenser node is closed by definition in
+        // that sum, so its water outlets are guarded separately against the published condenser duty.
         if (problem.hasPumparounds() || problem.hasSteamFeeds()) {
             checks.add(globalEnergyBalance(state, evaluator, workspace));
+        }
+        if (problem.hasSteamFeeds()) {
+            checks.add(condenserEnergyBalance(problem, thermo, state, workspace,
+                    V3ColumnDutyLedger.condenserDutyWatts(problem, state, evaluator, workspace)));
         }
         control.checkpoint();
         List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
@@ -89,9 +93,11 @@ final class V3AcceptanceAuditor {
      * residual assembled with the opposite sign cannot pass here: the row-residual {@code ENERGY_BALANCE}
      * check would be consistently wrong on both sides of every tray equation and could not detect it.</p>
      *
-     * <p>On a wet column the same closure carries the authored steam enthalpy in against the decanted free
-     * water and the molecular water-vapor slip out, so a dropped or double-counted water boundary term
-     * fails here rather than silently shifting the condenser duty.</p>
+     * <p>On a wet column the same closure carries the authored steam enthalpy in against the water leaving
+     * tray one, so a dropped or double-counted tray or sump water term fails here. It does not guard the
+     * condenser side: the condenser duty is defined as that node's closure, so the condenser outlets are
+     * added inside the duty and subtracted again as products and cancel exactly. That side is covered by
+     * {@link #condenserEnergyBalance}.</p>
      */
     private V3AcceptanceAudit.Check globalEnergyBalance(
             V3DryMeshState state, V3MeshResidualEvaluator evaluator, V3ThermoWorkspace workspace) {
@@ -134,6 +140,68 @@ final class V3AcceptanceAuditor {
                 ? V3AcceptanceAudit.Check.pass("GLOBAL_ENERGY_BALANCE", magnitude, limit, detail)
                 : V3AcceptanceAudit.Check.fail("GLOBAL_ENERGY_BALANCE",
                         Double.isFinite(magnitude) ? magnitude : Double.MAX_VALUE, limit, detail);
+    }
+
+    /**
+     * Independently closes the condenser node and compares the result with the published condenser duty.
+     *
+     * <p>Every term is rebuilt from the authored input, the candidate state, and direct property calls: the
+     * hydrocarbon outlets and the arriving tray-one vapor use {@link V3ThermoModel#molarEnthalpy} on the
+     * candidate flows, the water arriving at the condenser is the authored steam total, and the vapor and
+     * free-water outlets come from the auditor's own regime split. Nothing here reuses the residual
+     * evaluator's condenser terms, so a condenser vapor outlet that drops or double-counts the water it
+     * publishes fails this check instead of silently shifting the duty the ledger reports.</p>
+     */
+    static V3AcceptanceAudit.Check condenserEnergyBalance(
+            V3ColumnProblem problem, V3ThermoModel thermo, V3DryMeshState state, V3ThermoWorkspace workspace,
+            double publishedCondenserWatts) {
+        V3ColumnTopology topology = problem.topology();
+        int condenser = topology.condenserNode();
+        double outletTemperature = state.temperatureKelvin(condenser);
+        double liquidOut = topology.hasLiquidPhase(condenser)
+                ? hydrocarbonPhaseEnergyWatts(problem, thermo, state, condenser, true, workspace) : 0.0;
+        double vaporOut = topology.hasVaporPhase(condenser)
+                ? hydrocarbonPhaseEnergyWatts(problem, thermo, state, condenser, false, workspace) : 0.0;
+        IndependentWaterSplit water = independentCondenserWaterSplit(problem, state);
+        double waterVaporOut = water.vaporFlowMolPerSecond() == 0.0 ? 0.0
+                : water.vaporFlowMolPerSecond() * V3WaterProperties.vaporMolarEnthalpy(outletTemperature);
+        double freeWaterOut = water.freeWaterFlowMolPerSecond() == 0.0 ? 0.0
+                : water.freeWaterFlowMolPerSecond() * V3WaterProperties.liquidMolarEnthalpy(outletTemperature);
+        double arrivingWater = authoredWaterAtCondenser(problem);
+        double vaporIn = hydrocarbonPhaseEnergyWatts(problem, thermo, state, 1, false, workspace)
+                + (arrivingWater == 0.0 ? 0.0 : arrivingWater * V3WaterProperties.vaporMolarEnthalpy(state.temperatureKelvin(1)));
+        double expected = liquidOut + vaporOut + waterVaporOut + freeWaterOut - vaporIn;
+        double largest = 0.0;
+        for (double term : new double[] {liquidOut, vaporOut, waterVaporOut, freeWaterOut, vaporIn, publishedCondenserWatts}) {
+            largest = Math.max(largest, Math.abs(term));
+        }
+        double limit = Math.max(1.0, 1.0e-6 * largest);
+        double magnitude = Math.abs(expected - publishedCondenserWatts);
+        String detail = String.format(Locale.ROOT,
+                "fresh condenser-node closure %.6g W vs published %.6g W; water vapor out=%.6g W, free water out=%.6g W",
+                expected, publishedCondenserWatts, waterVaporOut, freeWaterOut);
+        return Double.isFinite(magnitude) && magnitude <= limit
+                ? V3AcceptanceAudit.Check.pass("CONDENSER_ENERGY_BALANCE", magnitude, limit, detail)
+                : V3AcceptanceAudit.Check.fail("CONDENSER_ENERGY_BALANCE",
+                        Double.isFinite(magnitude) ? magnitude : Double.MAX_VALUE, limit, detail);
+    }
+
+    /** Total hydrocarbon phase enthalpy rate of one node from a direct property call on the candidate flows. */
+    private static double hydrocarbonPhaseEnergyWatts(
+            V3ColumnProblem problem, V3ThermoModel thermo, V3DryMeshState state, int node, boolean liquid,
+            V3ThermoWorkspace workspace) {
+        V3ActiveComponentBasis active = problem.activeComponentBasis();
+        double[] composition = new double[active.publicBasis().componentCount()];
+        double total = 0.0;
+        for (int component = 0; component < state.componentCount(); component++) {
+            double flow = liquid ? state.liquidFlow(node, component) : state.vaporFlow(node, component);
+            composition[active.publicIndex(component)] = flow;
+            total += flow;
+        }
+        if (!(total > 0.0) || !Double.isFinite(total)) return 0.0;
+        for (int component = 0; component < composition.length; component++) composition[component] /= total;
+        return total * thermo.molarEnthalpy(state.temperatureKelvin(node), problem.nodePressurePascal(node),
+                composition, liquid ? V3Phase.LIQUID : V3Phase.VAPOR, workspace);
     }
 
     /** Advisory only: a cooled tray that condenses nearly all of its arriving vapor is at its physical cap. */
@@ -403,14 +471,18 @@ final class V3AcceptanceAuditor {
      * under audit.
      */
     private IndependentWaterSplit independentCondenserWaterSplit(V3DryMeshState state) {
-        double arrivingWater = authoredWaterAtCondenser();
+        return independentCondenserWaterSplit(problem, state);
+    }
+
+    private static IndependentWaterSplit independentCondenserWaterSplit(V3ColumnProblem problem, V3DryMeshState state) {
+        double arrivingWater = authoredWaterAtCondenser(problem);
         int condenser = problem.topology().condenserNode();
         return switch (problem.waterCondenserRegime()) {
             case NONE -> new IndependentWaterSplit(0.0, 0.0);
             case ALL_VAPOR -> new IndependentWaterSplit(arrivingWater, 0.0);
             case FREE_WATER -> {
                 double vaporWater = problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
-                        ? Math.min(arrivingWater, independentWaterSlipCoefficient()
+                        ? Math.min(arrivingWater, independentWaterSlipCoefficient(problem)
                                 * hydrocarbonVaporTotal(state, condenser)) : 0.0;
                 yield new IndependentWaterSplit(vaporWater, arrivingWater - vaporWater);
             }
@@ -584,14 +656,22 @@ final class V3AcceptanceAuditor {
     }
 
     private double independentWaterSlipCoefficient() {
+        return independentWaterSlipCoefficient(problem);
+    }
+
+    private static double independentWaterSlipCoefficient(V3ColumnProblem problem) {
         int condenser = problem.topology().condenserNode();
-        double temperature = condenserTemperatureKelvin();
+        double temperature = condenserTemperatureKelvin(problem);
         double waterFraction = V3WaterProperties.saturationPressurePascal(temperature)
                 / problem.nodePressurePascal(condenser);
         return waterFraction / (1.0 - waterFraction);
     }
 
     private double condenserTemperatureKelvin() {
+        return condenserTemperatureKelvin(problem);
+    }
+
+    private static double condenserTemperatureKelvin(V3ColumnProblem problem) {
         return problem.input().specifications().stream()
                 .filter(V3ColumnSpecification.CondenserOutletTemperature.class::isInstance)
                 .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst()
@@ -600,6 +680,10 @@ final class V3AcceptanceAuditor {
     }
 
     private double authoredWaterAtCondenser() {
+        return authoredWaterAtCondenser(problem);
+    }
+
+    private static double authoredWaterAtCondenser(V3ColumnProblem problem) {
         return problem.input().steamFeeds().stream().mapToDouble(V3SteamFeedSpec::molarFlowMolPerSecond).sum();
     }
 

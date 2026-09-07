@@ -86,6 +86,12 @@ class V3CondenserPhaseAuditTest {
         V3AcceptanceAudit exactAudit = new V3AcceptanceAuditor(wetProblem, wetThermo, 0.0)
                 .audit(fixture.exact(), wetThermo.newWorkspace());
         assertTrue(phaseCheck(exactAudit).passed(), phaseCheck(exactAudit)::toString);
+        // Psat(400 K) exceeds 150 kPa, so this drum is ALL_VAPOR on the TWO_PHASE branch: all of the water
+        // leaves with the hydrocarbon vapor and the published duty must carry it.
+        assertEquals(V3WaterCondenserRegime.ALL_VAPOR, wetProblem.waterCondenserRegime());
+        V3AcceptanceAudit.Check condenserClosure = exactAudit.checks().stream()
+                .filter(check -> check.family().equals("CONDENSER_ENERGY_BALANCE")).findFirst().orElseThrow();
+        assertTrue(condenserClosure.passed(), condenserClosure::toString);
 
         double[][] liquid = V3TruncationNumericsTest.copyFlows(fixture.exact(), true);
         double[][] vapor = V3TruncationNumericsTest.copyFlows(fixture.exact(), false);
@@ -102,6 +108,30 @@ class V3CondenserPhaseAuditTest {
     }
 
     @Test
+    void condenserEnergyBalanceClosesADecantingDrumWithBothTheSlipAndTheFreeWaterBoot() {
+        V3TruncationNumericsTest.Fixture fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
+        // Psat(400 K) / 600 kPa ~ 0.41 caps the slip near 6.9 mol/s against 12 mol/s arriving, so the drum decants,
+        // while 450 K sump steam is still superheated at the 600 kPa injection pressure (Tsat ~ 432 K).
+        V3ColumnProblem wetProblem = wetProblem(fixture, 600_000.0, 12.0);
+        V3ThermoModel wetThermo = withWetEquilibrium(fixture, wetProblem);
+        V3ColumnProblem.WaterCondenserSplit split = wetProblem.waterCondenserSplit(fixture.exact());
+        assertEquals(V3WaterCondenserRegime.FREE_WATER, wetProblem.waterCondenserRegime());
+        assertTrue(split.freeWaterFlowMolPerSecond() > 0.0);
+        assertTrue(split.vaporFlowMolPerSecond() > 0.0);
+
+        V3AcceptanceAudit audit = new V3AcceptanceAuditor(wetProblem, wetThermo, 0.0)
+                .audit(fixture.exact(), wetThermo.newWorkspace());
+        V3AcceptanceAudit.Check condenserClosure = audit.checks().stream()
+                .filter(check -> check.family().equals("CONDENSER_ENERGY_BALANCE")).findFirst().orElseThrow();
+
+        assertTrue(condenserClosure.passed(), condenserClosure::toString);
+        double expectedFreeWaterOut = split.freeWaterFlowMolPerSecond()
+                * com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties.liquidMolarEnthalpy(400.0);
+        assertTrue(condenserClosure.detail().contains(String.format(java.util.Locale.ROOT, "free water out=%.6g W",
+                expectedFreeWaterOut)), condenserClosure::detail);
+    }
+
+    @Test
     void waterLimitedOverheadRetainsAllSteamAsMixedVaporInsteadOfMakingNegativeFreeWater() {
         V3TruncationNumericsTest.Fixture fixture = V3TruncationNumericsTest.fixture(V3CondenserPhaseBranch.TWO_PHASE, 0.01);
         V3ColumnProblem wetProblem = wetProblem(fixture, 250_000.0);
@@ -114,6 +144,9 @@ class V3CondenserPhaseAuditTest {
 
         assertTrue(freeWater.passed());
         assertEquals(0.0, freeWater.value());
+        V3AcceptanceAudit.Check condenserClosure = audit.checks().stream()
+                .filter(check -> check.family().equals("CONDENSER_ENERGY_BALANCE")).findFirst().orElseThrow();
+        assertTrue(condenserClosure.passed(), condenserClosure::toString);
         V3ColumnProblem.WaterCondenserSplit split = wetProblem.waterCondenserSplit(fixture.exact());
         assertEquals(wetProblem.waterVaporFlowMolPerSecond(1), split.vaporFlowMolPerSecond());
         assertEquals(0.0, split.freeWaterFlowMolPerSecond());
@@ -159,11 +192,16 @@ class V3CondenserPhaseAuditTest {
     }
 
     private static V3ColumnProblem wetProblem(V3TruncationNumericsTest.Fixture fixture, double topPressurePascal) {
+        return wetProblem(fixture, topPressurePascal, 4.0);
+    }
+
+    private static V3ColumnProblem wetProblem(
+            V3TruncationNumericsTest.Fixture fixture, double topPressurePascal, double sumpSteamMolPerSecond) {
         V3ColumnInput dry = fixture.original().input();
         V3ColumnInput wet = new V3ColumnInput(dry.schemaVersion(), dry.packageId(), dry.assayId(), dry.componentBasis(),
                 dry.feedComponentMolarFlowsMolPerSecond(), dry.feedTemperatureKelvin(), dry.stageCount(), dry.feedStageNumber(),
                 topPressurePascal, dry.stagePressureDropPascal(), dry.specifications(), dry.sideDraws(),
-                List.of(new V3SteamFeedSpec(dry.stageCount() + 1, 4.0, 450.0)));
+                List.of(new V3SteamFeedSpec(dry.stageCount() + 1, sumpSteamMolPerSecond, 450.0)));
         V3ColumnProblem untruncated = V3ColumnProblemResolver.resolve(wet, V3CondenserPhaseBranch.TWO_PHASE);
         return V3ColumnProblemResolver.withTruncation(untruncated, fixture.problem().truncationSupport());
     }

@@ -174,6 +174,46 @@ class V3SteamFeedContractTest {
                 .filter(check -> check.family().equals("GLOBAL_ENERGY_BALANCE")).findFirst().orElseThrow();
         assertTrue(closure.passed(), closure::toString);
         assertEquals(0.0, closure.value(), 1.0e-9 * arrivingWaterEnergy);
+        V3AcceptanceAudit.Check condenserClosure = audit.checks().stream()
+                .filter(check -> check.family().equals("CONDENSER_ENERGY_BALANCE")).findFirst().orElseThrow();
+        assertTrue(condenserClosure.passed(), condenserClosure::toString);
+    }
+
+    @Test
+    void condenserEnergyBalanceRejectsAPublishedDutyThatDropsOrDoubleCountsTheSteamProduct() {
+        double condenserTemperature = 360.0;
+        V3ColumnInput input = new V3ColumnInput(1, "test:ideal_binary", "test:low-pressure-steam",
+                new V3ComponentBasis(List.of("methane", "n-pentane")), new double[] {40.0, 60.0}, 450.0,
+                4, 2, 50_000.0, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperature),
+                        new V3ColumnSpecification.OrganicRefluxRatio(2.0), new V3ColumnSpecification.ReboilerDuty(0.0)),
+                List.of(), List.of(new V3SteamFeedSpec(5, 4.0, 450.0)));
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.LIQUID_ONLY);
+        assertEquals(V3WaterCondenserRegime.ALL_VAPOR, problem.waterCondenserRegime());
+        V3DryMeshState state = manufacturedWetState(problem, condenserTemperature);
+        ZeroEnthalpyThermo thermo = new ZeroEnthalpyThermo(input.componentBasis());
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
+        V3ThermoWorkspace workspace = thermo.newWorkspace();
+        double steamProductEnergy = 4.0 * V3WaterProperties.vaporMolarEnthalpy(condenserTemperature);
+        double published = V3ColumnDutyLedger.condenserDutyWatts(problem, state, evaluator, workspace);
+
+        V3AcceptanceAudit.Check consistent = V3AcceptanceAuditor.condenserEnergyBalance(
+                problem, thermo, state, workspace, published);
+        assertTrue(consistent.passed(), consistent::toString);
+        assertEquals(0.0, consistent.value(), 1.0e-9 * steamProductEnergy);
+
+        // The pre-fix evaluator returned before adding the water term on the LIQUID_ONLY condenser, so the
+        // ledger published exactly this duty: the steam product's enthalpy never left the node.
+        V3AcceptanceAudit.Check dropped = V3AcceptanceAuditor.condenserEnergyBalance(
+                problem, thermo, state, workspace, published - steamProductEnergy);
+        assertFalse(dropped.passed(), dropped::toString);
+        assertEquals(steamProductEnergy, dropped.value(), 1.0e-9 * steamProductEnergy);
+        assertTrue(dropped.value() > dropped.limit());
+
+        V3AcceptanceAudit.Check doubled = V3AcceptanceAuditor.condenserEnergyBalance(
+                problem, thermo, state, workspace, published + steamProductEnergy);
+        assertFalse(doubled.passed(), doubled::toString);
+        assertEquals(steamProductEnergy, doubled.value(), 1.0e-9 * steamProductEnergy);
     }
 
     /** Hydrocarbon phases carry no enthalpy, so every energy term in the column is water. */
