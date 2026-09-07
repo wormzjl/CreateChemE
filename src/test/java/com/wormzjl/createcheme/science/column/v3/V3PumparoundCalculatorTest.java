@@ -165,6 +165,41 @@ class V3PumparoundCalculatorTest {
         }
     }
 
+    /**
+     * The 40 MW return-tray case is the measured worst case of the floor-support refresh loop: its heat rung
+     * at 0.375 stalls four times and every one of those stalls used to be followed by a second full Newton
+     * budget that only removed points and stalled again with a worse residual. Bounding that repeat to
+     * {@code MAXIMUM_NEWTON_ITERATIONS / 8} keeps the case converging and removes about a quarter of its cost.
+     *
+     * <p>The work counter is the number of cooperative cancellation checkpoints the whole cold solve takes,
+     * which is deterministic for a fixed input and is the only whole-chain work measure the public contract
+     * exposes; {@code newtonIterations()} reports the published attempt alone (7 before and after) and cannot
+     * see a shortened repeat. Measured on JDK 21: 1 042 879 checkpoints in 10.95 s with a full repeat budget,
+     * 839 654 in 8.75 s with the bounded one. The pinned ceiling is the bounded number with a 10% margin.</p>
+     */
+    @Test
+    void aStalledDropOnlyFloorRefreshCostsABoundedRepeatOnTheFortyMegawattCase() {
+        V3ColumnInput input = v1ScaleInput("createcheme:cdu17_tjl_acs2018",
+                List.of(new V3PumparoundSpec(8, 12, -40.0e6, V3PumparoundSpec.Split.RETURN_TRAY)));
+        long[] checkpoints = new long[1];
+        long started = System.nanoTime();
+
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, () -> {
+            checkpoints[0]++;
+            if (System.nanoTime() - started >= BUDGET_NANOS) {
+                throw new AssertionError("bounded stalled-refresh case exceeded its cold budget");
+            }
+        });
+
+        System.out.printf(Locale.ROOT, "pumparound case %-30s %6.2f s  checkpoints=%d%n",
+                "return-tray-40-MW/refresh-cost", (System.nanoTime() - started) / 1.0e9, checkpoints[0]);
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertPassed(success, "GLOBAL_ENERGY_BALANCE");
+        assertTrue(checkpoints[0] <= 925_000L,
+                () -> "cold solve took " + checkpoints[0] + " checkpoints; the bounded stalled drop-only "
+                        + "refresh should keep it near 839 654 (1 042 879 with a full repeat budget)");
+    }
+
     @Test
     void tjl19PackageSolvesThirtyStagesWithOnePumparound() {
         Run cooled = run("tjl19-uniform-5-MW", v1ScaleInput("createcheme:tjl19_dwsim",

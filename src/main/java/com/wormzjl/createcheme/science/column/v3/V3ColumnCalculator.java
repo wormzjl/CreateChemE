@@ -55,6 +55,22 @@ public final class V3ColumnCalculator {
     private static final int MAXIMUM_FLOOR_SUPPORT_REFRESHES = 3;
     /** Only one of those passes may follow a stalled attempt; a second stall in a row is not new information. */
     private static final int MAXIMUM_STALLED_FLOOR_SUPPORT_REFRESHES = 1;
+    /**
+     * Newton budget of the one refresh that follows a stalled attempt and only removes points.
+     *
+     * <p>Measured on the 40 MW return-tray case: all four such refreshes stalled again with a worse final
+     * residual than the attempt they repeated (0.070 to 0.220, 0.006 to 0.108, 0.007 to 0.127, 0.008 to
+     * 0.148) and each spent a full 40-iteration budget, 2.7 s of an 11.1 s solve. A drop-only refresh cannot
+     * repair a stalled attempt: the stalled state is what decided the removal, so the repeat starts from the
+     * same place with fewer degrees of freedom. What it does contribute is state motion the continuation
+     * ramp then re-derives its next rung's support from, and that is worth a bounded polish but not a second
+     * full budget. Cutting it off entirely was measured and costs two cases (the 40 MW return-tray case and
+     * {@code V3PumparoundSteamCalculatorTest.tjl19SolvesSumpSteamWithThreePumparounds}); one eighth of the
+     * Newton budget keeps both and still removes about a quarter of the 40 MW case's cost. A refresh that
+     * reinserts a point is different — it carries information the stalled state did not have — and keeps the
+     * full budget.</p>
+     */
+    private static final int STALLED_DROP_REFRESH_ITERATIONS = MAXIMUM_NEWTON_ITERATIONS / 8;
 
     private enum ContinuationJacobianPolicy {
         NONE,
@@ -642,6 +658,7 @@ public final class V3ColumnCalculator {
         SolveTelemetry telemetry;
         V3SimultaneousColumnSolver.Attempt attempt;
         V3AcceptanceAudit audit;
+        int nextIterations = maximumIterations;
         int refreshes = 0;
         int stalledRefreshes = 0;
         // The floor support is frozen for the length of one Newton solve, so it is re-derived from the
@@ -659,14 +676,14 @@ public final class V3ColumnCalculator {
             attempt = switch (jacobianPolicy) {
                 case NONE -> V3SimultaneousColumnSolver.solve(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        V3ConvergenceEvidence.unavailable(), maximumIterations, SCALED_RESIDUAL_TOLERANCE,
+                        V3ConvergenceEvidence.unavailable(), nextIterations, SCALED_RESIDUAL_TOLERANCE,
                         V3FiniteDifferenceJacobian.DifferenceScale.FINE, control, telemetry);
                 case STAGE_LOCAL_BLOCKS -> V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+                        nextIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
                 case PRESSURE_LOCAL_PREDICTOR -> V3SimultaneousColumnSolver.solveWithOneLocalBlockPredictor(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        maximumIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
+                        nextIterations, SCALED_RESIDUAL_TOLERANCE, control, telemetry);
             };
             control.checkpoint();
             audit = audit(attemptProblem, thermo, feedMolarEnthalpy, attempt.state(), control);
@@ -682,6 +699,12 @@ public final class V3ColumnCalculator {
             }
             PreparedAttempt refreshed = refreshFloorSupport(untruncated, prepared, attempt.state(), policy);
             if (refreshed == null) break;
+            // See STALLED_DROP_REFRESH_ITERATIONS: a refresh that only removes points from a stalled attempt
+            // is a bounded polish, not a second full Newton solve.
+            nextIterations = !converged
+                    && refreshed.support().retainedPointCount() <= prepared.support().retainedPointCount()
+                    ? Math.min(maximumIterations, STALLED_DROP_REFRESH_ITERATIONS)
+                    : maximumIterations;
             refreshes++;
             if (!converged) stalledRefreshes++;
             prepared = refreshed;

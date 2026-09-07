@@ -194,6 +194,8 @@ final class V3TruncationSupport {
     double cutoffMoleFraction() { return cutoffMoleFraction; }
     int totalPointCount() { return topology.nodeCount() * componentCount; }
     int truncatedPointCount() { return truncatedPointCount; }
+    /** Points that are not ABSENT; the quantity a refresh must increase to be worth a re-solve. */
+    int retainedPointCount() { return totalPointCount() - truncatedPointCount; }
     int closurePrunedCount() { return closurePrunedCount; }
     String note() { return note; }
     List<SinkEdge> sinkEdges() { return sinkEdges; }
