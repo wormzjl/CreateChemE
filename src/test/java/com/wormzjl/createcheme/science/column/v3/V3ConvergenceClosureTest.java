@@ -16,7 +16,8 @@ import org.junit.jupiter.params.provider.ValueSource;
  * <p>The five cases are the evaluation set of {@code documentation/V3_TRUNCATION_EVALUATION.md} and
  * {@code build/pkgcmp/RefreshProbe.java}: A a dry CDU17 base column, B dry preset draws with a 3 MW cooler,
  * C the wet TJL19 column with three pumparounds and three draws, D a 40 MW return-tray duty (a typed failure
- * since the phase-mask work package) and E dry CDU17 with three draws.</p>
+ * from the phase-mask work package until the heat-rung energy-shift predictor recovered it) and E dry CDU17
+ * with three draws.</p>
  */
 class V3ConvergenceClosureTest {
     private static final String CDU = "createcheme:cdu17_tjl_acs2018";
@@ -29,7 +30,11 @@ class V3ConvergenceClosureTest {
      *
      * <p>The counts were pinned from the run at {@code f245b39} that precedes this knob, and case B's
      * published iteration count was re-pinned from 4 to 2 by the product-path band work package, which
-     * changes the accepted state of every case that has a side draw. The digest is checked by recomputing
+     * changes the accepted state of every case that has a side draw. Case D was re-pinned from
+     * {@code NONCONVERGENCE, 16, .../failed-stage-30/liquid-only-condenser/heat-1} to
+     * {@code SUCCESS, 7, .../fine-fd/heat-ramp-1.0/condenser-phase-correction/heat-1} by the heat-rung
+     * energy-shift predictor, which puts the 40 MW rung's seed in the cold basin the solution actually sits
+     * in (condenser -30.11 MW against the heat-free -59.37 MW). The digest is checked by recomputing
      * the pre-closure byte stream from the accepted problem rather than by a hex literal: the default must
      * produce exactly the digest of a build that has no closure field at all. The published hex values are
      * recorded in {@code documentation/V3_CLOSURE_AND_BAND_REVIEW.md}.</p>
@@ -39,7 +44,7 @@ class V3ConvergenceClosureTest {
             "A, SUCCESS, 0, cold/dwsim-sequential/4-8-15-30/fine-fd/liquid-only-condenser",
             "B, SUCCESS, 2, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/heat-1",
             "C, SUCCESS, 3, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/steam-1/heat-3",
-            "D, NONCONVERGENCE, 16, cold/dwsim-sequential/4-8-15-30/failed-stage-30/liquid-only-condenser/heat-1",
+            "D, SUCCESS, 7, cold/dwsim-sequential/4-8-15-30/fine-fd/heat-ramp-1.0/condenser-phase-correction/heat-1",
             "E, SUCCESS, 3, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3"})
     void theDefaultClosureLeavesEveryEvaluationCaseExactlyWhereItWas(
             String label, String kind, int newtonIterations, String solvePath) {
@@ -62,11 +67,13 @@ class V3ConvergenceClosureTest {
     }
 
     /**
-     * The same cases at the loosest admitted closure. Case D is excluded: its heat rung plateaus three orders
-     * above any admitted closure, which the plan already predicted a closure cannot fix.
+     * The same cases at the loosest admitted closure, case D included since the energy-shift predictor
+     * converges it. The closure never reached D while it plateaued: the plateau was three orders above any
+     * admitted closure, exactly as the plan predicted, and what recovered the case was the rung seed rather
+     * than the acceptance bar.
      */
     @ParameterizedTest
-    @CsvSource({"A, 0", "B, 2", "C, 3", "E, 3"})
+    @CsvSource({"A, 0", "B, 2", "C, 3", "D, 7", "E, 3"})
     void aLooseClosureAcceptsEveryCaseWithinItsOwnScaledLimits(String label, int defaultNewtonIterations) {
         V3ColumnInput input = evaluationCase(label);
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, boundedControl(), 0.0, LOOSE_CLOSURE);

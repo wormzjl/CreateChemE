@@ -220,13 +220,17 @@ class V3PumparoundCalculatorTest {
      * which is deterministic for a fixed input and is the only whole-chain work measure the public contract
      * exposes; {@code newtonIterations()} reports the published attempt alone and cannot see a shortened
      * repeat. Measured on JDK 21 with per-phase support: 1 080 557 checkpoints with a full repeat budget,
-     * 881 492 with the bounded one. The pinned ceiling is the bounded number with a 10% margin.</p>
+     * 881 492 with the bounded one, and 475 375 once the heat-rung energy-shift predictor left only one stall
+     * on the way. The pinned ceiling is re-pinned with it, from 970 000 to the new number with a 10% margin.
+     * A repeat budget that grows back would still overshoot it, because a single stall is what remains to
+     * repeat.</p>
      *
      * <p>The outcome of this case is deliberately not pinned: a 40 MW duty on one tray is a configuration the
      * source arrangement never uses (it distributes 41.93 MW over three coolers in three sections, see
      * {@link #theThesisThreeCoolerArrangementCarriesItsWholeDutyWithTheSideDraws}), and it sits on a condenser
-     * phase transition that the heat ramp subdivides and then jumps past. Which side of that jump it lands on
-     * is not a property of the support rule this test measures.</p>
+     * phase transition the heat ramp has to cross. It does converge now — condenser -30.11 MW against the
+     * heat-free -59.37 MW, which is the cold branch the source of this case always had — but which side of
+     * that transition it lands on is not a property of the support rule this test measures.</p>
      */
     @Test
     void aStalledDropOnlyFloorRefreshCostsABoundedRepeatOnTheFortyMegawattCase() {
@@ -251,9 +255,10 @@ class V3PumparoundCalculatorTest {
         } else {
             assertPassed(assertInstanceOf(V3ColumnOutcome.Success.class, outcome), "GLOBAL_ENERGY_BALANCE");
         }
-        assertTrue(checkpoints[0] <= 970_000L,
+        assertTrue(checkpoints[0] <= 525_000L,
                 () -> "cold solve took " + checkpoints[0] + " checkpoints; the bounded stalled drop-only "
-                        + "refresh should keep it near 881 492 (1 080 557 with a full repeat budget)");
+                        + "refresh and the heat-rung predictor should keep it near 475 375 (881 492 before "
+                        + "the predictor, 1 080 557 with a full repeat budget)");
     }
 
     @Test

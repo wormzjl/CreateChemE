@@ -688,14 +688,7 @@ public final class V3ColumnCalculator {
         }
         jacobianPolicy = Objects.requireNonNull(jacobianPolicy, "jacobianPolicy");
         control.checkpoint();
-        V3FlashResult feedFlash = policy.attemptCutoff() > 0.0
-                ? thermo.flashTP(problem.input().feedTemperatureKelvin(),
-                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
-                        problem.input().feedComponentMolarFlowsMolPerSecond(), V3TraceTruncationPolicy.of(policy.attemptCutoff()),
-                        thermo.newWorkspace(), control::checkpoint)
-                : thermo.flashTP(problem.input().feedTemperatureKelvin(),
-                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
-                        problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
+        V3FlashResult feedFlash = feedFlash(problem, thermo, control, policy);
         // A phase-allocation approximation must never change the authored feed's physical energy.
         double feedMolarEnthalpy = feedFlash.referenceMolarEnthalpyJoulesPerMol();
         V3DryMeshState recoverySeed = seed;
@@ -769,6 +762,19 @@ public final class V3ColumnCalculator {
         }
         return new V3SolvePass(attempt, audit, feedMolarEnthalpy, solvePath,
                 recoverySeed, problem.input().stageCount(), true, true, true, events, prepared);
+    }
+
+    /** The authored feed's flash at the feed tray, truncated exactly as this attempt's policy asks. */
+    private static V3FlashResult feedFlash(
+            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3SolveControl control, SolvePolicy policy) {
+        return policy.attemptCutoff() > 0.0
+                ? thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
+                        problem.input().feedComponentMolarFlowsMolPerSecond(), V3TraceTruncationPolicy.of(policy.attemptCutoff()),
+                        thermo.newWorkspace(), control::checkpoint)
+                : thermo.flashTP(problem.input().feedTemperatureKelvin(),
+                        problem.nodePressurePascal(problem.topology().feedTrayNumber()),
+                        problem.input().feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
     }
 
     private static boolean hasCondenserPhaseMismatch(V3SolvePass pass) {
@@ -904,6 +910,13 @@ public final class V3ColumnCalculator {
         int steamRampSteps = Math.max(4, Math.min(24, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
         List<RampStep> rampSteps = new ArrayList<>(rampSteps(input, steamRampSteps));
         HeatSubdivisions subdivisions = new HeatSubdivisions();
+        EnergyShiftLog energyShift = new EnergyShiftLog();
+        // The heat and steam fractions the seed profile currently belongs to. The dry surrogate seed carries
+        // no stage heat and no water, so both start at zero, and it is accepted by this method's precondition.
+        double seedHeatFraction = 0.0;
+        double seedSteamFraction = 0.0;
+        boolean seedAccepted = true;
+        double[] rungFeedEnthalpy = {Double.NaN, Double.NaN};
         double acceptedHeatFraction = 0.0;
         boolean condenserBoundChecked = false;
         for (int index = 0; index < rampSteps.size(); index++) {
@@ -958,6 +971,23 @@ public final class V3ColumnCalculator {
                     ? continuationSeed(problem, previous.attempt().state(), thermo, control)
                     : previous.attempt().state();
             SolvePolicy rampPolicy = rampStep.requested(input) ? policy : policy.withoutCutoff();
+            // A rung that changes the stage heat or the steam moves the whole temperature profile while the
+            // flows barely move, and leaves every energy row short by the same amount: a long flat valley in
+            // the merit that the line search crawls along. Predict that common shift before Newton starts.
+            // A pure draw rung changes flows rather than heat and is left alone, and so is every continuation
+            // grid, whose seed comes from a different geometry rather than from a different duty.
+            //
+            // The seed must also be an accepted state. The prediction linearises the energy rows around a
+            // profile that satisfies its own rung with those flows; a state that failed its rung does not,
+            // and its residual is not the duty increment the linearisation is solving for. Measured: the
+            // 40-tray steam-plus-cooler column stalls its steam ramp at 5/12 and then jumps to the requested
+            // input, and predicting a 40 K shift from that stalled state cost the case its convergence
+            // (SUCCESS at 6.8e-14 became NONCONVERGENCE at 6.3e-7); skipping the prediction there keeps it.
+            if (seedAccepted
+                    && (rampStep.heatFraction() != seedHeatFraction || rampStep.steamFraction() != seedSteamFraction)) {
+                seed = withEnergyShiftPrediction(problem, thermo, seed, control, rampPolicy, rampStep,
+                        energyShift, rungFeedEnthalpy);
+            }
             V3SolvePass pass = solveSingleProblem(problem, thermo, seed, control,
                     rampPath + "/" + rampStep.pathLabel() + "-" + rampStep.progress(),
                     ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
@@ -969,7 +999,7 @@ public final class V3ColumnCalculator {
                     condenserAttempts.recordRequestedDrawRampFailure();
                     rampEvents.add(boundedEvent(
                             rampStep.description() + " reached the requested input and failed: " + rampEvidence(pass)));
-                    V3SolvePass annotated = withRampEvents(pass, rampEvents);
+                    V3SolvePass annotated = withRampEvents(pass, energyShift.merged(rampEvents));
                     return withPriorSupportNotes(seedBase, annotated);
                 }
                 String event = rampStep.description() + " stopped at " + rampStep.progress() + ": " + rampEvidence(pass)
@@ -987,15 +1017,82 @@ public final class V3ColumnCalculator {
                 // A failed intermediate fraction is still a finite fixed-geometry seed. The authored
                 // full-rate problem must be attempted before returning a terminal diagnostic.
                 previous = pass;
+                seedHeatFraction = rampStep.heatFraction();
+                seedSteamFraction = rampStep.steamFraction();
+                seedAccepted = false;
                 intermediateFailed = true;
                 continue;
             }
             previous = pass;
+            seedHeatFraction = rampStep.heatFraction();
+            seedSteamFraction = rampStep.steamFraction();
+            seedAccepted = true;
             if (rampStep.heatRung()) acceptedHeatFraction = rampStep.heatFraction();
         }
         condenserAttempts.recordAttempt(previous.prepared().problem().topology().condenserPhaseBranch());
         condenserAttempts.finishPhaseCorrection(true);
-        return withPriorSupportNotes(seedBase, withRampEvents(previous, rampEvents));
+        return withPriorSupportNotes(seedBase, withRampEvents(previous, energyShift.merged(rampEvents)));
+    }
+
+    /**
+     * Applies the enthalpy-consistent temperature shift of one heat or steam rung to that rung's seed.
+     *
+     * <p>The prediction is measured on the pair the attempt will actually solve — the truncation support the
+     * rung's own policy derives, and the seed projected onto it — because a state whose truncated points hold
+     * exact zeros cannot be evaluated against an identity-support problem. Only the temperature vector is
+     * carried back to the caller's seed: the flows are frozen through the whole prediction, so the shift is
+     * the same for the projected state and for the untruncated one the attempt will prepare for itself.</p>
+     */
+    private static V3DryMeshState withEnergyShiftPrediction(
+            V3ColumnProblem problem, V3PengRobinsonThermo thermo, V3DryMeshState seed, V3SolveControl control,
+            SolvePolicy policy, RampStep rampStep, EnergyShiftLog log, double[] feedEnthalpyCache) {
+        int slot = policy.attemptCutoff() > 0.0 ? 1 : 0;
+        if (Double.isNaN(feedEnthalpyCache[slot])) {
+            feedEnthalpyCache[slot] = feedFlash(problem, thermo, control, policy).referenceMolarEnthalpyJoulesPerMol();
+        }
+        PreparedAttempt prepared = prepareAttempt(problem, thermo, seed, policy);
+        V3EnergyShiftPredictor.Prediction prediction = V3EnergyShiftPredictor.predict(prepared.problem(), thermo,
+                feedEnthalpyCache[slot], prepared.seed(), thermo.newWorkspace(), control);
+        log.record(rampStep, prediction);
+        return prediction.applyTo(seed, problem.topology());
+    }
+
+    /** Bounded record of one ramp's energy-shift predictions, published as a single diagnostic event. */
+    private static final class EnergyShiftLog {
+        private int applied;
+        private int declined;
+        private double largestShiftKelvin;
+        private String first = "";
+        private String firstDeclined = "";
+
+        void record(RampStep step, V3EnergyShiftPredictor.Prediction prediction) {
+            if (!prediction.applied()) {
+                declined++;
+                if (firstDeclined.isEmpty()) firstDeclined = prediction.note();
+                return;
+            }
+            applied++;
+            largestShiftKelvin = Math.max(largestShiftKelvin, prediction.largestShiftKelvin());
+            if (first.isEmpty()) {
+                first = step.pathLabel() + "-" + step.progress() + " scaled energy "
+                        + prediction.scaledEnergyBefore() + " -> " + prediction.scaledEnergyAfter();
+            }
+        }
+
+        /** The predictor's own line first, then the ramp's, bounded by the published event contract. */
+        List<String> merged(List<String> rampEvents) {
+            if (applied == 0 && declined == 0) return rampEvents;
+            List<String> events = new ArrayList<>();
+            events.add(boundedEvent("energy-shift predictor: applied=" + applied + ", declined=" + declined
+                    + ", largest shift=" + largestShiftKelvin + " K"
+                    + (first.isEmpty() ? "" : ", first " + first)
+                    + (firstDeclined.isEmpty() ? "" : ", declined because " + firstDeclined)));
+            for (String event : rampEvents) {
+                if (events.size() >= V3SolverDiagnostics.MAX_EVENTS) break;
+                events.add(event);
+            }
+            return events;
+        }
     }
 
     /** Separates water/phase continuation from draw withdrawal when both authored features are present. */
