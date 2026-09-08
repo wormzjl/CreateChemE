@@ -314,58 +314,79 @@ final class V3AcceptanceAuditor {
      * <em>and</em> its free water must be strictly positive. Both are reported on one scale: a dry node's
      * value is its ratio against a limit of one, a wet tray's is its deviation from one divided by the same
      * closure, so a value above one is a violation either way.</p>
+     *
+     * <p>The two regimes are ranked separately even though they share a scale, because they have different
+     * severities: an inconsistent <em>wet</em> tray is a rejection, a supersaturated <em>dry</em> stage is only
+     * a warning. Folding both into one worst node let a large dry ratio outrank a failing wet tray and turn the
+     * whole check into that dry tray's warning, losing the wet-set failure entirely.</p>
      */
-    private V3AcceptanceAudit.Check waterDewPoint(V3DryMeshState state) {
+    V3AcceptanceAudit.Check waterDewPoint(V3DryMeshState state) {
         V3ColumnTopology topology = problem.topology();
         double maximum = 0.0;
-        boolean valid = true;
-        int worstNode = -1;
-        double worstPartialPressure = 0.0;
         int emptyWetTray = -1;
+        double worstWet = 0.0;
+        int worstWetNode = -1;
+        double worstWetPartialPressure = 0.0;
+        double worstDry = 0.0;
+        int worstDryNode = -1;
+        double worstDryPartialPressure = 0.0;
+        boolean dryValid = true;
         for (int node = 1; node <= topology.reboilerNode(); node++) {
             double water = problem.waterVaporFlow(state, node);
             if (water == 0.0 || state.temperatureKelvin(node) >= 640.0) continue;
             boolean wet = problem.isWetTray(node);
-            if (wet && !(state.freeWaterFlow(node) > 0.0)) {
-                valid = false;
-                emptyWetTray = node;
-            }
+            if (wet && !(state.freeWaterFlow(node) > 0.0)) emptyWetTray = node;
+            double value;
+            double partialPressure = 0.0;
             try {
                 double hydrocarbon = hydrocarbonVaporTotal(state, node);
-                double partialPressure = problem.nodePressurePascal(node) * water / (hydrocarbon + water);
+                partialPressure = problem.nodePressurePascal(node) * water / (hydrocarbon + water);
                 double ratio = partialPressure / V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(node));
-                double value = wet ? Math.abs(ratio - 1.0) / closureLimit() : ratio;
-                if (value > maximum) {
-                    maximum = value;
-                    worstNode = node;
-                    worstPartialPressure = partialPressure;
-                }
-                valid &= Double.isFinite(value) && value <= 1.0;
+                value = wet ? Math.abs(ratio - 1.0) / closureLimit() : ratio;
+                if (value > maximum) maximum = value;
             } catch (IllegalArgumentException invalidTemperature) {
-                valid = false;
+                // A temperature outside the water correlation is as inconsistent as an unsatisfied ratio.
+                value = Double.MAX_VALUE;
                 maximum = Double.MAX_VALUE;
-                worstNode = node;
+            }
+            // A non-finite value cannot be ranked, so it enters as the largest violation there is.
+            double rank = Double.isFinite(value) ? value : Double.MAX_VALUE;
+            if (wet) {
+                if (rank > 1.0 && rank > worstWet) {
+                    worstWet = rank;
+                    worstWetNode = node;
+                    worstWetPartialPressure = partialPressure;
+                }
+            } else {
+                dryValid &= rank <= 1.0;
+                if (rank > worstDry) {
+                    worstDry = rank;
+                    worstDryNode = node;
+                    worstDryPartialPressure = partialPressure;
+                }
             }
         }
         if (emptyWetTray >= 0) {
             return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
                     "tray " + emptyWetTray + " is in the free-water set but sheds no free water");
         }
-        if (valid) {
+        // A wet tray that is not on the saturation line is a claim the state does not support, whatever any dry
+        // stage reports; its own normalized error is what the check publishes.
+        if (worstWetNode >= 0) {
+            return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", worstWet, 1.0,
+                    waterDewPointDetail(state, worstWetNode, worstWetPartialPressure));
+        }
+        if (dryValid) {
             return V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", maximum, 1.0,
                     problem.hasWetTrays()
                             ? "every dry stage is above the free-water dew point and every wet tray sits on it"
                             : "all water-bearing stages remain above the free-water dew point");
         }
-        if (worstNode >= 0 && problem.isWetTray(worstNode)) {
-            return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
-                    waterDewPointDetail(state, worstNode, worstPartialPressure));
-        }
         // A dry stage below its water dew point is an operating condition the column can be in, not a modelling
         // failure: the steam-laden vapour is supersaturated there and water will condense on the tray. The column
         // is published, and the condition is reported as a warning (see withDewPointAdvisory).
-        return V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", maximum, 1.0,
-                "warning: " + waterDewPointDetail(state, worstNode, worstPartialPressure));
+        return V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", worstDry, 1.0,
+                "warning: " + waterDewPointDetail(state, worstDryNode, worstDryPartialPressure));
     }
 
     /** Names the stage, its temperature and the water dew point it sits below, in the units the operator authors. */

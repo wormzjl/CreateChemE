@@ -246,6 +246,69 @@ class V3FreeWaterTrayTest {
         }
     }
 
+    /**
+     * A dry stage below its dew point is a warning; an inconsistent wet tray is a rejection, and the larger
+     * advisory must not decide the severity of the other check.
+     *
+     * <p>Both regimes are reported on one scale — a dry stage as its saturation ratio against one, a wet tray as
+     * its deviation from the saturation line divided by the convergence closure — and the audit used to fail
+     * only when the single worst node happened to be wet. Here tray one misses saturation by 1.5 closures while
+     * dry tray two, pushed to 390 K, reads a ratio of about 2.3. Ranking them together names tray two and
+     * publishes a warning; the wet-set inconsistency the state actually carries would be lost.</p>
+     */
+    @Test
+    void aSupersaturatedDryTrayDoesNotDowngradeAnInconsistentWetTrayToAWarning() {
+        V3ColumnProblem problem = wetProblem(1);
+        double closure = 0.001;
+        V3AcceptanceAuditor auditor = new V3AcceptanceAuditor(problem, new AffineEnthalpyThermo(), 0.0, closure);
+        V3DryMeshState mixed = withWetRatioAndHotDryTray(problem, 1.0 + 1.5 * closure, 390.0);
+
+        V3AcceptanceAudit.Check check = auditor.waterDewPoint(mixed);
+
+        assertFalse(check.passed(), check::toString);
+        assertTrue(check.detail().contains("tray 1"), check::detail);
+        assertFalse(check.detail().startsWith("warning: "), check::detail);
+        assertEquals(1.5, check.value(), 1.0e-9, check::detail);
+        // The dry advisory that used to win the ranking is still the larger number on the shared scale.
+        assertTrue(saturationRatio(problem, mixed, 2) > check.value(),
+                () -> "dry tray 2 ratio " + saturationRatio(problem, mixed, 2));
+    }
+
+    /** With every wet tray consistent, the same supersaturated dry tray is published as its warning. */
+    @Test
+    void aConsistentWetTrayLeavesTheSupersaturatedDryTrayAsAPassingWarning() {
+        V3ColumnProblem problem = wetProblem(1);
+        V3AcceptanceAuditor auditor = new V3AcceptanceAuditor(problem, new AffineEnthalpyThermo(), 0.0, 0.001);
+        V3DryMeshState mixed = withWetRatioAndHotDryTray(problem, 1.0, 390.0);
+
+        V3AcceptanceAudit.Check check = auditor.waterDewPoint(mixed);
+
+        assertTrue(check.passed(), check::toString);
+        assertTrue(check.detail().startsWith("warning: tray 2 "), check::detail);
+        assertEquals(saturationRatio(problem, mixed, 2), check.value(), 1.0e-9, check::detail);
+        assertTrue(check.value() > 1.0, check::detail);
+    }
+
+    /** Tray one's hydrocarbon vapour is retuned to the requested saturation ratio and tray two is heated. */
+    private static V3DryMeshState withWetRatioAndHotDryTray(
+            V3ColumnProblem problem, double wetSaturationRatio, double dryTemperatureKelvin) {
+        V3DryMeshState base = saturatedState(problem);
+        double water = problem.waterVaporFlow(base, 1);
+        double saturationPressure = V3WaterProperties.saturationPressurePascal(base.temperatureKelvin(1));
+        double hydrocarbon = problem.nodePressurePascal(1) * water / (saturationPressure * wetSaturationRatio) - water;
+        double[][] vapor = V3ColumnInitializer.flows(base, false);
+        vapor[1][0] = 0.5 * hydrocarbon;
+        vapor[1][1] = 0.5 * hydrocarbon;
+        double[] temperatures = V3ColumnInitializer.temperatures(base);
+        temperatures[2] = dryTemperatureKelvin;
+        return new V3DryMeshState(problem.topology(), 2, V3ColumnInitializer.flows(base, true), vapor, temperatures,
+                freeWaterProfile(problem, base.freeWaterFlow(1)));
+    }
+
+    private static double saturationRatio(V3ColumnProblem problem, V3DryMeshState state, int node) {
+        return ratio(problem, state, node, problem.waterVaporFlow(state, node));
+    }
+
     private static double energy(V3MeshResidualEvaluator evaluator, V3DryMeshState state, int node) {
         return evaluator.evaluate(state, new com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace(2))
                 .rows().stream()
