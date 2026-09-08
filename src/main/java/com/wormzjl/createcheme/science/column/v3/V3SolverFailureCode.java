@@ -11,6 +11,8 @@ public enum V3SolverFailureCode {
     LINEAR_SOLVE_FAILURE,
     NONCONVERGENCE,
     ACCEPTANCE_AUDIT_FAILURE,
+    /** The column converged but a water-bearing stage sits below its water dew point: a verdict on the specification. */
+    WATER_DEW_POINT,
     CANCELLED,
     DEADLINE_EXCEEDED,
     INTERNAL_ERROR

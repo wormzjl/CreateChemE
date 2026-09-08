@@ -27,7 +27,8 @@ final class V3TruncationFallback {
 
     static boolean isAdmissionFailure(V3ColumnOutcome outcome) {
         return outcome instanceof V3ColumnOutcome.Failure failure
-                && (failure.code() == V3SolverFailureCode.INVALID_INPUT || failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE);
+                && (failure.code() == V3SolverFailureCode.INVALID_INPUT || failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
+                || failure.code() == V3SolverFailureCode.WATER_DEW_POINT);
     }
 
     static V3ColumnOutcome prependEvents(V3ColumnOutcome outcome, List<String> leading) {

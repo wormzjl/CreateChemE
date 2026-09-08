@@ -306,6 +306,8 @@ final class V3AcceptanceAuditor {
         V3ColumnTopology topology = problem.topology();
         double maximum = 0.0;
         boolean valid = true;
+        int worstNode = -1;
+        double worstPartialPressure = 0.0;
         for (int node = 1; node <= topology.reboilerNode(); node++) {
             double water = problem.waterVaporFlowMolPerSecond(node);
             if (water == 0.0 || state.temperatureKelvin(node) >= 640.0) continue;
@@ -313,17 +315,41 @@ final class V3AcceptanceAuditor {
                 double hydrocarbon = hydrocarbonVaporTotal(state, node);
                 double partialPressure = problem.nodePressurePascal(node) * water / (hydrocarbon + water);
                 double ratio = partialPressure / V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(node));
-                maximum = Math.max(maximum, ratio);
+                if (ratio > maximum) {
+                    maximum = ratio;
+                    worstNode = node;
+                    worstPartialPressure = partialPressure;
+                }
                 valid &= Double.isFinite(ratio) && ratio <= 1.0;
             } catch (IllegalArgumentException invalidTemperature) {
                 valid = false;
                 maximum = Double.MAX_VALUE;
+                worstNode = node;
             }
         }
-        return valid ? V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", maximum, 1.0,
-                "all water-bearing stages remain above the free-water dew point")
-                : V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
-                        "water would condense on a tray; three-phase trays are outside the V3 contract");
+        if (valid) {
+            return V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", maximum, 1.0,
+                    "all water-bearing stages remain above the free-water dew point");
+        }
+        return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
+                waterDewPointDetail(state, worstNode, worstPartialPressure));
+    }
+
+    /** Names the stage, its temperature and the water dew point it sits below, in the units the operator authors. */
+    private String waterDewPointDetail(V3DryMeshState state, int node, double partialPressurePascal) {
+        if (node < 0) return "water would condense on a tray; three-phase trays are outside the V3 contract";
+        String stage = node == problem.topology().reboilerNode() ? "the bottom stage" : "tray " + node;
+        String dewPoint;
+        try {
+            dewPoint = String.format(Locale.ROOT, "%.1f C",
+                    V3WaterProperties.saturationTemperatureKelvin(partialPressurePascal) - 273.15);
+        } catch (IllegalArgumentException outOfRange) {
+            dewPoint = "its water dew point";
+        }
+        return String.format(Locale.ROOT,
+                "%s at %.1f C is below the water dew point %s (steam partial pressure %.1f kPa); a tray must not operate "
+                        + "below the water dew point: raise the top temperature or reduce the stripping steam",
+                stage, state.temperatureKelvin(node) - 273.15, dewPoint, partialPressurePascal / 1000.0);
     }
 
     private V3AcceptanceAudit.Check freeWaterSplit(V3DryMeshState state) {

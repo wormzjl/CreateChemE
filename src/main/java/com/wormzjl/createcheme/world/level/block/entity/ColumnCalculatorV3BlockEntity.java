@@ -50,6 +50,9 @@ import org.jetbrains.annotations.Nullable;
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
     public static final int DATA_VERSION = 8;
     public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
+    public static final String LITERATURE_PACKAGE = "createcheme:tjl19_dwsim";
+    /** Reduced hydrocarbon feed of the Ledezma-Martinez (2019) no-preflash contract: 100,000 bbl/day of Tia Juana Light. */
+    private static final double LITERATURE_FEED_MOL_PER_SECOND = 737.6996333000835;
     private static final int DEFAULT_STAGE_COUNT = 29;
     private static final int DEFAULT_FEED_STAGE = 24;
     private static final double DEFAULT_FEED_KMOL_PER_HOUR = 2_610.7;
@@ -66,8 +69,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     private long inputRevision;
     private long resultRevision = -1L;
     private long stateRevision;
-    private String detail = "Pilot draft is ready";
-    private V3ColumnInput currentInput = defaultInput();
+    private String detail = "Literature CDU draft is ready";
+    private V3ColumnInput currentInput = freshInput();
     private V3ColumnDisplayResult displayResult;
     private V3Operation activeOperation;
 
@@ -206,7 +209,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         inputRevision = 0L;
         resultRevision = -1L;
         stateRevision = 0L;
-        currentInput = defaultInput();
+        currentInput = freshInput();
         if (!tag.contains(TAG_DATA_VERSION, Tag.TAG_INT)) {
             status = V3Status.DIRTY;
             detail = "No V3 persisted state";
@@ -260,7 +263,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 detail = "Persisted V3 input is ready to calculate";
             }
         } catch (IllegalArgumentException invalid) {
-            currentInput = defaultInput();
+            currentInput = freshInput();
             displayResult = null;
             inputRevision = 0L;
             resultRevision = -1L;
@@ -360,6 +363,37 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     public static V3ColumnInput pilotPresetInput() {
         return defaultInput();
     }
+
+    /**
+     * The input a fresh calculator starts on: the Ledezma-Martinez (2019) no-preflash atmospheric column. Forty
+     * trays plus the steam-stripped bottom stage, three direct side products at stages 10/18/28 (491/515/165 kmol/h),
+     * each paired with a pumparound cooler drawn at the draw stage and returned two stages above (12.84/17.89/11.20 MW),
+     * 1,200 kmol/h of stripping steam at the bottom, condenser 59 C, reflux ratio 4.17, no external reboiler.
+     */
+    public static V3ColumnInput literatureCduInput() {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(LITERATURE_PACKAGE);
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] feedFlows = crude.moleFractions();
+        for (int component = 0; component < feedFlows.length; component++) {
+            feedFlows[component] *= LITERATURE_FEED_MOL_PER_SECOND;
+        }
+        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
+                crude.componentBasis(), feedFlows, 365.0 + 273.15, 40, 37, 250_000.0, 0.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(332.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(4.17),
+                        new V3ColumnSpecification.ReboilerDuty(0.0)),
+                List.of(new V3SideDrawSpec(10, 491.0 / 3.6), new V3SideDrawSpec(18, 515.0 / 3.6),
+                        new V3SideDrawSpec(28, 165.0 / 3.6)),
+                List.of(new V3SteamFeedSpec(41, 1_200.0 / 3.6, 533.15)),
+                List.of(new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
+                        new V3PumparoundSpec(16, 18, -17.89e6, V3PumparoundSpec.Split.UNIFORM),
+                        new V3PumparoundSpec(26, 28, -11.20e6, V3PumparoundSpec.Split.UNIFORM)));
+    }
+
+    private static V3ColumnInput freshInput() {
+        return literatureCduInput();
+    }
+
 
     private static V3ColumnInput priorUnqualifiedDefaultInput() {
         return defaultInput(332.15, 4.17, 30, 250_000.0, List.of());
