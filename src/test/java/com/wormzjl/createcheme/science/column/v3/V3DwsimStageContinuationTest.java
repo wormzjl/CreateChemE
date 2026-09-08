@@ -1,7 +1,9 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
@@ -132,6 +134,66 @@ class V3DwsimStageContinuationTest {
                         () -> "no grid above 15 may more than double its predecessor: " + schedule);
             }
         }
+    }
+
+    /**
+     * The steam ramp doubles at the resolution the equal schedule used to step by.
+     *
+     * <p>The first rung is still that smallest increment — the one the rung count was measured for — and every
+     * later rung doubles the water already on the trays. On the literature preset's resolution of 24 that turns
+     * ten rungs to 41.7 % of the authored steam into four to 62.5 %.</p>
+     */
+    @Test
+    void theSteamRampDoublesFromItsSmallestIncrementAndAlwaysEndsOnTheAuthoredRate() {
+        assertEquals(List.of(1.0), V3ColumnCalculator.steamRampFractions(1));
+        assertEquals(List.of(0.25, 0.75, 1.0), V3ColumnCalculator.steamRampFractions(4));
+        assertEquals(List.of(1.0 / 12.0, 3.0 / 12.0, 7.0 / 12.0, 1.0), V3ColumnCalculator.steamRampFractions(12));
+        assertEquals(List.of(1.0 / 24.0, 3.0 / 24.0, 7.0 / 24.0, 15.0 / 24.0, 1.0),
+                V3ColumnCalculator.steamRampFractions(24));
+
+        for (int resolution = 1; resolution <= 24; resolution++) {
+            List<Double> fractions = V3ColumnCalculator.steamRampFractions(resolution);
+            assertEquals(1.0, fractions.get(fractions.size() - 1), 0.0,
+                    () -> "the ramp must end on the authored rate exactly: " + fractions);
+            assertEquals(1.0 / resolution, fractions.get(0), 0.0,
+                    () -> "the first rung stays the measured smallest increment: " + fractions);
+            for (int index = 1; index < fractions.size(); index++) {
+                assertTrue(fractions.get(index) > fractions.get(index - 1), fractions::toString);
+            }
+            assertTrue(fractions.size() <= 1 + (int) (Math.log(resolution) / Math.log(2.0)) + 1, fractions::toString);
+        }
+        assertThrows(IllegalArgumentException.class, () -> V3ColumnCalculator.steamRampFractions(0));
+    }
+
+    /** Only an intermediate steam rung runs reduced; the rung that publishes keeps every fallback. */
+    @Test
+    void onlyAnIntermediateSteamRungGivesUpItsFallbacksAndItsCertificateCascade() {
+        V3SimultaneousColumnSolver.RungBudget full = V3SimultaneousColumnSolver.RungBudget.DEFAULT;
+        assertEquals(full, V3ColumnCalculator.rampRungBudget(true, true), "the requested steam rung publishes");
+        assertEquals(full, V3ColumnCalculator.rampRungBudget(false, false), "a heat or draw rung is never reduced");
+        assertEquals(full, V3ColumnCalculator.rampRungBudget(false, true));
+
+        V3SimultaneousColumnSolver.RungBudget reduced = V3ColumnCalculator.rampRungBudget(true, false);
+        assertEquals(2, reduced.maximumDampingSteps());
+        assertFalse(reduced.gradientFallback());
+        assertEquals(0, reduced.verificationDampingSteps(),
+                "an intermediate rung produces a seed, not a published certificate");
+        assertEquals(12, reduced.stallWindow());
+        assertEquals(0.5, reduced.stallFactor(), 0.0);
+        assertEquals(1.0e-3, reduced.stallResidualFloor(), 0.0);
+
+        assertEquals(8, full.maximumDampingSteps());
+        assertTrue(full.gradientFallback());
+        assertEquals(8, full.verificationDampingSteps());
+        assertEquals(0, full.stallWindow(), "no published attempt may be stopped by the stall detector");
+    }
+
+    /** A stopped stall is a nonconvergence, like every other bounded Newton stop. */
+    @Test
+    void aStoppedStallIsPublishedAsANonconvergence() {
+        assertEquals(V3SolverFailureCode.NONCONVERGENCE, V3ColumnCalculator.failureCode("STALLED"));
+        assertEquals(V3SolverFailureCode.NONCONVERGENCE, V3ColumnCalculator.failureCode("MAX_ITERATIONS"));
+        assertEquals(V3SolverFailureCode.LINEAR_SOLVE_FAILURE, V3ColumnCalculator.failureCode("LINEAR_SINGULAR"));
     }
 
     /**

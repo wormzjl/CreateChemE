@@ -36,6 +36,9 @@ public final class V3ColumnCalculator {
     public static final String HEAT_ASSUMPTIONS_REVISION = "v3-heat-assumptions-r1";
     private static final String HEAT_FORMULATION_SUFFIX = "-stage-heat";
     private static final String HEAT_RAMP_LABEL = "heat-ramp";
+    /** Steam rungs are labelled by whether a draw ramp follows them; both are the same continuation. */
+    private static final String STEAM_RAMP_LABEL = "steam-ramp";
+    private static final String WET_RAMP_LABEL = "wet-ramp";
     private static final int HEAT_RAMP_STEPS = 4;
     /** Side-draw rungs once a stage heat is authored; a cooled zone needs finer withdrawal increments. */
     private static final int HEAT_BEARING_DRAW_RAMP_STEPS = 8;
@@ -75,6 +78,34 @@ public final class V3ColumnCalculator {
      * full budget.</p>
      */
     private static final int STALLED_DROP_REFRESH_ITERATIONS = MAXIMUM_NEWTON_ITERATIONS / 8;
+    /**
+     * Newton budget of an intermediate steam rung.
+     *
+     * <p>An intermediate rung exists only to hand the next one a nearby state. When a steam rung cannot be
+     * solved, the ramp keeps the last state, records its "stopped at" event and skips ahead to the requested
+     * input, so everything that rung spends after it stops descending is spent for nothing. Measured on the
+     * literature preset, the one failing steam rung ran 41 iterations while its maximum scaled residual crawled
+     * from 0.058 to 0.042, with 786 line-search trials and four entries into the damped normal-equation cascade
+     * at doubled bandwidth: 2.6 s of a 13.0 s solve for a state the ramp discards.</p>
+     *
+     * <p>So an intermediate steam rung stops as soon as its residual has not halved over twelve iterations —
+     * well outside the quadratic tail, and floored at 1e-3 so a rung merely closing slowly is never cut off —
+     * and keeps only the first two dampings of the cascade with no gradient fallback and no certificate cascade
+     * behind them.</p>
+     *
+     * <p>Only steam rungs. A heat rung's failure is not absorbed the same way: it is answered by halving the
+     * heat increment ({@code midpointHeatStep}), a recovery whose seed is the failed state and whose whole
+     * point is that the rung got as far as it did. Measured on the 40 MW return-tray case, whose heat rungs
+     * descend slowly and unevenly — 0.048 to 0.140 and back to 0.077 over twelve iterations — stopping them
+     * early turns an accepted solve into a NONCONVERGENCE, and on the three-draw cooled CDU17 case it moves
+     * the published state. A draw rung has no retry of its own but shares the heat rungs' slow descent, and
+     * neither pays: on the wet preset the steam ramp is what the continuation spends its time in.</p>
+     *
+     * <p>The requested rung, every stage rung, every recovery, the condenser-phase correction and the
+     * free-water continuation all keep {@link V3SimultaneousColumnSolver.RungBudget#DEFAULT}.</p>
+     */
+    private static final V3SimultaneousColumnSolver.RungBudget INTERMEDIATE_RUNG_BUDGET =
+            new V3SimultaneousColumnSolver.RungBudget(2, false, 0, 12, 0.5, 1.0e-3);
 
     private enum ContinuationJacobianPolicy {
         NONE,
@@ -691,10 +722,30 @@ public final class V3ColumnCalculator {
             ContinuationJacobianPolicy jacobianPolicy,
             int maximumIterations,
             SolvePolicy policy) {
+        return solveSingleProblem(problem, thermo, seed, control, solvePath, jacobianPolicy, maximumIterations, policy,
+                V3SimultaneousColumnSolver.RungBudget.DEFAULT);
+    }
+
+    private static V3SolvePass solveSingleProblem(
+            V3ColumnProblem problem,
+            V3PengRobinsonThermo thermo,
+            V3DryMeshState seed,
+            V3SolveControl control,
+            String solvePath,
+            ContinuationJacobianPolicy jacobianPolicy,
+            int maximumIterations,
+            SolvePolicy policy,
+            V3SimultaneousColumnSolver.RungBudget budget) {
         if (maximumIterations < 1 || maximumIterations > MAXIMUM_NEWTON_ITERATIONS) {
             throw new IllegalArgumentException("V3 simultaneous solve iteration limit is invalid");
         }
         jacobianPolicy = Objects.requireNonNull(jacobianPolicy, "jacobianPolicy");
+        // Only the continuation path has rungs whose failure a caller absorbs; a reduced budget anywhere else
+        // would silently weaken a solve that has nothing to fall back on.
+        if (!Objects.requireNonNull(budget, "budget").equals(V3SimultaneousColumnSolver.RungBudget.DEFAULT)
+                && jacobianPolicy != ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS) {
+            throw new IllegalArgumentException("V3 reduced rung budgets belong to the stage-local continuation path");
+        }
         control.checkpoint();
         V3FlashResult feedFlash = feedFlash(problem, thermo, control, policy);
         // A phase-allocation approximation must never change the authored feed's physical energy.
@@ -730,7 +781,7 @@ public final class V3ColumnCalculator {
                         V3FiniteDifferenceJacobian.DifferenceScale.FINE, control, telemetry);
                 case STAGE_LOCAL_BLOCKS -> V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        nextIterations, policy.closureTolerance(), control, telemetry);
+                        nextIterations, policy.closureTolerance(), control, telemetry, budget);
                 case PRESSURE_LOCAL_PREDICTOR -> V3SimultaneousColumnSolver.solveWithOneLocalBlockPredictor(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
                         nextIterations, policy.closureTolerance(), control, telemetry);
@@ -917,6 +968,10 @@ public final class V3ColumnCalculator {
             return pathLabel.equals(HEAT_RAMP_LABEL);
         }
 
+        boolean steamRung() {
+            return pathLabel.equals(STEAM_RAMP_LABEL) || pathLabel.equals(WET_RAMP_LABEL);
+        }
+
         double progress() {
             return labelFraction;
         }
@@ -963,7 +1018,9 @@ public final class V3ColumnCalculator {
         // cannot make the ramp unbounded, and at the cap the physical increment grows again. Twelve rungs
         // put 27.8 mol/s on the first rung of a 1200 kmol/h sump-steam column and diverged there whenever
         // the authored reboiler duty was small enough that the boilup surrogate dominated it; twenty-four
-        // rungs halve that increment and converge, at about three seconds of extra continuation.
+        // rungs halve that increment and converge, at about three seconds of extra continuation. This is the
+        // resolution of the schedule rather than its rung count: see steamRampFractions, whose first rung is
+        // this increment and whose later rungs double the water already placed.
         int steamRampSteps = Math.max(4, Math.min(24, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
         List<RampStep> rampSteps = new ArrayList<>(rampSteps(input, steamRampSteps));
         HeatSubdivisions subdivisions = new HeatSubdivisions();
@@ -1049,7 +1106,8 @@ public final class V3ColumnCalculator {
                     rampPath + "/" + rampStep.pathLabel() + "-" + rampStep.progress(),
                     ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
                     rampStep.requested(input) ? DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS
-                            : DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS, rampPolicy);
+                            : DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS, rampPolicy,
+                    rampRungBudget(rampStep.steamRung(), rampStep.requested(input)));
             pass = correctCondenserPhase(pass, thermo, control, rampPolicy, rampAttempts).pass();
             if (!publishesSuccess(pass.attempt(), pass.audit())) {
                 if (rampStep.requested(input)) {
@@ -1063,6 +1121,12 @@ public final class V3ColumnCalculator {
                         + "; failed checks=" + pass.audit().checks().stream().filter(check -> !check.passed())
                         .map(V3AcceptanceAudit.Check::family).toList();
                 rampEvents.add(boundedEvent(event));
+                // A failed steam rung is not subdivided the way a heat rung is. Measured on the literature
+                // preset: halving the failed 0.625 increment to 0.458 stalls again for another 1.2 s, and the
+                // requested rung then costs 3.6 s from that state instead of 2.5 s from the 0.625 one — the
+                // same accepted solution and digest, but two extra attempts, 26 extra Newton iterations and a
+                // published iteration count of 4 rather than 3. The water a stalled rung could not place is
+                // not placed any better by asking for half of it.
                 RampStep midpoint = rampStep.heatRung() ? midpointHeatStep(rampStep, acceptedHeatFraction) : null;
                 if (midpoint != null && subdivisions.allows(rampStep.heatFraction())) {
                     // The last accepted state is still the better seed; retry the smaller heat increment.
@@ -1220,26 +1284,54 @@ public final class V3ColumnCalculator {
         if (!input.pumparounds().isEmpty()) return heatBearingRampSteps(input, steamRampSteps);
         boolean hasSteam = !input.steamFeeds().isEmpty();
         boolean hasDraws = !input.sideDraws().isEmpty();
-        if (hasSteam && hasDraws) {
-            List<RampStep> steps = new ArrayList<>(steamRampSteps + 4);
-            for (int step = 1; step <= steamRampSteps; step++) {
-                steps.add(RampStep.legacy(step / (double) steamRampSteps, 0.0, "steam-ramp", "steam ramp"));
+        if (!hasSteam) {
+            List<RampStep> draws = new ArrayList<>(4);
+            for (int step = 1; step <= 4; step++) {
+                draws.add(RampStep.legacy(0.0, step / 4.0, "draw-ramp", "side-draw ramp"));
             }
+            return List.copyOf(draws);
+        }
+        List<Double> steamFractions = steamRampFractions(steamRampSteps);
+        List<RampStep> steps = new ArrayList<>(steamFractions.size() + 4);
+        String pathLabel = hasDraws ? STEAM_RAMP_LABEL : WET_RAMP_LABEL;
+        String description = hasDraws ? "steam ramp" : "wet ramp";
+        for (double fraction : steamFractions) {
+            steps.add(RampStep.legacy(fraction, 0.0, pathLabel, description));
+        }
+        if (hasDraws) {
             for (int step = 1; step <= 4; step++) {
                 steps.add(RampStep.legacy(1.0, step / 4.0, "draw-ramp", "side-draw ramp"));
             }
-            return List.copyOf(steps);
         }
-        int steps = hasSteam ? steamRampSteps : 4;
-        List<RampStep> result = new ArrayList<>(steps);
-        String pathLabel = hasSteam ? "wet-ramp" : "draw-ramp";
-        String description = hasSteam ? "wet ramp" : "side-draw ramp";
-        for (int step = 1; step <= steps; step++) {
-            double fraction = step / (double) steps;
-            result.add(RampStep.legacy(hasSteam ? fraction : 0.0, hasDraws ? fraction : 0.0,
-                    pathLabel, description));
+        return List.copyOf(steps);
+    }
+
+    /**
+     * Steam rung fractions: a doubling schedule at the resolution {@code steamRampSteps} sets.
+     *
+     * <p>The rungs are {@code (2^k - 1) / N} for {@code k = 1, 2, ...} while that is below one, then one exactly:
+     * for {@code N = 24} the schedule is 1/24, 3/24, 7/24, 15/24, 1. The first rung is still the smallest
+     * increment the equal schedule ever took — that is what {@code N} was measured for, and the first admission
+     * of water to a dry column is the increment that decides whether the ramp starts at all — and every later
+     * rung doubles the water already on the trays, which is the perturbation the previous solution can absorb.</p>
+     *
+     * <p>The equal schedule spent nine rungs walking to 37.5 % of the authored steam on the literature preset
+     * before failing at 41.7 %, and each of those rungs converged in five Newton iterations: they were not
+     * carrying the continuation, they were paying for it. The doubling schedule reaches the same water in four
+     * rungs. Where a rung does fail, the ramp's existing rule keeps the last state and skips ahead to the
+     * requested input, so a coarser schedule cannot lose a solution the equal one found — it can only hand the
+     * final rung a different seed, which is measured.</p>
+     *
+     * @throws IllegalArgumentException if the resolution is not positive
+     */
+    static List<Double> steamRampFractions(int steamRampSteps) {
+        if (steamRampSteps < 1) throw new IllegalArgumentException("V3 steam ramp resolution must be positive");
+        List<Double> fractions = new ArrayList<>();
+        for (long span = 1; span < steamRampSteps; span = 2 * span + 1) {
+            fractions.add(span / (double) steamRampSteps);
         }
-        return List.copyOf(result);
+        fractions.add(1.0);
+        return List.copyOf(fractions);
     }
 
     /**
@@ -1253,9 +1345,8 @@ public final class V3ColumnCalculator {
         boolean hasDraws = !input.sideDraws().isEmpty();
         List<RampStep> steps = new ArrayList<>(steamRampSteps + 2 * HEAT_RAMP_STEPS);
         if (hasSteam) {
-            for (int step = 1; step <= steamRampSteps; step++) {
-                double fraction = step / (double) steamRampSteps;
-                steps.add(new RampStep(fraction, 0.0, 0.0, fraction, "steam-ramp", "steam ramp"));
+            for (double fraction : steamRampFractions(steamRampSteps)) {
+                steps.add(new RampStep(fraction, 0.0, 0.0, fraction, STEAM_RAMP_LABEL, "steam ramp"));
             }
         }
         for (int step = 1; step <= HEAT_RAMP_STEPS; step++) {
@@ -1273,6 +1364,17 @@ public final class V3ColumnCalculator {
             }
         }
         return List.copyOf(steps);
+    }
+
+    /**
+     * The budget one ramp rung runs on: only an intermediate steam rung gets the reduced one.
+     *
+     * <p>The rung that reaches the authored input publishes the result, so it keeps every fallback and the full
+     * final-Newton certificate cascade unchanged. See {@link #INTERMEDIATE_RUNG_BUDGET} for why heat and draw
+     * rungs keep it too.</p>
+     */
+    static V3SimultaneousColumnSolver.RungBudget rampRungBudget(boolean steamRung, boolean requested) {
+        return steamRung && !requested ? INTERMEDIATE_RUNG_BUDGET : V3SimultaneousColumnSolver.RungBudget.DEFAULT;
     }
 
     /** Halves the remaining heat increment; null when the increment can no longer be split. */
@@ -2004,12 +2106,14 @@ public final class V3ColumnCalculator {
                 advisoryEvidence);
     }
 
-    private static V3SolverFailureCode failureCode(String code) {
+    /** Maps a solver attempt code onto the published failure taxonomy; a stopped stall is a nonconvergence. */
+    static V3SolverFailureCode failureCode(String code) {
         if (code.startsWith("LINEAR_") || code.startsWith("JACOBIAN_")) {
             return V3SolverFailureCode.LINEAR_SOLVE_FAILURE;
         }
         if (code.startsWith("MAX_ITERATIONS") || code.startsWith("LINE_SEARCH")
-                || code.startsWith("CONVERGENCE_EVIDENCE") || code.startsWith("STATE_DOMAIN")) {
+                || code.startsWith("CONVERGENCE_EVIDENCE") || code.startsWith("STATE_DOMAIN")
+                || code.startsWith("STALLED")) {
             return V3SolverFailureCode.NONCONVERGENCE;
         }
         return V3SolverFailureCode.INTERNAL_ERROR;
