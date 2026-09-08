@@ -1110,15 +1110,16 @@ public final class V3ColumnCalculator {
     }
 
     /**
-     * Re-levels the temperature profile after a free-water tray enters or leaves the frozen set.
+     * Re-levels the temperature profile after a free-water tray leaves the frozen set.
      *
-     * <p>Admitting a wet tray is an energy step of exactly the kind the ramp's rungs make: the free water it
-     * sheds carries its latent heat out of the tray below and into the tray itself, so the seed's energy rows
-     * move by that duty while its temperatures still belong to the dry solution. Left alone, Newton walks the
-     * bulk of it off in a handful of iterations and then sits in the common mode — measured on the literature
-     * column at its published duties, every tray energy row short by the same 57.6 kW with the line search
-     * refusing every step. That mode is what {@link V3EnergyShiftPredictor} solves for, and the gate it
-     * requires is satisfied here by construction: a wet refresh only follows a converged attempt.</p>
+     * <p>Losing a wet tray is an energy step of exactly the kind the ramp's rungs make: the free water it was
+     * shedding carried its latent heat out of the tray below and into the tray itself, so the seed's energy
+     * rows move by that duty while its temperatures still belong to the wet solution. That is the common mode
+     * {@link V3EnergyShiftPredictor} solves for, and the gate it requires is satisfied here by construction: a
+     * wet refresh only follows a converged attempt.</p>
+     *
+     * <p>A refresh that <em>admits</em> a tray is handled by {@link V3FreeWaterContinuation} instead, which
+     * re-solves every energy row exactly at each of its steps rather than linearising them once.</p>
      */
     private static PreparedAttempt withWetEnergyShift(
             PreparedAttempt prepared, V3PengRobinsonThermo thermo, double feedMolarEnthalpyJoulesPerMol,

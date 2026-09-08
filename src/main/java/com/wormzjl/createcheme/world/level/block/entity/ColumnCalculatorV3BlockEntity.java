@@ -374,10 +374,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
      * at 91.5 C against the source stage 1 at 93.7 C. 1,200 kmol/h of stripping steam at the bottom, condenser 59 C,
      * reflux ratio 4.17, no external reboiler.
      *
-     * <p>A tray below the water dew point is no longer a rejection — it takes a free-water phase — but the full
-     * 12.84 MW top cooler still does not converge with one: the wet solve reaches a scaled residual of 7.8e-4 and
-     * stalls on a near-null direction (V3_FREE_WATER_TRAYS_REVIEW section 5). Restoring the published duty here
-     * therefore waits on that, and on the side strippers that are the real fix for the missing heat.</p>
+     * <p>A tray below the water dew point is no longer a rejection — it may take a free-water phase — but at the
+     * full 12.84 MW no free-water phase can lift tray 1 onto its saturation line, and that is structural rather
+     * than numerical: the tray water balance telescopes, so the water rising out of the topmost tray of a wet
+     * block is the whole authored steam whatever that tray sheds, and its temperature is invariant along the
+     * free-water exchange cycle with the tray below (measured at about 1.6e-9 per kmol/h against the 0.1497 that
+     * would have to be closed; see V3_FREE_WATER_CONTINUATION_REVIEW). At the published duty the column therefore
+     * converges to a solved candidate whose WATER_DEW_POINT check names tray 1. Restoring the published duty here
+     * waits on the side strippers that are the real fix for the missing heat.</p>
      */
     public static V3ColumnInput literatureCduInput() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(LITERATURE_PACKAGE);
