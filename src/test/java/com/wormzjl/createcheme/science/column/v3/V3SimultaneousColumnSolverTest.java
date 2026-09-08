@@ -145,6 +145,167 @@ class V3SimultaneousColumnSolverTest {
                 .audit(warmConverged.state(), thermo.newWorkspace()).accepted());
     }
 
+    /**
+     * The stall stop belongs to the budget that asks for it and to no other solve.
+     *
+     * <p>A factor of zero is the sharpest form of the rule the ramp uses: no residual above the floor is ever
+     * a large enough fall, so the stop must fire on the first iteration the window allows and nowhere else.
+     * The default budget on the same perturbed state converges, so nothing on the published path can be cut
+     * off by a detector it never enabled; and a floor above the residual suppresses the stop and converges to
+     * the same state, so the floor really is what keeps a slowly closing rung alive.</p>
+     */
+    @Test
+    void onlyABudgetThatAsksForItStopsAStalledAttemptAndOnlyAboveItsResidualFloor() {
+        V3ColumnProblem problem = problem();
+        NewtonManufacturedThermo thermo = new NewtonManufacturedThermo();
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
+        V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
+        V3DryMeshState perturbed = perturbedState(problem, coordinates);
+
+        V3SimultaneousColumnSolver.Attempt.Failure stalled = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Failure.class,
+                solveWithBudget(problem, evaluator, coordinates, perturbed, thermo,
+                        new V3SimultaneousColumnSolver.RungBudget(8, true, 8, 2, 0.0, 0.0)));
+        assertEquals("STALLED", stalled.code());
+        assertEquals(2, stalled.evidence().iterations(), "the stop fires on the first iteration the window allows");
+        assertTrue(stalled.evidence().termination().contains("iteration 0"), stalled.evidence()::termination);
+        assertTrue(stalled.evidence().termination().contains(
+                Double.toString(stalled.evidence().maximumScaledResidual())), stalled.evidence()::termination);
+
+        V3SimultaneousColumnSolver.Attempt.Converged byDefault = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                solveWithBudget(problem, evaluator, coordinates, perturbed, thermo,
+                        V3SimultaneousColumnSolver.RungBudget.DEFAULT));
+        V3SimultaneousColumnSolver.Attempt.Converged belowFloor = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                solveWithBudget(problem, evaluator, coordinates, perturbed, thermo,
+                        new V3SimultaneousColumnSolver.RungBudget(8, true, 8, 2, 0.0, 1.0e30)));
+        assertEquals(byDefault.evidence().iterations(), belowFloor.evidence().iterations());
+        assertEquals(byDefault.evidence().maximumScaledResidual(), belowFloor.evidence().maximumScaledResidual(), 0.0);
+    }
+
+    /**
+     * The cascade cap is honoured, and the two dampings the ramp keeps are the ones that carry this fixture.
+     *
+     * <p>The manufactured Jacobian goes singular on the way in, so the damped normal equations are what solve
+     * it at all: with the cascade removed the attempt stops at iteration 0 having evaluated the residual 60
+     * times instead of 308. The ramp's own cap of two dampings reaches exactly the same state as the full eight
+     * with exactly the same work, which is the point — the fifth to eighth damping are a tail almost nothing
+     * uses, and an intermediate rung that would need them is a rung the ramp skips past anyway.</p>
+     *
+     * <p>The verification cap is the opposite finding, and is why every published rung keeps it: with the
+     * certificate cascade removed this attempt reaches its tolerance and then cannot certify, so it iterates
+     * on and costs more, not less. That measurement is why the reduced budget is spent only where the state is
+     * a seed — and why the stage continuation, whose rungs each certify, kept the full cascade.</p>
+     *
+     * <p>The workspace count is the proxy for work: every residual evaluation takes a fresh one.</p>
+     */
+    @Test
+    void theDampedCascadeCapIsHonouredAndTheRampsTwoDampingsAreEnough() {
+        V3ColumnProblem problem = problem();
+        NewtonManufacturedThermo thermo = new NewtonManufacturedThermo();
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
+        V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
+        V3DryMeshState perturbed = perturbedState(problem, coordinates);
+
+        AtomicInteger fullWorkspaces = new AtomicInteger();
+        V3SimultaneousColumnSolver.Attempt.Converged full = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(problem, evaluator, coordinates, perturbed,
+                        counting(thermo, fullWorkspaces), 32, 1.0e-9, V3SolveControl.UNBOUNDED, V3NewtonTrace.NONE,
+                        V3SimultaneousColumnSolver.RungBudget.DEFAULT));
+
+        AtomicInteger rampWorkspaces = new AtomicInteger();
+        V3SimultaneousColumnSolver.Attempt.Converged ramp = assertInstanceOf(
+                V3SimultaneousColumnSolver.Attempt.Converged.class,
+                V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(problem, evaluator, coordinates, perturbed,
+                        counting(thermo, rampWorkspaces), 32, 1.0e-9, V3SolveControl.UNBOUNDED, V3NewtonTrace.NONE,
+                        new V3SimultaneousColumnSolver.RungBudget(2, false, 8, 0, 0.0, 0.0)));
+        assertEquals(full.evidence().iterations(), ramp.evidence().iterations());
+        assertEquals(full.evidence().maximumScaledResidual(), ramp.evidence().maximumScaledResidual(), 0.0);
+        assertEquals(fullWorkspaces.get(), rampWorkspaces.get(),
+                "two dampings and no gradient fallback did not change one residual evaluation here");
+
+        AtomicInteger cappedWorkspaces = new AtomicInteger();
+        V3SimultaneousColumnSolver.Attempt capped =
+                V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(problem, evaluator, coordinates, perturbed,
+                        counting(thermo, cappedWorkspaces), 32, 1.0e-9, V3SolveControl.UNBOUNDED, V3NewtonTrace.NONE,
+                        new V3SimultaneousColumnSolver.RungBudget(0, false, 8, 0, 0.0, 0.0));
+        if (capped instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
+            assertTrue(cappedWorkspaces.get() < fullWorkspaces.get(),
+                    () -> "removing the cascade must remove work: " + cappedWorkspaces.get()
+                            + " residual evaluations against " + fullWorkspaces.get());
+            assertTrue(failure.code().startsWith("LINEAR_") || failure.code().startsWith("LINE_SEARCH"),
+                    failure::code);
+        } else {
+            assertEquals(full.evidence().maximumScaledResidual(),
+                    capped.evidence().maximumScaledResidual(), 0.0,
+                    "a solve that never needed the cascade may not be changed by capping it");
+        }
+
+        AtomicInteger uncertifiedWorkspaces = new AtomicInteger();
+        V3SimultaneousColumnSolver.Attempt uncertified =
+                V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(problem, evaluator, coordinates, perturbed,
+                        counting(thermo, uncertifiedWorkspaces), 32, 1.0e-9, V3SolveControl.UNBOUNDED,
+                        V3NewtonTrace.NONE, V3SimultaneousColumnSolver.RungBudget.DEFAULT.withoutVerificationCascade());
+        if (uncertified instanceof V3SimultaneousColumnSolver.Attempt.Converged certified) {
+            assertTrue(certified.evidence().convergenceEvidence().satisfiesGates());
+        } else {
+            assertTrue(uncertifiedWorkspaces.get() > fullWorkspaces.get(),
+                    () -> "giving up the certificate cascade cost the certificate and saved nothing: "
+                            + uncertifiedWorkspaces.get() + " residual evaluations against " + fullWorkspaces.get());
+        }
+    }
+
+    /** A budget is a bound on optional work, so every field has to be inside the solver's own limits. */
+    @Test
+    void theRungBudgetRejectsLimitsTheSolverCannotHonour() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3SimultaneousColumnSolver.RungBudget(9, true, 8, 0, 0.0, 0.0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3SimultaneousColumnSolver.RungBudget(-1, true, 8, 0, 0.0, 0.0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3SimultaneousColumnSolver.RungBudget(8, true, 9, 0, 0.0, 0.0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3SimultaneousColumnSolver.RungBudget(8, true, 8, -1, 0.0, 0.0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3SimultaneousColumnSolver.RungBudget(8, true, 8, 4, 1.5, 0.0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3SimultaneousColumnSolver.RungBudget(8, true, 8, 4, Double.NaN, 0.0));
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3SimultaneousColumnSolver.RungBudget(8, true, 8, 4, 0.5, -1.0));
+
+        V3SimultaneousColumnSolver.RungBudget seed =
+                V3SimultaneousColumnSolver.RungBudget.DEFAULT.withoutVerificationCascade();
+        assertEquals(0, seed.verificationDampingSteps());
+        assertEquals(V3SimultaneousColumnSolver.RungBudget.DEFAULT.maximumDampingSteps(), seed.maximumDampingSteps());
+        assertTrue(seed.gradientFallback());
+        assertEquals(0, seed.stallWindow());
+    }
+
+    private static V3SimultaneousColumnSolver.Attempt solveWithBudget(
+            V3ColumnProblem problem, V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState seed, NewtonManufacturedThermo thermo, V3SimultaneousColumnSolver.RungBudget budget) {
+        return V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(problem, evaluator, coordinates, seed,
+                thermo::newWorkspace, 32, 1.0e-9, V3SolveControl.UNBOUNDED, V3NewtonTrace.NONE, budget);
+    }
+
+    private static V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory counting(
+            NewtonManufacturedThermo thermo, AtomicInteger workspaces) {
+        return () -> {
+            workspaces.incrementAndGet();
+            return thermo.newWorkspace();
+        };
+    }
+
+    private static V3DryMeshState perturbedState(V3ColumnProblem problem, V3DryMeshCoordinateMap coordinates) {
+        double[] perturbedCoordinates = coordinates.encode(exactState(problem.topology()));
+        for (int index = 0; index < perturbedCoordinates.length; index++) {
+            perturbedCoordinates[index] += index < 24 ? ((index % 5) - 2) * 0.02 : (index % 2 == 0 ? 0.5 : -0.5);
+        }
+        return coordinates.decode(perturbedCoordinates);
+    }
+
     private static V3ColumnProblem problem() {
         V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:newton", "test:binary",
                 new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30.0, 60.0}, 400.0,

@@ -93,7 +93,7 @@ final class V3SimultaneousColumnSolver {
             V3SolveControl control,
             V3NewtonTrace trace) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, initialConvergenceEvidence,
-                maximumIterations, scaledTolerance, differenceScale, control, trace, 0, 0);
+                maximumIterations, scaledTolerance, differenceScale, control, trace, 0, 0, RungBudget.DEFAULT);
     }
 
     /**
@@ -125,9 +125,24 @@ final class V3SimultaneousColumnSolver {
             double scaledTolerance,
             V3SolveControl control,
             V3NewtonTrace trace) {
+        return solveWithContinuationLocalBlocks(problem, evaluator, coordinates, initialState, workspaceFactory,
+                maximumIterations, scaledTolerance, control, trace, RungBudget.DEFAULT);
+    }
+
+    static Attempt solveWithContinuationLocalBlocks(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumIterations,
+            double scaledTolerance,
+            V3SolveControl control,
+            V3NewtonTrace trace,
+            RungBudget budget) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
                 maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE,
-                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, UNLIMITED_LOCAL_BLOCK_ATTEMPTS);
+                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, UNLIMITED_LOCAL_BLOCK_ATTEMPTS, budget);
     }
 
     /** Uses exactly one local block predictor before the full finite-difference pressure-leg corrector. */
@@ -143,7 +158,7 @@ final class V3SimultaneousColumnSolver {
             V3NewtonTrace trace) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
                 maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE,
-                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, 1);
+                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, 1, RungBudget.DEFAULT);
     }
 
     private static Attempt solve(
@@ -159,7 +174,8 @@ final class V3SimultaneousColumnSolver {
             V3SolveControl control,
             V3NewtonTrace trace,
             int maximumFrozenFineJacobianSteps,
-            int maximumLocalBlockAttempts) {
+            int maximumLocalBlockAttempts,
+            RungBudget budget) {
         problem = Objects.requireNonNull(problem, "problem");
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
@@ -169,6 +185,7 @@ final class V3SimultaneousColumnSolver {
         differenceScale = Objects.requireNonNull(differenceScale, "differenceScale");
         control = Objects.requireNonNull(control, "control");
         trace = Objects.requireNonNull(trace, "trace");
+        budget = Objects.requireNonNull(budget, "budget");
         if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0
                 || maximumFrozenFineJacobianSteps < 0
                 || maximumFrozenFineJacobianSteps > MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS
@@ -178,6 +195,8 @@ final class V3SimultaneousColumnSolver {
         V3StageBlockLayout layout = new V3StageBlockLayout(problem);
         int maximumLineSearchSteps = differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.COARSE
                 ? COARSE_RECOVERY_MAXIMUM_LINE_SEARCH_STEPS : FINE_MAXIMUM_LINE_SEARCH_STEPS;
+        // Only a budget that asks for the stall stop pays for its history; null is the frozen default path.
+        double[] stallResiduals = budget.stallWindow() > 0 ? new double[maximumIterations + 1] : null;
         V3DryMeshState state = initialState;
         double lastMerit = Double.NaN;
         V3ConvergenceEvidence lastConvergenceEvidence = initialConvergenceEvidence;
@@ -211,7 +230,7 @@ final class V3SimultaneousColumnSolver {
             if (maximumResidual <= scaledTolerance) {
                 VerifiedFinalNewton verified = verifyFinalNewtonCorrection(
                         evaluator, coordinates, state, residual, frozenScales, merit, workspaceFactory, layout, control,
-                        scaledTolerance);
+                        scaledTolerance, budget);
                 if (verified != null) {
                     return new Attempt.Converged(verified.state(), new Evidence(iteration,
                             verified.maximumScaledResidual(), verified.merit(), verified.step(),
@@ -222,6 +241,19 @@ final class V3SimultaneousColumnSolver {
                 return new Attempt.Failure("MAX_ITERATIONS", state,
                         new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, "iteration budget exhausted",
                                 lastConvergenceEvidence));
+            }
+            // A rung whose residual has not fallen by the budget's factor over its window is not converging;
+            // spending the rest of the iteration budget on it only delays the caller's own recovery. The floor
+            // keeps this away from a rung that is merely closing slowly just above its tolerance.
+            if (stallResiduals != null) {
+                stallResiduals[iteration] = maximumResidual;
+                int earlier = iteration - budget.stallWindow();
+                if (earlier >= 0 && maximumResidual > budget.stallResidualFloor()
+                        && maximumResidual > budget.stallFactor() * stallResiduals[earlier]) {
+                    return new Attempt.Failure("STALLED", state, new Evidence(iteration, maximumResidual, merit,
+                            0.0, 0.0, "maximum scaled residual " + stallResiduals[earlier] + " at iteration "
+                                    + earlier + " and " + maximumResidual + " now", lastConvergenceEvidence));
+                }
             }
             if (maximumLocalBlockAttempts > localBlockAttempts
                     && differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.FINE
@@ -293,8 +325,8 @@ final class V3SimultaneousColumnSolver {
                 double[] baseCoordinates = coordinates.encode(state);
                 AcceptedTrial descentTrial = dampedGaussNewtonTrial(
                         evaluator, coordinates, baseCoordinates, jacobian, residual, frozenScales, merit, layout, workspaceFactory,
-                        maximumLineSearchSteps, control);
-                if (descentTrial == null) {
+                        maximumLineSearchSteps, control, budget);
+                if (descentTrial == null && budget.gradientFallback()) {
                     descentTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
                             normalizedNegativeGradient(jacobian, residual, coordinates), frozenScales, merit, workspaceFactory,
                             maximumLineSearchSteps, control);
@@ -323,8 +355,8 @@ final class V3SimultaneousColumnSolver {
             if (usedDescentFallback) {
                 acceptedTrial = dampedGaussNewtonTrial(
                         evaluator, coordinates, baseCoordinates, jacobian, residual, frozenScales, merit, layout, workspaceFactory,
-                        maximumLineSearchSteps, control);
-                if (acceptedTrial == null) {
+                        maximumLineSearchSteps, control, budget);
+                if (acceptedTrial == null && budget.gradientFallback()) {
                     acceptedTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
                             normalizedNegativeGradient(jacobian, residual, coordinates), frozenScales, merit, workspaceFactory,
                             maximumLineSearchSteps, control);
@@ -363,6 +395,12 @@ final class V3SimultaneousColumnSolver {
      * Produces the required final Newton certificate when a fallback step reaches the residual gate but has no
      * Newton-step evidence of its own. The candidate is decoded, independently re-evaluated, and accepted only when
      * the actual final correction satisfies the unchanged step/backward-error gates.
+     *
+     * <p>The damped cascade behind the direct correction is what a rung whose certificate must be published pays
+     * for. A rung whose caller only wants its state as the next rung's seed does not need a certificate at all,
+     * so its budget may set {@code verificationDampingSteps} to zero: the direct fine correction is still tried,
+     * and when it fails the gates the ordinary iteration simply continues, exactly as it does today whenever the
+     * whole cascade fails.</p>
      */
     private static VerifiedFinalNewton verifyFinalNewtonCorrection(
             V3MeshResidualEvaluator evaluator,
@@ -374,7 +412,8 @@ final class V3SimultaneousColumnSolver {
             V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             V3StageBlockLayout layout,
             V3SolveControl control,
-            double scaledTolerance) {
+            double scaledTolerance,
+            RungBudget budget) {
         try {
             control.checkpoint();
             V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
@@ -386,9 +425,10 @@ final class V3SimultaneousColumnSolver {
                         scaledTolerance, frozenScales, merit, success.solution(), success.backwardError());
                 if (direct != null) return direct;
             }
+            if (budget.verificationDampingSteps() == 0) return null;
             V3NormalEquations normal = V3NormalEquations.prepare(jacobian, residual, layout, control);
             double damping = INITIAL_GAUSS_NEWTON_DAMPING;
-            for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
+            for (int attempt = 0; attempt < budget.verificationDampingSteps(); attempt++) {
                 control.checkpoint();
                 V3BandedPivotedSolver.Result regularized = V3BandedPivotedSolver.solve(
                         normal.dampedMatrix(damping, control), normal.negativeGradient());
@@ -560,7 +600,8 @@ final class V3SimultaneousColumnSolver {
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double[] frozenScales, double merit,
             V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
-            int maximumLineSearchSteps, V3SolveControl control) {
+            int maximumLineSearchSteps, V3SolveControl control, RungBudget budget) {
+        if (budget.maximumDampingSteps() == 0) return null;
         V3NormalEquations normal;
         try {
             normal = V3NormalEquations.prepare(jacobian, residual, layout, control);
@@ -570,7 +611,7 @@ final class V3SimultaneousColumnSolver {
             return null;
         }
         double damping = INITIAL_GAUSS_NEWTON_DAMPING;
-        for (int attempt = 0; attempt < MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS; attempt++) {
+        for (int attempt = 0; attempt < budget.maximumDampingSteps(); attempt++) {
             control.checkpoint();
             V3BandedPivotedSolver.Result result;
             try {
@@ -612,6 +653,49 @@ final class V3SimultaneousColumnSolver {
         }
         return new V3ConvergenceEvidence(true, backwardError, maximumLogFlowChange, maximumTemperatureChange,
                 maximumTemperatureStepRatio, V3ConvergenceEvidence.closureOf(scaledTolerance));
+    }
+
+    /**
+     * Newton budget of one continuation rung.
+     *
+     * <p>{@link #DEFAULT} is the only budget a published attempt may run under: the full damped normal-equation
+     * cascade, the gradient fallback behind it, the full verification cascade, and no stall stop. A continuation
+     * rung whose failure the caller can absorb — it keeps its predecessor's state and skips ahead — pays for
+     * those fallbacks without needing them, so the caller may hand such a rung a smaller budget. Every field is
+     * a bound on optional work: nothing here can make an attempt accept a step it would otherwise reject, and
+     * nothing here changes the residual, evidence or acceptance gates.</p>
+     *
+     * @param maximumDampingSteps damped normal-equation solves tried per Newton fallback, at most
+     *        {@link #MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS}
+     * @param gradientFallback whether the normalized steepest-descent direction is tried after them
+     * @param verificationDampingSteps damped solves the final-Newton certificate may try after its direct
+     *        correction fails the step gates; zero leaves the ordinary iteration to continue instead
+     * @param stallWindow iterations over which the maximum scaled residual must fall by {@code stallFactor};
+     *        zero disables the stall stop entirely
+     * @param stallFactor required residual ratio over that window
+     * @param stallResidualFloor residual below which no stall is declared, so a rung that is merely closing
+     *        slowly near its tolerance is never cut off
+     */
+    record RungBudget(
+            int maximumDampingSteps, boolean gradientFallback, int verificationDampingSteps,
+            int stallWindow, double stallFactor, double stallResidualFloor) {
+        static final RungBudget DEFAULT = new RungBudget(MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS, true,
+                MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS, 0, 0.0, 0.0);
+
+        RungBudget {
+            if (maximumDampingSteps < 0 || maximumDampingSteps > MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS
+                    || verificationDampingSteps < 0 || verificationDampingSteps > MAXIMUM_GAUSS_NEWTON_DAMPING_STEPS
+                    || stallWindow < 0 || !Double.isFinite(stallFactor) || stallFactor < 0.0 || stallFactor > 1.0
+                    || !Double.isFinite(stallResidualFloor) || stallResidualFloor < 0.0) {
+                throw new IllegalArgumentException("V3 Newton rung budget is invalid");
+            }
+        }
+
+        /** Same fallbacks, no damped certificate cascade: for a rung whose state is a seed, not a published result. */
+        RungBudget withoutVerificationCascade() {
+            return new RungBudget(maximumDampingSteps, gradientFallback, 0,
+                    stallWindow, stallFactor, stallResidualFloor);
+        }
     }
 
     private record AcceptedTrial(V3DryMeshState state, double[] coordinates, double merit, double step) {}
