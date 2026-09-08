@@ -27,16 +27,34 @@ class V3LiteraturePresetTest {
             assertEquals(draw.trayNumber() - 2, cooler.returnTray(), "cooler returned two stages above");
             assertTrue(cooler.dutyWatts() < 0.0, "coolers remove heat");
         }
-        assertEquals(-41.93e6, input.pumparounds().stream().mapToDouble(V3PumparoundSpec::dutyWatts).sum(), 1.0e3);
+        assertEquals(-35.51e6, input.pumparounds().stream().mapToDouble(V3PumparoundSpec::dutyWatts).sum(), 1.0e3);
+        assertEquals(-6.42e6, input.pumparounds().get(0).dutyWatts(), 1.0, "top cooler halved: no stripper heat in this reconstruction");
         assertEquals(1, input.steamFeeds().size());
         assertEquals(41, input.steamFeeds().get(0).stageNumber());
         assertEquals(1_200.0 / 3.6, input.steamFeeds().get(0).molarFlowMolPerSecond(), 1.0e-9);
     }
 
     @Test
-    void aConvergedColumnWithATrayBelowTheWaterDewPointIsReportedByName() {
+    void theLiteraturePresetConvergesAboveTheWaterDewPoint() {
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(
                 ColumnCalculatorV3BlockEntity.literatureCduInput(), () -> {}, 0.0);
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertTrue(success.diagnostics().acceptanceAudit().checks().stream()
+                .anyMatch(check -> check.family().equals("WATER_DEW_POINT") && check.passed()));
+        assertTrue(success.result().dutyLedger().orElseThrow().stageHeatTotalWatts() < -35.0e6);
+    }
+
+    @Test
+    void aConvergedColumnWithATrayBelowTheWaterDewPointIsReportedByName() {
+        // The source duties as published: without the side-stripper reboiler heat the top lands below the dew point.
+        V3ColumnInput preset = ColumnCalculatorV3BlockEntity.literatureCduInput();
+        V3ColumnInput fullDuties = new V3ColumnInput(preset.schemaVersion(), preset.packageId(), preset.assayId(),
+                preset.componentBasis(), preset.feedComponentMolarFlowsMolPerSecond(), preset.feedTemperatureKelvin(),
+                preset.stageCount(), preset.feedStageNumber(), preset.topPressurePascal(), preset.stagePressureDropPascal(),
+                preset.specifications(), preset.sideDraws(), preset.steamFeeds(), java.util.List.of(
+                        new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
+                        preset.pumparounds().get(1), preset.pumparounds().get(2)));
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(fullDuties, () -> {}, 0.0);
         V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
         assertEquals(V3SolverFailureCode.WATER_DEW_POINT, failure.code(), failure.summary());
         assertTrue(failure.summary().startsWith("Converged, but tray "), failure.summary());

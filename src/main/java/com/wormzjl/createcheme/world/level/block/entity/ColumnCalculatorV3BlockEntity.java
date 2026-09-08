@@ -367,8 +367,12 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     /**
      * The input a fresh calculator starts on: the Ledezma-Martinez (2019) no-preflash atmospheric column. Forty
      * trays plus the steam-stripped bottom stage, three direct side products at stages 10/18/28 (491/515/165 kmol/h),
-     * each paired with a pumparound cooler drawn at the draw stage and returned two stages above (12.84/17.89/11.20 MW),
-     * 1,200 kmol/h of stripping steam at the bottom, condenser 59 C, reflux ratio 4.17, no external reboiler.
+     * each paired with a pumparound cooler drawn at the draw stage and returned two stages above. The source duties
+     * are 12.84/17.89/11.20 MW; the top cooler is halved to 6.42 MW here because this reconstruction carries no
+     * side-stripper reboiler heat (18.1 MW in the source), and at the full 12.84 MW tray 1 lands at 83 C, below the
+     * water dew point of its steam-laden overhead (see V3_LITERATURE_TOP_TEMPERATURE_CHECK). At 6.42 MW tray 1 sits
+     * at 91.5 C against the source stage 1 at 93.7 C. 1,200 kmol/h of stripping steam at the bottom, condenser 59 C,
+     * reflux ratio 4.17, no external reboiler.
      */
     public static V3ColumnInput literatureCduInput() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(LITERATURE_PACKAGE);
@@ -385,7 +389,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 List.of(new V3SideDrawSpec(10, 491.0 / 3.6), new V3SideDrawSpec(18, 515.0 / 3.6),
                         new V3SideDrawSpec(28, 165.0 / 3.6)),
                 List.of(new V3SteamFeedSpec(41, 1_200.0 / 3.6, 533.15)),
-                List.of(new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
+                List.of(new V3PumparoundSpec(8, 10, -6.42e6, V3PumparoundSpec.Split.UNIFORM),
                         new V3PumparoundSpec(16, 18, -17.89e6, V3PumparoundSpec.Split.UNIFORM),
                         new V3PumparoundSpec(26, 28, -11.20e6, V3PumparoundSpec.Split.UNIFORM)));
     }
