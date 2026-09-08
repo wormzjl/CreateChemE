@@ -219,7 +219,6 @@ class V3BandedSolverBitIdentityTest {
         String configured = System.getProperty(DUMPED_JACOBIAN_PROPERTY);
         if (configured != null) candidates.add(configured);
         candidates.add("src/test/resources/column/v3/literature-cdu-jacobian.txt");
-        candidates.add("D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/recursing-lamarr-6cb268/build/pkgcmp/matrix.txt");
         for (String candidate : candidates) {
             Path path = Path.of(candidate);
             if (Files.isReadable(path)) return path;
