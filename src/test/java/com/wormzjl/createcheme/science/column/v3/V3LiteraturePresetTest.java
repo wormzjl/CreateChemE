@@ -35,14 +35,35 @@ class V3LiteraturePresetTest {
         assertEquals(1_200.0 / 3.6, input.steamFeeds().get(0).molarFlowMolPerSecond(), 1.0e-9);
     }
 
+    /**
+     * The shipped preset stays dry in water: every stage is above the water dew point, so the free-water
+     * contract adds no tray, no unknown and no row to it, and its water balance is the plain steam profile.
+     *
+     * <p>Measured stage temperatures against thesis Table 1.1 (source, then this reconstruction, C):
+     * 1 = 93.7/91.5, 9 = 146.5/137.4, 10 = 147.4/149.5, 17 = 227.5/215.9, 18 = 238.6/228.6, 27 = 304.9/285.0,
+     * 28 = 310.9/293.0, 36 = 341.3/313.0, 37 = 341.3/333.8, 41 = 335.1/305.3. The column is still colder than
+     * the source below the top because the 18.1 MW of side-stripper reboiler heat is not modelled.</p>
+     */
     @Test
-    void theLiteraturePresetConvergesAboveTheWaterDewPoint() {
+    void theLiteraturePresetConvergesAboveTheWaterDewPointWithAClosedWaterBalance() {
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(
                 ColumnCalculatorV3BlockEntity.literatureCduInput(), () -> {}, 0.0);
         V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
         assertTrue(success.diagnostics().acceptanceAudit().checks().stream()
                 .anyMatch(check -> check.family().equals("WATER_DEW_POINT") && check.passed()));
+        assertTrue(success.diagnostics().acceptanceAudit().checks().stream()
+                .anyMatch(check -> check.family().equals("WATER_BALANCE") && check.passed()));
         assertTrue(success.result().dutyLedger().orElseThrow().stageHeatTotalWatts() < -35.0e6);
+        assertTrue(success.diagnostics().acceptanceAudit().advisoryEvidence().stream()
+                .noneMatch(advisory -> advisory.startsWith("wet trays:")), "no stage needs a free-water phase");
+        // Every mole of the 1,200 kmol/h of stripping steam decants in the drum at 59 C.
+        V3ColumnStreamProperties freeWater = success.result().streams().stream()
+                .filter(stream -> stream.streamId().equals("free_water")).findFirst().orElseThrow();
+        assertEquals(1_200.0 / 3.6, freeWater.molarFlowMolPerSecond(), 1.0e-9);
+        // Light naphtha follows from the specified reflux and condenser temperature; the source fixes it at 833.
+        V3ColumnStreamProperties distillate = success.result().streams().stream()
+                .filter(stream -> stream.streamId().equals("distillate_liquid")).findFirst().orElseThrow();
+        assertEquals(766.8, distillate.molarFlowMolPerSecond() * 3.6, 1.0);
     }
 
     /**

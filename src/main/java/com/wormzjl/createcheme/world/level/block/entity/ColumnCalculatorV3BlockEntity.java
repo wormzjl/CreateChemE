@@ -373,6 +373,11 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
      * water dew point of its steam-laden overhead (see V3_LITERATURE_TOP_TEMPERATURE_CHECK). At 6.42 MW tray 1 sits
      * at 91.5 C against the source stage 1 at 93.7 C. 1,200 kmol/h of stripping steam at the bottom, condenser 59 C,
      * reflux ratio 4.17, no external reboiler.
+     *
+     * <p>A tray below the water dew point is no longer a rejection — it takes a free-water phase — but the full
+     * 12.84 MW top cooler still does not converge with one: the wet solve reaches a scaled residual of 7.8e-4 and
+     * stalls on a near-null direction (V3_FREE_WATER_TRAYS_REVIEW section 5). Restoring the published duty here
+     * therefore waits on that, and on the side strippers that are the real fix for the missing heat.</p>
      */
     public static V3ColumnInput literatureCduInput() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(LITERATURE_PACKAGE);
