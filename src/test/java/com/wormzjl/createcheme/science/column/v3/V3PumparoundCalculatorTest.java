@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -109,8 +110,101 @@ class V3PumparoundCalculatorTest {
         V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
         assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, failure.code());
         assertTrue(failure.summary().contains("exceeds"), failure::summary);
+        assertFalse(failure.summary().contains("credited"), failure::summary);
         assertEquals("input/heat-1", failure.diagnostics().solvePath());
         assertEquals(0, failure.diagnostics().newtonIterations());
+    }
+
+    /**
+     * A heater credit widens the static bound; it does not remove it.
+     *
+     * <p>The same 200 MW cooling with a 1 MW heater beside it is still far outside the feed, reboiler and steam
+     * enthalpy, so the gate keeps rejecting it — and says the credit was already granted.</p>
+     */
+    @Test
+    void aHeaterCreditWidensTheStaticGateWithoutWaivingIt() {
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(v1ScaleInput("createcheme:cdu17_tjl_acs2018", List.of(
+                new V3PumparoundSpec(8, 12, -200.0e6, V3PumparoundSpec.Split.UNIFORM),
+                new V3PumparoundSpec(8, 13, 1.0e6, V3PumparoundSpec.Split.RETURN_TRAY))));
+
+        V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
+        assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, failure.code());
+        assertTrue(failure.summary().contains("exceeds"), failure::summary);
+        assertTrue(failure.summary().contains("1.000 MW of authored stage heating credited"), failure::summary);
+        assertEquals("input/heat-2", failure.diagnostics().solvePath());
+        assertEquals(0, failure.diagnostics().newtonIterations());
+    }
+
+    /**
+     * A cooler cancelled by an equal heater carries no net stage heat and must reach Newton.
+     *
+     * <p>Both energy admission bounds are stated against the <em>gross</em> authored cooling, against a column
+     * that carries no stage heat at all. Two pumparounds that place equal and opposite duties on the same tray
+     * expand to exactly zero on every node, so the MESH equations are the heat-free preset's — yet a gross bound
+     * rejects the pair as {@code INFEASIBLE_SPECIFICATION} on a gigawatt of cooling the column never sees. The
+     * bounds therefore credit the authored heating, and this case pins that the published state is the heat-free
+     * preset's, not merely that the rejection is gone.</p>
+     */
+    @Test
+    void aCoolerCancelledByAnEqualHeaterReachesTheHeatFreePresetState() {
+        V3ColumnInput preset = ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        V3ColumnInput cancelling = withPumparounds(preset, List.of(
+                new V3PumparoundSpec(8, 10, -1.0e9, V3PumparoundSpec.Split.RETURN_TRAY),
+                new V3PumparoundSpec(8, 11, 1.0e9, V3PumparoundSpec.Split.RETURN_TRAY)));
+        V3ColumnTopology topology = V3ColumnProblemResolver
+                .resolve(cancelling, V3CondenserPhaseBranch.TWO_PHASE).topology();
+        for (double duty : V3Pumparounds.nodeDutyWatts(cancelling, topology)) {
+            assertEquals(0.0, duty, 0.0, "the authored pair leaves no net stage heat on any node");
+        }
+
+        Run base = run("preset-heat-free", preset);
+        Run cancelled = run("preset-cancelling-1-GW-pair", cancelling);
+
+        V3ColumnOutcome.Success expected = base.success();
+        V3ColumnOutcome.Success actual = cancelled.success();
+        assertEquals(expected.result().streams().size(), actual.result().streams().size());
+        for (int index = 0; index < expected.result().streams().size(); index++) {
+            V3ColumnStreamProperties reference = expected.result().streams().get(index);
+            V3ColumnStreamProperties published = actual.result().streams().get(index);
+            assertEquals(reference.streamId(), published.streamId());
+            assertEquals(reference.molarFlowMolPerSecond(), published.molarFlowMolPerSecond(),
+                    1.0e-6 * Math.abs(reference.molarFlowMolPerSecond()), reference::streamId);
+            assertEquals(reference.temperatureKelvin(), published.temperatureKelvin(), 1.0e-6, reference::streamId);
+        }
+        V3ColumnDutyLedger ledger = actual.result().dutyLedger().orElseThrow();
+        assertEquals(0.0, ledger.stageHeatTotalWatts(), 1.0e-6, "no net stage heat is published");
+        assertPassed(actual, "GLOBAL_ENERGY_BALANCE");
+    }
+
+    /**
+     * The condenser-duty bound owes the same credit as the static gate.
+     *
+     * <p>The cooling here is 2% above the heat-free base condenser duty, which is exactly the case
+     * {@link #coolingAboveTheBaseCondenserDutyIsRejectedWithThatDutyNamed} rejects; an equal heater on the same
+     * tray cancels it node for node, so the column is the heat-free one and the bound must admit it. Fixing only
+     * the static gate would leave this second false rejection in place.</p>
+     */
+    @Test
+    void theCondenserDutyBoundCreditsAnEqualHeaterOnTheSameTray() {
+        Run base = run("base", v1ScaleInput("createcheme:cdu17_tjl_acs2018", List.of()));
+        double baseCondenser = Math.abs(base.success().result().dutyLedger().orElseThrow().condenserWatts());
+        double cooling = 1.02 * baseCondenser;
+        Run cancelled = run("condenser-bound-cancelling-pair",
+                v1ScaleInput("createcheme:cdu17_tjl_acs2018", List.of(
+                        new V3PumparoundSpec(8, 12, -cooling, V3PumparoundSpec.Split.RETURN_TRAY),
+                        new V3PumparoundSpec(8, 13, cooling, V3PumparoundSpec.Split.RETURN_TRAY))));
+
+        assertEquals(0.0, cancelled.success().result().dutyLedger().orElseThrow().stageHeatTotalWatts(), 1.0e-6);
+        assertPassed(cancelled.success(), "GLOBAL_ENERGY_BALANCE");
+        assertEquals(baseCondenser, Math.abs(cancelled.success().result().dutyLedger().orElseThrow().condenserWatts()),
+                1.0e-6 * baseCondenser, "the cancelled pair leaves the heat-free condenser duty untouched");
+    }
+
+    private static V3ColumnInput withPumparounds(V3ColumnInput base, List<V3PumparoundSpec> pumparounds) {
+        return new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(), base.componentBasis(),
+                base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(), base.stageCount(),
+                base.feedStageNumber(), base.topPressurePascal(), base.stagePressureDropPascal(),
+                base.specifications(), base.sideDraws(), base.steamFeeds(), pumparounds);
     }
 
     @Test

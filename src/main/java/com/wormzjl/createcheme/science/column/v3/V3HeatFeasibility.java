@@ -49,12 +49,29 @@ final class V3HeatFeasibility {
         return available;
     }
 
+    /**
+     * Heat the authored stage heaters add, which the coolers may remove again.
+     *
+     * <p>Both cooling bounds are stated against the gross authored cooling, so both owe this credit: without
+     * it a valid input that authors a heater and a cooler is rejected before Newton is ever attempted.</p>
+     */
+    static double heatingCreditWatts(V3ColumnInput input) {
+        double heating = V3Pumparounds.totalHeatingWatts(input);
+        return Double.isFinite(heating) && heating > 0.0 ? heating : 0.0;
+    }
+
     /** Human-readable static-admission diagnostic, in megawatts. */
-    static String staticAdmissionDetail(double requestedCoolingWatts, double availableWatts) {
+    static String staticAdmissionDetail(double requestedCoolingWatts, double availableWatts, double heatingWatts) {
         return String.format(Locale.ROOT,
                 "V3 authored pumparound cooling of %.4g MW exceeds the %.4g MW made available by the feed, "
-                        + "reboiler duty and steam at the condenser outlet temperature",
-                requestedCoolingWatts / 1.0e6, availableWatts / 1.0e6);
+                        + "reboiler duty and steam at the condenser outlet temperature%s",
+                requestedCoolingWatts / 1.0e6, availableWatts / 1.0e6, heatingCreditClause(heatingWatts));
+    }
+
+    /** Names the heating credit the bound already granted, so a rejected input is not read as ignoring it. */
+    private static String heatingCreditClause(double heatingWatts) {
+        return heatingWatts > 0.0 ? String.format(Locale.ROOT,
+                " even with the %.4g MW of authored stage heating credited to it", heatingWatts / 1.0e6) : "";
     }
 
     /**
@@ -99,11 +116,13 @@ final class V3HeatFeasibility {
                 Math.abs(dutyWatts) / 1.0e6, tray, capacityWatts / 1.0e6);
     }
 
-    static String condenserBoundDetail(double requestedCoolingWatts, double baseCondenserDutyWatts) {
+    static String condenserBoundDetail(
+            double requestedCoolingWatts, double baseCondenserDutyWatts, double heatingWatts) {
         return String.format(Locale.ROOT,
                 "V3 authored pumparound cooling of %.4g MW is not below the %.4g MW base condenser duty Q_cond0 "
-                        + "of the same column without stage heat; the overhead would vanish",
-                requestedCoolingWatts / 1.0e6, Math.abs(baseCondenserDutyWatts) / 1.0e6);
+                        + "of the same column without stage heat%s; the overhead would vanish",
+                requestedCoolingWatts / 1.0e6, Math.abs(baseCondenserDutyWatts) / 1.0e6,
+                heatingCreditClause(heatingWatts));
     }
 
     private static <S extends V3ColumnSpecification> S specification(V3ColumnInput input, Class<S> type) {

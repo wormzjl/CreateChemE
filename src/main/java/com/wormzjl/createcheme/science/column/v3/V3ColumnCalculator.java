@@ -202,11 +202,16 @@ public final class V3ColumnCalculator {
      *
      * <p>Returns {@code null} when the input is admissible or when the property package is unavailable; in the
      * latter case the ordinary admission path publishes the typed property failure instead.</p>
+     *
+     * <p>The bound is on the <em>net</em> authored heat: an authored stage heater adds enthalpy the coolers
+     * below it can remove again, so its duty is credited to the heat-free column's budget. Without that
+     * credit a cooler paired with an equal heater — no net stage heat anywhere — is rejected here.</p>
      */
     private static V3ColumnOutcome.Failure staticCoolingAdmission(V3ColumnInput input) {
         if (input.pumparounds().isEmpty()) return null;
         double cooling = -V3Pumparounds.totalCoolingWatts(input);
         if (!(cooling > 0.0)) return null;
+        double heating = V3HeatFeasibility.heatingCreditWatts(input);
         double available;
         try {
             available = V3HeatFeasibility.availableCoolingWatts(
@@ -214,9 +219,9 @@ public final class V3ColumnCalculator {
         } catch (V3ThermoException | IllegalArgumentException unavailableProperties) {
             return null;
         }
-        if (!Double.isFinite(available) || cooling <= available) return null;
+        if (!Double.isFinite(available) || cooling <= available + heating) return null;
         return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
-                V3HeatFeasibility.staticAdmissionDetail(cooling, available),
+                V3HeatFeasibility.staticAdmissionDetail(cooling, available, heating),
                 "input/heat-" + input.pumparounds().size(), List.of());
     }
 
@@ -1300,11 +1305,15 @@ public final class V3ColumnCalculator {
      * <p>{@code Q_cond0} is recomputed from the last accepted heat-free state at the requested geometry, so
      * this is a state-based bound rather than a correlation. On a wet column that state already carries the
      * authored steam, so the duty includes the water-vapor slip and the free water leaving the drum.</p>
+     *
+     * <p>Like the static gate this compares the net authored heat: {@code Q_cond0} belongs to a column without
+     * stage heat, so any authored heating is credited to it before the gross cooling is measured against it.</p>
      */
     private static void requireCoolingBelowBaseCondenserDuty(
             V3ColumnInput input, V3PengRobinsonThermo thermo, V3SolvePass heatFreeBase) {
         double cooling = -V3Pumparounds.totalCoolingWatts(input);
         if (!(cooling > 0.0)) return;
+        double heating = V3HeatFeasibility.heatingCreditWatts(input);
         V3ColumnProblem base = heatFreeBase.prepared().problem();
         if (base.hasPumparounds()) {
             throw new IllegalStateException("V3 base condenser duty requires a heat-free continuation state");
@@ -1313,8 +1322,9 @@ public final class V3ColumnCalculator {
                 base, thermo, heatFreeBase.feedMolarEnthalpyJoulesPerMol());
         double baseCondenserDuty = V3ColumnDutyLedger.condenserDutyWatts(
                 base, heatFreeBase.attempt().state(), evaluator, thermo.newWorkspace());
-        if (!Double.isFinite(baseCondenserDuty) || cooling < Math.abs(baseCondenserDuty)) return;
-        throw new InfeasibleSpecification(V3HeatFeasibility.condenserBoundDetail(cooling, baseCondenserDuty),
+        if (!Double.isFinite(baseCondenserDuty) || cooling < Math.abs(baseCondenserDuty) + heating) return;
+        throw new InfeasibleSpecification(
+                V3HeatFeasibility.condenserBoundDetail(cooling, baseCondenserDuty, heating),
                 "cold/heat-condenser-bound/heat-" + input.pumparounds().size());
     }
 

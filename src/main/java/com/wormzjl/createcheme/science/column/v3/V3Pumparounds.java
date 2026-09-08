@@ -31,9 +31,20 @@ final class V3Pumparounds {
         return duties;
     }
 
-    /** Total authored cooling as a nonpositive value; heating duties are deliberately excluded. */
+    /**
+     * Gross authored cooling as a nonpositive value; heating duties are excluded.
+     *
+     * <p>This is one half of the signed total. Any energy bound built on it has to credit the other half —
+     * {@link #totalHeatingWatts(V3ColumnInput)} — because heat added on a tray is heat the coolers below can
+     * remove again; see {@link V3HeatFeasibility}.</p>
+     */
     static double totalCoolingWatts(V3ColumnInput input) {
         return input.pumparounds().stream().mapToDouble(V3PumparoundSpec::dutyWatts).filter(duty -> duty < 0.0).sum();
+    }
+
+    /** Gross authored heating as a nonnegative value; the credit the cooling bounds owe the heaters. */
+    static double totalHeatingWatts(V3ColumnInput input) {
+        return input.pumparounds().stream().mapToDouble(V3PumparoundSpec::dutyWatts).filter(duty -> duty > 0.0).sum();
     }
 
     /** Signed total of every authored duty. */

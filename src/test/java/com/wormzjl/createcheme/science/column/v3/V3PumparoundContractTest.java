@@ -65,6 +65,52 @@ class V3PumparoundContractTest {
                 new V3PumparoundSpec(3, 4, -400.0, V3PumparoundSpec.Split.UNIFORM)))));
     }
 
+    /**
+     * The two gross halves of the authored heat, which the cooling admission bounds compare against each other.
+     *
+     * <p>A cooler paired with an equal heater expands to exactly zero net stage heat, so no energy bound may
+     * read its gross cooling without the matching heating credit.</p>
+     */
+    @Test
+    void theGrossCoolingAndHeatingHalvesSplitTheAuthoredDutiesAndCancelOnTheExpandedProfile() {
+        V3ColumnTopology topology = V3ColumnTopology.twoPhase(4, 2);
+        V3ColumnInput mixed = input(List.of(
+                new V3PumparoundSpec(2, 4, -900.0, V3PumparoundSpec.Split.UNIFORM),
+                new V3PumparoundSpec(3, 4, 400.0, V3PumparoundSpec.Split.RETURN_TRAY)));
+
+        assertEquals(-900.0, V3Pumparounds.totalCoolingWatts(mixed));
+        assertEquals(400.0, V3Pumparounds.totalHeatingWatts(mixed));
+        assertEquals(-500.0, V3Pumparounds.totalDutyWatts(mixed), 1.0e-12);
+        assertEquals(400.0, V3HeatFeasibility.heatingCreditWatts(mixed));
+        assertEquals(0.0, V3Pumparounds.totalHeatingWatts(input(List.of(
+                new V3PumparoundSpec(2, 4, -900.0, V3PumparoundSpec.Split.UNIFORM)))));
+        assertEquals(0.0, V3Pumparounds.totalCoolingWatts(input(List.of(
+                new V3PumparoundSpec(2, 4, 900.0, V3PumparoundSpec.Split.UNIFORM)))));
+
+        // Two distinct return/draw pairs that both place their whole duty on tray two cancel node by node.
+        assertArrayEqualsExactly(new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, V3Pumparounds.nodeDutyWatts(
+                input(List.of(new V3PumparoundSpec(2, 3, -900.0, V3PumparoundSpec.Split.RETURN_TRAY),
+                        new V3PumparoundSpec(2, 4, 900.0, V3PumparoundSpec.Split.RETURN_TRAY))), topology));
+    }
+
+    /** The heating credit only ever grows the budget; it never turns a heater into extra cooling. */
+    @Test
+    void theHeatingCreditIsNonNegativeAndTheAdmissionDetailNamesItOnlyWhenItIsSpent() {
+        String withoutHeater = V3HeatFeasibility.staticAdmissionDetail(2.0e6, 1.0e6, 0.0);
+        String withHeater = V3HeatFeasibility.staticAdmissionDetail(2.0e6, 1.0e6, 5.0e5);
+
+        assertEquals(0.0, V3HeatFeasibility.heatingCreditWatts(input(List.of(
+                new V3PumparoundSpec(2, 4, -900.0, V3PumparoundSpec.Split.UNIFORM)))));
+        assertTrue(withoutHeater.contains("exceeds"), withoutHeater);
+        assertTrue(withoutHeater.endsWith("condenser outlet temperature"), withoutHeater);
+        assertTrue(withHeater.startsWith(withoutHeater), withHeater);
+        assertTrue(withHeater.contains("0.5000 MW of authored stage heating credited"), withHeater);
+        assertTrue(V3HeatFeasibility.condenserBoundDetail(2.0e6, -1.0e6, 0.0)
+                .endsWith("without stage heat; the overhead would vanish"));
+        assertTrue(V3HeatFeasibility.condenserBoundDetail(2.0e6, -1.0e6, 5.0e5)
+                .contains("0.5000 MW of authored stage heating credited"));
+    }
+
     @Test
     void resolverRejectsAPumparoundOutsideTheEquilibriumTrayRangeAndKeepsEveryDegreeOfFreedom() {
         V3ColumnProblem plain = V3ColumnProblemResolver.resolve(input(List.of()), V3CondenserPhaseBranch.TWO_PHASE);
