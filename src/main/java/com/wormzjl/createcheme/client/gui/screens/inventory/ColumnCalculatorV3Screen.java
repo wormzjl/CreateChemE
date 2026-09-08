@@ -695,9 +695,14 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         int dutiesY = CONTENT_TOP + 138;
         graphics.drawString(font, "Column duties", 10, dutiesY, TEXT, false);
         V3ColumnDisplayResult result = serverState == null ? null : serverState.displayResult().orElse(null);
-        if (result != null && draftEditedSinceState) {
-            String pill = "Input edited since run";
+        // A present result is not evidence that it belongs to the draft on screen: the block entity keeps the
+        // last accepted one through a calculating or failed rerun, and the local edit flag is cleared by the
+        // very state that acknowledges that rerun.
+        String provenance = result == null ? null
+                : V3ResultProvenance.provenancePill(serverState.status(), true, draftEditedSinceState);
+        if (provenance != null) {
             int pillX = 10 + font.width("Column duties") + 10;
+            String pill = abbreviateToWidth(provenance, Math.max(1, leftWidth + 10 - pillX - 8));
             graphics.fill(pillX, dutiesY - 2, pillX + font.width(pill) + 8, dutiesY + 10, TABLE_HEADER);
             graphics.drawString(font, pill, pillX + 4, dutiesY, NOTICE, false);
         }
@@ -828,8 +833,11 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private void renderCoolerBars(
             GuiGraphics graphics, List<DraftCooler> coolers, int stages, int ladderX, int top, int bottom,
             int labelX, int labelWidth) {
+        // Only a ledger that belongs to the draft on screen may label a cooler with its megawatts; a retained
+        // one would put an earlier input's summary beside the current draft's authored duties.
         boolean ledger = serverState != null && serverState.displayResult().isPresent()
-                && serverState.displayResult().orElseThrow().dutyLedger().isPresent() && !draftEditedSinceState;
+                && serverState.displayResult().orElseThrow().dutyLedger().isPresent()
+                && V3ResultProvenance.retainedResultMatchesInput(serverState.status(), true, draftEditedSinceState);
         for (int index = 0; index < coolers.size(); index++) {
             DraftCooler cooler = coolers.get(index);
             if (cooler.returnTray() > stages || cooler.drawTray() > stages) continue;
