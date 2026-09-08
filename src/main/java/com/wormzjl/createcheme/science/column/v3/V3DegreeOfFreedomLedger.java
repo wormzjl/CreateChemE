@@ -226,7 +226,7 @@ public final class V3DegreeOfFreedomLedger {
             }
             // Last in the node's block, so the contiguous stage layout gains exactly one unknown here and
             // exactly one row (the saturation equation) in the matching equation block.
-            if (wetTraySet.isWet(node)) {
+            if (wetTraySet.hasFreeWaterUnknown(node)) {
                 unknowns.add(new Unknown(new UnknownId(UnknownFamily.FREE_WATER_FLOW, node, -1)));
             }
         }
@@ -257,7 +257,7 @@ public final class V3DegreeOfFreedomLedger {
                 equations.add(new Equation(new EquationId(EquationFamily.ENERGY_BALANCE, node, -1),
                         energyReferences(topology, node, componentCount, activeUnknowns)));
             }
-            if (wetTraySet.isWet(node)) {
+            if (wetTraySet.hasFreeWaterUnknown(node)) {
                 equations.add(new Equation(new EquationId(EquationFamily.WATER_SATURATION, node, -1),
                         waterSaturationReferences(node, componentCount, activeUnknowns)));
             }

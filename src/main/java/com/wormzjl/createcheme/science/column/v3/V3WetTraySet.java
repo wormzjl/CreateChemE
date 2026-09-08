@@ -31,6 +31,14 @@ import java.util.Objects;
  * otherwise tri-block system and breaks the off-band guard of {@link V3BlockJacobianAssembler} and the banded
  * solver. A sump below its own water dew point is instead reported by the {@code WATER_DEW_POINT} audit exactly
  * as a dry tray is; in a crude column it cannot happen, because the sump is the hottest node of the column.</p>
+ *
+ * <p><strong>Two modes.</strong> A <em>solved</em> set carries {@code F_n} as an unknown and
+ * {@code SAT(n)} as a row: that is the shipped formulation and the one every certificate is taken on. A
+ * <em>parametric</em> set holds each wet tray's {@code F_n} at a frozen value instead, so the ledger keeps
+ * exactly the dry problem's unknowns and rows while the water balance, the equilibrium dilution and the
+ * energy rows all carry the free water. That is the sub-problem
+ * {@link V3FreeWaterContinuation} solves repeatedly while it hunts the free-water flows on which the
+ * saturation rows read zero; the mode never reaches a published result.</p>
  */
 final class V3WetTraySet {
     /** A dry tray becomes wet only when its saturation ratio clears one by more than this. */
@@ -42,9 +50,10 @@ final class V3WetTraySet {
 
     private final V3ColumnTopology topology;
     private final boolean[] wet;
+    private final double[] parametricFreeWater;
     private final int wetCount;
 
-    private V3WetTraySet(V3ColumnTopology topology, boolean[] wet) {
+    private V3WetTraySet(V3ColumnTopology topology, boolean[] wet, double[] parametricFreeWater) {
         this.topology = Objects.requireNonNull(topology, "topology");
         this.wet = wet.clone();
         if (this.wet.length != topology.nodeCount()) {
@@ -59,14 +68,44 @@ final class V3WetTraySet {
             count++;
         }
         this.wetCount = count;
+        if (parametricFreeWater == null) {
+            this.parametricFreeWater = null;
+            return;
+        }
+        this.parametricFreeWater = parametricFreeWater.clone();
+        if (this.parametricFreeWater.length != topology.nodeCount()) {
+            throw new IllegalArgumentException("V3 parametric free-water profile does not match the resolved topology");
+        }
+        for (int node = 0; node < this.parametricFreeWater.length; node++) {
+            double flow = this.parametricFreeWater[node];
+            if (!Double.isFinite(flow) || flow < 0.0 || (flow != 0.0 && !this.wet[node])) {
+                throw new IllegalArgumentException("V3 parametric free water must be finite, nonnegative and on a wet tray");
+            }
+        }
     }
 
     static V3WetTraySet dry(V3ColumnTopology topology) {
-        return new V3WetTraySet(topology, new boolean[topology.nodeCount()]);
+        return new V3WetTraySet(topology, new boolean[topology.nodeCount()], null);
     }
 
     static V3WetTraySet of(V3ColumnTopology topology, boolean[] wet) {
-        return new V3WetTraySet(topology, wet);
+        return new V3WetTraySet(topology, wet, null);
+    }
+
+    /**
+     * The same wet trays with their free water frozen at {@code freeWaterMolPerSecond} instead of solved.
+     *
+     * <p>The resolved ledger of a parametric set is the dry one: no {@code FREE_WATER_FLOW} unknown and no
+     * {@code WATER_SATURATION} row. Everything else — the state's water profile, the dilution term, the
+     * latent heat the free water carries between trays — reads exactly as it does on a solved set.</p>
+     */
+    static V3WetTraySet parametric(V3ColumnTopology topology, boolean[] wet, double[] freeWaterMolPerSecond) {
+        return new V3WetTraySet(topology, wet, Objects.requireNonNull(freeWaterMolPerSecond, "freeWaterMolPerSecond"));
+    }
+
+    /** The same wet trays with their free water back as unknowns, for the certifying solve. */
+    V3WetTraySet asSolved() {
+        return parametricFreeWater == null ? this : new V3WetTraySet(topology, wet, null);
     }
 
     V3ColumnTopology topology() {
@@ -75,6 +114,20 @@ final class V3WetTraySet {
 
     boolean isWet(int node) {
         return node >= 0 && node < wet.length && wet[node];
+    }
+
+    /** Whether the tray's free water is an unknown of the resolved ledger, rather than a frozen parameter. */
+    boolean hasFreeWaterUnknown(int node) {
+        return parametricFreeWater == null && isWet(node);
+    }
+
+    boolean isParametric() {
+        return parametricFreeWater != null;
+    }
+
+    /** The frozen free-water profile of a parametric set; zero everywhere on a solved one. */
+    double[] parametricFreeWaterFlows() {
+        return parametricFreeWater == null ? new double[topology.nodeCount()] : parametricFreeWater.clone();
     }
 
     boolean hasWetTrays() {
@@ -92,7 +145,8 @@ final class V3WetTraySet {
     }
 
     boolean sameSet(V3WetTraySet other) {
-        return other != null && topology.equals(other.topology) && Arrays.equals(wet, other.wet);
+        return other != null && topology.equals(other.topology) && Arrays.equals(wet, other.wet)
+                && (parametricFreeWater == null) == (other.parametricFreeWater == null);
     }
 
     /**
@@ -130,7 +184,7 @@ final class V3WetTraySet {
             wet[tray] = nowWet;
             carried = nowWet ? freeWaterSeed(saturation, water, solved, steamScale) : 0.0;
         }
-        return new V3WetTraySet(topology, wet);
+        return new V3WetTraySet(topology, wet, null);
     }
 
     /**
@@ -149,6 +203,11 @@ final class V3WetTraySet {
         }
         if (!hasWetTrays()) {
             return V3ColumnInitializer.withFreeWater(state, topology, new double[topology.nodeCount()]);
+        }
+        // A parametric set has no free-water unknown: the flows are the frozen parameters themselves, and the
+        // state exists only to carry them into the residual rows.
+        if (parametricFreeWater != null) {
+            return V3ColumnInitializer.withFreeWater(state, topology, parametricFreeWater.clone());
         }
         double steamScale = problem.freeWaterFlowScaleMolPerSecond();
         double[] freeWater = new double[topology.nodeCount()];
@@ -174,7 +233,7 @@ final class V3WetTraySet {
      * when water cannot condense there at all: outside the correlation envelope, or with a saturation
      * pressure at or above the node pressure, where no vapour composition is supersaturated.
      */
-    private static Saturation saturation(V3ColumnProblem problem, V3DryMeshState state, int node, double water) {
+    static Saturation saturation(V3ColumnProblem problem, V3DryMeshState state, int node, double water) {
         double temperature = state.temperatureKelvin(node);
         if (!(water > 0.0) || !Double.isFinite(water)
                 || temperature < V3WaterProperties.TRIPLE_POINT_KELVIN
@@ -227,5 +286,6 @@ final class V3WetTraySet {
         return "V3WetTraySet" + wetTrays();
     }
 
-    private record Saturation(double ratio, double saturatedWaterMolPerSecond) {}
+    /** A node's water saturation ratio and the water flow that would put its vapour exactly on the line. */
+    record Saturation(double ratio, double saturatedWaterMolPerSecond) {}
 }

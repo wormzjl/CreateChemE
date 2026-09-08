@@ -766,7 +766,31 @@ public final class V3ColumnCalculator {
             }
             if (!refreshed.wetTrays().sameSet(prepared.wetTrays())) {
                 wetTrayRefreshes++;
-                refreshed = withWetEnergyShift(refreshed, thermo, feedMolarEnthalpy, control, wetTrayEvents);
+                if (!refreshed.wetTrays().hasWetTrays()) {
+                    // A refresh that only takes trays away is an energy step like a heat rung, and the
+                    // predictor is what re-levels the profile for it.
+                    refreshed = withWetEnergyShift(refreshed, thermo, feedMolarEnthalpy, control, wetTrayEvents);
+                } else {
+                    // A refresh that admits one places its free water by continuation instead: the
+                    // simultaneous system cannot see past the energy plateau the free-water unknown creates,
+                    // while a parametric solve re-solves every energy row exactly at each step.
+                    PreparedAttempt continued = withFreeWaterContinuation(
+                            untruncated, thermo, feedMolarEnthalpy, refreshed, control, policy, wetTrayEvents);
+                    if (continued != null) {
+                        refreshed = continued;
+                    } else if (refreshed.support().sameRetention(prepared.support())) {
+                        // The derived wet set has no realisable free-water flow and nothing else moved. The
+                        // converged candidate this refresh came from is the answer the column has, and its
+                        // WATER_DEW_POINT check reports the supersaturated stage by name.
+                        break;
+                    } else {
+                        // The support still has to be refreshed, but a set the continuation has refused is
+                        // not derived again on this solve: it would cost the same solves for the same answer.
+                        wetTrayRefreshes = MAXIMUM_WET_TRAY_REFRESHES;
+                        refreshed = prepareAttempt(
+                                untruncated, thermo, attempt.state(), policy, prepared.wetTrays(), false);
+                    }
+                }
             }
             prepared = refreshed;
         }
@@ -777,8 +801,12 @@ public final class V3ColumnCalculator {
                     + (prepared.support().totalPointCount() - prepared.support().truncatedPointCount())
                     + "/" + prepared.support().totalPointCount()), events);
         }
+        // The wet-tray events are published even when the set was refused: why a supersaturated stage did
+        // not take a free-water phase is exactly what an operator reading a failed dew-point check needs.
         if (prepared.wetTrays().hasWetTrays()) {
             events = mergedEvents(mergedEvents(List.of(prepared.wetTrays().event(attempt.state())), wetTrayEvents), events);
+        } else if (!wetTrayEvents.isEmpty()) {
+            events = mergedEvents(wetTrayEvents, events);
         }
         if (policy.attemptCutoff() > 0.0) events = mergedEvents(List.of(flashTraceEvent(feedFlash)), events);
         if (!prepared.support().note().isEmpty()) {
@@ -1108,6 +1136,35 @@ public final class V3ColumnCalculator {
         if (!prediction.applied()) return prepared;
         return new PreparedAttempt(prepared.problem(), prepared.support(), prepared.wetTrays(),
                 prediction.applyTo(prepared.seed(), prepared.problem().topology()));
+    }
+
+    /**
+     * Places the free water by continuation before the simultaneous wet system is asked to certify it.
+     *
+     * <p>Returns null when there is nothing to continue or the continuation declined, in which case the
+     * caller keeps the existing path. On success the attempt is rebuilt around the set the continuation
+     * ended on — which may be deeper than the refresh derived, because a parametric tray costs no ledger
+     * change and the continuation may therefore admit the trays the falling water wets. The seed it returns
+     * satisfies every row of the wet system already, so the certifying Newton starts inside its own
+     * tolerance. See {@link V3FreeWaterContinuation}.</p>
+     */
+    private static PreparedAttempt withFreeWaterContinuation(
+            V3ColumnProblem untruncated, V3PengRobinsonThermo thermo, double feedMolarEnthalpyJoulesPerMol,
+            PreparedAttempt prepared, V3SolveControl control, SolvePolicy policy, List<String> events) {
+        if (!prepared.wetTrays().hasWetTrays()) return null;
+        V3FreeWaterContinuation.Result result = V3FreeWaterContinuation.run(untruncated, prepared.support(),
+                prepared.wetTrays(), prepared.seed(), thermo, feedMolarEnthalpyJoulesPerMol,
+                policy.closureTolerance(), control);
+        if (events.size() < V3SolverDiagnostics.MAX_EVENTS) events.add(bounded(result.event()));
+        if (!result.converged()) return null;
+        V3ColumnProblem problem;
+        try {
+            problem = V3ColumnProblemResolver.withTruncation(untruncated, prepared.support(), result.wetTrays());
+        } catch (IllegalArgumentException invalidLedger) {
+            return null;
+        }
+        return new PreparedAttempt(problem, prepared.support(), result.wetTrays(),
+                result.wetTrays().seed(problem, result.state()));
     }
 
     private static String bounded(String event) {

@@ -22,7 +22,7 @@ final class V3StageBlockLayout {
             int expected = topology.hasTemperatureUnknown(node) ? 1 : 0;
             // A wet tray adds exactly one unknown (its free water) and exactly one row (its saturation
             // equation), so the block stays square and the node-contiguous layout is unchanged.
-            if (problem.isWetTray(node)) expected++;
+            if (problem.hasFreeWaterUnknown(node)) expected++;
             for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
                 if (problem.hasVaporUnknown(node, component)) expected++;
                 if (problem.hasLiquidUnknown(node, component)) expected++;
@@ -65,7 +65,7 @@ final class V3StageBlockLayout {
         }
         boolean foundFreeWater = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
                 == V3DegreeOfFreedomLedger.UnknownFamily.FREE_WATER_FLOW);
-        if (foundFreeWater != problem.isWetTray(node)) {
+        if (foundFreeWater != problem.hasFreeWaterUnknown(node)) {
             throw new IllegalArgumentException("V3 MESH unknown ledger disagrees with the free-water tray set");
         }
     }
@@ -93,7 +93,7 @@ final class V3StageBlockLayout {
         }
         boolean foundSaturation = equations.subList(start, start + size).stream().anyMatch(equation -> equation.id().family()
                 == V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION);
-        if (foundSaturation != problem.isWetTray(node)) {
+        if (foundSaturation != problem.hasFreeWaterUnknown(node)) {
             throw new IllegalArgumentException("V3 MESH equation ledger disagrees with the free-water tray set");
         }
     }

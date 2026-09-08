@@ -151,7 +151,7 @@ final class V3BlockJacobianAssembler {
         if (!problem.hasWetTrays()) return;
         List<V3MeshResidual.Row> rows = baseResidual.rows();
         for (int source = 1; source <= problem.topology().trayCount(); source++) {
-            if (!problem.isWetTray(source)) continue;
+            if (!problem.hasFreeWaterUnknown(source)) continue;
             Integer column = coordinateIndexes.get(new V3DegreeOfFreedomLedger.UnknownId(
                     V3DegreeOfFreedomLedger.UnknownFamily.FREE_WATER_FLOW, source, -1));
             if (column == null) continue;

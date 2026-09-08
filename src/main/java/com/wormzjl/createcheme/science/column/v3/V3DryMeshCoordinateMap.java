@@ -9,6 +9,7 @@ final class V3DryMeshCoordinateMap {
     private final List<V3DegreeOfFreedomLedger.Unknown> unknowns;
     private final double[] componentFlowScales;
     private final double freeWaterFlowScale;
+    private final double[] parametricFreeWaterFlows;
     private final double condenserTemperatureKelvin;
 
     V3DryMeshCoordinateMap(V3ColumnProblem problem) {
@@ -20,6 +21,9 @@ final class V3DryMeshCoordinateMap {
             componentFlowScales[component] = problem.activeComponentBasis().flowScale(component);
         }
         this.freeWaterFlowScale = problem.freeWaterFlowScaleMolPerSecond();
+        // A parametric wet set has no free-water coordinate, so its frozen flows have to be restored by the
+        // decode: they are part of the problem, not of the Newton vector.
+        this.parametricFreeWaterFlows = problem.wetTraySet().parametricFreeWaterFlows();
         this.condenserTemperatureKelvin = specification(V3ColumnSpecification.CondenserOutletTemperature.class).kelvin();
     }
 
@@ -60,7 +64,7 @@ final class V3DryMeshCoordinateMap {
         double[][] liquid = new double[nodes][components];
         double[][] vapor = new double[nodes][components];
         double[] temperatures = new double[nodes];
-        double[] freeWater = new double[nodes];
+        double[] freeWater = parametricFreeWaterFlows.clone();
         temperatures[problem.topology().condenserNode()] = condenserTemperatureKelvin;
         for (int index = 0; index < coordinates.length; index++) {
             double coordinate = coordinates[index];

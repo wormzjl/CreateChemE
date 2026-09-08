@@ -175,6 +175,17 @@ public final class V3ColumnProblem {
         return wetTraySet.isWet(node);
     }
 
+    /**
+     * Whether this wet tray's free water is an unknown of the resolved ledger.
+     *
+     * <p>False on every tray of a <em>parametric</em> wet set, whose free water is frozen at a value the
+     * continuation chose: such a tray carries free water in the water balance, the dilution term and the
+     * energy rows exactly as a solved one does, but contributes neither an unknown nor a saturation row.</p>
+     */
+    boolean hasFreeWaterUnknown(int node) {
+        return wetTraySet.hasFreeWaterUnknown(node);
+    }
+
     /** Log-flow scale of a free-water unknown: the total authored steam, or one on a dry column. */
     double freeWaterFlowScaleMolPerSecond() {
         return freeWaterFlowScaleMolPerSecond;

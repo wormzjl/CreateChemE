@@ -181,6 +181,71 @@ class V3FreeWaterTrayTest {
                 == V3DegreeOfFreedomLedger.UnknownFamily.FREE_WATER_FLOW));
     }
 
+    /**
+     * A parametric wet set is the dry ledger plus a known water flow: no unknown, no row, same blocks.
+     *
+     * <p>This is the sub-problem {@link V3FreeWaterContinuation} solves. The free water still has to reach
+     * every row that reads it, and it is no longer in the Newton vector, so the coordinate map has to put it
+     * back on decode — without that a single Newton step would silently dry the tray out.</p>
+     */
+    @Test
+    void aParametricWetTrayCarriesItsFreeWaterThroughTheRowsWithoutAnUnknownOrASaturationRow() {
+        V3ColumnProblem dry = dryProblem();
+        V3ColumnProblem parametric = parametricProblem(1, 1.5);
+
+        assertTrue(parametric.isWetTray(1));
+        assertFalse(parametric.hasFreeWaterUnknown(1));
+        assertEquals(dry.degreeOfFreedomLedger().unknownCount(), parametric.degreeOfFreedomLedger().unknownCount());
+        assertEquals(dry.degreeOfFreedomLedger().equationCount(), parametric.degreeOfFreedomLedger().equationCount());
+        assertTrue(parametric.degreeOfFreedomLedger().hasFullStructuralRank());
+        assertTrue(parametric.degreeOfFreedomLedger().unknowns().stream().noneMatch(unknown -> unknown.id().family()
+                == V3DegreeOfFreedomLedger.UnknownFamily.FREE_WATER_FLOW));
+        assertTrue(parametric.degreeOfFreedomLedger().equations().stream().noneMatch(equation -> equation.id().family()
+                == V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION));
+        for (int node = 0; node < parametric.topology().nodeCount(); node++) {
+            assertEquals(new V3StageBlockLayout(dry).size(node), new V3StageBlockLayout(parametric).size(node));
+        }
+
+        // Seeding writes the parameter, and a coordinate round trip has to preserve it.
+        V3DryMeshState seeded = parametric.wetTraySet().seed(parametric, state(parametric.topology()));
+        assertEquals(1.5, seeded.freeWaterFlow(1), 1.0e-12);
+        V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(parametric);
+        assertEquals(1.5, coordinates.decode(coordinates.encode(seeded)).freeWaterFlow(1), 1.0e-12);
+
+        // The tray below sees the latent heat of the frozen flow exactly as it sees a solved one.
+        V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(parametric, new AffineEnthalpyThermo(), 0.0);
+        V3DryMeshState empty = V3ColumnInitializer.withFreeWater(seeded, parametric.topology(), freeWaterProfile(parametric, 0.0));
+        assertTrue(Math.abs(energy(evaluator, seeded, 2) - energy(evaluator, empty, 2)) > 1.0,
+                "the frozen free water reaches the tray below's energy row");
+    }
+
+    /**
+     * The water rising out of a tray does not contain that tray's own free water, at any flow.
+     *
+     * <p>The tray water balance telescopes ({@link V3WetTraySet}), so {@code W_n} is the authored steam
+     * profile plus the free water of the tray <em>above</em>. On the topmost tray of a wet block there is no
+     * tray above, so {@code W_n} is the authored profile exactly and the saturation row it carries can only
+     * be moved by that tray's temperature and hydrocarbon vapour — never by its own free water. Measured on
+     * the literature CDU, the residual sensitivity that leaves is about 1e-9 per kmol/h, eight orders short
+     * of what closing the row would need, which is why {@link V3FreeWaterContinuation} refuses such a set
+     * instead of hunting a root that does not exist.</p>
+     */
+    @Test
+    void aTraysOwnFreeWaterNeverChangesTheWaterRisingOutOfIt() {
+        V3ColumnProblem problem = wetProblem(1);
+        V3DryMeshState base = saturatedState(problem);
+        double authored = problem.waterVaporFlowMolPerSecond(1);
+
+        for (double flow : new double[] {1.0e-9, 0.5, 1.5, 4.0, 40.0}) {
+            V3DryMeshState state = V3ColumnInitializer.withFreeWater(
+                    base, problem.topology(), freeWaterProfile(problem, flow));
+            assertEquals(authored, problem.waterVaporFlow(state, 1), 0.0,
+                    "the top tray of a wet block carries the whole authored steam whatever it sheds");
+            assertEquals(authored + flow, problem.waterVaporFlow(state, 2), 1.0e-12,
+                    "and the tray below is exactly what its free water controls");
+        }
+    }
+
     private static double energy(V3MeshResidualEvaluator evaluator, V3DryMeshState state, int node) {
         return evaluator.evaluate(state, new com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace(2))
                 .rows().stream()
@@ -231,6 +296,16 @@ class V3FreeWaterTrayTest {
                         new V3ColumnSpecification.ReboilerDuty(0.0)), List.of(),
                 List.of(new V3SteamFeedSpec(4, STEAM_MOL_PER_SECOND, 520.0))),
                 V3CondenserPhaseBranch.TWO_PHASE);
+    }
+
+    private static V3ColumnProblem parametricProblem(int tray, double freeWaterMolPerSecond) {
+        V3ColumnProblem dry = dryProblem();
+        boolean[] wet = new boolean[dry.topology().nodeCount()];
+        wet[tray] = true;
+        double[] flows = new double[dry.topology().nodeCount()];
+        flows[tray] = freeWaterMolPerSecond;
+        return V3ColumnProblemResolver.withTruncation(dry, dry.truncationSupport(),
+                V3WetTraySet.parametric(dry.topology(), wet, flows));
     }
 
     private static V3ColumnProblem wetProblem(int tray) {

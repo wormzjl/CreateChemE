@@ -67,21 +67,25 @@ class V3LiteraturePresetTest {
     }
 
     /**
-     * The published 12.84 MW top cooler admits a free-water tray, and its water balance closes on the
-     * candidate, but the wet column does not yet converge.
+     * At the published 12.84 MW top cooler tray one is below the water dew point and no free-water phase can
+     * lift it, so the column converges and the audit says so by name.
      *
-     * <p>This is the one gate of the free-water work that is not met, and the assertion states exactly that
-     * rather than hiding it. Measured: the dry stage of the rung converges to 5.0e-14 with tray one at
-     * 83.1 C and a saturation ratio of 1.162; the refresh admits tray one with 213 kmol/h of free water; the
-     * wet solve drives the residual from 1.50e-1 to 7.81e-4 in five iterations and then finds no
-     * Armijo-reducing step, with every tray energy row short by the same 57.6 kW. The Jacobian is not the
-     * cause — it agrees with the coloured finite-difference oracle to 1.5e-9 on that very state — the
-     * remaining direction is near-null. See {@code documentation/V3_FREE_WATER_TRAYS_REVIEW.md} section 5.
-     * The preset itself keeps the halved top cooler and stays above the dew point, so nothing shipped
+     * <p>The tray water balance telescopes, so the water rising out of tray one is the whole authored steam
+     * whatever that tray sheds; its saturation can therefore only move through its own temperature and
+     * hydrocarbon vapour, and both are invariant along the free-water exchange cycle with tray two. Measured
+     * by parametric continuation on this very column: holding tray one's free water at 0, 100, 200, 400, 800
+     * and 1600 kmol/h and converging every other row each time leaves {@code ln(ratio)} at
+     * 0.149743 -> 0.149685 and the tray at 83.073 C, a sensitivity of about 1.6e-9 per kmol/h against the
+     * 0.1497 that would have to be closed. The continuation refuses the set after two parametric solves and
+     * publishes what it measured; the solve keeps its converged dry candidate, which is a strictly better
+     * answer than the 7.8e-4 stall this case used to end on. See
+     * {@code documentation/V3_FREE_WATER_CONTINUATION_REVIEW.md}.</p>
+     *
+     * <p>The preset itself keeps the halved top cooler and stays above the dew point, so nothing shipped
      * depends on this case.</p>
      */
     @Test
-    void thePublishedTopCoolerDutyAdmitsAFreeWaterTrayAndClosesItsWaterBalanceWithoutConvergingYet() {
+    void thePublishedTopCoolerDutyConvergesWithTrayOneReportedBelowTheWaterDewPoint() {
         // The source duties as published: without the side-stripper reboiler heat the top lands below the dew point.
         V3ColumnInput preset = ColumnCalculatorV3BlockEntity.literatureCduInput();
         V3ColumnInput fullDuties = new V3ColumnInput(preset.schemaVersion(), preset.packageId(), preset.assayId(),
@@ -93,12 +97,24 @@ class V3LiteraturePresetTest {
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(fullDuties, () -> {}, 0.0);
 
         V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
-        assertEquals(V3SolverFailureCode.NONCONVERGENCE, failure.code(), failure.summary());
+        assertEquals(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE, failure.code(), failure.summary());
         assertNotNull(outcome.diagnostics().acceptanceAudit(), outcome::toString);
-        assertTrue(outcome.diagnostics().acceptanceAudit().advisoryEvidence().stream()
-                .anyMatch(advisory -> advisory.startsWith("wet trays: [1")), "the top tray carries free water");
-        // The water contract holds even on a candidate the solver could not finish: every mole of steam fed
-        // is accounted for as overhead vapour, decanted free water or bottoms free water.
+        // The candidate is a solved column, not a stalled iterate: it carries a verified final Newton
+        // correction and every check except the dew point passes on a fresh recomputation.
+        assertTrue(outcome.diagnostics().maximumScaledResidual() < 1.0e-10, outcome::toString);
+        assertTrue(outcome.diagnostics().acceptanceAudit().checks().stream()
+                .filter(check -> !check.passed())
+                .allMatch(check -> check.family().equals("WATER_DEW_POINT")), outcome::toString);
+        V3AcceptanceAudit.Check dewPoint = outcome.diagnostics().acceptanceAudit().checks().stream()
+                .filter(check -> check.family().equals("WATER_DEW_POINT")).findFirst().orElseThrow();
+        assertEquals(1.162, dewPoint.value(), 0.02, dewPoint.detail());
+        assertTrue(dewPoint.detail().startsWith("tray 1 "), dewPoint.detail());
+        // The continuation states, in the units it measured, why no free-water phase was admitted.
+        assertTrue(outcome.diagnostics().events().stream()
+                .anyMatch(event -> event.contains("free-water continuation declined")
+                        && event.contains("tray 1 cannot be saturated by any free-water flow")),
+                () -> String.join(" | ", outcome.diagnostics().events()));
+        // The water contract holds: every mole of steam fed is accounted for at the boundary.
         assertTrue(outcome.diagnostics().acceptanceAudit().checks().stream()
                 .anyMatch(check -> check.family().equals("WATER_BALANCE") && check.passed()));
     }

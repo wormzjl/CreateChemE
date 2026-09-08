@@ -102,7 +102,8 @@ final class V3MeshResidualEvaluator {
         double liquidEnergy = problem.topology().hasLiquidPhase(node)
                 ? phaseEnergy(state, node, true, properties) : 0.0;
         double vaporEnergy = phaseEnergy(state, node, false, properties);
-        double saturation = problem.isWetTray(node) ? waterSaturationResidual(state, node, properties) : Double.NaN;
+        double saturation = problem.hasFreeWaterUnknown(node)
+                ? waterSaturationResidual(state, node, properties) : Double.NaN;
         return new LocalNodeTerms(equilibrium, liquidEnergy, vaporEnergy, freeWaterEnergy(state, node), saturation);
     }
 
