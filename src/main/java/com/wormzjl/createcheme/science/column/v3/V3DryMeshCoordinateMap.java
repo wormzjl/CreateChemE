@@ -80,6 +80,38 @@ final class V3DryMeshCoordinateMap {
         return new V3DryMeshState(problem.topology(), components, liquid, vapor, temperatures, freeWater);
     }
 
+    /**
+     * What {@link #decode} returns for {@code baseCoordinates} with one entry moved by {@code signedStep},
+     * decoded from an already decoded base instead of from the whole vector again.
+     *
+     * <p>A finite-difference probe changes exactly one coordinate, and {@link #decode} is a coordinate-wise
+     * map: every other entry goes through the very same {@code scale * exp(z)} of the very same {@code z} and
+     * so lands on the very same bits it already has in {@code decodedBase}. Only the moved entry has to be
+     * decoded, and — because a base that decodes has already cleared every check the untouched entries could
+     * fail — only the checks that entry can fail have to be repeated, which is why this throws where
+     * {@link #decode} would and a probe still reads the failure as an inadmissible perturbation.</p>
+     *
+     * <p>{@code decodedBase} must be {@code decode(baseCoordinates)}; a caller whose base vector does not
+     * decode has no such state and has to keep using {@link #decode}.</p>
+     */
+    V3DryMeshState decodePerturbed(
+            V3DryMeshState decodedBase, double[] baseCoordinates, int column, double signedStep) {
+        decodedBase = Objects.requireNonNull(decodedBase, "decodedBase");
+        baseCoordinates = Objects.requireNonNull(baseCoordinates, "baseCoordinates");
+        if (baseCoordinates.length != coordinateCount()) throw new IllegalArgumentException("V3 MESH coordinate length is invalid");
+        double coordinate = baseCoordinates[column] + signedStep;
+        if (!Double.isFinite(coordinate)) throw new IllegalArgumentException("V3 MESH coordinates must be finite");
+        V3DegreeOfFreedomLedger.UnknownId id = unknowns.get(column).id();
+        return switch (id.family()) {
+            case LIQUID_COMPONENT_FLOW ->
+                    decodedBase.withLiquidFlow(id.node(), id.component(), flow(coordinate, id.component()));
+            case VAPOR_COMPONENT_FLOW ->
+                    decodedBase.withVaporFlow(id.node(), id.component(), flow(coordinate, id.component()));
+            case TEMPERATURE -> decodedBase.withTemperatureKelvin(id.node(), coordinate);
+            case FREE_WATER_FLOW -> decodedBase.withFreeWaterFlow(id.node(), freeWaterFlow(coordinate));
+        };
+    }
+
     private double logFlow(double flow, int component) {
         if (!Double.isFinite(flow) || flow <= 0.0) {
             throw new IllegalArgumentException("V3 MESH active flow must be positive before entering log coordinates");

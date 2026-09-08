@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,12 @@ final class V3BlockJacobianAssembler {
      * <p>Component-material derivatives are exact in the log-flow coordinates. VLE and energy derivatives use a
      * one-sided local PR probe at the changed node, reusing its base local terms for every column. The full coloured
      * finite-difference assembler above remains the independent verification/fallback oracle.</p>
+     *
+     * <p>One decoded base state and one thermodynamic workspace serve the whole assembly. Both are shared
+     * rather than rebuilt per probe because a probe cannot observe the difference: it moves one coordinate, so
+     * every other entry of its state decodes to the bits the base already holds, and the workspace it writes
+     * through carries nothing between calls but a temperature-keyed cache of pure functions of that
+     * temperature, which every evaluation either hits on the exact same bits or refills.</p>
      */
     static V3BlockJacobian assembleLocal(
             V3ColumnProblem problem,
@@ -64,7 +71,9 @@ final class V3BlockJacobianAssembler {
         control = Objects.requireNonNull(control, "control");
         V3StageBlockLayout layout = new V3StageBlockLayout(problem);
         double[] baseCoordinates = coordinates.encode(state);
-        V3MeshResidual baseResidual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
+        V3DryMeshState decodedBase = decodedBaseOrNull(coordinates, baseCoordinates);
+        V3ThermoWorkspace workspace = workspaceFactory.newWorkspace();
+        V3MeshResidual baseResidual = evaluator.evaluate(state, workspace);
         if (baseCoordinates.length != baseResidual.rows().size()) {
             throw new IllegalArgumentException("V3 local block Jacobian requires a square residual/coordinate map");
         }
@@ -81,14 +90,14 @@ final class V3BlockJacobianAssembler {
         V3MeshResidualEvaluator.LocalNodeTerms[] baseTerms = new V3MeshResidualEvaluator.LocalNodeTerms[layout.nodeCount()];
         for (int node = 0; node < baseTerms.length; node++) {
             control.checkpoint();
-            baseTerms[node] = evaluator.localTerms(state, node, workspaceFactory.newWorkspace());
+            baseTerms[node] = evaluator.localTerms(state, node, workspace);
         }
         for (int node = 0; node < layout.nodeCount(); node++) {
             for (int column = layout.start(node); column < layout.start(node) + layout.size(node); column++) {
                 control.checkpoint();
                 V3DegreeOfFreedomLedger.UnknownId unknown = coordinates.unknowns().get(column).id();
-                LocalProbe probe = localProbe(evaluator, coordinates, baseCoordinates, column, unknown.node(),
-                        workspaceFactory, differenceScale, control);
+                LocalProbe probe = localProbe(evaluator, coordinates, decodedBase, baseCoordinates, column,
+                        unknown.node(), workspace, differenceScale, control);
                 assembleLocalThermodynamicColumn(problem, state, unknown, baseResidual, equationIndexes, layout,
                         lower, diagonal, upper, node, column, baseTerms[node], probe);
             }
@@ -316,21 +325,38 @@ final class V3BlockJacobianAssembler {
         addGlobal(layout, lower, diagonal, upper, rowIndex, column, coefficient * flow / row.scale());
     }
 
+    /**
+     * The one decoded state every probe of this assembly shares, or {@code null} when the base does not decode.
+     *
+     * <p>Each probe needs the state that differs from this one in a single entry, so decoding the base once
+     * replaces one whole-column decode per probe with a single-entry one. The null is the honest answer for a
+     * base vector that has no decoded state at all: those assemblies keep decoding each candidate in full, so
+     * a probe that would have been admissible on its own still is.</p>
+     */
+    private static V3DryMeshState decodedBaseOrNull(V3DryMeshCoordinateMap coordinates, double[] baseCoordinates) {
+        try {
+            return coordinates.decode(baseCoordinates);
+        } catch (IllegalArgumentException undecodable) {
+            return null;
+        }
+    }
+
     private static LocalProbe localProbe(
             V3MeshResidualEvaluator evaluator,
             V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState decodedBase,
             double[] baseCoordinates,
             int column,
             int node,
-            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3ThermoWorkspace workspace,
             V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
             V3SolveControl control) {
         double step = V3FiniteDifferenceJacobian.step(
                 baseCoordinates[column], coordinates.unknowns().get(column).id().family(), differenceScale);
         V3MeshResidualEvaluator.LocalNodeTerms higher = localTermsOrNull(
-                evaluator, coordinates, baseCoordinates, column, node, step, workspaceFactory, control);
+                evaluator, coordinates, decodedBase, baseCoordinates, column, node, step, workspace, control);
         V3MeshResidualEvaluator.LocalNodeTerms lower = localTermsOrNull(
-                evaluator, coordinates, baseCoordinates, column, node, -step, workspaceFactory, control);
+                evaluator, coordinates, decodedBase, baseCoordinates, column, node, -step, workspace, control);
         if (higher == null && lower == null) {
             throw new IllegalArgumentException("V3 local block Jacobian has no admissible thermodynamic probe");
         }
@@ -340,20 +366,34 @@ final class V3BlockJacobianAssembler {
     private static V3MeshResidualEvaluator.LocalNodeTerms localTermsOrNull(
             V3MeshResidualEvaluator evaluator,
             V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState decodedBase,
             double[] baseCoordinates,
             int column,
             int node,
             double signedStep,
-            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3ThermoWorkspace workspace,
             V3SolveControl control) {
         try {
-            double[] candidate = baseCoordinates.clone();
-            candidate[column] += signedStep;
             control.checkpoint();
-            return evaluator.localTerms(coordinates.decode(candidate), node, workspaceFactory.newWorkspace());
+            return evaluator.localTerms(perturbedState(coordinates, decodedBase, baseCoordinates, column, signedStep),
+                    node, workspace);
         } catch (IllegalArgumentException | V3ThermoException unavailable) {
             return null;
         }
+    }
+
+    private static V3DryMeshState perturbedState(
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState decodedBase,
+            double[] baseCoordinates,
+            int column,
+            double signedStep) {
+        if (decodedBase != null) {
+            return coordinates.decodePerturbed(decodedBase, baseCoordinates, column, signedStep);
+        }
+        double[] candidate = baseCoordinates.clone();
+        candidate[column] += signedStep;
+        return coordinates.decode(candidate);
     }
 
     private static void assembleLocalThermodynamicColumn(
