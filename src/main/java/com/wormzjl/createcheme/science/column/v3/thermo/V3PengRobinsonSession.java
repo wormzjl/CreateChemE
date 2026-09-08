@@ -72,6 +72,22 @@ final class V3PengRobinsonSession {
         }
     }
 
+    /** Differentiates the same evaluation {@link #evaluate} performs, with the same failure classification. */
+    void evaluateDerivatives(
+            double temperatureKelvin, double pressurePascal, double[] composition, V3Phase phase, Session session) {
+        try {
+            kernel.evaluateDerivatives(temperatureKelvin, pressurePascal, composition,
+                    phase == V3Phase.LIQUID ? V3PengRobinsonKernel.Root.LIQUID : V3PengRobinsonKernel.Root.VAPOR,
+                    session.workspace, session.derivatives(phase));
+        } catch (IllegalArgumentException exception) {
+            throw new V3ThermoException(V3ThermoException.Code.DOMAIN, phase,
+                    "V3 Peng-Robinson derivative input is outside the property domain", exception);
+        } catch (IllegalStateException exception) {
+            throw new V3ThermoException(V3ThermoException.Code.EOS_ROOT_FAILURE, phase,
+                    "V3 Peng-Robinson could not differentiate a physical phase root", exception);
+        }
+    }
+
     double idealGasMolarEnthalpy(double temperatureKelvin, double[] normalizedComposition) {
         if (normalizedComposition.length != componentCount()) throw new IllegalArgumentException("V3 composition dimension differs");
         double enthalpy = 0.0;
@@ -82,12 +98,32 @@ final class V3PengRobinsonSession {
         return enthalpy;
     }
 
+    /** Mixture ideal-gas heat capacity in J/(mol K); the ideal-gas half of a phase heat capacity. */
+    double idealGasMolarHeatCapacity(double temperatureKelvin, double[] normalizedComposition) {
+        if (normalizedComposition.length != componentCount()) throw new IllegalArgumentException("V3 composition dimension differs");
+        double capacity = 0.0;
+        for (int component = 0; component < componentCount(); component++) {
+            capacity += normalizedComposition[component]
+                    * propertyPackage.component(component).idealGasHeatCapacity(temperatureKelvin);
+        }
+        return capacity;
+    }
+
+    /** Pure-component ideal-gas enthalpy about the shared datum; the ideal-gas half of a partial molar one. */
+    double componentIdealGasEnthalpy(int publicComponent, double temperatureKelvin) {
+        return propertyPackage.component(publicComponent).idealGasEnthalpy(temperatureKelvin);
+    }
+
     static final class Session {
         private final V3PengRobinsonKernel.Workspace workspace;
         private final V3PengRobinsonKernel.Evaluation liquid;
         private final V3PengRobinsonKernel.Evaluation vapor;
+        private V3PengRobinsonKernel.Derivatives liquidDerivatives;
+        private V3PengRobinsonKernel.Derivatives vaporDerivatives;
+        private final V3PengRobinsonKernel kernel;
 
         private Session(V3PengRobinsonKernel kernel) {
+            this.kernel = kernel;
             workspace = kernel.newWorkspace();
             liquid = kernel.newEvaluation();
             vapor = kernel.newEvaluation();
@@ -95,6 +131,20 @@ final class V3PengRobinsonSession {
 
         private V3PengRobinsonKernel.Evaluation evaluation(V3Phase phase) {
             return phase == V3Phase.LIQUID ? liquid : vapor;
+        }
+
+        /** Allocated on first use: a solve that never asks for derivatives never pays for their storage. */
+        private V3PengRobinsonKernel.Derivatives derivatives(V3Phase phase) {
+            if (phase == V3Phase.LIQUID) {
+                if (liquidDerivatives == null) liquidDerivatives = kernel.newDerivatives();
+                return liquidDerivatives;
+            }
+            if (vaporDerivatives == null) vaporDerivatives = kernel.newDerivatives();
+            return vaporDerivatives;
+        }
+
+        V3PengRobinsonKernel.Derivatives derivativesOf(V3Phase phase) {
+            return derivatives(phase);
         }
 
         double logFugacityCoefficient(V3Phase phase, int component) {

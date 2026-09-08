@@ -1,7 +1,9 @@
 package com.wormzjl.createcheme.science.column.v3;
 
+import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityDerivatives;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FugacityResult;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
+import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoDerivatives;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
@@ -105,6 +107,165 @@ final class V3MeshResidualEvaluator {
         double saturation = problem.hasFreeWaterUnknown(node)
                 ? waterSaturationResidual(state, node, properties) : Double.NaN;
         return new LocalNodeTerms(equilibrium, liquidEnergy, vaporEnergy, freeWaterEnergy(state, node), saturation);
+    }
+
+    /** Whether the injected property model can differentiate itself, so {@link #localDerivatives} exists. */
+    boolean providesLocalDerivatives() {
+        return thermo instanceof V3ThermoDerivatives;
+    }
+
+    /**
+     * The derivatives of exactly the quantities {@link LocalNodeTerms} carries, with respect to one node's own
+     * unknowns, in the solver's coordinates.
+     *
+     * <p>This is the analytic replacement for differencing {@link #localTerms} column by column, and it is
+     * written here rather than in the assembler because the chain rules are properties of the rows above, not
+     * of the linear algebra below: change a row and the derivative that has to change sits next to it.</p>
+     *
+     * <p>Two rules govern everything below. First, the flow unknowns are logarithmic, so the derivative of a
+     * quantity with respect to a coordinate whose flow is {@code n_j} is {@code n_j} times the derivative with
+     * respect to {@code n_j} itself; that single factor is what turns a partial molar quantity into a
+     * coordinate derivative. Second, a phase composition is normalised, so a flow appears twice in every
+     * composition it belongs to — once in its own mole fraction and once in the total — which is where the
+     * {@code -y_j} and {@code +x_j} terms come from and why the rows of the resulting matrices sum the way
+     * Gibbs--Duhem says they must.</p>
+     *
+     * <p>The water a node's vapour carries is not one of that node's unknowns anywhere except the condenser,
+     * whose regime can make it a capped multiple of the overhead hydrocarbon vapour; on every tray it is the
+     * authored steam plus the free water of the tray above, and that cross-node coupling is written in closed
+     * form by the assembler instead.</p>
+     */
+    LocalNodeDerivatives localDerivatives(V3DryMeshState state, int node, V3ThermoWorkspace workspace) {
+        state = Objects.requireNonNull(state, "state");
+        workspace = Objects.requireNonNull(workspace, "workspace");
+        if (!(thermo instanceof V3ThermoDerivatives differentiable)) {
+            throw new IllegalArgumentException("V3 local MESH derivatives need a differentiable property model");
+        }
+        if (state.nodeCount() != problem.topology().nodeCount()
+                || state.componentCount() != activeComponentBasis.componentCount()
+                || node < problem.topology().condenserNode() || node > problem.topology().reboilerNode()) {
+            throw new IllegalArgumentException("V3 local MESH derivative evaluation does not match its problem");
+        }
+        V3ColumnTopology topology = problem.topology();
+        int components = state.componentCount();
+        double temperature = state.temperatureKelvin(node);
+        double pressure = problem.nodePressurePascal(node);
+        double vaporTotal = topology.hasVaporPhase(node) ? phaseTotal(state, node, false) : 0.0;
+        double liquidTotal = topology.hasLiquidPhase(node) ? phaseTotal(state, node, true) : 0.0;
+        double[] vaporComposition = null;
+        V3FugacityDerivatives vapor = null;
+        if (topology.hasVaporPhase(node)) {
+            vaporComposition = normalizedPublicPhaseComposition(state, node, false);
+            vapor = differentiable.fugacityDerivatives(temperature, pressure, vaporComposition, V3Phase.VAPOR, workspace);
+        }
+        double[] liquidComposition = null;
+        V3FugacityDerivatives liquid = null;
+        if (topology.hasLiquidPhase(node)) {
+            liquidComposition = normalizedPublicPhaseComposition(state, node, true);
+            liquid = differentiable.fugacityDerivatives(temperature, pressure, liquidComposition, V3Phase.LIQUID, workspace);
+        }
+        double water = problem.hasSteamFeeds() ? waterVaporFlow(state, node) : 0.0;
+        double[] waterByVaporFlow = condenserWaterByVaporFlow(state, node, vaporTotal);
+        // One dilution term serves every equilibrium row of the node: it is the same log-composition shift for
+        // each component, because water dilutes the whole hydrocarbon vapour and not one part of it.
+        double[] dilutionByVaporFlow = new double[components];
+        if (water != 0.0) {
+            for (int j = 0; j < components; j++) {
+                double flow = state.vaporFlow(node, j);
+                dilutionByVaporFlow[j] = flow / vaporTotal - (flow + waterByVaporFlow[j]) / (vaporTotal + water);
+            }
+        }
+
+        double[][] equilibriumByLiquidFlow = new double[components][components];
+        double[][] equilibriumByVaporFlow = new double[components][components];
+        double[] equilibriumByTemperature = new double[components];
+        for (int component = 0; component < components; component++) {
+            if (!problem.hasEquilibriumRow(node, component)) continue;
+            int row = activeComponentBasis.publicIndex(component);
+            equilibriumByTemperature[component] =
+                    vapor.dLogFugacityCoefficientDT(row) - liquid.dLogFugacityCoefficientDT(row);
+            for (int j = 0; j < components; j++) {
+                int column = activeComponentBasis.publicIndex(j);
+                double vaporFraction = vaporComposition[column];
+                double liquidFraction = liquidComposition[column];
+                double delta = component == j ? 1.0 : 0.0;
+                equilibriumByVaporFlow[component][j] = delta - vaporFraction
+                        + vaporFraction * vapor.dLogFugacityCoefficientDMoles(row, column)
+                        + dilutionByVaporFlow[j];
+                equilibriumByLiquidFlow[component][j] = liquidFraction - delta
+                        - liquidFraction * liquid.dLogFugacityCoefficientDMoles(row, column);
+            }
+        }
+
+        double[] liquidEnergyByLiquidFlow = new double[components];
+        double liquidEnergyByTemperature = 0.0;
+        if (topology.hasLiquidPhase(node) && liquidTotal != 0.0) {
+            liquidEnergyByTemperature = liquidTotal * liquid.dMolarEnthalpyDTJoulesPerMolKelvin();
+            for (int j = 0; j < components; j++) {
+                liquidEnergyByLiquidFlow[j] = state.liquidFlow(node, j)
+                        * liquid.partialMolarEnthalpyJoulesPerMol(activeComponentBasis.publicIndex(j));
+            }
+        }
+
+        double[] vaporEnergyByVaporFlow = new double[components];
+        double vaporEnergyByTemperature = 0.0;
+        if (topology.hasVaporPhase(node) && vaporTotal != 0.0) {
+            vaporEnergyByTemperature = vaporTotal * vapor.dMolarEnthalpyDTJoulesPerMolKelvin();
+            for (int j = 0; j < components; j++) {
+                vaporEnergyByVaporFlow[j] = state.vaporFlow(node, j)
+                        * vapor.partialMolarEnthalpyJoulesPerMol(activeComponentBasis.publicIndex(j));
+            }
+        }
+        if (water != 0.0) {
+            vaporEnergyByTemperature += water * V3WaterProperties.dVaporMolarEnthalpyDT(temperature);
+            double vaporEnthalpy = V3WaterProperties.vaporMolarEnthalpy(temperature);
+            for (int j = 0; j < components; j++) vaporEnergyByVaporFlow[j] += waterByVaporFlow[j] * vaporEnthalpy;
+        }
+
+        double freeWater = problem.freeWaterFlowMolPerSecond(state, node);
+        double freeWaterEnergyByFreeWaterFlow = freeWater == 0.0
+                ? 0.0 : freeWater * V3WaterProperties.liquidMolarEnthalpy(temperature);
+        double freeWaterEnergyByTemperature = freeWater == 0.0
+                ? 0.0 : freeWater * V3WaterProperties.dLiquidMolarEnthalpyDT(temperature);
+
+        double[] waterSaturationByVaporFlow = new double[components];
+        double waterSaturationByTemperature = 0.0;
+        if (problem.hasFreeWaterUnknown(node)) {
+            waterSaturationByTemperature = -V3WaterProperties.dLogSaturationPressureDT(temperature);
+            for (int j = 0; j < components; j++) {
+                waterSaturationByVaporFlow[j] = waterByVaporFlow[j] / water
+                        - (state.vaporFlow(node, j) + waterByVaporFlow[j]) / (vaporTotal + water);
+            }
+        }
+        return new LocalNodeDerivatives(equilibriumByLiquidFlow, equilibriumByVaporFlow, equilibriumByTemperature,
+                liquidEnergyByLiquidFlow, liquidEnergyByTemperature, vaporEnergyByVaporFlow, vaporEnergyByTemperature,
+                freeWaterEnergyByFreeWaterFlow, freeWaterEnergyByTemperature, waterSaturationByVaporFlow,
+                waterSaturationByTemperature);
+    }
+
+    /**
+     * {@code dW/d(log vapor coordinate)} at one node: zero everywhere but an uncapped free-water condenser.
+     *
+     * <p>The condenser's water is not a balance but a regime split, and on the two-phase branch of the
+     * free-water regime the molecular overhead carries {@code slip} moles of water per mole of hydrocarbon
+     * vapour — until that exceeds the water that actually arrived, after which the split is the arriving
+     * total and stops responding to the overhead at all. Both sides are exact; only the crossing point is not
+     * differentiable, and there the cap is taken, which is the side the value evaluation's {@code min} lands
+     * on when the two are equal.</p>
+     */
+    private double[] condenserWaterByVaporFlow(V3DryMeshState state, int node, double vaporTotal) {
+        double[] byVaporFlow = new double[state.componentCount()];
+        if (!problem.hasSteamFeeds() || node != problem.topology().condenserNode()
+                || !problem.hasFreeWaterCondenser()
+                || problem.topology().condenserPhaseBranch() != V3CondenserPhaseBranch.TWO_PHASE) {
+            return byVaporFlow;
+        }
+        double slip = problem.waterVaporSlipCoefficient();
+        if (!(slip * vaporTotal < problem.waterVaporFlowMolPerSecond(1))) return byVaporFlow;
+        for (int component = 0; component < byVaporFlow.length; component++) {
+            byVaporFlow[component] = slip * state.vaporFlow(node, component);
+        }
+        return byVaporFlow;
     }
 
     /**
@@ -380,5 +541,77 @@ final class V3MeshResidualEvaluator {
         @Override public double[] equilibriumResiduals() { return equilibriumResiduals.clone(); }
 
         double equilibriumResidual(int component) { return equilibriumResiduals[component]; }
+    }
+
+    /**
+     * The derivatives of one node's {@link LocalNodeTerms} with respect to that node's own unknowns.
+     *
+     * <p>Indexed by the unknown's family and, for a component flow, by its active component. Every
+     * combination the rows do not couple is stored as an exact zero rather than left out, so a caller reads
+     * the same array shape whatever the node is and cannot mistake an absent coupling for a missing one: a
+     * hydrocarbon liquid flow does not change the vapour enthalpy leaving the node, a node's own free water
+     * does not change its own equilibrium, and a dry tray has no saturation row to differentiate.</p>
+     */
+    record LocalNodeDerivatives(
+            double[][] equilibriumByLiquidFlow,
+            double[][] equilibriumByVaporFlow,
+            double[] equilibriumByTemperature,
+            double[] liquidEnergyByLiquidFlow,
+            double liquidEnergyByTemperature,
+            double[] vaporEnergyByVaporFlow,
+            double vaporEnergyByTemperature,
+            double freeWaterEnergyByFreeWaterFlow,
+            double freeWaterEnergyByTemperature,
+            double[] waterSaturationByVaporFlow,
+            double waterSaturationByTemperature) {
+        LocalNodeDerivatives {
+            Objects.requireNonNull(equilibriumByLiquidFlow, "equilibriumByLiquidFlow");
+            Objects.requireNonNull(equilibriumByVaporFlow, "equilibriumByVaporFlow");
+            Objects.requireNonNull(equilibriumByTemperature, "equilibriumByTemperature");
+            Objects.requireNonNull(liquidEnergyByLiquidFlow, "liquidEnergyByLiquidFlow");
+            Objects.requireNonNull(vaporEnergyByVaporFlow, "vaporEnergyByVaporFlow");
+            Objects.requireNonNull(waterSaturationByVaporFlow, "waterSaturationByVaporFlow");
+        }
+
+        double equilibriumDerivative(V3DegreeOfFreedomLedger.UnknownFamily family, int column, int row) {
+            return switch (family) {
+                case LIQUID_COMPONENT_FLOW -> equilibriumByLiquidFlow[row][column];
+                case VAPOR_COMPONENT_FLOW -> equilibriumByVaporFlow[row][column];
+                case TEMPERATURE -> equilibriumByTemperature[row];
+                case FREE_WATER_FLOW -> 0.0;
+            };
+        }
+
+        double liquidEnergyDerivative(V3DegreeOfFreedomLedger.UnknownFamily family, int column) {
+            return switch (family) {
+                case LIQUID_COMPONENT_FLOW -> liquidEnergyByLiquidFlow[column];
+                case TEMPERATURE -> liquidEnergyByTemperature;
+                case VAPOR_COMPONENT_FLOW, FREE_WATER_FLOW -> 0.0;
+            };
+        }
+
+        double vaporEnergyDerivative(V3DegreeOfFreedomLedger.UnknownFamily family, int column) {
+            return switch (family) {
+                case VAPOR_COMPONENT_FLOW -> vaporEnergyByVaporFlow[column];
+                case TEMPERATURE -> vaporEnergyByTemperature;
+                case LIQUID_COMPONENT_FLOW, FREE_WATER_FLOW -> 0.0;
+            };
+        }
+
+        double freeWaterEnergyDerivative(V3DegreeOfFreedomLedger.UnknownFamily family) {
+            return switch (family) {
+                case FREE_WATER_FLOW -> freeWaterEnergyByFreeWaterFlow;
+                case TEMPERATURE -> freeWaterEnergyByTemperature;
+                case LIQUID_COMPONENT_FLOW, VAPOR_COMPONENT_FLOW -> 0.0;
+            };
+        }
+
+        double waterSaturationDerivative(V3DegreeOfFreedomLedger.UnknownFamily family, int column) {
+            return switch (family) {
+                case VAPOR_COMPONENT_FLOW -> waterSaturationByVaporFlow[column];
+                case TEMPERATURE -> waterSaturationByTemperature;
+                case LIQUID_COMPONENT_FLOW, FREE_WATER_FLOW -> 0.0;
+            };
+        }
     }
 }

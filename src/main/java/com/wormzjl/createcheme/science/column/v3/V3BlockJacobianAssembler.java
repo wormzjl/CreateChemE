@@ -53,6 +53,12 @@ final class V3BlockJacobianAssembler {
      * every other entry of its state decodes to the bits the base already holds, and the workspace it writes
      * through carries nothing between calls but a temperature-keyed cache of pure functions of that
      * temperature, which every evaluation either hits on the exact same bits or refills.</p>
+     *
+     * <p>A property model that can differentiate itself skips the probe entirely: one evaluation per node and
+     * phase produces the whole node's block instead of two per unknown, which is the same derivative to the
+     * last few digits and a small fraction of the property calls. The probe remains for every model that
+     * cannot, and for any node whose analytic evaluation refuses the state — at a root coalescence, say, where
+     * no derivative exists to return. Such a node is counted, never silently zeroed.</p>
      */
     static V3BlockJacobian assembleLocal(
             V3ColumnProblem problem,
@@ -62,6 +68,26 @@ final class V3BlockJacobianAssembler {
             V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
             V3SolveControl control) {
+        return assembleLocal(problem, evaluator, coordinates, state, workspaceFactory, differenceScale, control,
+                new AnalyticTally());
+    }
+
+    /**
+     * The same assembly, reporting how many nodes had to fall back from the analytic path to the probe.
+     *
+     * <p>Separate from the production entry point only so that a test can read the count: a fixture whose
+     * blocks match the finite-difference oracle proves nothing about the analytic path if the analytic path
+     * never ran.</p>
+     */
+    static V3BlockJacobian assembleLocal(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState state,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
+            V3SolveControl control,
+            AnalyticTally tally) {
         problem = Objects.requireNonNull(problem, "problem");
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
@@ -93,16 +119,48 @@ final class V3BlockJacobianAssembler {
             baseTerms[node] = evaluator.localTerms(state, node, workspace);
         }
         for (int node = 0; node < layout.nodeCount(); node++) {
+            control.checkpoint();
+            V3MeshResidualEvaluator.LocalNodeDerivatives analytic =
+                    analyticDerivativesOrNull(evaluator, state, node, workspace, tally);
             for (int column = layout.start(node); column < layout.start(node) + layout.size(node); column++) {
                 control.checkpoint();
                 V3DegreeOfFreedomLedger.UnknownId unknown = coordinates.unknowns().get(column).id();
-                LocalProbe probe = localProbe(evaluator, coordinates, decodedBase, baseCoordinates, column,
-                        unknown.node(), workspace, differenceScale, control);
+                LocalColumn local = analytic != null
+                        ? new AnalyticColumn(analytic, unknown.family(), unknown.component())
+                        : localProbe(evaluator, coordinates, decodedBase, baseCoordinates, column,
+                                unknown.node(), workspace, baseTerms[node], differenceScale, control);
                 assembleLocalThermodynamicColumn(problem, state, unknown, baseResidual, equationIndexes, layout,
-                        lower, diagonal, upper, node, column, baseTerms[node], probe);
+                        lower, diagonal, upper, node, column, baseTerms[node], local);
             }
         }
         return new V3BlockJacobian(layout, lower, diagonal, upper, 0.0);
+    }
+
+    /**
+     * One node's analytic local derivatives, or {@code null} when this assembly has to probe that node.
+     *
+     * <p>Two things can send a node back to the probe: a property model that does not differentiate itself at
+     * all, which is not a fallback and is not counted, and a model that does but refuses this particular
+     * state, which is. The refusal is the honest one — a derivative that does not exist, at a root the
+     * equation of state cannot separate — and the probe answers it the way it answers every other
+     * inadmissible perturbation, by differencing what it can reach.</p>
+     */
+    private static V3MeshResidualEvaluator.LocalNodeDerivatives analyticDerivativesOrNull(
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshState state,
+            int node,
+            V3ThermoWorkspace workspace,
+            AnalyticTally tally) {
+        if (!evaluator.providesLocalDerivatives()) return null;
+        try {
+            V3MeshResidualEvaluator.LocalNodeDerivatives derivatives =
+                    evaluator.localDerivatives(state, node, workspace);
+            tally.analyticNodes++;
+            return derivatives;
+        } catch (IllegalArgumentException | V3ThermoException unavailable) {
+            tally.fallbackNodes++;
+            return null;
+        }
     }
 
     private static double[][][] emptyBlocks(V3StageBlockLayout layout, int columnOffset) {
@@ -349,6 +407,7 @@ final class V3BlockJacobianAssembler {
             int column,
             int node,
             V3ThermoWorkspace workspace,
+            V3MeshResidualEvaluator.LocalNodeTerms base,
             V3FiniteDifferenceJacobian.DifferenceScale differenceScale,
             V3SolveControl control) {
         double step = V3FiniteDifferenceJacobian.step(
@@ -360,7 +419,7 @@ final class V3BlockJacobianAssembler {
         if (higher == null && lower == null) {
             throw new IllegalArgumentException("V3 local block Jacobian has no admissible thermodynamic probe");
         }
-        return new LocalProbe(higher, lower, step);
+        return new LocalProbe(base, higher, lower, step);
     }
 
     private static V3MeshResidualEvaluator.LocalNodeTerms localTermsOrNull(
@@ -409,12 +468,12 @@ final class V3BlockJacobianAssembler {
             int node,
             int column,
             V3MeshResidualEvaluator.LocalNodeTerms base,
-            LocalProbe probe) {
+            LocalColumn probe) {
         for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
             Integer row = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
                     V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM, node, component));
             if (row == null) continue;
-            double derivative = probe.equilibriumDerivative(base, component);
+            double derivative = probe.equilibriumDerivative(component);
             if (!Double.isFinite(derivative)) {
                 throw new IllegalArgumentException("V3 local block VLE derivative is not finite");
             }
@@ -423,16 +482,16 @@ final class V3BlockJacobianAssembler {
         Integer saturationRow = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
                 V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION, node, -1));
         if (saturationRow != null) {
-            double derivative = probe.waterSaturationDerivative(base);
+            double derivative = probe.waterSaturationDerivative();
             if (!Double.isFinite(derivative)) {
                 throw new IllegalArgumentException("V3 local block water-saturation derivative is not finite");
             }
             addGlobal(layout, lower, diagonal, upper, saturationRow, column,
                     derivative / baseResidual.rows().get(saturationRow).scale());
         }
-        double liquidDerivative = probe.liquidEnergyDerivative(base);
-        double vaporDerivative = probe.vaporEnergyDerivative(base);
-        double freeWaterDerivative = probe.freeWaterEnergyDerivative(base);
+        double liquidDerivative = probe.liquidEnergyDerivative();
+        double vaporDerivative = probe.vaporEnergyDerivative();
+        double freeWaterDerivative = probe.freeWaterEnergyDerivative();
         if (!Double.isFinite(liquidDerivative) || !Double.isFinite(vaporDerivative)
                 || !Double.isFinite(freeWaterDerivative)) {
             throw new IllegalArgumentException("V3 local block energy derivative is not finite");
@@ -517,11 +576,38 @@ final class V3BlockJacobianAssembler {
         return specification.ratio() / (1.0 + specification.ratio());
     }
 
+    /** Mutable count of how one local assembly obtained its thermodynamic derivatives, node by node. */
+    static final class AnalyticTally {
+        private int analyticNodes;
+        private int fallbackNodes;
+
+        int analyticNodes() { return analyticNodes; }
+        int fallbackNodes() { return fallbackNodes; }
+    }
+
+    /**
+     * The response of one node's thermodynamic terms to one of that node's coordinates.
+     *
+     * <p>Two implementations answer this: a finite difference of the terms themselves, and the analytic
+     * derivative of the same rows. The assembler cannot tell them apart, which is the point — the arithmetic
+     * that turns these five numbers into a column of the band is written once and does not know where they
+     * came from.</p>
+     */
+    private interface LocalColumn {
+        double equilibriumDerivative(int component);
+        double liquidEnergyDerivative();
+        double vaporEnergyDerivative();
+        double freeWaterEnergyDerivative();
+        double waterSaturationDerivative();
+    }
+
     private record LocalProbe(
+            V3MeshResidualEvaluator.LocalNodeTerms base,
             V3MeshResidualEvaluator.LocalNodeTerms higher,
             V3MeshResidualEvaluator.LocalNodeTerms lower,
-            double step) {
+            double step) implements LocalColumn {
         private LocalProbe {
+            Objects.requireNonNull(base, "base");
             if (higher == null && lower == null) {
                 throw new IllegalArgumentException("V3 local block probe has no admissible state");
             }
@@ -530,31 +616,36 @@ final class V3BlockJacobianAssembler {
             }
         }
 
-        double equilibriumDerivative(V3MeshResidualEvaluator.LocalNodeTerms base, int component) {
+        @Override
+        public double equilibriumDerivative(int component) {
             return derivative(base.equilibriumResidual(component),
                     higher == null ? Double.NaN : higher.equilibriumResidual(component),
                     lower == null ? Double.NaN : lower.equilibriumResidual(component));
         }
 
-        double liquidEnergyDerivative(V3MeshResidualEvaluator.LocalNodeTerms base) {
+        @Override
+        public double liquidEnergyDerivative() {
             return derivative(base.liquidPhaseEnergy(),
                     higher == null ? Double.NaN : higher.liquidPhaseEnergy(),
                     lower == null ? Double.NaN : lower.liquidPhaseEnergy());
         }
 
-        double vaporEnergyDerivative(V3MeshResidualEvaluator.LocalNodeTerms base) {
+        @Override
+        public double vaporEnergyDerivative() {
             return derivative(base.vaporPhaseEnergy(),
                     higher == null ? Double.NaN : higher.vaporPhaseEnergy(),
                     lower == null ? Double.NaN : lower.vaporPhaseEnergy());
         }
 
-        double freeWaterEnergyDerivative(V3MeshResidualEvaluator.LocalNodeTerms base) {
+        @Override
+        public double freeWaterEnergyDerivative() {
             return derivative(base.freeWaterPhaseEnergy(),
                     higher == null ? Double.NaN : higher.freeWaterPhaseEnergy(),
                     lower == null ? Double.NaN : lower.freeWaterPhaseEnergy());
         }
 
-        double waterSaturationDerivative(V3MeshResidualEvaluator.LocalNodeTerms base) {
+        @Override
+        public double waterSaturationDerivative() {
             return derivative(base.waterSaturationResidual(),
                     higher == null ? Double.NaN : higher.waterSaturationResidual(),
                     lower == null ? Double.NaN : lower.waterSaturationResidual());
@@ -568,6 +659,22 @@ final class V3BlockJacobianAssembler {
                     ? (higherValue - base) / step
                     : (base - lowerValue) / step;
         }
+    }
+
+    /** One column's view of a node's analytic derivatives: the unknown's family selects, its component indexes. */
+    private record AnalyticColumn(
+            V3MeshResidualEvaluator.LocalNodeDerivatives node,
+            V3DegreeOfFreedomLedger.UnknownFamily family,
+            int component) implements LocalColumn {
+        @Override
+        public double equilibriumDerivative(int row) {
+            return node.equilibriumDerivative(family, component, row);
+        }
+
+        @Override public double liquidEnergyDerivative() { return node.liquidEnergyDerivative(family, component); }
+        @Override public double vaporEnergyDerivative() { return node.vaporEnergyDerivative(family, component); }
+        @Override public double freeWaterEnergyDerivative() { return node.freeWaterEnergyDerivative(family); }
+        @Override public double waterSaturationDerivative() { return node.waterSaturationDerivative(family, component); }
     }
 
     private static double[][] block(double[][] values, V3StageBlockLayout layout, int rowNode, int columnNode) {

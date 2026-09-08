@@ -13,6 +13,16 @@ final class V3PengRobinsonKernel {
     private static final double ROOT_EPSILON = 1.0e-12;
     private static final double COALESCENCE_DISCRIMINANT_TOLERANCE = 1.0e-16;
     private static final int MAXIMUM_ROOT_REFINEMENTS = 4;
+    /**
+     * How flat the cubic may be at the selected root before its derivative is refused.
+     *
+     * <p>Every state derivative divides by this slope, so it is the one quantity whose smallness makes the
+     * whole bundle meaningless rather than merely inaccurate. The bound is relative to the size of the terms
+     * the slope is assembled from, so it measures cancellation rather than magnitude, and it is deliberately
+     * far below any separation a column state reaches: refusing costs the caller a fallback to differencing,
+     * which is correct but slow, and a root this flat is one whose finite difference is no better.</p>
+     */
+    private static final double COALESCENCE_SLOPE_TOLERANCE = 1.0e-10;
 
     private final V3PropertyPackage propertyPackage;
     private final int count;
@@ -64,6 +74,7 @@ final class V3PengRobinsonKernel {
     boolean usesRankOneMixing() { return rankOneMixing; }
     Workspace newWorkspace() { return new Workspace(count); }
     Evaluation newEvaluation() { return new Evaluation(count); }
+    Derivatives newDerivatives() { return new Derivatives(count); }
 
     /** Wilson K initialisation only; accepted states use rigorous fugacity refreshes. */
     void wilsonK(double temperatureKelvin, double pressurePascal, double[] output) {
@@ -171,8 +182,132 @@ final class V3PengRobinsonKernel {
                 + (temperatureKelvin * daMixDt - aMix) / (2.0 * SQRT_TWO * bMix) * logRatio;
         output.aMix = aMix;
         output.bMix = bMix;
+        // Recorded, not recomputed: the derivative evaluation below needs exactly this mixture da/dT, and
+        // recomputing it there would be a second arithmetic path for a number this one already has.
+        output.daMixDt = daMixDt;
         output.physicalRootCount = rootSelection.physicalRootCount();
         output.rootSeparation = rootSelection.rootSeparation();
+    }
+
+    /**
+     * Fills {@code output} with the value evaluation and its first derivatives on the very same root.
+     *
+     * <p>The values come from {@link #evaluatePrepared} itself rather than from a parallel expression, so a
+     * caller mixing values from one path with derivatives from the other is differentiating the function it is
+     * actually evaluating. Everything after that reads the mixture terms that evaluation left in the
+     * workspace.</p>
+     *
+     * <p>The route is the direct one. {@code Z} is a root of the fixed cubic
+     * {@code Z^3 + c2 Z^2 + c1 Z + c0} whose coefficients are polynomials in {@code (A, B)}, so the implicit
+     * function theorem gives {@code dZ/dA} and {@code dZ/dB} from one derivative of that cubic, and every
+     * remaining term of {@code ln phi_i} and of {@code H^R} is an explicit algebraic function of
+     * {@code (Z, A, B, a, b, S_i, b_i)}. That derivative, {@code 3Z^2 + 2 c2 Z + c1}, is also exactly the
+     * quantity that vanishes when two roots coalesce, which is where the derivative genuinely does not exist:
+     * the guard below refuses such a state instead of returning the enormous number the division would give.
+     * The partial molar residual enthalpies are not derived a second time; they are
+     * {@code -R T^2 (d ln phi_i / dT)}, which is the definition of the residual enthalpy differentiated once,
+     * and its mixture sum reproducing {@code H^R} is a genuine check of the temperature derivative against the
+     * closed-form residual enthalpy, because the two are computed from different expressions.</p>
+     */
+    void evaluateDerivatives(
+            double temperatureKelvin, double pressurePascal, double[] composition, Root root,
+            Workspace workspace, Derivatives output) {
+        Objects.requireNonNull(output, "output");
+        prepareTemperature(temperatureKelvin, workspace);
+        evaluatePrepared(temperatureKelvin, pressurePascal, composition, root, workspace, output.evaluation);
+        double[] x = workspace.composition;
+        double a = output.evaluation.aMix;
+        double b = output.evaluation.bMix;
+        double daDt = output.evaluation.daMixDt;
+        double z = output.evaluation.compressibility;
+        double reducedA = a * pressurePascal / (GAS_CONSTANT * GAS_CONSTANT * temperatureKelvin * temperatureKelvin);
+        double reducedB = b * pressurePascal / (GAS_CONSTANT * temperatureKelvin);
+        double c2 = -(1.0 - reducedB);
+        double c1 = reducedA - 3.0 * reducedB * reducedB - 2.0 * reducedB;
+        double slope = Math.fma(Math.fma(3.0, z, 2.0 * c2), z, c1);
+        double slopeScale = 3.0 * z * z + 2.0 * Math.abs(c2) * Math.abs(z) + Math.abs(c1);
+        if (!Double.isFinite(slope) || Math.abs(slope) <= COALESCENCE_SLOPE_TOLERANCE * Math.max(1.0, slopeScale)) {
+            throw new IllegalStateException("Peng-Robinson " + root + " root is too close to coalescence to differentiate");
+        }
+        double zByReducedA = -(z - reducedB) / slope;
+        double zByReducedB = -(z * z - (6.0 * reducedB + 2.0) * z - reducedA + 2.0 * reducedB
+                + 3.0 * reducedB * reducedB) / slope;
+        double lower = z + (1.0 + SQRT_TWO) * reducedB;
+        double upper = z + (1.0 - SQRT_TWO) * reducedB;
+        double logRatio = Math.log(lower / upper);
+        double attraction = reducedA / (2.0 * SQRT_TWO * Math.max(reducedB, 1.0e-300));
+        // d(sqrt(a_i))/dT and its own derivative, from which every mixture temperature derivative follows.
+        for (int i = 0; i < count; i++) {
+            V3PropertyComponent component = propertyPackage.component(i);
+            double secondADt = criticalA[i] * kappas[i] * (1.0 + kappas[i])
+                    / (2.0 * Math.sqrt(temperatureKelvin * temperatureKelvin * temperatureKelvin
+                    * component.criticalTemperatureKelvin()));
+            output.rootDt[i] = workspace.daDt[i] / (2.0 * workspace.sqrtA[i]);
+            output.rootDt2[i] = secondADt / (2.0 * workspace.sqrtA[i])
+                    - workspace.daDt[i] * workspace.daDt[i]
+                    / (4.0 * workspace.sqrtA[i] * workspace.sqrtA[i] * workspace.sqrtA[i]);
+        }
+        if (rankOneMixing) {
+            double interactionSum = 0.0;
+            for (int i = 0; i < count; i++) interactionSum += x[i] * output.rootDt[i];
+            for (int i = 0; i < count; i++) output.crossDt[i] = interactionSum;
+        } else {
+            for (int i = 0; i < count; i++) {
+                double sum = 0.0;
+                for (int j = 0; j < count; j++) sum += (1.0 - binaryInteractions[i][j]) * x[j] * output.rootDt[j];
+                output.crossDt[i] = sum;
+            }
+        }
+        double secondDaDt = 0.0;
+        for (int i = 0; i < count; i++) {
+            secondDaDt += 2.0 * x[i] * (output.rootDt2[i] * (workspace.sumA[i] / workspace.sqrtA[i])
+                    + output.rootDt[i] * output.crossDt[i]);
+        }
+        double reducedADt = reducedA * (daDt / a - 2.0 / temperatureKelvin);
+        double reducedBDt = -reducedB / temperatureKelvin;
+        double zDt = zByReducedA * reducedADt + zByReducedB * reducedBDt;
+        double logRatioDt = (zDt + (1.0 + SQRT_TWO) * reducedBDt) / lower - (zDt + (1.0 - SQRT_TWO) * reducedBDt) / upper;
+        double attractionDt = attraction * (reducedADt / reducedA - reducedBDt / reducedB);
+        for (int i = 0; i < count; i++) {
+            output.coVolumeRatio[i] = coVolumes[i] / b;
+            output.attractionRatio[i] = 2.0 * workspace.sumA[i] / a - output.coVolumeRatio[i];
+            double sumADt = output.rootDt[i] * (workspace.sumA[i] / workspace.sqrtA[i])
+                    + workspace.sqrtA[i] * output.crossDt[i];
+            double attractionRatioDt = 2.0 * (sumADt * a - workspace.sumA[i] * daDt) / (a * a);
+            output.dLogPhiDt[i] = output.coVolumeRatio[i] * zDt - (zDt - reducedBDt) / (z - reducedB)
+                    - (attractionDt * output.attractionRatio[i] * logRatio
+                    + attraction * attractionRatioDt * logRatio
+                    + attraction * output.attractionRatio[i] * logRatioDt);
+        }
+        for (int j = 0; j < count; j++) {
+            double reducedAdn = 2.0 * reducedA * (workspace.sumA[j] - a) / a;
+            double coVolumeShift = (coVolumes[j] - b) / b;
+            double reducedBdn = reducedB * coVolumeShift;
+            double zDn = zByReducedA * reducedAdn + zByReducedB * reducedBdn;
+            double logRatioDn = (zDn + (1.0 + SQRT_TWO) * reducedBdn) / lower - (zDn + (1.0 - SQRT_TWO) * reducedBdn) / upper;
+            double attractionDn = attraction * (reducedAdn / reducedA - reducedBdn / reducedB);
+            double sharedTerms = -(zDn - reducedBdn) / (z - reducedB);
+            double attractionShift = 2.0 * (workspace.sumA[j] - a);
+            double rootAj = workspace.sqrtA[j];
+            for (int i = 0; i < count; i++) {
+                double bRatioDn = -output.coVolumeRatio[i] * coVolumeShift;
+                double crossA = (rankOneMixing ? 1.0 : 1.0 - binaryInteractions[i][j])
+                        * workspace.sqrtA[i] * rootAj;
+                double attractionRatioDn = 2.0 * ((crossA - workspace.sumA[i]) * a
+                        - workspace.sumA[i] * attractionShift) / (a * a) - bRatioDn;
+                output.dLogPhiDn[i][j] = bRatioDn * (z - 1.0) + output.coVolumeRatio[i] * zDn + sharedTerms
+                        - (attractionDn * output.attractionRatio[i] * logRatio
+                        + attraction * attractionRatioDn * logRatio
+                        + attraction * output.attractionRatio[i] * logRatioDn);
+            }
+        }
+        output.dResidualEnthalpyDt = GAS_CONSTANT * (z - 1.0) + GAS_CONSTANT * temperatureKelvin * zDt
+                + temperatureKelvin * secondDaDt / (2.0 * SQRT_TWO * b) * logRatio
+                + (temperatureKelvin * daDt - a) / (2.0 * SQRT_TWO * b) * logRatioDt;
+        for (int i = 0; i < count; i++) {
+            output.partialMolarResidualEnthalpy[i] =
+                    -GAS_CONSTANT * temperatureKelvin * temperatureKelvin * output.dLogPhiDt[i];
+        }
     }
 
     /** Package-local precision qualifier; the EOS owns phase selection and its coalescence policy. */
@@ -380,6 +515,7 @@ final class V3PengRobinsonKernel {
         private double residualEnthalpyJoulesPerMol;
         private double aMix;
         private double bMix;
+        private double daMixDt;
         private int physicalRootCount;
         private double rootSeparation;
 
@@ -395,6 +531,48 @@ final class V3PengRobinsonKernel {
         double bMix() { return bMix; }
         int physicalRootCount() { return physicalRootCount; }
         double rootSeparation() { return rootSeparation; }
+    }
+
+    /**
+     * Caller-owned mutable derivative output; it carries the value evaluation it was differentiated from.
+     *
+     * <p>The residual-enthalpy composition derivatives are absent on purpose: they are
+     * {@code -R T^2 (d ln phi_i / dT)}, which is already here, and a second copy of the same numbers under a
+     * different name is a second thing to keep correct.</p>
+     */
+    static final class Derivatives {
+        private final Evaluation evaluation;
+        private final double[] dLogPhiDt;
+        private final double[][] dLogPhiDn;
+        private final double[] partialMolarResidualEnthalpy;
+        private final double[] rootDt;
+        private final double[] rootDt2;
+        private final double[] crossDt;
+        private final double[] coVolumeRatio;
+        private final double[] attractionRatio;
+        private double dResidualEnthalpyDt;
+
+        private Derivatives(int count) {
+            evaluation = new Evaluation(count);
+            dLogPhiDt = new double[count];
+            dLogPhiDn = new double[count][count];
+            partialMolarResidualEnthalpy = new double[count];
+            rootDt = new double[count];
+            rootDt2 = new double[count];
+            crossDt = new double[count];
+            coVolumeRatio = new double[count];
+            attractionRatio = new double[count];
+        }
+
+        Evaluation evaluation() { return evaluation; }
+        double[] dLogPhiDt() { return dLogPhiDt.clone(); }
+        double[][] dLogPhiDn() {
+            double[][] copy = new double[dLogPhiDn.length][];
+            for (int row = 0; row < copy.length; row++) copy[row] = dLogPhiDn[row].clone();
+            return copy;
+        }
+        double[] partialMolarResidualEnthalpy() { return partialMolarResidualEnthalpy.clone(); }
+        double dResidualEnthalpyDt() { return dResidualEnthalpyDt; }
     }
 
     record RootSelection(double selectedCompressibility, int physicalRootCount, double rootSeparation) {}

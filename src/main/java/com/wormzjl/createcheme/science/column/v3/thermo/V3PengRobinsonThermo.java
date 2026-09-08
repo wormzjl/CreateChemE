@@ -4,7 +4,7 @@ import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 import java.util.Objects;
 
 /** Immutable V3 hydrocarbon PR78 façade backed by a solve-local one-way property-session adapter. */
-public final class V3PengRobinsonThermo implements V3ThermoModel {
+public final class V3PengRobinsonThermo implements V3ThermoModel, V3ThermoDerivatives {
     private static final Runnable NO_CHECKPOINT = () -> { };
     private final V3PengRobinsonSession session;
 
@@ -81,6 +81,39 @@ public final class V3PengRobinsonThermo implements V3ThermoModel {
                 workspace.prSession.compressibilityFactor(phase), phaseMolarEnthalpy(temperatureKelvin,
                 workspace.normalizedOverall, phase, workspace), workspace.prSession.physicalRootCount(phase),
                 workspace.prSession.rootSeparation(phase));
+    }
+
+    /**
+     * Differentiates exactly what {@link #fugacity} evaluates, on the same root and the same normalisation.
+     *
+     * <p>The composition is normalised first, as it is there, so the returned mole-number derivatives are on
+     * the one-mole basis {@link V3FugacityDerivatives} documents. The ideal-gas halves of the two enthalpy
+     * quantities are added here rather than in the kernel because they belong to the property package's
+     * component data, not to the equation of state: the phase heat capacity is the mixture ideal-gas capacity
+     * plus the residual one, and a partial molar enthalpy is the pure-component ideal-gas enthalpy plus the
+     * partial molar residual enthalpy.</p>
+     */
+    @Override
+    public V3FugacityDerivatives fugacityDerivatives(
+            double temperatureKelvin, double pressurePascal, double[] composition, V3Phase phase,
+            V3ThermoWorkspace workspace) {
+        phase = Objects.requireNonNull(phase, "phase");
+        requireWorkspace(workspace);
+        normalizeInto(composition, workspace.normalizedOverall, workspace);
+        session.evaluateDerivatives(temperatureKelvin, pressurePascal, workspace.normalizedOverall, phase,
+                workspace.prSession);
+        V3PengRobinsonKernel.Derivatives derivatives = workspace.prSession.derivativesOf(phase);
+        double[] partialMolar = derivatives.partialMolarResidualEnthalpy();
+        for (int component = 0; component < partialMolar.length; component++) {
+            partialMolar[component] += session.componentIdealGasEnthalpy(component, temperatureKelvin);
+        }
+        return new V3FugacityDerivatives(phase, derivatives.evaluation().logFugacityCoefficients(),
+                derivatives.dLogPhiDt(), derivatives.dLogPhiDn(),
+                session.idealGasMolarEnthalpy(temperatureKelvin, workspace.normalizedOverall)
+                        + derivatives.evaluation().residualEnthalpyJoulesPerMol(),
+                session.idealGasMolarHeatCapacity(temperatureKelvin, workspace.normalizedOverall)
+                        + derivatives.dResidualEnthalpyDt(),
+                partialMolar);
     }
 
     @Override
