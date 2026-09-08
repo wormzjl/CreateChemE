@@ -21,8 +21,7 @@ class V3TruncationFallbackTest {
             cutoffs.add(cutoff);
             return cutoffs.size() == 1 ? first : fallback;
         });
-        if (code == V3SolverFailureCode.INVALID_INPUT || code == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
-                || code == V3SolverFailureCode.WATER_DEW_POINT) {
+        if (code == V3SolverFailureCode.INVALID_INPUT || code == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE) {
             assertSame(first, outcome);
             assertEquals(List.of(1.0e-6), cutoffs);
         } else {

@@ -399,14 +399,6 @@ public final class V3ColumnCalculator {
                 }
                 return new V3ColumnOutcome.Failure(failureCode(failure.code()), detail + operatingDetail, diagnostics);
             }
-            V3AcceptanceAudit.Check dewPoint = audit.checks().stream()
-                    .filter(check -> !check.passed() && check.family().equals("WATER_DEW_POINT")).findFirst().orElse(null);
-            if (dewPoint != null && audit.checks().stream().filter(check -> !check.passed()).count() == 1) {
-                // The column solved; only the water dew point rejects it. That is a verdict on the specification the
-                // operator must act on, so it carries its own code and a message that names the tray.
-                return new V3ColumnOutcome.Failure(V3SolverFailureCode.WATER_DEW_POINT,
-                        "Converged, but " + dewPoint.detail(), diagnostics);
-            }
             return new V3ColumnOutcome.Failure(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE,
                     "The fresh V3 acceptance audit rejected the converged candidate"
                             + sideDrawDiagnostic(selected.problem(), attempt.state(), input.stageCount())

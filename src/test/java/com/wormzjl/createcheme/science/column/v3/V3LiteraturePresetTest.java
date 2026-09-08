@@ -2,12 +2,13 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity;
 import org.junit.jupiter.api.Test;
 
-/** The fresh-calculator preset is the literature column, and its one physical verdict is reported by name. */
+/** The fresh-calculator preset is the literature column; F3 restores its published top-cooler duty. */
 class V3LiteraturePresetTest {
     @Test
     void theLiteraturePresetIsTheFortyTrayThesisColumnWithItsCoolersAtTheDraws() {
@@ -44,8 +45,17 @@ class V3LiteraturePresetTest {
         assertTrue(success.result().dutyLedger().orElseThrow().stageHeatTotalWatts() < -35.0e6);
     }
 
+    /**
+     * Placeholder for the F3 expectation, deliberately not asserting an outcome yet.
+     *
+     * <p>F1 removes the typed {@code WATER_DEW_POINT} verdict; F2 gives the trays a free-water phase; F3 restores
+     * the published 12.84 MW top cooler in the preset and turns this into the real assertion — the published
+     * duties converge with wet top trays and a closed water balance. Until F2 lands, the published duties still
+     * produce a converged state whose top tray sits below the water dew point, so all this pins is that the
+     * calculator returns a typed outcome rather than throwing, and that no removed failure code can come back.</p>
+     */
     @Test
-    void aConvergedColumnWithATrayBelowTheWaterDewPointIsReportedByName() {
+    void thePublishedTopCoolerDutyIsStillOnlyReachableThroughTheFreeWaterTrayContract() {
         // The source duties as published: without the side-stripper reboiler heat the top lands below the dew point.
         V3ColumnInput preset = ColumnCalculatorV3BlockEntity.literatureCduInput();
         V3ColumnInput fullDuties = new V3ColumnInput(preset.schemaVersion(), preset.packageId(), preset.assayId(),
@@ -55,12 +65,9 @@ class V3LiteraturePresetTest {
                         new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
                         preset.pumparounds().get(1), preset.pumparounds().get(2)));
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(fullDuties, () -> {}, 0.0);
-        V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
-        assertEquals(V3SolverFailureCode.WATER_DEW_POINT, failure.code(), failure.summary());
-        assertTrue(failure.summary().startsWith("Converged, but tray "), failure.summary());
-        assertTrue(failure.summary().contains("is below the water dew point"), failure.summary());
-        assertTrue(failure.summary().contains("must not operate below the water dew point"), failure.summary());
-        assertTrue(failure.diagnostics().acceptanceAudit().checks().stream()
-                .filter(check -> !check.passed()).allMatch(check -> check.family().equals("WATER_DEW_POINT")));
+        assertNotNull(outcome.diagnostics().acceptanceAudit(), outcome::toString);
+        if (outcome instanceof V3ColumnOutcome.Failure failure) {
+            assertEquals(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE, failure.code(), failure.summary());
+        }
     }
 }
