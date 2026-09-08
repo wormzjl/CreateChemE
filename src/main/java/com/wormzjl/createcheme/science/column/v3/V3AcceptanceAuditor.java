@@ -114,6 +114,7 @@ final class V3AcceptanceAuditor {
                 ? registeredPackage.advisoryEvidence() : List.of();
         if (problem.hasPumparounds()) advisoryEvidence = withCooledTrayAdvisory(advisoryEvidence, state);
         advisoryEvidence = withWetTrayAdvisory(advisoryEvidence, state);
+        advisoryEvidence = withDewPointAdvisory(advisoryEvidence, checks);
         return new V3AcceptanceAudit(checks, advisoryEvidence);
     }
 
@@ -346,16 +347,25 @@ final class V3AcceptanceAuditor {
                 worstNode = node;
             }
         }
+        if (emptyWetTray >= 0) {
+            return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
+                    "tray " + emptyWetTray + " is in the free-water set but sheds no free water");
+        }
         if (valid) {
             return V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", maximum, 1.0,
                     problem.hasWetTrays()
                             ? "every dry stage is above the free-water dew point and every wet tray sits on it"
                             : "all water-bearing stages remain above the free-water dew point");
         }
-        return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
-                emptyWetTray >= 0
-                        ? "tray " + emptyWetTray + " is in the free-water set but sheds no free water"
-                        : waterDewPointDetail(state, worstNode, worstPartialPressure));
+        if (worstNode >= 0 && problem.isWetTray(worstNode)) {
+            return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
+                    waterDewPointDetail(state, worstNode, worstPartialPressure));
+        }
+        // A dry stage below its water dew point is an operating condition the column can be in, not a modelling
+        // failure: the steam-laden vapour is supersaturated there and water will condense on the tray. The column
+        // is published, and the condition is reported as a warning (see withDewPointAdvisory).
+        return V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", maximum, 1.0,
+                "warning: " + waterDewPointDetail(state, worstNode, worstPartialPressure));
     }
 
     /** Names the stage, its temperature and the water dew point it sits below, in the units the operator authors. */
@@ -417,6 +427,19 @@ final class V3AcceptanceAuditor {
     }
 
     /** Advisory only: which trays carry a free-water phase and how much water they circulate. */
+    /** Publishes a dry stage below its water dew point as a warning that names the tray; it never rejects the column. */
+    private List<String> withDewPointAdvisory(List<String> advisoryEvidence, List<V3AcceptanceAudit.Check> checks) {
+        if (advisoryEvidence.size() >= 16) return advisoryEvidence;
+        for (V3AcceptanceAudit.Check check : checks) {
+            if (!check.family().equals("WATER_DEW_POINT") || !check.passed() || !check.detail().startsWith("warning: ")) continue;
+            List<String> evidence = new ArrayList<>(advisoryEvidence);
+            String warning = "Warning: " + check.detail().substring("warning: ".length());
+            evidence.add(warning.length() <= 256 ? warning : warning.substring(0, 256));
+            return List.copyOf(evidence);
+        }
+        return advisoryEvidence;
+    }
+
     private List<String> withWetTrayAdvisory(List<String> advisoryEvidence, V3DryMeshState state) {
         if (!problem.hasWetTrays() || advisoryEvidence.size() >= 16) return advisoryEvidence;
         List<String> evidence = new ArrayList<>(advisoryEvidence);

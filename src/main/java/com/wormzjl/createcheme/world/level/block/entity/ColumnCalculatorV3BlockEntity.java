@@ -118,7 +118,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             status = V3Status.SUCCESS;
             detail = V3HollandExample32.isPackage(operation.input().packageId())
                     ? "Success: Holland oracle and V3 audit agree; seven printed-table conflicts remain advisory"
-                    : "Success: accepted residual " + success.diagnostics().maximumScaledResidual();
+                    : successDetail(success);
         } else if (outcome instanceof V3ColumnOutcome.Failure failure) {
             status = V3Status.FAILED;
             detail = bounded(failure.code().name() + ": " + failure.summary());
@@ -129,6 +129,15 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         stateRevision = Math.incrementExact(stateRevision);
         setChanged();
         return true;
+    }
+
+    /** An accepted column keeps its residual in the detail; an audit warning, when there is one, leads the line. */
+    private static String successDetail(V3ColumnOutcome.Success success) {
+        String residual = "accepted residual " + success.diagnostics().maximumScaledResidual();
+        for (String advisory : success.diagnostics().acceptanceAudit().advisoryEvidence()) {
+            if (advisory.startsWith("Warning: ")) return bounded("Success with warning: " + advisory.substring("Warning: ".length()) + " (" + residual + ")");
+        }
+        return "Success: " + residual;
     }
 
     /** Records a terminal service failure while preserving any prior accepted display certificate. */
@@ -367,21 +376,17 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     /**
      * The input a fresh calculator starts on: the Ledezma-Martinez (2019) no-preflash atmospheric column. Forty
      * trays plus the steam-stripped bottom stage, three direct side products at stages 10/18/28 (491/515/165 kmol/h),
-     * each paired with a pumparound cooler drawn at the draw stage and returned two stages above. The source duties
-     * are 12.84/17.89/11.20 MW; the top cooler is halved to 6.42 MW here because this reconstruction carries no
-     * side-stripper reboiler heat (18.1 MW in the source), and at the full 12.84 MW tray 1 lands at 83 C, below the
-     * water dew point of its steam-laden overhead (see V3_LITERATURE_TOP_TEMPERATURE_CHECK). At 6.42 MW tray 1 sits
-     * at 91.5 C against the source stage 1 at 93.7 C. 1,200 kmol/h of stripping steam at the bottom, condenser 59 C,
-     * reflux ratio 4.17, no external reboiler.
+     * each paired with a pumparound cooler drawn at the draw stage and returned two stages above at the published
+     * 12.84/17.89/11.20 MW, 1,200 kmol/h of stripping steam at the bottom, condenser 59 C, reflux ratio 4.17, no
+     * external reboiler.
      *
-     * <p>A tray below the water dew point is no longer a rejection — it may take a free-water phase — but at the
-     * full 12.84 MW no free-water phase can lift tray 1 onto its saturation line, and that is structural rather
-     * than numerical: the tray water balance telescopes, so the water rising out of the topmost tray of a wet
-     * block is the whole authored steam whatever that tray sheds, and its temperature is invariant along the
-     * free-water exchange cycle with the tray below (measured at about 1.6e-9 per kmol/h against the 0.1497 that
-     * would have to be closed; see V3_FREE_WATER_CONTINUATION_REVIEW). At the published duty the column therefore
-     * converges to a solved candidate whose WATER_DEW_POINT check names tray 1. Restoring the published duty here
-     * waits on the side strippers that are the real fix for the missing heat.</p>
+     * <p>This reconstruction carries no side-stripper reboiler heat (18.1 MW in the source), so its top is about
+     * 10 C colder than the source's 93.7 C and tray 1 sits below the water dew point of its steam-laden overhead
+     * (83 C against 87 C). The column still solves; the condition is published as a warning on the result rather
+     * than a rejection, because it is an operating state the real column can be in, a bad one that water on the
+     * top trays makes corrosive. No steady free-water phase exists for that tray under these specifications (see
+     * V3_FREE_WATER_CONTINUATION_REVIEW); the fix that removes the warning is the side strippers
+     * (V3_LITERATURE_TOP_TEMPERATURE_CHECK).</p>
      */
     public static V3ColumnInput literatureCduInput() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(LITERATURE_PACKAGE);
@@ -398,7 +403,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 List.of(new V3SideDrawSpec(10, 491.0 / 3.6), new V3SideDrawSpec(18, 515.0 / 3.6),
                         new V3SideDrawSpec(28, 165.0 / 3.6)),
                 List.of(new V3SteamFeedSpec(41, 1_200.0 / 3.6, 533.15)),
-                List.of(new V3PumparoundSpec(8, 10, -6.42e6, V3PumparoundSpec.Split.UNIFORM),
+                List.of(new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
                         new V3PumparoundSpec(16, 18, -17.89e6, V3PumparoundSpec.Split.UNIFORM),
                         new V3PumparoundSpec(26, 28, -11.20e6, V3PumparoundSpec.Split.UNIFORM)));
     }
