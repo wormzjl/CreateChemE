@@ -21,6 +21,7 @@ public final class V3DegreeOfFreedomLedger {
     private final V3ColumnTopology topology;
     private final int componentCount;
     private final V3TruncationSupport truncationSupport;
+    private final V3WetTraySet wetTraySet;
     private final List<V3ColumnSpecification> specifications;
     private final List<Unknown> unknowns;
     private final List<Equation> equations;
@@ -31,10 +32,12 @@ public final class V3DegreeOfFreedomLedger {
     private V3DegreeOfFreedomLedger(
             V3ColumnTopology topology, int componentCount, List<V3ColumnSpecification> specifications,
             List<Unknown> unknowns, List<Equation> equations, List<V3CalculatedQuantity> calculatedQuantities,
-            List<V3ContractDiagnostic> diagnostics, int structuralRank, V3TruncationSupport truncationSupport) {
+            List<V3ContractDiagnostic> diagnostics, int structuralRank, V3TruncationSupport truncationSupport,
+            V3WetTraySet wetTraySet) {
         this.topology = topology;
         this.componentCount = componentCount;
         this.truncationSupport = truncationSupport;
+        this.wetTraySet = wetTraySet;
         this.specifications = List.copyOf(specifications);
         this.unknowns = List.copyOf(unknowns);
         this.equations = List.copyOf(equations);
@@ -71,9 +74,21 @@ public final class V3DegreeOfFreedomLedger {
             V3ColumnTopology topology, int componentCount, List<V3ColumnSpecification> specifications,
             V3CondenserComponentPhases condenserComponentPhases, V3TruncationSupport truncationSupport,
             List<V3SideDrawSpec> sideDraws) {
+        return create(topology, componentCount, specifications, condenserComponentPhases, truncationSupport,
+                sideDraws, V3WetTraySet.dry(Objects.requireNonNull(topology, "topology")));
+    }
+
+    static V3DegreeOfFreedomLedger create(
+            V3ColumnTopology topology, int componentCount, List<V3ColumnSpecification> specifications,
+            V3CondenserComponentPhases condenserComponentPhases, V3TruncationSupport truncationSupport,
+            List<V3SideDrawSpec> sideDraws, V3WetTraySet wetTraySet) {
         topology = Objects.requireNonNull(topology, "topology");
         condenserComponentPhases = Objects.requireNonNull(condenserComponentPhases, "condenserComponentPhases");
         truncationSupport = Objects.requireNonNull(truncationSupport, "truncationSupport");
+        wetTraySet = Objects.requireNonNull(wetTraySet, "wetTraySet");
+        if (!wetTraySet.topology().equals(topology)) {
+            throw new IllegalArgumentException("V3 wet-tray set does not match the ledger topology");
+        }
         truncationSupport.requireCompatible(topology, componentCount);
         if (componentCount < 1 || componentCount > V3ComponentBasis.MAX_COMPONENTS) {
             throw new IllegalArgumentException("V3 component count is outside the supported contract range");
@@ -84,9 +99,10 @@ public final class V3DegreeOfFreedomLedger {
         }
 
         List<V3ContractDiagnostic> diagnostics = specificationDiagnostics(topology, specifications);
-        List<Unknown> unknowns = enumerateUnknowns(topology, componentCount, condenserComponentPhases, truncationSupport);
+        List<Unknown> unknowns = enumerateUnknowns(topology, componentCount, condenserComponentPhases,
+                truncationSupport, wetTraySet);
         List<Equation> equations = enumerateEquations(topology, componentCount, unknowns, diagnostics,
-                condenserComponentPhases, truncationSupport, sideDraws);
+                condenserComponentPhases, truncationSupport, sideDraws, wetTraySet);
         int structuralRank = maximumBipartiteMatching(equations, unknowns);
         if (unknowns.size() != equations.size()) {
             diagnostics.add(new V3ContractDiagnostic("DOF_COUNT_MISMATCH", "V3 unknown and equation counts differ"));
@@ -100,7 +116,7 @@ public final class V3DegreeOfFreedomLedger {
                         V3CalculatedQuantity.BOTTOMS_COMPONENT_FLOWS,
                         V3CalculatedQuantity.STAGE_LIQUID_COMPONENT_FLOWS,
                         V3CalculatedQuantity.STAGE_VAPOR_COMPONENT_FLOWS),
-                diagnostics, structuralRank, truncationSupport);
+                diagnostics, structuralRank, truncationSupport, wetTraySet);
     }
 
     public V3ColumnTopology topology() {
@@ -113,6 +129,10 @@ public final class V3DegreeOfFreedomLedger {
 
     V3TruncationSupport truncationSupport() {
         return truncationSupport;
+    }
+
+    V3WetTraySet wetTraySet() {
+        return wetTraySet;
     }
 
     public List<V3ColumnSpecification> specifications() {
@@ -190,7 +210,7 @@ public final class V3DegreeOfFreedomLedger {
 
     private static List<Unknown> enumerateUnknowns(
             V3ColumnTopology topology, int componentCount, V3CondenserComponentPhases condenserComponentPhases,
-            V3TruncationSupport truncationSupport) {
+            V3TruncationSupport truncationSupport, V3WetTraySet wetTraySet) {
         List<Unknown> unknowns = new ArrayList<>();
         for (int node = 0; node < topology.nodeCount(); node++) {
             for (int component = 0; component < componentCount; component++) {
@@ -204,6 +224,11 @@ public final class V3DegreeOfFreedomLedger {
             if (topology.hasTemperatureUnknown(node)) {
                 unknowns.add(new Unknown(new UnknownId(UnknownFamily.TEMPERATURE, node, -1)));
             }
+            // Last in the node's block, so the contiguous stage layout gains exactly one unknown here and
+            // exactly one row (the saturation equation) in the matching equation block.
+            if (wetTraySet.isWet(node)) {
+                unknowns.add(new Unknown(new UnknownId(UnknownFamily.FREE_WATER_FLOW, node, -1)));
+            }
         }
         return unknowns;
     }
@@ -211,7 +236,7 @@ public final class V3DegreeOfFreedomLedger {
     private static List<Equation> enumerateEquations(
             V3ColumnTopology topology, int componentCount, List<Unknown> unknowns,
             List<V3ContractDiagnostic> diagnostics, V3CondenserComponentPhases condenserComponentPhases,
-            V3TruncationSupport truncationSupport, List<V3SideDrawSpec> sideDraws) {
+            V3TruncationSupport truncationSupport, List<V3SideDrawSpec> sideDraws, V3WetTraySet wetTraySet) {
         boolean[] drawTrays = new boolean[topology.nodeCount()];
         for (V3SideDrawSpec draw : sideDraws) drawTrays[draw.trayNumber()] = true;
         Set<UnknownId> activeUnknowns = new HashSet<>(unknowns.stream().map(Unknown::id).toList());
@@ -231,6 +256,10 @@ public final class V3DegreeOfFreedomLedger {
             if (topology.hasEnergyEquation(node)) {
                 equations.add(new Equation(new EquationId(EquationFamily.ENERGY_BALANCE, node, -1),
                         energyReferences(topology, node, componentCount, activeUnknowns)));
+            }
+            if (wetTraySet.isWet(node)) {
+                equations.add(new Equation(new EquationId(EquationFamily.WATER_SATURATION, node, -1),
+                        waterSaturationReferences(node, componentCount, activeUnknowns)));
             }
         }
         for (Equation equation : equations) {
@@ -276,6 +305,9 @@ public final class V3DegreeOfFreedomLedger {
             addIfActive(references, activeUnknowns, UnknownFamily.VAPOR_COMPONENT_FLOW, node, phaseComponent);
         }
         addIfActive(references, activeUnknowns, UnknownFamily.TEMPERATURE, node, -1);
+        // The water-dilution term of a wet column reads this node's water vapour, which is the authored
+        // steam profile plus the free water the tray above sheds.
+        if (node > 0) addIfActive(references, activeUnknowns, UnknownFamily.FREE_WATER_FLOW, node - 1, -1);
         return ordered(references);
     }
 
@@ -288,8 +320,27 @@ public final class V3DegreeOfFreedomLedger {
                 addIfActive(references, activeUnknowns, UnknownFamily.LIQUID_COMPONENT_FLOW, relatedNode, component);
                 addIfActive(references, activeUnknowns, UnknownFamily.VAPOR_COMPONENT_FLOW, relatedNode, component);
             }
+            // Free water in from above, out below, and the water vapour of both this node and the one below.
+            addIfActive(references, activeUnknowns, UnknownFamily.FREE_WATER_FLOW, relatedNode, -1);
         }
         addIfActive(references, activeUnknowns, UnknownFamily.TEMPERATURE, node, -1);
+        return ordered(references);
+    }
+
+    /**
+     * {@code ln(P_n W_n / ((V_hc,n + W_n) P_sat(T_n))) = 0}: this node's hydrocarbon vapour, its temperature,
+     * and — through {@code W_n} — the free water of the tray directly above. The free water of the node's
+     * <em>own</em> tray is deliberately absent: it cancels out of {@code W_n} exactly, because what condenses
+     * here arrives at the tray below and comes straight back up.
+     */
+    private static List<UnknownId> waterSaturationReferences(
+            int node, int componentCount, Set<UnknownId> activeUnknowns) {
+        Set<UnknownId> references = new HashSet<>();
+        for (int component = 0; component < componentCount; component++) {
+            addIfActive(references, activeUnknowns, UnknownFamily.VAPOR_COMPONENT_FLOW, node, component);
+        }
+        addIfActive(references, activeUnknowns, UnknownFamily.TEMPERATURE, node, -1);
+        if (node > 0) addIfActive(references, activeUnknowns, UnknownFamily.FREE_WATER_FLOW, node - 1, -1);
         return ordered(references);
     }
 
@@ -335,8 +386,8 @@ public final class V3DegreeOfFreedomLedger {
     public record UnknownId(UnknownFamily family, int node, int component) implements Comparable<UnknownId> {
         public UnknownId {
             family = Objects.requireNonNull(family, "family");
-            if (node < 0 || component < -1 || (family == UnknownFamily.TEMPERATURE && component != -1)
-                    || (family != UnknownFamily.TEMPERATURE && component < 0)) {
+            boolean nodeScoped = family == UnknownFamily.TEMPERATURE || family == UnknownFamily.FREE_WATER_FLOW;
+            if (node < 0 || component < -1 || (nodeScoped && component != -1) || (!nodeScoped && component < 0)) {
                 throw new IllegalArgumentException("Invalid V3 unknown semantic ID");
             }
         }
@@ -354,8 +405,8 @@ public final class V3DegreeOfFreedomLedger {
     public record EquationId(EquationFamily family, int node, int component) {
         public EquationId {
             family = Objects.requireNonNull(family, "family");
-            if (node < 0 || component < -1 || (family == EquationFamily.ENERGY_BALANCE && component != -1)
-                    || (family != EquationFamily.ENERGY_BALANCE && component < 0)) {
+            boolean nodeScoped = family == EquationFamily.ENERGY_BALANCE || family == EquationFamily.WATER_SATURATION;
+            if (node < 0 || component < -1 || (nodeScoped && component != -1) || (!nodeScoped && component < 0)) {
                 throw new IllegalArgumentException("Invalid V3 equation semantic ID");
             }
         }
@@ -382,12 +433,16 @@ public final class V3DegreeOfFreedomLedger {
     public enum UnknownFamily {
         LIQUID_COMPONENT_FLOW,
         VAPOR_COMPONENT_FLOW,
-        TEMPERATURE
+        TEMPERATURE,
+        /** Aqueous liquid leaving a wet tray downward; present only on the trays of the frozen wet set. */
+        FREE_WATER_FLOW
     }
 
     public enum EquationFamily {
         COMPONENT_MATERIAL_BALANCE,
         VAPOR_LIQUID_EQUILIBRIUM,
-        ENERGY_BALANCE
+        ENERGY_BALANCE,
+        /** {@code ln(P_n W_n / ((V_hc,n + W_n) P_sat(T_n))) = 0} on a wet tray. */
+        WATER_SATURATION
     }
 }

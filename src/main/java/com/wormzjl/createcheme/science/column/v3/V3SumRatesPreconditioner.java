@@ -68,7 +68,8 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
             request.control().checkpoint();
             double[][] phaseRatios = V3ColumnInitializer.phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures);
             V3ColumnInitializer.solveMaterialBalances(problem, phaseRatios, liquid, vapor);
-            V3DryMeshState state = new V3DryMeshState(topology, request.seed().componentCount(), liquid, vapor, temperatures);
+            V3DryMeshState state = new V3DryMeshState(topology, request.seed().componentCount(), liquid, vapor, temperatures,
+                    V3ColumnInitializer.freeWaterFlows(request.seed()));
             V3MeshResidual residual = evaluator.evaluate(state, workspace);
             double[] energyResidual = energyResiduals(residual, topology);
             double energyNorm = maximumAbsoluteScaledEnergy(residual);
@@ -80,7 +81,8 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
             completedSweeps = sweep;
             if (maximumChange <= 1.0e-4) break;
         }
-        V3DryMeshState candidate = new V3DryMeshState(topology, request.seed().componentCount(), liquid, vapor, temperatures);
+        V3DryMeshState candidate = new V3DryMeshState(topology, request.seed().componentCount(), liquid, vapor, temperatures,
+                V3ColumnInitializer.freeWaterFlows(request.seed()));
         V3MeshResidual finalResidual = evaluator.evaluate(candidate, workspace);
         finalEnergyNorm = maximumAbsoluteScaledEnergy(finalResidual);
         if (!Double.isFinite(initialEnergyNorm) || !Double.isFinite(finalEnergyNorm)
@@ -164,7 +166,8 @@ final class V3SumRatesPreconditioner implements V3SequentialPreconditioner {
         if (!(temperatures[node] > 0.0) || !Double.isFinite(temperatures[node])) {
             throw new IllegalArgumentException("V3 sum-rates temperature perturbation leaves the physical domain");
         }
-        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures);
+        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures,
+                V3ColumnInitializer.freeWaterFlows(state));
     }
 
     private static double[] solveTridiagonalCorrection(

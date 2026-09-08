@@ -160,7 +160,10 @@ final class V3ColumnInitializer {
             blendFlows(vapor, updatedVapor, MATERIAL_BALANCE_PROJECTION_DAMPING);
             updateBubblePointTemperatures(problem, thermo, workspace, liquid, vapor, temperatures);
         }
-        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures);
+        // A material/VLE projection moves hydrocarbon flows and temperatures only; the candidate's free
+        // water is carried through unchanged so a recovery seed does not silently dry the wet trays.
+        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures,
+                freeWaterFlows(state));
     }
 
     private static double[][] copyFlows(double[][] source) {
@@ -935,6 +938,20 @@ final class V3ColumnInitializer {
         double[] values = new double[state.nodeCount()];
         for (int node = 0; node < values.length; node++) values[node] = state.temperatureKelvin(node);
         return values;
+    }
+
+    /** The candidate's free-water profile, so a transform that rewrites flows or temperatures can carry it. */
+    static double[] freeWaterFlows(V3DryMeshState state) {
+        double[] values = new double[state.nodeCount()];
+        for (int node = 0; node < values.length; node++) values[node] = state.freeWaterFlow(node);
+        return values;
+    }
+
+    /** The same candidate with a different free-water profile; nothing else moves. */
+    static V3DryMeshState withFreeWater(
+            V3DryMeshState state, V3ColumnTopology topology, double[] freeWaterFlowsMolPerSecond) {
+        return new V3DryMeshState(topology, state.componentCount(), flows(state, true), flows(state, false),
+                temperatures(state), freeWaterFlowsMolPerSecond);
     }
 
     private static double[] temperatures(V3ColumnProblem problem, int nodes) {

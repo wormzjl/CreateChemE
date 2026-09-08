@@ -27,7 +27,8 @@ public final class V3ColumnCalculator {
     public static final String FORMULATION_REVISION = "v3-dry-mesh-r24-flash-trace";
     private static final String LEGACY_FORMULATION_REVISION = "v3-dry-mesh-r23";
     public static final String ASSUMPTIONS_REVISION = "v3-dry-assumptions-r4";
-    public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r1";
+    /** r2: free water is allowed on a tray, is immiscible with the hydrocarbon liquid, and is not side-drawn. */
+    public static final String WET_ASSUMPTIONS_REVISION = "v3-wet-assumptions-r2";
     /**
      * Prescribed stage heat: a signed duty with positive adding heat, no circulating pumparound stream,
      * no return-temperature specification, and the {@link V3PumparoundSpec.Split} tray placement rule.
@@ -56,6 +57,8 @@ public final class V3ColumnCalculator {
     private static final int MAXIMUM_FLOOR_SUPPORT_REFRESHES = 3;
     /** Only one of those passes may follow a stalled attempt; a second stall in a row is not new information. */
     private static final int MAXIMUM_STALLED_FLOOR_SUPPORT_REFRESHES = 1;
+    /** Free-water tray-set refreshes within one attempt; only a converged attempt spends one. */
+    private static final int MAXIMUM_WET_TRAY_REFRESHES = 3;
     /**
      * Newton budget of the one refresh that follows a stalled attempt and only removes points.
      *
@@ -700,6 +703,8 @@ public final class V3ColumnCalculator {
         int nextIterations = maximumIterations;
         int refreshes = 0;
         int stalledRefreshes = 0;
+        int wetTrayRefreshes = 0;
+        List<String> wetTrayEvents = new ArrayList<>();
         // The floor support is frozen for the length of one Newton solve, so it is re-derived from the
         // solved state afterwards: a point that fell below the floor is dropped, and a removed point whose
         // retained neighbours now deliver at least its floor is reinserted at the floor and the solve is
@@ -733,20 +738,36 @@ public final class V3ColumnCalculator {
             // rung the continuation is going to subdivide or abandon anyway, and re-solving it three times
             // triples the cost of every case that is on its way to a typed failure.
             boolean converged = attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged;
-            if (refreshes >= MAXIMUM_FLOOR_SUPPORT_REFRESHES
-                    || (!converged && stalledRefreshes >= MAXIMUM_STALLED_FLOOR_SUPPORT_REFRESHES)) {
-                break;
-            }
-            PreparedAttempt refreshed = refreshFloorSupport(untruncated, thermo, prepared, attempt.state(), policy);
+            boolean floorBudget = refreshes < MAXIMUM_FLOOR_SUPPORT_REFRESHES
+                    && (converged || stalledRefreshes < MAXIMUM_STALLED_FLOOR_SUPPORT_REFRESHES);
+            // The wet set is re-derived only from a state that solved its own equations, and carries its own
+            // small budget so it never has to compete with the support refreshes for one. How far a tray sits
+            // below the water dew point, and how much water it must therefore shed, are readings of a
+            // solution; taken off a stalled iterate they are noise, and a free-water flow seeded from noise
+            // is megawatts of latent heat in the wrong place.
+            boolean wetBudget = converged && wetTrayRefreshes < MAXIMUM_WET_TRAY_REFRESHES;
+            if (!floorBudget && !wetBudget) break;
+            PreparedAttempt refreshed = refreshFloorSupport(
+                    untruncated, thermo, prepared, attempt.state(), policy, wetBudget);
             if (refreshed == null) break;
             // See STALLED_DROP_REFRESH_ITERATIONS: a refresh that only removes points from a stalled attempt
             // is a bounded polish, not a second full Newton solve.
+            // A refresh that only removes — points from the support, trays from the wet set — carries no
+            // information the stalled state did not already have. One that adds a wet tray does: the water
+            // that tray sheds is a degree of freedom the stalled solve never had, so it keeps the full budget.
             nextIterations = !converged
                     && refreshed.support().presentPhaseCount() <= prepared.support().presentPhaseCount()
+                    && refreshed.wetTrays().wetTrayCount() <= prepared.wetTrays().wetTrayCount()
                     ? Math.min(maximumIterations, STALLED_DROP_REFRESH_ITERATIONS)
                     : maximumIterations;
-            refreshes++;
-            if (!converged) stalledRefreshes++;
+            if (!refreshed.support().sameRetention(prepared.support())) {
+                refreshes++;
+                if (!converged) stalledRefreshes++;
+            }
+            if (!refreshed.wetTrays().sameSet(prepared.wetTrays())) {
+                wetTrayRefreshes++;
+                refreshed = withWetEnergyShift(refreshed, thermo, feedMolarEnthalpy, control, wetTrayEvents);
+            }
             prepared = refreshed;
         }
         problem = prepared.problem();
@@ -755,6 +776,9 @@ public final class V3ColumnCalculator {
             events = mergedEvents(List.of("floor support refreshed " + refreshes + " time(s); retained="
                     + (prepared.support().totalPointCount() - prepared.support().truncatedPointCount())
                     + "/" + prepared.support().totalPointCount()), events);
+        }
+        if (prepared.wetTrays().hasWetTrays()) {
+            events = mergedEvents(mergedEvents(List.of(prepared.wetTrays().event(attempt.state())), wetTrayEvents), events);
         }
         if (policy.attemptCutoff() > 0.0) events = mergedEvents(List.of(flashTraceEvent(feedFlash)), events);
         if (!prepared.support().note().isEmpty()) {
@@ -1057,6 +1081,39 @@ public final class V3ColumnCalculator {
         return prediction.applyTo(seed, problem.topology());
     }
 
+    /**
+     * Re-levels the temperature profile after a free-water tray enters or leaves the frozen set.
+     *
+     * <p>Admitting a wet tray is an energy step of exactly the kind the ramp's rungs make: the free water it
+     * sheds carries its latent heat out of the tray below and into the tray itself, so the seed's energy rows
+     * move by that duty while its temperatures still belong to the dry solution. Left alone, Newton walks the
+     * bulk of it off in a handful of iterations and then sits in the common mode — measured on the literature
+     * column at its published duties, every tray energy row short by the same 57.6 kW with the line search
+     * refusing every step. That mode is what {@link V3EnergyShiftPredictor} solves for, and the gate it
+     * requires is satisfied here by construction: a wet refresh only follows a converged attempt.</p>
+     */
+    private static PreparedAttempt withWetEnergyShift(
+            PreparedAttempt prepared, V3PengRobinsonThermo thermo, double feedMolarEnthalpyJoulesPerMol,
+            V3SolveControl control, List<String> events) {
+        V3EnergyShiftPredictor.Prediction prediction = V3EnergyShiftPredictor.predict(prepared.problem(), thermo,
+                feedMolarEnthalpyJoulesPerMol, prepared.seed(), thermo.newWorkspace(), control);
+        if (events.size() < V3SolverDiagnostics.MAX_EVENTS) {
+            events.add(bounded(prediction.applied()
+                    ? String.format(Locale.ROOT,
+                            "free-water energy shift: largest %.3f K, scaled energy %.6g -> %.6g",
+                            prediction.largestShiftKelvin(), prediction.scaledEnergyBefore(),
+                            prediction.scaledEnergyAfter())
+                    : "free-water energy shift declined: " + prediction.note()));
+        }
+        if (!prediction.applied()) return prepared;
+        return new PreparedAttempt(prepared.problem(), prepared.support(), prepared.wetTrays(),
+                prediction.applyTo(prepared.seed(), prepared.problem().topology()));
+    }
+
+    private static String bounded(String event) {
+        return event.length() <= 256 ? event : event.substring(0, 256);
+    }
+
     /** Bounded record of one ramp's energy-shift predictions, published as a single diagnostic event. */
     private static final class EnergyShiftLog {
         private int applied;
@@ -1299,9 +1356,10 @@ public final class V3ColumnCalculator {
         boolean heat = !input.pumparounds().isEmpty();
         String trace = requestedCutoff > 0.0 ? "-flash-trace" : "";
         if (!input.steamFeeds().isEmpty()) {
-            // r7/r8: the condenser vapor outlet carries the ALL_VAPOR steam product enthalpy even when the
-            // hydrocarbon vapor is absent (LIQUID_ONLY branch), which changes the published wet condenser duty.
-            return (heat ? "v3-wet-mesh-r29-steam" : "v3-wet-mesh-r28-steam")
+            // r30/r31: a tray below the water dew point carries a free-water phase. Water vapour is a
+            // function of the state rather than a parameter, wet trays gain a free-water unknown and a
+            // saturation row, and the tray energy rows carry the aqueous liquid in and out.
+            return (heat ? "v3-wet-mesh-r31-steam" : "v3-wet-mesh-r30-steam")
                     + (!input.sideDraws().isEmpty() ? "-side-draws" : "") + trace
                     + (heat ? HEAT_FORMULATION_SUFFIX : "");
         }
@@ -1347,7 +1405,7 @@ public final class V3ColumnCalculator {
         if (!problem.hasSteamFeeds()) return "";
         double maximumRatio = 0.0;
         for (int node = 1; node <= problem.topology().reboilerNode(); node++) {
-            double water = problem.waterVaporFlowMolPerSecond(node);
+            double water = problem.waterVaporFlow(state, node);
             double temperature = state.temperatureKelvin(node);
             if (water == 0.0 || temperature >= 640.0 || temperature < V3WaterProperties.TRIPLE_POINT_KELVIN) continue;
             double hydrocarbon = 0.0;
@@ -1355,7 +1413,9 @@ public final class V3ColumnCalculator {
             maximumRatio = Math.max(maximumRatio, problem.nodePressurePascal(node) * water / (hydrocarbon + water)
                     / V3WaterProperties.saturationPressurePascal(temperature));
         }
-        return String.format(Locale.ROOT, "; water dew-point saturation ratio %.5g (<= 1 required)", maximumRatio);
+        // A wet tray sits exactly on the saturation line, so this ratio reads one there by construction.
+        return String.format(Locale.ROOT, "; water dew-point saturation ratio %.5g (wet trays: %d)",
+                maximumRatio, problem.wetTraySet().wetTrayCount());
     }
 
     private static V3SolvePass withPriorSupportNotes(V3SolvePass previous, V3SolvePass next) {
@@ -1384,25 +1444,60 @@ public final class V3ColumnCalculator {
      */
     private static PreparedAttempt prepareAttempt(
             V3ColumnProblem original, V3PengRobinsonThermo thermo, V3DryMeshState seed, SolvePolicy policy) {
+        return prepareAttempt(original, thermo, seed, policy, V3WetTraySet.dry(original.topology()), false);
+    }
+
+    /**
+     * Freezes both attempt-local decisions — the flow-floor support and the free-water tray set — together.
+     *
+     * <p>{@code previousWetTrays} is the set the candidate state belongs to, and it is what gives the wet
+     * decision its hysteresis: a tray that is already wet stays wet until its solved free water falls below
+     * a floor, while a dry tray needs its saturation ratio to clear one by a margin.</p>
+     *
+     * <p>With {@code deriveWetTrays} false the set is taken as given, and the first attempt of every solve
+     * therefore runs <strong>dry</strong>. The free-water decision is not a structural one like the flow
+     * floor: it asks how far a tray sits below the water dew point and how much water it must therefore
+     * shed, and both readings come out of a state that has not satisfied its own equations as nonsense.
+     * Measured on the literature column at its published duties, deriving the set from a stalled iterate put
+     * 773 kmol/h of free water on tray one against a true value near 210, poisoned the top three energy rows
+     * by 10, 6 and 4 MW, and left Newton accepting every step while the residual moved from 0.8454 to 0.8448
+     * in 32 iterations. Only a converged attempt spends a wet refresh, which is the rule the energy-shift
+     * predictor already follows for the same reason.</p>
+     */
+    private static PreparedAttempt prepareAttempt(
+            V3ColumnProblem original, V3PengRobinsonThermo thermo, V3DryMeshState seed, SolvePolicy policy,
+            V3WetTraySet currentWetTrays, boolean deriveWetTrays) {
         V3DryMeshState lifted = liftFloorSupport(original, thermo, seed);
         V3TruncationSupport support = V3TruncationSupport.derive(original, policy.attemptCutoff(), lifted);
+        V3WetTraySet wetTrays = deriveWetTrays
+                ? V3WetTraySet.derive(original, lifted, currentWetTrays) : currentWetTrays;
         V3ColumnProblem problem;
         try {
-            problem = V3ColumnProblemResolver.withTruncation(original, support);
+            problem = V3ColumnProblemResolver.withTruncation(original, support, wetTrays);
         } catch (IllegalArgumentException invalidLedger) {
             support = support.fallbackToIdentity(original,
                     "Stage-trace support fell back to identity: reduced ledger validation failed");
+            wetTrays = V3WetTraySet.dry(original.topology());
             problem = original;
         }
-        return new PreparedAttempt(problem, support, support.projectSeed(original, lifted));
+        return new PreparedAttempt(problem, support, wetTrays,
+                wetTrays.seed(problem, support.projectSeed(original, lifted)));
     }
 
-    /** Re-derives the floor support from a solved state, or returns null when the retained set is unchanged. */
+    /**
+     * Re-derives the floor support and the wet-tray set from a solved state.
+     *
+     * <p>Returns null when neither moved. The wet set is refreshed on exactly the same schedule as the
+     * support and for the same reason: both are frozen for the length of one Newton solve, so the state that
+     * solve produced is the first honest evidence about whether the decision was right.</p>
+     */
     private static PreparedAttempt refreshFloorSupport(
             V3ColumnProblem untruncated, V3PengRobinsonThermo thermo, PreparedAttempt prepared,
-            V3DryMeshState state, SolvePolicy policy) {
-        PreparedAttempt refreshed = prepareAttempt(untruncated, thermo, state, policy);
-        return refreshed.support().sameRetention(prepared.support()) ? null : refreshed;
+            V3DryMeshState state, SolvePolicy policy, boolean deriveWetTrays) {
+        PreparedAttempt refreshed = prepareAttempt(
+                untruncated, thermo, state, policy, prepared.wetTrays(), deriveWetTrays);
+        return refreshed.support().sameRetention(prepared.support())
+                && refreshed.wetTrays().sameSet(prepared.wetTrays()) ? null : refreshed;
     }
 
     /**
@@ -1493,7 +1588,8 @@ public final class V3ColumnCalculator {
                 }
             }
         }
-        return new V3DryMeshState(topology, components, liquid, vapor, temperatures);
+        return new V3DryMeshState(topology, components, liquid, vapor, temperatures,
+                V3ColumnInitializer.freeWaterFlows(state));
     }
 
     /** Splits the delivered material over the point's present phases the way its equilibrium row would. */
@@ -1606,11 +1702,13 @@ public final class V3ColumnCalculator {
         }
     }
 
-    /** Keeps the frozen problem/support/seed together through correction, audit and publication. */
-    private record PreparedAttempt(V3ColumnProblem problem, V3TruncationSupport support, V3DryMeshState seed) {
+    /** Keeps the frozen problem/support/wet set/seed together through correction, audit and publication. */
+    private record PreparedAttempt(
+            V3ColumnProblem problem, V3TruncationSupport support, V3WetTraySet wetTrays, V3DryMeshState seed) {
         private PreparedAttempt {
             Objects.requireNonNull(problem, "problem");
             Objects.requireNonNull(support, "support");
+            Objects.requireNonNull(wetTrays, "wetTrays");
             Objects.requireNonNull(seed, "seed");
         }
     }

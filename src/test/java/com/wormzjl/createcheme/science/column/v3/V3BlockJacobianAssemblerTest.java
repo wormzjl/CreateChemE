@@ -38,6 +38,19 @@ class V3BlockJacobianAssemblerTest {
         assertLocalBlocksMatchFiniteDifference(problem);
     }
 
+    /**
+     * The free-water columns are the one place the local assembler writes derivatives in closed form rather
+     * than probing for them, because they cross a node boundary: {@code F_m} reaches the equilibrium rows,
+     * the saturation row and both energy rows around tray {@code m + 1} through that tray's water vapour.
+     * This holds the whole assembled band, wet columns included, against the uncoloured oracle.
+     */
+    @Test
+    void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleOnWetTrays() {
+        V3ColumnProblem wet = wetProblem();
+        assertTrue(wet.hasWetTrays(), "fixture must carry a free-water tray");
+        assertLocalBlocksMatchFiniteDifference(wet, wetState(wet));
+    }
+
     @Test
     void localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleWithPrescribedStageHeat() {
         V3ColumnInput plain = problem().input();
@@ -52,10 +65,13 @@ class V3BlockJacobianAssemblerTest {
     }
 
     private static void assertLocalBlocksMatchFiniteDifference(V3ColumnProblem problem) {
+        assertLocalBlocksMatchFiniteDifference(problem, state(problem.topology()));
+    }
+
+    private static void assertLocalBlocksMatchFiniteDifference(V3ColumnProblem problem, V3DryMeshState state) {
         SmoothThermo thermo = new SmoothThermo();
         V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(problem, thermo, 0.0);
         V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(problem);
-        V3DryMeshState state = state(problem.topology());
 
         V3FiniteDifferenceJacobian.Jacobian full = V3FiniteDifferenceJacobian.evaluate(
                 evaluator, coordinates, state, thermo::newWorkspace);
@@ -67,7 +83,8 @@ class V3BlockJacobianAssemblerTest {
 
         assertEquals(6, referenceBlocks.layout().nodeCount());
         assertEquals(4, referenceBlocks.layout().size(0));
-        assertEquals(5, referenceBlocks.layout().size(1));
+        // Two component flows per phase plus the temperature, and on a wet tray the free-water unknown.
+        assertEquals(problem.isWetTray(1) ? 6 : 5, referenceBlocks.layout().size(1));
         assertTrue(referenceBlocks.maximumOffBandMagnitude() <= 1.0e-10);
         assertTrue(localBlocks.maximumOffBandMagnitude() <= 1.0e-10);
         for (int node = 0; node < referenceBlocks.layout().nodeCount(); node++) {
@@ -165,6 +182,32 @@ class V3BlockJacobianAssemblerTest {
                         new V3ColumnSpecification.OrganicRefluxRatio(1.0),
                         new V3ColumnSpecification.ReboilerDuty(0.0)), List.of(), steamFeeds);
         return V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+    }
+
+    /**
+     * The manufactured binary at 1.5 MPa with 10 mol/s of sump steam: at 410 K the water saturation pressure
+     * is 349 kPa and the tray-one vapour would carry 10 of 40 mol/s of water at 1.5 MPa, so tray one is
+     * supersaturated and takes a free-water phase.
+     */
+    private static V3ColumnProblem wetProblem() {
+        V3ColumnInput input = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:manufactured", "test:binary",
+                new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30.0, 60.0}, 400.0,
+                4, 2, 1_500_000.0, 750.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(400.0),
+                        new V3ColumnSpecification.OrganicRefluxRatio(1.0),
+                        new V3ColumnSpecification.ReboilerDuty(0.0)), List.of(),
+                List.of(new V3SteamFeedSpec(5, 10.0, 520.0)));
+        V3ColumnProblem dry = V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.TWO_PHASE);
+        boolean[] wet = new boolean[dry.topology().nodeCount()];
+        wet[1] = true;
+        return V3ColumnProblemResolver.withTruncation(dry, dry.truncationSupport(),
+                V3WetTraySet.of(dry.topology(), wet));
+    }
+
+    private static V3DryMeshState wetState(V3ColumnProblem problem) {
+        double[] freeWater = new double[problem.topology().nodeCount()];
+        freeWater[1] = 2.5;
+        return V3ColumnInitializer.withFreeWater(state(problem.topology()), problem.topology(), freeWater);
     }
 
     private static V3DryMeshState state(V3ColumnTopology topology) {

@@ -76,6 +76,7 @@ final class V3AcceptanceAuditor {
         if (problem.hasSideDraws()) checks.add(sideDrawSplit(state));
         if (problem.hasSteamFeeds()) {
             checks.add(waterProfile(state));
+            checks.add(waterBalance(state));
             checks.add(waterDewPoint(state));
             if (problem.topology().condenserPhaseBranch() == V3CondenserPhaseBranch.TWO_PHASE
                     && problem.hasFreeWaterCondenser()) {
@@ -112,6 +113,7 @@ final class V3AcceptanceAuditor {
         List<String> advisoryEvidence = thermo instanceof V3PengRobinsonThermo registeredPackage
                 ? registeredPackage.advisoryEvidence() : List.of();
         if (problem.hasPumparounds()) advisoryEvidence = withCooledTrayAdvisory(advisoryEvidence, state);
+        advisoryEvidence = withWetTrayAdvisory(advisoryEvidence, state);
         return new V3AcceptanceAudit(checks, advisoryEvidence);
     }
 
@@ -302,25 +304,42 @@ final class V3AcceptanceAuditor {
                         "known free-water profile or overhead split differs from authored steam feeds");
     }
 
+    /**
+     * The water dew point, read against the regime each node actually claims.
+     *
+     * <p>A <em>dry</em> node claims its vapour is not saturated, so its saturation ratio must not exceed one.
+     * A <em>wet</em> tray claims the opposite — that its vapour sits exactly on the saturation line and the
+     * surplus water has left as an aqueous liquid — so its ratio must equal one to the convergence closure
+     * <em>and</em> its free water must be strictly positive. Both are reported on one scale: a dry node's
+     * value is its ratio against a limit of one, a wet tray's is its deviation from one divided by the same
+     * closure, so a value above one is a violation either way.</p>
+     */
     private V3AcceptanceAudit.Check waterDewPoint(V3DryMeshState state) {
         V3ColumnTopology topology = problem.topology();
         double maximum = 0.0;
         boolean valid = true;
         int worstNode = -1;
         double worstPartialPressure = 0.0;
+        int emptyWetTray = -1;
         for (int node = 1; node <= topology.reboilerNode(); node++) {
-            double water = problem.waterVaporFlowMolPerSecond(node);
+            double water = problem.waterVaporFlow(state, node);
             if (water == 0.0 || state.temperatureKelvin(node) >= 640.0) continue;
+            boolean wet = problem.isWetTray(node);
+            if (wet && !(state.freeWaterFlow(node) > 0.0)) {
+                valid = false;
+                emptyWetTray = node;
+            }
             try {
                 double hydrocarbon = hydrocarbonVaporTotal(state, node);
                 double partialPressure = problem.nodePressurePascal(node) * water / (hydrocarbon + water);
                 double ratio = partialPressure / V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(node));
-                if (ratio > maximum) {
-                    maximum = ratio;
+                double value = wet ? Math.abs(ratio - 1.0) / closureLimit() : ratio;
+                if (value > maximum) {
+                    maximum = value;
                     worstNode = node;
                     worstPartialPressure = partialPressure;
                 }
-                valid &= Double.isFinite(ratio) && ratio <= 1.0;
+                valid &= Double.isFinite(value) && value <= 1.0;
             } catch (IllegalArgumentException invalidTemperature) {
                 valid = false;
                 maximum = Double.MAX_VALUE;
@@ -329,16 +348,24 @@ final class V3AcceptanceAuditor {
         }
         if (valid) {
             return V3AcceptanceAudit.Check.pass("WATER_DEW_POINT", maximum, 1.0,
-                    "all water-bearing stages remain above the free-water dew point");
+                    problem.hasWetTrays()
+                            ? "every dry stage is above the free-water dew point and every wet tray sits on it"
+                            : "all water-bearing stages remain above the free-water dew point");
         }
         return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
-                waterDewPointDetail(state, worstNode, worstPartialPressure));
+                emptyWetTray >= 0
+                        ? "tray " + emptyWetTray + " is in the free-water set but sheds no free water"
+                        : waterDewPointDetail(state, worstNode, worstPartialPressure));
     }
 
     /** Names the stage, its temperature and the water dew point it sits below, in the units the operator authors. */
     private String waterDewPointDetail(V3DryMeshState state, int node, double partialPressurePascal) {
-        if (node < 0) return "water would condense on a tray; three-phase trays are outside the V3 contract";
+        if (node < 0) return "water would condense on a stage that carries no free-water phase";
         String stage = node == problem.topology().reboilerNode() ? "the bottom stage" : "tray " + node;
+        if (problem.isWetTray(node)) {
+            return String.format(Locale.ROOT,
+                    "%s carries free water but its vapor is not on the water saturation line", stage);
+        }
         String dewPoint;
         try {
             dewPoint = String.format(Locale.ROOT, "%.1f C",
@@ -347,9 +374,54 @@ final class V3AcceptanceAuditor {
             dewPoint = "its water dew point";
         }
         return String.format(Locale.ROOT,
-                "%s at %.1f C is below the water dew point %s (steam partial pressure %.1f kPa); a tray must not operate "
-                        + "below the water dew point: raise the top temperature or reduce the stripping steam",
+                "%s at %.1f C is below the water dew point %s (steam partial pressure %.1f kPa) without a free-water "
+                        + "phase; the free-water tray set did not admit it",
                 stage, state.temperatureKelvin(node) - 273.15, dewPoint, partialPressurePascal / 1000.0);
+    }
+
+    /**
+     * Closes the column's water balance node by node and at its boundary, independently of the evaluator.
+     *
+     * <p>Every node's water in — vapour from below, free water from above, authored steam — must equal its
+     * water out, and the total steam fed must equal what the condenser publishes plus whatever free water
+     * leaves with the bottoms (always zero: the sump is never wet). Both closures are relative to the total
+     * steam. This is what would catch a wet tray whose free water was created or destroyed rather than
+     * circulated, which no other check can see.</p>
+     */
+    private V3AcceptanceAudit.Check waterBalance(V3DryMeshState state) {
+        V3ColumnTopology topology = problem.topology();
+        double totalSteam = authoredWaterAtCondenser();
+        if (!(totalSteam > 0.0)) {
+            return V3AcceptanceAudit.Check.pass("WATER_BALANCE", 0.0, 1.0e-8, "no authored steam to balance");
+        }
+        double maximum = 0.0;
+        for (int node = 1; node <= topology.reboilerNode(); node++) {
+            double vaporIn = node < topology.reboilerNode() ? problem.waterVaporFlow(state, node + 1) : 0.0;
+            double freeWaterIn = node >= 2 ? problem.freeWaterFlowMolPerSecond(state, node - 1) : 0.0;
+            double in = vaporIn + freeWaterIn + problem.nodeSteamFeedMolPerSecond(node);
+            double out = problem.waterVaporFlow(state, node) + problem.freeWaterFlowMolPerSecond(state, node);
+            maximum = Math.max(maximum, Math.abs(in - out) / totalSteam);
+        }
+        V3ColumnProblem.WaterCondenserSplit split = problem.waterCondenserSplit(state);
+        double bottomsFreeWater = problem.freeWaterFlowMolPerSecond(state, topology.reboilerNode());
+        double leaving = split.vaporFlowMolPerSecond() + split.freeWaterFlowMolPerSecond() + bottomsFreeWater;
+        maximum = Math.max(maximum, Math.abs(totalSteam - leaving) / totalSteam);
+        String detail = String.format(Locale.ROOT,
+                "steam in %.6g kmol/h; overhead vapor %.6g, decanted %.6g, bottoms free water %.6g kmol/h",
+                totalSteam * 3.6, split.vaporFlowMolPerSecond() * 3.6, split.freeWaterFlowMolPerSecond() * 3.6,
+                bottomsFreeWater * 3.6);
+        return Double.isFinite(maximum) && maximum <= 1.0e-8
+                ? V3AcceptanceAudit.Check.pass("WATER_BALANCE", maximum, 1.0e-8, detail)
+                : V3AcceptanceAudit.Check.fail("WATER_BALANCE",
+                        Double.isFinite(maximum) ? maximum : Double.MAX_VALUE, 1.0e-8, detail);
+    }
+
+    /** Advisory only: which trays carry a free-water phase and how much water they circulate. */
+    private List<String> withWetTrayAdvisory(List<String> advisoryEvidence, V3DryMeshState state) {
+        if (!problem.hasWetTrays() || advisoryEvidence.size() >= 16) return advisoryEvidence;
+        List<String> evidence = new ArrayList<>(advisoryEvidence);
+        evidence.add(problem.wetTraySet().event(state));
+        return List.copyOf(evidence);
     }
 
     private V3AcceptanceAudit.Check freeWaterSplit(V3DryMeshState state) {

@@ -8,6 +8,7 @@ final class V3DryMeshCoordinateMap {
     private final V3ColumnProblem problem;
     private final List<V3DegreeOfFreedomLedger.Unknown> unknowns;
     private final double[] componentFlowScales;
+    private final double freeWaterFlowScale;
     private final double condenserTemperatureKelvin;
 
     V3DryMeshCoordinateMap(V3ColumnProblem problem) {
@@ -18,6 +19,7 @@ final class V3DryMeshCoordinateMap {
         for (int component = 0; component < componentCount; component++) {
             componentFlowScales[component] = problem.activeComponentBasis().flowScale(component);
         }
+        this.freeWaterFlowScale = problem.freeWaterFlowScaleMolPerSecond();
         this.condenserTemperatureKelvin = specification(V3ColumnSpecification.CondenserOutletTemperature.class).kelvin();
     }
 
@@ -42,6 +44,9 @@ final class V3DryMeshCoordinateMap {
                 case LIQUID_COMPONENT_FLOW -> logFlow(state.liquidFlow(id.node(), id.component()), id.component());
                 case VAPOR_COMPONENT_FLOW -> logFlow(state.vaporFlow(id.node(), id.component()), id.component());
                 case TEMPERATURE -> state.temperatureKelvin(id.node());
+                // A wet tray sheds a strictly positive free-water flow by definition, so it takes the same
+                // log-flow coordinate a component flow does, scaled by the total steam fed to the column.
+                case FREE_WATER_FLOW -> logFreeWater(state.freeWaterFlow(id.node()));
             };
         }
         return coordinates;
@@ -55,6 +60,7 @@ final class V3DryMeshCoordinateMap {
         double[][] liquid = new double[nodes][components];
         double[][] vapor = new double[nodes][components];
         double[] temperatures = new double[nodes];
+        double[] freeWater = new double[nodes];
         temperatures[problem.topology().condenserNode()] = condenserTemperatureKelvin;
         for (int index = 0; index < coordinates.length; index++) {
             double coordinate = coordinates[index];
@@ -64,9 +70,10 @@ final class V3DryMeshCoordinateMap {
                 case LIQUID_COMPONENT_FLOW -> liquid[id.node()][id.component()] = flow(coordinate, id.component());
                 case VAPOR_COMPONENT_FLOW -> vapor[id.node()][id.component()] = flow(coordinate, id.component());
                 case TEMPERATURE -> temperatures[id.node()] = coordinate;
+                case FREE_WATER_FLOW -> freeWater[id.node()] = freeWaterFlow(coordinate);
             }
         }
-        return new V3DryMeshState(problem.topology(), components, liquid, vapor, temperatures);
+        return new V3DryMeshState(problem.topology(), components, liquid, vapor, temperatures, freeWater);
     }
 
     private double logFlow(double flow, int component) {
@@ -74,6 +81,21 @@ final class V3DryMeshCoordinateMap {
             throw new IllegalArgumentException("V3 MESH active flow must be positive before entering log coordinates");
         }
         return Math.log(flow / componentFlowScales[component]);
+    }
+
+    private double logFreeWater(double flow) {
+        if (!Double.isFinite(flow) || flow <= 0.0) {
+            throw new IllegalArgumentException("V3 MESH free water must be positive on a wet tray before entering log coordinates");
+        }
+        return Math.log(flow / freeWaterFlowScale);
+    }
+
+    private double freeWaterFlow(double coordinate) {
+        double flow = freeWaterFlowScale * Math.exp(coordinate);
+        if (!Double.isFinite(flow) || flow <= 0.0) {
+            throw new IllegalArgumentException("V3 MESH free-water log coordinate decodes outside the finite positive flow domain");
+        }
+        return flow;
     }
 
     private double flow(double coordinate, int component) {

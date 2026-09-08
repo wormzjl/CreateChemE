@@ -73,7 +73,9 @@ final class V3BlockJacobianAssembler {
         double[][][] upper = emptyBlocks(layout, 1);
         Map<V3DegreeOfFreedomLedger.UnknownId, Integer> coordinateIndexes = coordinateIndexes(coordinates);
         Map<V3DegreeOfFreedomLedger.EquationId, Integer> equationIndexes = equationIndexes(baseResidual);
-        assembleExactMaterialRows(problem, state, baseResidual, coordinates, coordinateIndexes,
+        assembleExactMaterialRows(problem, state, baseResidual, coordinateIndexes,
+                layout, lower, diagonal, upper);
+        assembleExactFreeWaterCouplings(problem, state, baseResidual, coordinateIndexes, equationIndexes,
                 layout, lower, diagonal, upper);
 
         V3MeshResidualEvaluator.LocalNodeTerms[] baseTerms = new V3MeshResidualEvaluator.LocalNodeTerms[layout.nodeCount()];
@@ -125,11 +127,86 @@ final class V3BlockJacobianAssembler {
         return indexes;
     }
 
+    /**
+     * The exact derivatives of every row with respect to a free-water column of the tray above.
+     *
+     * <p>A free-water unknown {@code F_m} enters the rows of tray {@code m + 1} only through that tray's
+     * water vapour {@code W_(m+1) = S_(m+1) + F_m}: it dilutes the hydrocarbon vapour in the equilibrium
+     * rows, it is the whole content of the saturation row, and it carries {@code h_v} out of tray
+     * {@code m + 1} and into tray {@code m}. None of those is a node-{@code (m+1)} coordinate, so the local
+     * thermodynamic probe — which perturbs a node's own columns — cannot see them; they are written here in
+     * closed form instead. Every one lands in the diagonal or the immediate lower block, which is why a wet
+     * tray does not widen the band. The uncoloured finite-difference assembler above remains the oracle.</p>
+     */
+    private static void assembleExactFreeWaterCouplings(
+            V3ColumnProblem problem,
+            V3DryMeshState state,
+            V3MeshResidual baseResidual,
+            Map<V3DegreeOfFreedomLedger.UnknownId, Integer> coordinateIndexes,
+            Map<V3DegreeOfFreedomLedger.EquationId, Integer> equationIndexes,
+            V3StageBlockLayout layout,
+            double[][][] lower,
+            double[][][] diagonal,
+            double[][][] upper) {
+        if (!problem.hasWetTrays()) return;
+        List<V3MeshResidual.Row> rows = baseResidual.rows();
+        for (int source = 1; source <= problem.topology().trayCount(); source++) {
+            if (!problem.isWetTray(source)) continue;
+            Integer column = coordinateIndexes.get(new V3DegreeOfFreedomLedger.UnknownId(
+                    V3DegreeOfFreedomLedger.UnknownFamily.FREE_WATER_FLOW, source, -1));
+            if (column == null) continue;
+            int node = source + 1;
+            if (node > problem.topology().reboilerNode()) continue;
+            // d(F)/d(log-flow coordinate) = F.
+            double free = state.freeWaterFlow(source);
+            double water = problem.waterVaporFlow(state, node);
+            double hydrocarbon = V3WetTraySet.hydrocarbonVaporTotal(state, node);
+            double vaporEnthalpy = com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties
+                    .vaporMolarEnthalpy(state.temperatureKelvin(node));
+            if (!(water > 0.0) || !Double.isFinite(hydrocarbon) || !Double.isFinite(vaporEnthalpy)) {
+                throw new IllegalArgumentException("V3 local block free-water coupling has no physical water state");
+            }
+            for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
+                Integer row = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
+                        V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM, node, component));
+                if (row == null) continue;
+                addGlobal(layout, lower, diagonal, upper, row, column,
+                        -free / (hydrocarbon + water) / rows.get(row).scale());
+            }
+            Integer saturation = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
+                    V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION, node, -1));
+            if (saturation != null) {
+                addGlobal(layout, lower, diagonal, upper, saturation, column,
+                        free * (1.0 / water - 1.0 / (hydrocarbon + water)) / rows.get(saturation).scale());
+            }
+            // W_(m+1) leaves tray m+1 in its vapour outlet and enters tray m as the vapour from below.
+            addFreeWaterEnergyCoupling(equationIndexes, rows, layout, lower, diagonal, upper,
+                    node, column, -free * vaporEnthalpy);
+            addFreeWaterEnergyCoupling(equationIndexes, rows, layout, lower, diagonal, upper,
+                    source, column, free * vaporEnthalpy);
+        }
+    }
+
+    private static void addFreeWaterEnergyCoupling(
+            Map<V3DegreeOfFreedomLedger.EquationId, Integer> equationIndexes,
+            List<V3MeshResidual.Row> rows,
+            V3StageBlockLayout layout,
+            double[][][] lower,
+            double[][][] diagonal,
+            double[][][] upper,
+            int energyNode,
+            int column,
+            double physicalDerivative) {
+        Integer row = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
+                V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE, energyNode, -1));
+        if (row == null) throw new IllegalArgumentException("V3 local block Jacobian is missing a wet energy row");
+        addGlobal(layout, lower, diagonal, upper, row, column, physicalDerivative / rows.get(row).scale());
+    }
+
     private static void assembleExactMaterialRows(
             V3ColumnProblem problem,
             V3DryMeshState state,
             V3MeshResidual baseResidual,
-            V3DryMeshCoordinateMap coordinates,
             Map<V3DegreeOfFreedomLedger.UnknownId, Integer> coordinateIndexes,
             V3StageBlockLayout layout,
             double[][][] lower,
@@ -146,7 +223,7 @@ final class V3BlockJacobianAssembler {
                 double withdrawal = problem.liquidWithdrawalFraction(state, node - 1);
                 double total = V3SideDraws.liquidTotal(state, node - 1);
                 for (int k = 0; k < state.componentCount(); k++) {
-                    addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                    addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                             lower, diagonal, upper, row,
                             new V3DegreeOfFreedomLedger.UnknownId(
                                     V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, k),
@@ -154,16 +231,16 @@ final class V3BlockJacobianAssembler {
                 }
             }
             if (node == topology.condenserNode()) {
-                addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                         lower, diagonal, upper, row,
                         new V3DegreeOfFreedomLedger.UnknownId(
                                 V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW, 1, component), 1.0);
-                addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                         lower, diagonal, upper, row,
                         new V3DegreeOfFreedomLedger.UnknownId(
                                 V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW, node, component), -1.0);
                 if (problem.condenserComponentPhases().hasLiquid(topology, node, component)) {
-                    addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                    addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                             lower, diagonal, upper, row,
                             new V3DegreeOfFreedomLedger.UnknownId(
                                     V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node, component), -1.0);
@@ -173,43 +250,43 @@ final class V3BlockJacobianAssembler {
             if (node <= topology.trayCount()) {
                 if (node == 1) {
                     if (problem.condenserComponentPhases().hasLiquid(topology, 0, component)) {
-                        addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                        addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                                 lower, diagonal, upper, row,
                                 new V3DegreeOfFreedomLedger.UnknownId(
                                         V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, 0, component),
                                 organicRefluxFraction(problem));
                     }
                 } else {
-                    addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                    addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                             lower, diagonal, upper, row,
                             new V3DegreeOfFreedomLedger.UnknownId(
                                     V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component),
                             1.0 - problem.liquidWithdrawalFraction(state, node - 1));
                 }
-                addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                         lower, diagonal, upper, row,
                         new V3DegreeOfFreedomLedger.UnknownId(
                                 V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW, node + 1, component), 1.0);
-                addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                         lower, diagonal, upper, row,
                         new V3DegreeOfFreedomLedger.UnknownId(
                                 V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node, component), -1.0);
-                addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+                addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                         lower, diagonal, upper, row,
                         new V3DegreeOfFreedomLedger.UnknownId(
                                 V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW, node, component), -1.0);
                 continue;
             }
-            addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+            addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                     lower, diagonal, upper, row,
                     new V3DegreeOfFreedomLedger.UnknownId(
                             V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component),
                     1.0 - problem.liquidWithdrawalFraction(state, node - 1));
-            addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+            addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                     lower, diagonal, upper, row,
                     new V3DegreeOfFreedomLedger.UnknownId(
                             V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node, component), -1.0);
-            addLogFlowDerivative(problem, state, rows.get(row), coordinates, coordinateIndexes, layout,
+            addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                     lower, diagonal, upper, row,
                     new V3DegreeOfFreedomLedger.UnknownId(
                             V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW, node, component), -1.0);
@@ -220,7 +297,6 @@ final class V3BlockJacobianAssembler {
             V3ColumnProblem problem,
             V3DryMeshState state,
             V3MeshResidual.Row row,
-            V3DryMeshCoordinateMap coordinates,
             Map<V3DegreeOfFreedomLedger.UnknownId, Integer> coordinateIndexes,
             V3StageBlockLayout layout,
             double[][][] lower,
@@ -234,7 +310,8 @@ final class V3BlockJacobianAssembler {
         double flow = switch (unknown.family()) {
             case LIQUID_COMPONENT_FLOW -> state.liquidFlow(unknown.node(), unknown.component());
             case VAPOR_COMPONENT_FLOW -> state.vaporFlow(unknown.node(), unknown.component());
-            case TEMPERATURE -> throw new IllegalArgumentException("V3 material row cannot differentiate a temperature unknown");
+            case TEMPERATURE, FREE_WATER_FLOW ->
+                    throw new IllegalArgumentException("V3 material row cannot differentiate a non-component unknown");
         };
         addGlobal(layout, lower, diagonal, upper, rowIndex, column, coefficient * flow / row.scale());
     }
@@ -303,13 +380,30 @@ final class V3BlockJacobianAssembler {
             }
             addGlobal(layout, lower, diagonal, upper, row, column, derivative / baseResidual.rows().get(row).scale());
         }
+        Integer saturationRow = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
+                V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION, node, -1));
+        if (saturationRow != null) {
+            double derivative = probe.waterSaturationDerivative(base);
+            if (!Double.isFinite(derivative)) {
+                throw new IllegalArgumentException("V3 local block water-saturation derivative is not finite");
+            }
+            addGlobal(layout, lower, diagonal, upper, saturationRow, column,
+                    derivative / baseResidual.rows().get(saturationRow).scale());
+        }
         double liquidDerivative = probe.liquidEnergyDerivative(base);
         double vaporDerivative = probe.vaporEnergyDerivative(base);
-        if (!Double.isFinite(liquidDerivative) || !Double.isFinite(vaporDerivative)) {
+        double freeWaterDerivative = probe.freeWaterEnergyDerivative(base);
+        if (!Double.isFinite(liquidDerivative) || !Double.isFinite(vaporDerivative)
+                || !Double.isFinite(freeWaterDerivative)) {
             throw new IllegalArgumentException("V3 local block energy derivative is not finite");
         }
         addEnergyDerivative(problem, baseResidual, equationIndexes, layout, lower, diagonal, upper,
-                node, column, node, -(liquidDerivative + vaporDerivative));
+                node, column, node, -(liquidDerivative + vaporDerivative + freeWaterDerivative));
+        if (node + 1 <= problem.topology().reboilerNode()) {
+            // The immiscible aqueous liquid is not withdrawn by a side draw, so it falls with coefficient one.
+            addEnergyDerivative(problem, baseResidual, equationIndexes, layout, lower, diagonal, upper,
+                    node + 1, column, node, freeWaterDerivative);
+        }
         if (node + 1 <= problem.topology().reboilerNode()) {
             double liquidInCoefficient = node == problem.topology().condenserNode()
                     ? organicRefluxFraction(problem) : 1.0 - problem.liquidWithdrawalFraction(state, node);
@@ -412,6 +506,18 @@ final class V3BlockJacobianAssembler {
             return derivative(base.vaporPhaseEnergy(),
                     higher == null ? Double.NaN : higher.vaporPhaseEnergy(),
                     lower == null ? Double.NaN : lower.vaporPhaseEnergy());
+        }
+
+        double freeWaterEnergyDerivative(V3MeshResidualEvaluator.LocalNodeTerms base) {
+            return derivative(base.freeWaterPhaseEnergy(),
+                    higher == null ? Double.NaN : higher.freeWaterPhaseEnergy(),
+                    lower == null ? Double.NaN : lower.freeWaterPhaseEnergy());
+        }
+
+        double waterSaturationDerivative(V3MeshResidualEvaluator.LocalNodeTerms base) {
+            return derivative(base.waterSaturationResidual(),
+                    higher == null ? Double.NaN : higher.waterSaturationResidual(),
+                    lower == null ? Double.NaN : lower.waterSaturationResidual());
         }
 
         private double derivative(double base, double higherValue, double lowerValue) {

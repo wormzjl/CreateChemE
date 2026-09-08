@@ -32,7 +32,7 @@ public final class V3ColumnProblemResolver {
             throw new IllegalArgumentException("Invalid V3 degree-of-freedom contract: " + ledger.humanReadableDiagnostic());
         }
         return new V3ColumnProblem(input, topology, activeComponentBasis, condenserComponentPhases,
-                pressureProfile(input, topology), ledger, ledger.truncationSupport());
+                pressureProfile(input, topology), ledger, ledger.truncationSupport(), ledger.wetTraySet());
     }
 
     /**
@@ -40,22 +40,36 @@ public final class V3ColumnProblemResolver {
      * and ledger. An invalid reduced ledger is rejected for the attempt orchestrator to retry unmasked.
      */
     static V3ColumnProblem withTruncation(V3ColumnProblem problem, V3TruncationSupport support) {
+        return withTruncation(problem, support, V3WetTraySet.dry(
+                Objects.requireNonNull(problem, "problem").topology()));
+    }
+
+    /**
+     * Attaches this attempt's frozen truncation support and free-water tray set together.
+     *
+     * <p>Both are attempt-local decisions taken from a seed and refreshed from a solved state, and both change
+     * the ledger, so they are attached in one step: a problem never carries a support that its wet set has not
+     * seen or the other way round.</p>
+     */
+    static V3ColumnProblem withTruncation(
+            V3ColumnProblem problem, V3TruncationSupport support, V3WetTraySet wetTraySet) {
         Objects.requireNonNull(problem, "problem");
         Objects.requireNonNull(support, "support");
+        Objects.requireNonNull(wetTraySet, "wetTraySet");
         support.requireCompatible(problem);
-        if (!problem.truncationSupport().isIdentity()) {
+        if (!problem.truncationSupport().isIdentity() || problem.hasWetTrays()) {
             throw new IllegalArgumentException("V3 truncation requires the original untruncated problem");
         }
-        if (support.isIdentity()) return problem;
+        if (support.isIdentity() && !wetTraySet.hasWetTrays()) return problem;
         V3DegreeOfFreedomLedger ledger = V3DegreeOfFreedomLedger.create(problem.topology(),
                 problem.activeComponentBasis().componentCount(), problem.input().specifications(),
-                problem.condenserComponentPhases(), support, problem.input().sideDraws());
+                problem.condenserComponentPhases(), support, problem.input().sideDraws(), wetTraySet);
         if (!ledger.isValid()) {
             throw new IllegalArgumentException("Invalid V3 reduced degree-of-freedom contract: "
                     + ledger.humanReadableDiagnostic());
         }
         return new V3ColumnProblem(problem.input(), problem.topology(), problem.activeComponentBasis(),
-                problem.condenserComponentPhases(), problem.nodePressuresPascal(), ledger, support);
+                problem.condenserComponentPhases(), problem.nodePressuresPascal(), ledger, support, wetTraySet);
     }
 
     /** Validates the authored geometry and rates without assembling a numerical ledger or calling properties. */

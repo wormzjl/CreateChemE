@@ -142,9 +142,7 @@ public record V3ColumnStreamProperties(
             hydrocarbonTotal += hydrocarbon[publicComponent];
             hydrocarbonMass += hydrocarbon[publicComponent] * molecularWeight.applyAsDouble(publicComponent);
         }
-        double water = node == problem.topology().condenserNode()
-                ? problem.waterCondenserSplit(state).vaporFlowMolPerSecond()
-                : problem.waterVaporFlowMolPerSecond(node);
+        double water = problem.waterVaporFlow(state, node);
         double total = hydrocarbonTotal + water;
         double totalMass = hydrocarbonMass + water * V3WaterProperties.MOLAR_MASS_KG_PER_MOL;
         // H2O belongs to the molecular vapor mixture here. It is deliberately absent from every

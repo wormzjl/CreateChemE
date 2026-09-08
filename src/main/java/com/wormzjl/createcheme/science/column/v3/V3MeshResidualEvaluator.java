@@ -64,6 +64,11 @@ final class V3MeshResidualEvaluator {
                     physicalValue = energyResidual(state, id.node(), properties);
                     scale = energyScale();
                 }
+                // A log-composition statement exactly like the VLE rows, and scaled like them.
+                case WATER_SATURATION -> {
+                    physicalValue = waterSaturationResidual(state, id.node(), properties[id.node()]);
+                    scale = 1.0;
+                }
                 default -> throw new IllegalStateException("V3 MESH equation family is unhandled");
             }
             rows.add(new V3MeshResidual.Row(id, physicalValue, scale));
@@ -97,7 +102,8 @@ final class V3MeshResidualEvaluator {
         double liquidEnergy = problem.topology().hasLiquidPhase(node)
                 ? phaseEnergy(state, node, true, properties) : 0.0;
         double vaporEnergy = phaseEnergy(state, node, false, properties);
-        return new LocalNodeTerms(equilibrium, liquidEnergy, vaporEnergy);
+        double saturation = problem.isWetTray(node) ? waterSaturationResidual(state, node, properties) : Double.NaN;
+        return new LocalNodeTerms(equilibrium, liquidEnergy, vaporEnergy, freeWaterEnergy(state, node), saturation);
     }
 
     /**
@@ -156,8 +162,18 @@ final class V3MeshResidualEvaluator {
         return problem.hasSteamFeeds() ? residual + waterDilutionLogTerm(state, node, properties.vaporTotal()) : residual;
     }
 
+    /**
+     * One node's energy closure, in watts.
+     *
+     * <p>Free water enters at the enthalpy of saturated liquid water at the tray it fell from and leaves at
+     * that of this tray, and the water vapour of every phase term is the state-dependent {@code W}, so the
+     * latent heat released where water condenses and absorbed where it re-evaporates appears without a term
+     * of its own. Free water is <em>not</em> withdrawn by a side draw: the aqueous phase is immiscible and
+     * decants, so the {@code 1 - w} retention factor applies to the hydrocarbon liquid only.</p>
+     */
     private double energyResidual(V3DryMeshState state, int node, NodeProperties[] properties) {
         V3ColumnTopology topology = problem.topology();
+        double freeWaterIn = node >= 2 ? freeWaterEnergy(state, node - 1) : 0.0;
         if (node <= topology.trayCount()) {
             double liquidIn = node == 1
                     ? (topology.hasLiquidPhase(0) ? organicRefluxFraction() * phaseEnergy(state, 0, true, properties) : 0.0)
@@ -166,11 +182,38 @@ final class V3MeshResidualEvaluator {
             double feed = node == topology.feedTrayNumber() ? totalFeedFlow * feedMolarEnthalpyJoulesPerMol : 0.0;
             // A prescribed pumparound duty is a constant source term with no state derivative, so no
             // unknown, equation, or Jacobian block changes when it is present.
-            return liquidIn + vaporIn + feed + problem.steamFeedEnthalpyWatts(node) + problem.stageHeatWatts(node)
-                    - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
+            return liquidIn + vaporIn + feed + freeWaterIn + problem.steamFeedEnthalpyWatts(node)
+                    + problem.stageHeatWatts(node) - phaseEnergy(state, node, true, properties)
+                    - phaseEnergy(state, node, false, properties) - freeWaterEnergy(state, node);
         }
+        // The sump is never wet, so free water arriving there leaves it entirely as vapour in W_R.
         return (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
-                + problem.steamFeedEnthalpyWatts(node) - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
+                + problem.steamFeedEnthalpyWatts(node) + freeWaterIn
+                - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
+    }
+
+    /** Enthalpy rate of the aqueous liquid leaving one tray downward; zero unless the tray is wet. */
+    private double freeWaterEnergy(V3DryMeshState state, int node) {
+        double freeWater = problem.freeWaterFlowMolPerSecond(state, node);
+        return freeWater == 0.0 ? 0.0
+                : freeWater * V3WaterProperties.liquidMolarEnthalpy(state.temperatureKelvin(node));
+    }
+
+    /**
+     * {@code ln(P_n W_n / ((V_hc,n + W_n) P_sat(T_n)))}: the wet tray's vapour is exactly water-saturated.
+     *
+     * <p>Written in logs for the same reason the equilibrium rows are: it makes the row a difference of
+     * log compositions whose scale is one, and it keeps the strictly positive flows in the coordinates the
+     * solver already works in.</p>
+     */
+    private double waterSaturationResidual(V3DryMeshState state, int node, NodeProperties properties) {
+        double water = waterVaporFlow(state, node);
+        if (!(water > 0.0) || !Double.isFinite(water)) {
+            throw new IllegalArgumentException("V3 MESH wet tray carries no positive water vapor");
+        }
+        double hydrocarbon = properties.vaporTotal();
+        return Math.log(problem.nodePressurePascal(node)) + Math.log(water) - Math.log(hydrocarbon + water)
+                - Math.log(V3WaterProperties.saturationPressurePascal(state.temperatureKelvin(node)));
     }
 
     private double phaseEnergy(V3DryMeshState state, int node, boolean liquid, NodeProperties[] properties) {
@@ -252,9 +295,7 @@ final class V3MeshResidualEvaluator {
     }
 
     private double waterVaporFlow(V3DryMeshState state, int node) {
-        return node == problem.topology().condenserNode()
-                ? problem.waterCondenserSplit(state).vaporFlowMolPerSecond()
-                : problem.waterVaporFlowMolPerSecond(node);
+        return problem.waterVaporFlow(state, node);
     }
 
     private double waterDilutionLogTerm(V3DryMeshState state, int node, double hydrocarbonVaporTotal) {
@@ -314,11 +355,23 @@ final class V3MeshResidualEvaluator {
             V3FugacityResult vaporResult,
             double vaporTotal) {}
 
-    /** Package-local response of one node to a local coordinate perturbation. */
-    record LocalNodeTerms(double[] equilibriumResiduals, double liquidPhaseEnergy, double vaporPhaseEnergy) {
+    /**
+     * Package-local response of one node to a local coordinate perturbation.
+     *
+     * <p>{@code freeWaterPhaseEnergy} is separate from {@code liquidPhaseEnergy} because the two are carried
+     * downward by different coefficients: the hydrocarbon liquid by the side-draw retention {@code 1 - w},
+     * the immiscible free water by one. {@code waterSaturationResidual} is {@code NaN} on a dry tray.</p>
+     */
+    record LocalNodeTerms(
+            double[] equilibriumResiduals,
+            double liquidPhaseEnergy,
+            double vaporPhaseEnergy,
+            double freeWaterPhaseEnergy,
+            double waterSaturationResidual) {
         LocalNodeTerms {
             equilibriumResiduals = Objects.requireNonNull(equilibriumResiduals, "equilibriumResiduals").clone();
-            if (!Double.isFinite(liquidPhaseEnergy) || !Double.isFinite(vaporPhaseEnergy)) {
+            if (!Double.isFinite(liquidPhaseEnergy) || !Double.isFinite(vaporPhaseEnergy)
+                    || !Double.isFinite(freeWaterPhaseEnergy)) {
                 throw new IllegalArgumentException("V3 local MESH phase energies must be finite");
             }
         }

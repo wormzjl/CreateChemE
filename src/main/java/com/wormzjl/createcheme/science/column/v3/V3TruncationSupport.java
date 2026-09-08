@@ -335,7 +335,8 @@ final class V3TruncationSupport {
                 }
             }
         }
-        return new V3DryMeshState(topology, componentCount, liquid, vapor, temperatures);
+        return new V3DryMeshState(topology, componentCount, liquid, vapor, temperatures,
+                V3ColumnInitializer.freeWaterFlows(seed));
     }
 
     /** Support floor of one active component: {@link #TRACE_FLOOR_FRACTION} of its flow scale. */

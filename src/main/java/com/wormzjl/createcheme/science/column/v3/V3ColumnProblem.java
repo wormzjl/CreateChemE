@@ -17,13 +17,16 @@ public final class V3ColumnProblem {
     private final double[] waterVaporFlowMolPerSecond;
     private final V3WaterCondenserRegime waterCondenserRegime;
     private final double waterVaporSlipCoefficient;
+    private final double freeWaterFlowScaleMolPerSecond;
+    private final V3WetTraySet wetTraySet;
     private final V3DegreeOfFreedomLedger degreeOfFreedomLedger;
     private final V3TruncationSupport truncationSupport;
 
     V3ColumnProblem(
             V3ColumnInput input, V3ColumnTopology topology, V3ActiveComponentBasis activeComponentBasis,
             V3CondenserComponentPhases condenserComponentPhases, double[] nodePressuresPascal,
-            V3DegreeOfFreedomLedger degreeOfFreedomLedger, V3TruncationSupport truncationSupport) {
+            V3DegreeOfFreedomLedger degreeOfFreedomLedger, V3TruncationSupport truncationSupport,
+            V3WetTraySet wetTraySet) {
         this.input = Objects.requireNonNull(input, "input");
         this.topology = Objects.requireNonNull(topology, "topology");
         this.activeComponentBasis = Objects.requireNonNull(activeComponentBasis, "activeComponentBasis");
@@ -44,6 +47,10 @@ public final class V3ColumnProblem {
         this.waterCondenserRegime = waterCondenserRegime(input, topology, this.nodePressuresPascal);
         this.waterVaporSlipCoefficient = condenserSlipCoefficient(topology, waterCondenserRegime, input,
                 this.nodePressuresPascal);
+        double steam = 0.0;
+        for (V3SteamFeedSpec feed : input.steamFeeds()) steam += feed.molarFlowMolPerSecond();
+        this.freeWaterFlowScaleMolPerSecond = steam > 0.0 ? steam : 1.0;
+        this.wetTraySet = Objects.requireNonNull(wetTraySet, "wetTraySet");
         this.degreeOfFreedomLedger = Objects.requireNonNull(degreeOfFreedomLedger, "degreeOfFreedomLedger");
         this.truncationSupport = Objects.requireNonNull(truncationSupport, "truncationSupport");
         if (this.nodePressuresPascal.length != topology.nodeCount()) {
@@ -57,8 +64,12 @@ public final class V3ColumnProblem {
         if (!degreeOfFreedomLedger.topology().equals(topology)
                 || degreeOfFreedomLedger.componentCount() != activeComponentBasis.componentCount()
                 || !degreeOfFreedomLedger.specifications().equals(input.specifications())
-                || degreeOfFreedomLedger.truncationSupport() != truncationSupport) {
+                || degreeOfFreedomLedger.truncationSupport() != truncationSupport
+                || degreeOfFreedomLedger.wetTraySet() != wetTraySet) {
             throw new IllegalArgumentException("V3 degree-of-freedom ledger does not describe this resolved problem");
+        }
+        if (wetTraySet.hasWetTrays() && !hasSteamFeeds()) {
+            throw new IllegalArgumentException("V3 free water requires an authored steam feed");
         }
         truncationSupport.requireCompatible(this);
     }
@@ -146,9 +157,49 @@ public final class V3ColumnProblem {
         return nodeHeatDutyWatts[node];
     }
 
-    /** Known upward water-vapor profile for tray and sump nodes; condenser slip is state-dependent. */
+    /** Authored upward steam profile of a node: every mole fed at or below it. Free water is added by state. */
     public double waterVaporFlowMolPerSecond(int node) {
         return waterVaporFlowMolPerSecond[node];
+    }
+
+    /** The trays of this attempt's frozen free-water set. */
+    V3WetTraySet wetTraySet() {
+        return wetTraySet;
+    }
+
+    boolean hasWetTrays() {
+        return wetTraySet.hasWetTrays();
+    }
+
+    boolean isWetTray(int node) {
+        return wetTraySet.isWet(node);
+    }
+
+    /** Log-flow scale of a free-water unknown: the total authored steam, or one on a dry column. */
+    double freeWaterFlowScaleMolPerSecond() {
+        return freeWaterFlowScaleMolPerSecond;
+    }
+
+    /** Aqueous liquid leaving a tray downward; exactly zero unless the tray is in the frozen wet set. */
+    double freeWaterFlowMolPerSecond(V3DryMeshState state, int node) {
+        return isWetTray(node) ? state.freeWaterFlow(node) : 0.0;
+    }
+
+    /**
+     * Water vapor rising out of a node, from the candidate state.
+     *
+     * <p>The tray water balance {@code W_n = W_(n+1) + F_(n-1) + S_n - F_n} telescopes downward to
+     * {@code W_n = (steam fed at or below n) + F_(n-1) - F_R}, and the sump is never wet
+     * ({@link V3WetTraySet}), so {@code F_R} is zero and only the tray directly above contributes. Water that
+     * condenses on a tray reaches the tray below and comes straight back up, which is why it never changes the
+     * net water passing its own tray.</p>
+     *
+     * <p>At the condenser the water is not a balance but the drum's regime split, whose arriving water is
+     * {@code W_1} — the authored steam total, because nothing above tray one can shed free water into it.</p>
+     */
+    double waterVaporFlow(V3DryMeshState state, int node) {
+        if (node == topology.condenserNode()) return waterCondenserSplit(state).vaporFlowMolPerSecond();
+        return waterVaporFlowMolPerSecond(node) + (node >= 2 ? freeWaterFlowMolPerSecond(state, node - 1) : 0.0);
     }
 
     public double waterVaporSlipCoefficient() {
@@ -168,9 +219,14 @@ public final class V3ColumnProblem {
     }
 
     /**
-     * Splits the known condenser-arriving water between the molecular overhead vapor and a
+     * Splits the condenser-arriving water between the molecular overhead vapor and a
      * separate free-water product. The molecular vapor allocation is capped by arriving water:
      * an unsaturated overhead cannot create water that was never fed to the column.
+     *
+     * <p>The arriving water is {@code W_1}, which is the authored steam total whether or not the top trays
+     * carry free water: no free water is shed into tray one from above, so the water balance leaves
+     * {@code W_1} equal to the steam fed. The regime and the slip coefficient are therefore still resolved
+     * once from the authored total, and this split is exactly what it was before wet trays existed.</p>
      */
     WaterCondenserSplit waterCondenserSplit(V3DryMeshState state) {
         state = Objects.requireNonNull(state, "state");

@@ -324,6 +324,7 @@ final class V3EnergyShiftPredictor {
             }
             temperatures[node] = updated;
         }
-        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures);
+        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures,
+                V3ColumnInitializer.freeWaterFlows(state));
     }
 }

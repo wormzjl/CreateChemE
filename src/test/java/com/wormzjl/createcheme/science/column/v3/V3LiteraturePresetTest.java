@@ -46,16 +46,21 @@ class V3LiteraturePresetTest {
     }
 
     /**
-     * Placeholder for the F3 expectation, deliberately not asserting an outcome yet.
+     * The published 12.84 MW top cooler admits a free-water tray, and its water balance closes on the
+     * candidate, but the wet column does not yet converge.
      *
-     * <p>F1 removes the typed {@code WATER_DEW_POINT} verdict; F2 gives the trays a free-water phase; F3 restores
-     * the published 12.84 MW top cooler in the preset and turns this into the real assertion — the published
-     * duties converge with wet top trays and a closed water balance. Until F2 lands, the published duties still
-     * produce a converged state whose top tray sits below the water dew point, so all this pins is that the
-     * calculator returns a typed outcome rather than throwing, and that no removed failure code can come back.</p>
+     * <p>This is the one gate of the free-water work that is not met, and the assertion states exactly that
+     * rather than hiding it. Measured: the dry stage of the rung converges to 5.0e-14 with tray one at
+     * 83.1 C and a saturation ratio of 1.162; the refresh admits tray one with 213 kmol/h of free water; the
+     * wet solve drives the residual from 1.50e-1 to 7.81e-4 in five iterations and then finds no
+     * Armijo-reducing step, with every tray energy row short by the same 57.6 kW. The Jacobian is not the
+     * cause — it agrees with the coloured finite-difference oracle to 1.5e-9 on that very state — the
+     * remaining direction is near-null. See {@code documentation/V3_FREE_WATER_TRAYS_REVIEW.md} section 5.
+     * The preset itself keeps the halved top cooler and stays above the dew point, so nothing shipped
+     * depends on this case.</p>
      */
     @Test
-    void thePublishedTopCoolerDutyIsStillOnlyReachableThroughTheFreeWaterTrayContract() {
+    void thePublishedTopCoolerDutyAdmitsAFreeWaterTrayAndClosesItsWaterBalanceWithoutConvergingYet() {
         // The source duties as published: without the side-stripper reboiler heat the top lands below the dew point.
         V3ColumnInput preset = ColumnCalculatorV3BlockEntity.literatureCduInput();
         V3ColumnInput fullDuties = new V3ColumnInput(preset.schemaVersion(), preset.packageId(), preset.assayId(),
@@ -65,9 +70,15 @@ class V3LiteraturePresetTest {
                         new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
                         preset.pumparounds().get(1), preset.pumparounds().get(2)));
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(fullDuties, () -> {}, 0.0);
+
+        V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
+        assertEquals(V3SolverFailureCode.NONCONVERGENCE, failure.code(), failure.summary());
         assertNotNull(outcome.diagnostics().acceptanceAudit(), outcome::toString);
-        if (outcome instanceof V3ColumnOutcome.Failure failure) {
-            assertEquals(V3SolverFailureCode.ACCEPTANCE_AUDIT_FAILURE, failure.code(), failure.summary());
-        }
+        assertTrue(outcome.diagnostics().acceptanceAudit().advisoryEvidence().stream()
+                .anyMatch(advisory -> advisory.startsWith("wet trays: [1")), "the top tray carries free water");
+        // The water contract holds even on a candidate the solver could not finish: every mole of steam fed
+        // is accounted for as overhead vapour, decanted free water or bottoms free water.
+        assertTrue(outcome.diagnostics().acceptanceAudit().checks().stream()
+                .anyMatch(check -> check.family().equals("WATER_BALANCE") && check.passed()));
     }
 }

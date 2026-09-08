@@ -151,7 +151,7 @@ class V3TruncationStructureTest {
         V3TruncationSupport support = V3TruncationSupportTest.topTailSupport(original);
         assertThrows(IllegalArgumentException.class, () -> new V3ColumnProblem(original.input(), original.topology(),
                 original.activeComponentBasis(), original.condenserComponentPhases(), original.nodePressuresPascal(),
-                original.degreeOfFreedomLedger(), support));
+                original.degreeOfFreedomLedger(), support, original.wetTraySet()));
         V3ColumnProblem masked = V3ColumnProblemResolver.withTruncation(original, support);
         assertThrows(IllegalArgumentException.class,
                 () -> V3ColumnProblemResolver.withTruncation(masked, original.truncationSupport()));

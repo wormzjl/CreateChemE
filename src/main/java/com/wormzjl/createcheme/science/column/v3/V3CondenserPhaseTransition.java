@@ -104,7 +104,8 @@ final class V3CondenserPhaseTransition {
                 }
             }
         }
-        return new Prepared(target, new V3DryMeshState(target.topology(), state.componentCount(), liquid, vapor, temperatures),
+        return new Prepared(target, new V3DryMeshState(target.topology(), state.componentCount(), liquid, vapor, temperatures,
+                V3ColumnInitializer.freeWaterFlows(state)),
                 flash.phase(), flash.vaporFraction());
     }
 
