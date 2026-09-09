@@ -321,6 +321,24 @@ tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
+tasks.register('v3MainOptimizationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Measures current-main A-E and Holland outcomes; timings are diagnostics, never assertions.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MainOptimizationProbe'
+    maxHeapSize = '2g'
+    args providers.gradleProperty('optimizationReport').getOrElse('build/reports/main-optimization/probe.json')
+    args providers.gradleProperty('optimizationWarmup').getOrElse('2')
+    args providers.gradleProperty('optimizationSamples').getOrElse('5')
+}
+
+tasks.register('v3FlashOptimizationProbe', JavaExec) {
+    group = 'verification'
+    description = 'Measures full flashes against the frozen main implementation in alternating batches.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.thermo.V3FlashOptimizationProbe'
+}
+
 idea {
     module {
         downloadSources = true

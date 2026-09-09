@@ -229,7 +229,7 @@ final class V3SimultaneousColumnSolver {
             }
             if (maximumResidual <= scaledTolerance) {
                 VerifiedFinalNewton verified = verifyFinalNewtonCorrection(
-                        evaluator, coordinates, state, residual, frozenScales, merit, workspaceFactory, layout, control,
+                        evaluator, coordinates, state, residual, merit, workspaceFactory, layout, control,
                         scaledTolerance, budget);
                 if (verified != null) {
                     return new Attempt.Converged(verified.state(), new Evidence(iteration,
@@ -407,7 +407,6 @@ final class V3SimultaneousColumnSolver {
             V3DryMeshCoordinateMap coordinates,
             V3DryMeshState state,
             V3MeshResidual residual,
-            double[] frozenScales,
             double merit,
             V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             V3StageBlockLayout layout,
@@ -422,7 +421,8 @@ final class V3SimultaneousColumnSolver {
                     toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
             if (linear instanceof V3BandedPivotedSolver.Result.Success success) {
                 VerifiedFinalNewton direct = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
-                        scaledTolerance, frozenScales, merit, success.solution(), success.backwardError());
+                        scaledTolerance, residual.maximumAbsoluteScaledResidual(), true,
+                        merit, success.solution(), success.backwardError());
                 if (direct != null) return direct;
             }
             if (budget.verificationDampingSteps() == 0) return null;
@@ -434,7 +434,8 @@ final class V3SimultaneousColumnSolver {
                         normal.dampedMatrix(damping, control), normal.negativeGradient());
                 if (regularized instanceof V3BandedPivotedSolver.Result.Success success) {
                     VerifiedFinalNewton verified = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
-                            scaledTolerance, frozenScales, merit, success.solution(), success.backwardError());
+                            scaledTolerance, residual.maximumAbsoluteScaledResidual(), false,
+                            merit, success.solution(), success.backwardError());
                     if (verified != null) return verified;
                 }
                 damping *= 10.0;
@@ -451,7 +452,8 @@ final class V3SimultaneousColumnSolver {
             V3DryMeshState state,
             V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
             double scaledTolerance,
-            double[] frozenScales,
+            double maximumBaseResidual,
+            boolean directCorrection,
             double merit,
             double[] correction,
             double backwardError) {
@@ -463,10 +465,30 @@ final class V3SimultaneousColumnSolver {
         double candidateMerit = scaledSquaredNorm(candidateResidual);
         V3ConvergenceEvidence evidence = convergenceEvidence(
                 coordinates, baseCoordinates, candidateCoordinates, backwardError, scaledTolerance);
-        if (maximumResidual > scaledTolerance || candidateMerit > merit || !evidence.satisfiesGates(scaledTolerance)) {
+        if (!verificationCandidateAcceptable(merit, candidateMerit, maximumBaseResidual, maximumResidual,
+                scaledTolerance, directCorrection, evidence)) {
             return null;
         }
         return new VerifiedFinalNewton(candidate, maximumResidual, candidateMerit, 1.0, backwardError, evidence);
+    }
+
+    /**
+     * A direct, fresh correction may move within a fixed near-root residual ceiling even when its
+     * squared merit increases. This bounds every native scaled row, not just the aggregate norm.
+     * The ceiling is four orders below the default closure and never widens a tighter request.
+     * Regularized corrections still require non-increasing merit; publication requires the independent audit.
+     */
+    static boolean verificationCandidateAcceptable(
+            double baseMerit, double candidateMerit, double maximumBaseResidual, double maximumCandidateResidual,
+            double scaledTolerance, boolean directCorrection, V3ConvergenceEvidence evidence) {
+        if (!Double.isFinite(baseMerit) || !Double.isFinite(candidateMerit)
+                || !Double.isFinite(maximumBaseResidual) || !Double.isFinite(maximumCandidateResidual)
+                || maximumCandidateResidual > scaledTolerance || !evidence.satisfiesGates(scaledTolerance)) {
+            return false;
+        }
+        double nearRootCeiling = Math.min(1.0e-12, scaledTolerance);
+        return candidateMerit <= baseMerit || directCorrection
+                && maximumBaseResidual <= nearRootCeiling && maximumCandidateResidual <= nearRootCeiling;
     }
 
     /** Keeps every coefficient in the declared adjacent-stage coupling, independent of its magnitude. */

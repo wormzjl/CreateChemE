@@ -1,13 +1,13 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
-/** Bounded rigorous dry-hydrocarbon TP flash with normal all-liquid, two-phase, and all-vapor outcomes. */
-final class V3FeedFlash {
+/** Frozen db46e88 flash for numerical equivalence tests; do not update with the implementation. */
+final class V3FeedFlashReference {
     private static final int MAXIMUM_ITERATIONS = 64;
     private static final int RACHFORD_RICE_ITERATIONS = 100;
     private static final double LOG_K_TOLERANCE = 1.0e-10;
     private static final double PHASE_ENDPOINT_TOLERANCE = 1.0e-12;
 
-    private V3FeedFlash() {}
+    private V3FeedFlashReference() {}
 
     static V3FlashResult resolve(
             V3PengRobinsonThermo model, double temperatureKelvin, double pressurePascal, V3ThermoWorkspace workspace) {
@@ -34,12 +34,8 @@ final class V3FeedFlash {
                     "all-vapor Wilson endpoint classification");
         }
 
-        // These values are fixed during each root solve. Allocate scratch once per two-phase flash;
-        // the other workspace arrays remain available to the reference/truncation protocol.
-        double[] k = new double[componentCount];
-        double[] kMinusOne = new double[componentCount];
         for (int iteration = 1; iteration <= MAXIMUM_ITERATIONS; iteration++) {
-            double vaporFraction = rachfordRiceRoot(workspace.normalizedOverall, workspace.logK, k, kMinusOne);
+            double vaporFraction = rachfordRiceRoot(workspace.normalizedOverall, workspace.logK);
             if (!Double.isFinite(vaporFraction) || vaporFraction <= 0.0 || vaporFraction >= 1.0) {
                 throw new V3ThermoException(V3ThermoException.Code.FLASH_NONCONVERGENCE, null,
                         "V3 feed flash lost its two-phase Rachford-Rice root");
@@ -78,37 +74,17 @@ final class V3FeedFlash {
                 "V3 feed flash did not converge within " + MAXIMUM_ITERATIONS + " iterations");
     }
 
-    private static double rachfordRiceRoot(double[] composition, double[] logK, double[] k, double[] kMinusOne) {
-        for (int component = 0; component < composition.length; component++) {
-            if (composition[component] == 0.0) continue;
-            k[component] = Math.exp(logK[component]);
-            kMinusOne[component] = Math.expm1(logK[component]);
-        }
+    private static double rachfordRiceRoot(double[] composition, double[] logK) {
         double lower = 0.0;
         double upper = 1.0;
         for (int iteration = 0; iteration < RACHFORD_RICE_ITERATIONS; iteration++) {
             double midpoint = 0.5 * (lower + upper);
-            double residual = cachedRachfordRiceResidual(composition, k, kMinusOne, midpoint);
+            double residual = rachfordRiceResidual(composition, logK, midpoint);
             if (!Double.isFinite(residual)) return Double.NaN;
-            // Only stop when the next update cannot change the bracket in binary64. Check the
-            // residual first so an invalid endpoint cannot be accepted by the stagnation shortcut.
-            if (midpoint == lower || midpoint == upper) return midpoint;
             if (residual > 0.0) lower = midpoint;
             else upper = midpoint;
         }
         return 0.5 * (lower + upper);
-    }
-
-    private static double cachedRachfordRiceResidual(
-            double[] composition, double[] k, double[] kMinusOne, double vaporFraction) {
-        double residual = 0.0;
-        for (int component = 0; component < composition.length; component++) {
-            if (composition[component] == 0.0) continue;
-            double denominator = (1.0 - vaporFraction) + vaporFraction * k[component];
-            if (!(denominator > 0.0) || !Double.isFinite(denominator)) return Double.NaN;
-            residual += composition[component] * kMinusOne[component] / denominator;
-        }
-        return residual;
     }
 
     private static double rachfordRiceResidual(double[] composition, double[] logK, double vaporFraction) {

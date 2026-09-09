@@ -1,0 +1,58 @@
+// Opt-in generated solver copy; never added to the production source set or artifact.
+allprojects {
+    afterEvaluate {
+        def generated = layout.buildDirectory.dir('generated/verification-probe')
+        def compiled = layout.buildDirectory.dir('classes/verification-probe')
+        tasks.register('generateVerificationDiagnostic') {
+            doLast {
+                def relative = 'com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver.java'
+                def source = file(providers.gradleProperty('verificationSource').getOrElse('src/main/java/' + relative)).getText('UTF-8')
+                def marker = '        double[] baseCoordinates = coordinates.encode(state);\n        double[] candidateCoordinates = addScaled(baseCoordinates, correction, 1.0);'
+                source = source.replace('\r\n', '\n')
+                if (source.count(marker) != 1) throw new GradleException('Verification entry marker changed')
+                def oldGate = '        if (maximumResidual > scaledTolerance || candidateMerit > merit || !evidence.satisfiesGates(scaledTolerance)) {'
+                def newGate = '        if (!verificationCandidateAcceptable(merit, candidateMerit, maximumBaseResidual, maximumResidual,\n                scaledTolerance, directCorrection, evidence)) {'
+                def legacy = source.contains(oldGate)
+                def gate = legacy ? oldGate : newGate
+                if (source.count(gate) != 1) throw new GradleException('Actual verification gate changed')
+                if (providers.gradleProperty('verificationObserve').getOrElse('true') == 'true') {
+                source = source.replace('            if (linear instanceof V3BandedPivotedSolver.Result.Success success) {\n                VerifiedFinalNewton direct',
+                        '            V3VerificationDiagnosticProbe.direct = true;\n            if (linear instanceof V3BandedPivotedSolver.Result.Success success) {\n                VerifiedFinalNewton direct')
+                source = source.replace('            if (budget.verificationDampingSteps() == 0) return null;',
+                        '            V3VerificationDiagnosticProbe.direct = false;\n            if (budget.verificationDampingSteps() == 0) return null;')
+                source = source.replace(gate,
+                        '        V3VerificationDiagnosticProbe.record(evaluator, state, candidate, merit, candidateMerit, maximumResidual, scaledTolerance, evidence, '
+                        + (legacy ? 'maximumResidual <= scaledTolerance && candidateMerit <= merit && evidence.satisfiesGates(scaledTolerance)'
+                        : 'verificationCandidateAcceptable(merit, candidateMerit, maximumBaseResidual, maximumResidual, scaledTolerance, directCorrection, evidence)')
+                        + ');\n' + gate)
+                source = source.replace('V3BandedPivotedSolver.solve(', 'V3VerificationDiagnosticProbe.solve(')
+                }
+                def output = generated.get().file(relative).asFile
+                output.parentFile.mkdirs()
+                output.setText(source, 'UTF-8')
+            }
+        }
+        tasks.register('compileVerificationDiagnostic', JavaCompile) {
+            dependsOn tasks.named('testClasses'), tasks.named('generateVerificationDiagnostic')
+            source generated
+            classpath = sourceSets.test.runtimeClasspath
+            destinationDirectory = compiled
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+        }
+        tasks.register('v3VerificationDiagnostic', JavaExec) {
+            dependsOn tasks.named('compileVerificationDiagnostic')
+            classpath = files(compiled) + sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3VerificationDiagnosticProbe'
+            maxHeapSize = '2g'
+            systemProperty 'verificationReport', providers.gradleProperty('verificationReport').getOrElse('build/reports/main-optimization/verification-gates-current.json')
+        }
+        tasks.register('v3ControlledComparison', JavaExec) {
+            dependsOn tasks.named('compileVerificationDiagnostic')
+            classpath = files(compiled) + sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MainOptimizationProbe'
+            maxHeapSize = '2g'
+            args providers.gradleProperty('optimizationReport').get()
+            args '5', '10', 'A,C,Holland'
+        }
+    }
+}
