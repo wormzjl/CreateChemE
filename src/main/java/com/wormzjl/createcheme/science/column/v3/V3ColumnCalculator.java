@@ -106,6 +106,18 @@ public final class V3ColumnCalculator {
      */
     private static final V3SimultaneousColumnSolver.RungBudget INTERMEDIATE_RUNG_BUDGET =
             new V3SimultaneousColumnSolver.RungBudget(2, false, 0, 12, 0.5, 1.0e-3);
+    /**
+     * How far above its own material row a seeded point may sit before {@link #capOversizedPoint} resets it.
+     *
+     * <p>The rule has to tolerate the ordinary case, where a seed is merely inexact. A point's material row
+     * says {@code l + v = I}, and a continuation seed satisfies it on the grid it came from, not on the one it
+     * is being mapped onto, so a factor of a few is normal and carries real information about the profile.
+     * What is not normal, and what this exists to catch, is a trace point sitting orders of magnitude above
+     * anything that feeds it. Three is the smallest round factor that leaves the ordinary case alone;
+     * measured on the cold 328 K pilot it is also the whole of the effect, because the flows it catches are
+     * eight to eighteen e-folds too high rather than two.</p>
+     */
+    private static final double OVERSIZED_SEED_FACTOR = 3.0;
 
     private enum ContinuationJacobianPolicy {
         NONE,
@@ -483,6 +495,7 @@ public final class V3ColumnCalculator {
         boolean featureRampRequired = featureRampRequired(input);
         V3ColumnInput continuationInput = withoutPumparounds(
                 input.steamFeeds().isEmpty() ? input : withoutSteamWithSurrogateDuty(input));
+        V3ColumnTopology previousTopology = null;
         for (int stageCount : stageCounts) {
             control.checkpoint();
             V3ColumnInput stageInput = !featureRampRequired && stageCount == input.stageCount()
@@ -492,7 +505,7 @@ public final class V3ColumnCalculator {
             V3ColumnProblem stageProblem = V3ColumnProblemResolver.resolve(stageInput, currentBranch);
             V3DryMeshState seed = previousState == null
                     ? initializeForSolve(stageProblem, thermo, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE)
-                    : continuationSeed(stageProblem, previousState, thermo, control);
+                    : continuationSeed(stageProblem, previousTopology, previousState, thermo, control);
             V3SolvePass preceding = lastPass;
             lastPass = solveSingleProblem(stageProblem, thermo,
                     seed, control, "cold/dwsim-sequential/" + stagePath + "/fine-fd",
@@ -516,6 +529,7 @@ public final class V3ColumnCalculator {
                 }
             }
             previousState = lastPass.attempt().state();
+            previousTopology = lastPass.prepared().problem().topology();
         }
         if (lastPass == null) throw new IllegalStateException("V3 DWSIM continuation has no stage grid");
         if (featureRampRequired) {
@@ -612,10 +626,11 @@ public final class V3ColumnCalculator {
     /** Applies the material/VLE hand-off projection only in the qualified low-pressure operating region. */
     private static V3DryMeshState continuationSeed(
             V3ColumnProblem targetProblem,
+            V3ColumnTopology sourceTopology,
             V3DryMeshState previousState,
             V3PengRobinsonThermo thermo,
             V3SolveControl control) {
-        V3DryMeshState interpolated = interpolate(previousState, targetProblem);
+        V3DryMeshState interpolated = interpolate(previousState, sourceTopology, targetProblem);
         return projectedSeedOrPrevious(targetProblem, thermo, interpolated, control);
     }
 
@@ -1082,7 +1097,8 @@ public final class V3ColumnCalculator {
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(rampInput, branch);
             rampAttempts.recordAttempt(branch);
             V3DryMeshState seed = previous == seedBase
-                    ? continuationSeed(problem, previous.attempt().state(), thermo, control)
+                    ? continuationSeed(problem, previous.prepared().problem().topology(),
+                            previous.attempt().state(), thermo, control)
                     : previous.attempt().state();
             SolvePolicy rampPolicy = rampStep.requested(input) ? policy : policy.withoutCutoff();
             // A rung that changes the stage heat or the steam moves the whole temperature profile while the
@@ -1690,6 +1706,12 @@ public final class V3ColumnCalculator {
      * state instead made reinsertion a front that could only advance one tray per refresh, which is what
      * exhausted the refresh cap on the wet TJL19 case and lost it entirely at a cap of one.</p>
      *
+     * <p>The same two sweeps also run the opposite rule, {@link #capOversizedPoint}: a retained point the seed
+     * put far <em>above</em> the material its neighbours deliver is brought back down to that material. The two
+     * rules share a criterion and a sweep on purpose — the inflow {@code I} is the whole right-hand side of the
+     * point's material row, so a chain of oversized trays is repaired in the same single pass a chain of
+     * removed ones is.</p>
+     *
      * <p>A one-phase point is different and is lifted first, by {@link #liftAbsentPhase}.</p>
      */
     static V3DryMeshState liftFloorSupport(
@@ -1736,21 +1758,15 @@ public final class V3ColumnCalculator {
                     double floor = componentFloor(problem, component);
                     boolean hasLiquid = hasLiquidPhase(problem, node, component);
                     boolean hasVapor = topology.hasVaporPhase(node);
+                    double inflow = deliveredInflow(problem, liquid, vapor, withdrawalRetained, refluxFraction,
+                            node, component);
                     if ((hasLiquid && liquid[node][component] >= floor)
                             || (hasVapor && vapor[node][component] >= floor)) {
-                        continue;
-                    }
-                    double inflow;
-                    if (node == topology.condenserNode()) {
-                        inflow = vapor[1][component];
-                    } else {
-                        inflow = node == 1
-                                ? refluxFraction * liquid[0][component]
-                                : withdrawalRetained[node - 1] * liquid[node - 1][component];
-                        if (node < topology.reboilerNode()) inflow += vapor[node + 1][component];
-                        if (node == topology.feedTrayNumber()) {
-                            inflow += problem.activeComponentBasis().feedFlowMolPerSecond(component);
+                        if (node != topology.feedTrayNumber()) {
+                            capOversizedPoint(equilibrium.node(node), liquid, vapor, node, component, inflow,
+                                    floor, hasLiquid, hasVapor);
                         }
+                        continue;
                     }
                     if (inflow < V3TruncationSupport.FLOOR_REINSERTION_FACTOR * floor) continue;
                     reinsertRemovedPoint(equilibrium.node(node), liquid, vapor, node, component, inflow,
@@ -1760,6 +1776,79 @@ public final class V3ColumnCalculator {
         }
         return new V3DryMeshState(topology, components, liquid, vapor, temperatures,
                 V3ColumnInitializer.freeWaterFlows(state));
+    }
+
+    /**
+     * The whole right-hand side of one point's material row, read from the flows lifted so far.
+     *
+     * <p>It is the material the point's retained neighbours and the feed actually deliver to it, and it is
+     * what both floor rules compare against: a point below the floor re-enters at this value, and a point far
+     * above it is brought back to it. The terms are exactly those of
+     * {@code V3MeshResidualEvaluator.materialBalance} — a pumparound moves heat rather than mass and a steam
+     * feed is water rather than a hydrocarbon component, so neither adds a term here.</p>
+     */
+    private static double deliveredInflow(
+            V3ColumnProblem problem, double[][] liquid, double[][] vapor, double[] withdrawalRetained,
+            double refluxFraction, int node, int component) {
+        V3ColumnTopology topology = problem.topology();
+        if (node == topology.condenserNode()) return vapor[1][component];
+        double inflow = node == 1
+                ? refluxFraction * liquid[0][component]
+                : withdrawalRetained[node - 1] * liquid[node - 1][component];
+        if (node < topology.reboilerNode()) inflow += vapor[node + 1][component];
+        if (node == topology.feedTrayNumber()) {
+            inflow += problem.activeComponentBasis().feedFlowMolPerSecond(component);
+        }
+        return inflow;
+    }
+
+    /**
+     * Brings a retained point that the seed put far above its own material row back to what feeds it.
+     *
+     * <p>A point's material row says its two outlets sum to what arrives: {@code l + v = I}. A seed can put a
+     * trace point orders of magnitude above that — a continuation grid whose profile is stretched, or a
+     * projection that carried a bulk value into a section where the component is a trace — and Newton is then
+     * very slow to undo it. In log-flow coordinates the row is {@code r = I − a·e^z} and, once {@code a·e^z}
+     * dominates {@code I}, the Newton step is {@code −1 + I/(a·e^z)}: one e-fold per iteration however good
+     * the Jacobian is, so a point eighteen e-folds too high costs eighteen iterations on a residual that sits
+     * at exactly one throughout. Setting it to the equilibrium split of {@code I}, the same split a
+     * reinsertion uses, closes both of the point's rows at the seed instead.</p>
+     *
+     * <p>The rule fires only above {@link #OVERSIZED_SEED_FACTOR} times the delivered material, so a point at
+     * or below what feeds it is never touched, and it never <em>raises</em> a flow: raising is the
+     * reinsertion's job and doing both here would let the two rules chase each other across the sweeps. It is
+     * also, by construction, inactive on any state that satisfies its material rows — every refresh reads a
+     * solved state, where {@code l + v = I} exactly — so no support refresh, sink-edge defect or audited bound
+     * can move because of it.</p>
+     *
+     * <p>Structure is left alone in both directions. A phase the point does not have is never written, and a
+     * phase below the floor is left exactly where it is rather than being pulled up to the floor, so the
+     * retention {@code V3TruncationSupport.derive} reads from the lifted seed is bit-for-bit the retention it
+     * would have read without the cap. The feed tray is excluded by the caller for the same reason it is
+     * retained whole by {@code derive}: it is the root of every material path, and its flows are the
+     * continuation's anchor rather than a consequence of its neighbours.</p>
+     */
+    private static void capOversizedPoint(
+            V3StageEquilibriumRatios.Node ratios, double[][] liquid, double[][] vapor, int node, int component,
+            double inflow, double floor, boolean hasLiquid, boolean hasVapor) {
+        boolean capLiquid = hasLiquid && liquid[node][component] >= floor;
+        boolean capVapor = hasVapor && vapor[node][component] >= floor;
+        double total = (capLiquid ? liquid[node][component] : 0.0) + (capVapor ? vapor[node][component] : 0.0);
+        double supply = Math.max(inflow, floor);
+        if (!(total > OVERSIZED_SEED_FACTOR * supply)) return;
+        if (!capLiquid || !capVapor) {
+            if (capLiquid) liquid[node][component] = Math.max(floor, Math.min(liquid[node][component], supply));
+            if (capVapor) vapor[node][component] = Math.max(floor, Math.min(vapor[node][component], supply));
+            return;
+        }
+        // Without properties the even split is the only defensible allocation, exactly as for a reinsertion.
+        double liquidShare = ratios == null ? 0.5 * supply
+                : supply / (1.0 + ratios.equilibriumRatio(component) * ratios.vaporTotalMolPerSecond()
+                        / ratios.liquidTotalMolPerSecond());
+        if (!Double.isFinite(liquidShare) || liquidShare < 0.0) liquidShare = 0.0;
+        liquidShare = Math.min(liquidShare, supply);
+        liquid[node][component] = Math.max(floor, Math.min(liquid[node][component], liquidShare));
+        vapor[node][component] = Math.max(floor, Math.min(vapor[node][component], supply - liquidShare));
     }
 
     /** Splits the delivered material over the point's present phases the way its equilibrium row would. */
@@ -2021,14 +2110,26 @@ public final class V3ColumnCalculator {
         return path.toString();
     }
 
-    private static V3DryMeshState interpolate(V3DryMeshState source, V3ColumnProblem target) {
+    /**
+     * Reads one converged grid's profile onto the next grid's nodes, node position by node position.
+     *
+     * <p>{@code sourceTopology} is the geometry the state belongs to, which a {@link V3DryMeshState} does not
+     * carry: it validates against its topology and then keeps only the node count. It is needed because the
+     * map is not purely geometric — see {@link #sourcePosition}, which holds a rectifying node off the source
+     * feed tray.</p>
+     */
+    private static V3DryMeshState interpolate(
+            V3DryMeshState source, V3ColumnTopology sourceTopology, V3ColumnProblem target) {
+        if (source.nodeCount() != sourceTopology.nodeCount()) {
+            throw new IllegalArgumentException("V3 continuation seed does not match its source geometry");
+        }
         int nodes = target.topology().nodeCount();
         int components = source.componentCount();
         double[][] liquid = new double[nodes][components];
         double[][] vapor = new double[nodes][components];
         double[] temperatures = new double[nodes];
         for (int node = 0; node < nodes; node++) {
-            double position = node * (source.nodeCount() - 1.0) / (nodes - 1.0);
+            double position = sourcePosition(node, sourceTopology, target.topology());
             int lower = (int) Math.floor(position);
             int upper = Math.min(source.nodeCount() - 1, lower + 1);
             double fraction = position - lower;
@@ -2044,6 +2145,43 @@ public final class V3ColumnCalculator {
         temperatures[target.topology().condenserNode()] = specification(
                 target.input(), V3ColumnSpecification.CondenserOutletTemperature.class).kelvin();
         return new V3DryMeshState(target.topology(), components, liquid, vapor, temperatures);
+    }
+
+    /**
+     * Where a target node reads the source profile: the whole-column linear map, with one clamp.
+     *
+     * <p>The map itself is unchanged — {@code node × sourceReboiler / targetReboiler}, which fixes the
+     * condenser and the reboiler — and the clamp only keeps a <em>rectifying</em> target node from reading
+     * the source feed tray. {@code interpolate} blends {@code floor(position)} with the node below it, so a
+     * position of at most {@code sourceFeed − 1} cannot touch the source feed tray at all: at exactly that
+     * bound the fraction is zero and the second node is unused.</p>
+     *
+     * <p>What the clamp is for is that the feed tray is a step in the profile, not a point on a curve. Above
+     * the feed the heavy pseudo-components fall by orders of magnitude per tray, while the feed tray itself
+     * carries them in bulk, so a rectifying tray that reads even a fifth of the source feed tray is seeded
+     * orders of magnitude above anything its own neighbours deliver. Newton undoes such a flow at one e-fold
+     * per iteration — for {@code r = I − a·e^z} with {@code a·e^z ≫ I} the step is exactly
+     * {@code −1 + I/(a·e^z)} — on a scaled residual pinned at one throughout. Measured on the plain 40-tray
+     * column, with {@link #capOversizedPoint} already in place, the clamp takes the stage rungs from
+     * 11/21/30/29/21 to 11/21/28/29/14 Newton iterations and the e-fold plateau from 17 iterations to 6.</p>
+     *
+     * <p>Only the rectifying side, and that asymmetry is measured rather than assumed. Clamping the stripping
+     * side symmetrically — a target node below the feed reading at least {@code sourceFeed + 1} — moves
+     * exactly one tray on the cold 30-tray pilot's last rung, the tray just below the feed, and costs two of
+     * the three {@code coldCondenserProducesOnlyLiquidProducts} cases their convergence entirely (18 s and
+     * 25 s of NONCONVERGENCE at residuals of 2.2 and 5.1, against 0.3 s successes). Below the feed the same
+     * components are bulk on both sides of the step, so there is nothing there for a clamp to protect and the
+     * only thing it changes is the map. Anchoring the target feed tray onto the source feed tray as well was
+     * measured separately, keeps every case, and is worth one Newton iteration out of a hundred: not enough
+     * to justify a third rule.</p>
+     *
+     * <p>When the two grids have the same geometry — every ramp rung — the map is exactly the identity: the
+     * position is the node, the clamp cannot bind, and a zero fraction returns its endpoint unrounded.</p>
+     */
+    static double sourcePosition(int node, V3ColumnTopology source, V3ColumnTopology target) {
+        double position = node * (double) source.reboilerNode() / target.reboilerNode();
+        if (node >= target.feedTrayNumber()) return position;
+        return Math.min(position, source.feedTrayNumber() - 1.0);
     }
 
     private static <S extends V3ColumnSpecification> S specification(V3ColumnInput input, Class<S> type) {
