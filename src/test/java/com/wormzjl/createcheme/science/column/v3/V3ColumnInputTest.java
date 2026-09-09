@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -58,17 +56,6 @@ class V3ColumnInputTest {
                 () -> V3ColumnProblemResolver.resolve(unsupportedSchema, V3CondenserPhaseBranch.TWO_PHASE));
         assertThrows(IllegalArgumentException.class,
                 () -> V3ColumnProblemResolver.resolve(invalidFeedTray, V3CondenserPhaseBranch.TWO_PHASE));
-    }
-
-    @Test
-    void fixtureSchemaIsVersionedAndExplicitAboutReferenceAuthority() throws IOException {
-        try (var stream = getClass().getResourceAsStream("/com/wormzjl/createcheme/science/column/v3/dwsim-reference-fixture.schema.json")) {
-            assertTrue(stream != null);
-            String schema = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            assertTrue(schema.contains("\"schemaVersion\": { \"const\": 1 }"));
-            assertTrue(schema.contains("REFERENCE_ACCEPTED"));
-            assertTrue(schema.contains("MODEL_MISMATCH"));
-        }
     }
 
     @Test

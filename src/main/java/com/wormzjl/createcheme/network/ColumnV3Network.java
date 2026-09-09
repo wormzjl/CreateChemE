@@ -40,7 +40,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.registration.HandlerThread;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /**
@@ -52,6 +54,9 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  */
 public final class ColumnV3Network {
     public static final int WIRE_SCHEMA_VERSION = 8;
+
+    // Version 5 removes the legacy calculator packet family; both peers must use the V3-only protocol.
+    private static final String PROTOCOL_VERSION = "5";
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -67,7 +72,8 @@ public final class ColumnV3Network {
 
     private ColumnV3Network() {}
 
-    static void register(PayloadRegistrar registrar) {
+    public static void register(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar(PROTOCOL_VERSION).executesOn(HandlerThread.MAIN);
         registrar.playToServer(CalculatePayload.TYPE, CalculatePayload.STREAM_CODEC, ColumnV3Network::handleCalculate);
         registrar.playToServer(PresetPayload.TYPE, PresetPayload.STREAM_CODEC, ColumnV3Network::handlePreset);
         registrar.playToServer(StateRequestPayload.TYPE, StateRequestPayload.STREAM_CODEC,

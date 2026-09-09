@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
-/** Additive V3 product block; solve admission remains unavailable until the V3 server protocol is installed. */
+/** Calculator block with server-authoritative V3 solve admission and result state. */
 public final class ColumnCalculatorV3Block extends BaseEntityBlock {
     public static final MapCodec<ColumnCalculatorV3Block> CODEC = simpleCodec(ColumnCalculatorV3Block::new);
 

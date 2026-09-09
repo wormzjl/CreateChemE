@@ -13,7 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Qualifies deterministic internal stage continuation without using a persisted or cross-request warm state. */
-class V3DwsimStageContinuationTest {
+class V3StageContinuationTest {
     private static final long TARGET_BUDGET_NANOS = 15_000_000_000L;
     private static final long FIFTEEN_STAGE_BUDGET_NANOS = 30_000_000_000L;
     private static final long THIRTY_STAGE_BUDGET_NANOS = 60_000_000_000L;
@@ -44,7 +44,7 @@ class V3DwsimStageContinuationTest {
         V3FlashResult eightFeedFlash = feedFlash(thermo, eightStage);
         V3AcceptanceAudit audit = new V3AcceptanceAuditor(eightStage, thermo,
                 eightFeedFlash.molarEnthalpyJoulesPerMol()).audit(converged.state(), thermo.newWorkspace());
-        System.out.println("V3 DWSIM continuation 4->8: " + converged + "; audit=" + audit);
+        System.out.println("V3 Stage continuation 4->8: " + converged + "; audit=" + audit);
         assertTrue(converged.evidence().convergenceEvidence().satisfiesGates());
         assertTrue(audit.accepted());
     }
@@ -72,7 +72,7 @@ class V3DwsimStageContinuationTest {
         V3FlashResult fifteenFeedFlash = feedFlash(thermo, fifteenStage);
         V3AcceptanceAudit audit = new V3AcceptanceAuditor(fifteenStage, thermo,
                 fifteenFeedFlash.molarEnthalpyJoulesPerMol()).audit(convergedFifteenStage.state(), thermo.newWorkspace());
-        System.out.println("V3 DWSIM continuation 4->8->15: " + convergedFifteenStage + "; audit=" + audit);
+        System.out.println("V3 Stage continuation 4->8->15: " + convergedFifteenStage + "; audit=" + audit);
         assertTrue(convergedFifteenStage.evidence().convergenceEvidence().satisfiesGates());
         assertTrue(audit.accepted());
     }
@@ -104,7 +104,7 @@ class V3DwsimStageContinuationTest {
         V3FlashResult thirtyFeedFlash = feedFlash(thermo, thirtyStage);
         V3AcceptanceAudit audit = new V3AcceptanceAuditor(thirtyStage, thermo,
                 thirtyFeedFlash.molarEnthalpyJoulesPerMol()).audit(convergedThirtyStage.state(), thermo.newWorkspace());
-        System.out.println("V3 DWSIM continuation 4->8->15->30: " + convergedThirtyStage + "; audit=" + audit);
+        System.out.println("V3 Stage continuation 4->8->15->30: " + convergedThirtyStage + "; audit=" + audit);
         assertTrue(convergedThirtyStage.evidence().convergenceEvidence().satisfiesGates());
         assertTrue(audit.accepted());
     }
@@ -115,18 +115,18 @@ class V3DwsimStageContinuationTest {
             List<Integer> legacy = new java.util.ArrayList<>();
             for (int seed : new int[] {4, 8, 15}) if (seed < request) legacy.add(seed);
             legacy.add(request);
-            assertEquals(legacy, V3ColumnCalculator.dwsimStageCounts(request),
+            assertEquals(legacy, V3ColumnCalculator.continuationStageCounts(request),
                     () -> "the schedule of a request at or below 30 stages must not move");
         }
 
-        assertEquals(List.of(4, 8, 15, 30, 31), V3ColumnCalculator.dwsimStageCounts(31));
-        assertEquals(List.of(4, 8, 15, 30, 40), V3ColumnCalculator.dwsimStageCounts(40));
-        assertEquals(List.of(4, 8, 15, 30, 60), V3ColumnCalculator.dwsimStageCounts(60));
-        assertEquals(List.of(4, 8, 15, 30, 60, 61), V3ColumnCalculator.dwsimStageCounts(61));
-        assertEquals(List.of(4, 8, 15, 30, 60, 64), V3ColumnCalculator.dwsimStageCounts(V3ColumnInput.MAX_STAGE_COUNT));
+        assertEquals(List.of(4, 8, 15, 30, 31), V3ColumnCalculator.continuationStageCounts(31));
+        assertEquals(List.of(4, 8, 15, 30, 40), V3ColumnCalculator.continuationStageCounts(40));
+        assertEquals(List.of(4, 8, 15, 30, 60), V3ColumnCalculator.continuationStageCounts(60));
+        assertEquals(List.of(4, 8, 15, 30, 60, 61), V3ColumnCalculator.continuationStageCounts(61));
+        assertEquals(List.of(4, 8, 15, 30, 60, 64), V3ColumnCalculator.continuationStageCounts(V3ColumnInput.MAX_STAGE_COUNT));
 
         for (int request = V3ColumnInput.MIN_STAGE_COUNT; request <= V3ColumnInput.MAX_STAGE_COUNT; request++) {
-            List<Integer> schedule = V3ColumnCalculator.dwsimStageCounts(request);
+            List<Integer> schedule = V3ColumnCalculator.continuationStageCounts(request);
             assertEquals(request, schedule.get(schedule.size() - 1), "the schedule must end on the request");
             for (int index = 1; index < schedule.size(); index++) {
                 assertTrue(schedule.get(index) > schedule.get(index - 1), schedule::toString);
@@ -373,7 +373,7 @@ class V3DwsimStageContinuationTest {
         long started = System.nanoTime();
         return solve(thermo, problem, seed, () -> {
             if (System.nanoTime() - started >= budgetNanos) {
-                throw new AssertionError("DWSIM stage continuation exceeded its cold-test budget");
+                throw new AssertionError("Stage continuation exceeded its cold-test budget");
             }
         });
     }

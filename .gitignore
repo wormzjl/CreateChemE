@@ -38,6 +38,8 @@ documentation/
 benchmarks/
 scripts/
 design/
+research/
+docs/
 
 # Claude × Codex collaboration runtime files
 .collab/

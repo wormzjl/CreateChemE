@@ -1,15 +1,10 @@
 package com.wormzjl.createcheme.runtime;
 
 import com.wormzjl.createcheme.CreateChemE;
-import com.wormzjl.createcheme.science.column.ColumnSimulation;
-import com.wormzjl.createcheme.science.column.TiaJuanaLight12PropertyPackage;
-import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnInput;
-import com.wormzjl.createcheme.science.column.ColumnSimulation.ColumnSolveOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
-import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorBlockEntity.CalculationTicket;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Operation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -24,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -33,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>Every method is server-thread confined. The worker receives only a deeply immutable
  * {@link ProcessSolveCommand}; Minecraft objects and request-delivery metadata stay in the server-thread context
- * map. V1 and V3 jobs enter the one owned bounded service through this sealed envelope.</p>
+ * map. V3 jobs enter the one owned bounded service through this sealed envelope.</p>
  */
 public final class ProcessSolveServices {
     public static final int MAXIMUM_COMPLETIONS_PER_TICK = 64;
@@ -44,7 +37,7 @@ public final class ProcessSolveServices {
     private ProcessSolveServices() {}
 
     /**
-     * Returns the only process-wide request identity used by both calculator families.
+     * Returns the only process-wide request identity used by calculator requests.
      *
      * <p>The value is deliberately not reset with a logical server: this keeps stale packet/log identities
      * unambiguous across an integrated-server restart in the same JVM. It is allocated only on the logical server
@@ -84,16 +77,6 @@ public final class ProcessSolveServices {
                 config.solveDeadline().toMillis(),
                 config.gracefulShutdown().toMillis(),
                 config.forcedShutdown().toMillis());
-    }
-
-    /**
-     * Admits a validated immutable column snapshot. This method never calculates on the server thread.
-     */
-    public static AdmissionResult submitColumn(MinecraftServer server, ColumnRequest request) {
-        requireServerThread(server);
-        Objects.requireNonNull(request, "request");
-        return submit(server, request, new LegacyColumnCommand(request.ticket().input()),
-                expectedDatasetRevision(request.ticket().input()));
     }
 
     /** Admits one immutable V3 input through the existing shared bounded service. */
@@ -154,30 +137,6 @@ public final class ProcessSolveServices {
         return drain(state, maximum);
     }
 
-    /** Cancels the exact outstanding block ticket without affecting a newer solve for that block. */
-    public static BoundedCpuSolveService.CancellationResult cancelColumn(
-            MinecraftServer server,
-            ColumnTarget target,
-            CalculationTicket ticket,
-            BoundedCpuSolveService.CancelReason reason) {
-        requireServerThread(server);
-        Objects.requireNonNull(target, "target");
-        Objects.requireNonNull(ticket, "ticket");
-        Objects.requireNonNull(reason, "reason");
-        ServerState state = STATES.get(server);
-        if (state == null) {
-            return BoundedCpuSolveService.CancellationResult.NOT_FOUND;
-        }
-        for (RequestContext context : state.requestsBySequence.values()) {
-            if (context.request() instanceof ColumnRequest request
-                    && request.target().equals(target)
-                    && request.ticket().equals(ticket)) {
-                return state.service.cancel(context.stamp(), reason);
-            }
-        }
-        return BoundedCpuSolveService.CancellationResult.NOT_FOUND;
-    }
-
     /** Stops admission and performs the owned bounded two-phase shutdown. */
     public static StopResult stopServer(MinecraftServer server) {
         requireServerThread(server);
@@ -235,33 +194,13 @@ public final class ProcessSolveServices {
             if (context == null) {
                 throw new IllegalStateException("Process-solve completion has no request context");
             }
-            if (context.request() instanceof ColumnRequest legacyRequest) {
-                result.add(new ColumnCompletion(
-                        legacyRequest, context.admissionDiagnostics(), legacyCompletion(completion)));
-            } else if (context.request() instanceof V3ColumnRequest v3Request) {
+            if (context.request() instanceof V3ColumnRequest v3Request) {
                 result.add(new V3ColumnCompletion(v3Request, context.admissionDiagnostics(), v3Completion(completion)));
             } else {
                 throw new IllegalStateException("Unknown process-solve request family");
             }
         }
         return List.copyOf(result);
-    }
-
-    private static String expectedDatasetRevision(ColumnInput input) {
-        return TiaJuanaLight12PropertyPackage.DATASET_REVISION;
-    }
-
-    private static BoundedCpuSolveService.Completion<ColumnTarget, ColumnSolveOutcome> legacyCompletion(
-            BoundedCpuSolveService.Completion<ColumnTarget, ProcessSolveResult> completion) {
-        Optional<ColumnSolveOutcome> outcome = completion.result().map(result -> {
-            if (!(result instanceof LegacyColumnSolveResult legacy)) {
-                throw new IllegalStateException("Legacy request completed with a non-legacy process result");
-            }
-            return legacy.outcome();
-        });
-        return new BoundedCpuSolveService.Completion<>(
-                completion.stamp(), completion.status(), outcome, completion.failure(), completion.detail(),
-                completion.enqueuedNanos(), completion.startedNanos(), completion.completedNanos());
     }
 
     private static BoundedCpuSolveService.Completion<ColumnTarget, V3ColumnOutcome> v3Completion(
@@ -304,32 +243,12 @@ public final class ProcessSolveServices {
     }
 
     /** Immutable worker envelope. Adding a job family extends this sealed protocol, never the executor count. */
-    public sealed interface ProcessSolveCommand permits LegacyColumnCommand, V3ColumnCommand {
+    public sealed interface ProcessSolveCommand permits V3ColumnCommand {
         ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken);
     }
 
     /** Immutable worker result envelope routed only after main-thread completion draining. */
-    public sealed interface ProcessSolveResult permits LegacyColumnSolveResult, V3ColumnSolveResult {}
-
-    private record LegacyColumnCommand(ColumnInput input) implements ProcessSolveCommand {
-        private LegacyColumnCommand {
-            Objects.requireNonNull(input, "input");
-        }
-
-        @Override
-        public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken) {
-            cancellationToken.throwIfCancellationRequested();
-            ColumnSolveOutcome outcome = ColumnSimulation.calculate(input);
-            cancellationToken.throwIfCancellationRequested();
-            return new LegacyColumnSolveResult(outcome);
-        }
-    }
-
-    private record LegacyColumnSolveResult(ColumnSolveOutcome outcome) implements ProcessSolveResult {
-        private LegacyColumnSolveResult {
-            Objects.requireNonNull(outcome, "outcome");
-        }
-    }
+    public sealed interface ProcessSolveResult permits V3ColumnSolveResult {}
 
     /** Immutable worker snapshot; configuration has already been read and converted by server-thread admission. */
     record V3ColumnCommand(
@@ -379,36 +298,12 @@ public final class ProcessSolveServices {
     }
 
     /** Immutable server-thread request context retained until exactly one terminal completion is drained. */
-    public sealed interface ProcessSolveRequest permits ColumnRequest, V3ColumnRequest {
+    public sealed interface ProcessSolveRequest permits V3ColumnRequest {
         long requestId();
 
         ColumnTarget target();
 
         long inputRevision();
-    }
-
-    /** Preserved legacy submission facade. */
-    public record ColumnRequest(
-            long requestId,
-            long clientRequestId,
-            int containerId,
-            UUID playerId,
-            ColumnTarget target,
-            CalculationTicket ticket,
-            long receivedNanos) implements ProcessSolveRequest {
-        public ColumnRequest {
-            if (requestId < 0L || clientRequestId < 0L || containerId < 0) {
-                throw new IllegalArgumentException("Request identifiers must not be negative");
-            }
-            Objects.requireNonNull(playerId, "playerId");
-            Objects.requireNonNull(target, "target");
-            Objects.requireNonNull(ticket, "ticket");
-        }
-
-        @Override
-        public long inputRevision() {
-            return ticket.inputRevision();
-        }
     }
 
     /** Immutable V3 pilot metadata retained only on the server thread until worker completion drains. */
@@ -431,41 +326,6 @@ public final class ProcessSolveServices {
         }
     }
 
-    /** One completion joined with its immutable main-thread request metadata. */
-    public record ColumnCompletion(
-            ColumnRequest request,
-            Diagnostics admissionDiagnostics,
-            BoundedCpuSolveService.Completion<ColumnTarget, ColumnSolveOutcome> completion)
-            implements ProcessSolveCompletion {
-        public ColumnCompletion {
-            Objects.requireNonNull(request, "request");
-            Objects.requireNonNull(admissionDiagnostics, "admissionDiagnostics");
-            Objects.requireNonNull(completion, "completion");
-            if (request.requestId() != completion.stamp().sequence()
-                    || !request.target().equals(completion.stamp().owner())
-                    || request.ticket().inputRevision() != completion.stamp().inputRevision()) {
-                throw new IllegalArgumentException("Completion stamp does not match request context");
-            }
-        }
-
-        public double queueMilliseconds() {
-            long end = completion.started()
-                    ? completion.startedNanos()
-                    : completion.completedNanos();
-            return nanosToMilliseconds(end - completion.enqueuedNanos());
-        }
-
-        public double workerMilliseconds() {
-            return completion.started()
-                    ? nanosToMilliseconds(completion.completedNanos() - completion.startedNanos())
-                    : 0.0;
-        }
-
-        public double wallMilliseconds(long nowNanos) {
-            return nanosToMilliseconds(nowNanos - request.receivedNanos());
-        }
-    }
-
     /** One V3 completion joined to immutable server-thread metadata for stale-operation rejection. */
     public record V3ColumnCompletion(
             V3ColumnRequest request,
@@ -485,7 +345,7 @@ public final class ProcessSolveServices {
     }
 
     /** Marker for the central router; only it may drain the shared completion queue. */
-    public sealed interface ProcessSolveCompletion permits ColumnCompletion, V3ColumnCompletion {}
+    public sealed interface ProcessSolveCompletion permits V3ColumnCompletion {}
 
     public record AdmissionResult(Admission admission, Diagnostics diagnostics) {
         public AdmissionResult {
@@ -569,10 +429,6 @@ public final class ProcessSolveServices {
         private static StopResult alreadyStopped(BoundedCpuSolveService.ShutdownReport shutdownReport) {
             return new StopResult(false, shutdownReport, List.of(), List.of());
         }
-    }
-
-    private static double nanosToMilliseconds(long nanos) {
-        return nanos / (double) TimeUnit.MILLISECONDS.toNanos(1L);
     }
 
     private record RequestContext(

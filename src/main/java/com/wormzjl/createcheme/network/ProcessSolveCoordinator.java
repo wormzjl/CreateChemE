@@ -2,8 +2,6 @@ package com.wormzjl.createcheme.network;
 
 import com.wormzjl.createcheme.CreateChemE;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
-import com.wormzjl.createcheme.runtime.ProcessSolveServices.ColumnCompletion;
-import com.wormzjl.createcheme.runtime.ProcessSolveServices.ColumnRequest;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.ProcessSolveCompletion;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.ProcessSolveRequest;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices.V3ColumnCompletion;
@@ -16,8 +14,8 @@ import java.util.Objects;
 /**
  * The sole main-thread completion router for the shared process-solve service.
  *
- * <p>V1 and V3 packet families retain independent codecs and commit handlers, but neither family may drain the
- * shared completion queue on its own. This coordinator is called once per logical-server lifecycle edge by
+ * <p>The V3 packet handlers may not drain the shared completion queue on their own.
+ * This coordinator is called once per logical-server lifecycle edge by
  * {@link CreateChemE}.</p>
  */
 public final class ProcessSolveCoordinator {
@@ -65,9 +63,7 @@ public final class ProcessSolveCoordinator {
 
     private static void route(MinecraftServer server, List<ProcessSolveCompletion> completions) {
         for (ProcessSolveCompletion completion : completions) {
-            if (completion instanceof ColumnCompletion legacy) {
-                ColumnNetwork.handleRoutedCompletion(server, legacy);
-            } else if (completion instanceof V3ColumnCompletion v3) {
+            if (completion instanceof V3ColumnCompletion v3) {
                 ColumnV3Network.handleRoutedCompletion(server, v3);
             } else {
                 throw new IllegalStateException("Unknown process-solve completion family");
@@ -76,9 +72,7 @@ public final class ProcessSolveCoordinator {
     }
 
     private static void routeAbandoned(MinecraftServer server, ProcessSolveRequest request) {
-        if (request instanceof ColumnRequest legacy) {
-            ColumnNetwork.handleRoutedAbandoned(server, legacy);
-        } else if (request instanceof V3ColumnRequest v3) {
+        if (request instanceof V3ColumnRequest v3) {
             ColumnV3Network.handleRoutedAbandoned(server, v3);
         } else {
             throw new IllegalStateException("Unknown process-solve request family");

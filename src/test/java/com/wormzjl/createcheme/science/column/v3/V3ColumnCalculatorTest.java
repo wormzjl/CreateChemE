@@ -61,18 +61,18 @@ class V3ColumnCalculatorTest {
     }
 
     @Test
-    void productionCalculatorUsesTheCertifiedDwsimStageContinuationForThirtyStageRealCrude() {
+    void productionCalculatorUsesTheCertifiedStageContinuationForThirtyStageRealCrude() {
         long started = System.nanoTime();
         V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class,
                 V3ColumnCalculator.calculate(registeredRealCrudeThirtyStagePilot(), () -> {
                     if (System.nanoTime() - started >= 60_000_000_000L) {
-                        throw new AssertionError("production 30-stage DWSIM continuation exceeded its cold-test budget");
+                        throw new AssertionError("production 30-stage Stage continuation exceeded its cold-test budget");
                     }
                 }));
 
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
-        assertTrue(success.diagnostics().solvePath().contains("dwsim-sequential/4-8-15-30"));
+        assertTrue(success.diagnostics().solvePath().contains("stage-continuation/4-8-15-30"));
         assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
     }

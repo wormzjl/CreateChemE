@@ -75,13 +75,13 @@ class IndependentIdealMeshOracleTest {
     }
 
     @Test
-    void fixtureResourceRecordsItsManufacturedAuthorityAndNoDwsimClaim() throws IOException {
+    void fixtureResourceRecordsItsManufacturedAuthority() throws IOException {
         try (var stream = getClass().getResourceAsStream("/column/v3/manufactured-two-component-four-tray.json")) {
             assertTrue(stream != null);
             String fixture = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
             assertTrue(fixture.contains("MANUFACTURED_IDEAL_MESH"));
             assertTrue(fixture.contains("\"stageCount\": 4"));
-            assertTrue(fixture.contains("it is not a DWSIM fixture"));
+            assertTrue(fixture.contains("it is not an external simulator fixture"));
         }
     }
 

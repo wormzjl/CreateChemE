@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "fixtureId": "manufactured-two-component-four-tray",
   "authority": "MANUFACTURED_IDEAL_MESH",
-  "description": "A full MESH state with stage-local reference K values, explicit K temperature slopes, and identical affine liquid/vapor component enthalpies. Feed and reboiler duty are derived from the listed state; it is not a DWSIM fixture.",
+  "description": "A full MESH state with stage-local reference K values, explicit K temperature slopes, and identical affine liquid/vapor component enthalpies. Feed and reboiler duty are derived from the listed state; it is not an external simulator fixture.",
   "componentIds": ["component-a", "component-b"],
   "stageCount": 4,
   "feedStageNumber": 2,

@@ -20,7 +20,7 @@ class V3LowPressureColdProbeTest {
 
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
-        assertTrue(success.diagnostics().solvePath().contains("dwsim"));
+        assertTrue(success.diagnostics().solvePath().contains("continuation"));
         assertEquals(V3CondenserPhaseBranch.LIQUID_ONLY, success.result().problem().topology().condenserPhaseBranch());
         assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("distillate_liquid")));
@@ -32,7 +32,7 @@ class V3LowPressureColdProbeTest {
 
         assertTrue(success.result().acceptanceAudit().accepted());
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
-        assertTrue(success.diagnostics().solvePath().contains("dwsim"));
+        assertTrue(success.diagnostics().solvePath().contains("continuation"));
         assertEquals(V3CondenserPhaseBranch.LIQUID_ONLY, success.result().problem().topology().condenserPhaseBranch());
         assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")));
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("distillate_liquid")));

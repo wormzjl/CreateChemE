@@ -417,7 +417,7 @@ final class V3ColumnInitializer {
     }
 
     /**
-     * DWSIM-style condenser traffic tear. The liquid node is split into reflux and liquid distillate;
+     * Sequential condenser traffic tear. The liquid node is split into reflux and liquid distillate;
      * a partial condenser also has an independently solved vapor product.
      */
     private static ColdTrafficCandidate refinePartialCondenserTraffic(

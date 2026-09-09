@@ -6,7 +6,7 @@ import java.util.Map;
 final class V3PropertyPackageRegistry {
     private static final Map<String, V3PropertyPackage> PACKAGES = Map.of(
             V3Cdu17TiaJuanaPackage.PACKAGE_ID, V3Cdu17TiaJuanaPackage.INSTANCE,
-            V3Tjl19DwsimPackage.PACKAGE_ID, V3Tjl19DwsimPackage.INSTANCE);
+            V3Tjl19PropertyPackage.PACKAGE_ID, V3Tjl19PropertyPackage.INSTANCE);
 
     private V3PropertyPackageRegistry() {}
 

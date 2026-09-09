@@ -10,13 +10,19 @@ Planned equipment includes storage drums, pumps, compressors, heat exchangers, b
 
 ## Current status
 
-The mod is in an early proof-of-concept stage. The NeoForge 1.21.1 project loads with Create, JEI, and KubeJS, and currently provides one placeholder crude-distillation calculator block.
+The mod is in an early proof-of-concept stage. The NeoForge 1.21.1 project integrates with Create, JEI, and KubeJS and provides the experimental V3 column calculator (`createcheme:column_calculator_v3`).
 
-The calculator has a pre-filled GUI for column inputs, server-authoritative calculation requests, tabular stream and composition results, console reporting, bounded asynchronous execution, and stale-result protection. Its current column calculation is an explicitly labelled deterministic placeholder that conserves the twelve pseudocut component flows; it is not yet a MESH distillation solver.
+The calculator provides editable column inputs, literature presets, side draws, steam feeds, pumparounds, and stream/composition results. A simultaneous MESH solver with stage and pressure continuation runs through one bounded server-owned solve service. Results must pass convergence and conservation checks before publication; server-authoritative admission and revision checks protect against stale results.
 
-A Minecraft-independent thermodynamics foundation is now present under `science.thermo`. It includes a Peng-Robinson 1978 cubic equation of state, liquid/vapor root selection, fugacity coefficients, residual enthalpy, polynomial ideal-gas heat capacities, reference-state enthalpy, Wilson initialization, phase-stability screening, TP and pressure-enthalpy flash solvers, and a reusable single equilibrium-stage material/energy balance. This kernel is covered by numerical, thermodynamic-identity, conservation, and 12-cut crude-assay robustness tests but is not connected to the calculator yet. The crude test uses clearly labelled gameplay-proxy critical and caloric properties; defensible production pseudocomponent characterization and the stagewise column solver remain to be implemented before replacing the placeholder result.
+V3 has its own Minecraft-independent thermodynamics implementation under `science.column.v3.thermo`. The reusable foundation under `science.thermo` and the single equilibrium-stage solver remain covered by thermodynamic-identity, flash, and conservation tests. Property reconstructions and model limitations are documented separately; see [TJL19 provenance](docs/tjl19-property-provenance.md).
 
 The custom multicomponent fluid system, connected plant simulation, reaction models, continuous equipment operation, and final multiblock structures are not implemented yet.
+
+## V1 removal and compatibility
+
+The original V1 calculator, its solver, packets, and `createcheme:column_calculator` block/item/block-entity/menu registrations have been removed. This is a breaking change for worlds and inventories containing V1 calculators: there is no remapping or conversion of their saved inputs/results. Replace any V1 calculators in the previous version before upgrading a world that needs them. Existing V3 registration IDs, saved input schema, property-package IDs, and dataset revisions are preserved.
+
+Client and server must both run the refactored version; the network protocol version changed to reject the old packet set. The [removal record](docs/v1-calculator-removal-plan.md) describes scope and validation.
 
 ## Verification
 

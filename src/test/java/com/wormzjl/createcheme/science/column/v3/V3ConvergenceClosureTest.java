@@ -41,11 +41,11 @@ class V3ConvergenceClosureTest {
      */
     @ParameterizedTest
     @CsvSource({
-            "A, SUCCESS, 0, cold/dwsim-sequential/4-8-15-30/fine-fd/liquid-only-condenser",
-            "B, SUCCESS, 2, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/heat-1",
-            "C, SUCCESS, 3, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/steam-1/heat-3",
-            "D, SUCCESS, 7, cold/dwsim-sequential/4-8-15-30/fine-fd/heat-ramp-1.0/condenser-phase-correction/heat-1",
-            "E, SUCCESS, 3, cold/dwsim-sequential/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3"})
+            "A, SUCCESS, 0, cold/stage-continuation/4-8-15-30/fine-fd/liquid-only-condenser",
+            "B, SUCCESS, 2, cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/heat-1",
+            "C, SUCCESS, 3, cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/steam-1/heat-3",
+            "D, SUCCESS, 7, cold/stage-continuation/4-8-15-30/fine-fd/heat-ramp-1.0/condenser-phase-correction/heat-1",
+            "E, SUCCESS, 3, cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3"})
     void theDefaultClosureLeavesEveryEvaluationCaseExactlyWhereItWas(
             String label, String kind, int newtonIterations, String solvePath) {
         V3ColumnInput input = evaluationCase(label);

@@ -1,7 +1,7 @@
 package com.wormzjl.createcheme;
 
 import com.mojang.logging.LogUtils;
-import com.wormzjl.createcheme.network.ColumnNetwork;
+import com.wormzjl.createcheme.network.ColumnV3Network;
 import com.wormzjl.createcheme.network.ProcessSolveCoordinator;
 import com.wormzjl.createcheme.registry.ModBlockEntities;
 import com.wormzjl.createcheme.registry.ModBlocks;
@@ -87,7 +87,7 @@ public final class CreateChemE {
         ModItems.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModMenus.register(modEventBus);
-        modEventBus.addListener(ColumnNetwork::register);
+        modEventBus.addListener(ColumnV3Network::register);
         modEventBus.addListener(CreateChemE::addCreativeTabItem);
         modContainer.registerConfig(ModConfig.Type.COMMON, CONFIG_SPEC, "createcheme-common.toml");
 
@@ -115,7 +115,6 @@ public final class CreateChemE {
 
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
-            event.accept(ModItems.COLUMN_CALCULATOR.get());
             event.accept(ModItems.COLUMN_CALCULATOR_V3.get());
         }
     }
