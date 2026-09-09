@@ -44,6 +44,8 @@ public final class V3ColumnCalculator {
     private static final int HEAT_BEARING_DRAW_RAMP_STEPS = 8;
     private static final int MAXIMUM_HEAT_SUBDIVISIONS = 4;
     private static final int MAXIMUM_HEAT_SUBDIVISIONS_PER_RUNG = 2;
+    /** Steam-rung halvings the second, full-budget sweep of one feature ramp may spend. */
+    private static final int MAXIMUM_STEAM_SUBDIVISIONS = 2;
     public static final int MAXIMUM_NEWTON_ITERATIONS = 128;
     public static final double SCALED_RESIDUAL_TOLERANCE = 1.0e-8;
     private static final double PRESSURE_CONTINUATION_TRIGGER_PASCAL = 100_000.0;
@@ -1048,6 +1050,16 @@ public final class V3ColumnCalculator {
         double[] rungFeedEnthalpy = {Double.NaN, Double.NaN};
         double acceptedHeatFraction = 0.0;
         boolean condenserBoundChecked = false;
+        // The bounded second sweep: the steam rung whose reduced budget stopped the schedule, the last state
+        // the schedule accepted before it, the fractions that state belongs to, and whether the sweep has
+        // already been spent. See the block that arms it at the requested rung.
+        RampStep stoppedSteamStep = null;
+        V3SolvePass stoppedSteamAccepted = null;
+        double resumeHeatFraction = 0.0;
+        double resumeSteamFraction = 0.0;
+        double resumeAcceptedHeatFraction = 0.0;
+        boolean fullBudgetSteamRungs = false;
+        int steamSubdivisions = 0;
         for (int index = 0; index < rampSteps.size(); index++) {
             RampStep rampStep = rampSteps.get(index);
             if (intermediateFailed && !rampStep.requested(input)) continue;
@@ -1118,15 +1130,50 @@ public final class V3ColumnCalculator {
                 seed = withEnergyShiftPrediction(problem, thermo, seed, control, rampPolicy, rampStep,
                         energyShift, rungFeedEnthalpy);
             }
+            boolean requestedRung = rampStep.requested(input);
+            int rungIterations = requestedRung
+                    ? DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS : DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS;
+            V3SimultaneousColumnSolver.RungBudget budget =
+                    rampRungBudget(rampStep.steamRung(), requestedRung, fullBudgetSteamRungs);
             V3SolvePass pass = solveSingleProblem(problem, thermo, seed, control,
-                    rampPath + "/" + rampStep.pathLabel() + "-" + rampStep.progress(),
-                    ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
-                    rampStep.requested(input) ? DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS
-                            : DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS, rampPolicy,
-                    rampRungBudget(rampStep.steamRung(), rampStep.requested(input)));
+                    rampPath + (fullBudgetSteamRungs ? "/full-budget/" : "/") + rampStep.pathLabel()
+                            + "-" + rampStep.progress(),
+                    ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS, rungIterations, rampPolicy, budget);
             pass = correctCondenserPhase(pass, thermo, control, rampPolicy, rampAttempts).pass();
             if (!publishesSuccess(pass.attempt(), pass.audit())) {
-                if (rampStep.requested(input)) {
+                if (requestedRung) {
+                    // A reduced intermediate budget is a bet that a steam rung either closes cheaply or
+                    // cannot be closed at all. When the bet loses, the ramp abandons its schedule and hands
+                    // this rung whatever state the stopped rung left — a different seed, and therefore a
+                    // different basin. Measured on the wet literature CDU, three perturbations (top 200 kPa,
+                    // steam x0.5, steam x1.5) are lost exactly this way, one of them skipping ahead from a
+                    // *lower* residual than the full budget ever reaches on that rung, so the residual level
+                    // is not what decides; the seed is. Spending the declined fallbacks eagerly recovers all
+                    // three, but it also costs the flagship preset 1.7 s -> 3.0 s for the same digest, because
+                    // its own schedule stalls at 0.625 and skips ahead to an answer anyway.
+                    //
+                    // So the second sweep is bought only once the first one has failed where it matters: at
+                    // the rung that publishes. Resume from the last state the schedule accepted, replay from
+                    // the rung that stopped with the full damped cascade, the gradient direction and no stall
+                    // stop, and let the schedule continue if that rung now closes. A ramp whose requested rung
+                    // succeeds never reaches here and is bit-identical; a ramp that would have failed pays one
+                    // extra sweep, once.
+                    int resumeIndex = stoppedSteamStep == null ? -1 : rampSteps.indexOf(stoppedSteamStep);
+                    if (resumeIndex >= 0 && !fullBudgetSteamRungs) {
+                        fullBudgetSteamRungs = true;
+                        rampEvents.add(boundedEvent(rampStep.description()
+                                + " failed at the requested input: " + rampEvidence(pass)
+                                + "; resuming the steam schedule at " + stoppedSteamStep.progress()
+                                + " on the full rung budget"));
+                        previous = stoppedSteamAccepted;
+                        seedHeatFraction = resumeHeatFraction;
+                        seedSteamFraction = resumeSteamFraction;
+                        acceptedHeatFraction = resumeAcceptedHeatFraction;
+                        seedAccepted = true;
+                        intermediateFailed = false;
+                        index = resumeIndex - 1;
+                        continue;
+                    }
                     condenserAttempts.recordRequestedDrawRampFailure();
                     rampEvents.add(boundedEvent(
                             rampStep.description() + " reached the requested input and failed: " + rampEvidence(pass)));
@@ -1150,6 +1197,33 @@ public final class V3ColumnCalculator {
                     rampSteps.add(index, midpoint);
                     index--;
                     continue;
+                }
+                // Inside the second sweep the calculus above is different, because the alternative is no
+                // longer a cheap skip-ahead to an answer: the requested rung has already been tried from the
+                // skipped-ahead state and failed. A stopped rung that the full budget cannot close either is
+                // then worth halving, at the cost of a rung the first sweep never pays for. Bounded to
+                // {@link #MAXIMUM_STEAM_SUBDIVISIONS} halvings so a schedule that stalls at every fraction
+                // cannot walk the interval.
+                if (fullBudgetSteamRungs && rampStep.steamRung()
+                        && steamSubdivisions < MAXIMUM_STEAM_SUBDIVISIONS) {
+                    RampStep steamMidpoint = midpointSteamStep(rampStep, seedSteamFraction);
+                    if (steamMidpoint != null) {
+                        steamSubdivisions++;
+                        rampSteps.add(index, steamMidpoint);
+                        index--;
+                        continue;
+                    }
+                }
+                // Remember where a reduced budget gave up, and on what state, so the requested rung can buy a
+                // second sweep from here if it needs one. Only the first such rung is remembered: it is the
+                // one whose seed the whole rest of the schedule depends on.
+                if (stoppedSteamStep == null && seedAccepted
+                        && !budget.equals(V3SimultaneousColumnSolver.RungBudget.DEFAULT)) {
+                    stoppedSteamStep = rampStep;
+                    stoppedSteamAccepted = previous;
+                    resumeHeatFraction = seedHeatFraction;
+                    resumeSteamFraction = seedSteamFraction;
+                    resumeAcceptedHeatFraction = acceptedHeatFraction;
                 }
                 // A failed intermediate fraction is still a finite fixed-geometry seed. The authored
                 // full-rate problem must be attempted before returning a terminal diagnostic.
@@ -1279,9 +1353,19 @@ public final class V3ColumnCalculator {
             }
         }
 
-        /** The predictor's own line first, then the ramp's, bounded by the published event contract. */
+        /**
+         * The predictor's own line first, then the ramp's, bounded by the published event contract.
+         *
+         * <p>The bound is applied on both branches. A ramp that stops rungs, subdivides them and then resumes
+         * its steam schedule on the full budget writes more lines than one that walks its schedule cleanly,
+         * and {@link V3SolverDiagnostics} rejects a list longer than {@link V3SolverDiagnostics#MAX_EVENTS}
+         * outright rather than truncating it for the caller.</p>
+         */
         List<String> merged(List<String> rampEvents) {
-            if (applied == 0 && declined == 0) return rampEvents;
+            if (applied == 0 && declined == 0) {
+                return rampEvents.size() <= V3SolverDiagnostics.MAX_EVENTS ? rampEvents
+                        : List.copyOf(rampEvents.subList(0, V3SolverDiagnostics.MAX_EVENTS));
+            }
             List<String> events = new ArrayList<>();
             events.add(boundedEvent("energy-shift predictor: applied=" + applied + ", declined=" + declined
                     + ", largest shift=" + largestShiftKelvin + " K"
@@ -1390,7 +1474,49 @@ public final class V3ColumnCalculator {
      * rungs keep it too.</p>
      */
     static V3SimultaneousColumnSolver.RungBudget rampRungBudget(boolean steamRung, boolean requested) {
+        return rampRungBudget(steamRung, requested, false);
+    }
+
+    /**
+     * The same choice, with the second sweep's override.
+     *
+     * <p>Once the ramp has resumed on the full budget there is no reduced rung left anywhere in the schedule:
+     * the whole point of the resumed sweep is that the fallbacks the first sweep declined are what it is
+     * buying, so the flag wins over every other consideration.</p>
+     */
+    static V3SimultaneousColumnSolver.RungBudget rampRungBudget(
+            boolean steamRung, boolean requested, boolean fullBudgetSweep) {
+        if (fullBudgetSweep) return V3SimultaneousColumnSolver.RungBudget.DEFAULT;
         return steamRung && !requested ? INTERMEDIATE_RUNG_BUDGET : V3SimultaneousColumnSolver.RungBudget.DEFAULT;
+    }
+
+    /**
+     * Halves the remaining steam increment; null when the increment can no longer be split.
+     *
+     * <p>Only the second, full-budget sweep uses this. On the first sweep the measured trade is the other way
+     * round: halving a stopped 0.625 rung to 0.458 stalls again for another 1.2 s and then costs the requested
+     * rung 3.6 s instead of 2.5 s for the same accepted answer, because the skip-ahead was going to succeed
+     * anyway. Once the requested rung has failed from the skipped-ahead state, that comparison no longer
+     * applies and the smaller increment is the only unexplored seed left.</p>
+     */
+    private static RampStep midpointSteamStep(RampStep failed, double acceptedSteamFraction) {
+        double midpoint = steamRampMidpointFraction(acceptedSteamFraction, failed.steamFraction());
+        if (Double.isNaN(midpoint)) return null;
+        return new RampStep(midpoint, failed.heatFraction(), failed.drawFraction(), midpoint,
+                failed.pathLabel(), failed.description());
+    }
+
+    /**
+     * The steam fraction halfway between an accepted rung and the rung that stopped, or NaN.
+     *
+     * <p>NaN is returned whenever the halving would not actually produce a new rung strictly inside the
+     * interval — a zero-width interval, or one so narrow that the midpoint rounds onto an endpoint in double
+     * arithmetic — which is what keeps the subdivision from re-queueing a fraction it has already solved.</p>
+     */
+    static double steamRampMidpointFraction(double acceptedSteamFraction, double failedSteamFraction) {
+        double midpoint = 0.5 * (acceptedSteamFraction + failedSteamFraction);
+        if (!(midpoint > acceptedSteamFraction) || !(midpoint < failedSteamFraction)) return Double.NaN;
+        return midpoint;
     }
 
     /** Halves the remaining heat increment; null when the increment can no longer be split. */

@@ -186,6 +186,138 @@ class V3DwsimStageContinuationTest {
         assertTrue(full.gradientFallback());
         assertEquals(8, full.verificationDampingSteps());
         assertEquals(0, full.stallWindow(), "no published attempt may be stopped by the stall detector");
+
+        for (boolean steamRung : new boolean[] {true, false}) {
+            for (boolean requested : new boolean[] {true, false}) {
+                assertEquals(full, V3ColumnCalculator.rampRungBudget(steamRung, requested, true),
+                        () -> "the resumed sweep exists to spend the fallbacks the first sweep declined, so"
+                                + " every rung in it runs on the full budget: steamRung=" + steamRung
+                                + " requested=" + requested);
+            }
+        }
+    }
+
+    /**
+     * The resumed sweep's halving may only ever queue a fraction strictly inside the interval it splits.
+     *
+     * <p>That is what bounds it together with the halving count: a midpoint that landed on either endpoint
+     * would re-queue a rung the schedule has already solved or already failed, and the loop would not make
+     * progress. The narrow interval below is the arithmetic limit — its midpoint rounds onto the lower
+     * endpoint — and is rejected rather than accepted as a degenerate rung.</p>
+     */
+    @Test
+    void aResumedSteamRungHalvingOnlyEverQueuesAFractionStrictlyInsideItsInterval() {
+        assertEquals(0.375, V3ColumnCalculator.steamRampMidpointFraction(0.25, 0.5), 0.0);
+        // The literature preset's own halving: the doubling schedule's 7/24 and 15/24 rungs meet at 11/24,
+        // which is the 0.4583333333333334 the recovered condenser +5 K case actually solves.
+        assertEquals(11.0 / 24.0, V3ColumnCalculator.steamRampMidpointFraction(7.0 / 24.0, 15.0 / 24.0), 1.0e-15);
+        assertEquals(0.5, V3ColumnCalculator.steamRampMidpointFraction(0.0, 1.0), 0.0);
+
+        assertTrue(Double.isNaN(V3ColumnCalculator.steamRampMidpointFraction(0.5, 0.5)),
+                "a zero-width interval has no interior rung");
+        assertTrue(Double.isNaN(V3ColumnCalculator.steamRampMidpointFraction(0.75, 0.25)),
+                "an inverted interval has no interior rung");
+        assertTrue(Double.isNaN(V3ColumnCalculator.steamRampMidpointFraction(0.5, Math.nextUp(0.5))),
+                "an interval one ulp wide has no interior rung in double arithmetic");
+
+        double accepted = 1.0 / 24.0;
+        double failed = 3.0 / 24.0;
+        for (int halving = 0; halving < 8; halving++) {
+            double upper = failed;
+            double midpoint = V3ColumnCalculator.steamRampMidpointFraction(accepted, upper);
+            if (Double.isNaN(midpoint)) break;
+            assertTrue(midpoint > accepted && midpoint < upper,
+                    () -> "halving " + accepted + " -> " + upper + " produced " + midpoint);
+            failed = midpoint;
+        }
+    }
+
+    /**
+     * The wet literature preset at half the authored steam: the case the second sweep exists for.
+     *
+     * <p>Its first sweep stall-stops the last steam rung at a scaled residual of 0.153 and skips ahead, and the
+     * requested rung then dies on a zero pivot after 31 iterations. Resuming that rung on the full budget and,
+     * when it stops again, halving it once, puts the requested rung in the basin that publishes. The assertions
+     * are on the contract rather than on the numbers: the sweep is entered at most once, it is announced in the
+     * published events, and every rung it solves is on the {@code /full-budget/} path.</p>
+     */
+    @Test
+    void theWetPresetAtHalfSteamIsRecoveredByOneFullBudgetResumeOfItsSteamSchedule() {
+        V3ColumnInput input = wetLiteraturePreset(0.5);
+
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, () -> {
+            if (System.nanoTime() - started >= FORTY_STAGE_BUDGET_NANOS) {
+                throw new AssertionError("the half-steam wet literature preset exceeded its 60-second cold budget");
+            }
+        });
+        System.out.println("V3 wet literature preset at half steam: " + (System.nanoTime() - started) / 1.0e9 + " s; "
+                + outcome.diagnostics().solvePath());
+        outcome.diagnostics().events().forEach(event -> System.out.println("  event: " + event));
+
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertTrue(success.diagnostics().solvePath().contains("/full-budget/"),
+                success.diagnostics()::solvePath);
+
+        long resumes = success.diagnostics().events().stream()
+                .filter(event -> event.contains("resuming the steam schedule")).count();
+        assertEquals(1, resumes, () -> "the resumed sweep is bought once and only once: "
+                + success.diagnostics().events());
+        assertTrue(success.diagnostics().events().stream()
+                        .anyMatch(event -> event.contains("resuming the steam schedule at")
+                                && event.contains("on the full rung budget")),
+                () -> "the resume must say where it restarts and on what budget: "
+                        + success.diagnostics().events());
+    }
+
+    /**
+     * A ramp whose requested rung succeeds on the first sweep never buys the second one.
+     *
+     * <p>This is the speed contract of the resume: the flagship preset's own schedule stall-stops at 0.625 and
+     * skips ahead to an accepted answer, so it must reach that answer without a single full-budget rung.
+     * Recovering the perturbations eagerly instead — retrying every stopped rung as soon as it stops — was
+     * measured at 1.74 s to 3.02 s on this case for the same input digest, which is what this asserts against.</p>
+     */
+    @Test
+    void theWetLiteraturePresetItselfNeverEntersTheFullBudgetSweep() {
+        V3ColumnInput input = wetLiteraturePreset(1.0);
+
+        long started = System.nanoTime();
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, () -> {
+            if (System.nanoTime() - started >= FORTY_STAGE_BUDGET_NANOS) {
+                throw new AssertionError("the wet literature preset exceeded its 60-second cold budget");
+            }
+        });
+        System.out.println("V3 wet literature preset: " + (System.nanoTime() - started) / 1.0e9 + " s; "
+                + outcome.diagnostics().solvePath());
+
+        V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
+        assertTrue(success.result().acceptanceAudit().accepted());
+        assertFalse(success.diagnostics().solvePath().contains("full-budget"), success.diagnostics()::solvePath);
+        assertTrue(success.diagnostics().events().stream()
+                        .noneMatch(event -> event.contains("resuming the steam schedule")),
+                () -> "a ramp that publishes on its first sweep must not pay for a second: "
+                        + success.diagnostics().events());
+    }
+
+    /** The 40-tray Ledezma-Martinez column with its three draws, sump steam and three pumparounds. */
+    private static V3ColumnInput wetLiteraturePreset(double steamScale) {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl19_dwsim");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
+        double[] flows = crude.moleFractions();
+        for (int component = 0; component < flows.length; component++) flows[component] *= 737.6996333000835;
+        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
+                crude.componentBasis(), flows, 638.15, 40, 37, 250_000.0, 0.0, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(332.15),
+                        new V3ColumnSpecification.OrganicRefluxRatio(4.17),
+                        new V3ColumnSpecification.ReboilerDuty(0.0)),
+                List.of(new V3SideDrawSpec(10, 491.0 / 3.6), new V3SideDrawSpec(18, 515.0 / 3.6),
+                        new V3SideDrawSpec(28, 165.0 / 3.6)),
+                List.of(new V3SteamFeedSpec(41, steamScale * 1_200.0 / 3.6, 533.15)),
+                List.of(new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
+                        new V3PumparoundSpec(16, 18, -17.89e6, V3PumparoundSpec.Split.UNIFORM),
+                        new V3PumparoundSpec(26, 28, -11.20e6, V3PumparoundSpec.Split.UNIFORM)));
     }
 
     /** A stopped stall is a nonconvergence, like every other bounded Newton stop. */
