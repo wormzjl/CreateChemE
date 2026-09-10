@@ -6,6 +6,7 @@ out/
 __pycache__/
 *.pyc
 .neural-cache/
+.neural-venv/
 
 # NeoForge development runs
 run/
