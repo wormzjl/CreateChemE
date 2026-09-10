@@ -84,14 +84,16 @@ The factorized loss substantially improves bulk-profile agreement, especially ph
 
 Every method uses the same 64 fresh inputs, selected before fitting to cover all 50 occupied stage-bucket/steam/PA strata. These 64 are a timing sample, not a replacement for the 252-input operating holdout. Candidate profiles use `LNN_ONLY`; the classical profile uses `CURRENT_ONLY`. Separate JVMs use one solver worker, `-Xms512m -Xmx4g`, two fixed-input warmups, a 30-second parent deadline and a two-second/16-iteration candidate allowance. The runtime version is Java 21.0.11. No other native experiments or test suites ran alongside these serial measurements.
 
-| Method | Strict qualified /64 | Median attempt, ms | Mean attempt, ms | p95 attempt, ms |
+| Method | Strict qualified /64 | Median attempt, ms | Mean ± SD attempt, ms | p95 attempt, ms |
 | --- | ---: | ---: | ---: | ---: |
-| Classical CURRENT | 15 | 1,085.84 | 3,162.50 | 10,584.40 |
-| Gen2 | 16 | 540.01 | 791.60 | 2,000.56 |
-| Gen3 MLP | 15 | 643.43 | 865.45 | 2,000.46 |
-| Gen3 factorized | 13 | 489.48 | 728.44 | 2,000.38 |
-| Transfer k=1 | 18 | 363.94 | 596.23 | 1,631.20 |
-| Transfer k=3 | 13 | 300.11 | 584.18 | 1,845.66 |
+| Classical CURRENT | 15 | 1,085.84 | 3,162.50 ± 5,554.29 | 10,584.40 |
+| Gen2 | 16 | 540.01 | 791.60 ± 719.16 | 2,000.56 |
+| Gen3 MLP | 15 | 643.43 | 865.45 ± 700.27 | 2,000.46 |
+| Gen3 factorized | 13 | 489.48 | 728.44 ± 679.19 | 2,000.38 |
+| Transfer k=1 | 18 | 363.94 | 596.23 ± 559.57 | 1,631.20 |
+| Transfer k=3 | 13 | 300.11 | 584.18 ± 587.01 | 1,845.66 |
+
+SD is the sample standard deviation across the 64 input-case timings, calculated with denominator `n−1` (`statistics.stdev`). It describes variation between inputs, including failures; it is not a standard error, confidence interval, or measure of repeated-run timing noise.
 
 All-attempt times include rejection and unsuccessful correction. In particular, the two-second candidate ceiling is not the classical solver's time allowance. Faster failed attempts are not solve speedups. The next table uses only identical inputs strictly qualified by both CURRENT and the candidate; ratios above one mean the candidate used less time or allocation.
 
@@ -122,18 +124,18 @@ One interrupted setup trial initially sampled the Gradle launcher. Its partial j
 
 These are separate, complete three-mode runs of the same fresh 64 inputs. Each case rotates the mode order deterministically. Every mode receives a fresh 30-second parent deadline; `LNN_FIRST` spends at most two seconds on its candidate before using the remaining deadline for any classical fallback. Each selected candidate has its own measured CURRENT control in the same JVM.
 
-| Candidate study | Mode | Native / strict qualified | Median attempt, ms | Mean attempt, ms | p95 attempt, ms |
+| Candidate study | Mode | Native / strict qualified | Median attempt, ms | Mean ± SD attempt, ms | p95 attempt, ms |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Gen3 factorized | CURRENT_ONLY | 15 / 15 | 1,101.42 | 3,172.91 | 10,683.72 |
-| Gen3 factorized | LNN_ONLY | 14 / 13 | 482.10 | 711.05 | 2,000.40 |
-| Gen3 factorized | LNN_FIRST | 23 / 22 | 1,266.41 | 3,669.08 | 12,111.92 |
-| Transfer k=1 | CURRENT_ONLY | 15 / 15 | 1,186.28 | 3,532.34 | 13,239.71 |
-| Transfer k=1 | LNN_ONLY | 18 / 18 | 452.46 | 666.32 | 1,822.75 |
-| Transfer k=1 | LNN_FIRST | 24 / 24 | 1,140.83 | 3,730.31 | 13,714.85 |
+| Gen3 factorized | CURRENT_ONLY | 15 / 15 | 1,101.42 | 3,172.91 ± 5,595.68 | 10,683.72 |
+| Gen3 factorized | LNN_ONLY | 14 / 13 | 482.10 | 711.05 ± 672.31 | 2,000.40 |
+| Gen3 factorized | LNN_FIRST | 23 / 22 | 1,266.41 | 3,669.08 ± 5,896.26 | 12,111.92 |
+| Transfer k=1 | CURRENT_ONLY | 15 / 15 | 1,186.28 | 3,532.34 ± 6,092.01 | 13,239.71 |
+| Transfer k=1 | LNN_ONLY | 18 / 18 | 452.46 | 666.32 ± 613.59 | 1,822.75 |
+| Transfer k=1 | LNN_FIRST | 24 / 24 | 1,140.83 | 3,730.31 ± 6,229.42 | 13,714.85 |
 
-The factorized `LNN_FIRST` path retains all 15 classical qualified cases and adds seven, with one further advisory accept. Mean all-attempt time rises by 496 ms, or 15.6%; median time rises by 15.0%. It triggers 49 classical fallback events. On the 15 shared qualified classical cases, the median CURRENT/first time ratio is 0.56, showing the overhead imposed on many existing classical successes.
+The factorized `LNN_FIRST` path retains all 15 classical qualified cases and adds seven, with one further advisory accept. The mean paired time increase is **496.18 ± 1,029.62 ms** (mean ± sample SD of the 64 per-input `LNN_FIRST − CURRENT_ONLY` differences), corresponding to 15.6% higher mean all-attempt time; median time rises by 15.0%. It triggers 49 classical fallback events. On the 15 shared qualified classical cases, the median CURRENT/first time ratio is 0.56, showing the overhead imposed on many existing classical successes.
 
-Transfer-first retains all 15 classical qualified cases and adds nine, with no advisory accepts. Mean time rises by 198 ms, or 5.6%, while median time falls by 3.8%. It triggers 44 classical fallback events. Its median CURRENT/first time ratio on the 15 shared qualified cases is 2.94. These results favor transfer-first within this timing sample, but the transfer library remains an offline candidate and has not replaced the configured model family.
+Transfer-first retains all 15 classical qualified cases and adds nine, with no advisory accepts. The mean paired time increase is **197.97 ± 1,609.08 ms**, using the same 64-input difference calculation, corresponding to 5.6% higher mean time; median time falls by 3.8%. It triggers 44 classical fallback events. Its median CURRENT/first time ratio on the 15 shared qualified cases is 2.94. These results favor transfer-first within this timing sample, but the transfer library remains an offline candidate and has not replaced the configured model family.
 
 The two benchmark runs have measurably different classical timings despite identical inputs, so comparisons above use each run's own paired control. They are single warmed runs, with no timing confidence interval or cross-machine performance claim. The frozen Gen2 model was compared on the same input-only candidate profile; its previously published fallback benchmark used a different old 64-case set and is not used as a direct fallback-time control here.
 
