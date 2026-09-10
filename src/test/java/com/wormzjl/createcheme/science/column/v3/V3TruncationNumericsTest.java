@@ -133,12 +133,16 @@ class V3TruncationNumericsTest {
                     fixture.thermo()::newWorkspace, scale).values();
             double[][] colored = V3FiniteDifferenceJacobian.evaluateStageColored(evaluator, coordinates, state,
                     fixture.thermo()::newWorkspace, scale).values();
+            var compact = V3FiniteDifferenceJacobian.evaluateCompact(evaluator, coordinates, state,
+                    fixture.thermo()::newWorkspace, scale, V3SolveControl.UNBOUNDED);
             V3BlockJacobian local = V3BlockJacobianAssembler.assembleLocal(problem, evaluator, coordinates, state,
                     fixture.thermo()::newWorkspace, scale, V3SolveControl.UNBOUNDED);
             V3BandedMatrix banded = local.toBandedMatrix();
             for (int row = 0; row < full.length; row++) {
                 for (int column = 0; column < full.length; column++) {
                     double tolerance = 1.0e-6 * Math.max(1.0, Math.abs(full[row][column]));
+                    assertEquals(Double.doubleToRawLongBits(full[row][column]),
+                            Double.doubleToRawLongBits(compact.value(row, column)), "compact row/column " + row + "/" + column);
                     assertEquals(full[row][column], colored[row][column], tolerance, "colored row/column " + row + "/" + column);
                     assertEquals(full[row][column], banded.get(row, column), tolerance, "local row/column " + row + "/" + column);
                 }

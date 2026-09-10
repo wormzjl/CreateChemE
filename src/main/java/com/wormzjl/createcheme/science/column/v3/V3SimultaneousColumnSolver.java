@@ -193,6 +193,7 @@ final class V3SimultaneousColumnSolver {
             throw new IllegalArgumentException("V3 Newton solve limits are invalid");
         }
         V3StageBlockLayout layout = new V3StageBlockLayout(problem);
+        V3BandedPivotedSolver.Workspace linearWorkspace = new V3BandedPivotedSolver.Workspace();
         int maximumLineSearchSteps = differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.COARSE
                 ? COARSE_RECOVERY_MAXIMUM_LINE_SEARCH_STEPS : FINE_MAXIMUM_LINE_SEARCH_STEPS;
         // Only a budget that asks for the stall stop pays for its history; null is the frozen default path.
@@ -230,7 +231,7 @@ final class V3SimultaneousColumnSolver {
             if (maximumResidual <= scaledTolerance) {
                 VerifiedFinalNewton verified = verifyFinalNewtonCorrection(
                         evaluator, coordinates, state, residual, merit, workspaceFactory, layout, control,
-                        scaledTolerance, budget);
+                        scaledTolerance, budget, linearWorkspace);
                 if (verified != null) {
                     return new Attempt.Converged(verified.state(), new Evidence(iteration,
                             verified.maximumScaledResidual(), verified.merit(), verified.step(),
@@ -264,7 +265,7 @@ final class V3SimultaneousColumnSolver {
                     V3BlockJacobian localJacobian = V3BlockJacobianAssembler.assembleLocal(
                             problem, evaluator, coordinates, state, workspaceFactory, differenceScale, control);
                     V3BandedPivotedSolver.Result localLinear = V3BandedPivotedSolver.solve(
-                            localJacobian.toBandedMatrix(), negativeScaledResidual(residual));
+                            localJacobian.toBandedMatrix(linearWorkspace), negativeScaledResidual(residual), linearWorkspace);
                     if (localLinear instanceof V3BandedPivotedSolver.Result.Success localSuccess) {
                         double[] baseCoordinates = coordinates.encode(state);
                         AcceptedTrial localTrial = armijoTrial(
@@ -291,7 +292,7 @@ final class V3SimultaneousColumnSolver {
                     && cachedFineJacobian != null && frozenFineJacobianSteps < maximumFrozenFineJacobianSteps;
             V3FiniteDifferenceJacobian.Jacobian jacobian = usesFrozenFineJacobian
                     ? cachedFineJacobian
-                    : V3FiniteDifferenceJacobian.evaluate(
+                    : V3FiniteDifferenceJacobian.evaluateCompact(
                             evaluator, coordinates, state, workspaceFactory, differenceScale, control);
             trace.finiteDifferenceJacobian(iteration, usesFrozenFineJacobian);
             if (!usesFrozenFineJacobian && differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.FINE) {
@@ -301,7 +302,7 @@ final class V3SimultaneousColumnSolver {
             V3BandedPivotedSolver.Result linearResult;
             try {
                 linearResult = V3BandedPivotedSolver.solve(
-                        toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
+                        toBandedMatrix(jacobian, layout, linearWorkspace), negativeScaledResidual(residual), linearWorkspace);
             } catch (IllegalStateException unavailable) {
                 if (usesFrozenFineJacobian) {
                     cachedFineJacobian = null;
@@ -325,7 +326,7 @@ final class V3SimultaneousColumnSolver {
                 double[] baseCoordinates = coordinates.encode(state);
                 AcceptedTrial descentTrial = dampedGaussNewtonTrial(
                         evaluator, coordinates, baseCoordinates, jacobian, residual, frozenScales, merit, layout, workspaceFactory,
-                        maximumLineSearchSteps, control, budget);
+                        maximumLineSearchSteps, control, budget, linearWorkspace);
                 if (descentTrial == null && budget.gradientFallback()) {
                     descentTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
                             normalizedNegativeGradient(jacobian, residual, coordinates), frozenScales, merit, workspaceFactory,
@@ -355,7 +356,7 @@ final class V3SimultaneousColumnSolver {
             if (usedDescentFallback) {
                 acceptedTrial = dampedGaussNewtonTrial(
                         evaluator, coordinates, baseCoordinates, jacobian, residual, frozenScales, merit, layout, workspaceFactory,
-                        maximumLineSearchSteps, control, budget);
+                        maximumLineSearchSteps, control, budget, linearWorkspace);
                 if (acceptedTrial == null && budget.gradientFallback()) {
                     acceptedTrial = armijoTrial(evaluator, coordinates, baseCoordinates,
                             normalizedNegativeGradient(jacobian, residual, coordinates), frozenScales, merit, workspaceFactory,
@@ -412,13 +413,13 @@ final class V3SimultaneousColumnSolver {
             V3StageBlockLayout layout,
             V3SolveControl control,
             double scaledTolerance,
-            RungBudget budget) {
+            RungBudget budget, V3BandedPivotedSolver.Workspace linearWorkspace) {
         try {
             control.checkpoint();
-            V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluate(
+            V3FiniteDifferenceJacobian.Jacobian jacobian = V3FiniteDifferenceJacobian.evaluateCompact(
                     evaluator, coordinates, state, workspaceFactory, V3FiniteDifferenceJacobian.DifferenceScale.FINE, control);
             V3BandedPivotedSolver.Result linear = V3BandedPivotedSolver.solve(
-                    toBandedMatrix(jacobian, layout), negativeScaledResidual(residual));
+                    toBandedMatrix(jacobian, layout, linearWorkspace), negativeScaledResidual(residual), linearWorkspace);
             if (linear instanceof V3BandedPivotedSolver.Result.Success success) {
                 VerifiedFinalNewton direct = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
                         scaledTolerance, residual.maximumAbsoluteScaledResidual(), true,
@@ -431,7 +432,7 @@ final class V3SimultaneousColumnSolver {
             for (int attempt = 0; attempt < budget.verificationDampingSteps(); attempt++) {
                 control.checkpoint();
                 V3BandedPivotedSolver.Result regularized = V3BandedPivotedSolver.solve(
-                        normal.dampedMatrix(damping, control), normal.negativeGradient());
+                        normal.dampedMatrix(damping, control, linearWorkspace), normal.negativeGradient(), linearWorkspace);
                 if (regularized instanceof V3BandedPivotedSolver.Result.Success success) {
                     VerifiedFinalNewton verified = verifiedCandidate(evaluator, coordinates, state, workspaceFactory,
                             scaledTolerance, residual.maximumAbsoluteScaledResidual(), false,
@@ -494,6 +495,12 @@ final class V3SimultaneousColumnSolver {
     /** Keeps every coefficient in the declared adjacent-stage coupling, independent of its magnitude. */
     static V3BandedMatrix toBandedMatrix(
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3StageBlockLayout layout) {
+        return toBandedMatrix(jacobian, layout, null);
+    }
+
+    private static V3BandedMatrix toBandedMatrix(
+            V3FiniteDifferenceJacobian.Jacobian jacobian, V3StageBlockLayout layout,
+            V3BandedPivotedSolver.Workspace workspace) {
         int lastNode = layout.nodeCount() - 1;
         int size = layout.start(lastNode) + layout.size(lastNode);
         if (jacobian.unknowns().size() != size) {
@@ -508,14 +515,15 @@ final class V3SimultaneousColumnSolver {
             lowerBandwidth = Math.max(lowerBandwidth, layout.start(node) + layout.size(node) - 1 - firstCoupled);
             upperBandwidth = Math.max(upperBandwidth, coupledEnd - 1 - layout.start(node));
         }
-        V3BandedMatrix matrix = new V3BandedMatrix(size, lowerBandwidth, upperBandwidth);
+        V3BandedMatrix matrix = workspace == null ? new V3BandedMatrix(size, lowerBandwidth, upperBandwidth)
+                : workspace.clearedMatrix(size, lowerBandwidth, upperBandwidth);
         for (int node = 0; node <= lastNode; node++) {
             int firstCoupled = layout.start(Math.max(0, node - 1));
             int lastCoupledNode = Math.min(lastNode, node + 1);
             int coupledEnd = layout.start(lastCoupledNode) + layout.size(lastCoupledNode);
             int rowEnd = layout.start(node) + layout.size(node);
             for (int row = layout.start(node); row < rowEnd; row++) {
-                for (int column = 0; column < size; column++) {
+                for (int column = jacobian.firstStoredColumn(row); column < jacobian.storedColumnEnd(row); column++) {
                     double value = jacobian.value(row, column);
                     if (column >= firstCoupled && column < coupledEnd) {
                         matrix.set(row, column, value);
@@ -593,7 +601,9 @@ final class V3SimultaneousColumnSolver {
         double[] direction = new double[jacobian.unknowns().size()];
         for (int row = 0; row < direction.length; row++) {
             double scaledResidual = residual.rows().get(row).scaledValue();
-            for (int column = 0; column < direction.length; column++) {
+            int first = Double.isFinite(scaledResidual) ? jacobian.firstStoredColumn(row) : 0;
+            int end = Double.isFinite(scaledResidual) ? jacobian.storedColumnEnd(row) : direction.length;
+            for (int column = first; column < end; column++) {
                 direction[column] -= jacobian.value(row, column) * scaledResidual;
             }
         }
@@ -622,7 +632,8 @@ final class V3SimultaneousColumnSolver {
             V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, double[] baseCoordinates,
             V3FiniteDifferenceJacobian.Jacobian jacobian, V3MeshResidual residual, double[] frozenScales, double merit,
             V3StageBlockLayout layout, V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
-            int maximumLineSearchSteps, V3SolveControl control, RungBudget budget) {
+            int maximumLineSearchSteps, V3SolveControl control, RungBudget budget,
+            V3BandedPivotedSolver.Workspace linearWorkspace) {
         if (budget.maximumDampingSteps() == 0) return null;
         V3NormalEquations normal;
         try {
@@ -638,7 +649,7 @@ final class V3SimultaneousColumnSolver {
             V3BandedPivotedSolver.Result result;
             try {
                 result = V3BandedPivotedSolver.solve(
-                        normal.dampedMatrix(damping, control), normal.negativeGradient());
+                        normal.dampedMatrix(damping, control, linearWorkspace), normal.negativeGradient(), linearWorkspace);
             } catch (IllegalStateException unavailable) {
                 if (!DAMPED_NORMAL_OFF_BAND_MESSAGE.equals(unavailable.getMessage())) throw unavailable;
                 // The normal-equation fallback is optional. Its finite-difference off-band noise must not turn a

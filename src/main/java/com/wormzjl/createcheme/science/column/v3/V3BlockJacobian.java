@@ -14,10 +14,26 @@ final class V3BlockJacobian {
     V3BlockJacobian(
             V3StageBlockLayout layout, double[][][] lower, double[][][] diagonal, double[][][] upper,
             double maximumOffBandMagnitude) {
+        this(layout, lower, diagonal, upper, maximumOffBandMagnitude, true);
+    }
+
+    /**
+     * Takes the assembler's freshly allocated blocks. The assembler must relinquish every array
+     * reference; other callers use the copying constructor. Accessors always return snapshots.
+     */
+    static V3BlockJacobian fromOwnedBlocks(
+            V3StageBlockLayout layout, double[][][] lower, double[][][] diagonal, double[][][] upper,
+            double maximumOffBandMagnitude) {
+        return new V3BlockJacobian(layout, lower, diagonal, upper, maximumOffBandMagnitude, false);
+    }
+
+    private V3BlockJacobian(
+            V3StageBlockLayout layout, double[][][] lower, double[][][] diagonal, double[][][] upper,
+            double maximumOffBandMagnitude, boolean copyInput) {
         this.layout = Objects.requireNonNull(layout, "layout");
-        this.lower = copyBlocks(lower, layout, -1);
-        this.diagonal = copyBlocks(diagonal, layout, 0);
-        this.upper = copyBlocks(upper, layout, 1);
+        this.lower = validatedBlocks(lower, layout, -1, copyInput);
+        this.diagonal = validatedBlocks(diagonal, layout, 0, copyInput);
+        this.upper = validatedBlocks(upper, layout, 1, copyInput);
         if (!Double.isFinite(maximumOffBandMagnitude) || maximumOffBandMagnitude < 0.0) {
             throw new IllegalArgumentException("V3 block Jacobian off-band magnitude must be finite and nonnegative");
         }
@@ -32,6 +48,11 @@ final class V3BlockJacobian {
 
     /** Materializes only the declared tri-block coupling as the scalar band matrix used by the current LU solver. */
     V3BandedMatrix toBandedMatrix() {
+        return toBandedMatrix(null);
+    }
+
+    /** The caller's scratch matrix is consumed before any subsequent assembly can overwrite it. */
+    V3BandedMatrix toBandedMatrix(com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolver.Workspace workspace) {
         int lowerBandwidth = 0;
         int upperBandwidth = 0;
         for (int rowNode = 0; rowNode < layout.nodeCount(); rowNode++) {
@@ -47,7 +68,8 @@ final class V3BlockJacobian {
                         maximumUpperBandwidth(upper[rowNode], rowStart, layout.start(rowNode + 1)));
             }
         }
-        V3BandedMatrix matrix = new V3BandedMatrix(totalSize(), lowerBandwidth, upperBandwidth);
+        V3BandedMatrix matrix = workspace == null ? new V3BandedMatrix(totalSize(), lowerBandwidth, upperBandwidth)
+                : workspace.clearedMatrix(totalSize(), lowerBandwidth, upperBandwidth);
         for (int rowNode = 0; rowNode < layout.nodeCount(); rowNode++) {
             int rowStart = layout.start(rowNode);
             if (rowNode > 0) putBlock(matrix, lower[rowNode], rowStart, layout.start(rowNode - 1));
@@ -96,14 +118,16 @@ final class V3BlockJacobian {
         }
     }
 
-    private static double[][][] copyBlocks(double[][][] blocks, V3StageBlockLayout layout, int columnOffset) {
+    private static double[][][] validatedBlocks(
+            double[][][] blocks, V3StageBlockLayout layout, int columnOffset, boolean copyInput) {
         blocks = Objects.requireNonNull(blocks, "blocks");
         if (blocks.length != layout.nodeCount()) throw new IllegalArgumentException("V3 block Jacobian node count is invalid");
-        double[][][] copy = new double[blocks.length][][];
+        double[][][] copy = copyInput ? new double[blocks.length][][] : blocks;
         for (int node = 0; node < blocks.length; node++) {
             int columns = node + columnOffset < 0 || node + columnOffset >= layout.nodeCount()
                     ? 0 : layout.size(node + columnOffset);
-            copy[node] = copy(blocks[node]);
+            if (copyInput) copy[node] = copy(blocks[node]);
+            else Objects.requireNonNull(copy[node], "block");
             if (copy[node].length != layout.size(node)) throw new IllegalArgumentException("V3 block Jacobian row size is invalid");
             for (double[] row : copy[node]) {
                 if (row.length != columns) throw new IllegalArgumentException("V3 block Jacobian column size is invalid");

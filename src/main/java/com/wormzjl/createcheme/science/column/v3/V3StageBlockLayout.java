@@ -50,21 +50,24 @@ final class V3StageBlockLayout {
             }
         }
         for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
-            int activeComponent = component;
             boolean expectedLiquid = problem.hasLiquidUnknown(node, component);
             boolean expectedVapor = problem.hasVaporUnknown(node, component);
-            boolean foundLiquid = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
-                    == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW
-                    && unknown.id().component() == activeComponent);
-            boolean foundVapor = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
-                    == V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW
-                    && unknown.id().component() == activeComponent);
+            boolean foundLiquid = false;
+            boolean foundVapor = false;
+            for (int index = start; index < start + size; index++) {
+                var id = unknowns.get(index).id();
+                if (id.component() != component) continue;
+                foundLiquid |= id.family() == V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW;
+                foundVapor |= id.family() == V3DegreeOfFreedomLedger.UnknownFamily.VAPOR_COMPONENT_FLOW;
+            }
             if (foundLiquid != expectedLiquid || foundVapor != expectedVapor) {
                 throw new IllegalArgumentException("V3 MESH unknown ledger disagrees with component phase/support map");
             }
         }
-        boolean foundFreeWater = unknowns.subList(start, start + size).stream().anyMatch(unknown -> unknown.id().family()
-                == V3DegreeOfFreedomLedger.UnknownFamily.FREE_WATER_FLOW);
+        boolean foundFreeWater = false;
+        for (int index = start; index < start + size; index++) {
+            foundFreeWater |= unknowns.get(index).id().family() == V3DegreeOfFreedomLedger.UnknownFamily.FREE_WATER_FLOW;
+        }
         if (foundFreeWater != problem.hasFreeWaterUnknown(node)) {
             throw new IllegalArgumentException("V3 MESH unknown ledger disagrees with the free-water tray set");
         }
@@ -78,21 +81,24 @@ final class V3StageBlockLayout {
             }
         }
         for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
-            int activeComponent = component;
             boolean retained = problem.truncationSupport().retains(node, component);
             boolean expectedVle = problem.hasEquilibriumRow(node, component);
-            boolean foundMaterial = equations.subList(start, start + size).stream().anyMatch(equation -> equation.id().family()
-                    == V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE
-                    && equation.id().component() == activeComponent);
-            boolean foundVle = equations.subList(start, start + size).stream().anyMatch(equation -> equation.id().family()
-                    == V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM
-                    && equation.id().component() == activeComponent);
+            boolean foundMaterial = false;
+            boolean foundVle = false;
+            for (int index = start; index < start + size; index++) {
+                var id = equations.get(index).id();
+                if (id.component() != component) continue;
+                foundMaterial |= id.family() == V3DegreeOfFreedomLedger.EquationFamily.COMPONENT_MATERIAL_BALANCE;
+                foundVle |= id.family() == V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM;
+            }
             if (foundMaterial != retained || foundVle != expectedVle) {
                 throw new IllegalArgumentException("V3 MESH equation ledger disagrees with component phase/support map");
             }
         }
-        boolean foundSaturation = equations.subList(start, start + size).stream().anyMatch(equation -> equation.id().family()
-                == V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION);
+        boolean foundSaturation = false;
+        for (int index = start; index < start + size; index++) {
+            foundSaturation |= equations.get(index).id().family() == V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION;
+        }
         if (foundSaturation != problem.hasFreeWaterUnknown(node)) {
             throw new IllegalArgumentException("V3 MESH equation ledger disagrees with the free-water tray set");
         }

@@ -1,0 +1,39 @@
+allprojects {
+    afterEvaluate {
+        def baselineClasses = layout.buildDirectory.dir('classes/ram-baseline')
+        tasks.register('compileRamBaseline', JavaCompile) {
+            dependsOn tasks.named('testClasses')
+            source layout.buildDirectory.dir('generated/ram-baseline')
+            classpath = sourceSets.test.runtimeClasspath
+            destinationDirectory = baselineClasses
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+        }
+        tasks.register('v3RamComparison', JavaExec) {
+            def baseline = providers.gradleProperty('ramVariant').getOrElse('candidate') == 'baseline'
+            if (baseline) dependsOn tasks.named('compileRamBaseline')
+            classpath = baseline ? files(baselineClasses) + sourceSets.test.runtimeClasspath : sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MainOptimizationProbe'
+            minHeapSize = '512m'
+            maxHeapSize = '2g'
+            systemProperty 'probeDeadlineMillis', providers.gradleProperty('ramDeadlineMillis').getOrElse('120000')
+            args providers.gradleProperty('ramReport').get()
+            args providers.gradleProperty('ramWarmup').getOrElse('5')
+            args providers.gradleProperty('ramSamples').getOrElse('7')
+            args providers.gradleProperty('ramCases').getOrElse('A,B,C,D,E,Holland,C64')
+        }
+        tasks.register('v3RamMemory', JavaExec) {
+            def baseline = providers.gradleProperty('ramVariant').getOrElse('candidate') == 'baseline'
+            if (baseline) dependsOn tasks.named('compileRamBaseline')
+            classpath = baseline ? files(baselineClasses) + sourceSets.test.runtimeClasspath : sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MemoryProbe'
+            minHeapSize = '64m'
+            maxHeapSize = providers.gradleProperty('ramHeap').getOrElse('512m')
+            jvmArgs '-XX:+UseG1GC', '-XX:NativeMemoryTracking=summary', '-DmemoryNativeSummary=true'
+            systemProperty 'probeDeadlineMillis', providers.gradleProperty('ramDeadlineMillis').getOrElse('60000')
+            args providers.gradleProperty('ramCase').getOrElse('C64')
+            args providers.gradleProperty('ramReport').get()
+            args providers.gradleProperty('ramSamples').getOrElse('3')
+            args providers.gradleProperty('ramProfile').getOrElse('false')
+        }
+    }
+}

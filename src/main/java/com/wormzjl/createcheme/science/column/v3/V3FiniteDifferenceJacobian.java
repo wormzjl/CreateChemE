@@ -33,6 +33,20 @@ final class V3FiniteDifferenceJacobian {
             V3ThermoWorkspaceFactory workspaceFactory,
             DifferenceScale differenceScale,
             V3SolveControl control) {
+        return evaluate(evaluator, coordinates, state, workspaceFactory, differenceScale, control, false);
+    }
+
+    /** Production storage: stage-local row windows, retaining unexpected off-stage entries without thresholding. */
+    static Jacobian evaluateCompact(
+            V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, V3DryMeshState state,
+            V3ThermoWorkspaceFactory workspaceFactory, DifferenceScale differenceScale, V3SolveControl control) {
+        return evaluate(evaluator, coordinates, state, workspaceFactory, differenceScale, control, true);
+    }
+
+    private static Jacobian evaluate(
+            V3MeshResidualEvaluator evaluator, V3DryMeshCoordinateMap coordinates, V3DryMeshState state,
+            V3ThermoWorkspaceFactory workspaceFactory, DifferenceScale differenceScale, V3SolveControl control,
+            boolean compact) {
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
         state = Objects.requireNonNull(state, "state");
@@ -45,9 +59,9 @@ final class V3FiniteDifferenceJacobian {
         int rows = baseResidual.rows().size();
         if (rows != base.length) throw new IllegalArgumentException("V3 MESH Jacobian requires a square residual/coordinate map");
         if (base.length >= STAGE_COLORED_MINIMUM_COORDINATES) {
-            return stageColoredJacobian(evaluator, coordinates, base, baseResidual, workspaceFactory, differenceScale, control);
+            return stageColoredJacobian(evaluator, coordinates, base, baseResidual, workspaceFactory, differenceScale, control, compact);
         }
-        return centralJacobian(evaluator, coordinates, base, baseResidual, workspaceFactory, differenceScale, control);
+        return centralJacobian(evaluator, coordinates, base, baseResidual, workspaceFactory, differenceScale, control, compact);
     }
 
     /** Package-private deterministic qualifier for the stage-colored high-dimensional path. */
@@ -60,7 +74,7 @@ final class V3FiniteDifferenceJacobian {
         double[] base = coordinates.encode(state);
         V3MeshResidual baseResidual = evaluator.evaluate(state, workspaceFactory.newWorkspace());
         return stageColoredJacobian(evaluator, coordinates, base, baseResidual, workspaceFactory, differenceScale,
-                V3SolveControl.UNBOUNDED);
+                V3SolveControl.UNBOUNDED, false);
     }
 
     private static Jacobian centralJacobian(
@@ -70,9 +84,8 @@ final class V3FiniteDifferenceJacobian {
             V3MeshResidual baseResidual,
             V3ThermoWorkspaceFactory workspaceFactory,
             DifferenceScale differenceScale,
-            V3SolveControl control) {
-        int rows = baseResidual.rows().size();
-        double[][] values = new double[rows][base.length];
+            V3SolveControl control, boolean compact) {
+        MatrixValues values = new MatrixValues(baseResidual, coordinates, compact);
         double[] frozenScales = baseResidual.scales();
         for (int column = 0; column < base.length; column++) {
             control.checkpoint();
@@ -93,8 +106,8 @@ final class V3FiniteDifferenceJacobian {
             V3MeshResidual baseResidual,
             V3ThermoWorkspaceFactory workspaceFactory,
             DifferenceScale differenceScale,
-            V3SolveControl control) {
-        double[][] values = new double[base.length][base.length];
+            V3SolveControl control, boolean compact) {
+        MatrixValues values = new MatrixValues(baseResidual, coordinates, compact);
         double[] frozenScales = baseResidual.scales();
         Map<ColorSlot, List<Integer>> groups = new LinkedHashMap<>();
         for (int column = 0; column < base.length; column++) {
@@ -126,7 +139,7 @@ final class V3FiniteDifferenceJacobian {
                 double step = step(base[column], coordinates.unknowns().get(column).id().family(), differenceScale);
                 for (int row = 0; row < base.length; row++) {
                     if (Math.abs(baseResidual.rows().get(row).equation().node() - columnNode) > 1) continue;
-                    values[row][column] = higherResidual != null && lowerResidual != null
+                    double value = higherResidual != null && lowerResidual != null
                             ? (frozen(higherResidual, row, frozenScales) - frozen(lowerResidual, row, frozenScales))
                                     / (2.0 * step)
                             : higherResidual != null
@@ -134,7 +147,8 @@ final class V3FiniteDifferenceJacobian {
                                     - frozen(baseResidual, row, frozenScales)) / step
                                     : (frozen(baseResidual, row, frozenScales)
                                     - frozen(lowerResidual, row, frozenScales)) / step;
-                    requireFinite(values[row][column]);
+                    requireFinite(value);
+                    values.set(row, column, value);
                 }
             }
         }
@@ -150,7 +164,7 @@ final class V3FiniteDifferenceJacobian {
             V3ThermoWorkspaceFactory workspaceFactory,
             DifferenceScale differenceScale,
             V3SolveControl control,
-            double[][] values,
+            MatrixValues values,
             int column) {
         double step = step(base[column], coordinates.unknowns().get(column).id().family(), differenceScale);
         double[] higher = base.clone();
@@ -164,12 +178,13 @@ final class V3FiniteDifferenceJacobian {
         }
         requireSameOrdering(baseResidual, higherResidual, lowerResidual);
         for (int row = 0; row < baseResidual.rows().size(); row++) {
-            values[row][column] = higherResidual != null && lowerResidual != null
+            double value = higherResidual != null && lowerResidual != null
                     ? (frozen(higherResidual, row, frozenScales) - frozen(lowerResidual, row, frozenScales)) / (2.0 * step)
                     : higherResidual != null
                             ? (frozen(higherResidual, row, frozenScales) - frozen(baseResidual, row, frozenScales)) / step
                             : (frozen(baseResidual, row, frozenScales) - frozen(lowerResidual, row, frozenScales)) / step;
-            requireFinite(values[row][column]);
+            requireFinite(value);
+            values.set(row, column, value);
         }
     }
 
@@ -201,9 +216,10 @@ final class V3FiniteDifferenceJacobian {
     }
 
     private static Jacobian jacobian(
-            V3MeshResidual baseResidual, V3DryMeshCoordinateMap coordinates, double[][] values) {
+            V3MeshResidual baseResidual, V3DryMeshCoordinateMap coordinates, MatrixValues values) {
         List<V3DegreeOfFreedomLedger.EquationId> equations = new ArrayList<>(baseResidual.rows().size());
         for (V3MeshResidual.Row row : baseResidual.rows()) equations.add(row.equation());
+        // Both finite-difference builders relinquish their fresh matrix here. No caller can retain it.
         return new Jacobian(equations, coordinates.unknowns().stream().map(V3DegreeOfFreedomLedger.Unknown::id).toList(), values);
     }
 
@@ -249,32 +265,123 @@ final class V3FiniteDifferenceJacobian {
         com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace newWorkspace();
     }
 
-    record Jacobian(
-            List<V3DegreeOfFreedomLedger.EquationId> equations,
-            List<V3DegreeOfFreedomLedger.UnknownId> unknowns, double[][] values) {
-        Jacobian {
-            equations = List.copyOf(equations);
-            unknowns = List.copyOf(unknowns);
-            values = copy(values);
-            if (equations.isEmpty() || equations.size() != unknowns.size() || values.length != equations.size()) {
+    static final class Jacobian {
+        private final List<V3DegreeOfFreedomLedger.EquationId> equations;
+        private final List<V3DegreeOfFreedomLedger.UnknownId> unknowns;
+        private final MatrixValues values;
+
+        Jacobian(List<V3DegreeOfFreedomLedger.EquationId> equations,
+                List<V3DegreeOfFreedomLedger.UnknownId> unknowns, double[][] values) {
+            this(equations, unknowns, new MatrixValues(values));
+        }
+
+        /** The enclosing builders alone may transfer a fresh matrix instead of copying it. */
+        private Jacobian(List<V3DegreeOfFreedomLedger.EquationId> equations,
+                List<V3DegreeOfFreedomLedger.UnknownId> unknowns, MatrixValues values) {
+            this.equations = List.copyOf(equations);
+            this.unknowns = List.copyOf(unknowns);
+            this.values = Objects.requireNonNull(values, "values");
+            if (this.equations.isEmpty() || this.equations.size() != this.unknowns.size() || values.size != this.equations.size()) {
                 throw new IllegalArgumentException("V3 finite-difference Jacobian shape is invalid");
             }
-            for (double[] row : values) {
-                if (row.length != unknowns.size()) throw new IllegalArgumentException("V3 finite-difference Jacobian is not square");
+            for (double[] row : values.rows) {
                 for (double value : row) if (!Double.isFinite(value)) throw new IllegalArgumentException("V3 finite-difference Jacobian must be finite");
             }
         }
 
-        @Override public double[][] values() { return copy(values); }
+        List<V3DegreeOfFreedomLedger.EquationId> equations() { return equations; }
+        List<V3DegreeOfFreedomLedger.UnknownId> unknowns() { return unknowns; }
+        double[][] values() { return values.snapshot(); }
 
         /** Read-only scalar access for numerical kernels that must not allocate a dense defensive copy. */
-        double value(int row, int column) { return values[row][column]; }
+        double value(int row, int column) { return values.get(row, column); }
 
-        private static double[][] copy(double[][] values) {
-            values = Objects.requireNonNull(values, "values");
-            double[][] copy = new double[values.length][];
-            for (int row = 0; row < values.length; row++) copy[row] = Objects.requireNonNull(values[row], "row").clone();
-            return copy;
+        /** Entries outside this stored window are exactly positive zero, never discarded FD noise. */
+        int firstStoredColumn(int row) { return values.starts[row]; }
+        int storedColumnEnd(int row) { return values.starts[row] + values.rows[row].length; }
+
+        /** Diagnostic storage count, excluding object headers and the small row-offset array. */
+        long storedValueCount() {
+            long count = 0;
+            for (double[] row : values.rows) count += row.length;
+            return count;
+        }
+    }
+
+    /** Mutable only while being assembled; the finished Jacobian exclusively owns it. */
+    private static final class MatrixValues {
+        private final int size;
+        private final double[][] rows;
+        private final int[] starts;
+
+        private MatrixValues(double[][] input) {
+            size = Objects.requireNonNull(input, "values").length;
+            rows = new double[size][];
+            starts = new int[size];
+            for (int row = 0; row < size; row++) {
+                rows[row] = Objects.requireNonNull(input[row], "row").clone();
+                if (rows[row].length != size) throw new IllegalArgumentException("V3 finite-difference Jacobian is not square");
+            }
+        }
+
+        private MatrixValues(V3MeshResidual residual, V3DryMeshCoordinateMap coordinates, boolean compact) {
+            size = coordinates.coordinateCount();
+            rows = new double[size][];
+            starts = new int[size];
+            if (!compact) {
+                for (int row = 0; row < size; row++) rows[row] = new double[size];
+                return;
+            }
+            int maximumNode = 0;
+            for (var unknown : coordinates.unknowns()) maximumNode = Math.max(maximumNode, unknown.id().node());
+            int[] first = new int[maximumNode + 1];
+            int[] end = new int[maximumNode + 1];
+            java.util.Arrays.fill(first, size);
+            for (int column = 0; column < size; column++) {
+                int node = coordinates.unknowns().get(column).id().node();
+                first[node] = Math.min(first[node], column);
+                end[node] = column + 1;
+            }
+            for (int row = 0; row < size; row++) {
+                int rowNode = residual.rows().get(row).equation().node();
+                int from = size;
+                int to = 0;
+                for (int node = Math.max(0, rowNode - 1); node <= Math.min(maximumNode, rowNode + 1); node++) {
+                    from = Math.min(from, first[node]);
+                    to = Math.max(to, end[node]);
+                }
+                starts[row] = to > from ? from : 0;
+                rows[row] = new double[Math.max(0, to - from)];
+            }
+        }
+
+        private void set(int row, int column, double value) {
+            int offset = column - starts[row];
+            if (offset >= 0 && offset < rows[row].length) {
+                rows[row][offset] = value;
+            } else if (Double.doubleToRawLongBits(value) != 0L) {
+                // Central fallback can expose unexpected off-stage values. Keep even subthreshold values
+                // and negative zero so the existing band guard, normal products and gradients see every bit.
+                double[] expanded = new double[size];
+                System.arraycopy(rows[row], 0, expanded, starts[row], rows[row].length);
+                rows[row] = expanded;
+                starts[row] = 0;
+                expanded[column] = value;
+            }
+        }
+
+        private double get(int row, int column) {
+            if (column < 0 || column >= size) throw new ArrayIndexOutOfBoundsException(column);
+            int offset = column - starts[row];
+            return offset >= 0 && offset < rows[row].length ? rows[row][offset] : 0.0;
+        }
+
+        private double[][] snapshot() {
+            double[][] result = new double[size][size];
+            for (int row = 0; row < size; row++) {
+                System.arraycopy(rows[row], 0, result[row], starts[row], rows[row].length);
+            }
+            return result;
         }
     }
 }

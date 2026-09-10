@@ -77,7 +77,7 @@ final class V3DryMeshCoordinateMap {
                 case FREE_WATER_FLOW -> freeWater[id.node()] = freeWaterFlow(coordinate);
             }
         }
-        return new V3DryMeshState(problem.topology(), components, liquid, vapor, temperatures, freeWater);
+        return V3DryMeshState.fromOwnedArrays(problem.topology(), components, liquid, vapor, temperatures, freeWater);
     }
 
     /**

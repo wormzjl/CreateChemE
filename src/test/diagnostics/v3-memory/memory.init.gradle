@@ -1,0 +1,20 @@
+allprojects {
+    afterEvaluate {
+        tasks.register('v3MemoryProbe', JavaExec) {
+            classpath = sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MemoryProbe'
+            minHeapSize = '64m'
+            maxHeapSize = providers.gradleProperty('memoryHeap').getOrElse('512m')
+            jvmArgs '-XX:+UseG1GC', '-XX:NativeMemoryTracking=summary'
+            args providers.gradleProperty('memoryCase').getOrElse('C')
+            args providers.gradleProperty('memoryReport').getOrElse('build/reports/v3-memory/C-512m.json')
+            args providers.gradleProperty('memorySamples').getOrElse('3')
+            args providers.gradleProperty('memoryProfile').getOrElse('false')
+        }
+        tasks.register('v3MemoryProfileSummary', JavaExec) {
+            classpath = sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MemoryProfileSummary'
+            args providers.gradleProperty('memoryReport').getOrElse('build/reports/v3-memory/C-profile-qualified.json')
+        }
+    }
+}

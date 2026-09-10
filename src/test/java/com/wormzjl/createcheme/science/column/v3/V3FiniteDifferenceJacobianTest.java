@@ -2,6 +2,7 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FlashResult;
@@ -13,6 +14,113 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class V3FiniteDifferenceJacobianTest {
+    @Test
+    void compactStorageMatchesEveryDenseBitForCentralAndColoredPaths() {
+        for (int trays : new int[] {4, 20}) {
+            for (var branch : V3CondenserPhaseBranch.values()) {
+                V3ColumnProblem problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(
+                        V3ColumnInput.SCHEMA_VERSION, "test:compact", "test:compact",
+                        new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30, 60},
+                        450, trays, 2, 250_000, 750, List.of(
+                                new V3ColumnSpecification.CondenserOutletTemperature(400),
+                                new V3ColumnSpecification.OrganicRefluxRatio(branch == V3CondenserPhaseBranch.VAPOR_ONLY ? 0 : 1),
+                                new V3ColumnSpecification.ReboilerDuty(0))), branch);
+                LinearThermo thermo = new LinearThermo();
+                var state = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace()).state();
+                var evaluator = new V3MeshResidualEvaluator(problem, thermo, 0);
+                var coordinates = new V3DryMeshCoordinateMap(problem);
+                for (var scale : V3FiniteDifferenceJacobian.DifferenceScale.values()) {
+                    var dense = V3FiniteDifferenceJacobian.evaluate(evaluator, coordinates, state, thermo::newWorkspace, scale);
+                    var compact = V3FiniteDifferenceJacobian.evaluateCompact(evaluator, coordinates, state,
+                            thermo::newWorkspace, scale, V3SolveControl.UNBOUNDED);
+                    assertTrue(compact.storedValueCount() < dense.storedValueCount() * 0.6);
+                    double[][] snapshot = compact.values();
+                    for (int row = 0; row < snapshot.length; row++) {
+                        for (int column = 0; column < snapshot.length; column++) {
+                            long bits = Double.doubleToRawLongBits(dense.value(row, column));
+                            assertEquals(bits, Double.doubleToRawLongBits(compact.value(row, column)));
+                            assertEquals(bits, Double.doubleToRawLongBits(snapshot[row][column]));
+                            snapshot[row][column] = 999;
+                            assertEquals(bits, Double.doubleToRawLongBits(compact.value(row, column)));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void compactStorageRetainsOffStageNoiseAndSignedZeroForExistingBandGuards() throws Exception {
+        var problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(
+                V3ColumnInput.SCHEMA_VERSION, "test:compact-noise", "test:compact-noise",
+                new V3ComponentBasis(List.of("component-a", "component-b")), new double[] {30, 60},
+                450, 4, 2, 250_000, 750, List.of(
+                        new V3ColumnSpecification.CondenserOutletTemperature(400),
+                        new V3ColumnSpecification.OrganicRefluxRatio(1),
+                        new V3ColumnSpecification.ReboilerDuty(0))), V3CondenserPhaseBranch.TWO_PHASE);
+        var thermo = new LinearThermo();
+        var state = V3ColumnInitializer.initialize(problem, thermo, thermo.newWorkspace()).state();
+        var evaluator = new V3MeshResidualEvaluator(problem, thermo, 0);
+        var coordinates = new V3DryMeshCoordinateMap(problem);
+        for (double noise : new double[] {-0.0, 1e-14, 1e-6}) {
+            var compact = V3FiniteDifferenceJacobian.evaluateCompact(evaluator, coordinates, state,
+                    thermo::newWorkspace, V3FiniteDifferenceJacobian.DifferenceScale.FINE, V3SolveControl.UNBOUNDED);
+            // Inject a nonlocal derivative into the private builder to exercise its rare expansion path.
+            // The physical fixture itself has no off-stage coupling.
+            var field = compact.getClass().getDeclaredField("values");
+            field.setAccessible(true);
+            Object storage = field.get(compact);
+            var setter = storage.getClass().getDeclaredMethod("set", int.class, int.class, double.class);
+            setter.setAccessible(true);
+            int column = coordinates.coordinateCount() - 1;
+            setter.invoke(storage, 0, column, noise);
+            assertEquals(Double.doubleToRawLongBits(noise), Double.doubleToRawLongBits(compact.value(0, column)));
+            var dense = jacobian(problem, compact.values());
+            var layout = new V3StageBlockLayout(problem);
+            if (noise > 1e-10) {
+                assertEquals(assertThrows(IllegalStateException.class,
+                        () -> V3SimultaneousColumnSolver.toBandedMatrix(dense, layout)).getMessage(),
+                        assertThrows(IllegalStateException.class,
+                                () -> V3SimultaneousColumnSolver.toBandedMatrix(compact, layout)).getMessage());
+            } else {
+                var residual = evaluator.evaluate(state, thermo.newWorkspace());
+                var expected = V3NormalEquations.prepare(dense, residual, layout, V3SolveControl.UNBOUNDED);
+                var actual = V3NormalEquations.prepare(compact, residual, layout, V3SolveControl.UNBOUNDED);
+                org.junit.jupiter.api.Assertions.assertArrayEquals(expected.negativeGradient(), actual.negativeGradient());
+                var gradient = V3SimultaneousColumnSolver.class.getDeclaredMethod("normalizedNegativeGradient",
+                        V3FiniteDifferenceJacobian.Jacobian.class, V3MeshResidual.class, V3DryMeshCoordinateMap.class);
+                gradient.setAccessible(true);
+                for (double physical : new double[] {0.0, -0.0, Double.MIN_VALUE, -Double.MIN_VALUE,
+                        1.0, -1.0, Double.MAX_VALUE, -Double.MAX_VALUE}) {
+                    var rows = new java.util.ArrayList<V3MeshResidual.Row>();
+                    for (int row = 0; row < residual.rows().size(); row++) {
+                        rows.add(new V3MeshResidual.Row(residual.rows().get(row).equation(),
+                                row % 2 == 0 ? physical : -physical, row % 3 == 0 ? Double.MIN_NORMAL : 1.0));
+                    }
+                    var extremes = new V3MeshResidual(rows);
+                    double[] denseGradient = V3NormalEquations.prepare(dense, extremes, layout,
+                            V3SolveControl.UNBOUNDED).negativeGradient();
+                    double[] compactGradient = V3NormalEquations.prepare(compact, extremes, layout,
+                            V3SolveControl.UNBOUNDED).negativeGradient();
+                    double[] denseDirection = (double[]) gradient.invoke(null, dense, extremes, coordinates);
+                    double[] compactDirection = (double[]) gradient.invoke(null, compact, extremes, coordinates);
+                    for (int index = 0; index < denseGradient.length; index++) {
+                        assertEquals(Double.doubleToRawLongBits(denseGradient[index]),
+                                Double.doubleToRawLongBits(compactGradient[index]));
+                        assertEquals(Double.doubleToRawLongBits(denseDirection[index]),
+                                Double.doubleToRawLongBits(compactDirection[index]));
+                    }
+                }
+                var expectedMatrix = expected.dampedMatrix(1e-3, V3SolveControl.UNBOUNDED);
+                var actualMatrix = actual.dampedMatrix(1e-3, V3SolveControl.UNBOUNDED);
+                for (int row = 0; row <= column; row++) for (int col = 0; col <= column; col++) {
+                    assertEquals(Double.doubleToRawLongBits(expectedMatrix.get(row, col)),
+                            Double.doubleToRawLongBits(actualMatrix.get(row, col)));
+                }
+            }
+        }
+    }
+
     @Test
     void stageColoredFiniteDifferenceMatchesIndependentCentralColumns() {
         V3ColumnProblem problem = V3ColumnProblemResolver.resolve(new V3ColumnInput(

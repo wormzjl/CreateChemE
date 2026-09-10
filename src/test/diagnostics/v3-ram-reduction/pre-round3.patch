@@ -1,0 +1,114 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobian.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobian.java
+index 1ad9f0e..6d7cfd5 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobian.java
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobian.java
+@@ -14,10 +14,26 @@ final class V3BlockJacobian {
+     V3BlockJacobian(
+             V3StageBlockLayout layout, double[][][] lower, double[][][] diagonal, double[][][] upper,
+             double maximumOffBandMagnitude) {
++        this(layout, lower, diagonal, upper, maximumOffBandMagnitude, true);
++    }
++
++    /**
++     * Takes the assembler's freshly allocated blocks. The assembler must relinquish every array
++     * reference; other callers use the copying constructor. Accessors always return snapshots.
++     */
++    static V3BlockJacobian fromOwnedBlocks(
++            V3StageBlockLayout layout, double[][][] lower, double[][][] diagonal, double[][][] upper,
++            double maximumOffBandMagnitude) {
++        return new V3BlockJacobian(layout, lower, diagonal, upper, maximumOffBandMagnitude, false);
++    }
++
++    private V3BlockJacobian(
++            V3StageBlockLayout layout, double[][][] lower, double[][][] diagonal, double[][][] upper,
++            double maximumOffBandMagnitude, boolean copyInput) {
+         this.layout = Objects.requireNonNull(layout, "layout");
+-        this.lower = copyBlocks(lower, layout, -1);
+-        this.diagonal = copyBlocks(diagonal, layout, 0);
+-        this.upper = copyBlocks(upper, layout, 1);
++        this.lower = validatedBlocks(lower, layout, -1, copyInput);
++        this.diagonal = validatedBlocks(diagonal, layout, 0, copyInput);
++        this.upper = validatedBlocks(upper, layout, 1, copyInput);
+         if (!Double.isFinite(maximumOffBandMagnitude) || maximumOffBandMagnitude < 0.0) {
+             throw new IllegalArgumentException("V3 block Jacobian off-band magnitude must be finite and nonnegative");
+         }
+@@ -96,14 +112,16 @@ final class V3BlockJacobian {
+         }
+     }
+ 
+-    private static double[][][] copyBlocks(double[][][] blocks, V3StageBlockLayout layout, int columnOffset) {
++    private static double[][][] validatedBlocks(
++            double[][][] blocks, V3StageBlockLayout layout, int columnOffset, boolean copyInput) {
+         blocks = Objects.requireNonNull(blocks, "blocks");
+         if (blocks.length != layout.nodeCount()) throw new IllegalArgumentException("V3 block Jacobian node count is invalid");
+-        double[][][] copy = new double[blocks.length][][];
++        double[][][] copy = copyInput ? new double[blocks.length][][] : blocks;
+         for (int node = 0; node < blocks.length; node++) {
+             int columns = node + columnOffset < 0 || node + columnOffset >= layout.nodeCount()
+                     ? 0 : layout.size(node + columnOffset);
+-            copy[node] = copy(blocks[node]);
++            if (copyInput) copy[node] = copy(blocks[node]);
++            else Objects.requireNonNull(copy[node], "block");
+             if (copy[node].length != layout.size(node)) throw new IllegalArgumentException("V3 block Jacobian row size is invalid");
+             for (double[] row : copy[node]) {
+                 if (row.length != columns) throw new IllegalArgumentException("V3 block Jacobian column size is invalid");
+diff --git a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian.java
+index fb24280..92f148a 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian.java
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian.java
+@@ -204,7 +204,8 @@ final class V3FiniteDifferenceJacobian {
+             V3MeshResidual baseResidual, V3DryMeshCoordinateMap coordinates, double[][] values) {
+         List<V3DegreeOfFreedomLedger.EquationId> equations = new ArrayList<>(baseResidual.rows().size());
+         for (V3MeshResidual.Row row : baseResidual.rows()) equations.add(row.equation());
+-        return new Jacobian(equations, coordinates.unknowns().stream().map(V3DegreeOfFreedomLedger.Unknown::id).toList(), values);
++        // Both finite-difference builders relinquish their fresh matrix here. No caller can retain it.
++        return new Jacobian(equations, coordinates.unknowns().stream().map(V3DegreeOfFreedomLedger.Unknown::id).toList(), values, false);
+     }
+ 
+     private record ColorSlot(
+@@ -249,23 +250,35 @@ final class V3FiniteDifferenceJacobian {
+         com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace newWorkspace();
+     }
+ 
+-    record Jacobian(
+-            List<V3DegreeOfFreedomLedger.EquationId> equations,
+-            List<V3DegreeOfFreedomLedger.UnknownId> unknowns, double[][] values) {
+-        Jacobian {
+-            equations = List.copyOf(equations);
+-            unknowns = List.copyOf(unknowns);
+-            values = copy(values);
+-            if (equations.isEmpty() || equations.size() != unknowns.size() || values.length != equations.size()) {
++    static final class Jacobian {
++        private final List<V3DegreeOfFreedomLedger.EquationId> equations;
++        private final List<V3DegreeOfFreedomLedger.UnknownId> unknowns;
++        private final double[][] values;
++
++        Jacobian(List<V3DegreeOfFreedomLedger.EquationId> equations,
++                List<V3DegreeOfFreedomLedger.UnknownId> unknowns, double[][] values) {
++            this(equations, unknowns, values, true);
++        }
++
++        /** The enclosing builders alone may transfer a fresh matrix instead of copying it. */
++        private Jacobian(List<V3DegreeOfFreedomLedger.EquationId> equations,
++                List<V3DegreeOfFreedomLedger.UnknownId> unknowns, double[][] values, boolean copyInput) {
++            this.equations = List.copyOf(equations);
++            this.unknowns = List.copyOf(unknowns);
++            this.values = copyInput ? copy(values) : Objects.requireNonNull(values, "values");
++            values = this.values;
++            if (this.equations.isEmpty() || this.equations.size() != this.unknowns.size() || values.length != this.equations.size()) {
+                 throw new IllegalArgumentException("V3 finite-difference Jacobian shape is invalid");
+             }
+             for (double[] row : values) {
+-                if (row.length != unknowns.size()) throw new IllegalArgumentException("V3 finite-difference Jacobian is not square");
++                if (row.length != this.unknowns.size()) throw new IllegalArgumentException("V3 finite-difference Jacobian is not square");
+                 for (double value : row) if (!Double.isFinite(value)) throw new IllegalArgumentException("V3 finite-difference Jacobian must be finite");
+             }
+         }
+ 
+-        @Override public double[][] values() { return copy(values); }
++        List<V3DegreeOfFreedomLedger.EquationId> equations() { return equations; }
++        List<V3DegreeOfFreedomLedger.UnknownId> unknowns() { return unknowns; }
++        double[][] values() { return copy(values); }
+ 
+         /** Read-only scalar access for numerical kernels that must not allocate a dense defensive copy. */
+         double value(int row, int column) { return values[row][column]; }

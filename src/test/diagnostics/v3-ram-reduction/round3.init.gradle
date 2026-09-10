@@ -1,0 +1,42 @@
+allprojects {
+    afterEvaluate {
+        def baselineClasses = layout.buildDirectory.dir('classes/ram-round3-baseline')
+        tasks.register('compileRamRound3Baseline', JavaCompile) {
+            dependsOn tasks.named('testClasses')
+            source layout.buildDirectory.dir('generated/ram-round3-baseline/src/main/java')
+            classpath = sourceSets.test.runtimeClasspath
+            destinationDirectory = baselineClasses
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+        }
+        tasks.register('v3RamRound3', JavaExec) {
+            dependsOn tasks.named('testClasses')
+            def baseline = providers.gradleProperty('ramVariant').getOrElse('candidate') == 'baseline'
+            if (baseline) dependsOn tasks.named('compileRamRound3Baseline')
+            classpath = baseline ? files(baselineClasses) + sourceSets.test.runtimeClasspath : sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MainOptimizationProbe'
+            minHeapSize = '512m'
+            maxHeapSize = '2g'
+            systemProperty 'probeDeadlineMillis', '45000'
+            args providers.gradleProperty('ramReport').get()
+            args providers.gradleProperty('ramWarmup').getOrElse('3')
+            args providers.gradleProperty('ramSamples').getOrElse('5')
+            args providers.gradleProperty('ramCases').getOrElse('DefaultLargePerturbations')
+        }
+        tasks.register('v3RamRound3Memory', JavaExec) {
+            dependsOn tasks.named('testClasses')
+            def baseline = providers.gradleProperty('ramVariant').getOrElse('candidate') == 'baseline'
+            if (baseline) dependsOn tasks.named('compileRamRound3Baseline')
+            classpath = baseline ? files(baselineClasses) + sourceSets.test.runtimeClasspath : sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MemoryProbe'
+            minHeapSize = providers.gradleProperty('ramMinHeap').getOrElse('64m')
+            maxHeapSize = providers.gradleProperty('ramHeap').getOrElse('512m')
+            jvmArgs '-XX:+UseG1GC', '-XX:NativeMemoryTracking=summary', '-DmemoryNativeSummary=true'
+            systemProperty 'probeDeadlineMillis', '45000'
+            systemProperty 'memoryWarmup', providers.gradleProperty('ramMemoryWarmup').getOrElse('3')
+            args providers.gradleProperty('ramCase').getOrElse('Default')
+            args providers.gradleProperty('ramReport').get()
+            args providers.gradleProperty('ramSamples').getOrElse('3')
+            args 'false'
+        }
+    }
+}

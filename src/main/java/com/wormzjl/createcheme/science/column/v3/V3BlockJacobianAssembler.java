@@ -38,7 +38,7 @@ final class V3BlockJacobianAssembler {
             throw new IllegalStateException("V3 MESH Jacobian contains an unexpected off-band coupling of "
                     + maximumOffBandMagnitude);
         }
-        return new V3BlockJacobian(layout, lower, diagonal, upper, maximumOffBandMagnitude);
+        return V3BlockJacobian.fromOwnedBlocks(layout, lower, diagonal, upper, maximumOffBandMagnitude);
     }
 
     /**
@@ -108,6 +108,7 @@ final class V3BlockJacobianAssembler {
         double[][][] upper = emptyBlocks(layout, 1);
         Map<V3DegreeOfFreedomLedger.UnknownId, Integer> coordinateIndexes = coordinateIndexes(coordinates);
         Map<V3DegreeOfFreedomLedger.EquationId, Integer> equationIndexes = equationIndexes(baseResidual);
+        ThermodynamicRows thermodynamicRows = new ThermodynamicRows(problem, equationIndexes);
         assembleExactMaterialRows(problem, state, baseResidual, coordinateIndexes,
                 layout, lower, diagonal, upper);
         assembleExactFreeWaterCouplings(problem, state, baseResidual, coordinateIndexes, equationIndexes,
@@ -129,11 +130,11 @@ final class V3BlockJacobianAssembler {
                         ? new AnalyticColumn(analytic, unknown.family(), unknown.component())
                         : localProbe(evaluator, coordinates, decodedBase, baseCoordinates, column,
                                 unknown.node(), workspace, baseTerms[node], differenceScale, control);
-                assembleLocalThermodynamicColumn(problem, state, unknown, baseResidual, equationIndexes, layout,
+                assembleLocalThermodynamicColumn(problem, state, unknown, baseResidual, thermodynamicRows, layout,
                         lower, diagonal, upper, node, column, baseTerms[node], local);
             }
         }
-        return new V3BlockJacobian(layout, lower, diagonal, upper, 0.0);
+        return V3BlockJacobian.fromOwnedBlocks(layout, lower, diagonal, upper, 0.0);
     }
 
     /**
@@ -460,7 +461,7 @@ final class V3BlockJacobianAssembler {
             V3DryMeshState state,
             V3DegreeOfFreedomLedger.UnknownId unknown,
             V3MeshResidual baseResidual,
-            Map<V3DegreeOfFreedomLedger.EquationId, Integer> equationIndexes,
+            ThermodynamicRows equationIndexes,
             V3StageBlockLayout layout,
             double[][][] lower,
             double[][][] diagonal,
@@ -470,18 +471,16 @@ final class V3BlockJacobianAssembler {
             V3MeshResidualEvaluator.LocalNodeTerms base,
             LocalColumn probe) {
         for (int component = 0; component < problem.activeComponentBasis().componentCount(); component++) {
-            Integer row = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
-                    V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM, node, component));
-            if (row == null) continue;
+            int row = equationIndexes.equilibrium[node][component];
+            if (row < 0) continue;
             double derivative = probe.equilibriumDerivative(component);
             if (!Double.isFinite(derivative)) {
                 throw new IllegalArgumentException("V3 local block VLE derivative is not finite");
             }
             addGlobal(layout, lower, diagonal, upper, row, column, derivative / baseResidual.rows().get(row).scale());
         }
-        Integer saturationRow = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
-                V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION, node, -1));
-        if (saturationRow != null) {
+        int saturationRow = equationIndexes.saturation[node];
+        if (saturationRow >= 0) {
             double derivative = probe.waterSaturationDerivative();
             if (!Double.isFinite(derivative)) {
                 throw new IllegalArgumentException("V3 local block water-saturation derivative is not finite");
@@ -522,7 +521,7 @@ final class V3BlockJacobianAssembler {
     private static void addEnergyDerivative(
             V3ColumnProblem problem,
             V3MeshResidual baseResidual,
-            Map<V3DegreeOfFreedomLedger.EquationId, Integer> equationIndexes,
+            ThermodynamicRows equationIndexes,
             V3StageBlockLayout layout,
             double[][][] lower,
             double[][][] diagonal,
@@ -532,13 +531,38 @@ final class V3BlockJacobianAssembler {
             int columnNode,
             double physicalDerivative) {
         if (energyNode < 1 || energyNode > problem.topology().reboilerNode()) return;
-        Integer row = equationIndexes.get(new V3DegreeOfFreedomLedger.EquationId(
-                V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE, energyNode, -1));
-        if (row == null) throw new IllegalArgumentException("V3 local block Jacobian is missing an energy row");
+        int row = equationIndexes.energy[energyNode];
+        if (row < 0) throw new IllegalArgumentException("V3 local block Jacobian is missing an energy row");
         if (Math.abs(energyNode - columnNode) > 1) {
             throw new IllegalArgumentException("V3 local block Jacobian has an invalid energy coupling");
         }
         addGlobal(layout, lower, diagonal, upper, row, column, physicalDerivative / baseResidual.rows().get(row).scale());
+    }
+
+    /** Resolve semantic IDs once per assembly, before the component-by-coordinate loop. */
+    private static final class ThermodynamicRows {
+        private final int[][] equilibrium;
+        private final int[] saturation;
+        private final int[] energy;
+
+        private ThermodynamicRows(V3ColumnProblem problem,
+                Map<V3DegreeOfFreedomLedger.EquationId, Integer> indexes) {
+            int nodes = problem.topology().nodeCount();
+            int components = problem.activeComponentBasis().componentCount();
+            equilibrium = new int[nodes][components];
+            saturation = new int[nodes];
+            energy = new int[nodes];
+            for (int node = 0; node < nodes; node++) {
+                for (int component = 0; component < components; component++) {
+                    equilibrium[node][component] = indexes.getOrDefault(new V3DegreeOfFreedomLedger.EquationId(
+                            V3DegreeOfFreedomLedger.EquationFamily.VAPOR_LIQUID_EQUILIBRIUM, node, component), -1);
+                }
+                saturation[node] = indexes.getOrDefault(new V3DegreeOfFreedomLedger.EquationId(
+                        V3DegreeOfFreedomLedger.EquationFamily.WATER_SATURATION, node, -1), -1);
+                energy[node] = indexes.getOrDefault(new V3DegreeOfFreedomLedger.EquationId(
+                        V3DegreeOfFreedomLedger.EquationFamily.ENERGY_BALANCE, node, -1), -1);
+            }
+        }
     }
 
     private static void addGlobal(

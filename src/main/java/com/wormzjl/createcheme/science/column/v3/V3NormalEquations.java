@@ -51,7 +51,11 @@ final class V3NormalEquations {
         for (int row = 0; row < size; row++) {
             control.checkpoint();
             double scaledResidual = residual.rows().get(row).scaledValue();
-            for (int column = 0; column < size; column++) {
+            // Implicit positive zeros cannot change this zero-initialized sum for finite residuals.
+            // Retain the full loop for non-finite scales: zero times infinity must still produce NaN.
+            int first = Double.isFinite(scaledResidual) ? jacobian.firstStoredColumn(row) : 0;
+            int end = Double.isFinite(scaledResidual) ? jacobian.storedColumnEnd(row) : size;
+            for (int column = first; column < end; column++) {
                 gradient[column] -= jacobian.value(row, column) * scaledResidual;
             }
         }
@@ -60,9 +64,16 @@ final class V3NormalEquations {
 
     /** Applies damping to a fresh matrix, always using the original undamped diagonal. */
     V3BandedMatrix dampedMatrix(double damping, V3SolveControl control) {
+        return dampedMatrix(damping, control, null);
+    }
+
+    /** Reuses only the output matrix; the undamped products remain immutable across damping trials. */
+    V3BandedMatrix dampedMatrix(double damping, V3SolveControl control,
+            com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolver.Workspace workspace) {
         Objects.requireNonNull(control, "control");
         int size = upperProduct.length;
-        V3BandedMatrix matrix = new V3BandedMatrix(size, bandwidth, bandwidth);
+        V3BandedMatrix matrix = workspace == null ? new V3BandedMatrix(size, bandwidth, bandwidth)
+                : workspace.clearedMatrix(size, bandwidth, bandwidth);
         for (int row = 0; row < size; row++) {
             control.checkpoint();
             for (int column = Math.max(0, row - bandwidth); column <= Math.min(size - 1, row + bandwidth); column++) {
@@ -88,7 +99,7 @@ final class V3NormalEquations {
             V3FiniteDifferenceJacobian.Jacobian jacobian, int[] nodes, V3SolveControl control) {
         for (int row = 0; row < nodes.length; row++) {
             control.checkpoint();
-            for (int column = 0; column < nodes.length; column++) {
+            for (int column = jacobian.firstStoredColumn(row); column < jacobian.storedColumnEnd(row); column++) {
                 if (Math.abs(nodes[row] - nodes[column]) > 1 && jacobian.value(row, column) != 0.0) return false;
             }
         }

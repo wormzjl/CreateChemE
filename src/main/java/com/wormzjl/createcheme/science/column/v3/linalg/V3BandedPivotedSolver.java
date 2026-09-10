@@ -23,10 +23,15 @@ public final class V3BandedPivotedSolver {
     private V3BandedPivotedSolver() {}
 
     public static Result solve(V3BandedMatrix matrix, double[] rightHandSide) {
+        return solve(matrix, rightHandSide, new Workspace());
+    }
+
+    /** Same numerical solve using caller-confined scratch storage; inputs and returned results remain independent. */
+    public static Result solve(V3BandedMatrix matrix, double[] rightHandSide, Workspace workspace) {
         matrix = Objects.requireNonNull(matrix, "matrix");
         rightHandSide = copiedFiniteRightHandSide(matrix, rightHandSide);
         double[] originalRightHandSide = rightHandSide.clone();
-        BandRows work = BandRows.copyOf(matrix);
+        BandRows work = Objects.requireNonNull(workspace, "workspace").factorization(matrix);
         double originalMatrixInfinityNorm = infinityNorm(matrix);
         double originalRightHandSideInfinityNorm = infinityNorm(rightHandSide);
         if (originalMatrixInfinityNorm == 0.0) {
@@ -114,6 +119,41 @@ public final class V3BandedPivotedSolver {
         }
         return new Result.Success(solution, backwardError, minimumPivot, maximumPivot, pivotSwaps,
                 pivotGrowth(maximumDuringFactorization, initialMaximum));
+    }
+
+    /**
+     * Scratch storage for one serial Newton solve. Do not share it between concurrent or reentrant calls.
+     * Only the current exact shape is retained; dropping the workspace releases all its arrays.
+     */
+    public static final class Workspace {
+        private V3BandedMatrix matrix;
+        private BandRows work;
+
+        /**
+         * Returns a zeroed matrix for immediate assembly and solving. A later call may overwrite it;
+         * callers needing a persistent matrix must construct their own instead.
+         */
+        public V3BandedMatrix clearedMatrix(int size, int lowerBandwidth, int upperBandwidth) {
+            if (matrix == null || matrix.size() != size || matrix.lowerBandwidth() != lowerBandwidth
+                    || matrix.upperBandwidth() != upperBandwidth) {
+                matrix = new V3BandedMatrix(size, lowerBandwidth, upperBandwidth);
+            } else {
+                matrix.clear();
+            }
+            return matrix;
+        }
+
+        private BandRows factorization(V3BandedMatrix input) {
+            if (work == null || work.size != input.size() || work.lowerBandwidth != input.lowerBandwidth()
+                    || work.upperBandwidth != input.upperBandwidth()) {
+                work = new BandRows(input.size(), input.lowerBandwidth(), input.upperBandwidth());
+            } else {
+                java.util.Arrays.fill(work.values, 0.0);
+                java.util.Arrays.fill(work.columnDivisors, 0.0);
+            }
+            work.copyFrom(input);
+            return work;
+        }
     }
 
     private static double[] copiedFiniteRightHandSide(V3BandedMatrix matrix, double[] rightHandSide) {
@@ -255,6 +295,7 @@ public final class V3BandedPivotedSolver {
         private final int width;
         private final double[] values;
         private final double[] columnDivisors;
+        private final double[] columnScales;
 
         private BandRows(int size, int lowerBandwidth, int upperBandwidth) {
             this.size = size;
@@ -264,20 +305,19 @@ public final class V3BandedPivotedSolver {
             this.width = 2 * lowerBandwidth + upperBandwidth + 1;
             this.values = new double[Math.multiplyExact(size, width)];
             this.columnDivisors = new double[size];
+            this.columnScales = new double[size];
         }
 
-        static BandRows copyOf(V3BandedMatrix matrix) {
-            BandRows copy = new BandRows(matrix.size(), matrix.lowerBandwidth(), matrix.upperBandwidth());
+        void copyFrom(V3BandedMatrix matrix) {
             for (int row = 0; row < matrix.size(); row++) {
-                int rowBase = copy.rowBase(row);
+                int rowBase = rowBase(row);
                 for (int column = matrix.firstStoredColumn(row); column <= matrix.lastStoredColumn(row); column++) {
                     // A negative zero has to arrive as the positive zero the envelope reported for the entry it
                     // dropped, so that fill later subtracts the same signed zero from it.
                     double value = matrix.get(row, column);
-                    copy.values[rowBase + column] = value == 0.0 ? 0.0 : value;
+                    values[rowBase + column] = value == 0.0 ? 0.0 : value;
                 }
             }
-            return copy;
         }
 
         private int rowBase(int row) { return row * width + lowerBandwidth - row; }
@@ -322,7 +362,7 @@ public final class V3BandedPivotedSolver {
                     columnDivisors[column] = Math.max(columnDivisors[column], Math.abs(values[rowBase + column]));
                 }
             }
-            double[] scales = new double[size];
+            double[] scales = columnScales;
             for (int column = 0; column < size; column++) {
                 if (columnDivisors[column] == 0.0) columnDivisors[column] = 1.0;
                 scales[column] = 1.0 / columnDivisors[column];

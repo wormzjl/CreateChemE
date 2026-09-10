@@ -357,24 +357,30 @@ public final class V3DegreeOfFreedomLedger {
     private static int maximumBipartiteMatching(List<Equation> equations, List<Unknown> unknowns) {
         Map<UnknownId, Integer> unknownIndexes = new HashMap<>();
         for (int index = 0; index < unknowns.size(); index++) unknownIndexes.put(unknowns.get(index).id(), index);
+        // Preserve reference order while resolving identifiers once, outside recursive matching.
+        int[][] references = new int[equations.size()][];
+        for (int equation = 0; equation < equations.size(); equation++) {
+            List<UnknownId> ids = equations.get(equation).referencedUnknowns();
+            references[equation] = new int[ids.size()];
+            for (int index = 0; index < ids.size(); index++) references[equation][index] = unknownIndexes.get(ids.get(index));
+        }
         int[] equationForUnknown = new int[unknowns.size()];
         java.util.Arrays.fill(equationForUnknown, -1);
+        int[] visitedAt = new int[unknowns.size()];
         int matched = 0;
         for (int equation = 0; equation < equations.size(); equation++) {
-            if (augment(equation, equations, unknownIndexes, equationForUnknown, new boolean[unknowns.size()])) matched++;
+            if (augment(equation, references, equationForUnknown, visitedAt, equation + 1)) matched++;
         }
         return matched;
     }
 
     private static boolean augment(
-            int equation, List<Equation> equations, Map<UnknownId, Integer> unknownIndexes,
-            int[] equationForUnknown, boolean[] visitedUnknowns) {
-        for (UnknownId unknownId : equations.get(equation).referencedUnknowns()) {
-            int unknown = unknownIndexes.get(unknownId);
-            if (visitedUnknowns[unknown]) continue;
-            visitedUnknowns[unknown] = true;
+            int equation, int[][] references, int[] equationForUnknown, int[] visitedAt, int search) {
+        for (int unknown : references[equation]) {
+            if (visitedAt[unknown] == search) continue;
+            visitedAt[unknown] = search;
             if (equationForUnknown[unknown] == -1
-                    || augment(equationForUnknown[unknown], equations, unknownIndexes, equationForUnknown, visitedUnknowns)) {
+                    || augment(equationForUnknown[unknown], references, equationForUnknown, visitedAt, search)) {
                 equationForUnknown[unknown] = equation;
                 return true;
             }

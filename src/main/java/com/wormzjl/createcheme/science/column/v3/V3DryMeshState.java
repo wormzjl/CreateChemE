@@ -3,7 +3,7 @@ package com.wormzjl.createcheme.science.column.v3;
 import java.util.Objects;
 
 /**
- * Solver-owned mutable stage state; it must never cross a public result boundary.
+ * Immutable internal stage state; it must never cross a public result boundary.
  *
  * <p>"Dry" names the hydrocarbon basis: the component flows are hydrocarbon only and water is carried
  * separately. Free water is the one water quantity that is a state variable — the aqueous liquid leaving a
@@ -26,6 +26,22 @@ final class V3DryMeshState {
     V3DryMeshState(V3ColumnTopology topology, int componentCount, double[][] liquidComponentFlows,
                    double[][] vaporComponentFlows, double[] temperaturesKelvin,
                    double[] freeWaterFlowsMolPerSecond) {
+        this(topology, componentCount, liquidComponentFlows, vaporComponentFlows, temperaturesKelvin,
+                freeWaterFlowsMolPerSecond, true);
+    }
+
+    /**
+     * Validates and adopts freshly allocated decoder arrays. The caller must relinquish every array,
+     * including all flow rows; ordinary callers keep using the defensive-copy constructors.
+     */
+    static V3DryMeshState fromOwnedArrays(V3ColumnTopology topology, int componentCount,
+            double[][] liquid, double[][] vapor, double[] temperatures, double[] freeWater) {
+        return new V3DryMeshState(topology, componentCount, liquid, vapor, temperatures, freeWater, false);
+    }
+
+    private V3DryMeshState(V3ColumnTopology topology, int componentCount, double[][] liquidComponentFlows,
+                   double[][] vaporComponentFlows, double[] temperaturesKelvin,
+                   double[] freeWaterFlowsMolPerSecond, boolean copy) {
         Objects.requireNonNull(topology, "topology");
         if (componentCount < 1 || liquidComponentFlows == null || vaporComponentFlows == null || temperaturesKelvin == null
                 || freeWaterFlowsMolPerSecond == null
@@ -34,15 +50,15 @@ final class V3DryMeshState {
                 || freeWaterFlowsMolPerSecond.length != topology.nodeCount()) {
             throw new IllegalArgumentException("V3 dry MESH state does not match its topology");
         }
-        this.liquidComponentFlows = copyFlows(liquidComponentFlows, topology, componentCount, true);
-        this.vaporComponentFlows = copyFlows(vaporComponentFlows, topology, componentCount, false);
-        this.temperaturesKelvin = temperaturesKelvin.clone();
+        this.liquidComponentFlows = validatedFlows(liquidComponentFlows, topology, componentCount, true, copy);
+        this.vaporComponentFlows = validatedFlows(vaporComponentFlows, topology, componentCount, false, copy);
+        this.temperaturesKelvin = copy ? temperaturesKelvin.clone() : temperaturesKelvin;
         for (double temperature : this.temperaturesKelvin) {
             if (!Double.isFinite(temperature) || temperature <= 0.0) {
                 throw new IllegalArgumentException("V3 dry MESH temperatures must be finite and positive");
             }
         }
-        this.freeWaterFlowsMolPerSecond = freeWaterFlowsMolPerSecond.clone();
+        this.freeWaterFlowsMolPerSecond = copy ? freeWaterFlowsMolPerSecond.clone() : freeWaterFlowsMolPerSecond;
         for (int node = 0; node < this.freeWaterFlowsMolPerSecond.length; node++) {
             double flow = this.freeWaterFlowsMolPerSecond[node];
             if (!Double.isFinite(flow) || flow < 0.0) {
@@ -84,7 +100,7 @@ final class V3DryMeshState {
      * revalidating the whole flow field for each of them costs far more than the single node the probe can
      * actually move. Sharing the untouched rows is safe precisely because a {@code V3DryMeshState} is
      * immutable from the outside: it never exposes an array, never writes one after construction, and the
-     * validating constructors copy whatever the caller hands them, so no row reachable from here is reachable
+     * ordinary constructors copy caller arrays and the decoder relinquishes its adopted arrays, so no row here is reachable
      * by anyone who could still change it. Two states sharing a row therefore observe the same numbers
      * forever, which is the only thing either of them promises.</p>
      */
@@ -145,9 +161,9 @@ final class V3DryMeshState {
         return copy;
     }
 
-    private static double[][] copyFlows(
-            double[][] flows, V3ColumnTopology topology, int componentCount, boolean liquid) {
-        double[][] copy = new double[flows.length][componentCount];
+    private static double[][] validatedFlows(
+            double[][] flows, V3ColumnTopology topology, int componentCount, boolean liquid, boolean copy) {
+        double[][] validated = copy ? new double[flows.length][componentCount] : flows;
         for (int node = 0; node < flows.length; node++) {
             if (flows[node] == null || flows[node].length != componentCount) {
                 throw new IllegalArgumentException("V3 dry MESH flow axis does not match its component basis");
@@ -163,9 +179,9 @@ final class V3DryMeshState {
                 if (!liquid && !topology.hasVaporPhase(node) && value != 0.0) {
                     throw new IllegalArgumentException("V3 dry MESH state supplies vapor flow for an absent condenser phase");
                 }
-                copy[node][component] = value;
+                if (copy) validated[node][component] = value;
             }
         }
-        return copy;
+        return validated;
     }
 }

@@ -26,7 +26,22 @@ public final class V3MainOptimizationProbe {
             inputs.put(label, (V3ColumnInput) factory.invoke(null, label));
         }
         inputs.put("Holland", V3HollandExample32.input());
-        if (args.length > 3) inputs.keySet().retainAll(List.of(args[3].split(",")));
+        if (args.length > 3 && args[3].contains("Default")) {
+            boolean large = args[3].contains("Large") || List.of(args[3].split(",")).stream()
+                    .anyMatch(label -> label.endsWith("5") || label.endsWith("10"));
+            inputs.putAll(large ? V3DiagnosticFixtures.largeDefaultPerturbations()
+                    : V3DiagnosticFixtures.defaultPerturbations());
+        }
+        if (args.length > 3 && List.of(args[3].split(",")).contains("C64")) {
+            inputs.put("C64", V3DiagnosticFixtures.with64Trays(inputs.get("C")));
+        }
+        if (args.length > 3) {
+            if (args[3].equals("DefaultPerturbations") || args[3].equals("DefaultLargePerturbations")) {
+                inputs.keySet().removeIf(key -> !key.startsWith("Default"));
+            }
+            else inputs.keySet().retainAll(List.of(args[3].split(",")));
+            if (inputs.isEmpty()) throw new IllegalArgumentException("No selected benchmark inputs");
+        }
         ThreadMXBean bean = (ThreadMXBean) ManagementFactory.getThreadMXBean();
         bean.setThreadCpuTimeEnabled(true);
         bean.setThreadAllocatedMemoryEnabled(true);
@@ -35,7 +50,7 @@ public final class V3MainOptimizationProbe {
         var gson = new GsonBuilder().setPrettyPrinting().create();
         for (var entry : inputs.entrySet()) {
             for (int iteration = -warmup; iteration < samples; iteration++) {
-                long deadline = System.nanoTime() + 120_000_000_000L;
+                long deadline = System.nanoTime() + Long.getLong("probeDeadlineMillis", 120_000L) * 1_000_000L;
                 V3SolveControl control = () -> {
                     if (System.nanoTime() > deadline) throw new java.util.concurrent.CancellationException("Probe deadline");
                 };
@@ -51,6 +66,7 @@ public final class V3MainOptimizationProbe {
                 if (iteration < 0) continue;
                 Map<String, Object> row = new LinkedHashMap<>();
                 row.put("case", entry.getKey());
+                row.put("input", entry.getValue());
                 row.put("sample", iteration);
                 row.put("wallMs", elapsed / 1e6);
                 row.put("cpuMs", cpuElapsed / 1e6);

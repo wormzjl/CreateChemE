@@ -9,7 +9,8 @@ final class V3MeshResidual {
 
     V3MeshResidual(List<Row> rows) {
         this.rows = List.copyOf(rows);
-        if (this.rows.isEmpty() || this.rows.stream().anyMatch(Objects::isNull)) {
+        // List.copyOf already rejects null elements while creating the immutable snapshot.
+        if (this.rows.isEmpty()) {
             throw new IllegalArgumentException("V3 MESH residual must contain non-null rows");
         }
     }

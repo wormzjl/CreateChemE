@@ -40,6 +40,7 @@ scripts/
 design/
 research/
 docs/
+tools/
 
 # Claude × Codex collaboration runtime files
 .collab/

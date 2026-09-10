@@ -1,6 +1,5 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /** Immutable Peng–Robinson phase result in the V3 SI/property convention. */
@@ -21,7 +20,12 @@ public final class V3FugacityResult {
         this.molarEnthalpyJoulesPerMol = molarEnthalpyJoulesPerMol;
         this.physicalRootCount = physicalRootCount;
         this.rootSeparation = rootSeparation;
-        if (this.logFugacityCoefficients.length == 0 || Arrays.stream(this.logFugacityCoefficients).anyMatch(value -> !Double.isFinite(value))
+        for (double value : this.logFugacityCoefficients) {
+            if (!Double.isFinite(value)) {
+                throw new IllegalArgumentException("V3 fugacity result is not finite and physically valid");
+            }
+        }
+        if (this.logFugacityCoefficients.length == 0
                 || !Double.isFinite(compressibilityFactor) || compressibilityFactor <= 0.0
                 || !Double.isFinite(molarEnthalpyJoulesPerMol) || physicalRootCount < 1
                 || !Double.isFinite(rootSeparation) || rootSeparation < 0.0) {

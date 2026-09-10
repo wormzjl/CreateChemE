@@ -1,0 +1,47 @@
+allprojects {
+    afterEvaluate {
+        def diagnosticClasses = layout.buildDirectory.dir('classes/continuation-profile')
+        tasks.register('compileContinuationProfile', JavaCompile) {
+            dependsOn tasks.named('testClasses')
+            source layout.buildDirectory.dir('generated/continuation-profile')
+            classpath = sourceSets.test.runtimeClasspath
+            destinationDirectory = diagnosticClasses
+            javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+        }
+        tasks.register('v3ContinuationProfile', JavaExec) {
+            dependsOn tasks.named('compileContinuationProfile')
+            classpath = files(diagnosticClasses) + sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3ContinuationInvestigationProbe'
+            minHeapSize = '512m'
+            maxHeapSize = '2g'
+            args providers.gradleProperty('profileReport').getOrElse('build/reports/v3-continuation/profile.json')
+            args providers.gradleProperty('profileRepeats').getOrElse('2')
+        }
+        tasks.register('v3ContinuationReference', JavaExec) {
+            dependsOn tasks.named('testClasses')
+            classpath = sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MainOptimizationProbe'
+            minHeapSize = '512m'
+            maxHeapSize = '2g'
+            systemProperty 'probeDeadlineMillis', '45000'
+            args 'build/reports/v3-continuation/reference.json', '1', '1',
+                    'Default,DefaultPressureLow5,DefaultPressureLow10,DefaultRefluxHigh10,DefaultTemperatureLow5'
+        }
+        tasks.register('v3ContinuationSeed', JavaExec) {
+            dependsOn tasks.named('compileContinuationProfile')
+            classpath = files(diagnosticClasses) + sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3ContinuationInvestigationProbe'
+            minHeapSize = '512m'
+            maxHeapSize = '2g'
+            args '--export-seed', 'build/reports/v3-continuation/default-seed.json'
+        }
+        tasks.register('v3ContinuationWitness', JavaExec) {
+            dependsOn tasks.named('v3ContinuationSeed')
+            classpath = sourceSets.test.runtimeClasspath
+            mainClass = 'com.wormzjl.createcheme.science.column.v3.V3ContinuationInvestigationProbe'
+            minHeapSize = '512m'
+            maxHeapSize = '2g'
+            args '--witness', 'build/reports/v3-continuation/default-seed.json', 'build/reports/v3-continuation/unprofiled-nearby.json'
+        }
+    }
+}

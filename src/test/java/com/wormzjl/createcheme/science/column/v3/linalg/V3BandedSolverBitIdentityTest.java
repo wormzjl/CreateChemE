@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
  * calculator's convergence path depends on the exact doubles a solve returns rather than on their accuracy.
  */
 class V3BandedSolverBitIdentityTest {
+    private final V3BandedPivotedSolver.Workspace reusedWorkspace = new V3BandedPivotedSolver.Workspace();
     /** Set to the dump of a real 874-row literature-CDU Jacobian when one is available on this machine. */
     private static final String DUMPED_JACOBIAN_PROPERTY = "createcheme.v3.dumpedJacobian";
 
@@ -233,6 +234,8 @@ class V3BandedSolverBitIdentityTest {
         Outcome expected = reference(matrix, referenceRightHandSide);
         assertArrayEquals(band, snapshot(matrix), label + ": the reference solve mutated the matrix");
         double[] bandedRightHandSide = rightHandSide.clone();
+        // Prime the reusable factorization, including its partially written state on failure paths.
+        banded(matrix, rightHandSide.clone());
         Outcome actual = banded(matrix, bandedRightHandSide);
         assertArrayEquals(band, snapshot(matrix), label + ": the banded solve mutated the matrix");
         assertArrayEquals(rightHandSide, referenceRightHandSide, label + ": the reference solve mutated the RHS");
@@ -267,9 +270,9 @@ class V3BandedSolverBitIdentityTest {
         }
     }
 
-    private static Outcome banded(V3BandedMatrix matrix, double[] rightHandSide) {
+    private Outcome banded(V3BandedMatrix matrix, double[] rightHandSide) {
         try {
-            V3BandedPivotedSolver.Result result = V3BandedPivotedSolver.solve(matrix, rightHandSide);
+            V3BandedPivotedSolver.Result result = V3BandedPivotedSolver.solve(matrix, rightHandSide, reusedWorkspace);
             if (result instanceof V3BandedPivotedSolver.Result.Success success) {
                 return new Outcome("SUCCESS", success.solution(), success.backwardError(), success.minimumPivotMagnitude(),
                         success.maximumPivotMagnitude(), success.pivotSwaps(), success.pivotGrowth());
