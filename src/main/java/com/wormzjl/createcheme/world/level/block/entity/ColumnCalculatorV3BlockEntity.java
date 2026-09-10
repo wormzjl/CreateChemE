@@ -69,7 +69,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     private long inputRevision;
     private long resultRevision = -1L;
     private long stateRevision;
-    private String detail = "Literature CDU draft is ready";
+    private String detail = "Methane-enriched CDU draft is ready";
     private V3ColumnInput currentInput = freshInput();
     private V3ColumnDisplayResult displayResult;
     private V3Operation activeOperation;
@@ -374,7 +374,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     }
 
     /**
-     * The input a fresh calculator starts on: the Ledezma-Martinez (2019) no-preflash atmospheric column. Forty
+     * Original methane-free reference: the Ledezma-Martinez (2019) no-preflash atmospheric column. Forty
      * trays plus the steam-stripped bottom stage, three direct side products at stages 10/18/28 (491/515/165 kmol/h),
      * each paired with a pumparound cooler drawn at the draw stage and returned two stages above at the published
      * 12.84/17.89/11.20 MW, 1,200 kmol/h of stripping steam at the bottom, condenser 59 C, reflux ratio 4.17, no
@@ -408,8 +408,23 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                         new V3PumparoundSpec(26, 28, -11.20e6, V3PumparoundSpec.Split.UNIFORM)));
     }
 
+    /** Current column preset: the literature operating conditions with a synthetic 0.5 mol% methane feed. */
+    public static V3ColumnInput methaneCduInput() {
+        V3ColumnInput original = literatureCduInput();
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane");
+        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light_methane");
+        double[] flows = crude.moleFractions();
+        for (int component = 0; component < flows.length; component++) {
+            flows[component] *= LITERATURE_FEED_MOL_PER_SECOND;
+        }
+        return new V3ColumnInput(original.schemaVersion(), crude.packageId(), crude.assayId(),
+                crude.componentBasis(), flows, original.feedTemperatureKelvin(), original.stageCount(),
+                original.feedStageNumber(), original.topPressurePascal(), original.stagePressureDropPascal(),
+                original.specifications(), original.sideDraws(), original.steamFeeds(), original.pumparounds());
+    }
+
     private static V3ColumnInput freshInput() {
-        return literatureCduInput();
+        return methaneCduInput();
     }
 
 

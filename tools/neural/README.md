@@ -7,6 +7,10 @@ The long-term target remains refinery-wide equilibrium-stage initialization. **T
 only a temperature-slice baseline for the current full TJL19 case.** The `V3NeuralInitializer` interface
 permits a later property-conditioned graph model without changing the selection/correction policy.
 
+The fresh calculator now uses a [methane-enriched TJL20 feed](methane-qualification.md), qualified with
+`CURRENT_ONLY`. The bundled model still covers only the original TJL19 pilot; it declines the methane
+package and `LNN_FIRST` uses the current initializer. Existing saved inputs retain their composition.
+
 ## Configuration
 
 The following keys are now recognized in `config/createcheme-common.toml`:
