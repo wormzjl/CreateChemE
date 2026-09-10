@@ -106,6 +106,16 @@ tasks.register('factorizedNeuralModelParity', JavaExec) {
     args directory, providers.gradleProperty('factorizedParityOutput').getOrElse(directory + '/java-parity.json')
 }
 
+tasks.register('transformerNeuralModelParity', JavaExec) {
+    group = 'verification'
+    description = 'Validates offline transformer CPU parity, cancellation and concurrent inference.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3TransformerParityCheck'
+    maxHeapSize = '1g'
+    args providers.gradleProperty('transformerModelDirectory').getOrElse('build/neural-transformer/native-v1/transformer')
+}
+
 tasks.register('nearestProfileModelParity', JavaExec) {
     group = 'verification'
     description = 'Exports actual nearest-profile inference on TRAIN references and TRAIN-derived perturbations.'

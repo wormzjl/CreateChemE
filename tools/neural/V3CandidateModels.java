@@ -24,6 +24,7 @@ final class V3CandidateModels {
         }
         try (var stream = Files.newInputStream(path)) {
             if (type.equals("nearest-profile")) return V3NearestProfileInitializer.read(stream);
+            if (revision.equals("v3-column-transformer-1")) return V3ColumnTransformerInitializer.read(stream);
             if (revision.equals("v3-factorized-stage-1")) return V3FactorizedNeuralInitializer.read(stream);
             if (revision.equals(V3GeneralNeuralFeatures.REVISION)) return V3GeneralNeuralInitializer.read(stream);
             throw new IllegalArgumentException("Unsupported candidate model format");
@@ -34,6 +35,7 @@ final class V3CandidateModels {
         if (model instanceof V3GeneralNeuralInitializer general) return general.parameterStorageBytes();
         if (model instanceof V3FactorizedNeuralInitializer factorized) return factorized.parameterStorageBytes();
         if (model instanceof V3NearestProfileInitializer nearest) return nearest.parameterStorageBytes();
+        if (model instanceof V3ColumnTransformerInitializer transformer) return transformer.parameterStorageBytes();
         return 0;
     }
 }

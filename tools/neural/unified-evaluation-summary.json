@@ -1,0 +1,975 @@
+{
+  "cases": 252,
+  "models": {
+    "gen3-factorized": {
+      "journalSha256": "f2b495c161b1c61c045aa79130723ef96fb1ca0d2e65d09debb27cb52e57e2ec",
+      "paired": {
+        "commonQualifiedCases": 66,
+        "firstGains": 13,
+        "firstLosses": 0,
+        "firstMinusCurrentMillis": {
+          "count": 252,
+          "max": 2082.391599999999,
+          "mean": 709.9004932539682,
+          "median": 698.2136499999999,
+          "min": -4881.9255,
+          "p05": -335.549475,
+          "p95": 1950.8255499999993,
+          "sampleSd": 865.5549790754546
+        },
+        "firstMinusCurrentMillisCommonQualified": {
+          "count": 66,
+          "max": 2008.0110999999997,
+          "mean": 436.4305106060606,
+          "median": 365.14905,
+          "min": -4881.9255,
+          "p05": -469.45000000000005,
+          "p95": 1902.8573999999994,
+          "sampleSd": 975.1867716652829
+        }
+      },
+      "run": {
+        "acceptanceCounterScope": "LNN_ONLY",
+        "accepted": 30,
+        "availableProcessors": 16,
+        "caseCount": 252,
+        "completed": 252,
+        "currentAccepted": 69,
+        "deadlineMillis": 30000,
+        "elapsedSeconds": 1969.7017008,
+        "heapCommittedAtEndBytes": 2126512128,
+        "heapUsedAtEndBytes": 379284312,
+        "java": "21.0.11",
+        "maximumHeapBytes": 4294967296,
+        "maximumInFlight": 2,
+        "memoryScope": "thread allocated bytes are allocation volume, not retained RAM; heap/RSS values are whole-process measurements",
+        "mode": "benchmark",
+        "modelId": "tjl20-gen3-factorized-v1",
+        "modelLoadAllocatedBytes": 18164320,
+        "modelLoadMillis": 71.2955,
+        "modelParameterStorageBytes": 257216,
+        "modelSha256": "19ed50603c2955841a9dd8e5a539aa076b1d8d59a09304b2bc0c613cc520e512",
+        "neuralBudgetMillis": 2000,
+        "neuralFirstAccepted": 83,
+        "neuralMaximumIterations": 16,
+        "poolPeakUsage": [
+          {
+            "name": "CodeHeap 'non-nmethods'",
+            "peakUsedBytes": 3589760,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Metaspace",
+            "peakUsedBytes": 8651184,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "CodeHeap 'profiled nmethods'",
+            "peakUsedBytes": 12901760,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Compressed Class Space",
+            "peakUsedBytes": 863728,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "G1 Eden Space",
+            "peakUsedBytes": 1270874112,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Old Gen",
+            "peakUsedBytes": 896484944,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Survivor Space",
+            "peakUsedBytes": 17875544,
+            "type": "HEAP"
+          },
+          {
+            "name": "CodeHeap 'non-profiled nmethods'",
+            "peakUsedBytes": 10977536,
+            "type": "NON_HEAP"
+          }
+        ],
+        "queueCapacity": 2,
+        "source": "build\\neural-transformer\\data-v2\\fresh-holdout.jsonl",
+        "sourceSha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082",
+        "timingScope": "serial JVM, elapsed and thread CPU measured separately",
+        "workers": 1
+      },
+      "strategies": {
+        "current": {
+          "advisoryOnly": 3,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 30208864912.0,
+            "mean": 3014067641.3650794,
+            "median": 1369873672.0,
+            "min": 49236776.0,
+            "p05": 153452947.6,
+            "p95": 11056411310.799986,
+            "sampleSd": 4749068920.269942
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29984.375,
+            "mean": 3124.813988095238,
+            "median": 1414.0625,
+            "min": 15.625,
+            "p05": 102.34375000000001,
+            "p95": 10314.843749999985,
+            "sampleSd": 5490.099987155009
+          },
+          "failed": 183,
+          "ms": {
+            "count": 252,
+            "max": 30011.2023,
+            "mean": 3131.9357523809526,
+            "median": 1422.8119000000002,
+            "min": 25.5414,
+            "p05": 118.69344000000001,
+            "p95": 10331.629654999984,
+            "sampleSd": 5501.697672982082
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 12.746938775510204,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 22.44248662146049
+          },
+          "qualified": 66
+        },
+        "neural": {
+          "advisoryOnly": 1,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 2683857640.0,
+            "mean": 1035618798.5714285,
+            "median": 998614544.0,
+            "min": 1898960.0,
+            "p05": 11683255.200000003,
+            "p95": 2393428314.4,
+            "sampleSd": 783338188.8519223
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 2015.625,
+            "mean": 832.5272817460317,
+            "median": 781.25,
+            "min": 0.0,
+            "p05": 15.625,
+            "p95": 1984.375,
+            "sampleSd": 643.4353108048159
+          },
+          "failed": 222,
+          "ms": {
+            "count": 252,
+            "max": 2009.9899,
+            "mean": 834.3302543650793,
+            "median": 778.2521999999999,
+            "min": 1.6386,
+            "p05": 10.357080000000002,
+            "p95": 2000.194855,
+            "sampleSd": 644.2846746371797
+          },
+          "newtonIterations": {
+            "count": 252,
+            "max": 16.0,
+            "mean": 12.174603174603174,
+            "median": 16.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 16.0,
+            "sampleSd": 6.466067562466411
+          },
+          "qualified": 29
+        },
+        "neuralFirst": {
+          "advisoryOnly": 4,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 30753551984.0,
+            "mean": 3921794691.2063494,
+            "median": 2680317828.0,
+            "min": 13986936.0,
+            "p05": 54023294.8,
+            "p95": 12984470535.199982,
+            "sampleSd": 4969791369.996968
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 30000.0,
+            "mean": 3832.8373015873017,
+            "median": 2390.625,
+            "min": 0.0,
+            "p05": 46.875,
+            "p95": 11853.124999999978,
+            "sampleSd": 5586.719659857305
+          },
+          "failed": 169,
+          "ms": {
+            "count": 252,
+            "max": 30017.7429,
+            "mean": 3841.8362456349205,
+            "median": 2392.3553,
+            "min": 9.9534,
+            "p05": 51.316685,
+            "p95": 11875.890884999977,
+            "sampleSd": 5597.72836315123
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 12.465306122448979,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 22.321326557143937
+          },
+          "qualified": 79
+        }
+      }
+    },
+    "mlp": {
+      "journalSha256": "1ecbfaef2fd118ce3cab8bf0009720e698aa9f340459b0bc8f3551f5c7c53ede",
+      "paired": {
+        "commonQualifiedCases": 66,
+        "firstGains": 23,
+        "firstLosses": 0,
+        "firstMinusCurrentMillis": {
+          "count": 252,
+          "max": 2115.562,
+          "mean": 389.16736785714295,
+          "median": 532.6287499999999,
+          "min": -29619.228499999997,
+          "p05": -971.91372,
+          "p95": 1948.8613300000002,
+          "sampleSd": 2165.497380112533
+        },
+        "firstMinusCurrentMillisCommonQualified": {
+          "count": 66,
+          "max": 2036.4266,
+          "mean": 253.11786060606062,
+          "median": 218.66920000000016,
+          "min": -4647.4986,
+          "p05": -937.5826000000001,
+          "p95": 1741.1949,
+          "sampleSd": 969.9585758759277
+        }
+      },
+      "run": {
+        "acceptanceCounterScope": "LNN_ONLY",
+        "accepted": 51,
+        "availableProcessors": 16,
+        "caseCount": 252,
+        "completed": 252,
+        "currentAccepted": 69,
+        "deadlineMillis": 30000,
+        "elapsedSeconds": 1860.8376338,
+        "heapCommittedAtEndBytes": 2170552320,
+        "heapUsedAtEndBytes": 1864347168,
+        "java": "21.0.11",
+        "maximumHeapBytes": 4294967296,
+        "maximumInFlight": 2,
+        "memoryScope": "thread allocated bytes are allocation volume, not retained RAM; heap/RSS values are whole-process measurements",
+        "mode": "benchmark",
+        "modelId": "tjl20-mlp-20260912-native-v1",
+        "modelLoadAllocatedBytes": 42606872,
+        "modelLoadMillis": 101.6637,
+        "modelParameterStorageBytes": 666304,
+        "modelSha256": "9569e44056b95e1792e68895080326fc286d436af2237004a08ba53c5f897f9e",
+        "neuralBudgetMillis": 2000,
+        "neuralFirstAccepted": 95,
+        "neuralMaximumIterations": 16,
+        "poolPeakUsage": [
+          {
+            "name": "CodeHeap 'non-nmethods'",
+            "peakUsedBytes": 3604224,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Metaspace",
+            "peakUsedBytes": 8816448,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "CodeHeap 'profiled nmethods'",
+            "peakUsedBytes": 13298432,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Compressed Class Space",
+            "peakUsedBytes": 878176,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "G1 Eden Space",
+            "peakUsedBytes": 1298137088,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Old Gen",
+            "peakUsedBytes": 915996776,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Survivor Space",
+            "peakUsedBytes": 14680064,
+            "type": "HEAP"
+          },
+          {
+            "name": "CodeHeap 'non-profiled nmethods'",
+            "peakUsedBytes": 11255552,
+            "type": "NON_HEAP"
+          }
+        ],
+        "queueCapacity": 2,
+        "source": "build\\neural-transformer\\data-v2\\fresh-holdout.jsonl",
+        "sourceSha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082",
+        "timingScope": "serial JVM, elapsed and thread CPU measured separately",
+        "workers": 1
+      },
+      "strategies": {
+        "current": {
+          "advisoryOnly": 3,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 31291219808.0,
+            "mean": 3025425435.6190476,
+            "median": 1369875528.0,
+            "min": 49239464.0,
+            "p05": 153455579.6,
+            "p95": 11056412440.399986,
+            "sampleSd": 4805324599.650716
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29953.125,
+            "mean": 3111.6071428571427,
+            "median": 1406.25,
+            "min": 15.625,
+            "p05": 117.96875000000001,
+            "p95": 10232.812499999985,
+            "sampleSd": 5489.907037968533
+          },
+          "failed": 183,
+          "ms": {
+            "count": 252,
+            "max": 30015.5455,
+            "mean": 3120.9501174603174,
+            "median": 1405.3899999999999,
+            "min": 24.1875,
+            "p05": 116.52424,
+            "p95": 10270.444779999985,
+            "sampleSd": 5507.452499234854
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 12.746938775510204,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 22.44248662146049
+          },
+          "qualified": 66
+        },
+        "neural": {
+          "advisoryOnly": 4,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 2640360208.0,
+            "mean": 936534984.0634921,
+            "median": 782664632.0,
+            "min": 1404096.0,
+            "p05": 6661387.200000001,
+            "p95": 2387249668.4,
+            "sampleSd": 795728553.5868127
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 2015.625,
+            "mean": 741.9394841269841,
+            "median": 593.75,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 1984.375,
+            "sampleSd": 639.4593421847104
+          },
+          "failed": 201,
+          "ms": {
+            "count": 252,
+            "max": 2013.4474,
+            "mean": 744.3077817460317,
+            "median": 588.75235,
+            "min": 1.2203,
+            "p05": 7.471085,
+            "p95": 2000.218955,
+            "sampleSd": 640.877154067257
+          },
+          "newtonIterations": {
+            "count": 252,
+            "max": 16.0,
+            "mean": 10.468253968253968,
+            "median": 16.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 16.0,
+            "sampleSd": 7.168086096986342
+          },
+          "qualified": 47
+        },
+        "neuralFirst": {
+          "advisoryOnly": 6,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 32129119296.0,
+            "mean": 3624122415.4920635,
+            "median": 2236231324.0,
+            "min": 10285848.0,
+            "p05": 35426920.4,
+            "p95": 11623295035.599998,
+            "sampleSd": 4916150445.319587
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 30031.25,
+            "mean": 3502.7901785714284,
+            "median": 1960.9375,
+            "min": 15.625,
+            "p05": 31.25,
+            "p95": 11189.062499999989,
+            "sampleSd": 5370.686570203925
+          },
+          "failed": 157,
+          "ms": {
+            "count": 252,
+            "max": 30025.7747,
+            "mean": 3510.1174853174603,
+            "median": 1978.6968499999998,
+            "min": 6.7366,
+            "p05": 41.882015,
+            "p95": 11223.07302499999,
+            "sampleSd": 5380.7101467426155
+          },
+          "newtonIterations": {
+            "count": 246,
+            "max": 128.0,
+            "mean": 12.16260162601626,
+            "median": 2.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 22.292077473889123
+          },
+          "qualified": 89
+        }
+      }
+    },
+    "nearest-k1": {
+      "journalSha256": "97b0ef30454e06ffe1d31bc16ae552595ec4adfded9c704cb48542aa41fd1f45",
+      "paired": {
+        "commonQualifiedCases": 66,
+        "firstGains": 15,
+        "firstLosses": 0,
+        "firstMinusCurrentMillis": {
+          "count": 252,
+          "max": 2094.6615,
+          "mean": 235.89122499999996,
+          "median": 356.71645,
+          "min": -29632.1662,
+          "p05": -1521.0050699999997,
+          "p95": 1892.1774349999998,
+          "sampleSd": 2363.6373577974455
+        },
+        "firstMinusCurrentMillisCommonQualified": {
+          "count": 66,
+          "max": 2003.5702999999999,
+          "mean": 14.26416969696971,
+          "median": 123.5646000000001,
+          "min": -5316.3688,
+          "p05": -1620.8494500000002,
+          "p95": 1322.1944250000001,
+          "sampleSd": 1024.9948138780983
+        }
+      },
+      "run": {
+        "acceptanceCounterScope": "LNN_ONLY",
+        "accepted": 45,
+        "availableProcessors": 16,
+        "caseCount": 252,
+        "completed": 252,
+        "currentAccepted": 69,
+        "deadlineMillis": 30000,
+        "elapsedSeconds": 1796.7185298,
+        "heapCommittedAtEndBytes": 2076180480,
+        "heapUsedAtEndBytes": 612116760,
+        "java": "21.0.11",
+        "maximumHeapBytes": 4294967296,
+        "maximumInFlight": 2,
+        "memoryScope": "thread allocated bytes are allocation volume, not retained RAM; heap/RSS values are whole-process measurements",
+        "mode": "benchmark",
+        "modelId": "tjl20-gen3-nearest-k1",
+        "modelLoadAllocatedBytes": 260517640,
+        "modelLoadMillis": 258.5547,
+        "modelParameterStorageBytes": 5389514,
+        "modelSha256": "4975ef506cce65efd888e412b81a572cd8f87316c507ff3fdc627b7c04005eec",
+        "neuralBudgetMillis": 2000,
+        "neuralFirstAccepted": 87,
+        "neuralMaximumIterations": 16,
+        "poolPeakUsage": [
+          {
+            "name": "CodeHeap 'non-nmethods'",
+            "peakUsedBytes": 3594624,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Metaspace",
+            "peakUsedBytes": 8750136,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "CodeHeap 'profiled nmethods'",
+            "peakUsedBytes": 13419648,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Compressed Class Space",
+            "peakUsedBytes": 869192,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "G1 Eden Space",
+            "peakUsedBytes": 1243611136,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Old Gen",
+            "peakUsedBytes": 887500040,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Survivor Space",
+            "peakUsedBytes": 14631376,
+            "type": "HEAP"
+          },
+          {
+            "name": "CodeHeap 'non-profiled nmethods'",
+            "peakUsedBytes": 10799488,
+            "type": "NON_HEAP"
+          }
+        ],
+        "queueCapacity": 2,
+        "source": "build\\neural-transformer\\data-v2\\fresh-holdout.jsonl",
+        "sourceSha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082",
+        "timingScope": "serial JVM, elapsed and thread CPU measured separately",
+        "workers": 1
+      },
+      "strategies": {
+        "current": {
+          "advisoryOnly": 3,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 29986745944.0,
+            "mean": 3017496613.269841,
+            "median": 1371816280.0,
+            "min": 49409528.0,
+            "p05": 153884672.4,
+            "p95": 11059487349.999987,
+            "sampleSd": 4755430004.969391
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29968.75,
+            "mean": 3114.8933531746034,
+            "median": 1421.875,
+            "min": 15.625,
+            "p05": 125.0,
+            "p95": 10204.687499999982,
+            "sampleSd": 5493.7697417684585
+          },
+          "failed": 183,
+          "ms": {
+            "count": 252,
+            "max": 30008.8281,
+            "mean": 3122.6625805555555,
+            "median": 1421.6506,
+            "min": 28.4042,
+            "p05": 124.337855,
+            "p95": 10217.565044999983,
+            "sampleSd": 5506.632463343599
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 12.746938775510204,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 22.44248662146049
+          },
+          "qualified": 66
+        },
+        "neural": {
+          "advisoryOnly": 4,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 2563271200.0,
+            "mean": 763209581.3650794,
+            "median": 520939916.0,
+            "min": 13434456.0,
+            "p05": 42420831.2,
+            "p95": 2259927189.5999994,
+            "sampleSd": 724652341.7786983
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 2015.625,
+            "mean": 639.6949404761905,
+            "median": 390.625,
+            "min": 0.0,
+            "p05": 46.875,
+            "p95": 1949.9999999999993,
+            "sampleSd": 601.7850725446306
+          },
+          "failed": 207,
+          "ms": {
+            "count": 252,
+            "max": 2012.9979,
+            "mean": 641.1326845238095,
+            "median": 402.23929999999996,
+            "min": 11.2776,
+            "p05": 43.73656,
+            "p95": 1954.9312049999994,
+            "sampleSd": 602.2872971936608
+          },
+          "newtonIterations": {
+            "count": 252,
+            "max": 16.0,
+            "mean": 12.265873015873016,
+            "median": 16.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 16.0,
+            "sampleSd": 6.0926402299707965
+          },
+          "qualified": 41
+        },
+        "neuralFirst": {
+          "advisoryOnly": 6,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 29400190832.0,
+            "mean": 3367238006.095238,
+            "median": 2053415076.0,
+            "min": 13434488.0,
+            "p05": 57322544.0,
+            "p95": 10946936054.399992,
+            "sampleSd": 4615662895.276409
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29984.375,
+            "mean": 3350.1984126984125,
+            "median": 1781.25,
+            "min": 0.0,
+            "p05": 46.875,
+            "p95": 10985.937499999996,
+            "sampleSd": 5296.556213832466
+          },
+          "failed": 165,
+          "ms": {
+            "count": 252,
+            "max": 30003.2259,
+            "mean": 3358.5538055555553,
+            "median": 1782.3856500000002,
+            "min": 11.2364,
+            "p05": 52.850910000000006,
+            "p95": 10996.565454999998,
+            "sampleSd": 5306.509482073913
+          },
+          "newtonIterations": {
+            "count": 246,
+            "max": 128.0,
+            "mean": 12.060975609756097,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 21.134755722564282
+          },
+          "qualified": 81
+        }
+      }
+    },
+    "transformer": {
+      "journalSha256": "39c759f490508bb106bfdc7cd78230e81cdbb703fae81fb33eb03c6b5b0eba1f",
+      "paired": {
+        "commonQualifiedCases": 66,
+        "firstGains": 32,
+        "firstLosses": 0,
+        "firstMinusCurrentMillis": {
+          "count": 252,
+          "max": 6052.2937999999995,
+          "mean": 316.484192063492,
+          "median": 439.01324999999997,
+          "min": -6692.9103000000005,
+          "p05": -2552.46634,
+          "p95": 2021.2921499999995,
+          "sampleSd": 1484.1512024792296
+        },
+        "firstMinusCurrentMillisCommonQualified": {
+          "count": 66,
+          "max": 2188.785,
+          "mean": -96.18898636363636,
+          "median": -90.4085,
+          "min": -5126.025500000001,
+          "p05": -2416.200775,
+          "p95": 1618.877025,
+          "sampleSd": 1340.1618339131528
+        }
+      },
+      "run": {
+        "acceptanceCounterScope": "LNN_ONLY",
+        "accepted": 72,
+        "availableProcessors": 16,
+        "caseCount": 252,
+        "completed": 252,
+        "currentAccepted": 69,
+        "deadlineMillis": 30000,
+        "elapsedSeconds": 2001.4695308,
+        "heapCommittedAtEndBytes": 2013265920,
+        "heapUsedAtEndBytes": 1259472264,
+        "java": "21.0.11",
+        "maximumHeapBytes": 4294967296,
+        "maximumInFlight": 2,
+        "memoryScope": "thread allocated bytes are allocation volume, not retained RAM; heap/RSS values are whole-process measurements",
+        "mode": "benchmark",
+        "modelId": "tjl20-transformer-20260912-native-v1",
+        "modelLoadAllocatedBytes": 43195872,
+        "modelLoadMillis": 109.0771,
+        "modelParameterStorageBytes": 670400,
+        "modelSha256": "2b94646bc26cc78df54654817a2a0a9c2c731e29c14dd9bbea1b08feb1ad1102",
+        "neuralBudgetMillis": 2000,
+        "neuralFirstAccepted": 103,
+        "neuralMaximumIterations": 16,
+        "poolPeakUsage": [
+          {
+            "name": "CodeHeap 'non-nmethods'",
+            "peakUsedBytes": 3042048,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Metaspace",
+            "peakUsedBytes": 8802944,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "CodeHeap 'profiled nmethods'",
+            "peakUsedBytes": 13088512,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "Compressed Class Space",
+            "peakUsedBytes": 878080,
+            "type": "NON_HEAP"
+          },
+          {
+            "name": "G1 Eden Space",
+            "peakUsedBytes": 1205862400,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Old Gen",
+            "peakUsedBytes": 869595216,
+            "type": "HEAP"
+          },
+          {
+            "name": "G1 Survivor Space",
+            "peakUsedBytes": 14458512,
+            "type": "HEAP"
+          },
+          {
+            "name": "CodeHeap 'non-profiled nmethods'",
+            "peakUsedBytes": 11233152,
+            "type": "NON_HEAP"
+          }
+        ],
+        "queueCapacity": 2,
+        "source": "build\\neural-transformer\\data-v2\\fresh-holdout.jsonl",
+        "sourceSha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082",
+        "timingScope": "serial JVM, elapsed and thread CPU measured separately",
+        "workers": 1
+      },
+      "strategies": {
+        "current": {
+          "advisoryOnly": 3,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 30270522512.0,
+            "mean": 2975016542.6031747,
+            "median": 1369819344.0,
+            "min": 49237400.0,
+            "p05": 153447006.8,
+            "p95": 11056322689.999987,
+            "sampleSd": 4590527212.448988
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29984.375,
+            "mean": 3426.09126984127,
+            "median": 1515.625,
+            "min": 31.25,
+            "p05": 125.0,
+            "p95": 14566.40625,
+            "sampleSd": 5665.977351895646
+          },
+          "failed": 183,
+          "ms": {
+            "count": 252,
+            "max": 30011.3951,
+            "mean": 3436.533264285714,
+            "median": 1507.6667000000002,
+            "min": 24.7284,
+            "p05": 127.107405,
+            "p95": 14587.397175,
+            "sampleSd": 5679.170077680473
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 12.746938775510204,
+            "median": 3.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 22.44248662146049
+          },
+          "qualified": 66
+        },
+        "neural": {
+          "advisoryOnly": 5,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 2426009920.0,
+            "mean": 800909581.5555556,
+            "median": 617242696.0,
+            "min": 1462536.0,
+            "p05": 5213756.400000001,
+            "p95": 2084955625.5999992,
+            "sampleSd": 736935379.7402325
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 2015.625,
+            "mean": 740.8854166666666,
+            "median": 562.5,
+            "min": 0.0,
+            "p05": 8.59375000000001,
+            "p95": 2000.0,
+            "sampleSd": 688.8520990355927
+          },
+          "failed": 180,
+          "ms": {
+            "count": 252,
+            "max": 2015.8072,
+            "mean": 743.023553968254,
+            "median": 561.8506,
+            "min": 1.1714,
+            "p05": 6.356575,
+            "p95": 2000.3858500000001,
+            "sampleSd": 691.421829599788
+          },
+          "newtonIterations": {
+            "count": 252,
+            "max": 16.0,
+            "mean": 8.452380952380953,
+            "median": 7.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 16.0,
+            "sampleSd": 7.360503125511978
+          },
+          "qualified": 67
+        },
+        "neuralFirst": {
+          "advisoryOnly": 5,
+          "allocatedBytes": {
+            "count": 252,
+            "max": 31521920168.0,
+            "mean": 3349963150.15873,
+            "median": 1744595412.0,
+            "min": 10291992.0,
+            "p05": 32375418.400000002,
+            "p95": 12755830510.39999,
+            "sampleSd": 4884292921.162868
+          },
+          "cases": 252,
+          "cpuMillis": {
+            "count": 252,
+            "max": 29984.375,
+            "mean": 3741.5674603174602,
+            "median": 1710.9375,
+            "min": 0.0,
+            "p05": 31.25,
+            "p95": 15753.124999999996,
+            "sampleSd": 5961.1357415008015
+          },
+          "failed": 149,
+          "ms": {
+            "count": 252,
+            "max": 30011.1933,
+            "mean": 3753.0174563492064,
+            "median": 1723.384,
+            "min": 9.6994,
+            "p05": 29.364910000000002,
+            "p95": 15792.240534999997,
+            "sampleSd": 5977.452427840361
+          },
+          "newtonIterations": {
+            "count": 245,
+            "max": 128.0,
+            "mean": 11.4,
+            "median": 2.0,
+            "min": 0.0,
+            "p05": 0.0,
+            "p95": 32.0,
+            "sampleSd": 22.16876402419981
+          },
+          "qualified": 98
+        }
+      }
+    }
+  },
+  "planSha256": "e68ef9f37591ea2dd15668d1afb00c19f8c31ed2612a93cf83d0465eda5d3d6d",
+  "policy": {
+    "deadlineMillis": 30000,
+    "mode": "benchmark",
+    "neuralBudgetMillis": 2000,
+    "neuralMaximumIterations": 16,
+    "workers": 1
+  },
+  "priorTestExposure": "These 252 inputs were already released for the native-v1 campaign. This unified run is a fixed-model follow-up, not another independent blind test.",
+  "revision": "unified-column-evaluation-v1"
+}
