@@ -42,7 +42,7 @@ public final class V3GeneralTrainingProbe {
         for (var row : requests) if (!ids.add(row.get("id").toString())) throw new IllegalArgumentException("Duplicate case ID");
         V3NeuralInitializer model = V3NeuralInitializer.UNAVAILABLE;
         long modelLoadStart = System.nanoTime(), modelAllocationStart = allocation();
-        if (needsModel) try (var in = Files.newInputStream(Path.of(args[5]))) { model = V3GeneralNeuralInitializer.read(in); }
+        if (needsModel) model = V3CandidateModels.read(Path.of(args[5]));
         long neuralBudgetMillis = args.length > 6 ? Long.parseLong(args[6]) : 2_000;
         if (neuralBudgetMillis < 1 || neuralBudgetMillis > 60_000) throw new IllegalArgumentException("Neural budget must be 1..60000 milliseconds");
         int maximumIterations = args.length > 7 ? Integer.parseInt(args[7]) : 16;
@@ -56,7 +56,7 @@ public final class V3GeneralTrainingProbe {
         metadata.put("caseCount", requests.size()); metadata.put("modelId", model.modelId());
         metadata.put("modelLoadMillis", (System.nanoTime() - modelLoadStart) / 1e6);
         metadata.put("modelLoadAllocatedBytes", difference(modelAllocationStart, allocation()));
-        if (model instanceof V3GeneralNeuralInitializer general) metadata.put("modelParameterStorageBytes", general.parameterStorageBytes());
+        if (needsModel) metadata.put("modelParameterStorageBytes", V3CandidateModels.parameterStorageBytes(model));
         if (needsModel) metadata.put("modelSha256", sha256(Path.of(args[5])));
         metadata.put("java", System.getProperty("java.version")); metadata.put("availableProcessors", Runtime.getRuntime().availableProcessors());
         metadata.put("maximumHeapBytes", Runtime.getRuntime().maxMemory());

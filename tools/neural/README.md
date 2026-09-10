@@ -1,6 +1,8 @@
 # V3 neural initialization
 
-The new [generalized experiment](generalized-model.md) varies all twenty component fractions, 2–64 trays, steam, pressure, reflux, side draws and up to four pumparounds. Its [finite design](generalized-design.md), [model card](generalized-model-card.json) and [complete case map](generalized-case-map.jsonl.gz) preserve failures and distinguish physical necessities from solver limitations. The trained general model is **opt-in**: validation showed weak flow-profile and tall-column coverage, so the existing local experts remain the default.
+The [Generation 3 comparison](gen3-model.md) adds 96 qualified training-fold rescues, trains two neural candidates, and compares nearest-profile transfer against the frozen Generation 2 and classical controls. It preserves the Generation 2 study in `.neural-cache/gen2-1a4a01d/`, outside Gradle's build directory. The [methods](gen3-model-methods.md), [prospective protocol](gen3_protocol.md), [model card](gen3-model-card.json), and [case map](gen3-case-map.jsonl.gz) record the separate validation, fresh-test, regression, recovery and serial benchmark populations.
+
+The [Generation 2 generalized experiment](generalized-model.md) varies all twenty component fractions, 2–64 trays, steam, pressure, reflux, side draws and up to four pumparounds. Its [finite design](generalized-design.md), [model card](generalized-model-card.json) and [complete case map](generalized-case-map.jsonl.gz) preserve failures and distinguish physical necessities from solver limitations. Generalized models remain **opt-in**; the existing local experts remain the default.
 
 The methane initializer uses **two multivariable state predictors**, one trained on qualified dry columns and one on certified wet columns. It ranks predictions using the requested column's material, energy and water-saturation residuals, then corrects candidates with the rigorous solver. It does not classify a column from condenser temperature alone or average wet and dry profiles together.
 
@@ -21,7 +23,8 @@ In `config/createcheme-common.toml`, section `[columnV3]`:
 - `LNN_FIRST`: try compatible neural candidates, then initialize classically once if necessary.
 - `LNN_ONLY`: neural candidates and rigorous correction only; unsupported inputs or unsuccessful correction return a typed failure. No classical initializer is hidden in this mode.
 - `CURRENT_ONLY`: unchanged classical initialization, without consulting the model.
-- `initializerModel = "GENERALIZED_EXPERIMENTAL"`: select only the freshly trained generalized model. `LOCAL_EXPERTS` selects the existing dry/wet and legacy predictors. Keep `LNN_FIRST` when experimenting so that classical fallback remains available.
+- `initializerModel = "GENERALIZED_EXPERIMENTAL"`: select the retained Generation 2 generalized model.
+- `initializerModel = "GENERALIZED_GEN3_EXPERIMENTAL"`: select the Generation 3 network with separate phase-total and composition predictions. `LOCAL_EXPERTS` selects the existing dry/wet and legacy predictors. Keep `LNN_FIRST` when experimenting so that classical fallback remains available.
 - `AUTO` / `PREDICTED_WET`: retain the predictor's wet mask. `DRY_START` clears its initial water and wet mask; native phase checks and repairs still apply.
 
 The neural time budget is shared by inference, ranking, all neural candidates, wet refinement and final correction. The iteration limit applies to each native correction pass. A wet prediction first receives a bounded pass with water held fixed; every water unknown is released for its final certificate. Parametric intermediate states are never results or training labels.

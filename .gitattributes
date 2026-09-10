@@ -1,0 +1,6 @@
+# These experiment artifacts are byte-hashed; preserve their stored bytes on checkout.
+tools/neural/gen2-cache-manifest.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+tools/neural/gen3-cache-manifest.json -text
+tools/neural/gen3-selection.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+tools/neural/gen3-model-card.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+src/main/resources/data/createcheme/neural/v3-general-gen3-factorized.json -text

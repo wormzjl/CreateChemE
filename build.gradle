@@ -95,6 +95,29 @@ tasks.register('generalNeuralModelParity', JavaExec) {
     args directory, providers.gradleProperty('generalParityOutput').getOrElse(directory + '/java-parity.json')
 }
 
+tasks.register('factorizedNeuralModelParity', JavaExec) {
+    group = 'verification'
+    description = 'Exports generation 3 factorized inference for Python/Java parity on training fixtures.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3FactorizedModelParityCheck'
+    maxHeapSize = '1g'
+    def directory = providers.gradleProperty('factorizedModelDirectory').getOrElse('build/neural-gen3/factorized-v1')
+    args directory, providers.gradleProperty('factorizedParityOutput').getOrElse(directory + '/java-parity.json')
+}
+
+tasks.register('nearestProfileModelParity', JavaExec) {
+    group = 'verification'
+    description = 'Exports actual nearest-profile inference on TRAIN references and TRAIN-derived perturbations.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3NearestModelParityCheck'
+    maxHeapSize = '1g'
+    args providers.gradleProperty('nearestModelFile').getOrElse('build/neural-gen3/nearest-k1/model.json'),
+            providers.gradleProperty('nearestParityFixture').getOrElse('build/neural-gen3/nearest-parity/fixture.json'),
+            providers.gradleProperty('nearestParityOutput').getOrElse('build/neural-gen3/nearest-parity/java-k1.json')
+}
+
 tasks.register('qualifyNeuralWetStates', JavaExec) {
     group = 'verification'
     dependsOn tasks.named('neuralMvpClasses')

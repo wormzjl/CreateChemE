@@ -77,8 +77,9 @@ public final class CreateChemE {
                 .defineEnum("initializerMode", V3InitializationOptions.Mode.LNN_FIRST);
         COLUMN_V3_INITIALIZER_MODEL = builder
                 .comment("LOCAL_EXPERTS retains the qualified 40-tray and legacy predictors.",
-                        "GENERALIZED_EXPERIMENTAL selects the variable-composition, 2-64-tray experiment.",
-                        "The experimental model has weak tall-column coverage; use LNN_FIRST for classical fallback.",
+                        "GENERALIZED_EXPERIMENTAL selects the original Gen2 variable-composition, 2-64-tray experiment.",
+                        "GENERALIZED_GEN3_EXPERIMENTAL selects the Gen3 model with normalized phase flows and compositions.",
+                        "Experimental families have limited qualification; use LNN_FIRST for classical fallback.",
                         "Model selection is captured at admission and never changes an in-flight solve.")
                 .defineEnum("initializerModel", V3NeuralModels.Family.LOCAL_EXPERTS);
         COLUMN_V3_WET_START = builder

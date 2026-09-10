@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory=$true, ParameterSetName='Id')][int]$ExperimentProcessId,
     [Parameter(Mandatory=$true, ParameterSetName='Command')][string]$CommandPattern,
+    [Parameter(ParameterSetName='Command')][string]$RequiredCommandPattern,
     [Parameter(Mandatory=$true)][string]$OutputPath
 )
 $ErrorActionPreference = 'Stop'
@@ -8,7 +9,8 @@ if ($CommandPattern) {
     $attachDeadline = [DateTime]::UtcNow.AddSeconds(60)
     do {
         $matchingExperiments = @(Get-CimInstance Win32_Process -Filter "Name='java.exe'" |
-            Where-Object { $_.CommandLine -and $_.CommandLine.Contains($CommandPattern) })
+            Where-Object { $_.CommandLine -and $_.CommandLine.Contains($CommandPattern) -and
+                (-not $RequiredCommandPattern -or $_.CommandLine.Contains($RequiredCommandPattern)) })
         if ($matchingExperiments.Count -gt 1) { throw 'More than one JVM matches the owned experiment command' }
         if ($matchingExperiments.Count -eq 1) { $ExperimentProcessId = $matchingExperiments[0].ProcessId; break }
         if ([DateTime]::UtcNow -ge $attachDeadline) { throw 'Experiment JVM did not appear within 60 seconds' }
@@ -34,6 +36,8 @@ while ($true) {
     } catch [System.InvalidOperationException] { break }
     $measurement = [ordered]@{
         processId = $ExperimentProcessId
+        commandPattern = $CommandPattern
+        requiredCommandPattern = $RequiredCommandPattern
         processStartedUtc = $experimentStarted.ToString('o')
         monitorStartedUtc = $watchStarted.ToString('o')
         lastSampleUtc = [DateTime]::UtcNow.ToString('o')

@@ -33,3 +33,5 @@ Run the unit suite with:
 ```
 
 The standalone numerical benchmarks live in `benchmarks/`. They are intentionally separate from the production source set so they cannot become runtime dependencies.
+
+The [V3 initializer experiments](tools/neural/README.md) include cached Generation 2 evidence and the [Generation 3 recovery and performance comparison](tools/neural/gen3-model.md). Experimental models are optional; all solver paths retain native physical acceptance checks.
