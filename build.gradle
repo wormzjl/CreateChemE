@@ -55,6 +55,49 @@ tasks.register('generateNeuralMvpData', JavaExec) {
             'tools/neural/tjl19-pilot-input.json', providers.gradleProperty('neuralMvpCases').getOrElse('40')
 }
 
+tasks.register('qualifyNeuralWetStates', JavaExec) {
+    group = 'verification'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3WetQualificationProbe'
+    maxHeapSize = '1g'
+    args providers.gradleProperty('wetCondenserKelvin').getOrElse('332.15'),
+            providers.gradleProperty('wetMode').getOrElse('sensitivity')
+}
+
+tasks.register('generateMethaneNeuralData', JavaExec) {
+    group = 'verification'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MethaneTrainingProbe'
+    maxHeapSize = '1g'
+    args 'generate', providers.gradleProperty('methaneNeuralOutput').getOrElse('build/neural-methane/v1'),
+            providers.gradleProperty('methaneSamplesPerGroup').getOrElse('32')
+}
+
+tasks.register('evaluateMethaneNeural', JavaExec) {
+    group = 'verification'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MethaneTrainingProbe'
+    maxHeapSize = '1g'
+    def output = providers.gradleProperty('methaneNeuralOutput').getOrElse('build/neural-methane/v1')
+    args 'evaluate', output, providers.gradleProperty('methaneEvaluationModel').getOrElse(output + '/model.json'),
+            providers.gradleProperty('methaneEvaluationRepeats').getOrElse('2'),
+            providers.gradleProperty('methaneEvaluationSplit').getOrElse('test')
+}
+
+tasks.register('generateMethaneWetData', JavaExec) {
+    group = 'verification'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MethaneTrainingProbe'
+    maxHeapSize = '1g'
+    args 'generate-wet', providers.gradleProperty('methaneNeuralOutput').getOrElse('build/neural-methane/wet-v1'),
+            providers.gradleProperty('methaneSamplesPerGroup').getOrElse('8'),
+            providers.gradleProperty('wetGroupFrom').getOrElse('0'), providers.gradleProperty('wetGroupTo').getOrElse('7')
+}
+
 tasks.register('evaluateNeuralMvp', JavaExec) {
     group = 'verification'
     description = 'Compare held-out neural seeds and current initialization with unchanged V3 audits.'

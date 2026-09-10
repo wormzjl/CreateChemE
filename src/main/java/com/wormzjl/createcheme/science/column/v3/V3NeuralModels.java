@@ -9,12 +9,16 @@ public final class V3NeuralModels {
     private static final class Holder {
         private static final V3NeuralInitializer MODEL = load();
         private static V3NeuralInitializer load() {
-            try (var stream = V3NeuralModels.class.getResourceAsStream("/data/createcheme/neural/v3-mvp.json")) {
-                return stream == null ? V3NeuralInitializer.UNAVAILABLE : V3DenseNeuralInitializer.read(stream);
-            } catch (IOException | IllegalArgumentException invalid) {
-                // Optional optimization is unavailable. Forced LNN reports this; LNN_FIRST retains backup.
-                return V3NeuralInitializer.UNAVAILABLE;
+            var models = new java.util.ArrayList<V3NeuralInitializer>();
+            for (String artifact : java.util.List.of("v3-mvp.json", "v3-tjl20-dry.json", "v3-tjl20-wet.json")) {
+                try (var stream = V3NeuralModels.class.getResourceAsStream("/data/createcheme/neural/" + artifact)) {
+                    if (stream != null) models.add(V3DenseNeuralInitializer.read(stream));
+                } catch (IOException | IllegalArgumentException invalid) {
+                    // A corrupt optional expert does not disable the other compatible experts or backup.
+                }
             }
+            return models.isEmpty() ? V3NeuralInitializer.UNAVAILABLE
+                    : new V3PhaseAwareNeuralInitializer("v3-phase-aware-bundle-v2", models);
         }
     }
 }

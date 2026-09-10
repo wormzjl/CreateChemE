@@ -159,6 +159,18 @@ public final class V3ColumnCalculator {
      */
     public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
             double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model) {
+        return calculate(input, control, cutoff, closureFraction, options, model, null);
+    }
+
+    /** Offline export after native seed correction; intermediate or parametric states are never exported. */
+    public static V3ColumnOutcome calculateWithAcceptedProfile(V3ColumnInput input, V3SolveControl control,
+            V3InitializationOptions options, V3NeuralInitializer model, java.util.function.Consumer<V3NeuralSeed> observer) {
+        return calculate(input, control, 0, 0, options, model, Objects.requireNonNull(observer, "observer"));
+    }
+
+    private static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
+            double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
+            java.util.function.Consumer<V3NeuralSeed> observer) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         Objects.requireNonNull(options, "options");
@@ -166,7 +178,8 @@ public final class V3ColumnCalculator {
         V3TruncationSupport.requireCutoff(cutoff);
         double closure = closureTolerance(closureFraction);
         if (options.mode() == V3InitializationOptions.Mode.CURRENT_ONLY)
-            return calculate(input, control, cutoff, closureFraction);
+            return observer == null ? calculate(input, control, cutoff, closureFraction)
+                    : calculateWithAcceptedProfile(input, control, observer);
         Objects.requireNonNull(model, "model");
         try {
             V3ColumnProblemResolver.validateInput(input);
@@ -182,29 +195,46 @@ public final class V3ColumnCalculator {
             if (System.nanoTime() - started >= options.budgetMilliseconds() * 1_000_000L)
                 throw new NeuralBudgetExceeded();
         };
-        String reason;
+        String reason = "model unavailable or outside coverage";
+        V3ColumnOutcome.Success selected = null;
+        V3NeuralSeed selectedProfile = null;
+        V3ColumnOutcome.Failure lastFailure = null;
+        int candidatesTried = 0;
         String modelId = model.modelId();
         if (modelId == null || !modelId.matches("[A-Za-z0-9._:/-]{1,96}")) modelId = "invalid-id";
         try {
             neuralControl.checkpoint();
-            java.util.Optional<V3NeuralSeed> prediction = model.predict(input, neuralControl);
+            List<V3NeuralSeed> predictions = model instanceof V3PhaseAwareNeuralInitializer phaseAware
+                    ? phaseAware.candidates(input, neuralControl) : model.predict(input, neuralControl).stream().toList();
             neuralControl.checkpoint();
-            if (prediction.isEmpty()) {
-                reason = "model unavailable or outside coverage";
-            } else {
-                V3ColumnOutcome outcome = correctNeuralSeed(input, prediction.orElseThrow(), options,
-                        neuralControl, new SolvePolicy(cutoff, cutoff, closure));
+            for (V3NeuralSeed prediction : predictions) {
+                candidatesTried++;
+                V3NeuralSeed[] acceptedCandidate = {null};
+                V3ColumnOutcome outcome;
+                try {
+                    outcome = correctNeuralSeed(input, prediction, options, neuralControl,
+                            new SolvePolicy(cutoff, cutoff, closure, observer == null ? null : seed -> acceptedCandidate[0] = seed));
+                } catch (V3ThermoException | IllegalArgumentException | IllegalStateException rejected) {
+                    reason = "neural seed rejected: " + rejected.getClass().getSimpleName();
+                    continue;
+                }
                 neuralControl.checkpoint();
-                if (outcome instanceof V3ColumnOutcome.Success)
-                    return initializationEvent(outcome, "initializer=LNN; model=" + modelId
-                            + "; wet=" + options.wetStart() + "; mode=" + options.mode()
-                            + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000);
+                if (outcome instanceof V3ColumnOutcome.Success success) {
+                    boolean advisory = success.result().acceptanceAudit().checks().stream()
+                            .anyMatch(check -> check.family().equals("WATER_DEW_POINT") && check.value() > check.limit());
+                    if (selected == null || !advisory) {
+                        selected = success;
+                        selectedProfile = acceptedCandidate[0];
+                    }
+                    // Prefer a qualified equilibrium state if another neural phase candidate can supply it.
+                    // The existing accepted-advisory policy is retained when no such candidate succeeds.
+                    if (!advisory) break;
+                    continue;
+                }
                 V3ColumnOutcome.Failure failure = (V3ColumnOutcome.Failure) outcome;
+                lastFailure = failure;
                 if (failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
-                        || failure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION) return outcome;
-                if (options.mode() == V3InitializationOptions.Mode.LNN_ONLY)
-                    return initializationEvent(outcome, "initializer=LNN_FAILED; model=" + modelId
-                            + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000 + "; correction rejected");
+                        || failure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION) break;
                 reason = "neural correction " + failure.code();
             }
         } catch (CancellationException cancelled) {
@@ -215,13 +245,22 @@ public final class V3ColumnCalculator {
             reason = "neural seed rejected: " + rejected.getClass().getSimpleName();
         }
         control.checkpoint();
+        if (selected != null) {
+            if (observer != null) observer.accept(Objects.requireNonNull(selectedProfile));
+            return initializationEvent(selected, "initializer=LNN; model=" + modelId + "; wet=" + options.wetStart()
+                    + "; mode=" + options.mode() + "; candidates=" + candidatesTried
+                    + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000);
+        }
+        if (lastFailure != null && (lastFailure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
+                || lastFailure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION)) return lastFailure;
         String event = "initializer=" + (options.mode() == V3InitializationOptions.Mode.LNN_ONLY ? "LNN_FAILED" : "CURRENT_BACKUP")
                 + "; model=" + modelId + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000 + "; " + reason;
         if (options.mode() == V3InitializationOptions.Mode.LNN_ONLY)
-            return initializationEvent(terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE, reason,
-                    "initialization/lnn-only", List.of()), event);
+            return initializationEvent(lastFailure != null ? lastFailure
+                    : terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE, reason, "initialization/lnn-only", List.of()), event);
         // One clean backup from the original input; no failed seed state or neural control escapes into it.
-        return initializationEvent(calculate(input, control, cutoff, closureFraction), event);
+        return initializationEvent(observer == null ? calculate(input, control, cutoff, closureFraction)
+                : calculateWithAcceptedProfile(input, control, observer), event);
     }
 
     private static V3ColumnOutcome correctNeuralSeed(V3ColumnInput input, V3NeuralSeed seed,
@@ -235,10 +274,34 @@ public final class V3ColumnCalculator {
                     "initialization/admission", thermo.advisoryEvidence());
         V3DryMeshState state = seed.stateFor(problem);
         V3WetTraySet wet = seed.wetSetFor(problem, options.wetStart());
+        boolean fixedWaterRefined = false;
+        if (wet.hasWetTrays()) {
+            // Near an aqueous phase boundary, releasing the weakly determined water coordinate before
+            // correcting the energy profile gives enormous Newton steps. Hold only the predicted water
+            // during this warm prepass, then release it for the unchanged final wet-system certificate.
+            PreparedAttempt prepared = prepareAttempt(problem, thermo, state, policy, wet, false);
+            boolean[] mask = new boolean[problem.topology().nodeCount()];
+            for (int tray : wet.wetTrays()) mask[tray] = true;
+            V3WetTraySet parametric = V3WetTraySet.parametric(problem.topology(), mask,
+                    V3ColumnInitializer.freeWaterFlows(prepared.seed()));
+            V3ColumnProblem warm = V3ColumnProblemResolver.withTruncation(problem, prepared.support(), parametric);
+            var flash = feedFlash(problem, thermo, control, policy);
+            var evaluator = new V3MeshResidualEvaluator(warm, thermo, flash.molarEnthalpyJoulesPerMol());
+            var attempt = V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(warm, evaluator,
+                    new V3DryMeshCoordinateMap(warm), parametric.seed(warm, prepared.seed()), thermo::newWorkspace,
+                    options.maximumIterations(), policy.closureTolerance(), control);
+            if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged) {
+                state = converged.state();
+                fixedWaterRefined = true;
+            }
+        }
         V3SolvePass pass = solveSingleProblem(problem, thermo, state, control, "lnn/requested-state",
                 ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS, options.maximumIterations(), policy,
                 V3SimultaneousColumnSolver.RungBudget.DEFAULT, wet);
-        V3SolverDiagnostics diagnostics = diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), pass.solverEvents(), policy);
+        List<String> events = fixedWaterRefined ? mergedEvents(List.of(
+                "wet seed refinement: fixed-water warm pass; final certificate releases every wet coordinate"), pass.solverEvents())
+                : pass.solverEvents();
+        V3SolverDiagnostics diagnostics = diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), events, policy);
         if (publishesSuccess(pass.attempt(), pass.audit()) && pass.reachedRequestedProblem()
                 && pass.prepared().problem().input().equals(input) && !pass.prepared().problem().wetTraySet().isParametric()) {
             V3ColumnProblem selected = pass.prepared().problem();
@@ -249,7 +312,10 @@ public final class V3ColumnCalculator {
                             policy.requestedCutoff(), policy.closureTolerance()),
                     pass.audit(), pass.attempt().evidence().convergenceEvidence(), corrected, thermo, revision,
                     V3ColumnDutyLedger.fromAccepted(selected, corrected, thermo, pass.feedMolarEnthalpyJoulesPerMol()));
-            return new V3ColumnOutcome.Success(result, diagnostics);
+            var success = new V3ColumnOutcome.Success(result, diagnostics);
+            if (policy.observer() != null)
+                policy.observer().accept(V3NeuralSeed.capture(selected, corrected, thermo.datasetRevision()));
+            return success;
         }
         return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE,
                 "Learned seed did not reach an audited requested solution", diagnostics);

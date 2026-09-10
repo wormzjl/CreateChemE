@@ -86,7 +86,7 @@ public final class V3NeuralMvpProbe {
         return () -> {if(System.nanoTime()-start>milliseconds*1_000_000)throw new CancellationException("offline deadline");};
     }
 
-    private static V3ColumnInput input(JsonObject json) {
+    static V3ColumnInput input(JsonObject json) {
         var specs = new ArrayList<V3ColumnSpecification>();
         for(JsonElement e:json.getAsJsonArray("specifications")) {
             JsonObject s=e.getAsJsonObject();

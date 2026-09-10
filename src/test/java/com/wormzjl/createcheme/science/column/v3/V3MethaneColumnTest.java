@@ -62,17 +62,20 @@ class V3MethaneColumnTest {
                 .findFirst().orElseThrow();
         assertTrue(overhead.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("Methane")
                 && fraction.moleFraction() > 0.01));
-        assertTrue(V3NeuralModels.bundled().predict(input, () -> {}).isEmpty(), "19-component model must decline the new package");
+        try (var oldModel = getClass().getResourceAsStream("/data/createcheme/neural/v3-mvp.json")) {
+            assertTrue(V3DenseNeuralInitializer.read(oldModel).predict(input, () -> {}).isEmpty(),
+                    "19-component model must decline the new package");
+        }
     }
 
-    @Test void defaultNeuralFirstModeFallsBackForTheMethanePackage() {
+    @Test void defaultNeuralFirstModeUsesTheNewMethaneModel() {
         var input = ColumnCalculatorV3BlockEntity.methaneCduInput();
         long start = System.nanoTime();
         var outcome = V3ColumnCalculator.calculate(input, () -> {
             if (System.nanoTime() - start > 60_000_000_000L) throw new java.util.concurrent.CancellationException("methane fallback deadline");
         }, 0, 0, V3InitializationOptions.DEFAULT, V3NeuralModels.bundled());
         var success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
-        assertTrue(success.diagnostics().events().getFirst().contains("CURRENT_BACKUP"));
+        assertTrue(success.diagnostics().events().getFirst().contains("initializer=LNN;"));
         assertTrue(success.result().convergenceEvidence().satisfiesGates());
     }
 }
