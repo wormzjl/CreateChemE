@@ -145,6 +145,129 @@ public final class V3ColumnCalculator {
         return calculate(input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE);
     }
 
+    /** Offline export hook: called only after the requested state passes every publication gate. */
+    public static V3ColumnOutcome calculateWithAcceptedProfile(V3ColumnInput input, V3SolveControl control,
+            java.util.function.Consumer<V3NeuralSeed> observer) {
+        return calculate(input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
+                new SolvePolicy(0.0, 0.0, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE,
+                        Objects.requireNonNull(observer, "observer")));
+    }
+
+    /**
+     * Explicit initializer strategy. Old overloads remain the unchanged classical numerical boundary.
+     * The learned path never calls a classical initializer before deciding whether backup is allowed.
+     */
+    public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
+            double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model) {
+        Objects.requireNonNull(input, "input");
+        Objects.requireNonNull(control, "control");
+        Objects.requireNonNull(options, "options");
+        control.checkpoint();
+        V3TruncationSupport.requireCutoff(cutoff);
+        double closure = closureTolerance(closureFraction);
+        if (options.mode() == V3InitializationOptions.Mode.CURRENT_ONLY)
+            return calculate(input, control, cutoff, closureFraction);
+        Objects.requireNonNull(model, "model");
+        try {
+            V3ColumnProblemResolver.validateInput(input);
+        } catch (IllegalArgumentException invalid) {
+            return terminalFailure(V3SolverFailureCode.INVALID_INPUT, "Invalid requested input",
+                    "initialization/admission", List.of());
+        }
+        V3ColumnOutcome.Failure coolingFailure = staticCoolingAdmission(input);
+        if (coolingFailure != null) return coolingFailure;
+        long started = System.nanoTime();
+        V3SolveControl neuralControl = () -> {
+            control.checkpoint(); // Whole-request cancellation always wins over the local neural budget.
+            if (System.nanoTime() - started >= options.budgetMilliseconds() * 1_000_000L)
+                throw new NeuralBudgetExceeded();
+        };
+        String reason;
+        String modelId = model.modelId();
+        if (modelId == null || !modelId.matches("[A-Za-z0-9._:/-]{1,96}")) modelId = "invalid-id";
+        try {
+            neuralControl.checkpoint();
+            java.util.Optional<V3NeuralSeed> prediction = model.predict(input, neuralControl);
+            neuralControl.checkpoint();
+            if (prediction.isEmpty()) {
+                reason = "model unavailable or outside coverage";
+            } else {
+                V3ColumnOutcome outcome = correctNeuralSeed(input, prediction.orElseThrow(), options,
+                        neuralControl, new SolvePolicy(cutoff, cutoff, closure));
+                neuralControl.checkpoint();
+                if (outcome instanceof V3ColumnOutcome.Success)
+                    return initializationEvent(outcome, "initializer=LNN; model=" + modelId
+                            + "; wet=" + options.wetStart() + "; mode=" + options.mode()
+                            + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000);
+                V3ColumnOutcome.Failure failure = (V3ColumnOutcome.Failure) outcome;
+                if (failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
+                        || failure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION) return outcome;
+                if (options.mode() == V3InitializationOptions.Mode.LNN_ONLY)
+                    return initializationEvent(outcome, "initializer=LNN_FAILED; model=" + modelId
+                            + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000 + "; correction rejected");
+                reason = "neural correction " + failure.code();
+            }
+        } catch (CancellationException cancelled) {
+            throw cancelled;
+        } catch (NeuralBudgetExceeded exhausted) {
+            reason = "neural budget exhausted";
+        } catch (V3ThermoException | IllegalArgumentException | IllegalStateException rejected) {
+            reason = "neural seed rejected: " + rejected.getClass().getSimpleName();
+        }
+        control.checkpoint();
+        String event = "initializer=" + (options.mode() == V3InitializationOptions.Mode.LNN_ONLY ? "LNN_FAILED" : "CURRENT_BACKUP")
+                + "; model=" + modelId + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000 + "; " + reason;
+        if (options.mode() == V3InitializationOptions.Mode.LNN_ONLY)
+            return initializationEvent(terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE, reason,
+                    "initialization/lnn-only", List.of()), event);
+        // One clean backup from the original input; no failed seed state or neural control escapes into it.
+        return initializationEvent(calculate(input, control, cutoff, closureFraction), event);
+    }
+
+    private static V3ColumnOutcome correctNeuralSeed(V3ColumnInput input, V3NeuralSeed seed,
+            V3InitializationOptions options, V3SolveControl control, SolvePolicy policy) {
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
+        if (!thermo.datasetRevision().equals(seed.propertyRevision()))
+            throw new IllegalArgumentException("Seed property revision mismatch");
+        V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, seed.branch());
+        if (V3OperatingDomainValidator.assess(problem, thermo) instanceof V3OperatingDomainValidator.Assessment.Rejected)
+            return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, "Requested pressure outside property coverage",
+                    "initialization/admission", thermo.advisoryEvidence());
+        V3DryMeshState state = seed.stateFor(problem);
+        V3WetTraySet wet = seed.wetSetFor(problem, options.wetStart());
+        V3SolvePass pass = solveSingleProblem(problem, thermo, state, control, "lnn/requested-state",
+                ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS, options.maximumIterations(), policy,
+                V3SimultaneousColumnSolver.RungBudget.DEFAULT, wet);
+        V3SolverDiagnostics diagnostics = diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), pass.solverEvents(), policy);
+        if (publishesSuccess(pass.attempt(), pass.audit()) && pass.reachedRequestedProblem()
+                && pass.prepared().problem().input().equals(input) && !pass.prepared().problem().wetTraySet().isParametric()) {
+            V3ColumnProblem selected = pass.prepared().problem();
+            V3DryMeshState corrected = pass.attempt().state();
+            String revision = formulationRevision(input, policy.requestedCutoff(), policy.closureTolerance());
+            V3ColumnResult result = V3ColumnResult.accepted(selected,
+                    V3InputDigest.of(selected, revision, thermo.datasetRevision(), assumptionsRevision(input),
+                            policy.requestedCutoff(), policy.closureTolerance()),
+                    pass.audit(), pass.attempt().evidence().convergenceEvidence(), corrected, thermo, revision,
+                    V3ColumnDutyLedger.fromAccepted(selected, corrected, thermo, pass.feedMolarEnthalpyJoulesPerMol()));
+            return new V3ColumnOutcome.Success(result, diagnostics);
+        }
+        return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE,
+                "Learned seed did not reach an audited requested solution", diagnostics);
+    }
+
+    private static V3ColumnOutcome initializationEvent(V3ColumnOutcome outcome, String event) {
+        V3SolverDiagnostics old = outcome.diagnostics();
+        var diagnostics = new V3SolverDiagnostics(old.initializerIterations(), old.newtonIterations(),
+                old.residualEvaluations(), old.linearSolves(), old.maximumScaledResidual(), old.finalStepNorm(),
+                old.solvePath(), mergedEvents(List.of(event.substring(0, Math.min(256, event.length()))), old.events()),
+                old.acceptanceAudit(), old.convergenceEvidence(), old.closureTolerance());
+        if (outcome instanceof V3ColumnOutcome.Success success) return new V3ColumnOutcome.Success(success.result(), diagnostics);
+        V3ColumnOutcome.Failure failure = (V3ColumnOutcome.Failure) outcome;
+        return new V3ColumnOutcome.Failure(failure.code(), failure.summary(), diagnostics);
+    }
+
+    private static final class NeuralBudgetExceeded extends RuntimeException {}
+
     /**
      * Calculates with frozen per-attempt stage support and an audited molar defect. The cutoff is a mole
      * fraction in [0, 0.01], not a feed filter. Zero uses the exact legacy path. A failed truncated chain
@@ -432,7 +555,10 @@ public final class V3ColumnCalculator {
                         revision,
                         V3ColumnDutyLedger.fromAccepted(selected.problem(), converged.state(), thermo,
                                 pass.feedMolarEnthalpyJoulesPerMol()));
-                return new V3ColumnOutcome.Success(result, diagnostics);
+                V3ColumnOutcome.Success success = new V3ColumnOutcome.Success(result, diagnostics);
+                if (policy.observer() != null)
+                    policy.observer().accept(V3NeuralSeed.capture(selected.problem(), converged.state(), thermo.datasetRevision()));
+                return success;
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
                 String detail = !pass.attemptedRequestedProblem() && pass.terminalStageCount() >= input.stageCount()
@@ -753,6 +879,14 @@ public final class V3ColumnCalculator {
             int maximumIterations,
             SolvePolicy policy,
             V3SimultaneousColumnSolver.RungBudget budget) {
+        return solveSingleProblem(problem, thermo, seed, control, solvePath, jacobianPolicy, maximumIterations,
+                policy, budget, V3WetTraySet.dry(problem.topology()));
+    }
+
+    private static V3SolvePass solveSingleProblem(V3ColumnProblem problem, V3PengRobinsonThermo thermo,
+            V3DryMeshState seed, V3SolveControl control, String solvePath, ContinuationJacobianPolicy jacobianPolicy,
+            int maximumIterations, SolvePolicy policy, V3SimultaneousColumnSolver.RungBudget budget,
+            V3WetTraySet initialWetTrays) {
         if (maximumIterations < 1 || maximumIterations > MAXIMUM_NEWTON_ITERATIONS) {
             throw new IllegalArgumentException("V3 simultaneous solve iteration limit is invalid");
         }
@@ -769,7 +903,9 @@ public final class V3ColumnCalculator {
         double feedMolarEnthalpy = feedFlash.referenceMolarEnthalpyJoulesPerMol();
         V3DryMeshState recoverySeed = seed;
         V3ColumnProblem untruncated = problem;
-        PreparedAttempt prepared = prepareAttempt(untruncated, thermo, seed, policy);
+        PreparedAttempt prepared = prepareAttempt(untruncated, thermo, seed, policy, initialWetTrays, false);
+        if (!prepared.wetTrays().sameSet(initialWetTrays))
+            throw new IllegalArgumentException("Requested initial wet set cannot form a valid ledger");
         SolveTelemetry telemetry;
         V3SimultaneousColumnSolver.Attempt attempt;
         V3AcceptanceAudit audit;
@@ -2067,7 +2203,11 @@ public final class V3ColumnCalculator {
      * closure from the one the chain publishes. The cutoff can be disabled for one rung
      * ({@link #withoutCutoff()}); the closure never can.</p>
      */
-    private record SolvePolicy(double requestedCutoff, double attemptCutoff, double closureTolerance) {
+    private record SolvePolicy(double requestedCutoff, double attemptCutoff, double closureTolerance,
+            java.util.function.Consumer<V3NeuralSeed> observer) {
+        private SolvePolicy(double requestedCutoff, double attemptCutoff, double closureTolerance) {
+            this(requestedCutoff, attemptCutoff, closureTolerance, null);
+        }
         private static final SolvePolicy OFF =
                 new SolvePolicy(0.0, 0.0, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
 
@@ -2083,7 +2223,7 @@ public final class V3ColumnCalculator {
         /** Same closure, no stage-trace cutoff; the ramp's intermediate rungs run untruncated by design. */
         private SolvePolicy withoutCutoff() {
             return requestedCutoff == 0.0 && attemptCutoff == 0.0
-                    ? this : new SolvePolicy(0.0, 0.0, closureTolerance);
+                    ? this : new SolvePolicy(0.0, 0.0, closureTolerance, observer);
         }
     }
 

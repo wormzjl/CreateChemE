@@ -36,6 +36,34 @@ sourceSets {
         compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
         runtimeClasspath += output + compileClasspath
     }
+    // Offline neural MVP tooling is never part of the mod runtime artifact.
+    neuralMvp {
+        java.srcDir 'tools/neural'
+        compileClasspath += sourceSets.main.output + configurations.runtimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+tasks.register('generateNeuralMvpData', JavaExec) {
+    group = 'verification'
+    description = 'Generate audited V3 profiles for the explicitly bounded neural MVP experiment.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3NeuralMvpProbe'
+    maxHeapSize = '1g'
+    args 'generate', providers.gradleProperty('neuralMvpOutput').getOrElse('build/neural-mvp/regenerated'),
+            'tools/neural/tjl19-pilot-input.json', providers.gradleProperty('neuralMvpCases').getOrElse('40')
+}
+
+tasks.register('evaluateNeuralMvp', JavaExec) {
+    group = 'verification'
+    description = 'Compare held-out neural seeds and current initialization with unchanged V3 audits.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3NeuralMvpProbe'
+    maxHeapSize = '1g'
+    def output = providers.gradleProperty('neuralMvpOutput').getOrElse('build/neural-mvp/regenerated')
+    args 'evaluate', output, output + '/model.json'
 }
 
 repositories {

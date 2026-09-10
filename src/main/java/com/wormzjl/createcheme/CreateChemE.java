@@ -8,6 +8,8 @@ import com.wormzjl.createcheme.registry.ModBlocks;
 import com.wormzjl.createcheme.registry.ModItems;
 import com.wormzjl.createcheme.registry.ModMenus;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
+import com.wormzjl.createcheme.science.column.v3.V3InitializationOptions;
+import com.wormzjl.createcheme.science.column.v3.V3NeuralModels;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
@@ -38,6 +40,10 @@ public final class CreateChemE {
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
+    private static final ModConfigSpec.EnumValue<V3InitializationOptions.Mode> COLUMN_V3_INITIALIZER_MODE;
+    private static final ModConfigSpec.EnumValue<V3InitializationOptions.WetStart> COLUMN_V3_WET_START;
+    private static final ModConfigSpec.IntValue COLUMN_V3_LNN_ITERATIONS;
+    private static final ModConfigSpec.IntValue COLUMN_V3_LNN_MILLISECONDS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -62,6 +68,21 @@ public final class CreateChemE {
                 .defineInRange("forcedShutdownMilliseconds", 1_000, 0, 10_000);
         builder.pop();
         builder.push("columnV3");
+        COLUMN_V3_INITIALIZER_MODE = builder
+                .comment("LNN_FIRST tries a compatible learned seed, then the current initializer as backup.",
+                        "LNN_ONLY never invokes current initialization. CURRENT_ONLY bypasses the model.",
+                        "All routes retain physical acceptance checks. Captured at request admission.")
+                .defineEnum("initializerMode", V3InitializationOptions.Mode.LNN_FIRST);
+        COLUMN_V3_WET_START = builder
+                .comment("Learned seeds only: AUTO and PREDICTED_WET retain the model's validated wet mask.",
+                        "DRY_START clears the initial wet set; subsequent water physics and wet correction remain enabled.")
+                .defineEnum("lnnWetStartMode", V3InitializationOptions.WetStart.AUTO);
+        COLUMN_V3_LNN_ITERATIONS = builder
+                .comment("Maximum Newton iterations per learned correction pass; all passes also share the LNN time budget.")
+                .defineInRange("lnnMaxCorrectionIterations", 16, 1, 128);
+        COLUMN_V3_LNN_MILLISECONDS = builder
+                .comment("Shared inference/correction allowance in milliseconds; never extends the overall solve deadline.")
+                .defineInRange("lnnBudgetMilliseconds", 2_000, 1, 60_000);
         COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT = builder
                 .comment("V3 stage-level trace cutoff in mol% (not a feed filter).",
                         "Components below this cutoff in every testable phase at a stage may be structurally removed there.",
@@ -103,6 +124,12 @@ public final class CreateChemE {
         return CALCULATION_LOGGING.getAsBoolean();
     }
 
+    /** Read only on the logical server's admission thread; workers receive the immutable result. */
+    public static V3InitializationOptions columnV3InitializationOptions() {
+        return new V3InitializationOptions(COLUMN_V3_INITIALIZER_MODE.get(), COLUMN_V3_WET_START.get(),
+                COLUMN_V3_LNN_ITERATIONS.get(), COLUMN_V3_LNN_MILLISECONDS.get());
+    }
+
     /** Read on the server thread when admitting a V3 request, never from its worker. */
     public static double columnV3StageTraceCutoffMolPercent() {
         return COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT.get();
@@ -122,6 +149,8 @@ public final class CreateChemE {
     private static void onServerStarting(ServerStartingEvent event) {
         MinecraftServer server = event.getServer();
         try {
+            if (columnV3InitializationOptions().mode() != V3InitializationOptions.Mode.CURRENT_ONLY)
+                V3NeuralModels.bundled(); // Parse the immutable optional artifact before admitting normal work.
             ProcessSolveServices.ServerStarted started =
                     ProcessSolveServices.startServer(server, solveServiceConfig());
             if (calculationLoggingEnabled()) {

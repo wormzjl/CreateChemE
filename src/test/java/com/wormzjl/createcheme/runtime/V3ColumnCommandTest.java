@@ -14,6 +14,20 @@ import org.junit.jupiter.api.Test;
 
 class V3ColumnCommandTest {
     @Test
+    void admittedCommandKeepsItsInitializerPolicyAndModel() {
+        var forced = new com.wormzjl.createcheme.science.column.v3.V3InitializationOptions(
+                com.wormzjl.createcheme.science.column.v3.V3InitializationOptions.Mode.LNN_ONLY,
+                com.wormzjl.createcheme.science.column.v3.V3InitializationOptions.WetStart.PREDICTED_WET, 8, 500);
+        var settings = new AtomicReference<>(forced);
+        var command = new ProcessSolveServices.V3ColumnCommand(input(), 0, 0, settings.get(),
+                com.wormzjl.createcheme.science.column.v3.V3NeuralInitializer.UNAVAILABLE);
+        settings.set(com.wormzjl.createcheme.science.column.v3.V3InitializationOptions.CURRENT);
+        assertSame(forced, command.initialization());
+        var result = assertInstanceOf(ProcessSolveServices.V3ColumnSolveResult.class, command.solve(unbounded()));
+        assertEquals(com.wormzjl.createcheme.science.column.v3.V3SolverFailureCode.INITIALIZATION_FAILURE,
+                assertInstanceOf(V3ColumnOutcome.Failure.class, result.outcome()).code());
+    }
+    @Test
     void immutableCommandCarriesSideDrawsIntoThePublicFacade() {
         V3ColumnInput base = input();
         V3ColumnInput drawn = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(), base.componentBasis(),

@@ -1,0 +1,153 @@
+{
+  "seed": 42,
+  "epochs": 5000,
+  "selected_epoch": 5000,
+  "accepted": 37,
+  "attempted": 40,
+  "train": 23,
+  "validation": 5,
+  "test": 10,
+  "validation_normalized_mse": 4.986326231276101e-06,
+  "pca_rank": 8,
+  "hidden_width": 32,
+  "training_normalized_pca_reconstruction_mse": 1.6348391436911077e-07,
+  "data_sha256": "4718809aa006227b1f0b0f403a9a09814979c097ffe63a116d5ef79ed1ef3a1e",
+  "coverage": "Single TJL19 40-tray temperature slice; all other physical features fixed. Not refinery-wide.",
+  "split": "Preassigned withheld temperature blocks; related trays never split into independent samples.",
+  "test_used_for_training_or_selection": false,
+  "model_sha256": "987679f550f037c5bab58d5b2294a045e91665df7602eba244a499bb8ab6ed3e",
+  "held_out_cases": 10,
+  "neural_accepted": 10,
+  "current_accepted": 9,
+  "neural_median_ms": 177.3897,
+  "current_median_ms_all_attempts": 1344.3011999999999,
+  "paired_accepted_cases": 9,
+  "median_paired_speedup": 7.405846643651056,
+  "paired_max_product_temperature_difference_K": 1.2857412912126165e-08,
+  "paired_max_product_flow_difference_mol_s": 5.336278263712302e-08,
+  "paired_max_product_mole_fraction_difference": 3.8079911446331494e-10,
+  "cases": [
+    {
+      "id": 3,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 290.6921,
+      "current_ms": 4961.1491,
+      "neural_scaled_residual": 2.2648549702353193e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 80.3 C is below the water dew point 87.4 C (steam partial pressure 63.5 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 4,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 189.4778,
+      "current_ms": 1215.2569,
+      "neural_scaled_residual": 2.0650148258027912e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 80.5 C is below the water dew point 87.4 C (steam partial pressure 63.4 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 11,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 172.3817,
+      "current_ms": 1151.7716,
+      "neural_scaled_residual": 3.497202527569243e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 81.7 C is below the water dew point 87.1 C (steam partial pressure 62.9 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 12,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 171.5366,
+      "current_ms": 1153.9871,
+      "neural_scaled_residual": 3.813616089587413e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 81.9 C is below the water dew point 87.1 C (steam partial pressure 62.8 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 19,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 186.6616,
+      "current_ms": 1190.8937,
+      "neural_scaled_residual": 3.425038030968608e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 83.0 C is below the water dew point 86.9 C (steam partial pressure 62.3 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 20,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 176.8365,
+      "current_ms": 1309.624,
+      "neural_scaled_residual": 2.681188604469753e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 83.1 C is below the water dew point 86.9 C (steam partial pressure 62.3 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 27,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 166.7093,
+      "current_ms": 1378.9784,
+      "neural_scaled_residual": 4.3520742565306136e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 84.2 C is below the water dew point 86.7 C (steam partial pressure 61.8 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 28,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 172.2842,
+      "current_ms": 4319.1235,
+      "neural_scaled_residual": 2.6478819137309983e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 84.3 C is below the water dew point 86.6 C (steam partial pressure 61.7 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 35,
+      "neural_accepted": true,
+      "current_accepted": true,
+      "neural_ms": 177.9429,
+      "current_ms": 1543.1265,
+      "neural_scaled_residual": 2.4868995751603507e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 85.3 C is below the water dew point 86.4 C (steam partial pressure 61.2 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    },
+    {
+      "id": 36,
+      "neural_accepted": true,
+      "current_accepted": false,
+      "neural_ms": 178.0705,
+      "current_ms": 5626.7105,
+      "neural_scaled_residual": 6.42264019745653e-14,
+      "neural_audit_accepted": true,
+      "water_dew_advisory": [
+        "warning: tray 1 at 85.5 C is below the water dew point 86.4 C (steam partial pressure 61.2 kPa) without a free-water phase; the free-water tray set did not admit it"
+      ]
+    }
+  ],
+  "qualification": "Local interpolation MVP only. No refinery-wide, new-chemistry or genuine wet-tray model qualification.",
+  "timing_note": "One paired run, alternating method order; includes JIT effects. No confidence interval or broad speedup claim."
+}
