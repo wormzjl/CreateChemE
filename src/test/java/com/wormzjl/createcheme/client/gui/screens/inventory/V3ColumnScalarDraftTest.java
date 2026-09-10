@@ -29,7 +29,27 @@ class V3ColumnScalarDraftTest {
         assertInvalid(2, "30.5", "Stage count");
         assertInvalid(3, "31", "Feed stage");
         assertInvalid(6, "NaN", "Reflux ratio");
+        assertInvalid(6, "-0.01", "Reflux ratio");
         assertInvalid(7, "0", "Top pressure");
+    }
+
+    @Test
+    void acceptsTrainingRangeEndpointsIncludingExactZeroRefluxAndPressureDrop() {
+        for (int stages : List.of(2, 64)) {
+            for (double reflux : List.of(0.0, 10.0)) {
+                List<String> fields = new ArrayList<>(VALID);
+                fields.set(2, Integer.toString(stages));
+                fields.set(3, Integer.toString(stages));
+                fields.set(6, Double.toString(reflux));
+                fields.set(7, stages == 2 ? "1" : "3");
+                fields.set(8, "0");
+                V3ColumnScalarDraft.Values values = V3ColumnScalarDraft.parse(fields);
+                assertEquals(stages, values.stageCount());
+                assertEquals(reflux, values.refluxRatio());
+                assertEquals(stages == 2 ? 100_000.0 : 300_000.0, values.topPressurePascal());
+                assertEquals(0.0, values.pressureDropPascal());
+            }
+        }
     }
 
     private static void assertInvalid(int index, String value, String expectedField) {

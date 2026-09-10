@@ -30,16 +30,26 @@ class V3PumparoundCodecTest {
     private static final List<V3PumparoundSpec> PUMPAROUNDS = List.of(
             new V3PumparoundSpec(1, 1, -2_500_000.0, V3PumparoundSpec.Split.RETURN_TRAY),
             new V3PumparoundSpec(2, 3, -900_000.0, V3PumparoundSpec.Split.UNIFORM),
-            new V3PumparoundSpec(2, 4, 450_000.0, V3PumparoundSpec.Split.RETURN_TRAY));
+            new V3PumparoundSpec(2, 4, 450_000.0, V3PumparoundSpec.Split.RETURN_TRAY),
+            new V3PumparoundSpec(3, 4, -600_000.0, V3PumparoundSpec.Split.UNIFORM));
 
     @Test
-    void wireAndNbtRoundTripZeroThroughThreePumparoundsAcrossBothSplits() throws Exception {
+    void wireAndNbtRoundTripZeroThroughFourPumparoundsAcrossBothSplits() throws Exception {
         for (int count = 0; count <= V3ColumnInput.MAX_PUMPAROUNDS; count++) {
             V3ColumnInput input = input(count);
             assertEquals(count, input.pumparounds().size());
             assertEquals(input, wireRoundTrip(input));
             assertEquals(input, readNbt(writeNbt(input)));
         }
+    }
+
+    @Test
+    void fourPumparoundsAndExactZeroRefluxSurviveBothTransports() throws Exception {
+        V3ColumnInput input = input(4, 0.0);
+        assertEquals(input, wireRoundTrip(input));
+        assertEquals(input, readNbt(writeNbt(input)));
+        assertTrue(V3ColumnProblemResolver.resolve(input, V3CondenserPhaseBranch.VAPOR_ONLY)
+                .degreeOfFreedomLedger().isValid());
     }
 
     @Test
@@ -61,7 +71,7 @@ class V3PumparoundCodecTest {
     }
 
     @Test
-    void wireAndNbtRejectAFourthPumparoundANonFiniteDutyAndAnUnknownSplit() throws Exception {
+    void wireAndNbtRejectAFifthPumparoundANonFiniteDutyAndAnUnknownSplit() throws Exception {
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         try {
             writeWire(buffer, input(0));
@@ -91,7 +101,7 @@ class V3PumparoundCodecTest {
             buffer.release();
         }
 
-        CompoundTag oversized = writeNbt(input(3));
+        CompoundTag oversized = writeNbt(input(4));
         ListTag entries = oversized.getList("Pumparounds", Tag.TAG_COMPOUND);
         entries.add(entries.getCompound(0).copy());
         assertInstanceOf(IllegalArgumentException.class, readNbtFailure(oversized));
@@ -271,10 +281,14 @@ class V3PumparoundCodecTest {
     }
 
     private static V3ColumnInput input(int pumparoundCount) {
+        return input(pumparoundCount, 4.17);
+    }
+
+    private static V3ColumnInput input(int pumparoundCount, double refluxRatio) {
         return new V3ColumnInput(1, "test:binary", "test:codec", new V3ComponentBasis(List.of("a", "b")),
                 new double[] {40, 60}, 450, 4, 2, 250_000, 750, List.of(
                 new V3ColumnSpecification.CondenserOutletTemperature(332.15),
-                new V3ColumnSpecification.OrganicRefluxRatio(4.17),
+                new V3ColumnSpecification.OrganicRefluxRatio(refluxRatio),
                 new V3ColumnSpecification.ReboilerDuty(8_000_000)),
                 List.of(new V3SideDrawSpec(2, 3)), List.of(), PUMPAROUNDS.subList(0, pumparoundCount));
     }

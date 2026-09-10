@@ -55,6 +55,46 @@ tasks.register('generateNeuralMvpData', JavaExec) {
             'tools/neural/tjl19-pilot-input.json', providers.gradleProperty('neuralMvpCases').getOrElse('40')
 }
 
+tasks.register('generalNeuralExperiment', JavaExec) {
+    group = 'verification'
+    description = 'Bounded concurrent general-column data generation, evaluation, or serial profiling.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3GeneralTrainingProbe'
+    minHeapSize = '512m'
+    maxHeapSize = '4g'
+    args providers.gradleProperty('generalMode').getOrElse('generate'),
+            providers.gradleProperty('generalOutput').getOrElse('build/neural-generalized/v1'),
+            providers.gradleProperty('generalSource').getOrElse('build/neural-generalized/design/matrix.jsonl'),
+            providers.gradleProperty('generalWorkers').getOrElse('10'),
+            providers.gradleProperty('generalDeadlineSeconds').getOrElse('30'),
+            providers.gradleProperty('generalModel').getOrElse('build/neural-generalized/v1/model.json'),
+            providers.gradleProperty('generalNeuralBudgetMillis').getOrElse('2000'),
+            providers.gradleProperty('generalIterations').getOrElse('16')
+}
+
+tasks.register('generalNeuralParallelCheck', JavaExec) {
+    group = 'verification'
+    description = 'Checks bounded task completion, cancellation, and ten parallel native solves against serial profiles.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3GeneralParallelCheck'
+    maxHeapSize = '2g'
+    args providers.gradleProperty('generalParallelReport').getOrElse('build/neural-generalized/parallel-check.json')
+    if (providers.gradleProperty('generalSource').isPresent()) args providers.gradleProperty('generalSource').get()
+}
+
+tasks.register('generalNeuralModelParity', JavaExec) {
+    group = 'verification'
+    description = 'Exports actual Java inference for independent Python parity checks on training fixtures.'
+    dependsOn tasks.named('neuralMvpClasses')
+    classpath = sourceSets.neuralMvp.runtimeClasspath
+    mainClass = 'com.wormzjl.createcheme.science.column.v3.V3GeneralModelParityCheck'
+    maxHeapSize = '1g'
+    def directory = providers.gradleProperty('generalModelDirectory').getOrElse('build/neural-generalized/model-v1')
+    args directory, providers.gradleProperty('generalParityOutput').getOrElse(directory + '/java-parity.json')
+}
+
 tasks.register('qualifyNeuralWetStates', JavaExec) {
     group = 'verification'
     dependsOn tasks.named('neuralMvpClasses')

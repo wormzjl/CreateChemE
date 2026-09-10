@@ -10,6 +10,7 @@ import com.wormzjl.createcheme.registry.ModMenus;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
 import com.wormzjl.createcheme.science.column.v3.V3InitializationOptions;
 import com.wormzjl.createcheme.science.column.v3.V3NeuralModels;
+import com.wormzjl.createcheme.science.column.v3.V3NeuralInitializer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
@@ -41,6 +42,7 @@ public final class CreateChemE {
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
     private static final ModConfigSpec.EnumValue<V3InitializationOptions.Mode> COLUMN_V3_INITIALIZER_MODE;
+    private static final ModConfigSpec.EnumValue<V3NeuralModels.Family> COLUMN_V3_INITIALIZER_MODEL;
     private static final ModConfigSpec.EnumValue<V3InitializationOptions.WetStart> COLUMN_V3_WET_START;
     private static final ModConfigSpec.IntValue COLUMN_V3_LNN_ITERATIONS;
     private static final ModConfigSpec.IntValue COLUMN_V3_LNN_MILLISECONDS;
@@ -73,6 +75,12 @@ public final class CreateChemE {
                         "LNN_ONLY never invokes current initialization. CURRENT_ONLY bypasses the model.",
                         "All routes retain physical acceptance checks. Captured at request admission.")
                 .defineEnum("initializerMode", V3InitializationOptions.Mode.LNN_FIRST);
+        COLUMN_V3_INITIALIZER_MODEL = builder
+                .comment("LOCAL_EXPERTS retains the qualified 40-tray and legacy predictors.",
+                        "GENERALIZED_EXPERIMENTAL selects the variable-composition, 2-64-tray experiment.",
+                        "The experimental model has weak tall-column coverage; use LNN_FIRST for classical fallback.",
+                        "Model selection is captured at admission and never changes an in-flight solve.")
+                .defineEnum("initializerModel", V3NeuralModels.Family.LOCAL_EXPERTS);
         COLUMN_V3_WET_START = builder
                 .comment("Learned seeds only: AUTO and PREDICTED_WET retain the model's validated wet mask.",
                         "DRY_START clears the initial wet set; subsequent water physics and wet correction remain enabled.")
@@ -130,6 +138,11 @@ public final class CreateChemE {
                 COLUMN_V3_LNN_ITERATIONS.get(), COLUMN_V3_LNN_MILLISECONDS.get());
     }
 
+    /** Resolve a safely published immutable model on the admission thread. */
+    public static V3NeuralInitializer columnV3NeuralModel() {
+        return V3NeuralModels.forFamily(COLUMN_V3_INITIALIZER_MODEL.get());
+    }
+
     /** Read on the server thread when admitting a V3 request, never from its worker. */
     public static double columnV3StageTraceCutoffMolPercent() {
         return COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT.get();
@@ -150,7 +163,7 @@ public final class CreateChemE {
         MinecraftServer server = event.getServer();
         try {
             if (columnV3InitializationOptions().mode() != V3InitializationOptions.Mode.CURRENT_ONLY)
-                V3NeuralModels.bundled(); // Parse the immutable optional artifact before admitting normal work.
+                columnV3NeuralModel(); // Parse the selected immutable artifact before admitting normal work.
             ProcessSolveServices.ServerStarted started =
                     ProcessSolveServices.startServer(server, solveServiceConfig());
             if (calculationLoggingEnabled()) {

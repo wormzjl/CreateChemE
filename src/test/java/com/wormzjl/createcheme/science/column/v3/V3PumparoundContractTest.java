@@ -37,11 +37,33 @@ class V3PumparoundContractTest {
         assertThrows(IllegalArgumentException.class, () -> input(List.of(
                 new V3PumparoundSpec(1, 2, -1.0e6, V3PumparoundSpec.Split.UNIFORM),
                 new V3PumparoundSpec(1, 2, -2.0e6, V3PumparoundSpec.Split.RETURN_TRAY))));
-        assertThrows(IllegalArgumentException.class, () -> input(List.of(
+        List<V3PumparoundSpec> four = List.of(
                 new V3PumparoundSpec(1, 2, -1.0e6, V3PumparoundSpec.Split.UNIFORM),
                 new V3PumparoundSpec(1, 3, -1.0e6, V3PumparoundSpec.Split.UNIFORM),
                 new V3PumparoundSpec(2, 3, -1.0e6, V3PumparoundSpec.Split.UNIFORM),
-                new V3PumparoundSpec(2, 4, -1.0e6, V3PumparoundSpec.Split.UNIFORM))));
+                new V3PumparoundSpec(2, 4, -1.0e6, V3PumparoundSpec.Split.UNIFORM));
+        assertEquals(four, input(four).pumparounds());
+        List<V3PumparoundSpec> five = new java.util.ArrayList<>(four);
+        five.add(new V3PumparoundSpec(3, 4, -1.0e6, V3PumparoundSpec.Split.UNIFORM));
+        assertThrows(IllegalArgumentException.class, () -> input(five));
+    }
+
+    @Test
+    void fourOverlappingPumparoundsPreserveTheirWholeDutyAndTheEquationMap() {
+        V3ColumnProblem plain = V3ColumnProblemResolver.resolve(input(List.of()), V3CondenserPhaseBranch.TWO_PHASE);
+        V3ColumnProblem heated = V3ColumnProblemResolver.resolve(input(List.of(
+                new V3PumparoundSpec(1, 4, -1_200.0, V3PumparoundSpec.Split.UNIFORM),
+                new V3PumparoundSpec(2, 3, -400.0, V3PumparoundSpec.Split.UNIFORM),
+                new V3PumparoundSpec(2, 4, -500.0, V3PumparoundSpec.Split.RETURN_TRAY),
+                new V3PumparoundSpec(4, 4, -600.0, V3PumparoundSpec.Split.RETURN_TRAY))),
+                V3CondenserPhaseBranch.TWO_PHASE);
+
+        assertArrayEqualsExactly(new double[] {0.0, -300.0, -1_000.0, -500.0, -900.0, 0.0},
+                V3Pumparounds.nodeDutyWatts(heated.input(), heated.topology()));
+        assertEquals(-2_700.0, V3Pumparounds.totalDutyWatts(heated.input()));
+        assertEquals(plain.degreeOfFreedomLedger().unknowns(), heated.degreeOfFreedomLedger().unknowns());
+        assertEquals(plain.degreeOfFreedomLedger().equations(), heated.degreeOfFreedomLedger().equations());
+        assertTrue(heated.degreeOfFreedomLedger().isValid());
     }
 
     @Test

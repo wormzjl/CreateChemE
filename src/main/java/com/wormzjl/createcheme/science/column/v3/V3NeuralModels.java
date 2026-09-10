@@ -4,8 +4,15 @@ import java.io.IOException;
 
 /** Safely published immutable bundled model; no file reload or mutable workspace crosses admission. */
 public final class V3NeuralModels {
+    public enum Family { LOCAL_EXPERTS, GENERALIZED_EXPERIMENTAL }
     private V3NeuralModels() {}
     public static V3NeuralInitializer bundled() { return Holder.MODEL; }
+    public static V3NeuralInitializer forFamily(Family family) {
+        return switch (java.util.Objects.requireNonNull(family)) {
+            case LOCAL_EXPERTS -> bundled();
+            case GENERALIZED_EXPERIMENTAL -> GeneralHolder.MODEL;
+        };
+    }
     private static final class Holder {
         private static final V3NeuralInitializer MODEL = load();
         private static V3NeuralInitializer load() {
@@ -19,6 +26,17 @@ public final class V3NeuralModels {
             }
             return models.isEmpty() ? V3NeuralInitializer.UNAVAILABLE
                     : new V3PhaseAwareNeuralInitializer("v3-phase-aware-bundle-v2", models);
+        }
+    }
+    private static final class GeneralHolder {
+        private static final V3NeuralInitializer MODEL = load();
+        private static V3NeuralInitializer load() {
+            try (var stream = V3NeuralModels.class.getResourceAsStream("/data/createcheme/neural/v3-general-stage.json")) {
+                if (stream != null) return V3GeneralNeuralInitializer.read(stream);
+            } catch (IOException | IllegalArgumentException invalid) {
+                // Optional experimental coverage may be unavailable; LNN_FIRST retains classical fallback.
+            }
+            return V3NeuralInitializer.UNAVAILABLE;
         }
     }
 }

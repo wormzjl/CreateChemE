@@ -15,6 +15,7 @@ import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3State;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Status;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.gui.GuiGraphics;
@@ -33,7 +34,7 @@ import net.minecraft.world.entity.player.Inventory;
 public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<ColumnCalculatorV3Menu> {
     private static final int CORE_EDITOR_COUNT = 9;
     private static final int SIDE_DRAW_COUNT = 3;
-    private static final int COOLER_COUNT = 3;
+    private static final int COOLER_COUNT = V3ColumnInput.MAX_PUMPAROUNDS;
     private static final int MAX_PANEL_WIDTH = 620;
     private static final int MAX_PANEL_HEIGHT = 360;
     private static final int PANEL_MARGIN = 10;
@@ -63,15 +64,16 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private static final int HEAT_COOLING_X = 158;
     private static final int HEAT_SPLIT_X = 240;
     private static final int HEAT_ROW_TOP = CONTENT_TOP + 30;
-    private static final int HEAT_ROW_PITCH = 26;
+    private static final int HEAT_ROW_PITCH = 22;
+    private static final int HEAT_HELP_Y = HEAT_ROW_TOP + COOLER_COUNT * HEAT_ROW_PITCH + 2;
+    private static final int HEAT_DUTIES_Y = HEAT_HELP_Y + 30;
     private static final int TRAY_MAP_X = 400;
     private static final int TRAY_MAP_MINIMUM_PANEL_WIDTH = 560;
 
     private final List<EditBox> coreEditors = new ArrayList<>();
     private final List<SideDrawFields> sideDrawFields = new ArrayList<>();
     private final List<CoolerFields> coolerFields = new ArrayList<>();
-    private final V3PumparoundSpec.Split[] coolerSplits = {
-            V3PumparoundSpec.Split.UNIFORM, V3PumparoundSpec.Split.UNIFORM, V3PumparoundSpec.Split.UNIFORM};
+    private final V3PumparoundSpec.Split[] coolerSplits = new V3PumparoundSpec.Split[COOLER_COUNT];
     private SteamFields steamFields;
     private Page page = Page.INPUTS;
     private V3State serverState;
@@ -95,6 +97,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     public ColumnCalculatorV3Screen(ColumnCalculatorV3Menu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
+        Arrays.fill(coolerSplits, V3PumparoundSpec.Split.UNIFORM);
         imageWidth = MAX_PANEL_WIDTH;
         imageHeight = MAX_PANEL_HEIGHT;
         inventoryLabelY = imageHeight + 10;
@@ -256,7 +259,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         return split == V3PumparoundSpec.Split.UNIFORM ? "Uniform" : "Return tray";
     }
 
-    /** Snapshot of the three cooler rows, used to survive a resize and a Holland preset round trip. */
+    /** Snapshot of every cooler row, used to survive a resize and a Holland preset round trip. */
     private String[][] coolerDrafts() {
         String[][] drafts = new String[COOLER_COUNT][];
         for (int index = 0; index < COOLER_COUNT; index++) {
@@ -679,12 +682,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                     HEAT_ROW_TOP + index * HEAT_ROW_PITCH + 6, MUTED, false);
         }
         graphics.drawString(font, "Empty draw and return trays disable the row. Cooling is entered positive.",
-                10, CONTENT_TOP + 108, MUTED, false);
+                10, HEAT_HELP_Y, MUTED, false);
         List<String> advisories = heatAdvisories(coolers);
         if (!advisories.isEmpty()) {
             String advisory = advisories.size() == 1 ? advisories.getFirst()
                     : advisories.getFirst() + " (+" + (advisories.size() - 1) + " more)";
-            graphics.drawString(font, abbreviateToWidth(advisory, leftWidth), 10, CONTENT_TOP + 122, NOTICE, false);
+            graphics.drawString(font, abbreviateToWidth(advisory, leftWidth), 10, HEAT_HELP_Y + 14, NOTICE, false);
         }
         renderColumnDuties(graphics, leftWidth);
         if (trayMap) renderTrayMap(graphics, coolers);
@@ -692,7 +695,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     }
 
     private void renderColumnDuties(GuiGraphics graphics, int leftWidth) {
-        int dutiesY = CONTENT_TOP + 138;
+        int dutiesY = HEAT_DUTIES_Y;
         graphics.drawString(font, "Column duties", 10, dutiesY, TEXT, false);
         V3ColumnDisplayResult result = serverState == null ? null : serverState.displayResult().orElse(null);
         // A present result is not evidence that it belongs to the draft on screen: the block entity keeps the
@@ -716,13 +719,13 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             return;
         }
         V3ColumnDutyLedger ledger = result.dutyLedger().orElseThrow();
-        int boxY = CONTENT_TOP + 154;
+        int boxY = HEAT_DUTIES_Y + 16;
         renderDutyBox(graphics, 10, boxY, 118, "Condenser", ledger.condenserWatts());
         renderDutyBox(graphics, 134, boxY, 118, "Reboiler", ledger.reboilerWatts());
         renderDutyBox(graphics, 258, boxY, 118, "Coolers total", ledger.stageHeatTotalWatts());
         graphics.drawString(font, abbreviateToWidth("Feed enthalpy " + megawatts(ledger.feedEnthalpyWatts())
                         + " · steam enthalpy " + megawatts(ledger.steamEnthalpyWatts()), leftWidth),
-                10, CONTENT_TOP + 202, MUTED, false);
+                10, HEAT_DUTIES_Y + 64, MUTED, false);
         renderStageDuties(graphics, ledger.stageDuties(), leftWidth);
     }
 
@@ -737,9 +740,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     }
 
     private void renderStageDuties(GuiGraphics graphics, List<V3ColumnDutyLedger.StageDuty> duties, int leftWidth) {
-        graphics.drawString(font, "Per tray", 10, CONTENT_TOP + 216, MUTED, false);
+        graphics.drawString(font, "Per tray", 10, HEAT_DUTIES_Y + 78, MUTED, false);
         if (duties.isEmpty()) {
-            graphics.drawString(font, "No prescribed stage heat in this result", 62, CONTENT_TOP + 216, MUTED, false);
+            graphics.drawString(font, "No prescribed stage heat in this result", 62, HEAT_DUTIES_Y + 78, MUTED, false);
             return;
         }
         int labelWidth = 34;
@@ -763,8 +766,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             trays[columns - 1] = "…";
             values[columns - 1] = "…";
         }
-        drawTableRow(graphics, 10, CONTENT_TOP + 228, 12, widths, trays, true);
-        drawTableRow(graphics, 10, CONTENT_TOP + 240, 12, widths, values, false);
+        drawTableRow(graphics, 10, HEAT_DUTIES_Y + 90, 12, widths, trays, true);
+        drawTableRow(graphics, 10, HEAT_DUTIES_Y + 102, 12, widths, values, false);
     }
 
     private void renderHeatStatus(GuiGraphics graphics, List<DraftCooler> coolers) {

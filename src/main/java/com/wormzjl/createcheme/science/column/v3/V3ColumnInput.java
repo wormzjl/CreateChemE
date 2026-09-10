@@ -32,7 +32,7 @@ public record V3ColumnInput(
     public static final int MAX_STAGE_COUNT = 64;
     public static final int MAX_SIDE_DRAWS = 3;
     public static final int MAX_STEAM_FEEDS = 2;
-    public static final int MAX_PUMPAROUNDS = 3;
+    public static final int MAX_PUMPAROUNDS = 4;
 
     /** Legacy no-draw input; preserves the existing schema and digest representation. */
     public V3ColumnInput(

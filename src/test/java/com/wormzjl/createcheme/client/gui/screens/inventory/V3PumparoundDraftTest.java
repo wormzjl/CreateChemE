@@ -80,7 +80,20 @@ class V3PumparoundDraftTest {
                 row("20", "16", "5", V3PumparoundSpec.Split.UNIFORM),
                 row("19", "15", "5", V3PumparoundSpec.Split.UNIFORM),
                 row("18", "14", "5", V3PumparoundSpec.Split.UNIFORM),
-                row("17", "13", "5", V3PumparoundSpec.Split.UNIFORM)), 24));
+                row("17", "13", "5", V3PumparoundSpec.Split.UNIFORM),
+                row("16", "12", "5", V3PumparoundSpec.Split.UNIFORM)), 24));
+    }
+
+    @Test
+    void fourthCoolerIsRetainedIncludingItsSplitAndDuty() {
+        List<V3PumparoundSpec> coolers = V3PumparoundDraft.parse(List.of(
+                row("20", "16", "5", V3PumparoundSpec.Split.UNIFORM),
+                row("19", "15", "4", V3PumparoundSpec.Split.UNIFORM),
+                row("18", "14", "3", V3PumparoundSpec.Split.UNIFORM),
+                row("17", "13", "2", V3PumparoundSpec.Split.RETURN_TRAY)), 24);
+        assertEquals(4, coolers.size());
+        assertEquals(new V3PumparoundSpec(13, 17, -2.0e6, V3PumparoundSpec.Split.RETURN_TRAY),
+                coolers.get(3));
     }
 
     @Test

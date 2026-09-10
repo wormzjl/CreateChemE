@@ -7,7 +7,6 @@ import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.science.column.v3.V3InitializationOptions;
 import com.wormzjl.createcheme.science.column.v3.V3NeuralInitializer;
-import com.wormzjl.createcheme.science.column.v3.V3NeuralModels;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Operation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -90,7 +89,7 @@ public final class ProcessSolveServices {
         double convergenceClosureFraction = CreateChemE.columnV3ConvergenceClosurePercent() / 100.0;
         V3InitializationOptions initialization = CreateChemE.columnV3InitializationOptions();
         V3NeuralInitializer model = initialization.mode() == V3InitializationOptions.Mode.CURRENT_ONLY
-                ? V3NeuralInitializer.UNAVAILABLE : V3NeuralModels.bundled();
+                ? V3NeuralInitializer.UNAVAILABLE : CreateChemE.columnV3NeuralModel();
         return submit(server, request, new V3ColumnCommand(request.operation().input(),
                         stageTraceCutoffMoleFraction, convergenceClosureFraction, initialization, model),
                 request.operation().input().packageId());
