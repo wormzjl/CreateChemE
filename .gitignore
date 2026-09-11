@@ -46,6 +46,7 @@ tools/*
 !tools/neural/
 !tools/hybrid-learning/
 !tools/hybrid-diagnosis/
+!tools/training-curation/
 
 # Claude × Codex collaboration runtime files
 .collab/
