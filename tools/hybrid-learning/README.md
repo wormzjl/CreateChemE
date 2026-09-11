@@ -2,6 +2,8 @@
 
 This directory contains the offline hybrid framework, matched N/N+1 training and repeated native evaluation. It is tracked on `codex/v4-transformer-investigation`; `.gitignore` explicitly admits it. Production defaults are unchanged.
 
+The [completed comparison](results.md) recommends retaining the current Transformer. Both trained hybrid representatives underperformed it on validation and the prospective test.
+
 The [protocol](protocol.md) defines the architecture, data boundary, equal-update training, native budgets, repeated-block selection and prospective test. [Salvage results](../neural/salvage_results.md) explain the 101 added strict TRAIN profiles and preserved original folds. N has 805 certified columns; N+1 has 906.
 
 ## Components
@@ -20,7 +22,7 @@ The [protocol](protocol.md) defines the architecture, data boundary, equal-updat
 
 The working artifact root is `build/neural-hybrid-learning/v1`. It holds both plans, input-only prospective test, native anchor banks, normalization, six fit histories/checkpoints, eight pipeline manifests, parity records, journals and selections. Every pipeline manifest binds the weight file and whether material completion is enabled; equal weight bytes do not imply equal inference procedures.
 
-The [training cache manifest](training-cache-manifest.json) binds the verified `.neural-cache/hybrid-learning-v1/training.zip` snapshot, including source files and exact datasets. The salvage archive is separately bound by its [manifest](../neural/salvage_dataset_manifest.json). Archives retain byte-exact files independently of checkout newline conversion. Native results are sealed separately after completion.
+The [training cache manifest](training-cache-manifest.json) binds the verified `.neural-cache/hybrid-learning-v1/training.zip` snapshot, including source files and exact datasets. The [results cache manifest](results-cache-manifest.json) binds the completed native campaigns, physical diagnostics and independently recomputed reports. The salvage archive is separately bound by its [manifest](../neural/salvage_dataset_manifest.json). Archives retain byte-exact files independently of checkout newline conversion.
 
 ## Execution
 
@@ -38,8 +40,11 @@ The scripts preserve existing outputs. Preparation, fitting and export refuse to
 .neural-venv/Scripts/python.exe tools/hybrid-learning/benchmark.py validation
 .neural-venv/Scripts/python.exe tools/hybrid-learning/benchmark.py select
 .neural-venv/Scripts/python.exe tools/hybrid-learning/run_test.py
+.neural-venv/Scripts/python.exe tools/hybrid-learning/diagnostics.py run
+.neural-venv/Scripts/python.exe tools/hybrid-learning/profile_report.py
 .neural-venv/Scripts/python.exe tools/hybrid-learning/report.py
 .neural-venv/Scripts/python.exe tools/hybrid-learning/archive.py results
+.neural-venv/Scripts/python.exe tools/hybrid-learning/archive.py verify
 ```
 
 The material anchor and completion remain numerical preparation. Strict qualification belongs exclusively to the unchanged native corrector and audit. N and N+1 contain no wet-qualified training profiles; steam-fed dry solutions do not establish wet-tray coverage.
