@@ -41,6 +41,7 @@ def verify_outputs():
         report_names+=['profile-summary.json','profile-report.md']
     return dict(passed=True,selection=selection_check['selection'],testExecutionLock=info(AREA/'test-execution-lock.json'),
         benchmarkPlan=info(PLAN),reports=[info(AREA/name) for name in report_names],
+        reportingSources=[info(ROOT/'tools/hybrid-learning'/name) for name in ('report.py','profile_report.py','verify_results.py','archive.py')],
         source=info(Path(__file__)),validationIndependentInputs=405,testIndependentInputs=252,blocks=2,
         summaryRecomputed=True,caseMapRecomputed=True,reportRerendered=True,storedOutputsEqual=True)
 
