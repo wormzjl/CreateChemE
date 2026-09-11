@@ -1,0 +1,19 @@
+// Separate class output preserves already-running frozen study JVMs.
+gradle.projectsEvaluated {
+    def p = gradle.rootProject
+    def destination = p.layout.buildDirectory.dir('neural-hybrid-learning/classes-v1')
+    p.tasks.register('compileHybridLearning', JavaCompile) {
+        source = p.fileTree('tools/hybrid-learning/java') { include '**/*.java' }
+        classpath = p.files(p.sourceSets.neuralMvp.runtimeClasspath.files)
+        destinationDirectory = destination
+        javaCompiler = p.javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+        options.encoding = 'UTF-8'
+    }
+    p.tasks.register('hybridLearning', JavaExec) {
+        dependsOn p.tasks.named('compileHybridLearning')
+        classpath = p.files(destination) + p.files(p.sourceSets.neuralMvp.runtimeClasspath.files)
+        mainClass = p.providers.gradleProperty('hybridMain').getOrElse('com.wormzjl.createcheme.science.column.v3.V3HybridBaselineExport')
+        maxHeapSize = '4g'
+        args p.providers.gradleProperty('hybridArgs').getOrElse('').split(',').toList()
+    }
+}
