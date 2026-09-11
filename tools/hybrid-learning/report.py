@@ -139,7 +139,7 @@ def report_text(summary):
     return '\n'.join(lines)
 
 
-def main():
+def build_outputs():
     plan=study.verify_plan();selection=json.loads((AREA/'selection.json').read_text())
     assert selection['validationComplete'] and selection['planSha256']==digest(study.PLAN)
     validation,vcases=summarize_population(plan,'validation',study.ORDER)
@@ -148,8 +148,12 @@ def main():
     result=dict(revision='hybrid-residual-comparison-v1',plan=info(study.PLAN),selection=selection,
         training=training_summary(),validation=validation,test=test,
         source=info(Path(__file__)),dataAcquisition=json.loads((ROOT/'tools/neural/salvage_verification.json').read_text()))
-    freeze(AREA/'summary.json',result);freeze(AREA/'case-map.jsonl',vcases+tcases,True)
-    text=report_text(result)
+    return result,vcases+tcases,report_text(result)
+
+
+def main():
+    result,cases,text=build_outputs()
+    freeze(AREA/'summary.json',result);freeze(AREA/'case-map.jsonl',cases,True)
     with (AREA/'report.md').open('x',encoding='utf-8',newline='\n') as stream:stream.write(text)
     print(json.dumps({'report':str((AREA/'report.md').relative_to(ROOT)),'validationInputs':405,'testInputs':252,'blocks':2}))
 

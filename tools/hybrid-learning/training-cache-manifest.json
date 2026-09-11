@@ -1,0 +1,1141 @@
+{
+  "acquisitionArchive": {
+    "bytes": 106762904,
+    "path": ".neural-cache/salvage-nplus1-v1/certified-campaign.zip",
+    "sha256": "e41c02d5f85b2cf4140d2d21bc9465e027905c57cea78a1c91192ade1207fa5b"
+  },
+  "archive": {
+    "path": ".neural-cache/hybrid-learning-v1/training.zip",
+    "sha256": "c63e8019badc7deeddd71a3e31f1048e610f33cff76f7c3aca2159618ad3b805"
+  },
+  "createdUtc": "2026-09-11T10:27:05.728299+00:00",
+  "entries": [
+    {
+      "bytes": 2502892,
+      "entry": "build/neural-hybrid/feasibility-v1/model.json",
+      "sha256": "7aa7eaa5ecbe4cea51a31bbe4724569e40900b128e98b1d69a6068e5e7d43e5e"
+    },
+    {
+      "bytes": 32791,
+      "entry": "build/neural-hybrid-learning/v1/benchmark-plan.json",
+      "sha256": "8143137e808a9586e619838ca71daa1a9e4e058df5d65514808eac321a4b5f18"
+    },
+    {
+      "bytes": 11546330,
+      "entry": "build/neural-hybrid-learning/v1/candidate-pool.jsonl",
+      "sha256": "408f49515325873b4ae4c7b5810dc15d53add0107557e33dc1ef4541bd99782f"
+    },
+    {
+      "bytes": 386221,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260910/model.pt",
+      "sha256": "5102d59f5f2a00935745b4810444fa3add150e430e53161b61fb64d61e5c2fb3"
+    },
+    {
+      "bytes": 27207,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260910/report.json",
+      "sha256": "f69ad8c155921120bc3e6497cd1d3709ffe089ea523107b1e0327274853224d4"
+    },
+    {
+      "bytes": 67733,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260910/validation.jsonl",
+      "sha256": "a4d2aca0e57a4213ece0cf59aa56831977dae1d7da30179c8403a91788cf4012"
+    },
+    {
+      "bytes": 386221,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260911/model.pt",
+      "sha256": "69b3c7a063bfae27758049a421afece8be6c9d1943e7a4913520885a65bc0f55"
+    },
+    {
+      "bytes": 27187,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260911/report.json",
+      "sha256": "42dddd57940779cf43857148773ce13ff8a1ba3eeba0e683e3fc9da4a2fff760"
+    },
+    {
+      "bytes": 67725,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260911/validation.jsonl",
+      "sha256": "0403bece153f4fac60e233ab7677feb8b757f6bdc47dd95c514d0689e6ce2cf5"
+    },
+    {
+      "bytes": 386221,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260912/model.pt",
+      "sha256": "5db8e895ce456ab177743001b6ca1576a2704b80ae4d18a845b33affccb571e5"
+    },
+    {
+      "bytes": 27199,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260912/report.json",
+      "sha256": "38afb79310f4ee7c8913707ee789a070aa54dafb94e44367e461f3e0cecfe807"
+    },
+    {
+      "bytes": 67698,
+      "entry": "build/neural-hybrid-learning/v1/fits/N-20260912/validation.jsonl",
+      "sha256": "edfc0767aa180dcc06cdadbd603c1e451455ca3d9db37645cc640b80e16f03ec"
+    },
+    {
+      "bytes": 386221,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260910/model.pt",
+      "sha256": "b183a4cb5a92c0bf8fc86a49971635648a1e30265711debbf0f2598136ef21da"
+    },
+    {
+      "bytes": 27200,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260910/report.json",
+      "sha256": "c511a7d411bc1c4c022473a333fbc776689183ffc407c8fece5b452d8f371434"
+    },
+    {
+      "bytes": 67676,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260910/validation.jsonl",
+      "sha256": "cd6ea6e2cbb511c83dae4e79950c949b739d446c942b6d8e980aa71269f57c4f"
+    },
+    {
+      "bytes": 386221,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260911/model.pt",
+      "sha256": "92067f993ea0e48ef6ff387c550e52bba81c55938b588e3833416f67741d85ff"
+    },
+    {
+      "bytes": 27206,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260911/report.json",
+      "sha256": "68e0b0649be84a13c8e719e227222dac79f9bb77ba2d2b400ce4e4010cd15a78"
+    },
+    {
+      "bytes": 67717,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260911/validation.jsonl",
+      "sha256": "048948a614ab48f3e5cae92cc4bd2799cb86515e16b797e5ea97d6cc862266ab"
+    },
+    {
+      "bytes": 386221,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260912/model.pt",
+      "sha256": "bbf68569c7b436e7fc790ac33d6ecae2f5f3447d4139d6ae83a7774b9925a87b"
+    },
+    {
+      "bytes": 27191,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260912/report.json",
+      "sha256": "13a2f588eea26818a9830faaa5713334e0f6831066518a024963a411f69da6ad"
+    },
+    {
+      "bytes": 67706,
+      "entry": "build/neural-hybrid-learning/v1/fits/Nplus1-20260912/validation.jsonl",
+      "sha256": "97007630cb0a32565c33b3e0307fb572624680aff8537dab6609b36db70fbcca"
+    },
+    {
+      "bytes": 986023,
+      "entry": "build/neural-hybrid-learning/v1/historical-input-hashes.json",
+      "sha256": "e714e00af0109630e810f7f785e63d859c8bae6142cc39521da55b95dd50d0bd"
+    },
+    {
+      "bytes": 278,
+      "entry": "build/neural-hybrid-learning/v1/models/incumbent/pipeline.json",
+      "sha256": "d7fbc4a1286218cc624f36da4807760d5d3b9d405c36d9646b6e6e04724d93a8"
+    },
+    {
+      "bytes": 285,
+      "entry": "build/neural-hybrid-learning/v1/models/incumbent-wrapper/pipeline.json",
+      "sha256": "3a2566f09d09de960465bdd3a09ae9c739023b3a661b9425d68ae996eb6cdd42"
+    },
+    {
+      "bytes": 2191408,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260910/fixture.json",
+      "sha256": "1a2fb66c0fc856d9cd4379c12ad4fab0eba61cf111f499d8bc541fa43710d0a7"
+    },
+    {
+      "bytes": 500,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260910/java-parity.json",
+      "sha256": "51de0b3784047d687fa75d459c3220e95a9cd327ecc862e43a31be07a1add56e"
+    },
+    {
+      "bytes": 2683307,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260910/model.json",
+      "sha256": "a73563a242807c5468844546943312c8b14cdb5539c31a9ed3c399977855df95"
+    },
+    {
+      "bytes": 335,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260910/pipeline.json",
+      "sha256": "b3747ee017e5ffc9925c3d5d1048829faaf906d12a0f6f6386e1a5829fb2265f"
+    },
+    {
+      "bytes": 842,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260910/precision-check.json",
+      "sha256": "553491ffd29f1fc30ac4f7a09817062260af41ebda76e03702071310bb390d5d"
+    },
+    {
+      "bytes": 2190511,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260911/fixture.json",
+      "sha256": "527a3f2e6295035e6fbf44f11fe3305c5ea6a4c290c93df18d998bc1069f25fd"
+    },
+    {
+      "bytes": 500,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260911/java-parity.json",
+      "sha256": "1f45cbf5751a0d8f6c6d710d0ae1693d2a69c68f94c118b9a34e2430a51ec3a6"
+    },
+    {
+      "bytes": 830,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260911/java-parity.log",
+      "sha256": "86be7e210434858f564eaf1a39d7f95d02f20adf09839118ae9dcbd4a9e1cb94"
+    },
+    {
+      "bytes": 2682396,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260911/model.json",
+      "sha256": "81f0a22182eeacc74d2c29139fc1bf63e17568a152a690a5a17a61efcd25cf82"
+    },
+    {
+      "bytes": 335,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260911/pipeline.json",
+      "sha256": "336d0ed005b2702622087722fd8d7fc118ef63367109c18ef6a4f20a052b6cc4"
+    },
+    {
+      "bytes": 844,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260911/precision-check.json",
+      "sha256": "ee1261f79c268c8a4eee95042fe1d9b7cc49234c3c15145fced009cb9efcb5f5"
+    },
+    {
+      "bytes": 2191407,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260912/fixture.json",
+      "sha256": "5307081729372fe4360eec6958f4e297ccbeab448e4de4a03c5444e293361281"
+    },
+    {
+      "bytes": 501,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260912/java-parity.json",
+      "sha256": "8d6bcc59a59069070316760dc897ba3ffc0ddbcd72abfbb73211af7a83f7af37"
+    },
+    {
+      "bytes": 831,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260912/java-parity.log",
+      "sha256": "dfb951c2af8ffffa487450a218176b046377c43aef6464f6880f95f85eefb3bc"
+    },
+    {
+      "bytes": 2683283,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260912/model.json",
+      "sha256": "a0dcd283414826730e6c335cd6e4d6135bd560e777eadf3005bf093bc2b4180c"
+    },
+    {
+      "bytes": 335,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260912/pipeline.json",
+      "sha256": "94230f43204919d31c36ce2359c33d30156284c22ad92c9eb8cf01badc7e69cf"
+    },
+    {
+      "bytes": 843,
+      "entry": "build/neural-hybrid-learning/v1/models/N-20260912/precision-check.json",
+      "sha256": "13bf8707d667290cec12d8233546e79dfa0d7c36d3b5144adf7019f549c23460"
+    },
+    {
+      "bytes": 2191578,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260910/fixture.json",
+      "sha256": "17694fbdd3f30c7bcc8ad1785702b4731e515320b10d6bc1dc97ba9709736b40"
+    },
+    {
+      "bytes": 500,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260910/java-parity.json",
+      "sha256": "0d0244364d4dc7adcbcc451681dc251906ec5e82ceb79600f3093c490ac1beae"
+    },
+    {
+      "bytes": 830,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260910/java-parity.log",
+      "sha256": "08ceaefc51a6ccecb82e120c8415255204437035dc1b14ca89df457a12cd780f"
+    },
+    {
+      "bytes": 2683053,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260910/model.json",
+      "sha256": "e629bbed9bb8e7df18132982666c867ad27ef885712777e8cad435d87e7f53f7"
+    },
+    {
+      "bytes": 350,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260910/pipeline.json",
+      "sha256": "04df0dc6e24ba6335034858abe45c24ced49cc516cb67ccbaf185eea040943b1"
+    },
+    {
+      "bytes": 859,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260910/precision-check.json",
+      "sha256": "005041862a0ace6c38ef36aea4f5514c975005200f969f5494becdeeaaf0871a"
+    },
+    {
+      "bytes": 2192262,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260911/fixture.json",
+      "sha256": "a66e5668bde2e47b0f7f7bcb61f06fe494e4be7e9fa126ec86d260b7ddebec96"
+    },
+    {
+      "bytes": 500,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260911/java-parity.json",
+      "sha256": "8674135e7fef05027e65bb955ab3e372f4c5c19857c3285ca8c91e972744f6a9"
+    },
+    {
+      "bytes": 830,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260911/java-parity.log",
+      "sha256": "ff4fcbef2d0ca6bc08667837ab03efa5a7ac765c7f39e9c4fa7a1ec5a4e51ce9"
+    },
+    {
+      "bytes": 2682783,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260911/model.json",
+      "sha256": "ad2fa8bca04cec3172f52285f60f9938518af66834b505ec4f5c02e0c167644e"
+    },
+    {
+      "bytes": 350,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260911/pipeline.json",
+      "sha256": "ba808ee38196427e9193994f512aa31f70fd918a24d868476926c58699dad80d"
+    },
+    {
+      "bytes": 857,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260911/precision-check.json",
+      "sha256": "8bde4ad58a17f58bda1b296fc7d72e1b040725cf24ba178bb0787d632e4660b5"
+    },
+    {
+      "bytes": 2191534,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260912/fixture.json",
+      "sha256": "0a4edd3963b941c1b8681246d267bf6903e39c14b4e0bc5926a359f221aa3bf3"
+    },
+    {
+      "bytes": 498,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260912/java-parity.json",
+      "sha256": "76619685ab23395504884a491761377a67bd16d3d81cb283e3dd62240c281693"
+    },
+    {
+      "bytes": 828,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260912/java-parity.log",
+      "sha256": "246d4584b45746e100c3d06a9bc7c639a9764e1b19aad3b009419ecfff664841"
+    },
+    {
+      "bytes": 2683263,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260912/model.json",
+      "sha256": "10ead4f699d94ba9e1929c16af4f0ab5bf4e118d7c76079ef6377e5246b10a22"
+    },
+    {
+      "bytes": 350,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260912/pipeline.json",
+      "sha256": "d7ddfab3c90dac410ab63310a5f112a690d17169e89cb9bab8cbb66732e7ac4e"
+    },
+    {
+      "bytes": 859,
+      "entry": "build/neural-hybrid-learning/v1/models/Nplus1-20260912/precision-check.json",
+      "sha256": "61594c1f78e4db71f3cf791fe33f491c026f9f329749d925cc7d0589e71c8c18"
+    },
+    {
+      "bytes": 3266,
+      "entry": "build/neural-hybrid-learning/v1/models.json",
+      "sha256": "ca5734d075bb5365c1543fd2d221dfb6b4c143bfee5be843a4d2f605e48380a4"
+    },
+    {
+      "bytes": 1440171,
+      "entry": "build/neural-hybrid-learning/v1/N-anchor-inputs.jsonl",
+      "sha256": "b04af1bc04f1f7a2b80cac27e4f611c6c868a21ad77532ab5799930bd17c6f1c"
+    },
+    {
+      "bytes": 66683253,
+      "entry": "build/neural-hybrid-learning/v1/N-anchors.jsonl",
+      "sha256": "dc5a0665bbde4d369bfabbbf9260038648fa38a20df3b9e221f64224c52b3e57"
+    },
+    {
+      "bytes": 153841,
+      "entry": "build/neural-hybrid-learning/v1/new-anchor-inputs.jsonl",
+      "sha256": "d785f1f51ac5742fe9bb7cb9dd1ee069153c7c605c5d54294ea6766f7a85258b"
+    },
+    {
+      "bytes": 10439823,
+      "entry": "build/neural-hybrid-learning/v1/new-anchors.jsonl",
+      "sha256": "a1216fce2f8b4b9e11bed1e351a3ab7e1ce8ed6104d3c41737a926806124b5d4"
+    },
+    {
+      "bytes": 17896,
+      "entry": "build/neural-hybrid-learning/v1/normalization.json",
+      "sha256": "7b951c33139104d2d14ee4c9ab454c3fba529184e79eb2a84aa12c19f4cb26bc"
+    },
+    {
+      "bytes": 80810,
+      "entry": "build/neural-hybrid-learning/v1/test-registration.json",
+      "sha256": "a91118c8c556efebda127771cf05e3713187de50c61f40f86018c3133380ee65"
+    },
+    {
+      "bytes": 1052097,
+      "entry": "build/neural-hybrid-learning/v1/test.jsonl",
+      "sha256": "c80d954a605f2eb71adffd2a41030e85e10035196d45cb6560a32d5aa0807736"
+    },
+    {
+      "bytes": 1223,
+      "entry": "build/neural-hybrid-learning/v1/training-logs/N-20260910.log",
+      "sha256": "6c32c8c874ec9e8d96a6f4b86d3e301c662a49459e6146a62dc53632b472b35f"
+    },
+    {
+      "bytes": 1221,
+      "entry": "build/neural-hybrid-learning/v1/training-logs/N-20260911.log",
+      "sha256": "107037b741a819b97e1d0f42edf6e603bec02f4d2ebfa362169552f72d69b2e4"
+    },
+    {
+      "bytes": 1225,
+      "entry": "build/neural-hybrid-learning/v1/training-logs/N-20260912.log",
+      "sha256": "e74c6226121416d4e8bd9704fbe9d195de4114973bab3f847a8179cda5adfb73"
+    },
+    {
+      "bytes": 1268,
+      "entry": "build/neural-hybrid-learning/v1/training-logs/Nplus1-20260910.log",
+      "sha256": "03e0360e07fd5b1a5aebd0080b6cb255529eea69d1c3eb1d89e62757bc235c14"
+    },
+    {
+      "bytes": 1268,
+      "entry": "build/neural-hybrid-learning/v1/training-logs/Nplus1-20260911.log",
+      "sha256": "aa01635ad3dc0e7ebfb5e2222c0e81aa626ae124d47c26de0d16f034bb98487c"
+    },
+    {
+      "bytes": 1266,
+      "entry": "build/neural-hybrid-learning/v1/training-logs/Nplus1-20260912.log",
+      "sha256": "71004ca30f4c8693978fa208e7e6d3cae875aa6b7b3f6f808abca5b23fa1e52a"
+    },
+    {
+      "bytes": 3651,
+      "entry": "build/neural-hybrid-learning/v1/training-plan.json",
+      "sha256": "61f19321a767c7777ba11bd14604512de881203d797a85c4d512bed929f72e8f"
+    },
+    {
+      "bytes": 1675220,
+      "entry": "build/neural-hybrid-learning/v1/validation-inputs.jsonl",
+      "sha256": "95d773b06126b1637492e07cc5e7ab62b819655f5ac221c98c961bff436a9a0a"
+    },
+    {
+      "bytes": 2257,
+      "entry": "build/neural-hybrid-learning/v1/warmup.json",
+      "sha256": "f213c11059f9b81b57fbc9a32bc1bb86fbca26f583fe24f0027e8bd03ec50769"
+    },
+    {
+      "bytes": 3420,
+      "entry": "build/neural-salvage/nplus1-v1/certified-dataset-manifest.json",
+      "sha256": "0f4cef8a593f2315e400f2d82faa1f80824b4c4faac5eb8f09ddbd364e63d61b"
+    },
+    {
+      "bytes": 401,
+      "entry": "build/neural-salvage/nplus1-v1/execution-checks.json",
+      "sha256": "ba954e6f63f7e2c14ac250853db5c4c111f16f98dc5b4b208148e479b0628609"
+    },
+    {
+      "bytes": 47784788,
+      "entry": "build/neural-salvage/nplus1-v1/N-cases.jsonl",
+      "sha256": "85c668f6162e2af819bda5110750fa5bb71a3769b4b813070cfe140e3eabbe62"
+    },
+    {
+      "bytes": 52440890,
+      "entry": "build/neural-salvage/nplus1-v1/Nplus1-certified-cases.jsonl",
+      "sha256": "1dc86a2590ad5da7f37d1735dc08abd3b38077b64628229cb014147d1a536a06"
+    },
+    {
+      "bytes": 11463,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/HollandB12Thermo.java",
+      "sha256": "be68a3e2926561966451f7a8143ee6d502f47552d1a19ee84ba26ab0d10b0e13"
+    },
+    {
+      "bytes": 7988,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/HollandExample32Data.java",
+      "sha256": "10bc947be57ddfb38d10d5a7422a33bcff245830df5759a29bfca818e0a13dc4"
+    },
+    {
+      "bytes": 22248,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/IndependentHollandMeshOracle.java",
+      "sha256": "92bf88f940c3250851e824bf541faa5f0372ea9c4105d0888105f10f218f5e31"
+    },
+    {
+      "bytes": 2737,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedMatrix.java",
+      "sha256": "f1f50c216d0d42a1143d9f4c1d6e31f4d3e3ade91dade1b9030545ee0705da0f"
+    },
+    {
+      "bytes": 21328,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/linalg/V3BandedPivotedSolver.java",
+      "sha256": "bc8ba246f3d868cd873436df52dacc918078eba11e99e6da3b8345991003f512"
+    },
+    {
+      "bytes": 8978,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Cdu17TiaJuanaPackage.java",
+      "sha256": "2c34220e07d92e8df9d088f4d530287ffcb7d630515d75c8033c42608a3a4331"
+    },
+    {
+      "bytes": 2710,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3CrudeFeed.java",
+      "sha256": "b566675ddf196cdd5b0e418bc413f0a631368eec48d340ac02f56b527558a940"
+    },
+    {
+      "bytes": 9698,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedFlash.java",
+      "sha256": "6810eb8c4ae9f053faa8ddb9521af8e2af1f29d77a969a3e082a08a7b0643fb7"
+    },
+    {
+      "bytes": 213,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FeedPhase.java",
+      "sha256": "b05dd80e853b46922758c88d9d47a4488415b35169c2e7301abc81ddc9aa5611"
+    },
+    {
+      "bytes": 3921,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashPhaseSupport.java",
+      "sha256": "8b235474e066ab9c7d05a73c3db436983a762ca54b953d0465fc7c90237e6436"
+    },
+    {
+      "bytes": 6348,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashResult.java",
+      "sha256": "9266e8371d76f6aec591d714fdedc3b1ed4940f099ddb2b70dde3f463c0290ad"
+    },
+    {
+      "bytes": 4995,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FlashTruncationEvidence.java",
+      "sha256": "55605648c22a4d76511bd6e04a182b776ebc74773eb0462c073ac6367cc4993f"
+    },
+    {
+      "bytes": 6076,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FugacityDerivatives.java",
+      "sha256": "12b37e524f350e003997c1533a53fa9bb4223160ff7aa2ba4635f48a2918f3d0"
+    },
+    {
+      "bytes": 2445,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3FugacityResult.java",
+      "sha256": "095d3e81d56a57e50e2d27ac7953296d489c575de38f46fa42f539c585a24da5"
+    },
+    {
+      "bytes": 32666,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonKernel.java",
+      "sha256": "2d912ba307fc9bd0d68632d7b4e118ba4dc6d4b74fe8b98344ba35c66d5b29d7"
+    },
+    {
+      "bytes": 8430,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonSession.java",
+      "sha256": "9c05f77c69dd1fb2bd90f109cb63c5697840419ca3bdf420f8f6423d8ce87d84"
+    },
+    {
+      "bytes": 11516,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PengRobinsonThermo.java",
+      "sha256": "f76792c6fbdc5846d1acc636028ee68c904e86c51baff53cbe67f140af692292"
+    },
+    {
+      "bytes": 192,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Phase.java",
+      "sha256": "a4672f94787e61eb8c4b5fdc9758f0034591874720268e534b751128647d3d4a"
+    },
+    {
+      "bytes": 2924,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyComponent.java",
+      "sha256": "abfb07ad412403e30fbb81699055bbc9135371db02702156cea1896b463f294b"
+    },
+    {
+      "bytes": 838,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyPackage.java",
+      "sha256": "a458aaf56cf2938c3378d7fed3dd3c7593a7bed8fcf2cc193d3edbd582cdec57"
+    },
+    {
+      "bytes": 913,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3PropertyPackageRegistry.java",
+      "sha256": "e251ef9d45c6eb2e4860ab1ffae25929064bfc0584d69286d40e903d8d3a3a9c"
+    },
+    {
+      "bytes": 1561,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoDerivatives.java",
+      "sha256": "32dfd3b51b9ec4370027f192b0c991bc046c815193e49e151f3e769f04161cb6"
+    },
+    {
+      "bytes": 895,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoException.java",
+      "sha256": "a977d9ce7c4939f58b0d3ca3b18c02f62571d071d449e44b27b549c577da0d04"
+    },
+    {
+      "bytes": 873,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoModel.java",
+      "sha256": "df2f00ad425b5ebada4859aff018262db81e9c66eba6c79d2a7e2bf306aed777"
+    },
+    {
+      "bytes": 2268,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3ThermoWorkspace.java",
+      "sha256": "a3b20d03199baae7508f7955ba4f194f8101748eb749a821355f715ddade408f"
+    },
+    {
+      "bytes": 11166,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Tjl19PropertyPackage.java",
+      "sha256": "80282ff2a87ff7cc5b9af61743dc8519ab3a2492b514d19358476444c0e62e69"
+    },
+    {
+      "bytes": 4175,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3Tjl20MethanePropertyPackage.java",
+      "sha256": "cebe978c5029dcedb4970f0d851852f4bf30f4d3e6b75d4dfe845d9de6cae595"
+    },
+    {
+      "bytes": 2511,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TraceTruncationPolicy.java",
+      "sha256": "34830403752fca0c6256129823d43a0aed5700c9bf9a6967f5595809b706a81a"
+    },
+    {
+      "bytes": 20760,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3TruncatedFlash.java",
+      "sha256": "5bb9257252b1c7c254a917ceea38e779c748cd2fd0e9131762839d1087aeebdc"
+    },
+    {
+      "bytes": 8795,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/thermo/V3WaterProperties.java",
+      "sha256": "128c48fbf6e0aa4fc9aa736ae34aad4084a929a291e0376c8b725008927fb972"
+    },
+    {
+      "bytes": 2359,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAudit.java",
+      "sha256": "245b2bb9cbc6e789c7f45938cb91782a1c29c71775032d0e82fa3d378618cc0b"
+    },
+    {
+      "bytes": 59740,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3AcceptanceAuditor.java",
+      "sha256": "beb3a0f6494aac67baaa82f767fd8ea92348cc76f002b73595047138792e5ea2"
+    },
+    {
+      "bytes": 3473,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ActiveComponentBasis.java",
+      "sha256": "4fe49d5b40034d67a612628f1cc7f4aac7387852a6e27d852567c924bf9fb463"
+    },
+    {
+      "bytes": 7585,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobian.java",
+      "sha256": "369e20e3f979312405b3eb6a41071c79f1bd8df9729999ca8f2fa598723d6831"
+    },
+    {
+      "bytes": 40791,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3BlockJacobianAssembler.java",
+      "sha256": "66c12b5c41fa73d232edb079220b82ec03d485819fca7fc090ef16f1473a244f"
+    },
+    {
+      "bytes": 2435,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3BubblePointPreconditioner.java",
+      "sha256": "78a3ad9164e16b29d834e63f7dc9858f7b5527384771c4ad54cce0cb8c67a5fc"
+    },
+    {
+      "bytes": 349,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CalculatedQuantity.java",
+      "sha256": "8179690f4f1205185da69b24218b8ce877d2dd004c640943dbe17ea967d09066"
+    },
+    {
+      "bytes": 180155,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java",
+      "sha256": "bb7da80a7da8ad380da911ae02b409c87f5f13679d76688ddf6610cde94af0b6"
+    },
+    {
+      "bytes": 5094,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnDisplayResult.java",
+      "sha256": "e5530374b416f016971bce317a338260eb4a8fe2637bd94c61e3d227b1323a00"
+    },
+    {
+      "bytes": 5620,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnDutyLedger.java",
+      "sha256": "b01655c32ae293a22f2147bc88f561581a1cde8591a29a2b8a77581dd24f0fcc"
+    },
+    {
+      "bytes": 60463,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java",
+      "sha256": "8ffa23b9723c67dc4f51961ce3a5fc4596adcb06f83ce4424172f56e420d2ce4"
+    },
+    {
+      "bytes": 11167,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInput.java",
+      "sha256": "4cf63dbd669f75a41a57e9c30393f29b4fab5f51f289597fc33b28e77a30af82"
+    },
+    {
+      "bytes": 1857,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnOutcome.java",
+      "sha256": "9957d4be5eda3044758299c5bb64fb3381e6b8918467b68dd24bcc27498b1d96"
+    },
+    {
+      "bytes": 14883,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnProblem.java",
+      "sha256": "e90a23bcf61afa6761fb76980ff3e36cd68f5a73e1b835971fd4969f7dc2d6dd"
+    },
+    {
+      "bytes": 9648,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnProblemResolver.java",
+      "sha256": "9cffb3fe41ced6078ce0234b153fc52dd55293435f8083423df306243440bcbf"
+    },
+    {
+      "bytes": 6669,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnResult.java",
+      "sha256": "61d9b199fc7ba3550139fa056c784f957ef7f92b19bbe92e6bb030d67305ddbf"
+    },
+    {
+      "bytes": 2187,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnSpecification.java",
+      "sha256": "c68bd337818cad8b64bca0685f151c1881921b734b93170af4636cd7022247cd"
+    },
+    {
+      "bytes": 13683,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnStreamProperties.java",
+      "sha256": "9ffb720552ec5ad441c3ac4cd14758c4f186272cf5094d522ee64f8df5e27bef"
+    },
+    {
+      "bytes": 3850,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnTopology.java",
+      "sha256": "872d6b8d7edd19584ab817a6c45d27c0a7cb91d8f7e9c34d8f9a61cca899140f"
+    },
+    {
+      "bytes": 1834,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ComponentBasis.java",
+      "sha256": "66e57a981378176a1fae4a34aa44c3287904b7f2792927a2bdbb78f8d696de2c"
+    },
+    {
+      "bytes": 1958,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CondenserComponentPhases.java",
+      "sha256": "91add18acbf0294f879cea6e89b54471c4c235fc0e0f900ebe4520b734297669"
+    },
+    {
+      "bytes": 244,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CondenserPhaseBranch.java",
+      "sha256": "87e8509eb397365f67f626ef7426187b96e41d4bd5c7ca366a82a7610db3b21e"
+    },
+    {
+      "bytes": 7292,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3CondenserPhaseTransition.java",
+      "sha256": "c4140301c9162e4e156ce19796a9eab7fc3d3c75a6be6ac7f2a14f2d46823939"
+    },
+    {
+      "bytes": 744,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ContractDiagnostic.java",
+      "sha256": "77421b9ca7f2ff34bb8c87a63ae13e5d2a3f8df79d220c40fbdd42b26b3817cd"
+    },
+    {
+      "bytes": 271,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ControlledQuantity.java",
+      "sha256": "9de8bb612f0ebfa9d43bac4525ee79de9874e02fc83ef0542d1531ab2677b38a"
+    },
+    {
+      "bytes": 5747,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3ConvergenceEvidence.java",
+      "sha256": "893b95d5bbc89580f91a239bdf45d989f1244df241cf8ae638b9d152b510d378"
+    },
+    {
+      "bytes": 23678,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DegreeOfFreedomLedger.java",
+      "sha256": "b1f13d37a4709170050cfccdb211556a9371196822950b5bcb25c637e5af1942"
+    },
+    {
+      "bytes": 8300,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DenseNeuralInitializer.java",
+      "sha256": "69cb59989d881e4331346a54922428074e829f25f2da93860d7804ac48520de5"
+    },
+    {
+      "bytes": 8764,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshCoordinateMap.java",
+      "sha256": "184ec398a00c942ea80a615b8bf732c2c2b5c97c8e0b120f019a719fc713d565"
+    },
+    {
+      "bytes": 11297,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3DryMeshState.java",
+      "sha256": "5910a60a08b0e15a463adb5204c7bf72ddbbaa5e1afbbf297bef48fddeb306d1"
+    },
+    {
+      "bytes": 18058,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3EnergyShiftPredictor.java",
+      "sha256": "1caba91be26b843517be6f99a8189ffc05976e41adcd58f2d6cd0cb5ff3bdc8b"
+    },
+    {
+      "bytes": 7841,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralFeatures.java",
+      "sha256": "4966cd87e45d07f9e274f1cc0d3312c390681477917e1a251f41709cbd16d41e"
+    },
+    {
+      "bytes": 13114,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FactorizedNeuralInitializer.java",
+      "sha256": "868b82cfc5bbe2608e81a80ed7eaef5f7d3ad0ea60e3e7f1bb6a1293019e4ec0"
+    },
+    {
+      "bytes": 20816,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FiniteDifferenceJacobian.java",
+      "sha256": "226eb6da5ba5d1c1f42e6fa2d4b55f2c38d29aae055566d388ab141652ecec36"
+    },
+    {
+      "bytes": 24226,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3FreeWaterContinuation.java",
+      "sha256": "2f29a604c62484779ebd7826511257457128ff266beda9e80739865516efba24"
+    },
+    {
+      "bytes": 10519,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralFeatures.java",
+      "sha256": "ba6a4e0443abf39d1e2b962cfba6833808dd270a511a7845e371fd51055a2fe5"
+    },
+    {
+      "bytes": 12673,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3GeneralNeuralInitializer.java",
+      "sha256": "06b7006a6c802e25c1890838161513180d0278d1f4836bf6f33768063d6d95f4"
+    },
+    {
+      "bytes": 7775,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3HeatFeasibility.java",
+      "sha256": "91f0a5a1c6a2bb768b1dc582a902594ec8dc6be630c164f347093938300f3841"
+    },
+    {
+      "bytes": 16073,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3HollandExample32.java",
+      "sha256": "3a01ac1e326daa48ce7ac364a139741e49c3f148fdba62619ead70ddce25eacc"
+    },
+    {
+      "bytes": 4630,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3HybridPreconditioner.java",
+      "sha256": "a367f4086077522c6d2b64c8ea9757799fd484c560d533c8f52c68287adc466b"
+    },
+    {
+      "bytes": 1148,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3InitializationOptions.java",
+      "sha256": "984ab142ef82214365192d8c32dd17246771dc6e1125b6b9b4ab1d29f819722e"
+    },
+    {
+      "bytes": 8223,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3InputDigest.java",
+      "sha256": "1ea4d91532a2336c5b772b09a127bcc4bad7bd100ebc4f95331aa11de4943063"
+    },
+    {
+      "bytes": 1941,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidual.java",
+      "sha256": "54a427e9feff50f4dff182e73ce92cf953c037cd41f21f8c2f15163c4f82d04c"
+    },
+    {
+      "bytes": 37393,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3MeshResidualEvaluator.java",
+      "sha256": "3fd5839cbc13a4e685fbbaa94234e4ced7ba51de99b6e08f92739faa2a169d28"
+    },
+    {
+      "bytes": 21594,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NearestProfileInitializer.java",
+      "sha256": "4de0f8693e66d30f4d9bab40ea5266f8386788959bf76db5543a54f59d86e0ed"
+    },
+    {
+      "bytes": 4985,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralFeatures.java",
+      "sha256": "b1654459e945376e99b9ff5670b6caf15abdc8d692228ac437c86d36ab4f41e5"
+    },
+    {
+      "bytes": 891,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralInitializer.java",
+      "sha256": "33f20d1aa1721cf7e42f9a6cbcbcc261bc2928c63845e420aa25bf9d68044cb4"
+    },
+    {
+      "bytes": 3028,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralModels.java",
+      "sha256": "ea136ef2bc6693b3c83d3bfca97ce05437b7b085fb020bc21ae2eda5a6c37656"
+    },
+    {
+      "bytes": 6535,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralSeed.java",
+      "sha256": "4558ca0ab17edb381dfdfbf96076fbc74428ae2b00b1960c6f49cdb9839c660a"
+    },
+    {
+      "bytes": 1003,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NewtonTrace.java",
+      "sha256": "337a8c8c354d0295c7f597b089fb9d88ce4b752e49198ea2115b2a6a391f8b45"
+    },
+    {
+      "bytes": 8755,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3NormalEquations.java",
+      "sha256": "5f2f47ddd64045c9300da51a9a582b8ef30fba18a6e99e13e6546c30fabea529"
+    },
+    {
+      "bytes": 7600,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3OperatingDomainValidator.java",
+      "sha256": "72870d5a5928b51d33f85c0c660a38152b6f7bfe3d35cf3e74dc93a5369624a3"
+    },
+    {
+      "bytes": 3723,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3PhaseAwareNeuralInitializer.java",
+      "sha256": "5068170f96f727f96d5968693164406c72e1614358644f2513edb2d9ae07eff1"
+    },
+    {
+      "bytes": 3142,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3Pumparounds.java",
+      "sha256": "25d214d7295f72f0a61538e9843455fd111c72b401d63eded4733c2f1e11d51a"
+    },
+    {
+      "bytes": 2288,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3PumparoundSpec.java",
+      "sha256": "7b8064d0ef8db55aff524e52766ff4a82cd5cb486d6a053d328f4f070059d596"
+    },
+    {
+      "bytes": 3464,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SequentialPreconditioner.java",
+      "sha256": "27f34713cacad20716ef49e684af90d34316d3f2e0da6e5c6e5f49e17903279e"
+    },
+    {
+      "bytes": 1388,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SideDraws.java",
+      "sha256": "98307de2f41575c53928d82d6a2450798c2d28177cadb9efdd4b4b49f93ae020"
+    },
+    {
+      "bytes": 503,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SideDrawSpec.java",
+      "sha256": "6952c1ccf7bba5ebe280fff22f0e1076e2908b8350e4a22a1a52d845bd739242"
+    },
+    {
+      "bytes": 47439,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver.java",
+      "sha256": "3555fbf9785eb695ee3cb7a56b9a8701dc5c59c47123ffb62c30ec9393b06254"
+    },
+    {
+      "bytes": 600,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SolveControl.java",
+      "sha256": "67927500e3174956b9a0bceaf0db69cdcf4b1f888a2b1b2acdf8e9aa9371345a"
+    },
+    {
+      "bytes": 2832,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SolverDiagnostics.java",
+      "sha256": "2873858f57fb5faa768cd6dec36c98f36a0b1d59b50ba310c5fd4755af282d3a"
+    },
+    {
+      "bytes": 456,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SolverFailureCode.java",
+      "sha256": "f55f92a0fbfe21cb4113d993043803607115ca0287f0f65e71e0756857d0e905"
+    },
+    {
+      "bytes": 6330,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageBlockLayout.java",
+      "sha256": "8d2afc35faa2469a890e3047950050dd9eca9a79a12f8881485e55c4a43f8b4d"
+    },
+    {
+      "bytes": 7770,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3StageEquilibriumRatios.java",
+      "sha256": "9f2eaf052b856f8c9ec1c87ed89da1aef0131b2597a540cd924e457f505a1797"
+    },
+    {
+      "bytes": 1260,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SteamFeeds.java",
+      "sha256": "cd24c087d05de66e32ed2f84b7efd72c4105956b7a37a302f2ea354e0f1a0992"
+    },
+    {
+      "bytes": 628,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SteamFeedSpec.java",
+      "sha256": "b2f4d42b50fa0c053edb9d1c62e560dccf6f85564ec2eaad662443ec8acceca2"
+    },
+    {
+      "bytes": 13144,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3SumRatesPreconditioner.java",
+      "sha256": "9afd4930eb85a610f163f26d2143f7bd0037a80f552faadcaaee6571e874d164"
+    },
+    {
+      "bytes": 3495,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3TruncationFallback.java",
+      "sha256": "0e3797104b287a7b9446ae88e2a9cccf68587e39c7dcab7621bb87160e6f2216"
+    },
+    {
+      "bytes": 42789,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3TruncationSupport.java",
+      "sha256": "8f1ac3e8bce2ae4f22b3f3407fc0bece489a0df1e7ad9367f20d32b690c548a6"
+    },
+    {
+      "bytes": 502,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3WaterCondenserRegime.java",
+      "sha256": "96c1da970872642e7c9a9ee2c5df66c65a9042d342cd869c2f8616c8c2e86efa"
+    },
+    {
+      "bytes": 2697,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3WaterPhaseQualification.java",
+      "sha256": "bc181bfa5034678f978339e9bfbba61987aa1bd17f78e3e35ce868bff2715ce9"
+    },
+    {
+      "bytes": 15153,
+      "entry": "src/main/java/com/wormzjl/createcheme/science/column/v3/V3WetTraySet.java",
+      "sha256": "278cf8f3eaa072c9d3a62fdc158b89f568e8f8d166040d5fff8b345ef929f3c0"
+    },
+    {
+      "bytes": 3717,
+      "entry": "tools/hybrid-learning/archive.py",
+      "sha256": "49afaba0aa86c2ac1657d1af6d7647e5019fb18a6ac7714e028c69feff3221f3"
+    },
+    {
+      "bytes": 9123,
+      "entry": "tools/hybrid-learning/benchmark.py",
+      "sha256": "fe5e7e34da344fbefd60a150456fb7738adf623ba0a53a2cba17cd37576456f5"
+    },
+    {
+      "bytes": 2716,
+      "entry": "tools/hybrid-learning/create_probe.py",
+      "sha256": "5f0c3d7823958af348f19c8734568f4c8dc973be1557caca147879a80ce65bfc"
+    },
+    {
+      "bytes": 3139,
+      "entry": "tools/hybrid-learning/create_runtime.py",
+      "sha256": "a792cf0fadda9a8ff1c69c4dfb418c8fadc3182e4e3245cf40c4952104c1bb5f"
+    },
+    {
+      "bytes": 4949,
+      "entry": "tools/hybrid-learning/export_hybrid.py",
+      "sha256": "b604e914f9fd5a224ad4be7d69ad25d377aa0cabeebafa783a43eea1274c045a"
+    },
+    {
+      "bytes": 1086,
+      "entry": "tools/hybrid-learning/hybrid.gradle",
+      "sha256": "abdc58dd24f349caa048e4048c40abdaf4352c980e8bef8ccda93c50e65254ec"
+    },
+    {
+      "bytes": 3079,
+      "entry": "tools/hybrid-learning/java/V3HybridBaseline.java",
+      "sha256": "8ee7c67ca0511a568c2747290b89ece97f84efe87f41357fec15ffbdecc02a10"
+    },
+    {
+      "bytes": 1568,
+      "entry": "tools/hybrid-learning/java/V3HybridBaselineExport.java",
+      "sha256": "fae76d6eb4797c4f48961f7a2157a2954d58bcdad3d1ff09b6c6e39d7c4688b7"
+    },
+    {
+      "bytes": 19681,
+      "entry": "tools/hybrid-learning/java/V3HybridEvaluationProbe.java",
+      "sha256": "56ba8381c4238f525a1c9865a5ad9b2eb450602730f2a9841b5353ca4e260854"
+    },
+    {
+      "bytes": 1463,
+      "entry": "tools/hybrid-learning/java/V3HybridModels.java",
+      "sha256": "d31de4d661c4ef6772a654f3af9b0933591d1d870d797c202e8ed9d755e048f7"
+    },
+    {
+      "bytes": 6500,
+      "entry": "tools/hybrid-learning/java/V3HybridParityCheck.java",
+      "sha256": "80a77436ffd8a60692c8f4f810398f64e4dce5dab69314f22669f8070609c792"
+    },
+    {
+      "bytes": 14588,
+      "entry": "tools/hybrid-learning/java/V3HybridResidualInitializer.java",
+      "sha256": "c4bcb02b807e200e7294c01750aa7705f1b70d27f20ea5682e0d8e6f318e0bd7"
+    },
+    {
+      "bytes": 781,
+      "entry": "tools/hybrid-learning/prepare_inputs.py",
+      "sha256": "4a91cc6db52d1b035cc97cc3580b7ce879f58fa035158daffc47508aeb9c7ce9"
+    },
+    {
+      "bytes": 2289,
+      "entry": "tools/hybrid-learning/prepare_test.py",
+      "sha256": "808189f5193ce5d7da1ce242dda667a0477ee10b9966dbe45c1aaf630f0da62a"
+    },
+    {
+      "bytes": 4777,
+      "entry": "tools/hybrid-learning/prepare_training.py",
+      "sha256": "307974f8119b93a6946b42c16e405b6c54317de5447ca80b6543ef43a839d729"
+    },
+    {
+      "bytes": 6348,
+      "entry": "tools/hybrid-learning/protocol.md",
+      "sha256": "78d2ed9bd042a8d5c7ed7ae106089871b371a1fb55a87a99c8ec511aa0754a78"
+    },
+    {
+      "bytes": 14583,
+      "entry": "tools/hybrid-learning/report.py",
+      "sha256": "a56296b30a97d607a66a096ddb4607a556badb6386584ea9d59338742d36b183"
+    },
+    {
+      "bytes": 3595,
+      "entry": "tools/hybrid-learning/run_checks.py",
+      "sha256": "d415774e5b4342309f22a6caf19f939ba3ef661bb3755c23d71cd060b9dbd412"
+    },
+    {
+      "bytes": 1240,
+      "entry": "tools/hybrid-learning/run_training.py",
+      "sha256": "1da679e8b72f154f25a20c3f8c516f26fb17a64b5f907bd504352d5c27d5d710"
+    },
+    {
+      "bytes": 2641,
+      "entry": "tools/hybrid-learning/test_training.py",
+      "sha256": "6fab17329ae2cb99b2b64bb2aa6fcaa5a883857d6fe37669cd0ecb1a93dfc3a3"
+    },
+    {
+      "bytes": 9439,
+      "entry": "tools/hybrid-learning/train_hybrid.py",
+      "sha256": "c144b73dcace8c05e128b972c6dc240e2031878050e9f35c006fa52772108e0b"
+    },
+    {
+      "bytes": 1112,
+      "entry": "tools/neural/salvage_dataset_manifest.json",
+      "sha256": "e61b280c18dd6cdf2dee50a9aeabb4910fea680f63bbd2ad73db84f3dc38c143"
+    },
+    {
+      "bytes": 3712,
+      "entry": "tools/neural/salvage_results.md",
+      "sha256": "45cf16b49abac109197d6af9d8be8db31d923bfd7ce8b43ef3437ca945b2ab74"
+    },
+    {
+      "bytes": 551,
+      "entry": "tools/neural/salvage_verification.json",
+      "sha256": "ff6dec16390293443b0a4bf097d7606fb6394f695b58a558a11725ab9fc5e74c"
+    },
+    {
+      "bytes": 5317,
+      "entry": "tools/neural/V3BoundedEvaluation.java",
+      "sha256": "aed990ad9f09e8d381e7f70199f33bd9899c874a07af5057ecec94240ceededd"
+    },
+    {
+      "bytes": 9103,
+      "entry": "tools/neural/V3BoundedEvaluationCheck.java",
+      "sha256": "6836e73c4344aff9c12bec3219ae306db6b4918840f0d48e60b438227800ba5a"
+    },
+    {
+      "bytes": 2203,
+      "entry": "tools/neural/V3CandidateModels.java",
+      "sha256": "3ee6666a97de988c437410d3c2f2dd8b6e8ebdde88a720d30d0901296cf095ac"
+    },
+    {
+      "bytes": 13718,
+      "entry": "tools/neural/V3ColumnTransformerInitializer.java",
+      "sha256": "43e393bf811c54a1e12e370f4b3b5ff9183ee6af5e7645804ed41a388bde89d2"
+    },
+    {
+      "bytes": 18935,
+      "entry": "tools/neural/V3ConcurrentColumnEvaluationProbe.java",
+      "sha256": "2841098b8be5c1de15ad952f88e33a87aa4d5db17f99bd13c24491bc77bdc2fb"
+    },
+    {
+      "bytes": 5677,
+      "entry": "tools/neural/V3FactorizedModelParityCheck.java",
+      "sha256": "132a82b6427d7d30c6752b5a61187fe020cedd8986ee9190211f5030ff692ab8"
+    },
+    {
+      "bytes": 8025,
+      "entry": "tools/neural/V3GeneralModelParityCheck.java",
+      "sha256": "fa635f63b1daaabc25dcc6d56ccc8f679f21afb7a64c8051684685fc7d33009a"
+    },
+    {
+      "bytes": 20490,
+      "entry": "tools/neural/V3GeneralParallelCheck.java",
+      "sha256": "79fe647d846d6d5223bdbebeb0a88ab3defd4a704407dec745503b8451dc7384"
+    },
+    {
+      "bytes": 23632,
+      "entry": "tools/neural/V3GeneralTrainingProbe.java",
+      "sha256": "e4abf47119aaab57c32c48feb66aaa9448d99d66f6ce1960964616c041dbe3ef"
+    },
+    {
+      "bytes": 7449,
+      "entry": "tools/neural/V3GenerationPredictionCheck.java",
+      "sha256": "0885df69f25d851909e2f45c177a99551906e05317c2d189a492822fd384d79b"
+    },
+    {
+      "bytes": 25887,
+      "entry": "tools/neural/V3MechanisticSeedProbe.java",
+      "sha256": "86b3638c57f09c4be249e92c954070ca3502338a071f19dd082798ccd8cd49f8"
+    },
+    {
+      "bytes": 8731,
+      "entry": "tools/neural/V3MechanisticTransformerInitializer.java",
+      "sha256": "b21b5000b32390161dd9941fdae4d52a298643ccecf4b5a4ac9ff87fc7eef355"
+    },
+    {
+      "bytes": 16813,
+      "entry": "tools/neural/V3MethaneTrainingProbe.java",
+      "sha256": "05ba873baf0021afb0486034d96dde0fc675d5d63b2ad172a724781885eb8cec"
+    },
+    {
+      "bytes": 7144,
+      "entry": "tools/neural/V3NearestModelParityCheck.java",
+      "sha256": "7915c82f7b8cab8ac1f8ba3c43f124ca5b99e6d441872a9f8551395a75481426"
+    },
+    {
+      "bytes": 7843,
+      "entry": "tools/neural/V3NeuralMvpProbe.java",
+      "sha256": "f3a01dbcd9e6cd605eb2a55eecd8827f2e07bb2a69eb0993d7ad5095d9c91dd0"
+    },
+    {
+      "bytes": 5814,
+      "entry": "tools/neural/V3TransformerParityCheck.java",
+      "sha256": "bd939434b9a65eb9687179bad6f5f8d1aaf55bf9a4c10d40d8799c5e495cf8ac"
+    },
+    {
+      "bytes": 6516,
+      "entry": "tools/neural/V3WetBoundaryTeacher.java",
+      "sha256": "c45864b5cbbcbeb8c20f44f7003e6246a170324fe9dab5498a3d92b41fcd8cc8"
+    },
+    {
+      "bytes": 13702,
+      "entry": "tools/neural/V3WetQualificationProbe.java",
+      "sha256": "14c71d199d9781f802c1c10604c66a5718a462d7c431f7e659017acaa29fc9f3"
+    },
+    {
+      "bytes": 17109,
+      "entry": "tools/neural/worktree-artifact-organization.json",
+      "sha256": "b0107b8f5ed3a271f704dded43a24ac8c5e71189b941ae5fb434d3b7e26eadd9"
+    }
+  ],
+  "mode": "training",
+  "revision": "hybrid-learning-archive-v1"
+}
