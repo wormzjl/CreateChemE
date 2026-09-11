@@ -1,0 +1,19 @@
+{
+  "N": 805,
+  "Nplus1": 906,
+  "archive": {
+    "bytes": 106762904,
+    "path": ".neural-cache/salvage-nplus1-v1/certified-campaign.zip",
+    "sha256": "e41c02d5f85b2cf4140d2d21bc9465e027905c57cea78a1c91192ade1207fa5b"
+  },
+  "archiveCrcPassed": true,
+  "archiveEntriesMatched": 22,
+  "canonicalDuplicates": 0,
+  "commonNontrainingRows": 835,
+  "exactOriginalNPrefix": true,
+  "newTrain": 101,
+  "passed": true,
+  "perNovelLabelRunAndModelHashesVerified": true,
+  "sourceAndCodeHashesReverified": true,
+  "unchangedCertifiedValidationLabels": 168
+}
