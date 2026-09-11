@@ -1,0 +1,16 @@
+// Registers only this additive offline probe; the sealed build file is unchanged.
+gradle.projectsEvaluated {
+    def project = gradle.rootProject
+    project.tasks.register('mechanisticSeedProbe', JavaExec) {
+        group = 'verification'
+        dependsOn project.tasks.named('neuralMvpClasses')
+        classpath = project.sourceSets.neuralMvp.runtimeClasspath
+        mainClass = 'com.wormzjl.createcheme.science.column.v3.V3MechanisticSeedProbe'
+        maxHeapSize = '4g'
+        args project.providers.gradleProperty('hybridMode').get(),
+            project.providers.gradleProperty('hybridFixtures').get(),
+            project.providers.gradleProperty('hybridModel').get(),
+            project.providers.gradleProperty('hybridOutput').get(),
+            project.providers.gradleProperty('hybridPlan').getOrElse('-')
+    }
+}
