@@ -1,0 +1,19 @@
+// New class output; previous sources and already compiled studies stay intact.
+gradle.projectsEvaluated {
+    def p = gradle.rootProject
+    def destination = p.layout.buildDirectory.dir('neural-trace-followup/classes-v1')
+    p.tasks.register('compileTraceFollowup', JavaCompile) {
+        source = p.fileTree('tools/trace-followup/java') { include '**/*.java' }
+        classpath = p.files('build/neural-hybrid-learning/classes-v1') + p.files(p.sourceSets.neuralMvp.runtimeClasspath.files)
+        destinationDirectory = destination
+        javaCompiler = p.javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+        options.encoding = 'UTF-8'
+    }
+    p.tasks.register('traceFollowup', JavaExec) {
+        dependsOn p.tasks.named('compileTraceFollowup')
+        classpath = p.files(destination) + p.files('build/neural-hybrid-learning/classes-v1') + p.files(p.sourceSets.neuralMvp.runtimeClasspath.files)
+        mainClass = p.providers.gradleProperty('followupMain').getOrElse('com.wormzjl.createcheme.science.column.v3.V3TraceParityCheck')
+        maxHeapSize = '4g'
+        args p.providers.gradleProperty('followupArgs').getOrElse('').split(',').toList()
+    }
+}
