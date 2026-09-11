@@ -30,8 +30,17 @@ def verify_outputs():
     for item in gate['sources']:assert digest(ROOT/item['path'])==item['sha256']
     summary,cases,text=analysis.build_outputs()
     require_equal_outputs(summary,cases,text)
+    report_names=['summary.json','case-map.jsonl','report.md']
+    if (AREA/'diagnostic-plan-v2.json').exists():
+        from profile_report import build_outputs
+        profile,profile_text=build_outputs()
+        if json.loads((AREA/'profile-summary.json').read_text())!=profile:
+            raise ValueError('Stored native profile summary differs from recomputation')
+        if (AREA/'profile-report.md').read_text(encoding='utf-8')!=profile_text:
+            raise ValueError('Stored native profile report differs from rerendering')
+        report_names+=['profile-summary.json','profile-report.md']
     return dict(passed=True,selection=selection_check['selection'],testExecutionLock=info(AREA/'test-execution-lock.json'),
-        benchmarkPlan=info(PLAN),reports=[info(AREA/name) for name in ('summary.json','case-map.jsonl','report.md')],
+        benchmarkPlan=info(PLAN),reports=[info(AREA/name) for name in report_names],
         source=info(Path(__file__)),validationIndependentInputs=405,testIndependentInputs=252,blocks=2,
         summaryRecomputed=True,caseMapRecomputed=True,reportRerendered=True,storedOutputsEqual=True)
 
