@@ -48,6 +48,7 @@ tools/*
 !tools/hybrid-diagnosis/
 !tools/training-curation/
 !tools/trace-followup/
+!tools/capacity-followup/
 
 # Claude × Codex collaboration runtime files
 .collab/
