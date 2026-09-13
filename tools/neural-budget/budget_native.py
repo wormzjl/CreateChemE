@@ -11,7 +11,7 @@ import os
 import subprocess
 
 JAVA = Path('C:/Program Files/Java/jdk-21.0.11/bin')
-CORE_CLASSES = ROOT / 'build/neural-budget/native-core-v1'
+CORE_CLASSES = ROOT / f'build/neural-budget/native-core-{REVISION}'
 GSON = Path('C:/Users/wormz/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.10.1/'
             'b3add478d4382b78ea20b1671390a858002feb6c/gson-2.10.1.jar')
 DEPENDENCIES = [CORE_CLASSES, ROOT / 'src/main/resources', GSON]

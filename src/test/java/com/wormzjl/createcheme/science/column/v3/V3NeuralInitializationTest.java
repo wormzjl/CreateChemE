@@ -155,6 +155,67 @@ class V3NeuralInitializationTest {
         assertFalse(events.contains("unmeasured"),events);
     }
 
+    /**
+     * The progress rule is opt-in: the default correction reproduces the frozen walls exactly.
+     *
+     * <p>Both requests below run the same displaced seed on the same input. The first uses the production
+     * rule and the second adds an extension it can never earn, because its contraction factor is zero, and
+     * a stall stop it can never trigger, because its floor is above any residual. A rule that is genuinely
+     * inert has to produce the same published evidence, not merely the same outcome.</p>
+     */
+    @Test void theProgressCorrectionRuleIsInertUntilItsTestsCanFire() {
+        V3ColumnInput input = input();
+        var captured = new AtomicReference<V3NeuralSeed>();
+        assertInstanceOf(V3ColumnOutcome.Success.class,
+                V3ColumnCalculator.calculateWithAcceptedProfile(input,()->{},captured::set));
+        V3NeuralInitializer model = fixed(displaced(captured.get()));
+        var walls = options(V3InitializationOptions.Mode.LNN_ONLY);
+        var inert = new V3InitializationOptions(V3InitializationOptions.Mode.LNN_ONLY,
+                V3InitializationOptions.WetStart.AUTO,16,5_000,
+                new V3InitializationOptions.Correction(8,48,8,0.0,8,0.0,1e30));
+        assertEquals(V3InitializationOptions.Correction.WALLS,walls.correction());
+        var reference = V3ColumnCalculator.calculate(input,()->{},0,0,walls,model);
+        var candidate = V3ColumnCalculator.calculate(input,()->{},0,0,inert,model);
+        assertEquals(reference.isSuccess(),candidate.isSuccess());
+        assertEquals(reference.diagnostics().newtonIterations(),candidate.diagnostics().newtonIterations());
+        assertEquals(reference.diagnostics().maximumScaledResidual(),candidate.diagnostics().maximumScaledResidual());
+        assertEquals(reference.diagnostics().convergenceEvidence(),candidate.diagnostics().convergenceEvidence());
+    }
+
+    /** A zero decoded phase total stays empty by default and is seeded at the declared floors when asked. */
+    @Test void theZeroPhaseDecoderFloorOnlyFillsPhasesTheBranchAllows() {
+        V3ColumnInput request = input();
+        int components = request.componentBasis().componentCount();
+        double[] feed = request.feedComponentMolarFlowsMolPerSecond();
+        double totalFeed = 0; for (double value : feed) totalFeed += value;
+        int nodes = request.stageCount()+2;
+        double[][] outputs = new double[nodes][V3FactorizedNeuralFeatures.outputWidth(components)];
+        for (int n = 0; n < nodes; n++) {
+            outputs[n][0] = 300 + 50.0*n;
+            outputs[n][1] = 0; outputs[n][2] = 0; // both phase totals decode to exactly zero
+            for (int c = 0; c < components; c++) {
+                outputs[n][5 + 2*components + c] = feed[c] > 0 ? 8 : -8;   // liquid presence
+                outputs[n][5 + 3*components + c] = feed[c] > 0 ? 8 : -8;   // vapor presence
+            }
+        }
+        var branch = V3CondenserPhaseBranch.LIQUID_ONLY;
+        var plain = V3FactorizedNeuralFeatures.decode(request,"test-revision",branch,outputs,0.02);
+        for (int n = 0; n < nodes; n++) {
+            assertEquals(0.0,java.util.Arrays.stream(plain.liquid()[n]).sum());
+            assertEquals(0.0,java.util.Arrays.stream(plain.vapor()[n]).sum());
+        }
+        var lifted = V3FactorizedNeuralFeatures.decode(request,"test-revision",branch,outputs,0.02,
+                V3FactorizedNeuralFeatures.DecodeOptions.zeroPhaseFloor(10));
+        double floors = 0;
+        for (int c = 0; c < components; c++)
+            if (feed[c] > 0) floors += Math.max(feed[c],totalFeed*1e-12)*V3FactorizedNeuralFeatures.TRACE_FLOOR_FRACTION;
+        for (int n = 0; n < nodes; n++) {
+            assertEquals(10*floors,java.util.Arrays.stream(lifted.liquid()[n]).sum(),1e-18*totalFeed);
+            // The condenser's vapour is forbidden by the branch and stays empty however confident the head is.
+            assertEquals(n == 0 ? 0.0 : 10*floors,java.util.Arrays.stream(lifted.vapor()[n]).sum(),1e-18*totalFeed);
+        }
+    }
+
     /** The accepted profile, moved off its own solution far enough that the corrector needs several steps. */
     private static V3NeuralSeed displaced(V3NeuralSeed seed) {
         double[][] liquid = seed.liquid(), vapor = seed.vapor();

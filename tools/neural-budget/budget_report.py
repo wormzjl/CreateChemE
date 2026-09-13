@@ -28,7 +28,7 @@ def summary():
                                   for block in BLOCKS],
             elapsedSeconds=[analysis['runMetadata'][f'{block}/{name}']['elapsedSeconds'] for block in BLOCKS],
             aboveFloorOmissions=analysis['referenceOmissions'][name]['aboveFloorOmissions'])
-    diagnostic = OUT / 'trace-analysis.json'
+    diagnostic = DIAGNOSTIC_OUT / 'trace-analysis.json'
     result = dict(
         revision='neural-budget-summary-v1', studyPlan=info(OUT / 'study-plan.json'),
         analysis=info(OUT / 'validation-analysis.json'), baseCommit=plan['baseCommit'],

@@ -61,20 +61,20 @@ def seal():
                  seedSha256=None if row['seed'] is None else hashlib.sha256(
                      json.dumps(row['seed'], sort_keys=True, separators=(',', ':')).encode()).hexdigest())
             for row in read_rows(OUT / 'preflight/decode' / f'{name}.jsonl')]))
-    diagnostic = read(OUT / 'trace-analysis.json')
+    diagnostic = read(DIAGNOSTIC_OUT / 'trace-analysis.json')
     entries.append(write(EVIDENCE / 'trace-trajectories.jsonl.gz',
                          [trajectory(diagnostic['perCase'][case]) for case in sorted(diagnostic['perCase'])]))
     manifest = dict(
         revision='neural-budget-evidence-v1', studyPlan=info(OUT / 'study-plan.json'),
         analysis=info(OUT / 'validation-analysis.json'), summary=info(ROOT / 'tools/neural-budget/summary.json'),
-        diagnostic=info(OUT / 'trace-analysis.json'),
+        diagnostic=info(DIAGNOSTIC_OUT / 'trace-analysis.json'),
         committedEvidence=entries,
         committedBytes=sum((ROOT / entry['path']).stat().st_size for entry in entries),
         uncommittedJournals=[dict(run=value['run'], evaluation=value['evaluation'],
                                   evaluationBytes=(ROOT / value['evaluation']['path']).stat().st_size)
                              for value in analysis['runMetadata'].values()],
         uncommittedDecodeDumps=[info(OUT / 'preflight/decode' / f'{name}.jsonl') for name in ORDER],
-        uncommittedTraceJournals=[info(trace_directory(config) / 'trace.jsonl') for config in TRACE_CONFIGS],
+        uncommittedTraceJournals=[info(DIAGNOSTIC_OUT / 'trace' / config / 'trace.jsonl') for config in TRACE_CONFIGS],
         restoration='Committed files hold per-case outcome, status, cost and stop evidence, the reference profile '
                     'evidence, the per-case decoded-seed digests and the per-case correction trajectories of the '
                     'bounded diagnostic. The complete journals, decoded seeds and traced profiles stay under '

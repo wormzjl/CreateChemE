@@ -328,7 +328,7 @@ public final class V3ColumnCalculator {
         }
         V3SolvePass pass = solveSingleProblem(problem, thermo, state, control, "lnn/requested-state",
                 ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS, options.maximumIterations(), policy,
-                V3SimultaneousColumnSolver.RungBudget.DEFAULT, wet);
+                neuralRungBudget(options), wet, neuralExtension(options));
         List<String> events = fixedWaterRefined ? mergedEvents(List.of(
                 "wet seed refinement: fixed-water warm pass; final certificate releases every wet coordinate"), pass.solverEvents())
                 : pass.solverEvents();
@@ -350,6 +350,34 @@ public final class V3ColumnCalculator {
         }
         return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE,
                 "Learned seed did not reach an audited requested solution", diagnostics);
+    }
+
+    /**
+     * The rung budget of the learned correction: the default cascade, plus the requested early stop.
+     *
+     * <p>The production rule states no stall window and reproduces {@link
+     * V3SimultaneousColumnSolver.RungBudget#DEFAULT} exactly. A progress rule adds the stall stop the steam
+     * rungs already carry and changes nothing else: every damping step, the gradient fallback and the
+     * verification cascade stay, because a correction that reaches tolerance still has to publish a
+     * certificate.</p>
+     */
+    private static V3SimultaneousColumnSolver.RungBudget neuralRungBudget(V3InitializationOptions options) {
+        V3InitializationOptions.Correction correction = options.correction();
+        if (!correction.stopsEarly()) return V3SimultaneousColumnSolver.RungBudget.DEFAULT;
+        V3SimultaneousColumnSolver.RungBudget budget = V3SimultaneousColumnSolver.RungBudget.DEFAULT;
+        return new V3SimultaneousColumnSolver.RungBudget(budget.maximumDampingSteps(), budget.gradientFallback(),
+                budget.verificationDampingSteps(), correction.stallWindow(), correction.stallFactor(),
+                correction.stallResidualFloor());
+    }
+
+    /** The progress extension of the learned correction; disabled unless the caller asked for one. */
+    private static V3SimultaneousColumnSolver.Extension neuralExtension(V3InitializationOptions options) {
+        V3InitializationOptions.Correction correction = options.correction();
+        return correction.extendsAttempts()
+                ? new V3SimultaneousColumnSolver.Extension(correction.extensionBlock(),
+                        correction.extensionMaximumIterations(), correction.contractionWindow(),
+                        correction.contractionFactor())
+                : V3SimultaneousColumnSolver.Extension.NONE;
     }
 
     private static V3ColumnOutcome initializationEvent(V3ColumnOutcome outcome, String event) {
@@ -1082,13 +1110,22 @@ public final class V3ColumnCalculator {
             V3DryMeshState seed, V3SolveControl control, String solvePath, ContinuationJacobianPolicy jacobianPolicy,
             int maximumIterations, SolvePolicy policy, V3SimultaneousColumnSolver.RungBudget budget,
             V3WetTraySet initialWetTrays) {
+        return solveSingleProblem(problem, thermo, seed, control, solvePath, jacobianPolicy, maximumIterations,
+                policy, budget, initialWetTrays, V3SimultaneousColumnSolver.Extension.NONE);
+    }
+
+    private static V3SolvePass solveSingleProblem(V3ColumnProblem problem, V3PengRobinsonThermo thermo,
+            V3DryMeshState seed, V3SolveControl control, String solvePath, ContinuationJacobianPolicy jacobianPolicy,
+            int maximumIterations, SolvePolicy policy, V3SimultaneousColumnSolver.RungBudget budget,
+            V3WetTraySet initialWetTrays, V3SimultaneousColumnSolver.Extension extension) {
         if (maximumIterations < 1 || maximumIterations > MAXIMUM_NEWTON_ITERATIONS) {
             throw new IllegalArgumentException("V3 simultaneous solve iteration limit is invalid");
         }
         jacobianPolicy = Objects.requireNonNull(jacobianPolicy, "jacobianPolicy");
         // Only the continuation path has rungs whose failure a caller absorbs; a reduced budget anywhere else
         // would silently weaken a solve that has nothing to fall back on.
-        if (!Objects.requireNonNull(budget, "budget").equals(V3SimultaneousColumnSolver.RungBudget.DEFAULT)
+        if ((!Objects.requireNonNull(budget, "budget").equals(V3SimultaneousColumnSolver.RungBudget.DEFAULT)
+                || Objects.requireNonNull(extension, "extension").enabled())
                 && jacobianPolicy != ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS) {
             throw new IllegalArgumentException("V3 reduced rung budgets belong to the stage-local continuation path");
         }
@@ -1135,7 +1172,7 @@ public final class V3ColumnCalculator {
                         V3FiniteDifferenceJacobian.DifferenceScale.FINE, control, telemetry);
                 case STAGE_LOCAL_BLOCKS -> V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
-                        nextIterations, policy.closureTolerance(), control, telemetry, budget);
+                        nextIterations, policy.closureTolerance(), control, telemetry, budget, extension);
                 case PRESSURE_LOCAL_PREDICTOR -> V3SimultaneousColumnSolver.solveWithOneLocalBlockPredictor(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
                         nextIterations, policy.closureTolerance(), control, telemetry);

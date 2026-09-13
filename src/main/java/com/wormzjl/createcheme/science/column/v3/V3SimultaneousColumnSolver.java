@@ -93,7 +93,8 @@ final class V3SimultaneousColumnSolver {
             V3SolveControl control,
             V3NewtonTrace trace) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, initialConvergenceEvidence,
-                maximumIterations, scaledTolerance, differenceScale, control, trace, 0, 0, RungBudget.DEFAULT);
+                maximumIterations, scaledTolerance, differenceScale, control, trace, 0, 0, RungBudget.DEFAULT,
+                Extension.NONE);
     }
 
     /**
@@ -140,9 +141,25 @@ final class V3SimultaneousColumnSolver {
             V3SolveControl control,
             V3NewtonTrace trace,
             RungBudget budget) {
+        return solveWithContinuationLocalBlocks(problem, evaluator, coordinates, initialState, workspaceFactory,
+                maximumIterations, scaledTolerance, control, trace, budget, Extension.NONE);
+    }
+
+    static Attempt solveWithContinuationLocalBlocks(
+            V3ColumnProblem problem,
+            V3MeshResidualEvaluator evaluator,
+            V3DryMeshCoordinateMap coordinates,
+            V3DryMeshState initialState,
+            V3FiniteDifferenceJacobian.V3ThermoWorkspaceFactory workspaceFactory,
+            int maximumIterations,
+            double scaledTolerance,
+            V3SolveControl control,
+            V3NewtonTrace trace,
+            RungBudget budget,
+            Extension extension) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
                 maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE,
-                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, UNLIMITED_LOCAL_BLOCK_ATTEMPTS, budget);
+                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, UNLIMITED_LOCAL_BLOCK_ATTEMPTS, budget, extension);
     }
 
     /** Uses exactly one local block predictor before the full finite-difference pressure-leg corrector. */
@@ -158,7 +175,7 @@ final class V3SimultaneousColumnSolver {
             V3NewtonTrace trace) {
         return solve(problem, evaluator, coordinates, initialState, workspaceFactory, V3ConvergenceEvidence.unavailable(),
                 maximumIterations, scaledTolerance, V3FiniteDifferenceJacobian.DifferenceScale.FINE,
-                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, 1, RungBudget.DEFAULT);
+                control, trace, MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS, 1, RungBudget.DEFAULT, Extension.NONE);
     }
 
     private static Attempt solve(
@@ -175,7 +192,8 @@ final class V3SimultaneousColumnSolver {
             V3NewtonTrace trace,
             int maximumFrozenFineJacobianSteps,
             int maximumLocalBlockAttempts,
-            RungBudget budget) {
+            RungBudget budget,
+            Extension extension) {
         problem = Objects.requireNonNull(problem, "problem");
         evaluator = Objects.requireNonNull(evaluator, "evaluator");
         coordinates = Objects.requireNonNull(coordinates, "coordinates");
@@ -186,6 +204,7 @@ final class V3SimultaneousColumnSolver {
         control = Objects.requireNonNull(control, "control");
         trace = Objects.requireNonNull(trace, "trace");
         budget = Objects.requireNonNull(budget, "budget");
+        extension = Objects.requireNonNull(extension, "extension");
         if (maximumIterations < 1 || !Double.isFinite(scaledTolerance) || scaledTolerance <= 0.0
                 || maximumFrozenFineJacobianSteps < 0
                 || maximumFrozenFineJacobianSteps > MAXIMUM_FROZEN_FINE_JACOBIAN_STEPS
@@ -196,8 +215,11 @@ final class V3SimultaneousColumnSolver {
         V3BandedPivotedSolver.Workspace linearWorkspace = new V3BandedPivotedSolver.Workspace();
         int maximumLineSearchSteps = differenceScale == V3FiniteDifferenceJacobian.DifferenceScale.COARSE
                 ? COARSE_RECOVERY_MAXIMUM_LINE_SEARCH_STEPS : FINE_MAXIMUM_LINE_SEARCH_STEPS;
-        // Only a budget that asks for the stall stop pays for its history; null is the frozen default path.
-        double[] stallResiduals = budget.stallWindow() > 0 ? new double[maximumIterations + 1] : null;
+        // Only a budget that asks for the stall stop or the progress extension pays for its history; null is
+        // the frozen default path.
+        double[] stallResiduals = budget.stallWindow() > 0 || extension.enabled()
+                ? new double[Math.max(maximumIterations, extension.maximumIterations()) + 1] : null;
+        int extensionBlocks = 0;
         V3DryMeshState state = initialState;
         double lastMerit = Double.NaN;
         V3ConvergenceEvidence lastConvergenceEvidence = initialConvergenceEvidence;
@@ -239,9 +261,21 @@ final class V3SimultaneousColumnSolver {
                 }
             }
             if (iteration == maximumIterations) {
-                return new Attempt.Failure("MAX_ITERATIONS", state,
-                        new Evidence(iteration, maximumResidual, merit, 0.0, 0.0, "iteration budget exhausted",
-                                lastConvergenceEvidence));
+                // A cap is only a wall while the attempt has stopped earning steps. One that is still
+                // contracting over its window buys another block, never past the extension's own cap and
+                // never past the caller's wall-clock allowance, which its control still enforces.
+                int extended = extension.extend(maximumIterations, iteration, maximumResidual, stallResiduals,
+                        scaledTolerance);
+                if (extended > maximumIterations) {
+                    maximumIterations = extended;
+                    extensionBlocks++;
+                } else {
+                    return new Attempt.Failure("MAX_ITERATIONS", state,
+                            new Evidence(iteration, maximumResidual, merit, 0.0, 0.0,
+                                    extensionBlocks == 0 ? "iteration budget exhausted"
+                                            : "iteration budget exhausted after " + extensionBlocks + " progress extension(s)",
+                                    lastConvergenceEvidence));
+                }
             }
             // A rung whose residual has not fallen by the budget's factor over its window is not converging;
             // spending the rest of the iteration budget on it only delays the caller's own recovery. The floor
@@ -728,6 +762,46 @@ final class V3SimultaneousColumnSolver {
         RungBudget withoutVerificationCascade() {
             return new RungBudget(maximumDampingSteps, gradientFallback, 0,
                     stallWindow, stallFactor, stallResidualFloor);
+        }
+    }
+
+    /**
+     * Progress-based extension of an attempt's iteration cap. {@link #NONE} is the frozen hard cap.
+     *
+     * <p>An attempt that reaches its cap with a residual still falling by {@code factor} over
+     * {@code window} iterations is granted another {@code block}, never past {@code maximumIterations}.
+     * The test reads the same residual history the stall stop keeps, so it costs an array and a comparison
+     * and only on the iteration where the attempt would otherwise have failed. With {@code block} zero,
+     * nothing is allocated that would not have been, and the loop is the historical one.</p>
+     */
+    record Extension(int block, int maximumIterations, int window, double factor) {
+        static final Extension NONE = new Extension(0, 0, 0, 0.0);
+
+        Extension {
+            if (block < 0 || maximumIterations < 0 || window < 0
+                    || maximumIterations > V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS
+                    || !Double.isFinite(factor) || factor < 0.0 || factor > 1.0) {
+                throw new IllegalArgumentException("V3 Newton extension is invalid");
+            }
+            if (block > 0 && (window < 1 || maximumIterations < 1)) {
+                throw new IllegalArgumentException("V3 Newton extension needs a window and a cap");
+            }
+        }
+
+        boolean enabled() { return block > 0; }
+
+        /**
+         * The new cap when this attempt has earned another block, or the old one when it has not.
+         *
+         * <p>An attempt already at tolerance is never extended: it is about to be certified or to fail its
+         * final-step gate, and neither needs more iterations.</p>
+         */
+        int extend(int cap, int iteration, double maximumResidual, double[] history, double scaledTolerance) {
+            if (!enabled() || cap >= maximumIterations || history == null || iteration < window) return cap;
+            if (maximumResidual <= scaledTolerance) return cap;
+            double earlier = history[iteration - window];
+            if (!(earlier > 0.0) || maximumResidual > factor * earlier) return cap;
+            return Math.min(maximumIterations, cap + block);
         }
     }
 

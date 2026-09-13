@@ -15,6 +15,7 @@ from analysis_common import (mode_evidence, condition, profile_evidence, summari
                              summarize_profiles, paired_profiles, optional)
 import argparse
 import gzip
+import math
 from collections import Counter
 
 REFERENCE = 'F0-baseline'
@@ -244,7 +245,7 @@ def build():
     intersection = set.intersection(*classical.values())
     classical_union = intersection
     preflight = read(OUT / 'preflight-parity.json')
-    trace = OUT / 'trace-analysis.json'
+    trace = DIAGNOSTIC_OUT / 'trace-analysis.json'
     result = dict(
         revision='neural-budget-analysis-v1', studyPlan=info(OUT / 'study-plan.json'),
         preflight=info(OUT / 'preflight-parity.json'), pipelines=ORDER, blocks=BLOCKS, cases=plan['cases'],
@@ -279,8 +280,34 @@ def build():
     return result, case_records, profile_records
 
 
+def representable(node, path, reported):
+    """Replace a statistic that is not a JSON number with null, and say where it happened.
+
+    A rejected candidate's independent audit can report an enormous ratio — a failed SIDE_DRAW_SPLIT check
+    on one phase-floor seed reads about 2e254 against a limit of 1 — and squaring that for a sample
+    standard deviation overflows a double. The value itself is finite and is kept; only the derived
+    spread is unrepresentable. It is recorded rather than quietly dropped, and it can never touch a strict
+    count, because a check that fails is a candidate that was not accepted.
+    """
+    if isinstance(node, dict):
+        return {key: representable(value, f'{path}/{key}', reported) for key, value in node.items()}
+    if isinstance(node, list):
+        return [representable(value, f'{path}[{index}]', reported) for index, value in enumerate(node)]
+    if isinstance(node, float) and not math.isfinite(node):
+        reported.append(dict(path=path, value=repr(node)))
+        return None
+    return node
+
+
 def main():
     result, case_records, profile_records = build()
+    overflowed = []
+    result = representable(result, '', overflowed)
+    result['nonFiniteStatistics'] = dict(
+        entries=overflowed,
+        note='Derived spreads that overflowed a double and are published as null. The underlying audit '
+             'values are finite and are kept; every such entry belongs to a check that failed, so no '
+             'strict outcome depends on it.')
     freeze(OUT / 'validation-analysis.json', result)
     for name, rows in (('case', case_records), ('profile', profile_records)):
         path = OUT / f'validation-{name}-evidence.jsonl.gz'

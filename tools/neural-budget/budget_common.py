@@ -6,6 +6,7 @@ rules. The predecessor workspaces are read only; everything measured here lives 
 root and is bound by the SHA-256 the predecessor registrations recorded.
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -21,7 +22,13 @@ PRIOR = Path('C:/Users/wormz/.codex/worktrees/8848/CreateChemE')
 PRIOR_TRACE = PRIOR / 'build/neural-trace-followup/v1'
 PRIOR_CAPACITY = PRIOR / 'build/neural-capacity-followup/v1'
 
-OUT = ROOT / 'build/neural-budget/v1'
+# The study runs in two registered phases with their own native cores, because the bounded diagnostic has
+# to measure the unchanged production correction and the campaign has to measure the changed one. `v1`
+# holds the diagnostic; `v2` holds the campaign that the diagnostic's declared decision rule selects.
+REVISION = os.environ.get('NEURAL_BUDGET_REVISION', 'v1')
+assert REVISION in ('v1', 'v2'), REVISION
+OUT = ROOT / f'build/neural-budget/{REVISION}'
+DIAGNOSTIC_OUT = ROOT / 'build/neural-budget/v1'
 INPUTS = OUT / 'inputs'
 EVIDENCE = ROOT / 'tools/neural-budget/evidence'
 IDS = ROOT / 'tools/neural-budget/ids'
@@ -49,15 +56,25 @@ TRACE_CONFIGS = {
 }
 
 # The correction rule of a pipeline, as the pipeline manifest states it. "fixed" is the production wall
-# pair. The progress rule is registered in phase two together with the solver change that implements it,
-# and only if the diagnostic's declared decision rule selects it.
+# pair. The progress rule keeps both walls and adds the declared contraction test and early stop; its
+# parameters are ladder step 1, registered by budget_ladder.py under the rule protocol.md declared.
 BASELINE_CORRECTION = dict(rule='fixed', maximumIterations=MAXIMUM_ITERATIONS, budgetMillis=NEURAL_BUDGET_MILLIS)
+PROGRESS_CORRECTION = dict(rule='progress', maximumIterations=MAXIMUM_ITERATIONS,
+                           budgetMillis=NEURAL_BUDGET_MILLIS, extensionBlock=8, extensionMaximumIterations=48,
+                           contractionWindow=8, contractionFactor=0.5,
+                           stallWindow=8, stallFactor=0.9, stallResidualFloor=1e-6)
+PHASE_FLOOR_DECODER = dict(rule='zero-phase-floor', zeroPhaseFloorFactor=10.0)
+PRUNE_DECODER = dict(rule='prune')
 
-# One pipeline per intervention on the identical frozen F0 weight bytes. The candidate entries are
-# written by budget_register once the diagnostic has chosen them; the baseline never changes.
-PIPELINES = {
-    'F0-baseline': dict(decoder=dict(rule='prune'), correction=BASELINE_CORRECTION),
-}
+# One pipeline per selected intervention on the identical frozen F0 weight bytes. The diagnostic phase
+# registers the baseline alone; the campaign phase adds the interventions the declared rules selected.
+PIPELINES = {'F0-baseline': dict(decoder=PRUNE_DECODER, correction=BASELINE_CORRECTION)}
+if REVISION != 'v1':
+    PIPELINES.update({
+        'F0-progress': dict(decoder=PRUNE_DECODER, correction=PROGRESS_CORRECTION),
+        'F0-phase-floor': dict(decoder=PHASE_FLOOR_DECODER, correction=BASELINE_CORRECTION),
+        'F0-progress-phase-floor': dict(decoder=PHASE_FLOOR_DECODER, correction=PROGRESS_CORRECTION),
+    })
 ORDER = list(PIPELINES)
 
 

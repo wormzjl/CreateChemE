@@ -139,7 +139,7 @@ def register():
     tools = sorted(p for p in (ROOT / 'tools/neural-budget').rglob('*')
                    if p.is_file() and p.suffix in ('.py', '.java', '.md', '.json') and p.name != 'results.md')
     commit = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=ROOT, capture_output=True, text=True, check=True)
-    plan = dict(revision='neural-budget-study-v1', createdUtc=datetime.now(timezone.utc).isoformat(),
+    plan = dict(revision=f'neural-budget-study-{REVISION}', phase=REVISION, createdUtc=datetime.now(timezone.utc).isoformat(),
                 baseCommit=commit.stdout.strip(),
                 question='Do the learned seed\'s capped corrections stop while still contracting, and does a '
                          'progress-based correction budget or a phase-level decoder floor on the frozen F0 '
@@ -177,7 +177,7 @@ def register():
 
 def verify_plan():
     plan = read(OUT / 'study-plan.json')
-    assert plan['revision'] == 'neural-budget-study-v1'
+    assert plan['revision'] == f'neural-budget-study-{REVISION}'
     assert plan['workers'] == WORKERS and plan['maximumIterations'] == MAXIMUM_ITERATIONS
     assert plan['neuralBudgetMillis'] == NEURAL_BUDGET_MILLIS and plan['requestDeadlineSeconds'] == DEADLINE_SECONDS
     assert set(plan['pipelines']) == set(ORDER) and plan['orderByBlock'] == [ORDER, list(reversed(ORDER))]

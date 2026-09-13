@@ -3,21 +3,77 @@ package com.wormzjl.createcheme.science.column.v3;
 import java.util.Objects;
 
 /** Immutable admission snapshot. Neural budgets never replace the caller's overall deadline. */
-public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumIterations, int budgetMilliseconds) {
+public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumIterations, int budgetMilliseconds,
+        Correction correction) {
     public enum Mode { LNN_FIRST, LNN_ONLY, CURRENT_ONLY }
     public enum WetStart { AUTO, DRY_START, PREDICTED_WET }
+
+    /**
+     * How one learned correction attempt is allowed to spend Newton iterations.
+     *
+     * <p>{@link #WALLS} is the frozen production rule and the default: a hard iteration cap inside a hard
+     * wall-clock allowance, with no progress test of any kind. It reproduces the historical path bit for
+     * bit, because every field it would consult is zero.</p>
+     *
+     * <p>A progress rule keeps the same base cap and, when an attempt reaches it, extends it in blocks
+     * while the maximum scaled residual is still falling by {@code contractionFactor} over
+     * {@code contractionWindow} iterations, never past {@code extensionMaximumIterations} and never past
+     * the unchanged wall. {@code stallWindow}, {@code stallFactor} and {@code stallResidualFloor} are the
+     * mirror image: an attempt whose residual has not fallen by that factor over that window stops there
+     * instead of spending the rest of its cap. Extending and stopping are one rule, not two — the time the
+     * stop returns is what pays for the time the extension spends.</p>
+     *
+     * @param extensionBlock iterations added per granted block, or zero for the frozen hard cap
+     * @param extensionMaximumIterations the cap an extended attempt may never exceed
+     * @param contractionWindow iterations the extension's contraction test looks back over
+     * @param contractionFactor the fraction of its earlier value the residual must have reached
+     * @param stallWindow iterations the early stop looks back over, or zero to never stop early
+     * @param stallFactor the fraction an attempt must beat to continue
+     * @param stallResidualFloor residual below which the early stop never fires
+     */
+    public record Correction(int extensionBlock, int extensionMaximumIterations, int contractionWindow,
+            double contractionFactor, int stallWindow, double stallFactor, double stallResidualFloor) {
+        /** The frozen production rule: walls only. */
+        public static final Correction WALLS = new Correction(0, 0, 0, 0.0, 0, 0.0, 0.0);
+
+        public Correction {
+            if (extensionBlock < 0 || extensionMaximumIterations < 0 || contractionWindow < 0 || stallWindow < 0
+                    || extensionMaximumIterations > V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS
+                    || !Double.isFinite(contractionFactor) || contractionFactor < 0.0 || contractionFactor > 1.0
+                    || !Double.isFinite(stallFactor) || stallFactor < 0.0 || stallFactor > 1.0
+                    || !Double.isFinite(stallResidualFloor) || stallResidualFloor < 0.0) {
+                throw new IllegalArgumentException("Invalid neural correction progress rule");
+            }
+            if (extensionBlock > 0 && (contractionWindow < 1 || extensionMaximumIterations < 1)) {
+                throw new IllegalArgumentException("A neural correction extension needs a window and a cap");
+            }
+        }
+
+        public boolean extendsAttempts() { return extensionBlock > 0; }
+
+        public boolean stopsEarly() { return stallWindow > 0; }
+    }
 
     public static final V3InitializationOptions DEFAULT =
             new V3InitializationOptions(Mode.LNN_FIRST, WetStart.AUTO, 16, 2_000);
     public static final V3InitializationOptions CURRENT =
             new V3InitializationOptions(Mode.CURRENT_ONLY, WetStart.DRY_START, 16, 2_000);
 
+    /** The production walls; every caller that does not ask for a progress rule gets the frozen path. */
+    public V3InitializationOptions(Mode mode, WetStart wetStart, int maximumIterations, int budgetMilliseconds) {
+        this(mode, wetStart, maximumIterations, budgetMilliseconds, Correction.WALLS);
+    }
+
     public V3InitializationOptions {
         Objects.requireNonNull(mode, "mode");
         Objects.requireNonNull(wetStart, "wetStart");
+        Objects.requireNonNull(correction, "correction");
         if (maximumIterations < 1 || maximumIterations > V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS
                 || budgetMilliseconds < 1 || budgetMilliseconds > 60_000) {
             throw new IllegalArgumentException("Invalid neural initialization budget");
+        }
+        if (correction.extendsAttempts() && correction.extensionMaximumIterations() < maximumIterations) {
+            throw new IllegalArgumentException("A neural correction extension cannot lower the base cap");
         }
     }
 }

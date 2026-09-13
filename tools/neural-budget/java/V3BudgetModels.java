@@ -54,6 +54,8 @@ final class V3BudgetModels {
             }
             case "presence-floor-lift" -> V3FactorizedNeuralFeatures.DecodeOptions.lift(
                     decoder.get("liftFactor").getAsDouble(), decoder.get("liftPresenceProbability").getAsDouble());
+            case "zero-phase-floor" -> V3FactorizedNeuralFeatures.DecodeOptions.zeroPhaseFloor(
+                    decoder.get("zeroPhaseFloorFactor").getAsDouble());
             default -> throw new IllegalArgumentException("Unknown decoder rule");
         };
     }
@@ -65,10 +67,11 @@ final class V3BudgetModels {
      * both stated in the manifest so the journal records what was actually spent rather than what the
      * command line happened to pass.</p>
      */
-    record Correction(String rule, int maximumIterations, int budgetMillis, JsonObject manifest) {
+    record Correction(String rule, int maximumIterations, int budgetMillis,
+                      V3InitializationOptions.Correction progress, JsonObject manifest) {
         V3InitializationOptions options(V3InitializationOptions.Mode mode) {
             return new V3InitializationOptions(mode, V3InitializationOptions.WetStart.AUTO,
-                    maximumIterations, budgetMillis);
+                    maximumIterations, budgetMillis, progress);
         }
     }
 
@@ -76,16 +79,24 @@ final class V3BudgetModels {
         var doc = manifest(path);
         var correction = doc.getAsJsonObject("correction");
         if (correction == null) throw new IllegalArgumentException("Pipeline must state its correction rule");
+        int iterations = correction.has("maximumIterations")
+                ? correction.get("maximumIterations").getAsInt() : defaultIterations;
+        int millis = correction.has("budgetMillis") ? correction.get("budgetMillis").getAsInt() : defaultBudgetMillis;
         return switch (correction.get("rule").getAsString()) {
-            case "fixed" -> new Correction("fixed",
-                    correction.has("maximumIterations") ? correction.get("maximumIterations").getAsInt() : defaultIterations,
-                    correction.has("budgetMillis") ? correction.get("budgetMillis").getAsInt() : defaultBudgetMillis,
+            case "fixed" -> new Correction("fixed", iterations, millis,
+                    V3InitializationOptions.Correction.WALLS, correction);
+            // The progress rule keeps the base cap and the wall and adds the windowed contraction test that
+            // extends an attempt still earning steps, together with the early stop that pays for it.
+            case "progress" -> new Correction("progress", iterations, millis,
+                    new V3InitializationOptions.Correction(
+                            correction.get("extensionBlock").getAsInt(),
+                            correction.get("extensionMaximumIterations").getAsInt(),
+                            correction.get("contractionWindow").getAsInt(),
+                            correction.get("contractionFactor").getAsDouble(),
+                            correction.get("stallWindow").getAsInt(),
+                            correction.get("stallFactor").getAsDouble(),
+                            correction.get("stallResidualFloor").getAsDouble()),
                     correction);
-            // The progress rule reshapes walls into a windowed contraction test with an early stall stop. It
-            // is registered together with the solver change that implements it, and only if the bounded
-            // diagnostic's pre-declared decision rule selects it.
-            case "progress" -> throw new IllegalArgumentException(
-                    "The progress correction rule is registered with the solver change that implements it");
             default -> throw new IllegalArgumentException("Unknown correction rule");
         };
     }

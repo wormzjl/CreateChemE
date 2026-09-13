@@ -220,26 +220,37 @@ earlier shows up there and nowhere else.
 `tools/neural-budget`. Nothing here may overlap another campaign or a Gradle run: every step owns ten
 worker threads.
 
+The study runs in two registered phases with their own native cores, selected by
+`NEURAL_BUDGET_REVISION`. `v1` is the bounded diagnostic and must run on the **unchanged** correction, so
+it is registered and built before any intervention exists. `v2` is the campaign and is registered and
+built afterwards, with its own source hashes and its own pipelines. Both phases bind to the same frozen
+inputs and the same archived F0 journals.
+
 ```
 $P budget_ids.py build                 # committed id lists, seconds, no JVM
-$P budget_register.py register         # frozen inputs, pipeline manifests, source delta
+$P budget_register.py register         # v1: frozen inputs, baseline manifest, source delta
 $P budget_ids.py inputs                # the 216-case traced subset of the frozen inputs
 $P budget_native.py rebuild-core       # isolated Gson-only rebuild, about a minute
-$P budget_preflight.py decode          # solver-free decode dump per pipeline, about a minute each
+$P budget_preflight.py decode          # solver-free decode dump, about a minute
 $P budget_preflight.py check           # archive seed parity; must pass before any campaign time
 $P budget_trace.py production          # bounded diagnostic, 216 cases, 16 iterations / 2 s
 $P budget_trace.py diagnostic          # bounded diagnostic, 216 cases, 48 iterations / 6 s
 $P budget_trace.py analyse             # classification and the declared decision
-                                       # implement the selected intervention, then rebuild and re-register
-$P budget_benchmark.py validation      # 405 x 3 modes x 2 blocks per pipeline, about 6.6 minutes a run
-$P budget_analysis.py
-$P budget_report.py
-$P budget_seal.py
+$P budget_ladder.py                    # the declared net-time arithmetic; fixes A's parameters
+                                       # implement what the rules selected, then run the suite again
+NEURAL_BUDGET_REVISION=v2 $P budget_register.py register
+NEURAL_BUDGET_REVISION=v2 $P budget_native.py rebuild-core
+NEURAL_BUDGET_REVISION=v2 $P budget_preflight.py decode
+NEURAL_BUDGET_REVISION=v2 $P budget_preflight.py check
+NEURAL_BUDGET_REVISION=v2 $P budget_benchmark.py validation   # 405 x 3 modes x 2 blocks per pipeline
+NEURAL_BUDGET_REVISION=v2 $P budget_analysis.py
+NEURAL_BUDGET_REVISION=v2 $P budget_report.py
+NEURAL_BUDGET_REVISION=v2 $P budget_seal.py
 ```
 
-The two diagnostic runs are a few minutes each: 216 cases of a single strategy on ten workers, where the
-whole 405-case three-strategy campaign run takes about 395 seconds. The campaign is two runs per pipeline;
-four pipelines is eight runs, about 53 minutes.
+The two diagnostic runs are a minute or less each: 216 cases of a single strategy on ten workers, where
+the whole 405-case three-strategy campaign run takes about 395 seconds. The campaign is two runs per
+pipeline; four pipelines is eight runs, about 40 to 53 minutes.
 
 ## 8. Limits declared in advance
 
