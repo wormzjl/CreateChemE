@@ -49,6 +49,7 @@ tools/*
 !tools/training-curation/
 !tools/trace-followup/
 !tools/capacity-followup/
+!tools/path-dependent-infeasible/
 
 # Claude × Codex collaboration runtime files
 .collab/

@@ -207,8 +207,12 @@ class V3PumparoundCalculatorTest {
                 base.specifications(), base.sideDraws(), base.steamFeeds(), pumparounds);
     }
 
+    /**
+     * The bound is read off the last accepted heat-free continuation state, so it is path-dependent and must
+     * not claim the specification is infeasible; it is published as a hinted nonconvergence instead.
+     */
     @Test
-    void coolingAboveTheBaseCondenserDutyIsRejectedWithThatDutyNamed() {
+    void coolingAboveTheBaseCondenserDutyStopsTheSolveWithThatDutyNamed() {
         Run base = run("base", v1ScaleInput("createcheme:cdu17_tjl_acs2018", List.of()));
         double baseCondenser = Math.abs(base.success().result().dutyLedger().orElseThrow().condenserWatts());
         long started = System.nanoTime();
@@ -218,10 +222,12 @@ class V3PumparoundCalculatorTest {
                 (System.nanoTime() - started) / 1.0e9, baseCondenser / 1.0e6, outcome);
 
         V3ColumnOutcome.Failure failure = assertInstanceOf(V3ColumnOutcome.Failure.class, outcome, outcome::toString);
-        assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, failure.code());
+        assertEquals(V3SolverFailureCode.NONCONVERGENCE, failure.code());
         assertTrue(failure.summary().contains("Q_cond0"), failure::summary);
         assertTrue(failure.summary().contains(String.format(Locale.ROOT, "%.4g", baseCondenser / 1.0e6)),
                 failure::summary);
+        assertTrue(failure.summary().contains("continuation path"), failure::summary);
+        assertTrue(failure.summary().contains(V3ColumnCalculator.PATH_DEPENDENT_BOUND_SUFFIX), failure::summary);
     }
 
     @Test

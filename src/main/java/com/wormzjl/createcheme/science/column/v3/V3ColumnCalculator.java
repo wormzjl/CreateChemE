@@ -233,6 +233,10 @@ public final class V3ColumnCalculator {
                 }
                 V3ColumnOutcome.Failure failure = (V3ColumnOutcome.Failure) outcome;
                 lastFailure = failure;
+                // Both codes are properties of the request, so no later candidate and no classical backup can
+                // change them: PROPERTY_OUT_OF_RANGE is the resolved pressure profile, and since the two
+                // state-dependent heat bounds became PathDependentHeatBound, INFEASIBLE_SPECIFICATION is only
+                // ever raised by the request-only gates. A path-dependent verdict must not stop the search.
                 if (failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
                         || failure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION) break;
                 reason = "neural correction " + failure.code();
@@ -653,9 +657,13 @@ public final class V3ColumnCalculator {
         } catch (InitializationFailure initialization) {
             return terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE,
                     initialization.getMessage(), "initialization", advisoryEvidence);
-        } catch (InfeasibleSpecification infeasible) {
-            return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, infeasible.getMessage(),
-                    infeasible.solvePath(), advisoryEvidence);
+        } catch (PathDependentHeatBound pathBound) {
+            // Not INFEASIBLE_SPECIFICATION: the bound was measured on a continuation state, so the same
+            // request can still be solvable from another seed. The diagnostic survives as the hint. The
+            // recorded flag keeps the caller's cold-recovery decision exactly as it was under the old code.
+            condenserAttempts.recordPathDependentHeatBound();
+            return terminalFailure(V3SolverFailureCode.NONCONVERGENCE, pathBound.getMessage(),
+                    pathBound.solvePath(), advisoryEvidence);
         } catch (V3ThermoException thermoFailure) {
             return terminalFailure(admitted && policy.attemptCutoff() > 0.0 ? V3SolverFailureCode.NONCONVERGENCE
                     : V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property", advisoryEvidence);
@@ -1201,6 +1209,7 @@ public final class V3ColumnCalculator {
         private final EnumSet<V3CondenserPhaseBranch> branches = EnumSet.noneOf(V3CondenserPhaseBranch.class);
         private boolean unresolvedPhaseMismatch;
         private boolean requestedDrawRampFailed;
+        private boolean pathDependentHeatBound;
 
         void recordAttempt(V3CondenserPhaseBranch branch) { branches.add(Objects.requireNonNull(branch, "branch")); }
         boolean hasAttempted(V3CondenserPhaseBranch branch) { return branches.contains(branch); }
@@ -1209,7 +1218,14 @@ public final class V3ColumnCalculator {
             if (auditedSuccess) unresolvedPhaseMismatch = false;
         }
         void recordRequestedDrawRampFailure() { requestedDrawRampFailed = true; }
-        boolean allowsColdRecovery() { return !unresolvedPhaseMismatch && !requestedDrawRampFailed; }
+        // A heat bound stopped the ramp after the whole heat-free chain had already been accepted. Retyping it
+        // from INFEASIBLE_SPECIFICATION to NONCONVERGENCE must not silently buy a second cold chain on the other
+        // condenser branch: the bound is about the authored duty against that accepted state, not about the
+        // condenser phase, so the alternate branch would re-derive the same stop at twice the cost.
+        void recordPathDependentHeatBound() { pathDependentHeatBound = true; }
+        boolean allowsColdRecovery() {
+            return !unresolvedPhaseMismatch && !requestedDrawRampFailed && !pathDependentHeatBound;
+        }
     }
 
     /** Bounded authored-parameter ramp from a dry surrogate seed to liquid draws and free-water steam. */
@@ -1287,9 +1303,10 @@ public final class V3ColumnCalculator {
                         index--;
                         continue;
                     }
-                    throw new InfeasibleSpecification(V3HeatFeasibility.condensationCapDetail(cappedTray,
+                    throw new PathDependentHeatBound(V3HeatFeasibility.condensationCapDetail(cappedTray,
                             condensationCapacityWatts(previous, thermo, cappedTray),
                             rampStep.heatFraction() * trayDutyWatts(input, cappedTray)),
+                            "condensation-capped at tray " + cappedTray + " on the continuation path",
                             "cold/heat-cap/heat-" + input.pumparounds().size());
                 }
             }
@@ -1746,11 +1763,15 @@ public final class V3ColumnCalculator {
     }
 
     /**
-     * Rejects an authored cooling that is not below the base condenser duty of the same column without heat.
+     * Stops an authored cooling that is not below the base condenser duty of the same column without heat.
      *
      * <p>{@code Q_cond0} is recomputed from the last accepted heat-free state at the requested geometry, so
      * this is a state-based bound rather than a correlation. On a wet column that state already carries the
      * authored steam, so the duty includes the water-vapor slip and the free water leaving the drum.</p>
+     *
+     * <p>Because the bound is read off a continuation state it is path-dependent, and raises
+     * {@link PathDependentHeatBound} — a typed {@code NONCONVERGENCE} with the bound as its hint — rather than
+     * claiming the specification itself is infeasible.</p>
      *
      * <p>Like the static gate this compares the net authored heat: {@code Q_cond0} belongs to a column without
      * stage heat, so any authored heating is credited to it before the gross cooling is measured against it.</p>
@@ -1769,8 +1790,9 @@ public final class V3ColumnCalculator {
         double baseCondenserDuty = V3ColumnDutyLedger.condenserDutyWatts(
                 base, heatFreeBase.attempt().state(), evaluator, thermo.newWorkspace());
         if (!Double.isFinite(baseCondenserDuty) || cooling < Math.abs(baseCondenserDuty) + heating) return;
-        throw new InfeasibleSpecification(
+        throw new PathDependentHeatBound(
                 V3HeatFeasibility.condenserBoundDetail(cooling, baseCondenserDuty, heating),
+                "cooling above the base condenser duty measured on the continuation path",
                 "cold/heat-condenser-bound/heat-" + input.pumparounds().size());
     }
 
@@ -2562,8 +2584,11 @@ public final class V3ColumnCalculator {
             V3SolverFailureCode code, String detail, String solvePath, List<String> advisoryEvidence) {
         String summary = boundedSummary(detail);
         V3AcceptanceAudit audit = failedAudit("UNAVAILABLE", summary, advisoryEvidence);
-        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, solvePath, List.of(summary),
-                audit, V3ConvergenceEvidence.unavailable());
+        // The summary and the audit detail are bounded at 512, a diagnostic event at 256. Passing the summary
+        // straight through threw IllegalArgumentException out of the public calculate() for any detail between
+        // the two bounds — reachable as soon as a typed detail grew past 256 characters.
+        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, solvePath,
+                List.of(boundedEvent(summary)), audit, V3ConvergenceEvidence.unavailable());
         return new V3ColumnOutcome.Failure(code, summary, diagnostics);
     }
 
@@ -2628,12 +2653,26 @@ public final class V3ColumnCalculator {
         }
     }
 
-    /** A physically impossible authored duty; reported as a typed specification failure, not nonconvergence. */
-    private static final class InfeasibleSpecification extends RuntimeException {
+    /**
+     * A heat bound that only the continuation path this request happened to take could measure.
+     *
+     * <p>Both bounds that raise this — {@link #requireCoolingBelowBaseCondenserDuty} and
+     * {@link #condensationCappedTray} — read the last accepted continuation state. Their verdict is therefore
+     * a property of this initializer's path, not of the authored request: a differently seeded path can reach
+     * a state on which the same request solves. Measured on the 405-case neural validation population, 42 of
+     * the 108 requests the classical path typed {@code INFEASIBLE_SPECIFICATION} are strictly solved by a
+     * neural-seeded pipeline on the identical input.</p>
+     *
+     * <p>So these are published as {@link V3SolverFailureCode#NONCONVERGENCE} carrying the bound's own
+     * diagnostic plus the path hint, and {@code INFEASIBLE_SPECIFICATION} is left to the request-only gates
+     * ({@code totalDraw >= totalFeed} and {@link #staticCoolingAdmission}), which are computable from the
+     * specification alone.</p>
+     */
+    private static final class PathDependentHeatBound extends RuntimeException {
         private final String solvePath;
 
-        private InfeasibleSpecification(String message, String solvePath) {
-            super(message);
+        private PathDependentHeatBound(String detail, String hint, String solvePath) {
+            super(detail + "; " + hint + PATH_DEPENDENT_BOUND_SUFFIX);
             this.solvePath = Objects.requireNonNull(solvePath, "solvePath");
         }
 
@@ -2641,6 +2680,11 @@ public final class V3ColumnCalculator {
             return solvePath;
         }
     }
+
+    /** Names the path dependence in every published state-dependent heat bound, so the GUI cannot read it as infeasibility. */
+    static final String PATH_DEPENDENT_BOUND_SUFFIX =
+            "; this bound reads the last accepted continuation state rather than the request, so the "
+                    + "specification is not typed infeasible";
 
     private static String pressureEvent(double pressurePascal, String phase, V3SolvePass pass) {
         V3SimultaneousColumnSolver.Evidence evidence = pass.attempt().evidence();

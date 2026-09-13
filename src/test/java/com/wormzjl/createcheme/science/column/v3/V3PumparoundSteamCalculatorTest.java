@@ -135,7 +135,7 @@ class V3PumparoundSteamCalculatorTest {
     }
 
     @Test
-    void wetCoolingAboveTheWetBaseCondenserDutyIsATypedInfeasibility() {
+    void wetCoolingAboveTheWetBaseCondenserDutyIsATypedPathDependentStop() {
         double wetCondenser = Math.abs(wetBaseline().success().result().dutyLedger().orElseThrow().condenserWatts());
         Run rejected = run("wet-over-condenser-bound", wetInput(CDU17, DEFAULT_REBOILER_DUTY_WATTS,
                 List.of(new V3PumparoundSpec(8, 12, -1.02 * wetCondenser, V3PumparoundSpec.Split.UNIFORM)),
@@ -143,8 +143,10 @@ class V3PumparoundSteamCalculatorTest {
 
         V3ColumnOutcome.Failure failure = assertInstanceOf(
                 V3ColumnOutcome.Failure.class, rejected.outcome(), rejected.outcome()::toString);
-        assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, failure.code());
+        // State-dependent bound: typed as a hinted nonconvergence, never as an infeasible specification.
+        assertEquals(V3SolverFailureCode.NONCONVERGENCE, failure.code());
         assertTrue(failure.summary().contains("Q_cond0"), failure::summary);
+        assertTrue(failure.summary().contains(V3ColumnCalculator.PATH_DEPENDENT_BOUND_SUFFIX), failure::summary);
         assertTrue(failure.diagnostics().solvePath().contains("heat-condenser-bound"),
                 failure.diagnostics()::solvePath);
         // The bound must be the wet condenser duty. The dry surrogate seed of the same input carries a
