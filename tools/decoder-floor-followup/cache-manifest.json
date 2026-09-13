@@ -1,0 +1,179 @@
+{
+  "analysis": {
+    "path": "build/neural-decoder-floor/v1/validation-analysis.json",
+    "sha256": "b578ce1b60f408b1889d497f0f00fb32d7e4702977240437c812837fa9bd1c27"
+  },
+  "committedBytes": 563562,
+  "committedEvidence": [
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block1-F0-baseline.jsonl.gz",
+      "sha256": "89f57f0e4028aee2f72d7311c6d7fb718ffee084eda1d1957a9e216e05ad2bb0"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block1-F0-lift-p002-k10.jsonl.gz",
+      "sha256": "7c63ea4cf32911829f3c5d5b2eca0ab99442703782fae8d9f13c5ffe42b54b5d"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block1-F0-lift-p050-k10.jsonl.gz",
+      "sha256": "bf66a8c2bd5814c89492148bd0b24fe4b153e07252e07ece2453043e65ad96a3"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block1-F0-lift-p050-k1.jsonl.gz",
+      "sha256": "5a90989581a6b6931ffe967eeac81e9496f4ab601c1c1726ae2723fe1596ffb9"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block2-F0-baseline.jsonl.gz",
+      "sha256": "e6acf43f8766f67409ae5e1da1a409233cfd8300a3fa1817bf871bd8df6a5814"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block2-F0-lift-p002-k10.jsonl.gz",
+      "sha256": "c026e48c776a5216614dcf668ebc2ef22f9c5c05b2543cb48ab1656e8de58fce"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block2-F0-lift-p050-k10.jsonl.gz",
+      "sha256": "4d4e8ba98c526c245ecf7386d7d99cd5a28a56e4d51ded7263e0a42321e9c43d"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/case-block2-F0-lift-p050-k1.jsonl.gz",
+      "sha256": "c41b4bea40df55013da6a919c92134d11c74ee71eed9ceb4b977b47de112c97b"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/profile-evidence.jsonl.gz",
+      "sha256": "550859233da5686045b512edc7396c9eb1d3bcd35a2735c4d2a8bfbd026fb000"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/decode-seed-digests-F0-baseline.jsonl.gz",
+      "sha256": "424c472fecc47deae60fec54813118236f0414717b733050ea1474bda59d9999"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/decode-seed-digests-F0-lift-p002-k10.jsonl.gz",
+      "sha256": "bed15adf06a2ac70ece6ce99b36b3fb1d8e9040837cd2a17bae124f43825f8cd"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/decode-seed-digests-F0-lift-p050-k10.jsonl.gz",
+      "sha256": "bb49743c360c792e79183462ba45390e1e3dbbbeeb3015461ce837cf918f01dc"
+    },
+    {
+      "path": "tools/decoder-floor-followup/evidence/decode-seed-digests-F0-lift-p050-k1.jsonl.gz",
+      "sha256": "b8911d26c048417b3fce6df748f235a31e0c432243e84cd4c9fc5205c8f2ab2c"
+    }
+  ],
+  "restoration": "Committed files hold per-case outcome, status, cost and stop evidence plus the reference profile evidence and per-case decoded-seed digests. The complete journals and decoded seeds stay under build/neural-decoder-floor/v1; preserve that directory to re-derive anything else.",
+  "revision": "decoder-floor-evidence-v1",
+  "studyPlan": {
+    "path": "build/neural-decoder-floor/v1/study-plan.json",
+    "sha256": "a1fe1a51ce87c15f0347ce62a898cd77245c37d4c21bb5a9672336ac15a4956f"
+  },
+  "summary": {
+    "path": "tools/decoder-floor-followup/summary.json",
+    "sha256": "3edeb0279fa928e56b64c57273e9de92f81f95061d8e96593ed8e11f82c5c33f"
+  },
+  "uncommittedDecodeDumps": [
+    {
+      "path": "build/neural-decoder-floor/v1/preflight/decode/F0-baseline.jsonl",
+      "sha256": "05e7c2d1751d1898e7b35df70074a1c36a5fb49214b296b7c95f7cd8a5c4d26e"
+    },
+    {
+      "path": "build/neural-decoder-floor/v1/preflight/decode/F0-lift-p002-k10.jsonl",
+      "sha256": "4579e0f8735c2cbad4f270828b9a8fa6966e3af319ec7d813bd81d44fcb3aba8"
+    },
+    {
+      "path": "build/neural-decoder-floor/v1/preflight/decode/F0-lift-p050-k10.jsonl",
+      "sha256": "8b03482a4e2b6f32b4e385b641249e38c33bee358435af8898801a61fac1e210"
+    },
+    {
+      "path": "build/neural-decoder-floor/v1/preflight/decode/F0-lift-p050-k1.jsonl",
+      "sha256": "31ca38cb16fbe34b84d46e4c0527dcfd9f6532aefc3bd9576973244ebf435cfc"
+    }
+  ],
+  "uncommittedJournals": [
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-baseline/evaluation.jsonl",
+        "sha256": "3ab04394b85f60dd908cec6317aff544ac1caf23c24030df1555d66e3bc69d5e"
+      },
+      "evaluationBytes": 26317411,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-baseline/run.json",
+        "sha256": "c9de7fd38796835e49dcb78e1a52b8489e1f99b3801f5d3fa371f97802e8bcf5"
+      }
+    },
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-lift-p002-k10/evaluation.jsonl",
+        "sha256": "619535efbe11ea33c4c6baa3786c8a4c535aaaccad8207099fdeda9131b801c7"
+      },
+      "evaluationBytes": 26381924,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-lift-p002-k10/run.json",
+        "sha256": "c1b57a0c91579d622cbc70a66836a42dd9b582a49280593cbfd598c7bd316316"
+      }
+    },
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-lift-p050-k1/evaluation.jsonl",
+        "sha256": "76bf6da39e2b9e9895d1df5e0df83e37b1463ab018ba381f78ddb8b98d89ddd6"
+      },
+      "evaluationBytes": 26332260,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-lift-p050-k1/run.json",
+        "sha256": "80562f1af13dc7926a3e7fe5b872fe3779a5ff596545124a50a44a498941a0d1"
+      }
+    },
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-lift-p050-k10/evaluation.jsonl",
+        "sha256": "d708ed2c1ee41bb431769d7d3dadf485cb373cf3af571f514eecb2d2b5924cb2"
+      },
+      "evaluationBytes": 26381485,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-1/F0-lift-p050-k10/run.json",
+        "sha256": "c6a35d8e44a81d387c3099b010a85e853b83fdd1b1b21469cfdb347d5197a44e"
+      }
+    },
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-baseline/evaluation.jsonl",
+        "sha256": "aba97a32d99ccd580c540ed9ffbec1fc83950d0b06ad23ddc060a51b784e1452"
+      },
+      "evaluationBytes": 26315718,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-baseline/run.json",
+        "sha256": "c2a941786ad502a3fcc3ff6c1ac9380942e9693e2b341ebb12bf365ed858e039"
+      }
+    },
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-lift-p002-k10/evaluation.jsonl",
+        "sha256": "f47512845d826a05eed7ad376ac5027f720b4dd184ddff9f6891545c48d7b879"
+      },
+      "evaluationBytes": 26333531,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-lift-p002-k10/run.json",
+        "sha256": "0dd9fd57b3ba57ca230296b3de7e1971706c2f10b0e3c567879c5924f1803ea8"
+      }
+    },
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-lift-p050-k1/evaluation.jsonl",
+        "sha256": "ee29058e6beb0eea1b6af29bf47f97105d96bba07654a8471986f14ffba54be6"
+      },
+      "evaluationBytes": 26344347,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-lift-p050-k1/run.json",
+        "sha256": "278df0bc9b0774df47ced548f8fa2e77c92ba9363b9d465a98c616d95a330dc4"
+      }
+    },
+    {
+      "evaluation": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-lift-p050-k10/evaluation.jsonl",
+        "sha256": "e9ba8c664dd1a24eb19cae0a7278388af67ab0487a6900d349c9310cba1b7ab9"
+      },
+      "evaluationBytes": 26342346,
+      "run": {
+        "path": "build/neural-decoder-floor/v1/validation/block-2/F0-lift-p050-k10/run.json",
+        "sha256": "3d5fd13b768e0d1f06481d8b843b95ffcb311e130616a36ddcfdc0b53b9ef67a"
+      }
+    }
+  ]
+}

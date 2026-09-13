@@ -49,6 +49,7 @@ tools/*
 !tools/training-curation/
 !tools/trace-followup/
 !tools/capacity-followup/
+!tools/decoder-floor-followup/
 
 # Claude × Codex collaboration runtime files
 .collab/
