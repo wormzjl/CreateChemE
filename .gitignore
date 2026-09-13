@@ -50,6 +50,7 @@ tools/*
 !tools/trace-followup/
 !tools/capacity-followup/
 !tools/decoder-floor-followup/
+!tools/neural-budget/
 
 # Claude × Codex collaboration runtime files
 .collab/

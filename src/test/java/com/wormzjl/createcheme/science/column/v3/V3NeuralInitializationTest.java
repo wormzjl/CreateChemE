@@ -111,6 +111,66 @@ class V3NeuralInitializationTest {
         assertTrue(result.diagnostics().events().getFirst().contains("budget exhausted"));
     }
 
+    /**
+     * A budget that stops a correction mid-solve publishes what that solve had already measured.
+     *
+     * <p>The archived campaigns record seventy-five neural-only failures as "budget exhausted" with zero
+     * Newton iterations, which reads as a seed rejected before its first step. It is a reporting artefact:
+     * the exception unwinds the attempt and the published failure used to carry a zero placeholder. The
+     * calibration run below uses the observation trace to find the exact checkpoint at which the second
+     * Newton iteration starts, so the stall that follows lands inside the solve on any machine rather than
+     * at a wall-clock guess.</p>
+     */
+    @Test void exhaustedBudgetPublishesTheInFlightIterationCount() {
+        V3ColumnInput input = input();
+        var captured = new AtomicReference<V3NeuralSeed>();
+        assertInstanceOf(V3ColumnOutcome.Success.class,
+                V3ColumnCalculator.calculateWithAcceptedProfile(input,()->{},captured::set));
+        V3NeuralInitializer model = fixed(displaced(captured.get()));
+        int[] checkpoints = {0};
+        List<int[]> samples = new java.util.ArrayList<>();
+        V3NewtonTrace calibration = (iteration,residual,merit) -> samples.add(new int[]{iteration,checkpoints[0]});
+        V3ColumnCalculator.calculateWithNeuralTrace(input,()->checkpoints[0]++,
+                new V3InitializationOptions(V3InitializationOptions.Mode.LNN_ONLY,V3InitializationOptions.WetStart.AUTO,16,60_000),
+                model,calibration);
+        // A Newton attempt restarts its iteration counter from zero, so the first run of increasing indices
+        // is the first attempt. Arming inside it keeps the stall away from an attempt boundary.
+        int first = 1;
+        while (first<samples.size() && samples.get(first)[0]>samples.get(first-1)[0]) first++;
+        assertTrue(first>=3,"the displaced seed's first attempt recorded only "+first+" iterations");
+        assertEquals(1,samples.get(1)[0]);
+        int stallAt = samples.get(1)[1];
+
+        int[] seen = {0};
+        // The production two-second allowance, spent by a stall the checkpoint sequence places inside the solve.
+        var budgeted = new V3InitializationOptions(V3InitializationOptions.Mode.LNN_ONLY,
+                V3InitializationOptions.WetStart.AUTO,16,2_000);
+        var failure = assertInstanceOf(V3ColumnOutcome.Failure.class,V3ColumnCalculator.calculate(input,
+                ()->{ if (seen[0]++==stallAt) pause(2_500); },0,0,budgeted,model));
+        String events = String.join(" | ",failure.diagnostics().events());
+        assertTrue(events.contains("neural budget exhausted"),events);
+        assertTrue(failure.diagnostics().newtonIterations()>=1,events);
+        assertTrue(failure.diagnostics().maximumScaledResidual()>0,events);
+        assertTrue(events.contains("iterations="+failure.diagnostics().newtonIterations()+"/"),events);
+        assertFalse(events.contains("unmeasured"),events);
+    }
+
+    /** The accepted profile, moved off its own solution far enough that the corrector needs several steps. */
+    private static V3NeuralSeed displaced(V3NeuralSeed seed) {
+        double[][] liquid = seed.liquid(), vapor = seed.vapor();
+        double[] temperatures = seed.temperatures();
+        for (int n = 0; n < temperatures.length; n++) {
+            if (n > 0) temperatures[n] += 12; // node zero carries the prescribed condenser temperature.
+            for (int c = 0; c < liquid[n].length; c++) { liquid[n][c] *= 1.5; vapor[n][c] *= 0.7; }
+        }
+        return new V3NeuralSeed(seed.input(),seed.propertyRevision(),seed.branch(),liquid,vapor,temperatures,
+                seed.freeWater(),seed.wetTrays());
+    }
+
+    private static void pause(long millis) {
+        try { Thread.sleep(millis); } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+    }
+
     private static V3NeuralInitializer fixed(V3NeuralSeed seed) {
         return new V3NeuralInitializer() {
             public String modelId(){return "accepted-snapshot-test";}

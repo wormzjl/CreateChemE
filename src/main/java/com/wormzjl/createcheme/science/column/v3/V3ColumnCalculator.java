@@ -168,9 +168,35 @@ public final class V3ColumnCalculator {
         return calculate(input, control, 0, 0, options, model, Objects.requireNonNull(observer, "observer"));
     }
 
+    /**
+     * Offline diagnostic seam: the unchanged learned path with a caller-owned Newton observation trace.
+     *
+     * <p>The trace only observes. It cannot change a step, a support, a budget or an outcome, and every
+     * production entry point above passes {@link V3NewtonTrace#NONE}, so the traced and untraced paths
+     * run the same arithmetic in the same order. It exists because the correction trajectory of a seed
+     * that runs out of iterations or budget is not recoverable from the published evidence.</p>
+     */
+    static V3ColumnOutcome calculateWithNeuralTrace(V3ColumnInput input, V3SolveControl control,
+            V3InitializationOptions options, V3NeuralInitializer model, V3NewtonTrace trace) {
+        return calculateWithNeuralTrace(input, control, options, model, trace, null);
+    }
+
+    /** The same seam, also exporting the accepted profile, so a traced request can be audited like any other. */
+    static V3ColumnOutcome calculateWithNeuralTrace(V3ColumnInput input, V3SolveControl control,
+            V3InitializationOptions options, V3NeuralInitializer model, V3NewtonTrace trace,
+            java.util.function.Consumer<V3NeuralSeed> observer) {
+        return calculate(input, control, 0, 0, options, model, observer, Objects.requireNonNull(trace, "trace"));
+    }
+
     private static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
             double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
             java.util.function.Consumer<V3NeuralSeed> observer) {
+        return calculate(input, control, cutoff, closureFraction, options, model, observer, V3NewtonTrace.NONE);
+    }
+
+    private static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
+            double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
+            java.util.function.Consumer<V3NeuralSeed> observer, V3NewtonTrace trace) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         Objects.requireNonNull(options, "options");
@@ -190,6 +216,7 @@ public final class V3ColumnCalculator {
         V3ColumnOutcome.Failure coolingFailure = staticCoolingAdmission(input);
         if (coolingFailure != null) return coolingFailure;
         long started = System.nanoTime();
+        NeuralProgress progress = new NeuralProgress(trace);
         V3SolveControl neuralControl = () -> {
             control.checkpoint(); // Whole-request cancellation always wins over the local neural budget.
             if (System.nanoTime() - started >= options.budgetMilliseconds() * 1_000_000L)
@@ -213,7 +240,8 @@ public final class V3ColumnCalculator {
                 V3ColumnOutcome outcome;
                 try {
                     outcome = correctNeuralSeed(input, prediction, options, neuralControl,
-                            new SolvePolicy(cutoff, cutoff, closure, observer == null ? null : seed -> acceptedCandidate[0] = seed));
+                            new SolvePolicy(cutoff, cutoff, closure,
+                                    observer == null ? null : seed -> acceptedCandidate[0] = seed, progress));
                 } catch (V3ThermoException | IllegalArgumentException | IllegalStateException rejected) {
                     reason = "neural seed rejected: " + rejected.getClass().getSimpleName();
                     continue;
@@ -240,7 +268,10 @@ public final class V3ColumnCalculator {
         } catch (CancellationException cancelled) {
             throw cancelled;
         } catch (NeuralBudgetExceeded exhausted) {
-            reason = "neural budget exhausted";
+            // The budget throws out of whatever the correction was doing, so what that attempt had already
+            // measured is published here instead of being discarded with the stack. Nothing about the budget,
+            // the attempt or the outcome changes; only the evidence attached to the failure does.
+            reason = "neural budget exhausted; " + progress.summary();
         } catch (V3ThermoException | IllegalArgumentException | IllegalStateException rejected) {
             reason = "neural seed rejected: " + rejected.getClass().getSimpleName();
         }
@@ -257,7 +288,7 @@ public final class V3ColumnCalculator {
                 + "; model=" + modelId + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000 + "; " + reason;
         if (options.mode() == V3InitializationOptions.Mode.LNN_ONLY)
             return initializationEvent(lastFailure != null ? lastFailure
-                    : terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE, reason, "initialization/lnn-only", List.of()), event);
+                    : neuralFailure(reason, progress), event);
         // One clean backup from the original input; no failed seed state or neural control escapes into it.
         return initializationEvent(observer == null ? calculate(input, control, cutoff, closureFraction)
                 : calculateWithAcceptedProfile(input, control, observer), event);
@@ -289,7 +320,7 @@ public final class V3ColumnCalculator {
             var evaluator = new V3MeshResidualEvaluator(warm, thermo, flash.molarEnthalpyJoulesPerMol());
             var attempt = V3SimultaneousColumnSolver.solveWithContinuationLocalBlocks(warm, evaluator,
                     new V3DryMeshCoordinateMap(warm), parametric.seed(warm, prepared.seed()), thermo::newWorkspace,
-                    options.maximumIterations(), policy.closureTolerance(), control);
+                    options.maximumIterations(), policy.closureTolerance(), control, policy.trace());
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged) {
                 state = converged.state();
                 fixedWaterRefined = true;
@@ -333,6 +364,104 @@ public final class V3ColumnCalculator {
     }
 
     private static final class NeuralBudgetExceeded extends RuntimeException {}
+
+    /**
+     * In-flight evidence of one learned correction pass, and the seam a diagnostic trace observes it through.
+     *
+     * <p>The local neural budget and a candidate rejection both leave the correction loop without a failure
+     * of their own, so the published outcome used to carry a zero-iteration, zero-residual placeholder even
+     * when the correction had already run most of a Newton solve. The archived campaigns therefore record
+     * those cases as "budget exhausted with zero recorded iterations", which is a reporting artefact rather
+     * than a seed rejected before its first step. This records what the interrupted attempt had already
+     * measured so the published failure can say how far it got.</p>
+     *
+     * <p>It is written only from the request's own thread, only on the learned path, and it is read only
+     * after the pass has ended. No step, support, budget, tolerance or acceptance decision consults it.</p>
+     */
+    private static final class NeuralProgress implements V3NewtonTrace {
+        private final V3NewtonTrace observer;
+        private int attempts;
+        private int iterations;
+        private int completedIterations;
+        private double maximumScaledResidual = Double.NaN;
+        private int supportRefreshes;
+        private int wetTrayRefreshes;
+
+        private NeuralProgress(V3NewtonTrace observer) {
+            this.observer = Objects.requireNonNull(observer, "observer");
+        }
+
+        @Override
+        public void sampledIteration(int iteration, V3MeshResidual residual, double scaledMerit) {
+            observer.sampledIteration(iteration, residual, scaledMerit);
+            noteIteration(iteration, residual);
+        }
+
+        @Override
+        public void sampledState(int iteration, V3DryMeshState state, V3MeshResidual residual, double scaledMerit) {
+            observer.sampledState(iteration, state, residual, scaledMerit);
+            noteIteration(iteration, residual);
+        }
+
+        @Override
+        public void localBlockDirection(int iteration, boolean accepted) {
+            observer.localBlockDirection(iteration, accepted);
+        }
+
+        @Override
+        public void finiteDifferenceJacobian(int iteration, boolean reused) {
+            observer.finiteDifferenceJacobian(iteration, reused);
+        }
+
+        @Override
+        public void beganAttempt(int attempt, int supportRefreshes, int wetTrayRefreshes, int iterationBudget,
+                int retainedPoints, int totalPoints, int wetTrayCount) {
+            observer.beganAttempt(attempt, supportRefreshes, wetTrayRefreshes, iterationBudget,
+                    retainedPoints, totalPoints, wetTrayCount);
+            // Iterations sampled before the first attempt belong to the fixed-water wet prepass.
+            completedIterations += iterations;
+            iterations = 0;
+            attempts = attempt;
+            this.supportRefreshes = supportRefreshes;
+            this.wetTrayRefreshes = wetTrayRefreshes;
+        }
+
+        @Override
+        public void finishedAttempt(int attempt, String code, int iterations, double maximumScaledResidual) {
+            observer.finishedAttempt(attempt, code, iterations, maximumScaledResidual);
+        }
+
+        private void noteIteration(int iteration, V3MeshResidual residual) {
+            iterations = iteration;
+            maximumScaledResidual = residual.maximumAbsoluteScaledResidual();
+        }
+
+        /** Iterations the interrupted attempt had completed; the published {@code newtonIterations}. */
+        private int iterations() {
+            return iterations;
+        }
+
+        /** Last maximum scaled residual any attempt of this pass observed, or zero if none ever did. */
+        private double lastMaximumScaledResidual() {
+            return Double.isFinite(maximumScaledResidual) ? maximumScaledResidual : 0.0;
+        }
+
+        private String summary() {
+            return "attempts=" + attempts + ", iterations=" + iterations + "/" + (completedIterations + iterations)
+                    + ", residual=" + (Double.isNaN(maximumScaledResidual) ? "unmeasured" : Double.toString(maximumScaledResidual))
+                    + ", refreshes=" + supportRefreshes + "/" + wetTrayRefreshes;
+        }
+    }
+
+    /** A learned pass that ended without a failure of its own still publishes what its attempts measured. */
+    private static V3ColumnOutcome.Failure neuralFailure(String reason, NeuralProgress progress) {
+        String summary = boundedSummary(reason);
+        String event = summary.length() <= 256 ? summary : summary.substring(0, 256);
+        return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE, summary,
+                new V3SolverDiagnostics(0, progress.iterations(), 0, 0, progress.lastMaximumScaledResidual(), 0.0,
+                        "initialization/lnn-only", List.of(event), failedAudit("UNAVAILABLE", summary),
+                        V3ConvergenceEvidence.unavailable()));
+    }
 
     /**
      * Calculates with frozen per-attempt stage support and an audited molar defect. The cutoff is a mole
@@ -979,6 +1108,7 @@ public final class V3ColumnCalculator {
         int refreshes = 0;
         int stalledRefreshes = 0;
         int wetTrayRefreshes = 0;
+        int attempts = 0;
         List<String> wetTrayEvents = new ArrayList<>();
         // The floor support is frozen for the length of one Newton solve, so it is re-derived from the
         // solved state afterwards: a point that fell below the floor is dropped, and a removed point whose
@@ -989,9 +1119,14 @@ public final class V3ColumnCalculator {
             V3ColumnProblem attemptProblem = prepared.problem();
             V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                     attemptProblem, thermo, feedMolarEnthalpy);
-            telemetry = new SolveTelemetry(attemptProblem);
+            telemetry = new SolveTelemetry(attemptProblem, policy.progress());
             V3DryMeshCoordinateMap coordinates = new V3DryMeshCoordinateMap(attemptProblem);
             V3DryMeshState attemptSeed = prepared.seed();
+            if (policy.progress() != null) {
+                policy.progress().beganAttempt(++attempts, refreshes, wetTrayRefreshes, nextIterations,
+                        prepared.support().totalPointCount() - prepared.support().truncatedPointCount(),
+                        prepared.support().totalPointCount(), prepared.wetTrays().wetTrayCount());
+            }
             attempt = switch (jacobianPolicy) {
                 case NONE -> V3SimultaneousColumnSolver.solve(
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
@@ -1005,6 +1140,11 @@ public final class V3ColumnCalculator {
                         attemptProblem, evaluator, coordinates, attemptSeed, thermo::newWorkspace,
                         nextIterations, policy.closureTolerance(), control, telemetry);
             };
+            if (policy.progress() != null) {
+                policy.progress().finishedAttempt(attempts,
+                        attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failed ? failed.code() : "CONVERGED",
+                        attempt.evidence().iterations(), attempt.evidence().maximumScaledResidual());
+            }
             control.checkpoint();
             audit = audit(attemptProblem, thermo, feedMolarEnthalpy, attempt.state(), control, policy);
             // A stalled attempt is refreshed too, and measurably must be: a stall is often exactly the state
@@ -2270,9 +2410,15 @@ public final class V3ColumnCalculator {
      * ({@link #withoutCutoff()}); the closure never can.</p>
      */
     private record SolvePolicy(double requestedCutoff, double attemptCutoff, double closureTolerance,
-            java.util.function.Consumer<V3NeuralSeed> observer) {
+            java.util.function.Consumer<V3NeuralSeed> observer, NeuralProgress progress) {
         private SolvePolicy(double requestedCutoff, double attemptCutoff, double closureTolerance) {
             this(requestedCutoff, attemptCutoff, closureTolerance, null);
+        }
+
+        /** Only the learned path carries an in-flight recorder; every classical solve leaves it null. */
+        private SolvePolicy(double requestedCutoff, double attemptCutoff, double closureTolerance,
+                java.util.function.Consumer<V3NeuralSeed> observer) {
+            this(requestedCutoff, attemptCutoff, closureTolerance, observer, null);
         }
         private static final SolvePolicy OFF =
                 new SolvePolicy(0.0, 0.0, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
@@ -2289,7 +2435,12 @@ public final class V3ColumnCalculator {
         /** Same closure, no stage-trace cutoff; the ramp's intermediate rungs run untruncated by design. */
         private SolvePolicy withoutCutoff() {
             return requestedCutoff == 0.0 && attemptCutoff == 0.0
-                    ? this : new SolvePolicy(0.0, 0.0, closureTolerance, observer);
+                    ? this : new SolvePolicy(0.0, 0.0, closureTolerance, observer, progress);
+        }
+
+        /** The trace a solve on this policy reports through; unobserved classical solves report nowhere. */
+        private V3NewtonTrace trace() {
+            return progress == null ? V3NewtonTrace.NONE : progress;
         }
     }
 
@@ -2661,6 +2812,8 @@ public final class V3ColumnCalculator {
     /** Bounded per-solve direction counters, surfaced through the existing diagnostics event contract. */
     private static final class SolveTelemetry implements V3NewtonTrace {
         private final V3ColumnProblem problem;
+        /** Where a learned pass keeps its in-flight evidence; null on every classical solve. */
+        private final NeuralProgress progress;
         private int acceptedLocalBlockDirections;
         private int rejectedLocalBlockDirections;
         private int freshFiniteDifferenceJacobians;
@@ -2671,8 +2824,9 @@ public final class V3ColumnCalculator {
         private double finalDominantPhysicalResidual;
         private V3DryMeshState finalState;
 
-        private SolveTelemetry(V3ColumnProblem problem) {
+        private SolveTelemetry(V3ColumnProblem problem, NeuralProgress progress) {
             this.problem = Objects.requireNonNull(problem, "problem");
+            this.progress = progress;
         }
 
         @Override
@@ -2682,6 +2836,7 @@ public final class V3ColumnCalculator {
 
         @Override
         public void sampledState(int iteration, V3DryMeshState state, V3MeshResidual residual, double scaledMerit) {
+            if (progress != null) progress.sampledState(iteration, state, residual, scaledMerit);
             double maximum = residual.maximumAbsoluteScaledResidual();
             if (Double.isNaN(initialMaximumScaledResidual)) initialMaximumScaledResidual = maximum;
             finalMaximumScaledResidual = maximum;
@@ -2698,12 +2853,14 @@ public final class V3ColumnCalculator {
 
         @Override
         public void localBlockDirection(int iteration, boolean accepted) {
+            if (progress != null) progress.localBlockDirection(iteration, accepted);
             if (accepted) acceptedLocalBlockDirections++;
             else rejectedLocalBlockDirections++;
         }
 
         @Override
         public void finiteDifferenceJacobian(int iteration, boolean reused) {
+            if (progress != null) progress.finiteDifferenceJacobian(iteration, reused);
             if (reused) reusedFiniteDifferenceJacobians++;
             else freshFiniteDifferenceJacobians++;
         }
