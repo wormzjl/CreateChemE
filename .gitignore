@@ -50,6 +50,7 @@ tools/*
 !tools/trace-followup/
 !tools/capacity-followup/
 !tools/path-dependent-infeasible/
+!tools/liquid-supply-screen/
 
 # Claude × Codex collaboration runtime files
 .collab/
