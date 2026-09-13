@@ -17,9 +17,18 @@ final class V3ColumnTransformerInitializer implements V3NeuralInitializer {
     private static final V3CondenserPhaseBranch[] BRANCHES = {V3CondenserPhaseBranch.LIQUID_ONLY,
             V3CondenserPhaseBranch.TWO_PHASE, V3CondenserPhaseBranch.VAPOR_ONLY};
     private final Document model;
-    private V3ColumnTransformerInitializer(Document model) { this.model = model; }
+    /** Decoder variant selected by the pipeline manifest, never by the model bytes. */
+    private final V3FactorizedNeuralFeatures.DecodeOptions decode;
+    private V3ColumnTransformerInitializer(Document model, V3FactorizedNeuralFeatures.DecodeOptions decode) {
+        this.model = model; this.decode = decode;
+    }
 
     static V3ColumnTransformerInitializer read(InputStream stream) throws IOException {
+        return read(stream, V3FactorizedNeuralFeatures.DecodeOptions.NONE);
+    }
+
+    static V3ColumnTransformerInitializer read(InputStream stream, V3FactorizedNeuralFeatures.DecodeOptions decode) throws IOException {
+        if (decode == null) throw new IllegalArgumentException("Missing pipeline decode options");
         byte[] bytes = stream.readNBytes(8 * 1024 * 1024 + 1);
         if (bytes.length > 8 * 1024 * 1024) throw new IllegalArgumentException("Transformer artifact exceeds size limit");
         Document m = new Gson().fromJson(new String(bytes, StandardCharsets.UTF_8), Document.class);
@@ -43,7 +52,7 @@ final class V3ColumnTransformerInitializer implements V3NeuralInitializer {
                 || d.minimumNodePressurePascal <= 0 || d.maximumNodePressurePascal < d.minimumNodePressurePascal
                 || d.pumparoundSplits == null || d.pumparoundSplits.stream().anyMatch(s -> s == null))
             throw new IllegalArgumentException("Invalid design constraints");
-        var result = new V3ColumnTransformerInitializer(m);
+        var result = new V3ColumnTransformerInitializer(m, decode);
         result.checkLinear("embed", 96, 64); result.checkNorm("output.0"); result.checkLinear("output.1", 64, 85);
         result.checkLinear("branch.0", 74, 64); result.checkLinear("branch.2", 64, 3);
         for (int i = 0; i < 2; i++) {
@@ -73,7 +82,7 @@ final class V3ColumnTransformerInitializer implements V3NeuralInitializer {
         for (int i = 0; i < 3; i++) if (model.branchesSeen[i] && !(i == 2 && reflux)
                 && (best < 0 || raw.branchLogits[i] > raw.branchLogits[best])) best = i;
         if (best < 0 || !Double.isFinite(raw.branchLogits[best])) return Optional.empty();
-        try { return Optional.of(V3FactorizedNeuralFeatures.decode(input, model.propertyRevision, BRANCHES[best], raw.values, model.presenceThreshold)); }
+        try { return Optional.of(V3FactorizedNeuralFeatures.decode(input, model.propertyRevision, BRANCHES[best], raw.values, model.presenceThreshold, decode)); }
         catch (IllegalArgumentException invalid) { return Optional.empty(); }
     }
 

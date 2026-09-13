@@ -49,8 +49,64 @@ public final class V3FactorizedNeuralFeatures {
             if (feed[c] > 0) target[compositionOffset + c] -= center / active;
     }
 
+    /**
+     * Opt-in decoder presence floor, used only by offline research pipelines.
+     *
+     * <p>The production decode prunes a kept component whose decoded flow lands below its own support
+     * floor to exactly zero, and the native support refresh then has to reinsert the point. This option
+     * instead seeds such a component at {@code liftFactor} floors, so the point is already present when
+     * the solver starts. {@link V3TruncationSupport#FLOOR_REINSERTION_FACTOR} is the hysteresis the native
+     * support uses to reinsert a removed phase, which is why ten floors is the natural default: a lifted
+     * trace lands exactly at the flow the support rules already treat as "carrying material again", and
+     * below that it would still be inside the remove/reinsert band.</p>
+     *
+     * <p>{@code liftPresenceProbability} gates the rule on the presence head's own confidence, as a
+     * probability rather than a logit. The decode presence threshold itself (0.02 in production) still
+     * decides which components are kept at all, so a gate at 0.02 reproduces "every kept component" and a
+     * gate at 0.5 lifts only confident presences. The fallback component that a positive phase total
+     * rescues when every support score is uncertain is never lifted: it was not kept by the head.</p>
+     *
+     * <p>The lift is <b>not</b> renormalised into the phase total. The lifted mass is added after the
+     * existing renormalisation, so every component that stays above its floor keeps its default decoded
+     * value bit for bit and only the lifted traces differ. The phase total then exceeds the predicted
+     * total by at most one lift per component, which is of order 1e-9 of the feed; the material rows are
+     * Newton unknowns and absorb it, whereas renormalising would perturb every major component of the
+     * phase to pay for a trace.</p>
+     *
+     * @param liftFactor multiple of the component's support floor to seed, or zero to prune as usual
+     * @param liftPresenceProbability minimum presence probability of a kept component for the lift to apply
+     */
+    record DecodeOptions(double liftFactor, double liftPresenceProbability) {
+        /** The unchanged production rule: below-floor flows of kept components are pruned to zero. */
+        static final DecodeOptions NONE = new DecodeOptions(0, .5);
+
+        DecodeOptions {
+            if (!Double.isFinite(liftFactor) || liftFactor < 0 || liftFactor > 1e6
+                    || (liftFactor > 0 && liftFactor < 1))
+                throw new IllegalArgumentException("Invalid decoder presence floor lift factor");
+            if (!Double.isFinite(liftPresenceProbability) || liftPresenceProbability <= 0 || liftPresenceProbability >= 1)
+                throw new IllegalArgumentException("Invalid decoder presence floor gate probability");
+        }
+
+        static DecodeOptions lift(double factor, double probability) { return new DecodeOptions(factor, probability); }
+
+        boolean liftsPresentTraces() { return liftFactor > 0; }
+
+        /** Presence logit a kept component must reach to be lifted; unreachable while the rule is off. */
+        double liftLogit() {
+            return liftsPresentTraces() ? Math.log(liftPresenceProbability / (1 - liftPresenceProbability))
+                    : Double.POSITIVE_INFINITY;
+        }
+    }
+
     static V3NeuralSeed decode(V3ColumnInput input, String revision, V3CondenserPhaseBranch branch,
             double[][] outputs, double presenceThreshold) {
+        return decode(input, revision, branch, outputs, presenceThreshold, DecodeOptions.NONE);
+    }
+
+    static V3NeuralSeed decode(V3ColumnInput input, String revision, V3CondenserPhaseBranch branch,
+            double[][] outputs, double presenceThreshold, DecodeOptions options) {
+        if (options == null) throw new IllegalArgumentException("Missing learned seed decode options");
         if (!Double.isFinite(presenceThreshold) || presenceThreshold < 0 || presenceThreshold > .5)
             throw new IllegalArgumentException("Invalid learned seed presence threshold");
         double[] feed = input.feedComponentMolarFlowsMolPerSecond(); double total = Arrays.stream(feed).sum();
@@ -67,8 +123,8 @@ public final class V3FactorizedNeuralFeatures {
             double liquidTotal = phaseTotal(row[1], total), vaporTotal = phaseTotal(row[2], total);
             if (n == 0 && branch == V3CondenserPhaseBranch.LIQUID_ONLY) vaporTotal = 0;
             if (n == 0 && branch == V3CondenserPhaseBranch.VAPOR_ONLY) liquidTotal = 0;
-            liquid[n] = decodePhase(row, 3, 5 + 2*c, liquidTotal, feed, total, presenceThreshold);
-            vapor[n] = decodePhase(row, 3 + c, 5 + 3*c, vaporTotal, feed, total, presenceThreshold);
+            liquid[n] = decodePhase(row, 3, 5 + 2*c, liquidTotal, feed, total, presenceThreshold, options);
+            vapor[n] = decodePhase(row, 3 + c, 5 + 3*c, vaporTotal, feed, total, presenceThreshold, options);
             double waterLog = row[3 + 2*c];
             if (waterLog > 30) throw new IllegalArgumentException("Unbounded factorized water flow");
             wet[n] = row[4 + 2*c] >= .5 && n > 0 && n < count-1 && !input.steamFeeds().isEmpty();
@@ -84,7 +140,7 @@ public final class V3FactorizedNeuralFeatures {
     }
 
     private static double[] decodePhase(double[] row, int compositionOffset, int presenceOffset, double total,
-            double[] feed, double totalFeed, double presenceThreshold) {
+            double[] feed, double totalFeed, double presenceThreshold, DecodeOptions options) {
         double[] flows = new double[feed.length], logits = new double[feed.length];
         boolean[] present = new boolean[feed.length]; int fallback = -1;
         double maximum = -Double.MAX_VALUE, fallbackMaximum = -Double.MAX_VALUE;
@@ -103,15 +159,27 @@ public final class V3FactorizedNeuralFeatures {
         if (maximum == -Double.MAX_VALUE) { present[fallback] = true; maximum = fallbackMaximum; }
         double sum = 0;
         for (int c = 0; c < feed.length; c++) if (present[c]) { flows[c] = Math.exp(logits[c]-maximum); sum += flows[c]; }
-        double retained = 0;
+        double retained = 0, liftLogit = options.liftLogit();
+        double[] lifted = null;
         for (int c = 0; c < feed.length; c++) {
             flows[c] *= total / sum;
             double floor = Math.max(feed[c], totalFeed * 1e-12) * TRACE_FLOOR_FRACTION;
-            if (flows[c] < floor) flows[c] = 0;
+            if (flows[c] < floor) {
+                // Opt-in only: the gate logit is positive infinity while the rule is off, so the default
+                // path below is exactly the historical prune and every retained flow is bit identical.
+                if (present[c] && row[presenceOffset+c] >= liftLogit) {
+                    if (lifted == null) lifted = new double[feed.length];
+                    lifted[c] = floor * options.liftFactor();
+                }
+                flows[c] = 0;
+            }
             retained += flows[c];
         }
         // This only forms a seed. The unchanged native support refresh and final physical audits decide acceptance.
         if (retained > 0) for (int c = 0; c < flows.length; c++) flows[c] *= total / retained;
+        // Lifted traces are written after the renormalisation, so they add their own mass instead of taking
+        // it from the components the phase total was predicted for. See DecodeOptions for why.
+        if (lifted != null) for (int c = 0; c < flows.length; c++) if (lifted[c] > 0) flows[c] = lifted[c];
         return flows;
     }
 }
