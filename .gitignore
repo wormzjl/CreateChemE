@@ -51,6 +51,9 @@ tools/*
 !tools/capacity-followup/
 !tools/decoder-floor-followup/
 !tools/neural-budget/
+!tools/path-dependent-infeasible/
+!tools/liquid-supply-screen/
+!tools/integration/
 
 # Claude × Codex collaboration runtime files
 .collab/

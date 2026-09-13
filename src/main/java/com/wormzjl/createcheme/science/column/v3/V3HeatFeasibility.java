@@ -11,8 +11,14 @@ import java.util.Objects;
 /**
  * Necessary conditions for a prescribed cooling duty, evaluated before or between solves.
  *
- * <p>None of these bounds is sufficient. They exist so that an impossible authored duty becomes a typed
- * {@code INFEASIBLE_SPECIFICATION} instead of an unexplained nonconvergence.</p>
+ * <p>None of these bounds is sufficient. They exist so that an impossible authored duty carries a typed
+ * explanation instead of an unexplained nonconvergence.</p>
+ *
+ * <p>Only {@link #availableCoolingWatts} is computable from the request alone, and only its rejection is
+ * published as {@code INFEASIBLE_SPECIFICATION}. {@link #condensationCapacityWatts} and the base-condenser
+ * bound behind {@link #condenserBoundDetail} are evaluated on the last accepted continuation state, so their
+ * verdict belongs to the initializer's path rather than to the specification; they are published as
+ * {@code NONCONVERGENCE} carrying their detail as a hint. See {@code V3ColumnCalculator.PathDependentHeatBound}.</p>
  */
 final class V3HeatFeasibility {
     private V3HeatFeasibility() {}

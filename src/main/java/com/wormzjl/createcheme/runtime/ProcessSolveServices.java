@@ -87,11 +87,13 @@ public final class ProcessSolveServices {
         Objects.requireNonNull(request, "request");
         double stageTraceCutoffMoleFraction = CreateChemE.columnV3StageTraceCutoffMolPercent() / 100.0;
         double convergenceClosureFraction = CreateChemE.columnV3ConvergenceClosurePercent() / 100.0;
+        double liquidSupplyScreenRatio = CreateChemE.columnV3LiquidSupplyScreenRatio();
         V3InitializationOptions initialization = CreateChemE.columnV3InitializationOptions();
         V3NeuralInitializer model = initialization.mode() == V3InitializationOptions.Mode.CURRENT_ONLY
                 ? V3NeuralInitializer.UNAVAILABLE : CreateChemE.columnV3NeuralModel();
         return submit(server, request, new V3ColumnCommand(request.operation().input(),
-                        stageTraceCutoffMoleFraction, convergenceClosureFraction, initialization, model),
+                        stageTraceCutoffMoleFraction, convergenceClosureFraction, initialization, model,
+                        liquidSupplyScreenRatio),
                 request.operation().input().packageId());
     }
 
@@ -258,8 +260,14 @@ public final class ProcessSolveServices {
     /** Immutable worker snapshot; configuration has already been read and converted by server-thread admission. */
     record V3ColumnCommand(
             V3ColumnInput input, double stageTraceCutoffMoleFraction, double convergenceClosureFraction,
-            V3InitializationOptions initialization, V3NeuralInitializer model)
+            V3InitializationOptions initialization, V3NeuralInitializer model, double liquidSupplyScreenRatio)
             implements ProcessSolveCommand {
+        /** Existing initializer-explicit callers retain the default request-only liquid-supply screen. */
+        V3ColumnCommand(V3ColumnInput input, double cutoff, double closure,
+                V3InitializationOptions initialization, V3NeuralInitializer model) {
+            this(input, cutoff, closure, initialization, model,
+                    V3ColumnCalculator.DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO);
+        }
         /** Existing explicit numerical callers retain their classical behavior. */
         V3ColumnCommand(V3ColumnInput input, double cutoff, double closure) {
             this(input, cutoff, closure, V3InitializationOptions.CURRENT, V3NeuralInitializer.UNAVAILABLE);
@@ -281,6 +289,11 @@ public final class ProcessSolveServices {
                     || convergenceClosureFraction > 1.0e-3) {
                 throw new IllegalArgumentException("V3 convergence closure must be finite and in [0, 1e-3]");
             }
+            // Revalidated here rather than trusted from the config range, exactly as the two fractions above are.
+            if (!Double.isFinite(liquidSupplyScreenRatio) || liquidSupplyScreenRatio < 0.0
+                    || liquidSupplyScreenRatio > 1.0) {
+                throw new IllegalArgumentException("V3 liquid-supply screen ratio must be finite and in [0, 1]");
+            }
         }
 
         @Override
@@ -290,7 +303,8 @@ public final class ProcessSolveServices {
                     && initialization.mode() != V3InitializationOptions.Mode.LNN_ONLY
                     ? V3HollandExample32.calculate(input, cancellationToken::throwIfCancellationRequested)
                     : V3ColumnCalculator.calculate(input, cancellationToken::throwIfCancellationRequested,
-                            stageTraceCutoffMoleFraction, convergenceClosureFraction, initialization, model);
+                            stageTraceCutoffMoleFraction, convergenceClosureFraction, initialization, model,
+                            liquidSupplyScreenRatio);
             cancellationToken.throwIfCancellationRequested();
             return new V3ColumnSolveResult(outcome);
         }

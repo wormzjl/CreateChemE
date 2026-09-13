@@ -8,6 +8,7 @@ import com.wormzjl.createcheme.registry.ModBlocks;
 import com.wormzjl.createcheme.registry.ModItems;
 import com.wormzjl.createcheme.registry.ModMenus;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
+import com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator;
 import com.wormzjl.createcheme.science.column.v3.V3InitializationOptions;
 import com.wormzjl.createcheme.science.column.v3.V3NeuralModels;
 import com.wormzjl.createcheme.science.column.v3.V3NeuralInitializer;
@@ -41,6 +42,7 @@ public final class CreateChemE {
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
+    private static final ModConfigSpec.DoubleValue COLUMN_V3_LIQUID_SUPPLY_SCREEN_RATIO;
     private static final ModConfigSpec.EnumValue<V3InitializationOptions.Mode> COLUMN_V3_INITIALIZER_MODE;
     private static final ModConfigSpec.EnumValue<V3NeuralModels.Family> COLUMN_V3_INITIALIZER_MODEL;
     private static final ModConfigSpec.EnumValue<V3InitializationOptions.WetStart> COLUMN_V3_WET_START;
@@ -108,6 +110,20 @@ public final class CreateChemE {
                         "A nonzero value changes the accepted state, so it is part of the result digest and label.",
                         "Captured at admission; config reloads do not change in-flight solves.")
                 .defineInRange("columnV3ConvergenceClosurePercent", 0.0, 0.0, 0.1);
+        COLUMN_V3_LIQUID_SUPPLY_SCREEN_RATIO = builder
+                .comment("Request-only liquid-supply screen: reject a specification whose authored side draws withdraw",
+                        "at least this fraction of the liquid that reflux, feed and authored pumparound condensation",
+                        "can deliver to their trays. No flash and no thermodynamics; a rejected request fails in",
+                        "microseconds with INFEASIBLE_SPECIFICATION instead of seconds of Newton work.",
+                        "0.30 is calibrated, not proved: over 474 independently generated solvable requests the worst",
+                        "reached 0.2176, and 0.30 typed 16 of 405 and 11 of 252 never-solved requests with no false",
+                        "positive. Do not lower it below 0.2176 without re-measuring. A ratio at or above 1 is",
+                        "physically necessary and is always rejected, whatever this value is.",
+                        "0 disables the calibrated tier and leaves only that necessary rejection, which is what a",
+                        "research probe on the draw-wall specifications wants.",
+                        "Captured at admission; config reloads do not change in-flight solves.")
+                .defineInRange("columnV3LiquidSupplyScreenRatio",
+                        V3ColumnCalculator.DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO, 0.0, 1.0);
         builder.pop();
         CONFIG_SPEC = builder.build();
     }
@@ -152,6 +168,11 @@ public final class CreateChemE {
     /** Read on the server thread when admitting a V3 request, never from its worker. */
     public static double columnV3ConvergenceClosurePercent() {
         return COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT.get();
+    }
+
+    /** Read on the server thread when admitting a V3 request, never from its worker. */
+    public static double columnV3LiquidSupplyScreenRatio() {
+        return COLUMN_V3_LIQUID_SUPPLY_SCREEN_RATIO.get();
     }
 
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {

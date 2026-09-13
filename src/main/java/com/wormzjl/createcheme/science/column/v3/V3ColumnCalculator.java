@@ -120,6 +120,14 @@ public final class V3ColumnCalculator {
      * eight to eighteen e-folds too high rather than two.</p>
      */
     private static final double OVERSIZED_SEED_FACTOR = 3.0;
+    /**
+     * Calibrated ratio of the request-only liquid-supply screen every existing entry point uses.
+     *
+     * <p>See {@link V3LiquidSupplyScreen}. Zero disables the calibrated tier and leaves only the physically
+     * necessary {@code rho >= 1} rejection; a caller that wants the raw solver on a draw-wall specification
+     * passes zero through the screen-ratio overloads.</p>
+     */
+    public static final double DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO = V3LiquidSupplyScreen.DEFAULT_CALIBRATED_RATIO;
 
     private enum ContinuationJacobianPolicy {
         NONE,
@@ -148,9 +156,14 @@ public final class V3ColumnCalculator {
     /** Offline export hook: called only after the requested state passes every publication gate. */
     public static V3ColumnOutcome calculateWithAcceptedProfile(V3ColumnInput input, V3SolveControl control,
             java.util.function.Consumer<V3NeuralSeed> observer) {
+        return calculateWithAcceptedProfile(input, control, observer, DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO);
+    }
+
+    private static V3ColumnOutcome calculateWithAcceptedProfile(V3ColumnInput input, V3SolveControl control,
+            java.util.function.Consumer<V3NeuralSeed> observer, double liquidSupplyScreenRatio) {
         return calculate(input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
                 new SolvePolicy(0.0, 0.0, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE,
-                        Objects.requireNonNull(observer, "observer")));
+                        Objects.requireNonNull(observer, "observer")), liquidSupplyScreenRatio);
     }
 
     /**
@@ -159,13 +172,29 @@ public final class V3ColumnCalculator {
      */
     public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
             double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model) {
-        return calculate(input, control, cutoff, closureFraction, options, model, null);
+        return calculate(input, control, cutoff, closureFraction, options, model, DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO);
+    }
+
+    /**
+     * Learned-first entry at an authored liquid-supply screen ratio.
+     *
+     * <p>Screening is a property of the request, so it happens once at this entry, before the neural
+     * candidates and before any flash: the learned and classical routes publish the identical typed failure
+     * for a screened specification. See {@link V3LiquidSupplyScreen}; {@code 0} disables the calibrated tier.</p>
+     *
+     * @throws IllegalArgumentException if the screen ratio is nonfinite or outside [0, 1]
+     */
+    public static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
+            double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
+            double liquidSupplyScreenRatio) {
+        return calculate(input, control, cutoff, closureFraction, options, model, null, liquidSupplyScreenRatio);
     }
 
     /** Offline export after native seed correction; intermediate or parametric states are never exported. */
     public static V3ColumnOutcome calculateWithAcceptedProfile(V3ColumnInput input, V3SolveControl control,
             V3InitializationOptions options, V3NeuralInitializer model, java.util.function.Consumer<V3NeuralSeed> observer) {
-        return calculate(input, control, 0, 0, options, model, Objects.requireNonNull(observer, "observer"));
+        return calculate(input, control, 0, 0, options, model, Objects.requireNonNull(observer, "observer"),
+                DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO);
     }
 
     /**
@@ -185,27 +214,32 @@ public final class V3ColumnCalculator {
     static V3ColumnOutcome calculateWithNeuralTrace(V3ColumnInput input, V3SolveControl control,
             V3InitializationOptions options, V3NeuralInitializer model, V3NewtonTrace trace,
             java.util.function.Consumer<V3NeuralSeed> observer) {
-        return calculate(input, control, 0, 0, options, model, observer, Objects.requireNonNull(trace, "trace"));
+        // The seam observes the production learned entry, so it screens on the same terms as that entry.
+        return calculate(input, control, 0, 0, options, model, observer, DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO,
+                Objects.requireNonNull(trace, "trace"));
     }
 
     private static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
             double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
-            java.util.function.Consumer<V3NeuralSeed> observer) {
-        return calculate(input, control, cutoff, closureFraction, options, model, observer, V3NewtonTrace.NONE);
+            java.util.function.Consumer<V3NeuralSeed> observer, double liquidSupplyScreenRatio) {
+        return calculate(input, control, cutoff, closureFraction, options, model, observer,
+                liquidSupplyScreenRatio, V3NewtonTrace.NONE);
     }
 
     private static V3ColumnOutcome calculate(V3ColumnInput input, V3SolveControl control,
             double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
-            java.util.function.Consumer<V3NeuralSeed> observer, V3NewtonTrace trace) {
+            java.util.function.Consumer<V3NeuralSeed> observer, double liquidSupplyScreenRatio,
+            V3NewtonTrace trace) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         Objects.requireNonNull(options, "options");
         control.checkpoint();
         V3TruncationSupport.requireCutoff(cutoff);
+        V3LiquidSupplyScreen.requireRatio(liquidSupplyScreenRatio);
         double closure = closureTolerance(closureFraction);
         if (options.mode() == V3InitializationOptions.Mode.CURRENT_ONLY)
-            return observer == null ? calculate(input, control, cutoff, closureFraction)
-                    : calculateWithAcceptedProfile(input, control, observer);
+            return observer == null ? calculate(input, control, cutoff, closureFraction, liquidSupplyScreenRatio)
+                    : calculateWithAcceptedProfile(input, control, observer, liquidSupplyScreenRatio);
         Objects.requireNonNull(model, "model");
         try {
             V3ColumnProblemResolver.validateInput(input);
@@ -213,6 +247,9 @@ public final class V3ColumnCalculator {
             return terminalFailure(V3SolverFailureCode.INVALID_INPUT, "Invalid requested input",
                     "initialization/admission", List.of());
         }
+        // Request-only, so it must be answered the same way on both routes and before any candidate is built.
+        V3ColumnOutcome.Failure unsuppliedDraws = liquidSupplyScreen(input, liquidSupplyScreenRatio);
+        if (unsuppliedDraws != null) return unsuppliedDraws;
         V3ColumnOutcome.Failure coolingFailure = staticCoolingAdmission(input);
         if (coolingFailure != null) return coolingFailure;
         long started = System.nanoTime();
@@ -261,6 +298,10 @@ public final class V3ColumnCalculator {
                 }
                 V3ColumnOutcome.Failure failure = (V3ColumnOutcome.Failure) outcome;
                 lastFailure = failure;
+                // Both codes are properties of the request, so no later candidate and no classical backup can
+                // change them: PROPERTY_OUT_OF_RANGE is the resolved pressure profile, and since the two
+                // state-dependent heat bounds became PathDependentHeatBound, INFEASIBLE_SPECIFICATION is only
+                // ever raised by the request-only gates. A path-dependent verdict must not stop the search.
                 if (failure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
                         || failure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION) break;
                 reason = "neural correction " + failure.code();
@@ -290,8 +331,9 @@ public final class V3ColumnCalculator {
             return initializationEvent(lastFailure != null ? lastFailure
                     : neuralFailure(reason, progress), event);
         // One clean backup from the original input; no failed seed state or neural control escapes into it.
-        return initializationEvent(observer == null ? calculate(input, control, cutoff, closureFraction)
-                : calculateWithAcceptedProfile(input, control, observer), event);
+        return initializationEvent(observer == null
+                ? calculate(input, control, cutoff, closureFraction, liquidSupplyScreenRatio)
+                : calculateWithAcceptedProfile(input, control, observer, liquidSupplyScreenRatio), event);
     }
 
     private static V3ColumnOutcome correctNeuralSeed(V3ColumnInput input, V3NeuralSeed seed,
@@ -484,10 +526,9 @@ public final class V3ColumnCalculator {
     /** A learned pass that ended without a failure of its own still publishes what its attempts measured. */
     private static V3ColumnOutcome.Failure neuralFailure(String reason, NeuralProgress progress) {
         String summary = boundedSummary(reason);
-        String event = summary.length() <= 256 ? summary : summary.substring(0, 256);
         return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE, summary,
                 new V3SolverDiagnostics(0, progress.iterations(), 0, 0, progress.lastMaximumScaledResidual(), 0.0,
-                        "initialization/lnn-only", List.of(event), failedAudit("UNAVAILABLE", summary),
+                        "initialization/lnn-only", List.of(boundedEvent(summary)), failedAudit("UNAVAILABLE", summary),
                         V3ConvergenceEvidence.unavailable()));
     }
 
@@ -520,19 +561,44 @@ public final class V3ColumnCalculator {
     public static V3ColumnOutcome calculate(
             V3ColumnInput input, V3SolveControl control, double stageTraceCutoffMoleFraction,
             double convergenceClosureFraction) {
+        return calculate(input, control, stageTraceCutoffMoleFraction, convergenceClosureFraction,
+                DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO);
+    }
+
+    /**
+     * Calculates at an authored liquid-supply screen ratio.
+     *
+     * <p>{@code liquidSupplyScreenRatio} is the calibrated tier of {@link V3LiquidSupplyScreen}: a request
+     * whose authored side draws withdraw at least that fraction of the liquid reflux, feed and authored
+     * pumparound condensation can deliver to their trays is typed {@code INFEASIBLE_SPECIFICATION} before any
+     * flash, so it fails in microseconds instead of seconds. {@code 0} disables the calibrated tier, leaving
+     * only the physically necessary {@code rho >= 1} rejection, and is how a research probe reaches the raw
+     * solver on the draw-wall specifications this project intends to learn to solve.</p>
+     *
+     * <p>The screen reads nothing but the request, evaluates no thermodynamics and changes no digest,
+     * closure, support rule, ramp schedule or acceptance limit.</p>
+     *
+     * @throws IllegalArgumentException if the cutoff or closure is out of range, or if the screen ratio is
+     *         nonfinite or outside [0, 1]
+     */
+    public static V3ColumnOutcome calculate(
+            V3ColumnInput input, V3SolveControl control, double stageTraceCutoffMoleFraction,
+            double convergenceClosureFraction, double liquidSupplyScreenRatio) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         V3TruncationSupport.requireCutoff(stageTraceCutoffMoleFraction);
+        V3LiquidSupplyScreen.requireRatio(liquidSupplyScreenRatio);
         double closure = closureTolerance(convergenceClosureFraction);
         if (stageTraceCutoffMoleFraction == 0.0) {
             return closure == V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE
-                    ? calculate(input, control)
+                    ? calculate(input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
+                            SolvePolicy.OFF, liquidSupplyScreenRatio)
                     : calculate(input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
-                            new SolvePolicy(0.0, 0.0, closure));
+                            new SolvePolicy(0.0, 0.0, closure), liquidSupplyScreenRatio);
         }
         return V3TruncationFallback.calculate(stageTraceCutoffMoleFraction, attemptCutoff -> calculate(
                 input, control, V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE,
-                new SolvePolicy(stageTraceCutoffMoleFraction, attemptCutoff, closure)));
+                new SolvePolicy(stageTraceCutoffMoleFraction, attemptCutoff, closure), liquidSupplyScreenRatio));
     }
 
     /**
@@ -552,20 +618,26 @@ public final class V3ColumnCalculator {
     /** Package-private cold-start qualifier for reviewed initializer modes; production uses the sequential MESH path. */
     static V3ColumnOutcome calculate(
             V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode) {
-        return calculate(input, control, initializerMode, SolvePolicy.OFF);
+        return calculate(input, control, initializerMode, SolvePolicy.OFF, DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO);
     }
 
     private static V3ColumnOutcome calculate(
-            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode, SolvePolicy policy) {
+            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode, SolvePolicy policy,
+            double liquidSupplyScreenRatio) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         Objects.requireNonNull(initializerMode, "initializerMode");
+        V3LiquidSupplyScreen.requireRatio(liquidSupplyScreenRatio);
         double totalDraw = input.sideDraws().stream().mapToDouble(V3SideDrawSpec::molarFlowMolPerSecond).sum();
         double totalFeed = java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum();
         if (totalDraw >= totalFeed) {
             return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
                     "V3 total side draw rate must be less than the feed rate", "input/draws-" + input.sideDraws().size(), List.of());
         }
+        // Generalises the gate above from the column's total balance to each tray's own liquid supply, on the
+        // same request-only terms and still before any flash or property evaluation.
+        V3ColumnOutcome.Failure unsuppliedDraws = liquidSupplyScreen(input, liquidSupplyScreenRatio);
+        if (unsuppliedDraws != null) return unsuppliedDraws;
         V3ColumnOutcome.Failure inadmissibleCooling = staticCoolingAdmission(input);
         if (inadmissibleCooling != null) return inadmissibleCooling;
         CondenserAttempts condenserAttempts = new CondenserAttempts();
@@ -586,6 +658,22 @@ public final class V3ColumnCalculator {
         if (!condenserAttempts.allowsColdRecovery() || condenserAttempts.hasAttempted(alternate)) return outcome;
         V3ColumnOutcome alternative = calculateBranch(input, control, initializerMode, alternate, policy, condenserAttempts);
         return alternative instanceof V3ColumnOutcome.Success ? alternative : outcome;
+    }
+
+    /**
+     * Request-only liquid-supply screen, evaluated before any flash or property evaluation.
+     *
+     * <p>Returns {@code null} when the request is admitted. A published failure reports zero Newton
+     * iterations on the admission path, because none were spent: the statistic is a few dozen floating-point
+     * operations on the authored draws, feed, steam, reflux and pumparound duties. See
+     * {@link V3LiquidSupplyScreen} for the two tiers and for what "calibrated" does and does not claim.</p>
+     */
+    private static V3ColumnOutcome.Failure liquidSupplyScreen(V3ColumnInput input, double liquidSupplyScreenRatio) {
+        V3LiquidSupplyScreen.Verdict verdict = V3LiquidSupplyScreen.evaluate(input);
+        if (!verdict.fires(liquidSupplyScreenRatio)) return null;
+        return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
+                V3LiquidSupplyScreen.detail(verdict, liquidSupplyScreenRatio),
+                "input/liquid-supply-" + input.sideDraws().size(), List.of());
     }
 
     /**
@@ -810,9 +898,13 @@ public final class V3ColumnCalculator {
         } catch (InitializationFailure initialization) {
             return terminalFailure(V3SolverFailureCode.INITIALIZATION_FAILURE,
                     initialization.getMessage(), "initialization", advisoryEvidence);
-        } catch (InfeasibleSpecification infeasible) {
-            return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, infeasible.getMessage(),
-                    infeasible.solvePath(), advisoryEvidence);
+        } catch (PathDependentHeatBound pathBound) {
+            // Not INFEASIBLE_SPECIFICATION: the bound was measured on a continuation state, so the same
+            // request can still be solvable from another seed. The diagnostic survives as the hint. The
+            // recorded flag keeps the caller's cold-recovery decision exactly as it was under the old code.
+            condenserAttempts.recordPathDependentHeatBound();
+            return terminalFailure(V3SolverFailureCode.NONCONVERGENCE, pathBound.getMessage(),
+                    pathBound.solvePath(), advisoryEvidence);
         } catch (V3ThermoException thermoFailure) {
             return terminalFailure(admitted && policy.attemptCutoff() > 0.0 ? V3SolverFailureCode.NONCONVERGENCE
                     : V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, thermoFailure.getMessage(), "property", advisoryEvidence);
@@ -1378,6 +1470,7 @@ public final class V3ColumnCalculator {
         private final EnumSet<V3CondenserPhaseBranch> branches = EnumSet.noneOf(V3CondenserPhaseBranch.class);
         private boolean unresolvedPhaseMismatch;
         private boolean requestedDrawRampFailed;
+        private boolean pathDependentHeatBound;
 
         void recordAttempt(V3CondenserPhaseBranch branch) { branches.add(Objects.requireNonNull(branch, "branch")); }
         boolean hasAttempted(V3CondenserPhaseBranch branch) { return branches.contains(branch); }
@@ -1386,7 +1479,14 @@ public final class V3ColumnCalculator {
             if (auditedSuccess) unresolvedPhaseMismatch = false;
         }
         void recordRequestedDrawRampFailure() { requestedDrawRampFailed = true; }
-        boolean allowsColdRecovery() { return !unresolvedPhaseMismatch && !requestedDrawRampFailed; }
+        // A heat bound stopped the ramp after the whole heat-free chain had already been accepted. Retyping it
+        // from INFEASIBLE_SPECIFICATION to NONCONVERGENCE must not silently buy a second cold chain on the other
+        // condenser branch: the bound is about the authored duty against that accepted state, not about the
+        // condenser phase, so the alternate branch would re-derive the same stop at twice the cost.
+        void recordPathDependentHeatBound() { pathDependentHeatBound = true; }
+        boolean allowsColdRecovery() {
+            return !unresolvedPhaseMismatch && !requestedDrawRampFailed && !pathDependentHeatBound;
+        }
     }
 
     /** Bounded authored-parameter ramp from a dry surrogate seed to liquid draws and free-water steam. */
@@ -1464,9 +1564,10 @@ public final class V3ColumnCalculator {
                         index--;
                         continue;
                     }
-                    throw new InfeasibleSpecification(V3HeatFeasibility.condensationCapDetail(cappedTray,
+                    throw new PathDependentHeatBound(V3HeatFeasibility.condensationCapDetail(cappedTray,
                             condensationCapacityWatts(previous, thermo, cappedTray),
                             rampStep.heatFraction() * trayDutyWatts(input, cappedTray)),
+                            "condensation-capped at tray " + cappedTray + " on the continuation path",
                             "cold/heat-cap/heat-" + input.pumparounds().size());
                 }
             }
@@ -1923,11 +2024,15 @@ public final class V3ColumnCalculator {
     }
 
     /**
-     * Rejects an authored cooling that is not below the base condenser duty of the same column without heat.
+     * Stops an authored cooling that is not below the base condenser duty of the same column without heat.
      *
      * <p>{@code Q_cond0} is recomputed from the last accepted heat-free state at the requested geometry, so
      * this is a state-based bound rather than a correlation. On a wet column that state already carries the
      * authored steam, so the duty includes the water-vapor slip and the free water leaving the drum.</p>
+     *
+     * <p>Because the bound is read off a continuation state it is path-dependent, and raises
+     * {@link PathDependentHeatBound} — a typed {@code NONCONVERGENCE} with the bound as its hint — rather than
+     * claiming the specification itself is infeasible.</p>
      *
      * <p>Like the static gate this compares the net authored heat: {@code Q_cond0} belongs to a column without
      * stage heat, so any authored heating is credited to it before the gross cooling is measured against it.</p>
@@ -1946,8 +2051,9 @@ public final class V3ColumnCalculator {
         double baseCondenserDuty = V3ColumnDutyLedger.condenserDutyWatts(
                 base, heatFreeBase.attempt().state(), evaluator, thermo.newWorkspace());
         if (!Double.isFinite(baseCondenserDuty) || cooling < Math.abs(baseCondenserDuty) + heating) return;
-        throw new InfeasibleSpecification(
+        throw new PathDependentHeatBound(
                 V3HeatFeasibility.condenserBoundDetail(cooling, baseCondenserDuty, heating),
+                "cooling above the base condenser duty measured on the continuation path",
                 "cold/heat-condenser-bound/heat-" + input.pumparounds().size());
     }
 
@@ -2750,8 +2856,11 @@ public final class V3ColumnCalculator {
             V3SolverFailureCode code, String detail, String solvePath, List<String> advisoryEvidence) {
         String summary = boundedSummary(detail);
         V3AcceptanceAudit audit = failedAudit("UNAVAILABLE", summary, advisoryEvidence);
-        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, solvePath, List.of(summary),
-                audit, V3ConvergenceEvidence.unavailable());
+        // The summary and the audit detail are bounded at 512, a diagnostic event at 256. Passing the summary
+        // straight through threw IllegalArgumentException out of the public calculate() for any detail between
+        // the two bounds — reachable as soon as a typed detail grew past 256 characters.
+        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, solvePath,
+                List.of(boundedEvent(summary)), audit, V3ConvergenceEvidence.unavailable());
         return new V3ColumnOutcome.Failure(code, summary, diagnostics);
     }
 
@@ -2816,12 +2925,26 @@ public final class V3ColumnCalculator {
         }
     }
 
-    /** A physically impossible authored duty; reported as a typed specification failure, not nonconvergence. */
-    private static final class InfeasibleSpecification extends RuntimeException {
+    /**
+     * A heat bound that only the continuation path this request happened to take could measure.
+     *
+     * <p>Both bounds that raise this — {@link #requireCoolingBelowBaseCondenserDuty} and
+     * {@link #condensationCappedTray} — read the last accepted continuation state. Their verdict is therefore
+     * a property of this initializer's path, not of the authored request: a differently seeded path can reach
+     * a state on which the same request solves. Measured on the 405-case neural validation population, 42 of
+     * the 108 requests the classical path typed {@code INFEASIBLE_SPECIFICATION} are strictly solved by a
+     * neural-seeded pipeline on the identical input.</p>
+     *
+     * <p>So these are published as {@link V3SolverFailureCode#NONCONVERGENCE} carrying the bound's own
+     * diagnostic plus the path hint, and {@code INFEASIBLE_SPECIFICATION} is left to the request-only gates
+     * ({@code totalDraw >= totalFeed} and {@link #staticCoolingAdmission}), which are computable from the
+     * specification alone.</p>
+     */
+    private static final class PathDependentHeatBound extends RuntimeException {
         private final String solvePath;
 
-        private InfeasibleSpecification(String message, String solvePath) {
-            super(message);
+        private PathDependentHeatBound(String detail, String hint, String solvePath) {
+            super(detail + "; " + hint + PATH_DEPENDENT_BOUND_SUFFIX);
             this.solvePath = Objects.requireNonNull(solvePath, "solvePath");
         }
 
@@ -2829,6 +2952,11 @@ public final class V3ColumnCalculator {
             return solvePath;
         }
     }
+
+    /** Names the path dependence in every published state-dependent heat bound, so the GUI cannot read it as infeasibility. */
+    static final String PATH_DEPENDENT_BOUND_SUFFIX =
+            "; this bound reads the last accepted continuation state rather than the request, so the "
+                    + "specification is not typed infeasible";
 
     private static String pressureEvent(double pressurePascal, String phase, V3SolvePass pass) {
         V3SimultaneousColumnSolver.Evidence evidence = pass.attempt().evidence();

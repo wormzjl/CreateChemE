@@ -1,0 +1,31 @@
+{
+ "revision": "path-dependent-infeasible-verification-v1",
+ "label": "changed",
+ "baseline": "recorded journal statuses in ids.json",
+ "population": 108,
+ "statusHistogram": {
+  "NONCONVERGENCE": 108
+ },
+ "criterion1_noneStillTypedInfeasible": {
+  "passed": true,
+  "stillInfeasible": [],
+  "strictlySolvedElsewhereStillInfeasible": [],
+  "strictlySolvedElsewhereCount": 42
+ },
+ "criterion2_hintPresentOnEveryRetypedCase": {
+  "passed": true,
+  "retypedCount": 108,
+  "missingHint": [],
+  "gateBreakdown": {
+   "condensation-cap": 83,
+   "condenser-bound": 25
+  }
+ },
+ "criterion3_nothingElseChanged": {
+  "passed": true,
+  "unexpectedTransitions": [],
+  "newlyAccepted": []
+ },
+ "wallSecondsThisRun": 11.8700257,
+ "passed": true
+}

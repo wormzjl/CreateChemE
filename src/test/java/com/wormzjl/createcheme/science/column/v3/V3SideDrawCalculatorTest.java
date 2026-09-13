@@ -71,13 +71,26 @@ class V3SideDrawCalculatorTest {
      * contract — requested geometry attempted, the exhausted authored tray named, no continuation-grid excuse
      * — and nothing about convergence; the qualified draw lanes are the 0.25x draws-only case above and the
      * 0.40x draws-plus-coolers case below.</p>
+     *
+     * <p>The request-only liquid-supply screen answers this same specification without solving it: the
+     * cumulative draw reaches 0.4944 of the reflux that can deliver liquid to tray 22, well past the
+     * calibrated 0.30. Both answers are wanted, and they are separated here rather than merged, because they
+     * say different things — the screen says the specification is outside the solver's demonstrated envelope,
+     * the contract below says what the solver does when it is made to try anyway. The disabled-screen ratio
+     * is exactly the switch a research probe on these draw-wall specifications uses.</p>
      */
     @Test
     void anOverSpecifiedProductSlateAttemptsRequestedGeometryAndNamesAnAuthoredTray() {
+        V3ColumnOutcome.Failure screened = assertInstanceOf(V3ColumnOutcome.Failure.class,
+                V3ColumnCalculator.calculate(canonicalInput(150_000)));
+        assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, screened.code());
+        assertEquals(0, screened.diagnostics().newtonIterations(), "the screen may not precede itself with a solve");
+        assertTrue(screened.summary().contains("liquid that reflux"), screened::summary);
+
         long started = System.nanoTime();
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(canonicalInput(150_000), () -> {
             if (System.nanoTime() - started > 45_000_000_000L) throw new AssertionError("large-draw failure exceeded 45 seconds");
-        });
+        }, 0.0, 0.0, 0.0);
         if (outcome instanceof V3ColumnOutcome.Success success) {
             assertTrue(success.result().acceptanceAudit().accepted());
             assertEquals(30, success.result().problem().topology().trayCount());
@@ -147,6 +160,14 @@ class V3SideDrawCalculatorTest {
         }
     }
 
+    /**
+     * A 99-of-100 draw on tray 1 is legal geometry, so it must never be answered {@code INVALID_INPUT}.
+     *
+     * <p>Its liquid-supply ratio is 0.9706 — a hair under the physically necessary 1.0 and far past the
+     * calibrated 0.30 — so the request-only screen types it before any solve. The original contract is about
+     * what the solver does when it is made to attempt the geometry, so it keeps the raw solver via the
+     * disabled screen ratio.</p>
+     */
     @Test
     void legalNearFeedDrawNeverBecomesInvalidInputWhenTheDrawBlindSeedIsAvailable() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:cdu17_tjl_acs2018");
@@ -159,7 +180,13 @@ class V3SideDrawCalculatorTest {
                 new V3ColumnSpecification.OrganicRefluxRatio(2),
                 new V3ColumnSpecification.ReboilerDuty(0)), List.of(new V3SideDrawSpec(1, 99)));
 
-        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input);
+        V3ColumnOutcome.Failure screened = assertInstanceOf(V3ColumnOutcome.Failure.class,
+                V3ColumnCalculator.calculate(input));
+        assertNotEquals(V3SolverFailureCode.INVALID_INPUT, screened.code());
+        assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, screened.code());
+        assertTrue(screened.summary().contains("tray 1"), screened::summary);
+
+        V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, V3SolveControl.UNBOUNDED, 0.0, 0.0, 0.0);
         if (outcome instanceof V3ColumnOutcome.Failure failure) {
             assertNotEquals(V3SolverFailureCode.INVALID_INPUT, failure.code());
             assertTrue(failure.summary().contains("authored tray 1"), failure::summary);
