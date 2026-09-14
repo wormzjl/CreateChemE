@@ -59,3 +59,4 @@ tools/*
 .collab/
 CLAUDE.md
 .claude/
+!tools/transformer-promotion/

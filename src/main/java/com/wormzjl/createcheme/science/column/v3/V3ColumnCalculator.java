@@ -268,8 +268,7 @@ public final class V3ColumnCalculator {
         if (modelId == null || !modelId.matches("[A-Za-z0-9._:/-]{1,96}")) modelId = "invalid-id";
         try {
             neuralControl.checkpoint();
-            List<V3NeuralSeed> predictions = model instanceof V3PhaseAwareNeuralInitializer phaseAware
-                    ? phaseAware.candidates(input, neuralControl) : model.predict(input, neuralControl).stream().toList();
+            List<V3NeuralSeed> predictions = model.candidates(input, neuralControl);
             neuralControl.checkpoint();
             for (V3NeuralSeed prediction : predictions) {
                 candidatesTried++;

@@ -25,7 +25,7 @@ final class V3PhaseAwareNeuralInitializer implements V3NeuralInitializer {
     }
 
     /** Ranked alternatives share one caller-owned inference/correction budget. */
-    List<V3NeuralSeed> candidates(V3ColumnInput input, V3SolveControl control) {
+    @Override public List<V3NeuralSeed> candidates(V3ColumnInput input, V3SolveControl control) {
         List<V3NeuralSeed> candidates = new ArrayList<>();
         for (var expert : experts) {
             control.checkpoint();

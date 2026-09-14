@@ -30,13 +30,35 @@ NEEDED_TOOLS = {'V3HybridBaseline.java', 'V3HybridResidualInitializer.java', 'V3
                 'V3MechanisticTransformerInitializer.java', 'V3NeuralMvpProbe.java'}
 
 
+# The transformer promotion retired these readers out of `src/main` into the offline tools and added the
+# promoted initializer, its anchor and the liquid-supply screen to the core. Re-registering this study
+# against the current tree therefore also needs its DECLARED_SOURCE_DELTA widened; its committed evidence
+# stands on the tree it was sealed against, which is what the cache manifest binds.
+PROMOTED_CORE_SOURCES = {
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3AnchorTransformerInitializer.java',
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3NativeAnchor.java',
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3LiquidSupplyScreen.java',
+}
+RETIRED_CORE_SOURCES = {
+    f'src/main/java/com/wormzjl/createcheme/science/column/v3/{name}.java':
+        f'tools/neural/retired/{name}.java'
+    for name in ('V3DenseNeuralInitializer', 'V3GeneralNeuralInitializer', 'V3FactorizedNeuralInitializer',
+                 'V3NearestProfileInitializer', 'V3PhaseAwareNeuralInitializer')
+}
+
+
+def resolved(path):
+    """Where a declared core source lives in this worktree, after the promotion's relocations."""
+    return RETIRED_CORE_SOURCES.get(path, path)
+
+
 def core_sources():
     """The predecessor's native-core source closure, resolved against this worktree."""
     previous = read(PRIOR_TRACE / 'training-plan.json')
     declared = [entry for entry in previous['dependencies'] if entry['path'].endswith('.java')
                 and (entry['path'].startswith('src/main/') or Path(entry['path']).name in NEEDED_TOOLS)]
-    added = sorted(ROOT / path for path in ADDED_TOOL_SOURCES)
-    return declared, sorted({ROOT / entry['path'] for entry in declared} | set(added))
+    added = sorted(ROOT / path for path in ADDED_TOOL_SOURCES | PROMOTED_CORE_SOURCES)
+    return declared, sorted({ROOT / resolved(entry['path']) for entry in declared} | set(added))
 
 
 def source_delta():
@@ -55,7 +77,7 @@ def source_delta():
     with zipfile.ZipFile(archive) as zipped:
         for entry in declared:
             archived = zipped.read(entry['path'])
-            local = (ROOT / entry['path']).read_bytes()
+            local = (ROOT / resolved(entry['path'])).read_bytes()
             if archived == local:
                 unchanged += 1
             elif normalized(archived) == normalized(local):
@@ -63,8 +85,9 @@ def source_delta():
                 # is identical, so the compiled behaviour is too; it is recorded rather than hidden.
                 reencoded.append(entry['path'])
             else:
-                changed.append(dict(path=entry['path'], archivedSha256=entry['sha256'],
-                                    studySha256=digest(ROOT / entry['path'])))
+                changed.append(dict(path=entry['path'], studyPath=resolved(entry['path']),
+                                    archivedSha256=entry['sha256'],
+                                    studySha256=digest(ROOT / resolved(entry['path']))))
     assert {entry['path'] for entry in changed} == DECLARED_SOURCE_DELTA, changed
     return dict(passed=True, archive=manifest['archive'], archiveMatchedSources=unchanged,
                 lineEndingOnlyDifferences=sorted(reencoded),

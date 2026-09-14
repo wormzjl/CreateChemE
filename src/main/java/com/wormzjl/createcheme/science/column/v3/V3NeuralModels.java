@@ -2,51 +2,40 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import java.io.IOException;
 
-/** Safely published immutable bundled model; no file reload or mutable workspace crosses admission. */
+/**
+ * The single bundled learned initializer. Safely published and immutable; no file reload or mutable
+ * workspace crosses admission.
+ *
+ * <p>One model ships: the anchor-augmented Transformer {@code F-20260911-s4160}, qualified over the
+ * frozen 405-input validation population with the phase-level decoder floor this holder states. The
+ * earlier dense, generalized, factorized and nearest-profile families are no longer bundled; their
+ * readers and artifacts live in the offline tools source set under {@code tools/neural/retired/} so the
+ * archived studies still build. See {@code v3-column-transformer-f0.md} beside the artifact.</p>
+ */
 public final class V3NeuralModels {
-    public enum Family { LOCAL_EXPERTS, GENERALIZED_EXPERIMENTAL, GENERALIZED_GEN3_EXPERIMENTAL }
+    /**
+     * The qualified decoder rule: a phase whose total decodes zero, whose branch admits it and whose
+     * presence head kept at least one component, is seeded at ten support floors over those components.
+     * Registered as {@code PHASE_FLOOR_DECODER} by the neural-budget study; changing it changes seeds.
+     */
+    static final double QUALIFIED_ZERO_PHASE_FLOOR_FACTOR = 10.0;
+
+    /** The bundled artifact, relative to the classpath root. */
+    public static final String ARTIFACT = "/data/createcheme/neural/v3-column-transformer-f0.json";
+
     private V3NeuralModels() {}
+
     public static V3NeuralInitializer bundled() { return Holder.MODEL; }
-    public static V3NeuralInitializer forFamily(Family family) {
-        return switch (java.util.Objects.requireNonNull(family)) {
-            case LOCAL_EXPERTS -> bundled();
-            case GENERALIZED_EXPERIMENTAL -> GeneralHolder.MODEL;
-            case GENERALIZED_GEN3_EXPERIMENTAL -> Gen3Holder.MODEL;
-        };
-    }
+
     private static final class Holder {
         private static final V3NeuralInitializer MODEL = load();
         private static V3NeuralInitializer load() {
-            var models = new java.util.ArrayList<V3NeuralInitializer>();
-            for (String artifact : java.util.List.of("v3-mvp.json", "v3-tjl20-dry.json", "v3-tjl20-wet.json")) {
-                try (var stream = V3NeuralModels.class.getResourceAsStream("/data/createcheme/neural/" + artifact)) {
-                    if (stream != null) models.add(V3DenseNeuralInitializer.read(stream));
-                } catch (IOException | IllegalArgumentException invalid) {
-                    // A corrupt optional expert does not disable the other compatible experts or backup.
-                }
-            }
-            return models.isEmpty() ? V3NeuralInitializer.UNAVAILABLE
-                    : new V3PhaseAwareNeuralInitializer("v3-phase-aware-bundle-v2", models);
-        }
-    }
-    private static final class GeneralHolder {
-        private static final V3NeuralInitializer MODEL = load();
-        private static V3NeuralInitializer load() {
-            try (var stream = V3NeuralModels.class.getResourceAsStream("/data/createcheme/neural/v3-general-stage.json")) {
-                if (stream != null) return V3GeneralNeuralInitializer.read(stream);
+            try (var stream = V3NeuralModels.class.getResourceAsStream(ARTIFACT)) {
+                if (stream != null) return V3AnchorTransformerInitializer.read(stream,
+                        V3FactorizedNeuralFeatures.DecodeOptions.zeroPhaseFloor(QUALIFIED_ZERO_PHASE_FLOOR_FACTOR));
             } catch (IOException | IllegalArgumentException invalid) {
-                // Optional experimental coverage may be unavailable; LNN_FIRST retains classical fallback.
-            }
-            return V3NeuralInitializer.UNAVAILABLE;
-        }
-    }
-    private static final class Gen3Holder {
-        private static final V3NeuralInitializer MODEL = load();
-        private static V3NeuralInitializer load() {
-            try (var stream = V3NeuralModels.class.getResourceAsStream("/data/createcheme/neural/v3-general-gen3-factorized.json")) {
-                if (stream != null) return V3FactorizedNeuralInitializer.read(stream);
-            } catch (IOException | IllegalArgumentException invalid) {
-                // Optional experimental coverage may be unavailable; LNN_FIRST retains classical fallback.
+                // A corrupt or absent artifact never disables the solver: LNN_FIRST retains classical fallback
+                // and LNN_ONLY publishes its own typed failure.
             }
             return V3NeuralInitializer.UNAVAILABLE;
         }

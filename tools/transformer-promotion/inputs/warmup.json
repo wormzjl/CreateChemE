@@ -1,0 +1,102 @@
+{
+  "id": "g3fresh-s02-w0-p3-d2-r01",
+  "input": {
+    "assayId": "createcheme:tia_juana_light_methane",
+    "componentBasis": {
+      "componentIds": [
+        "Methane",
+        "Ethane",
+        "Propane",
+        "Isobutane",
+        "N-butane",
+        "Isopentane",
+        "N-pentane",
+        "TJL_PC01",
+        "TJL_PC02",
+        "TJL_PC03",
+        "TJL_PC04",
+        "TJL_PC05",
+        "TJL_PC06",
+        "TJL_PC07",
+        "TJL_PC08",
+        "TJL_PC09",
+        "TJL_PC10",
+        "TJL_PC11",
+        "TJL_PC12",
+        "TJL_PC13"
+      ]
+    },
+    "feedComponentMolarFlowsMolPerSecond": [
+      3.205767343466076,
+      0.7426372870888082,
+      6.422396077186031,
+      5.481824001237806,
+      15.218881621032198,
+      10.597638658266918,
+      18.140349057342927,
+      140.49305880745516,
+      94.56515835513132,
+      77.93912348387832,
+      91.27296401517857,
+      56.76117049246198,
+      58.80679096540815,
+      47.59645370728792,
+      43.661131162540364,
+      37.47270909852507,
+      22.51076171779882,
+      20.655721170663792,
+      6.376998622147424,
+      0.997795189146396
+    ],
+    "feedStageNumber": 2,
+    "feedTemperatureKelvin": 704.8501922392311,
+    "packageId": "createcheme:tjl20_methane",
+    "pumparounds": [
+      {
+        "drawTray": 1,
+        "dutyWatts": -16170420.07831969,
+        "returnTray": 1,
+        "split": "UNIFORM"
+      },
+      {
+        "drawTray": 2,
+        "dutyWatts": -11621046.635813458,
+        "returnTray": 1,
+        "split": "UNIFORM"
+      },
+      {
+        "drawTray": 2,
+        "dutyWatts": -14620870.060519759,
+        "returnTray": 2,
+        "split": "UNIFORM"
+      }
+    ],
+    "schemaVersion": 1,
+    "sideDraws": [
+      {
+        "molarFlowMolPerSecond": 130.2421779201772,
+        "trayNumber": 1
+      },
+      {
+        "molarFlowMolPerSecond": 121.1622760175626,
+        "trayNumber": 2
+      }
+    ],
+    "specifications": [
+      {
+        "kelvin": 340.284836240655
+      },
+      {
+        "ratio": 5.049839800640798
+      },
+      {
+        "watts": 5654209.008526451
+      }
+    ],
+    "stageCount": 2,
+    "stagePressureDropPascal": 632.0754716981132,
+    "steamFeeds": [],
+    "topPressurePascal": 265503.73798504804
+  },
+  "split": "train"
+}

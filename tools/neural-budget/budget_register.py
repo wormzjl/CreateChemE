@@ -35,9 +35,14 @@ ALLOWED_SOURCE_DELTA = {
         'the opt-in decoder options, inherited from the decoder-floor study and extended if selected',
     'tools/neural/V3ColumnTransformerInitializer.java':
         'threads the decode options; inherited from the decoder-floor study',
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralModels.java':
+        'one bundled model after the transformer promotion: the frozen F0 weights with the qualified floor',
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralInitializer.java':
+        'the multi-candidate seam became a default interface method when the expert bundle left production',
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3PhaseAwareNeuralInitializer.java':
+        'retired to tools/neural/retired/ and now overrides the interface seam it used to be matched by',
 }
-ADDED_TOOL_SOURCES = {'tools/neural-budget/java/V3BudgetInitializer.java',
-                      'tools/neural-budget/java/V3BudgetModels.java',
+ADDED_TOOL_SOURCES = {'tools/neural-budget/java/V3BudgetModels.java',
                       'tools/neural-budget/java/V3BudgetEvaluationProbe.java',
                       'tools/neural-budget/java/V3BudgetDecodeCheck.java',
                       'tools/neural-budget/java/V3BudgetTraceProbe.java'}
@@ -45,14 +50,35 @@ NEEDED_TOOLS = {'V3HybridBaseline.java', 'V3HybridResidualInitializer.java', 'V3
                 'V3CandidateModels.java', 'V3ColumnTransformerInitializer.java',
                 'V3MechanisticTransformerInitializer.java', 'V3NeuralMvpProbe.java'}
 
+# The transformer promotion moved code in both directions across the production boundary, so the
+# predecessor's closure no longer resolves path for path. Sources the promotion added to `src/main` are
+# named here because the predecessor plan cannot know them; sources it retired out of `src/main` are
+# mapped to where they now live, because the archived studies still compile against them.
+PROMOTED_CORE_SOURCES = {
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3AnchorTransformerInitializer.java',
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3NativeAnchor.java',
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3LiquidSupplyScreen.java',
+}
+RETIRED_CORE_SOURCES = {
+    f'src/main/java/com/wormzjl/createcheme/science/column/v3/{name}.java':
+        f'tools/neural/retired/{name}.java'
+    for name in ('V3DenseNeuralInitializer', 'V3GeneralNeuralInitializer', 'V3FactorizedNeuralInitializer',
+                 'V3NearestProfileInitializer', 'V3PhaseAwareNeuralInitializer')
+}
+
+
+def resolved(path):
+    """Where a declared core source lives in this worktree, after the promotion's relocations."""
+    return RETIRED_CORE_SOURCES.get(path, path)
+
 
 def core_sources():
     """The predecessor's native-core source closure, resolved against this worktree."""
     previous = read(PRIOR_TRACE / 'training-plan.json')
     declared = [entry for entry in previous['dependencies'] if entry['path'].endswith('.java')
                 and (entry['path'].startswith('src/main/') or Path(entry['path']).name in NEEDED_TOOLS)]
-    added = sorted(ROOT / path for path in ADDED_TOOL_SOURCES)
-    return declared, sorted({ROOT / entry['path'] for entry in declared} | set(added))
+    added = sorted(ROOT / path for path in ADDED_TOOL_SOURCES | PROMOTED_CORE_SOURCES)
+    return declared, sorted({ROOT / resolved(entry['path']) for entry in declared} | set(added))
 
 
 def source_delta():
@@ -72,7 +98,7 @@ def source_delta():
     with zipfile.ZipFile(archive) as zipped:
         for entry in declared:
             archived = zipped.read(entry['path'])
-            local = (ROOT / entry['path']).read_bytes()
+            local = (ROOT / resolved(entry['path'])).read_bytes()
             if archived == local:
                 unchanged += 1
             elif normalized(archived) == normalized(local):
@@ -80,8 +106,9 @@ def source_delta():
                 # identical, so the compiled behaviour is too; it is recorded rather than hidden.
                 reencoded.append(entry['path'])
             else:
-                changed.append(dict(path=entry['path'], archivedSha256=entry['sha256'],
-                                    studySha256=digest(ROOT / entry['path']),
+                changed.append(dict(path=entry['path'], studyPath=resolved(entry['path']),
+                                    archivedSha256=entry['sha256'],
+                                    studySha256=digest(ROOT / resolved(entry['path'])),
                                     reason=ALLOWED_SOURCE_DELTA[entry['path']]))
     undeclared = sorted({entry['path'] for entry in changed} - set(ALLOWED_SOURCE_DELTA))
     assert not undeclared, undeclared

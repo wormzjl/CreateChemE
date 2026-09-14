@@ -28,7 +28,10 @@ final class V3BudgetModels {
         var decode = decodeOptions(doc.getAsJsonObject("decoder"));
         try (var stream = Files.newInputStream(file)) {
             return switch (doc.get("kind").getAsString()) {
-                case "anchor-augmented" -> V3BudgetInitializer.read(stream, decode);
+                // Promoted to production: the class this study derived and measured is now
+                // V3AnchorTransformerInitializer in src/main, bundled with the decoder rule it qualified.
+                // The offline copy was removed so a campaign can only ever load the shipped arithmetic.
+                case "anchor-augmented" -> V3AnchorTransformerInitializer.read(stream, decode);
                 case "transformer" -> V3ColumnTransformerInitializer.read(stream, decode);
                 default -> throw new IllegalArgumentException("Unknown pipeline kind");
             };

@@ -36,6 +36,18 @@ public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumI
         /** The frozen production rule: walls only. */
         public static final Correction WALLS = new Correction(0, 0, 0, 0.0, 0, 0.0, 0.0);
 
+        /**
+         * The qualified progress rule, and the learned default since the Transformer promotion.
+         *
+         * <p>These are exactly the parameters the neural-budget study registered as its progress
+         * correction and measured on the frozen F0 weights: extension blocks of eight iterations up to a
+         * cap of forty-eight while the maximum scaled residual has fallen below half its value eight
+         * iterations ago, and an early stop when it has not fallen below nine tenths of that value over
+         * the same window while still above 1e-6. The base cap of sixteen and the two-second allowance
+         * are unchanged, and {@link #WALLS} remains available for a caller that wants the frozen path.</p>
+         */
+        public static final Correction PROGRESS = new Correction(8, 48, 8, 0.5, 8, 0.9, 1e-6);
+
         public Correction {
             if (extensionBlock < 0 || extensionMaximumIterations < 0 || contractionWindow < 0 || stallWindow < 0
                     || extensionMaximumIterations > V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS
@@ -54,8 +66,10 @@ public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumI
         public boolean stopsEarly() { return stallWindow > 0; }
     }
 
+    /** The learned default: the bundled Transformer's qualified walls and progress rule. */
     public static final V3InitializationOptions DEFAULT =
-            new V3InitializationOptions(Mode.LNN_FIRST, WetStart.AUTO, 16, 2_000);
+            new V3InitializationOptions(Mode.LNN_FIRST, WetStart.AUTO, 16, 2_000, Correction.PROGRESS);
+    /** The classical route. It runs no learned correction, so no progress rule applies to it. */
     public static final V3InitializationOptions CURRENT =
             new V3InitializationOptions(Mode.CURRENT_ONLY, WetStart.DRY_START, 16, 2_000);
 

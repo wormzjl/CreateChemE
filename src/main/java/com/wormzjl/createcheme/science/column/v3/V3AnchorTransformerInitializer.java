@@ -9,25 +9,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/** Offline absolute-output Transformer with a pipeline-selected decoder rule. Parser-owned weights are immutable after validation.
- * Every prediction owns all scratch arrays; cooperative cancellation is checked inside matrix work.
+/**
+ * The bundled absolute-output Transformer with a native material-closed anchor on its input.
+ * Parser-owned weights are immutable after validation. Every prediction owns all scratch arrays;
+ * cooperative cancellation is checked inside matrix work.
+ *
+ * <p>This is the qualified production initializer. Its arithmetic is the arithmetic the offline
+ * campaigns measured: the class was promoted unchanged from the neural-budget study's
+ * {@code V3BudgetInitializer}, which that study derived from the trace-followup study's
+ * {@code V3AnchorAugmentedInitializer}. The decoder variant is never read from the model bytes; the
+ * caller that loads the artifact states it, and {@link V3NeuralModels} states the qualified one.</p>
  */
-final class V3BudgetInitializer implements V3NeuralInitializer {
+final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
     private static final String REVISION = "v3-anchor-augmented-1";
     private static final V3CondenserPhaseBranch[] BRANCHES = {V3CondenserPhaseBranch.LIQUID_ONLY,
             V3CondenserPhaseBranch.TWO_PHASE, V3CondenserPhaseBranch.VAPOR_ONLY};
     private final Document model;
-    /** Decoder variant selected by the pipeline manifest, never by the model bytes. */
+    /** Decoder variant selected by the loading caller, never by the model bytes. */
     private final V3FactorizedNeuralFeatures.DecodeOptions decode;
-    private V3BudgetInitializer(Document model, V3FactorizedNeuralFeatures.DecodeOptions decode) {
+    private V3AnchorTransformerInitializer(Document model, V3FactorizedNeuralFeatures.DecodeOptions decode) {
         this.model = model; this.decode = decode;
     }
 
-    static V3BudgetInitializer read(InputStream stream) throws IOException {
+    static V3AnchorTransformerInitializer read(InputStream stream) throws IOException {
         return read(stream, V3FactorizedNeuralFeatures.DecodeOptions.NONE);
     }
 
-    static V3BudgetInitializer read(InputStream stream, V3FactorizedNeuralFeatures.DecodeOptions decode) throws IOException {
+    static V3AnchorTransformerInitializer read(InputStream stream, V3FactorizedNeuralFeatures.DecodeOptions decode) throws IOException {
         if (decode == null) throw new IllegalArgumentException("Missing pipeline decode options");
         byte[] bytes = stream.readNBytes(8 * 1024 * 1024 + 1);
         if (bytes.length > 8 * 1024 * 1024) throw new IllegalArgumentException("Transformer artifact exceeds size limit");
@@ -53,7 +61,7 @@ final class V3BudgetInitializer implements V3NeuralInitializer {
                 || d.minimumNodePressurePascal <= 0 || d.maximumNodePressurePascal < d.minimumNodePressurePascal
                 || d.pumparoundSplits == null || d.pumparoundSplits.stream().anyMatch(s -> s == null))
             throw new IllegalArgumentException("Invalid design constraints");
-        var result = new V3BudgetInitializer(m, decode);
+        var result = new V3AnchorTransformerInitializer(m, decode);
         result.checkLinear("embed", inputs(m), 64); result.checkNorm("output.0"); result.checkLinear("output.1", 64, 85);
         result.checkLinear("branch.0", 74, 64); result.checkLinear("branch.2", 64, 3);
         for (int i = 0; i < 2; i++) {
@@ -76,6 +84,11 @@ final class V3BudgetInitializer implements V3NeuralInitializer {
 
     @Override public String modelId() { return model.modelId; }
 
+    /** The property dataset this model's targets were labelled against; a mismatch is not corrected. */
+    String propertyRevision() { return model.propertyRevision; }
+
+    long parameterCount() { return parameterStorageBytes() / Double.BYTES; }
+
     @Override public Optional<V3NeuralSeed> predict(V3ColumnInput input, V3SolveControl control) {
         control.checkpoint();
         if (!supported(input)) return Optional.empty();
@@ -89,7 +102,7 @@ final class V3BudgetInitializer implements V3NeuralInitializer {
         catch (IllegalArgumentException invalid) { return Optional.empty(); }
     }
 
-    private boolean supported(V3ColumnInput input) {
+    boolean supported(V3ColumnInput input) {
         if (!input.packageId().equals(model.packageId) || !input.componentBasis().componentIds().equals(model.components)
                 || input.stageCount() < 2 || input.stageCount() > 64 || input.feedStageNumber() < 1 || input.feedStageNumber() > input.stageCount()
                 || input.pumparounds().size() > 4 || input.sideDraws().size() > 3 || input.steamFeeds().size() > 2
@@ -108,7 +121,7 @@ final class V3BudgetInitializer implements V3NeuralInitializer {
         return true;
     }
 
-    /** Request-owned diagnostic values, only exposed within the offline tool package. */
+    /** Request-owned diagnostic values. */
     record Raw(double[][] values, double[] branchLogits) {}
 
     Raw raw(V3ColumnInput input, V3SolveControl control) {
@@ -119,7 +132,7 @@ final class V3BudgetInitializer implements V3NeuralInitializer {
         for (int i = 0; i < 3; i++) if (model.branchesSeen[i] && !(i == 2 && reflux)
                 && (best < 0 || branch[i] > branch[best])) best = i;
         if (best < 0 || !Double.isFinite(branch[best])) throw new IllegalArgumentException("No legal branch");
-        var anchor = V3HybridBaseline.build(input, BRANCHES[best], control);
+        var anchor = V3NativeAnchor.build(input, BRANCHES[best], control);
         double[][] features = V3GeneralNeuralFeatures.nodes(input, V3CondenserPhaseBranch.TWO_PHASE);
         double[][] hidden = new double[features.length][];
         for (int i = 0; i < features.length; i++) {

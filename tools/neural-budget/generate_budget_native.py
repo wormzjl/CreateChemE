@@ -20,31 +20,31 @@ def once(text, old, new):
 
 
 def initializer():
-    text = (TRACE / 'V3AnchorAugmentedInitializer.java').read_text(encoding='utf-8')
-    # The feature revision and every manifest check stay as they are: the model bytes are frozen and the
-    # decoder variant is chosen by the pipeline manifest alone.
-    text = text.replace('V3AnchorAugmentedInitializer', 'V3BudgetInitializer')
-    text = once(text, 'Offline absolute-output Transformer with optional full or compact native anchor inputs.',
-                'Offline absolute-output Transformer with a pipeline-selected decoder rule.')
-    text = once(text, '    private final Document model;\n'
-                      '    private V3BudgetInitializer(Document model) { this.model = model; }',
-                '    private final Document model;\n'
-                '    /** Decoder variant selected by the pipeline manifest, never by the model bytes. */\n'
-                '    private final V3FactorizedNeuralFeatures.DecodeOptions decode;\n'
-                '    private V3BudgetInitializer(Document model, V3FactorizedNeuralFeatures.DecodeOptions decode) {\n'
-                '        this.model = model; this.decode = decode;\n'
-                '    }')
-    text = once(text, '    static V3BudgetInitializer read(InputStream stream) throws IOException {\n'
-                      '        byte[] bytes',
-                '    static V3BudgetInitializer read(InputStream stream) throws IOException {\n'
-                '        return read(stream, V3FactorizedNeuralFeatures.DecodeOptions.NONE);\n'
-                '    }\n\n'
-                '    static V3BudgetInitializer read(InputStream stream, V3FactorizedNeuralFeatures.DecodeOptions decode) throws IOException {\n'
-                '        if (decode == null) throw new IllegalArgumentException("Missing pipeline decode options");\n'
-                '        byte[] bytes')
-    text = once(text, 'var result = new V3BudgetInitializer(m);', 'var result = new V3BudgetInitializer(m, decode);')
-    text = once(text, 'raw.values, model.presenceThreshold));', 'raw.values, model.presenceThreshold, decode));')
-    (DEST / 'V3BudgetInitializer.java').write_text(text, encoding='utf-8', newline='\n')
+    """Verify the promoted production initializer still carries this study's numerical body.
+
+    The derived `V3BudgetInitializer` no longer exists: the transformer-promotion work moved exactly this
+    class into `src/main` as `V3AnchorTransformerInitializer`, bundled the frozen F0 weights beside it and
+    made it the shipped default. Nothing is generated any more, because a campaign that regenerated an
+    offline twin could no longer claim to be measuring what the game runs. What is still checked is that
+    the production class is the sealed predecessor's arithmetic under the renames this study applied, so a
+    silent upstream change cannot be absorbed here either.
+    """
+    production = (ROOT / 'src/main/java/com/wormzjl/createcheme/science/column/v3'
+                  / 'V3AnchorTransformerInitializer.java')
+    origin = (TRACE / 'V3AnchorAugmentedInitializer.java').read_text(encoding='utf-8').replace('\r\n', '\n')
+    shipped = production.read_text(encoding='utf-8').replace('\r\n', '\n')
+    # The promotion renamed the offline anchor helper; nothing else in the numerical body moved.
+    origin = origin.replace('V3HybridBaseline', 'V3NativeAnchor')
+    marker = '    Raw raw(V3ColumnInput input, V3SolveControl control) {'
+    assert marker in origin and marker in shipped, 'The numerical body marker moved'
+    assert shipped[shipped.index(marker):] == origin[origin.index(marker):], \
+        'The promoted initializer diverged from the sealed predecessor body'
+    for required in ('static final String REVISION = "v3-anchor-augmented-1"',
+                     'V3FactorizedNeuralFeatures.DecodeOptions decode',
+                     'raw.values, model.presenceThreshold, decode'):
+        assert required in shipped, required
+    print(f'Verified the promoted initializer {production.relative_to(ROOT).as_posix()} '
+          f'against the sealed predecessor body.')
 
 
 def probe():
@@ -85,7 +85,7 @@ def main():
     DEST.mkdir(parents=True, exist_ok=True)
     initializer()
     probe()
-    print('Generated the pipeline initializer and the campaign probe; measurement helpers are byte identical.')
+    print('Verified the promoted initializer and generated the campaign probe; measurement helpers are byte identical.')
 
 
 if __name__ == '__main__':

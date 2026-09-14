@@ -44,7 +44,6 @@ public final class CreateChemE {
     private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_LIQUID_SUPPLY_SCREEN_RATIO;
     private static final ModConfigSpec.EnumValue<V3InitializationOptions.Mode> COLUMN_V3_INITIALIZER_MODE;
-    private static final ModConfigSpec.EnumValue<V3NeuralModels.Family> COLUMN_V3_INITIALIZER_MODEL;
     private static final ModConfigSpec.EnumValue<V3InitializationOptions.WetStart> COLUMN_V3_WET_START;
     private static final ModConfigSpec.IntValue COLUMN_V3_LNN_ITERATIONS;
     private static final ModConfigSpec.IntValue COLUMN_V3_LNN_MILLISECONDS;
@@ -73,17 +72,14 @@ public final class CreateChemE {
         builder.pop();
         builder.push("columnV3");
         COLUMN_V3_INITIALIZER_MODE = builder
-                .comment("LNN_FIRST tries a compatible learned seed, then the current initializer as backup.",
+                .comment("LNN_FIRST tries the bundled learned seed, then the current initializer as backup.",
                         "LNN_ONLY never invokes current initialization. CURRENT_ONLY bypasses the model.",
+                        "One learned model ships: the qualified anchor-augmented Transformer F-20260911-s4160,",
+                        "with the phase-level decoder floor and the progress-based correction budget it was",
+                        "qualified with. There is no model selection; the earlier experimental families were",
+                        "retired to the offline tools and an initializerModel key in an older config is ignored.",
                         "All routes retain physical acceptance checks. Captured at request admission.")
                 .defineEnum("initializerMode", V3InitializationOptions.Mode.LNN_FIRST);
-        COLUMN_V3_INITIALIZER_MODEL = builder
-                .comment("LOCAL_EXPERTS retains the qualified 40-tray and legacy predictors.",
-                        "GENERALIZED_EXPERIMENTAL selects the original Gen2 variable-composition, 2-64-tray experiment.",
-                        "GENERALIZED_GEN3_EXPERIMENTAL selects the Gen3 model with normalized phase flows and compositions.",
-                        "Experimental families have limited qualification; use LNN_FIRST for classical fallback.",
-                        "Model selection is captured at admission and never changes an in-flight solve.")
-                .defineEnum("initializerModel", V3NeuralModels.Family.LOCAL_EXPERTS);
         COLUMN_V3_WET_START = builder
                 .comment("Learned seeds only: AUTO and PREDICTED_WET retain the model's validated wet mask.",
                         "DRY_START clears the initial wet set; subsequent water physics and wet correction remain enabled.")
@@ -149,15 +145,21 @@ public final class CreateChemE {
         return CALCULATION_LOGGING.getAsBoolean();
     }
 
-    /** Read only on the logical server's admission thread; workers receive the immutable result. */
+    /**
+     * Read only on the logical server's admission thread; workers receive the immutable result.
+     *
+     * <p>The correction rule is the qualified one and is not configurable: it is part of what the
+     * bundled model was measured with, so a config that could separate them could not be qualified.</p>
+     */
     public static V3InitializationOptions columnV3InitializationOptions() {
         return new V3InitializationOptions(COLUMN_V3_INITIALIZER_MODE.get(), COLUMN_V3_WET_START.get(),
-                COLUMN_V3_LNN_ITERATIONS.get(), COLUMN_V3_LNN_MILLISECONDS.get());
+                COLUMN_V3_LNN_ITERATIONS.get(), COLUMN_V3_LNN_MILLISECONDS.get(),
+                V3InitializationOptions.Correction.PROGRESS);
     }
 
-    /** Resolve a safely published immutable model on the admission thread. */
+    /** Resolve the safely published immutable bundled model on the admission thread. */
     public static V3NeuralInitializer columnV3NeuralModel() {
-        return V3NeuralModels.forFamily(COLUMN_V3_INITIALIZER_MODEL.get());
+        return V3NeuralModels.bundled();
     }
 
     /** Read on the server thread when admitting a V3 request, never from its worker. */
