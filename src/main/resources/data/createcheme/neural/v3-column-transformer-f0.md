@@ -49,9 +49,13 @@ weights, and only with them:
   it and whose presence head kept at least one component is seeded at ten support floors over those
   components. Registered as `PHASE_FLOOR_DECODER`.
 - **Correction budget**: `V3InitializationOptions.Correction.PROGRESS` — base cap 16 inside the
-  unchanged 2,000 ms allowance, extension blocks of 8 up to 48 while the maximum scaled residual has
-  contracted below 0.5 over the last 8 iterations, early stop when it has not fallen below 0.9 over 8
-  iterations while above 1e-6. Registered as `PROGRESS_CORRECTION`.
+  unchanged 2,000 ms allowance, extension blocks of 8 up to 48 while the maximum scaled residual has not
+  risen over the last 8 iterations, early stop when it has not fallen below 0.9 over 8 iterations while
+  above 1e-6. Registered as `PROGRESS_CORRECTION` at a contraction factor of 0.5; the LNN-gap campaign
+  raised that one field to **1.0** on the cleaned 330-input validation population (+2 strict LNN_ONLY and
+  +2 strict LNN_FIRST in both blocks, 0.6 ms on the pooled all-case LNN_FIRST mean against a 119 ms
+  between-block band). The rule as promoted is kept as `Correction.PROMOTED_2026_09_14`, which is what the
+  archived studies state for themselves, and the coverage table below is the promotion's, at 0.5.
 
 ## Measured coverage
 

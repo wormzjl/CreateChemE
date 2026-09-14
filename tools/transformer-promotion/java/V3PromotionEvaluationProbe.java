@@ -46,13 +46,16 @@ public final class V3PromotionEvaluationProbe {
             throw new IllegalArgumentException("Revision 1 requires ten workers, 30s requests, 2s neural and 16 iterations");
         if (Files.exists(directory)) throw new IllegalArgumentException("Evaluation output already exists");
 
-        // The production defaults, asserted rather than assumed. A build whose shipped defaults drifted from
-        // what was qualified must not be able to publish a campaign that looks like the qualified one.
+        // The defaults this study qualified, asserted rather than assumed. They were the shipped defaults
+        // when it ran; the LNN-gap campaign has since moved the contraction factor from 0.5 to 1.0, so this
+        // archived study states its own rule instead of inheriting a default that no longer means what it
+        // measured. A re-run therefore still measures the promotion, not whatever ships today.
+        var qualified = V3InitializationOptions.Correction.PROMOTED_2026_09_14;
         var shipped = V3InitializationOptions.DEFAULT;
         if (shipped.maximumIterations() != maximumIterations || shipped.budgetMilliseconds() != neuralBudgetMillis
                 || shipped.wetStart() != V3InitializationOptions.WetStart.AUTO
                 || shipped.mode() != V3InitializationOptions.Mode.LNN_FIRST
-                || !shipped.correction().equals(new V3InitializationOptions.Correction(8, 48, 8, .5, 8, .9, 1e-6)))
+                || !qualified.equals(new V3InitializationOptions.Correction(8, 48, 8, .5, 8, .9, 1e-6)))
             throw new IllegalArgumentException("Shipped defaults are not the qualified ones: " + shipped);
         V3NeuralInitializer model = V3NeuralModels.bundled();
         if (model == V3NeuralInitializer.UNAVAILABLE)
@@ -163,7 +166,8 @@ public final class V3PromotionEvaluationProbe {
     private static Map<String, Object> run(V3ColumnInput input, V3NeuralInitializer model,
             V3InitializationOptions.Mode mode, long deadlineMillis, long neuralBudgetMillis, int maximumIterations) {
         var options = new V3InitializationOptions(mode, V3InitializationOptions.WetStart.AUTO,
-                maximumIterations, Math.toIntExact(neuralBudgetMillis), V3InitializationOptions.DEFAULT.correction());
+                maximumIterations, Math.toIntExact(neuralBudgetMillis),
+                V3InitializationOptions.Correction.PROMOTED_2026_09_14);
         long start = System.nanoTime();
         var row = new LinkedHashMap<String, Object>();
         try {

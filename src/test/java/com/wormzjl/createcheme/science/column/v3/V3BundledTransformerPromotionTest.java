@@ -64,11 +64,23 @@ class V3BundledTransformerPromotionTest {
         assertSame(model, V3NeuralModels.bundled());
     }
 
-    // (b) the shipped correction rule is exactly the one the study registered as PROGRESS_CORRECTION.
+    // (b) the shipped correction rule is the qualified one, with the one field the LNN-gap campaign moved.
     @Test void theDefaultCorrectionRuleIsTheQualifiedProgressRule() {
-        var qualified = new V3InitializationOptions.Correction(8, 48, 8, 0.5, 8, 0.9, 1e-6);
+        // What the promotion shipped, and what the E1 experiment changed about it: the contraction factor,
+        // measured at +2 strict LNN_ONLY and +2 strict LNN_FIRST in both blocks for 0.6 ms. Every other
+        // field of the qualified rule is still the qualified value, and this pins that field by field.
+        var promoted = new V3InitializationOptions.Correction(8, 48, 8, 0.5, 8, 0.9, 1e-6);
+        assertEquals(promoted, V3InitializationOptions.Correction.PROMOTED_2026_09_14);
+        var qualified = new V3InitializationOptions.Correction(8, 48, 8, 1.0, 8, 0.9, 1e-6);
         assertEquals(qualified, V3InitializationOptions.Correction.PROGRESS);
         assertEquals(qualified, V3InitializationOptions.DEFAULT.correction());
+        assertEquals(promoted.extensionBlock(), qualified.extensionBlock());
+        assertEquals(promoted.extensionMaximumIterations(), qualified.extensionMaximumIterations());
+        assertEquals(promoted.contractionWindow(), qualified.contractionWindow());
+        assertEquals(promoted.stallWindow(), qualified.stallWindow());
+        assertEquals(promoted.stallFactor(), qualified.stallFactor());
+        assertEquals(promoted.stallResidualFloor(), qualified.stallResidualFloor());
+        assertEquals(1.0, qualified.contractionFactor(), "the extension refuses only a residual that rose");
         assertEquals(V3InitializationOptions.Mode.LNN_FIRST, V3InitializationOptions.DEFAULT.mode());
         assertEquals(V3InitializationOptions.WetStart.AUTO, V3InitializationOptions.DEFAULT.wetStart());
         assertEquals(16, V3InitializationOptions.DEFAULT.maximumIterations(), "the base cap is unchanged");

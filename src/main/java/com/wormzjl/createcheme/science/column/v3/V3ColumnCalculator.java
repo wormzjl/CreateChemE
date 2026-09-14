@@ -59,8 +59,9 @@ public final class V3ColumnCalculator {
     private static final int DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS = 40;
     private static final int DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS = 32;
     /**
-     * Wall-clock allowance of one {@link V3InitializationOptions.Recovery#RAMP_HANDOFF}, inside the caller's
-     * own request deadline and never inside the learned allowance.
+     * Default wall-clock allowance of one {@link V3InitializationOptions.Recovery#RAMP_HANDOFF}, inside the
+     * caller's own request deadline and never inside the learned allowance. A caller may state another
+     * through {@link V3InitializationOptions#recoveryBudgetMilliseconds()}.
      *
      * <p>The handoff walks the same authored-feature ramp the classical route walks, so what it may spend is
      * bounded by what that route costs: the most expensive classical rescue measured on the validation
@@ -349,7 +350,7 @@ public final class V3ColumnCalculator {
                 && featureRampRequired(input) && progress.terminalState() != null) {
             long[] spent = {0L};
             V3ColumnOutcome handoff = neuralRampHandoff(input, progress.terminalState(), progress.terminalBranch(),
-                    control, cutoff, closure, observer, spent);
+                    control, cutoff, closure, observer, options.recoveryBudgetMilliseconds(), spent);
             // The learned allowance is what the correction spent; the handoff reports its own cost beside it.
             long neuralMillis = (System.nanoTime() - started) / 1_000_000 - spent[0];
             handoffNote = "; handoffMs=" + spent[0];
@@ -468,7 +469,7 @@ public final class V3ColumnCalculator {
      */
     private static V3ColumnOutcome neuralRampHandoff(V3ColumnInput input, V3DryMeshState terminal,
             V3CondenserPhaseBranch branch, V3SolveControl control, double cutoff, double closure,
-            java.util.function.Consumer<V3NeuralSeed> observer, long[] spentMillis) {
+            java.util.function.Consumer<V3NeuralSeed> observer, long budgetMillis, long[] spentMillis) {
         long started = System.nanoTime();
         try {
             if (branch == null) return null;
@@ -476,7 +477,7 @@ public final class V3ColumnCalculator {
             // restart LNN_FIRST owes afterwards is going to need.
             V3SolveControl handoffControl = () -> {
                 control.checkpoint();
-                if (System.nanoTime() - started >= NEURAL_RAMP_HANDOFF_BUDGET_MILLIS * 1_000_000L)
+                if (System.nanoTime() - started >= budgetMillis * 1_000_000L)
                     throw new HandoffBudgetExceeded();
             };
             V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());

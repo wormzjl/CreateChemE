@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /** Immutable admission snapshot. Neural budgets never replace the caller's overall deadline. */
 public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumIterations, int budgetMilliseconds,
-        Correction correction, Recovery recovery) {
+        Correction correction, Recovery recovery, int recoveryBudgetMilliseconds) {
     public enum Mode { LNN_FIRST, LNN_ONLY, CURRENT_ONLY }
     public enum WetStart { AUTO, DRY_START, PREDICTED_WET }
 
@@ -24,10 +24,10 @@ public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumI
      * seed, an out-of-coverage request or a request-only typed failure — and when the input carries none of
      * the three features, because then there is no ramp to hand anything to.</p>
      *
-     * <p>The handoff spends the caller's own request deadline, never the learned allowance, under its own
-     * declared sub-wall; it runs before the classical restart in {@code LNN_FIRST} and as the last step in
-     * {@code LNN_ONLY}. A handoff that fails changes nothing about what is published except the diagnostic
-     * event that records what it cost.</p>
+     * <p>The handoff spends the caller's own request deadline, never the learned allowance, under the
+     * sub-wall {@link #recoveryBudgetMilliseconds()} states; it runs before the classical restart in
+     * {@code LNN_FIRST} and as the last step in {@code LNN_ONLY}. A handoff that fails changes nothing about
+     * what is published except the diagnostic event that records what it cost.</p>
      */
     public enum Recovery { NONE, RAMP_HANDOFF }
 
@@ -62,14 +62,24 @@ public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumI
         /**
          * The qualified progress rule, and the learned default since the Transformer promotion.
          *
-         * <p>These are exactly the parameters the neural-budget study registered as its progress
-         * correction and measured on the frozen F0 weights: extension blocks of eight iterations up to a
-         * cap of forty-eight while the maximum scaled residual has fallen below half its value eight
-         * iterations ago, and an early stop when it has not fallen below nine tenths of that value over
-         * the same window while still above 1e-6. The base cap of sixteen and the two-second allowance
-         * are unchanged, and {@link #WALLS} remains available for a caller that wants the frozen path.</p>
+         * <p>Extension blocks of eight iterations up to a cap of forty-eight, and an early stop when the
+         * maximum scaled residual has not fallen below nine tenths of its value eight iterations ago while
+         * still above 1e-6. The base cap of sixteen and the two-second allowance are unchanged, and
+         * {@link #WALLS} remains available for a caller that wants the frozen path.</p>
+         *
+         * <p>The contraction factor is <b>1.0</b>: an attempt that reaches its cap is extended unless its
+         * residual actually rose over the window. The neural-budget study registered 0.5 — the residual had
+         * to be still halving — and the LNN-gap campaign measured what that cost. Of the twenty traced
+         * crawling trajectories the 0.5 gate admitted four; on the cleaned 330-input validation population
+         * raising it to 1.0 is +2 strict LNN_ONLY and +2 strict LNN_FIRST in both blocks, three stable
+         * gains against one stable loss, for 0.6 ms on the pooled all-case LNN_FIRST mean against a 119 ms
+         * between-block noise band. The extension can still only spend time the attempt was already allowed
+         * to spend, because the two-second allowance did not move.</p>
          */
-        public static final Correction PROGRESS = new Correction(8, 48, 8, 0.5, 8, 0.9, 1e-6);
+        public static final Correction PROGRESS = new Correction(8, 48, 8, 1.0, 8, 0.9, 1e-6);
+
+        /** The rule the Transformer promotion shipped; kept so the archived studies can state their own. */
+        public static final Correction PROMOTED_2026_09_14 = new Correction(8, 48, 8, 0.5, 8, 0.9, 1e-6);
 
         public Correction {
             if (extensionBlock < 0 || extensionMaximumIterations < 0 || contractionWindow < 0 || stallWindow < 0
@@ -107,13 +117,21 @@ public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumI
         this(mode, wetStart, maximumIterations, budgetMilliseconds, correction, Recovery.NONE);
     }
 
+    /** A recovery at its default allowance; only a study states a different one. */
+    public V3InitializationOptions(Mode mode, WetStart wetStart, int maximumIterations, int budgetMilliseconds,
+            Correction correction, Recovery recovery) {
+        this(mode, wetStart, maximumIterations, budgetMilliseconds, correction, recovery,
+                Math.toIntExact(V3ColumnCalculator.NEURAL_RAMP_HANDOFF_BUDGET_MILLIS));
+    }
+
     public V3InitializationOptions {
         Objects.requireNonNull(mode, "mode");
         Objects.requireNonNull(wetStart, "wetStart");
         Objects.requireNonNull(correction, "correction");
         Objects.requireNonNull(recovery, "recovery");
         if (maximumIterations < 1 || maximumIterations > V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS
-                || budgetMilliseconds < 1 || budgetMilliseconds > 60_000) {
+                || budgetMilliseconds < 1 || budgetMilliseconds > 60_000
+                || recoveryBudgetMilliseconds < 1 || recoveryBudgetMilliseconds > 60_000) {
             throw new IllegalArgumentException("Invalid neural initialization budget");
         }
         if (correction.extendsAttempts() && correction.extensionMaximumIterations() < maximumIterations) {

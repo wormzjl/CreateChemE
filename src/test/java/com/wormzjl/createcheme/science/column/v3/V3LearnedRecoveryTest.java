@@ -64,6 +64,21 @@ class V3LearnedRecoveryTest {
                 V3InitializationOptions.Correction.WALLS, recovery);
     }
 
+    /** The handoff's sub-wall is a stated allowance, and a caller that states none gets the default. */
+    @Test void theRecoveryBudgetIsStatedOrDefaulted() {
+        assertEquals(V3ColumnCalculator.NEURAL_RAMP_HANDOFF_BUDGET_MILLIS,
+                V3InitializationOptions.DEFAULT.recoveryBudgetMilliseconds());
+        var stated = new V3InitializationOptions(V3InitializationOptions.Mode.LNN_ONLY,
+                V3InitializationOptions.WetStart.AUTO, 16, 2_000, V3InitializationOptions.Correction.PROGRESS,
+                V3InitializationOptions.Recovery.RAMP_HANDOFF, 2_500);
+        assertEquals(2_500, stated.recoveryBudgetMilliseconds());
+        assertThrows(IllegalArgumentException.class,
+                () -> new V3InitializationOptions(V3InitializationOptions.Mode.LNN_ONLY,
+                        V3InitializationOptions.WetStart.AUTO, 16, 2_000,
+                        V3InitializationOptions.Correction.PROGRESS,
+                        V3InitializationOptions.Recovery.RAMP_HANDOFF, 0));
+    }
+
     @Test void theShippedDefaultsCarryNoRecovery() {
         assertEquals(V3InitializationOptions.Recovery.NONE, V3InitializationOptions.DEFAULT.recovery());
         assertEquals(V3InitializationOptions.Recovery.NONE, V3InitializationOptions.CURRENT.recovery());

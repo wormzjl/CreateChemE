@@ -42,13 +42,17 @@ public final class V3GapEvaluationProbe {
 
         // The promoted defaults, asserted rather than assumed. A build whose shipped defaults drifted from
         // what was promoted must not be able to publish a campaign that looks like a study of that promotion.
+        // Rounds one to three ran against the promoted 0.5 contraction factor; round three's own conclusion
+        // moved it to 1.0, so a build is admissible here if its default is either of the two rules this
+        // study has measured, and the arm manifest states which one the run is actually using.
         var shipped = V3InitializationOptions.DEFAULT;
         if (shipped.maximumIterations() != 16 || shipped.budgetMilliseconds() != 2_000
                 || shipped.wetStart() != V3InitializationOptions.WetStart.AUTO
                 || shipped.mode() != V3InitializationOptions.Mode.LNN_FIRST
                 || shipped.recovery() != V3InitializationOptions.Recovery.NONE
-                || !shipped.correction().equals(new V3InitializationOptions.Correction(8, 48, 8, .5, 8, .9, 1e-6)))
-            throw new IllegalArgumentException("Shipped defaults are not the promoted ones: " + shipped);
+                || !(shipped.correction().equals(V3InitializationOptions.Correction.PROMOTED_2026_09_14)
+                        || shipped.correction().equals(new V3InitializationOptions.Correction(8, 48, 8, 1.0, 8, .9, 1e-6))))
+            throw new IllegalArgumentException("Shipped defaults are not a measured rule of this study: " + shipped);
 
         if (THREADS.isThreadCpuTimeSupported() && !THREADS.isThreadCpuTimeEnabled()) THREADS.setThreadCpuTimeEnabled(true);
         JsonObject arm = JsonParser.parseString(Files.readString(armPath)).getAsJsonObject();
@@ -86,7 +90,8 @@ public final class V3GapEvaluationProbe {
         metadata.put("zeroPhaseFloorFactor", pipeline.zeroPhaseFloorFactor());
         metadata.put("candidateRule", pipeline.candidateRule().name());
         metadata.put("recovery", pipeline.recovery().name());
-        metadata.put("rampHandoffBudgetMillis", V3ColumnCalculator.NEURAL_RAMP_HANDOFF_BUDGET_MILLIS);
+        metadata.put("rampHandoffBudgetMillis", pipeline.recoveryBudgetMillis());
+        metadata.put("rampHandoffDefaultBudgetMillis", V3ColumnCalculator.NEURAL_RAMP_HANDOFF_BUDGET_MILLIS);
         metadata.put("correction", JSON.toJsonTree(pipeline.correction()));
         metadata.put("correctionIterations", pipeline.maximumIterations());
         metadata.put("correctionBudgetMillis", pipeline.budgetMillis());
@@ -135,7 +140,8 @@ public final class V3GapEvaluationProbe {
     /** One registered arm: everything the campaign is allowed to vary, and nothing else. */
     private record Arm(String name, String decoderRule, double zeroPhaseFloorFactor,
             V3AnchorTransformerInitializer.CandidateRule candidateRule, int maximumIterations, int budgetMillis,
-            V3InitializationOptions.Correction correction, V3InitializationOptions.Recovery recovery) {
+            V3InitializationOptions.Correction correction, V3InitializationOptions.Recovery recovery,
+            int recoveryBudgetMillis) {
         static Arm of(JsonObject manifest) {
             JsonObject decoder = manifest.getAsJsonObject("decoder");
             String rule = decoder.get("rule").getAsString();
@@ -152,7 +158,10 @@ public final class V3GapEvaluationProbe {
                             c.get("extensionMaximumIterations").getAsInt(), c.get("contractionWindow").getAsInt(),
                             c.get("contractionFactor").getAsDouble(), c.get("stallWindow").getAsInt(),
                             c.get("stallFactor").getAsDouble(), c.get("stallResidualFloor").getAsDouble()),
-                    V3InitializationOptions.Recovery.valueOf(manifest.get("recovery").getAsString()));
+                    V3InitializationOptions.Recovery.valueOf(manifest.get("recovery").getAsString()),
+                    manifest.has("recoveryBudgetMillis")
+                            ? manifest.get("recoveryBudgetMillis").getAsInt()
+                            : Math.toIntExact(V3ColumnCalculator.NEURAL_RAMP_HANDOFF_BUDGET_MILLIS));
         }
 
         /** The promoted decoder and candidate rules; only then may the arm use the production holder itself. */
@@ -171,7 +180,7 @@ public final class V3GapEvaluationProbe {
 
         V3InitializationOptions options(V3InitializationOptions.Mode mode) {
             return new V3InitializationOptions(mode, V3InitializationOptions.WetStart.AUTO,
-                    maximumIterations, budgetMillis, correction, recovery);
+                    maximumIterations, budgetMillis, correction, recovery, recoveryBudgetMillis);
         }
     }
 
