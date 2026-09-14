@@ -106,21 +106,37 @@ class V3SideDrawCodecTest {
 
     @Test
     void malformedAndOversizedListsAreRejectedBeforeAllocationOrSilentMigration() throws Exception {
-        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
-        try {
-            invoke(ColumnV3Network.class, "writeInput", new Class<?>[] {RegistryFriendlyByteBuf.class, V3ColumnInput.class}, buffer, input(0));
-            buffer.setByte(buffer.writerIndex() - 1, V3ColumnInput.MAX_SIDE_DRAWS + 1);
-            InvocationTargetException failure = assertThrows(InvocationTargetException.class, () -> invoke(ColumnV3Network.class,
-                    "readInput", new Class<?>[] {RegistryFriendlyByteBuf.class}, buffer));
-            assertInstanceOf(DecoderException.class, failure.getCause());
-        } finally {
-            buffer.release();
-        }
+        // An empty input ends in the three bounded list counts, written in order as one zero byte each. Address them
+        // by name: poking the last byte alone once forged a pumparound count while claiming to test side draws, so
+        // the assertion only tracked the side-draw bound while MAX_PUMPAROUNDS happened to be smaller.
+        assertForgedCountIsRejected(3, V3ColumnInput.MAX_SIDE_DRAWS + 1, "side draw");
+        assertForgedCountIsRejected(2, V3ColumnInput.MAX_STEAM_FEEDS + 1, "steam feed");
+        assertForgedCountIsRejected(1, V3ColumnInput.MAX_PUMPAROUNDS + 1, "pumparound");
+        // In bound but with no payload behind it: still the decoder's to refuse, never a read off the end.
+        assertForgedCountIsRejected(1, V3ColumnInput.MAX_PUMPAROUNDS, "truncated pumparound");
+
         CompoundTag tag = (CompoundTag) invoke(ColumnCalculatorV3BlockEntity.class, "writeInput", new Class<?>[] {V3ColumnInput.class}, input(1));
         ListTag invalid = new ListTag();
         invalid.add(StringTag.valueOf("not a draw"));
         tag.put("SideDraws", invalid);
         assertInstanceOf(IllegalArgumentException.class, assertThrows(InvocationTargetException.class, () -> readNbt(tag)).getCause());
+    }
+
+    /** Overwrites one trailing list-count byte of an otherwise well-formed input and requires a decoder rejection. */
+    private static void assertForgedCountIsRejected(int bytesFromEnd, int forgedCount, String field) throws Exception {
+        RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
+        try {
+            invoke(ColumnV3Network.class, "writeInput", new Class<?>[] {RegistryFriendlyByteBuf.class, V3ColumnInput.class}, buffer, input(0));
+            int index = buffer.writerIndex() - bytesFromEnd;
+            assertEquals(0, buffer.getByte(index), () -> "expected the empty " + field + " count at this offset");
+            buffer.setByte(index, forgedCount);
+            InvocationTargetException failure = assertThrows(InvocationTargetException.class, () -> invoke(ColumnV3Network.class,
+                    "readInput", new Class<?>[] {RegistryFriendlyByteBuf.class}, buffer));
+            assertInstanceOf(DecoderException.class, failure.getCause(),
+                    () -> field + " count " + forgedCount + " escaped the guard as " + failure.getCause());
+        } finally {
+            buffer.release();
+        }
     }
 
     private static Object readNbt(CompoundTag tag) throws Exception {

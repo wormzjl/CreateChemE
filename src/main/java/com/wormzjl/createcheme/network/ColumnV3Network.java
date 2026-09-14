@@ -66,6 +66,13 @@ public final class ColumnV3Network {
     private static final int MAX_STREAM_LABEL_LENGTH = 48;
     private static final int MAX_PHASE_LENGTH = 16;
     private static final int MAX_REJECTION_LENGTH = 128;
+
+    // Smallest encoding every declared element of a bounded list can occupy: a VarInt is at least one byte and a
+    // double is exactly eight. A declared count that cannot fit in the remaining bytes is a forged length, not a
+    // short read, so the decoder rejects it before allocating the list.
+    private static final int SIDE_DRAW_MINIMUM_BYTES = 9;
+    private static final int STEAM_FEED_MINIMUM_BYTES = 17;
+    private static final int PUMPAROUND_MINIMUM_BYTES = 11;
     private static final AtomicLong CLIENT_NONCE_SEQUENCE = new AtomicLong();
     private static volatile ClientStateConsumer clientStateConsumer = (pos, state) -> {};
     private static volatile ClientRejectionConsumer clientRejectionConsumer = (pos, nonce, reason) -> {};
@@ -642,18 +649,19 @@ public final class ColumnV3Network {
                         buffer.readUtf(MAX_COMPONENT_IDENTIFIER_LENGTH));
                 specifications.add(specification(quantity, finite(buffer.readDouble(), "specification")));
             }
-            int drawCount = readCount(buffer, V3ColumnInput.MAX_SIDE_DRAWS, "side draw");
+            int drawCount = readCount(buffer, V3ColumnInput.MAX_SIDE_DRAWS, "side draw", SIDE_DRAW_MINIMUM_BYTES);
             List<V3SideDrawSpec> draws = new ArrayList<>(drawCount);
             for (int index = 0; index < drawCount; index++) {
                 draws.add(new V3SideDrawSpec(buffer.readVarInt(), finite(buffer.readDouble(), "side draw rate")));
             }
-            int steamCount = readCount(buffer, V3ColumnInput.MAX_STEAM_FEEDS, "steam feed");
+            int steamCount = readCount(buffer, V3ColumnInput.MAX_STEAM_FEEDS, "steam feed", STEAM_FEED_MINIMUM_BYTES);
             List<V3SteamFeedSpec> steam = new ArrayList<>(steamCount);
             for (int index = 0; index < steamCount; index++) {
                 steam.add(new V3SteamFeedSpec(buffer.readVarInt(), finite(buffer.readDouble(), "steam rate"),
                         finite(buffer.readDouble(), "steam temperature")));
             }
-            int pumparoundCount = readCount(buffer, V3ColumnInput.MAX_PUMPAROUNDS, "pumparound");
+            int pumparoundCount =
+                    readCount(buffer, V3ColumnInput.MAX_PUMPAROUNDS, "pumparound", PUMPAROUND_MINIMUM_BYTES);
             List<V3PumparoundSpec> pumparounds = new ArrayList<>(pumparoundCount);
             for (int index = 0; index < pumparoundCount; index++) {
                 int returnTray = buffer.readVarInt();
@@ -666,7 +674,9 @@ public final class ColumnV3Network {
                     pumparounds);
         } catch (DecoderException invalidWire) {
             throw invalidWire;
-        } catch (IllegalArgumentException | NullPointerException invalid) {
+        } catch (IllegalArgumentException | NullPointerException | IndexOutOfBoundsException invalid) {
+            // A packet that runs short mid-decode is malformed client input, not a server fault: report it on the
+            // decoder contract so the connection is dropped rather than the read escaping as a raw runtime failure.
             throw new DecoderException("Invalid V3 input", invalid);
         }
     }
@@ -805,8 +815,21 @@ public final class ColumnV3Network {
     }
 
     private static int readCount(RegistryFriendlyByteBuf buffer, int maximum, String description) {
+        return readCount(buffer, maximum, description, 0);
+    }
+
+    /**
+     * Reads a declared list length and rejects it before the caller allocates. The count must fit its bound and the
+     * buffer must still hold the minimum bytes the declared elements need, so a forged length on a short packet is
+     * reported as a {@link DecoderException} instead of letting an {@link IndexOutOfBoundsException} escape mid-decode.
+     */
+    private static int readCount(
+            RegistryFriendlyByteBuf buffer, int maximum, String description, int minimumBytesPerElement) {
         int count = buffer.readVarInt();
         if (count < 0 || count > maximum) throw new DecoderException("Invalid V3 " + description + " count");
+        if (buffer.readableBytes() < (long) count * minimumBytesPerElement) {
+            throw new DecoderException("Truncated V3 " + description + " list");
+        }
         return count;
     }
 
