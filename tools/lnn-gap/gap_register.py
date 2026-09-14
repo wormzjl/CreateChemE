@@ -35,7 +35,10 @@ def source_delta():
     return dict(base=PROMOTION_BASE, head=git('rev-parse', 'HEAD').strip(), changed=changed,
                 allowed=sorted(ALLOWED_SOURCE_DELTA),
                 note='The bundled weight artifact is not in this list, and the registration asserts its '
-                     'SHA-256 separately: no arm may move a weight byte.')
+                     'SHA-256 separately: no arm may move a weight byte. V3ColumnCalculator also carries '
+                     'the merged benchmark-population branch\'s request-only admission seam, which extracts '
+                     'the three request-only gates the production calculate path already ran and changes no '
+                     'outcome; it is inside the same file and therefore inside this allowlist.')
 
 
 def population(path):

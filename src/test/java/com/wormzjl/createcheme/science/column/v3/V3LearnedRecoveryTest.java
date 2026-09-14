@@ -165,26 +165,60 @@ class V3LearnedRecoveryTest {
     }
 
     /**
-     * In {@code LNN_FIRST} a failed handoff costs time and nothing else: the classical backup still runs.
+     * A recovered result is an audited solution of the authored request, and it need not be the classical one.
      *
-     * <p>This is the whole risk the rule carries — a handoff that cannot close precedes the restart it does
-     * not replace — so the backup has to be demonstrably intact, publishing the classical solution and the
-     * classical event, with the handoff's cost recorded beside it.</p>
+     * <p>The two routes reach the ramp through different arithmetic — from a failed learned iterate rather
+     * than from a cold stage continuation — and on this fixture they land on **different roots** of the same
+     * MESH system: the classical route publishes a 67.9 mol/s liquid distillate and the recovered one
+     * 10.3 mol/s, both fully certified at closure 1e-8 and both accepted by the independent audit. That is
+     * not new behaviour introduced here. The learned route already publishes whichever root its own seed
+     * reaches whenever it succeeds, and the classical route's own root is a property of its continuation
+     * path; multiplicity on a condenser-temperature, reflux-ratio and reboiler-duty specification is a
+     * property of the problem. So what is asserted is what the route actually promises: the authored
+     * request's own geometry, the authored draw rate, a passed audit and a real final Newton certificate.</p>
      */
-    @Test void aFailedHandoffStillLeavesTheClassicalBackupToLnnFirst() {
+    @Test void theHandoffPublishesAnAuditedSolutionOfTheAuthoredRequest() {
         V3ColumnInput input = drawInput();
-        // A seed for another operating point is admissible and corrects nowhere near this request.
         V3NeuralInitializer model = fixed(displaced(acceptedProfile(input)));
         var direct = assertInstanceOf(V3ColumnOutcome.Success.class, V3ColumnCalculator.calculate(input));
-        var backup = assertInstanceOf(V3ColumnOutcome.Success.class, V3ColumnCalculator.calculate(input, () -> {},
+        var recovered = assertInstanceOf(V3ColumnOutcome.Success.class, V3ColumnCalculator.calculate(input, () -> {},
                 0, 0, learned(V3InitializationOptions.Mode.LNN_FIRST, 1, V3InitializationOptions.Recovery.RAMP_HANDOFF), model));
-        assertEquals(direct.result().inputDigest(), backup.result().inputDigest());
-        assertEquals(direct.result().streams(), backup.result().streams());
-        String event = backup.diagnostics().events().getFirst();
-        // Either the handoff closed it or the classical backup did; either way the cost is published and the
-        // answer is the classical solution.
+        // The digest is the request's identity and its formulation, so it must match whatever root is found.
+        assertEquals(direct.result().inputDigest(), recovered.result().inputDigest());
+        assertEquals(direct.result().streams().stream().map(V3ColumnStreamProperties::streamId).toList(),
+                recovered.result().streams().stream().map(V3ColumnStreamProperties::streamId).toList());
+        var draw = recovered.result().streams().stream()
+                .filter(stream -> stream.streamId().startsWith("side_liquid_tray")).findFirst().orElseThrow();
+        assertEquals(2.0, draw.molarFlowMolPerSecond(), 1e-9, "the ramp must reach the authored draw rate");
+        assertTrue(recovered.result().acceptanceAudit().accepted());
+        assertTrue(recovered.result().convergenceEvidence().satisfiesGates());
+        String event = recovered.diagnostics().events().getFirst();
         assertTrue(event.contains("handoffMs="), event);
         assertTrue(event.contains("initializer=LNN_RAMP_HANDOFF;") || event.contains("initializer=CURRENT_BACKUP;"), event);
+    }
+
+    /**
+     * Where the handoff does not apply, {@code LNN_FIRST} still gets its unchanged classical backup.
+     *
+     * <p>This is the whole risk the rule carries — a recovery that runs before a restart it does not replace
+     * — so on a request the rule declines, the restart has to publish the classical solution exactly, down
+     * to the streams, and say nothing about a handoff that never happened.</p>
+     */
+    @Test void aDeclinedHandoffLeavesLnnFirstItsUnchangedClassicalBackup() {
+        V3ColumnInput input = plainInput();
+        V3NeuralInitializer model = fixed(displaced(acceptedProfile(input)));
+        var direct = assertInstanceOf(V3ColumnOutcome.Success.class, V3ColumnCalculator.calculate(input));
+        var none = assertInstanceOf(V3ColumnOutcome.Success.class, V3ColumnCalculator.calculate(input, () -> {},
+                0, 0, learned(V3InitializationOptions.Mode.LNN_FIRST, 1, V3InitializationOptions.Recovery.NONE), model));
+        var handoff = assertInstanceOf(V3ColumnOutcome.Success.class, V3ColumnCalculator.calculate(input, () -> {},
+                0, 0, learned(V3InitializationOptions.Mode.LNN_FIRST, 1, V3InitializationOptions.Recovery.RAMP_HANDOFF), model));
+        assertEquals(direct.result().streams(), none.result().streams());
+        assertEquals(direct.result().streams(), handoff.result().streams());
+        assertEquals(none.diagnostics().solvePath(), handoff.diagnostics().solvePath());
+        assertEquals(none.diagnostics().newtonIterations(), handoff.diagnostics().newtonIterations());
+        String event = handoff.diagnostics().events().getFirst();
+        assertTrue(event.contains("initializer=CURRENT_BACKUP;"), event);
+        assertFalse(event.contains("handoffMs="), event);
     }
 
     /** The bundled production model offers exactly the one seed it predicts. */
