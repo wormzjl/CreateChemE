@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'build/transformer-promotion/v1'
 STUDY = ROOT / 'tools/transformer-promotion'
 INPUTS = STUDY / 'inputs'
+WARMUP = INPUTS / 'warmup.json'
 EVIDENCE = STUDY / 'evidence'
 # The predecessor's committed per-case evidence and decoded-seed digests; read only.
 BUDGET_EVIDENCE = ROOT / 'tools/neural-budget/evidence'
@@ -76,12 +77,42 @@ def freeze(path, value):
         json.dump(value, stream, indent=1, sort_keys=True, allow_nan=False)
 
 
+# --- population hook -------------------------------------------------------------------------------------
+# The archived 405 stay the default, so this study reproduces byte for byte with no argument. A caller may
+# instead name a population registered in tools/benchmark-population/v1/manifest.json -- the cleaned
+# validation set, for instance -- with `promotion_native.py --population <path>` or the
+# CREATECHEME_BENCHMARK_POPULATION environment variable. A non-archived run writes under its own directory
+# so it can never overwrite the archived campaign's evidence.
+sys.path.insert(0, str(ROOT / 'tools/benchmark-population'))
+import harness  # noqa: E402
+
+_POPULATION = None
+
+
+def population():
+    global _POPULATION
+    if _POPULATION is None:
+        _POPULATION = harness.resolve(INPUTS / 'validation-inputs.jsonl')
+    return _POPULATION
+
+
+def use_population(path):
+    """Point this run at another registered population; None restores the archived default."""
+    global _POPULATION
+    _POPULATION = harness.resolve(INPUTS / 'validation-inputs.jsonl', path)
+    return _POPULATION
+
+
+def population_root():
+    return OUT if population().archived else OUT / 'population' / population().label
+
+
 def run_directory(block):
-    return OUT / 'validation' / f'block-{block}'
+    return population_root() / 'validation' / f'block-{block}'
 
 
 def decode_path():
-    return OUT / 'decode' / 'bundled.jsonl'
+    return population_root() / 'decode' / 'bundled.jsonl'
 
 
 def qualified_cases(block):
@@ -110,8 +141,16 @@ def verify_frozen():
     """Bind this study to the bytes it claims to be measuring, before it measures anything."""
     assert digest(BUNDLED_ARTIFACT) == BASE_WEIGHTS_SHA, 'The bundled artifact is not the registered F0 export'
     assert digest(INPUTS / 'validation-inputs.jsonl') == VALIDATION_INPUTS_SHA, 'The frozen population changed'
-    assert digest(INPUTS / 'warmup.json') == WARMUP_SHA, 'The warmup input changed'
-    rows = read_rows(INPUTS / 'validation-inputs.jsonl')
-    assert len(rows) == CASES and len({row['id'] for row in rows}) == CASES
-    return dict(bundledArtifact=info(BUNDLED_ARTIFACT), inputs=info(INPUTS / 'validation-inputs.jsonl'),
-                warmup=info(INPUTS / 'warmup.json'), cases=len(rows))
+    assert digest(WARMUP) == WARMUP_SHA, 'The warmup input changed'
+    chosen = population()
+    rows = read_rows(chosen.path)
+    assert len(rows) == chosen.cases and len({row['id'] for row in rows}) == chosen.cases
+    if chosen.archived:
+        assert chosen.cases == CASES and chosen.sha256 == VALIDATION_INPUTS_SHA
+    frozen = dict(bundledArtifact=info(BUNDLED_ARTIFACT), inputs=info(INPUTS / 'validation-inputs.jsonl'),
+                  warmup=info(WARMUP), cases=len(rows))
+    if not chosen.archived:
+        # A filtered campaign publishes which denominator it used and how that denominator was drawn.
+        frozen['population'] = dict(label=chosen.label, path=str(chosen.path), sha256=chosen.sha256,
+                                    registered=chosen.registered)
+    return frozen

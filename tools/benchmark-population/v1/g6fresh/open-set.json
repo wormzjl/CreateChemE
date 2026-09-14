@@ -1,0 +1,1132 @@
+{
+ "revision": "benchmark-population-open-set-v1",
+ "population": "g6fresh",
+ "note": "Cases kept in the cleaned population that no archived arm has ever solved strictly. Advisory-only and never-converged cases are deliberately retained; this is the work left.",
+ "cleanedPopulation": 206,
+ "count": 119,
+ "neverConverged": 113,
+ "advisoryOnly": 6,
+ "cases": [
+  {
+   "id": "g6fresh-s54-w0-p3-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.04855903209569193
+  },
+  {
+   "id": "g6fresh-s44-w0-p3-d0-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s36-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.027117143176436032
+  },
+  {
+   "id": "g6fresh-s41-w0-p1-d1-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.03131214206083743
+  },
+  {
+   "id": "g6fresh-s29-w0-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.15475955040070877
+  },
+  {
+   "id": "g6fresh-s43-w1-p2-d2-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.22275878100493746
+  },
+  {
+   "id": "g6fresh-s53-w1-p3-d1-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.07153306391451224
+  },
+  {
+   "id": "g6fresh-s55-w0-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09495792581048108
+  },
+  {
+   "id": "g6fresh-s23-w1-p3-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.026298716523113195
+  },
+  {
+   "id": "g6fresh-s28-w1-p1-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.13714261208397016
+  },
+  {
+   "id": "g6fresh-s50-w1-p3-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0862025368237995
+  },
+  {
+   "id": "g6fresh-s38-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1061318387084172
+  },
+  {
+   "id": "g6fresh-s43-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05715111973955998
+  },
+  {
+   "id": "g6fresh-s57-w1-p0-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.018322143620553937
+  },
+  {
+   "id": "g6fresh-s35-w0-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.22538154858258197
+  },
+  {
+   "id": "g6fresh-s17-w1-p4-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.14520089424442426
+  },
+  {
+   "id": "g6fresh-s33-w1-p1-d3-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.16624234440390578
+  },
+  {
+   "id": "g6fresh-s36-w1-p2-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s02-w1-p2-d1-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "checkpoint:20260911:current",
+    "checkpoint:20260911:neural",
+    "checkpoint:20260911:neuralFirst",
+    "generation:gen2:current",
+    "generation:gen2:current:test",
+    "generation:gen2:neural",
+    "generation:gen2:neural:test",
+    "generation:gen2:neuralFirst"
+   ],
+   "solvingArmCount": 21,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.044337491034623665
+  },
+  {
+   "id": "g6fresh-s46-w0-p1-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.16663426354154942
+  },
+  {
+   "id": "g6fresh-s56-w1-p4-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.013913688432793168
+  },
+  {
+   "id": "g6fresh-s16-w1-p4-d3-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.045934292236659784
+  },
+  {
+   "id": "g6fresh-s09-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.19388139558977197
+  },
+  {
+   "id": "g6fresh-s55-w1-p0-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.04003350840431369
+  },
+  {
+   "id": "g6fresh-s33-w0-p2-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.03296753325060216
+  },
+  {
+   "id": "g6fresh-s48-w0-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.12826307526121508
+  },
+  {
+   "id": "g6fresh-s37-w0-p2-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.07124588564704513
+  },
+  {
+   "id": "g6fresh-s35-w1-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05860936071912345
+  },
+  {
+   "id": "g6fresh-s22-w0-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.04610544695525606
+  },
+  {
+   "id": "g6fresh-s24-w1-p0-d0-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s30-w1-p4-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.03685142679051773
+  },
+  {
+   "id": "g6fresh-s08-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.07867992806105742
+  },
+  {
+   "id": "g6fresh-s58-w0-p2-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s60-w1-p3-d1-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.026047122417748914
+  },
+  {
+   "id": "g6fresh-s52-w0-p1-d1-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.022147623677174197
+  },
+  {
+   "id": "g6fresh-s23-w0-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.17386440878972131
+  },
+  {
+   "id": "g6fresh-s43-w0-p1-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s63-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.03775587527489504
+  },
+  {
+   "id": "g6fresh-s52-w1-p2-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s42-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.19888591538986877
+  },
+  {
+   "id": "g6fresh-s57-w0-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06108110540812999
+  },
+  {
+   "id": "g6fresh-s47-w1-p1-d0-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s42-w1-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.10896817884847204
+  },
+  {
+   "id": "g6fresh-s44-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.15534290554415456
+  },
+  {
+   "id": "g6fresh-s49-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06277503339249996
+  },
+  {
+   "id": "g6fresh-s29-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06589002076204982
+  },
+  {
+   "id": "g6fresh-s42-w1-p3-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s64-w1-p3-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "checkpoint:20260911:neural",
+    "checkpoint:20260911:neuralFirst",
+    "generation:transformer:neural",
+    "generation:transformer:neural:test",
+    "generation:transformer:neuralFirst",
+    "generation:transformer:neuralFirst:test"
+   ],
+   "solvingArmCount": 6,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s58-w1-p4-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.04287135024799797
+  },
+  {
+   "id": "g6fresh-s34-w1-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09459153242946684
+  },
+  {
+   "id": "g6fresh-s52-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.14052155030911687
+  },
+  {
+   "id": "g6fresh-s54-w1-p4-d3-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08734063343668753
+  },
+  {
+   "id": "g6fresh-s30-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09250745710597227
+  },
+  {
+   "id": "g6fresh-s27-w0-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09463308329992723
+  },
+  {
+   "id": "g6fresh-s26-w1-p0-d3-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.11037180745263005
+  },
+  {
+   "id": "g6fresh-s55-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05236111110310396
+  },
+  {
+   "id": "g6fresh-s49-w0-p2-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.025304894047095655
+  },
+  {
+   "id": "g6fresh-s40-w0-p3-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s10-w1-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08697939424872989
+  },
+  {
+   "id": "g6fresh-s45-w0-p4-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06950030086769791
+  },
+  {
+   "id": "g6fresh-s39-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.07379560599741318
+  },
+  {
+   "id": "g6fresh-s52-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.18498483841604355
+  },
+  {
+   "id": "g6fresh-s56-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.040816504041740344
+  },
+  {
+   "id": "g6fresh-s20-w1-p3-d0-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "checkpoint:20260911:current",
+    "checkpoint:20260911:neural",
+    "checkpoint:20260911:neuralFirst",
+    "generation:gen2:current",
+    "generation:gen2:current:test",
+    "generation:gen2:neuralFirst",
+    "generation:gen2:neuralFirst:test",
+    "generation:gen3:current"
+   ],
+   "solvingArmCount": 19,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s41-w1-p0-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s15-w1-p2-d1-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "checkpoint:20260911:current",
+    "checkpoint:20260911:neuralFirst",
+    "generation:gen2:current",
+    "generation:gen2:current:test",
+    "generation:gen2:neuralFirst",
+    "generation:gen2:neuralFirst:test",
+    "generation:gen3:current",
+    "generation:gen3:current:test"
+   ],
+   "solvingArmCount": 16,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.01698590008864922
+  },
+  {
+   "id": "g6fresh-s19-w1-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2268959299052133
+  },
+  {
+   "id": "g6fresh-s28-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06863147729033699
+  },
+  {
+   "id": "g6fresh-s57-w0-p1-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s40-w1-p0-d1-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.054043498749026
+  },
+  {
+   "id": "g6fresh-s58-w0-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.12221755598340017
+  },
+  {
+   "id": "g6fresh-s34-w1-p4-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.013477817834722527
+  },
+  {
+   "id": "g6fresh-s29-w1-p1-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.16300083474663368
+  },
+  {
+   "id": "g6fresh-s64-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05542904574256066
+  },
+  {
+   "id": "g6fresh-s49-w0-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2491065551478769
+  },
+  {
+   "id": "g6fresh-s46-w1-p4-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s58-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.04840236252206663
+  },
+  {
+   "id": "g6fresh-s05-w1-p3-d3-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.18324675541838356
+  },
+  {
+   "id": "g6fresh-s61-w0-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.19556484141308736
+  },
+  {
+   "id": "g6fresh-s17-w1-p0-d0-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s28-w0-p4-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1167429247476039
+  },
+  {
+   "id": "g6fresh-s59-w1-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.15755510764550065
+  },
+  {
+   "id": "g6fresh-s54-w1-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0533984919797921
+  },
+  {
+   "id": "g6fresh-s10-w0-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.14412141969518985
+  },
+  {
+   "id": "g6fresh-s60-w0-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.11766528230814426
+  },
+  {
+   "id": "g6fresh-s61-w1-p2-d0-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "checkpoint:20260911:current",
+    "checkpoint:20260911:neuralFirst",
+    "generation:gen2:current",
+    "generation:gen2:current:test",
+    "generation:gen2:neuralFirst",
+    "generation:gen2:neuralFirst:test",
+    "generation:gen3:current",
+    "generation:gen3:current:test"
+   ],
+   "solvingArmCount": 14,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s59-w0-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0772975780820162
+  },
+  {
+   "id": "g6fresh-s21-w0-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1633480295985474
+  },
+  {
+   "id": "g6fresh-s25-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "checkpoint:20260911:neural",
+    "checkpoint:20260911:neuralFirst",
+    "generation:transformer:neural",
+    "generation:transformer:neural:test",
+    "generation:transformer:neuralFirst",
+    "generation:transformer:neuralFirst:test"
+   ],
+   "solvingArmCount": 6,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.040525700585486976
+  },
+  {
+   "id": "g6fresh-s23-w1-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.175675755136017
+  },
+  {
+   "id": "g6fresh-s33-w1-p4-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2802191482609231
+  },
+  {
+   "id": "g6fresh-s62-w1-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0536808836192822
+  },
+  {
+   "id": "g6fresh-s44-w1-p4-d3-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.10904767014563
+  },
+  {
+   "id": "g6fresh-s15-w0-p0-d2-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.15964117724205534
+  },
+  {
+   "id": "g6fresh-s60-w1-p4-d0-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s47-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.15104173859644632
+  },
+  {
+   "id": "g6fresh-s37-w0-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.14038276359736965
+  },
+  {
+   "id": "g6fresh-s37-w1-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2257426480767442
+  },
+  {
+   "id": "g6fresh-s53-w1-p4-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.030982335057338693
+  },
+  {
+   "id": "g6fresh-s56-w0-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08283616742535815
+  },
+  {
+   "id": "g6fresh-s51-w1-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1037710189696675
+  },
+  {
+   "id": "g6fresh-s21-w1-p3-d1-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0207326403992579
+  },
+  {
+   "id": "g6fresh-s53-w0-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.10818255923642628
+  },
+  {
+   "id": "g6fresh-s41-w1-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05663273691771025
+  },
+  {
+   "id": "g6fresh-s61-w1-p0-d1-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.01822541024117576
+  },
+  {
+   "id": "g6fresh-s47-w0-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.07053781119046204
+  },
+  {
+   "id": "g6fresh-s50-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.19079645399206088
+  },
+  {
+   "id": "g6fresh-s50-w0-p2-d0-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s41-w0-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2932769064825294
+  },
+  {
+   "id": "g6fresh-s33-w0-p3-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s31-w0-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.13789632233396992
+  },
+  {
+   "id": "g6fresh-s39-w0-p2-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.043530606624018156
+  },
+  {
+   "id": "g6fresh-s08-w0-p4-d1-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.017650706588221984
+  },
+  {
+   "id": "g6fresh-s19-w1-p4-d3-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.04057114374548751
+  },
+  {
+   "id": "g6fresh-s51-w0-p2-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s25-w0-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1295320642758737
+  },
+  {
+   "id": "g6fresh-s39-w1-p4-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "g6fresh-s27-w1-p0-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.019649772660548688
+  },
+  {
+   "id": "g6fresh-s63-w0-p1-d1-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.02989079530024905
+  }
+ ]
+}

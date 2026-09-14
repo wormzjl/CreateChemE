@@ -97,12 +97,42 @@ def exact_copy(source, target):
     assert digest(Path(source)) == digest(target), 'Artifact copy mismatch'
 
 
+# --- population hook -------------------------------------------------------------------------------------
+# The archived 405 stay the default, so this study reproduces byte for byte with no argument. A caller may
+# instead name a population registered in tools/benchmark-population/v1/manifest.json -- the cleaned
+# validation set, for instance -- with `budget_benchmark.py validation --population <path>` or the
+# CREATECHEME_BENCHMARK_POPULATION environment variable. A non-archived run writes under its own directory
+# so it can never overwrite the archived campaign's evidence.
+sys.path.insert(0, str(ROOT / 'tools/benchmark-population'))
+import harness  # noqa: E402
+
+_POPULATION = None
+
+
+def population():
+    global _POPULATION
+    if _POPULATION is None:
+        _POPULATION = harness.resolve(INPUTS / 'validation-inputs.jsonl')
+    return _POPULATION
+
+
+def use_population(path):
+    """Point this run at another registered population; None restores the archived default."""
+    global _POPULATION
+    _POPULATION = harness.resolve(INPUTS / 'validation-inputs.jsonl', path)
+    return _POPULATION
+
+
+def population_root():
+    return OUT if population().archived else OUT / 'population' / population().label
+
+
 def pipeline_path(name):
     return OUT / 'pipelines' / f'{name}.json'
 
 
 def run_directory(name, block):
-    return OUT / 'validation' / f'block-{block}' / name
+    return population_root() / 'validation' / f'block-{block}' / name
 
 
 def trace_directory(config):

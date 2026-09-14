@@ -54,6 +54,7 @@ tools/*
 !tools/path-dependent-infeasible/
 !tools/liquid-supply-screen/
 !tools/integration/
+!tools/benchmark-population/
 
 # Claude × Codex collaboration runtime files
 .collab/

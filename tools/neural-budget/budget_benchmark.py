@@ -10,13 +10,13 @@ def validate_run(directory, name):
     rows = read_rows(directory / 'evaluation.jsonl')
     meta = read(directory / 'run.json')
     assert meta['revision'] == 'neural-budget-column-evaluation-v1'
-    assert meta['complete'] and meta['completed'] == len(rows) == 405
+    assert meta['complete'] and meta['completed'] == len(rows) == population().cases
     assert meta['scheduling']['distinctWorkerThreads'] == WORKERS and meta['scheduling']['terminated']
     assert meta['maximumHeapBytes'] == HEAP_BYTES and meta['workers'] == WORKERS
     assert meta['deadlineMillis'] == DEADLINE_SECONDS * 1000 and meta['neuralBudgetMillis'] == NEURAL_BUDGET_MILLIS
     assert meta['neuralMaximumIterations'] == MAXIMUM_ITERATIONS
     assert meta['modelSha256'] == digest(pipeline_path(name)) and meta['warmupSha256'] == WARMUP_SHA
-    assert meta['sourceSha256'] == VALIDATION_INPUTS_SHA
+    assert meta['sourceSha256'] == population().sha256
     assert meta['pipelineManifest']['decoder'] == PIPELINES[name]['decoder']
     assert meta['pipelineManifest']['correction'] == PIPELINES[name]['correction']
     # The command line always states the production wall pair; only the manifest may reshape it, and the
@@ -24,7 +24,7 @@ def validate_run(directory, name):
     if name == 'F0-baseline':
         assert meta['correctionIterations'] == MAXIMUM_ITERATIONS
         assert meta['correctionBudgetMillis'] == NEURAL_BUDGET_MILLIS
-    assert len({row['id'] for row in rows}) == 405
+    assert len({row['id'] for row in rows}) == population().cases
     # The seed a request actually received must be the seed the preflight recorded for this variant.
     expected = {row['id']: row['seed'] for row in read_rows(decode_path(name))}
     for row in rows:
@@ -45,7 +45,7 @@ def invoke(name, block):
         return
     print(f'START block {block} {name}', flush=True)
     execute('V3BudgetEvaluationProbe',
-            [directory, INPUTS / 'validation-inputs.jsonl', pipeline_path(name),
+            [directory, population().path, pipeline_path(name),
              WORKERS, DEADLINE_SECONDS, NEURAL_BUDGET_MILLIS, MAXIMUM_ITERATIONS, INPUTS / 'warmup.json'],
             OUT / 'logs' / f'validation-block-{block}-{name}.log')
     rows, meta = validate_run(directory, name)
@@ -73,5 +73,14 @@ def validation():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', choices=['validation'])
-    parser.parse_args()
+    parser.add_argument('--population', default=None,
+                        help='A population file registered in tools/benchmark-population/v1/manifest.json, '
+                             'e.g. tools/benchmark-population/v1/validation/validation-inputs.jsonl. '
+                             'Defaults to the archived 405, which reproduces this study unchanged. A '
+                             'non-archived run writes under build/neural-budget/<rev>/population/.')
+    arguments = parser.parse_args()
+    chosen = use_population(arguments.population)
+    if not chosen.archived:
+        print(json.dumps({'population': chosen.label, 'cases': chosen.cases, 'sha256': chosen.sha256}),
+              flush=True)
     validation()
