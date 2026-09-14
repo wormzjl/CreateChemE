@@ -33,6 +33,13 @@ EQUIPMENT_FACTORS = [
     *(f"pa_{i}_{part}" for i in range(4) for part in ("return", "span", "duty")),
 ]
 
+# Mirrors the shipped V3LiquidSupplyScreen. PRODUCTION_SCREEN_RATIO is what
+# V3ColumnCalculator.DEFAULT_LIQUID_SUPPLY_SCREEN_RATIO is; a design that samples above it is a request the
+# game answers INFEASIBLE_SPECIFICATION in microseconds, which is not an experiment.
+PRODUCTION_SCREEN_RATIO = 0.30
+NECESSARY_LIQUID_SUPPLY_RATIO = 1.0
+PUMPAROUND_LATENT_J_PER_MOL = 30_000.0
+
 
 def canonical(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
@@ -147,12 +154,102 @@ def water_saturation_temperature(pressure):
     return 0.5 * (low + high)
 
 
-def screen_input(input_value, design=None):
+def liquid_supply_ratio(input_value):
+    """Worst cumulative-draw to liquid-supply ratio over the trays, with the tray that attains it.
+
+    A line-by-line port of the shipped ``V3LiquidSupplyScreen.evaluate``, verified against the Java verdict
+    on 405 + 252 requests by ``tools/liquid-supply-screen/verify.py``. Reads nothing but the request.
+    """
+    draws = [(d["trayNumber"], d["molarFlowMolPerSecond"]) for d in input_value.get("sideDraws", [])]
+    stages = input_value.get("stageCount", 0)
+    if not draws or not isinstance(stages, int) or stages < 1:
+        return 0.0, 0
+    reflux = next((s["ratio"] for s in input_value.get("specifications", []) if "ratio" in s), None)
+    if reflux is None:
+        return 0.0, 0
+    feed = math.fsum(input_value["feedComponentMolarFlowsMolPerSecond"])
+    steam = math.fsum(s["molarFlowMolPerSecond"] for s in input_value.get("steamFeeds", []))
+    total_draw = math.fsum(rate for _, rate in draws)
+    if not all(math.isfinite(v) for v in (feed, steam, total_draw)):
+        return 0.0, 0
+    # Bottoms cannot be negative, so this is the largest distillate the material balance admits, and
+    # reflux * D_max is the largest liquid rate that can descend from the condenser.
+    distillate = max(0.0, feed + steam - total_draw)
+    worst, limiting, cumulative = 0.0, 0, 0.0
+    for tray in range(1, stages + 1):
+        cumulative += math.fsum(rate for at, rate in draws if at == tray)
+        if cumulative <= 0.0:
+            continue
+        supply = (reflux * distillate + steam + _cooling_above_watts(input_value, tray) / PUMPAROUND_LATENT_J_PER_MOL
+                  + (feed if tray >= input_value["feedStageNumber"] else 0.0))
+        ratio = cumulative / supply if supply > 0.0 else math.inf
+        if ratio > worst:
+            worst, limiting = ratio, tray
+    return (worst, limiting) if limiting else (0.0, 0)
+
+
+def _cooling_above_watts(input_value, tray):
+    """Authored cooling duty on trays 1..tray, in watts, positive. Heaters raise vapour and never count."""
+    duty = 0.0
+    for pumparound in input_value.get("pumparounds", []):
+        if pumparound["dutyWatts"] >= 0.0:
+            continue
+        low, high = pumparound["returnTray"], pumparound["drawTray"]
+        if pumparound.get("split") == "RETURN_TRAY":
+            duty += -pumparound["dutyWatts"] if low <= tray else 0.0
+        else:
+            duty += -pumparound["dutyWatts"] * max(0, min(high, tray) - low + 1) / (high - low + 1)
+    return duty if math.isfinite(duty) else 0.0
+
+
+def request_only_exclusions(input_value, calibrated_ratio=0.0):
+    """Exclusions for conditions the shipped solver's request-only admission would type infeasible.
+
+    This is a different kind of claim from the rest of the filter and is kept separate for that reason.
+    ``LIQUID_SUPPLY_BALANCE`` is physics: at ``rho >= 1`` the cumulative withdrawal exceeds a supply bound
+    that is already generous in every term, so no liquid balance closes. ``LIQUID_SUPPLY_ENVELOPE`` is not a
+    proof; it is the solver's measured envelope, and it exists so that a freshly sampled design does not
+    spend a benchmark denominator on requests production answers in microseconds without solving.
+
+    Only the two liquid-supply tiers are computable here. The third request-only gate,
+    ``V3HeatFeasibility.availableCoolingWatts``, needs one feed flash and therefore the property package, so
+    it cannot be evaluated from Python. Run the generated matrix through
+    ``tools/benchmark-population/java/V3RequestAdmissionProbe.java`` to catch it; measured over 3,297
+    archived requests it fired on none, so it is a completeness step rather than a load-bearing one.
+    """
+    if calibrated_ratio and not 0.0 <= calibrated_ratio <= 1.0:
+        raise ValueError("The request-only screen ratio must be in [0, 1]")
+    ratio, tray = liquid_supply_ratio(input_value)
+    necessary = ratio >= NECESSARY_LIQUID_SUPPLY_RATIO
+    if not necessary and not (calibrated_ratio and ratio >= calibrated_ratio):
+        return []
+    return [{
+        "category": "physical_necessity" if necessary else "solver_admission",
+        "code": "LIQUID_SUPPLY_BALANCE" if necessary else "LIQUID_SUPPLY_ENVELOPE",
+        "proof": ("Liquid reaching a tray is bounded by reflux*D_max + steam + condensed pumparound cooling "
+                  "above it + the feed below the feed tray; a draw can only remove liquid that has already "
+                  "reached its own tray, so cumulative withdrawal at or above that bound closes no balance."
+                  if necessary else
+                  "Not a proof: the shipped V3LiquidSupplyScreen types this request INFEASIBLE_SPECIFICATION "
+                  "before any flash at the production calibrated ratio, so no solver reaches it."),
+        "evidence": {"liquidSupplyRatio": ratio, "limitingTray": tray,
+                     "threshold": NECESSARY_LIQUID_SUPPLY_RATIO if necessary else calibrated_ratio},
+    }]
+
+
+def screen_input(input_value, design=None, request_only_screen_ratio=None):
     """Return proof-bearing exclusions; passing means undetermined, not feasible.
 
     Physical necessity, representational restrictions and property-domain limits
     are separate categories. Energy heuristics and numerical failures never enter
     this filter. This function is also usable on an independently authored matrix.
+
+    ``request_only_screen_ratio`` defaults to ``None``: the request-only admission is not applied at all,
+    and this filter is exactly what the frozen matrices were generated with, byte for byte. Pass a ratio to
+    also reject conditions the shipped solver would type ``INFEASIBLE_SPECIFICATION`` from the request alone
+    -- ``0.0`` for the physically necessary tier only, ``PRODUCTION_SCREEN_RATIO`` for what production
+    actually refuses. It is off by default because turning it on changes which points a design admits, and
+    every archived matrix has to keep reproducing. See :func:`request_only_exclusions`.
     """
     issues = []
 
@@ -234,6 +331,10 @@ def screen_input(input_value, design=None):
                 reject("physical_necessity", "STEAM_NOT_VAPOR", "A stable pure-water vapor source at this subcritical pressure requires T >= Tsat(P); the declared source is subcooled water.", temperatureKelvin=t, pressurePascal=p, saturationKelvin=saturation)
             elif t < saturation + 5.0:
                 reject("model_contract", "STEAM_SUPERHEAT_MARGIN", "V3 requires at least 5 K pure-water superheat; the margin is a solver contract.", temperatureKelvin=t, saturationKelvin=saturation)
+        # Last, and only on a request whose fields have all just been read: what production's request-only
+        # admission would type. Off unless a ratio is authored.
+        if request_only_screen_ratio is not None:
+            issues.extend(request_only_exclusions(input_value, request_only_screen_ratio))
         if design:
             requested = design.get("structuralCell", {})
             if requested.get("sideDrawCount", len(draws)) != len(draws) or requested.get("paCount", len(pas)) != len(pas):
@@ -304,7 +405,7 @@ def make_input(baseline, cell, factors, mixture):
     return result
 
 
-def generate(baseline, seed=DEFAULT_SEED):
+def generate(baseline, seed=DEFAULT_SEED, request_only_screen_ratio=None):
     components = baseline["componentBasis"]["componentIds"]
     if len(components) != 20:
         raise ValueError("This design revision requires the registered 20-component basis")
@@ -334,12 +435,13 @@ def generate(baseline, seed=DEFAULT_SEED):
     excluded = []
     admitted = []
     for row in rows:
-        reasons = screen_input(row["input"], row["design"])
+        reasons = screen_input(row["input"], row["design"], request_only_screen_ratio)
         if reasons:
             excluded.append({**row, "status": "preflight_excluded", "exclusions": reasons})
         else:
             admitted.append(row)
-    report = {"revision": REVISION, "seed": seed, "baselineSha256": digest(baseline),
+    report = {"revision": REVISION, "seed": seed, "requestOnlyScreenRatio": request_only_screen_ratio,
+        "baselineSha256": digest(baseline),
         "baselineInput": baseline, "orthogonalArray": oa_evidence,
         "candidateRows": len(rows), "admittedRows": len(admitted), "excludedRows": len(excluded),
         "structuralCellCount": len(structural), "coveredStructuralCellCount": len(repeats),
@@ -375,10 +477,10 @@ def write_jsonl(path, rows):
             handle.write(canonical(row) + "\n")
 
 
-def generate_files(output, baseline_path, seed):
+def generate_files(output, baseline_path, seed, request_only_screen_ratio=None):
     baseline_document = json.loads(baseline_path.read_text(encoding="utf-8-sig"))
     baseline = baseline_document.get("input", baseline_document)
-    rows, admitted, excluded, report = generate(baseline, seed)
+    rows, admitted, excluded, report = generate(baseline, seed, request_only_screen_ratio)
     paths = [output / name for name in ("candidate-matrix.jsonl", "matrix.jsonl", "exclusions.jsonl", "design.json")]
     if any(path.exists() for path in paths):
         raise FileExistsError("Refusing to overwrite a frozen matrix; use a fresh output directory")
@@ -399,12 +501,22 @@ def main():
     create.add_argument("output", type=Path)
     create.add_argument("--baseline", type=Path, default=DEFAULT_BASELINE)
     create.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    request_only_help = (
+        "Also reject conditions the shipped solver's request-only admission would type "
+        "INFEASIBLE_SPECIFICATION, at this calibrated liquid-supply ratio "
+        f"(production is {PRODUCTION_SCREEN_RATIO}; 0 applies only the physically necessary rho >= 1 tier). "
+        "Omitted, no request-only rejection is applied and the filter is exactly the one the archived "
+        "matrices were generated with. The third request-only gate needs a feed flash and is not reachable "
+        "from Python: run the generated matrix through "
+        "tools/benchmark-population/java/V3RequestAdmissionProbe.java to cover it.")
+    create.add_argument("--request-only-screen-ratio", type=float, default=None, help=request_only_help)
     screen = commands.add_parser("screen", help="Apply proof-bearing exclusions to an existing matrix")
     screen.add_argument("matrix", type=Path)
     screen.add_argument("output", type=Path)
+    screen.add_argument("--request-only-screen-ratio", type=float, default=None, help=request_only_help)
     args = parser.parse_args()
     if args.command == "generate":
-        generate_files(args.output, args.baseline, args.seed)
+        generate_files(args.output, args.baseline, args.seed, args.request_only_screen_ratio)
     else:
         args.output.mkdir(parents=True, exist_ok=True)
         admitted, excluded = [], []
@@ -412,7 +524,7 @@ def main():
             if not line.strip():
                 continue
             row = json.loads(line)
-            reasons = screen_input(row["input"], row.get("design"))
+            reasons = screen_input(row["input"], row.get("design"), args.request_only_screen_ratio)
             (excluded if reasons else admitted).append({**row, "status": "preflight_excluded", "exclusions": reasons} if reasons else row)
         write_jsonl(args.output / "matrix.jsonl", admitted)
         write_jsonl(args.output / "exclusions.jsonl", excluded)

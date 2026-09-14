@@ -93,7 +93,7 @@ def decode():
     if path.exists():
         print(f'Reusing decode dump {path}', flush=True)
         return
-    execute('V3PromotionDecodeCheck', [path, INPUTS / 'validation-inputs.jsonl'], next_log('decode-%d.log'))
+    execute('V3PromotionDecodeCheck', [path, population().path], next_log('decode-%d.log'))
 
 
 def campaign(block):
@@ -102,15 +102,25 @@ def campaign(block):
         print(f'Reusing block {block} at {directory}', flush=True)
         return
     execute('V3PromotionEvaluationProbe',
-            [directory, INPUTS / 'validation-inputs.jsonl', WORKERS, DEADLINE_SECONDS,
-             NEURAL_BUDGET_MILLIS, MAXIMUM_ITERATIONS, INPUTS / 'warmup.json'],
+            [directory, population().path, WORKERS, DEADLINE_SECONDS,
+             NEURAL_BUDGET_MILLIS, MAXIMUM_ITERATIONS, WARMUP],
             next_log(f'campaign-block{block}-%d.log'))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', choices=['rebuild-core', 'verify-core', 'decode', 'block1', 'block2'])
-    mode = parser.parse_args().mode
+    parser.add_argument('--population', default=None,
+                        help='A population file registered in tools/benchmark-population/v1/manifest.json, '
+                             'e.g. tools/benchmark-population/v1/validation/validation-inputs.jsonl. '
+                             'Defaults to the archived 405, which reproduces this study unchanged. A '
+                             'non-archived run writes under build/transformer-promotion/v1/population/.')
+    arguments = parser.parse_args()
+    chosen = use_population(arguments.population)
+    if not chosen.archived:
+        print(json.dumps({'population': chosen.label, 'cases': chosen.cases, 'sha256': chosen.sha256}),
+              flush=True)
+    mode = arguments.mode
     if mode == 'rebuild-core':
         rebuild_core()
     elif mode == 'verify-core':

@@ -11,7 +11,7 @@ import argparse
 def observed(block):
     directory = run_directory(block)
     meta = read(directory / 'run.json')
-    assert meta['complete'] and meta['completed'] == CASES, f'Block {block} did not complete'
+    assert meta['complete'] and meta['completed'] == population().cases, f'Block {block} did not complete'
     assert meta['workers'] == WORKERS and meta['deadlineMillis'] == DEADLINE_SECONDS * 1000
     assert meta['neuralBudgetMillis'] == NEURAL_BUDGET_MILLIS and meta['neuralMaximumIterations'] == MAXIMUM_ITERATIONS
     assert meta['modelArtifactSha256'] == BASE_WEIGHTS_SHA, 'The campaign did not load the registered weights'
@@ -19,13 +19,18 @@ def observed(block):
     for key, value in PROGRESS_CORRECTION.items():
         assert meta['correction'][key] == value, (key, meta['correction'][key], value)
     rows = {row['id']: row for row in read_rows(directory / 'evaluation.jsonl')}
-    assert len(rows) == CASES
+    assert len(rows) == population().cases
     return meta, rows
 
 
 def compare_block(block):
     meta, rows = observed(block)
     reference = qualified_cases(block)
+    if not population().archived:
+        # A filtered campaign measures a subset of the qualified population; every id it ran must still be
+        # one the qualification measured, so this narrows the reference without weakening the identity check.
+        assert set(rows) <= set(reference), 'The filtered population is not a subset of the qualified one'
+        reference = {case: record for case, record in reference.items() if case in rows}
     assert set(rows) == set(reference), 'The population differs from the qualification campaign'
     result = dict(block=block, elapsedSeconds=meta['elapsedSeconds'], modelId=meta['modelId'],
                   java=meta['java'], availableProcessors=meta['availableProcessors'], modes={})
@@ -123,4 +128,9 @@ def compare(blocks):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('blocks', nargs='*', type=int, default=[1])
-    compare(parser.parse_args().blocks or [1])
+    parser.add_argument('--population', default=None,
+                        help='Compare a run made on a registered filtered population instead of the '
+                             'archived 405; the qualification reference is then restricted to its ids.')
+    arguments = parser.parse_args()
+    use_population(arguments.population)
+    compare(arguments.blocks or [1])

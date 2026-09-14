@@ -28,7 +28,7 @@ def seal():
     entries = []
     for block in BLOCKS:
         rows = sorted(read_rows(run_directory(block) / 'evaluation.jsonl'), key=lambda r: r['id'])
-        assert len(rows) == CASES, block
+        assert len(rows) == population().cases, block
         entries.append(write(EVIDENCE / f'case-block{block}.jsonl.gz', [compact(row) for row in rows]))
         entries.append(info(run_directory(block) / 'run.json')
                        if (run_directory(block) / 'run.json').is_relative_to(ROOT / 'tools') else
