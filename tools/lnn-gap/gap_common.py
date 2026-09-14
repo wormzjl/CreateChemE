@@ -19,8 +19,11 @@ ROOT = Path(__file__).resolve().parents[2]
 STUDY = ROOT / 'tools/lnn-gap'
 IDS = STUDY / 'ids'
 EVIDENCE = STUDY / 'evidence'
+# v1 is round one, the seven arms. v2 re-measures the one arm whose registered option combination turned
+# out to hit a solver defect rather than its intervention, on a core carrying the fix and with its own
+# re-run baseline. v3 is the combination round the declared rules select.
 REVISION = os.environ.get('LNN_GAP_REVISION', 'v1')
-assert REVISION in ('v1', 'v2'), REVISION
+assert REVISION in ('v1', 'v2', 'v3'), REVISION
 OUT = ROOT / f'build/lnn-gap/{REVISION}'
 
 # The promotion campaign's committed per-case evidence and decoded-seed digests; read only. These are the

@@ -118,30 +118,37 @@ def render():
               f"- registration `{plan_value['protocol']['sha256'][:16]}...` over protocol.md",
               f"- production delta: {', '.join(Path(p).name for p in plan_value['sourceDelta']['changed'])}",
               f"- bundled weights `{plan_value['frozen']['bundledArtifact']['sha256'][:16]}...`", '']
-    (STUDY / 'results.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
-    print(f"Wrote {STUDY / 'results.md'} ({len(lines)} lines)", flush=True)
+    target = STUDY / ('results.md' if REVISION == 'v1' else f'results-{REVISION}.md')
+    target.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    print(f'Wrote {target} ({len(lines)} lines)', flush=True)
 
 
 def seal():
+    """Copy this round's evidence under the study root and bind every copied byte."""
     EVIDENCE.mkdir(parents=True, exist_ok=True)
     copied = []
-    for source, name in [(OUT / 'validation-case-evidence.jsonl.gz', 'validation-case-evidence.jsonl.gz'),
-                         (OUT / 'validation-analysis.json', 'validation-analysis.json'),
-                         (OUT / 'preflight-parity.json', 'preflight-parity.json'),
-                         (OUT / 'study-plan.json', 'study-plan.json')]:
-        target = EVIDENCE / name
+    for name in ('validation-case-evidence.jsonl.gz', 'validation-analysis.json',
+                 'preflight-parity.json', 'study-plan.json'):
+        source = OUT / name
+        stem, _, suffix = name.partition('.')
+        target = EVIDENCE / f'{REVISION}-{stem}.{suffix}'
         if not target.exists():
             target.write_bytes(Path(source).read_bytes())
             assert digest(source) == digest(target), 'Artifact copy mismatch'
         copied.append(info(target))
-    total = sum(Path(ROOT / entry['path']).stat().st_size for entry in copied)
+    total = sum(Path(ROOT / entry['path']).stat().st_size for entry in EVIDENCE_FILES())
     assert total < 25 * 1024 ** 2, f'Committed evidence is {total} bytes; keep it under 25 MB'
-    freeze(EVIDENCE / 'cache-manifest.json', dict(
-        revision='lnn-gap-seal-v1', committedEvidence=copied, totalBytes=total,
+    freeze(EVIDENCE / f'{REVISION}-cache-manifest.json', dict(
+        revision='lnn-gap-seal-v1', round=REVISION, committedEvidence=copied, totalBytesAllRounds=total,
         nativeCore=info(OUT / 'native-core-build.json'),
         runs=[info(run_directory(name, block) / 'run.json') for block in BLOCKS for name in plan()['arms']],
         note='Raw evaluation journals are bound by hash here and are not committed.'))
-    print(json.dumps(dict(sealed=[entry['path'] for entry in copied], totalBytes=total), indent=1), flush=True)
+    print(json.dumps(dict(sealed=[entry['path'] for entry in copied], totalBytesAllRounds=total), indent=1),
+          flush=True)
+
+
+def EVIDENCE_FILES():
+    return [info(p) for p in sorted(EVIDENCE.rglob('*')) if p.is_file()]
 
 
 if __name__ == '__main__':
