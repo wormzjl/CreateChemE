@@ -93,3 +93,39 @@ E1a does not touch.)
 clearest negative result in the study: more iterations without the gate spend the two-second wall before the
 support-refresh pass that would have converged them. E2's abort should stay exactly as shipped; widening it
 is ONLY-neutral and removing it costs more latency than its coverage is worth.
+
+## 6. Round four: the handoff's sub-wall (registered in `protocol-round4.md`)
+
+The contraction factor is now the shipped default, so round four's baseline is that rule and reads
+LNN_ONLY 164/164 and LNN_FIRST 182/182 of 330 — the E1a arm's numbers, reproduced against a fresh core.
+Both shortened-wall arms sit on top of it.
+
+| Arm | sub-wall | ONLY b1/b2 | FIRST b1/b2 | group B | handoff total, ONLY | pooled FIRST delta |
+|---|--:|--:|--:|--:|--:|--:|
+| `baseline` | — | 164/164 | 182/182 | 1/1 | — | — |
+| `E3-2500` | 2,500 ms | **172/172** | **184/184** | **6/6** | 649 s | +812 ms |
+| `E3-4000` | 4,000 ms | **172/172** | **184/184** | **6/6** | 934 s | +1,169 ms |
+| (round one) | 8,000 ms | 170/171 | 182/182 | 6/7 | 1,550 s | +2,047 ms |
+
+**The coverage is identical and the cost is not.** Both arms accept exactly the same 18 requests over 9
+cases, 16 of them strict, as the 8,000 ms arm did; both gain +8 LNN_ONLY and +2 LNN_FIRST in both blocks
+with zero losses anywhere; both recover 6 of the 18 group-B cases and take the crawling group from 12 to 14.
+Cutting the wall from 8,000 ms to 2,500 ms costs nothing in coverage and returns 58% of the handoff time.
+
+**Nothing accepted is lost to the shorter wall, and this is not an inference.** The slowest handoff round one
+ever accepted took 2,255 ms in LNN_ONLY and 2,264 ms in LNN_FIRST; **no accepted handoff anywhere in round
+one exceeded 2,500 ms**, so the 2,500 ms wall has nothing to cut. Measured directly here, the slowest
+accepted handoff is 2,223 ms at the 2,500 ms wall and 2,210 ms at 4,000 ms. One case round one accepted,
+`gd-s31-w0-p2-d1-r00`, is not accepted in round four — not because of the wall but because the adopted
+contraction factor now solves it from the seed, so no handoff is ever armed for it — and one case round one
+did not accept, `gd-s59-w1-p2-d0-r01`, is accepted here.
+
+**Neither arm is adopted, by the rule registered before the round ran.** Both pass the strict-gain gate
+(FIRST 184 against 182 in both blocks) and the classical-union gate, and both fail the latency gate: +812 ms
+and +1,169 ms against a band of 23.3 ms, this round's baseline having reproduced itself unusually closely
+between blocks. `Recovery.RAMP_HANDOFF` therefore stays opt-in and `NONE` stays the default, which is where
+it was already.
+
+What the round establishes is the price. If the handoff is ever enabled — offline, batch, or behind a
+user-facing setting — **2,500 ms is the sub-wall to enable it at**: same coverage as 8,000 ms for 40% of the
+time. That is a recommendation about the parameter, not about the default.

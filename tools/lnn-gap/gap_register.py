@@ -27,6 +27,10 @@ ALLOWED_SOURCE_DELTA = {
     # configuration with a positive window, which is every other arm and the shipped default; the re-run
     # baseline of the round that carries the fix is the evidence for that.
     'src/main/java/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver.java',
+    # The model card beside the bundled artifact, which records which correction rule ships and which one
+    # each coverage table belongs to. No solver byte is read from it, and the artifact's own SHA-256 is
+    # asserted separately on every run; it is listed so the guard stays a whitelist rather than a filter.
+    'src/main/resources/data/createcheme/neural/v3-column-transformer-f0.md',
 }
 
 
@@ -77,7 +81,7 @@ def register(path, arms):
     plan_value = dict(
         revision='lnn-gap-registration-v1', studyRevision=REVISION,
         createdUtc=datetime.now(timezone.utc).isoformat(),
-        protocol=info(STUDY / 'protocol.md'),
+        protocol=info(protocol_path()),
         frozen=verify_frozen(), population=population(path), sourceDelta=source_delta(),
         arms={name: dict(pipeline=name, manifest=info(arm_path(name)), **specs[name]) for name in arms},
         orderByBlock=order, blocks=BLOCKS, workers=WORKERS, requestDeadlineSeconds=DEADLINE_SECONDS,
@@ -111,7 +115,7 @@ def verify_plan():
     assert value['revision'] == 'lnn-gap-registration-v1'
     assert digest(BUNDLED_ARTIFACT) == BASE_WEIGHTS_SHA, 'The bundled artifact moved after registration'
     assert digest(value['population']['absolutePath']) == value['population']['sha256'], 'The population moved'
-    assert digest(STUDY / 'protocol.md') == value['protocol']['sha256'], 'The protocol moved after registration'
+    assert digest(protocol_path()) == value['protocol']['sha256'], 'The protocol moved after registration'
     for name, entry in value['arms'].items():
         assert read(arm_path(name)) == dict(pipeline=name, **spec(name)), f'Arm {name} drifted from its manifest'
         assert digest(arm_path(name)) == entry['manifest']['sha256']

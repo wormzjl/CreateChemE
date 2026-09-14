@@ -23,7 +23,9 @@ EVIDENCE = STUDY / 'evidence'
 # out to hit a solver defect rather than its intervention, on a core carrying the fix and with its own
 # re-run baseline. v3 is the combination round the declared rules select.
 REVISION = os.environ.get('LNN_GAP_REVISION', 'v1')
-assert REVISION in ('v1', 'v2', 'v3'), REVISION
+assert REVISION in ('v1', 'v2', 'v3', 'v4'), REVISION
+# v4 is the bounded handoff-budget round, registered after the E1 selection became the shipped default.
+ADOPTED_ROUNDS = ('v4',)
 OUT = ROOT / f'build/lnn-gap/{REVISION}'
 
 # The promotion campaign's committed per-case evidence and decoded-seed digests; read only. These are the
@@ -63,15 +65,26 @@ def correction(**delta):
     return {**PROMOTED_CORRECTION, **delta}
 
 
-def arm(correction_rule=None, candidates='SINGLE', recovery='NONE'):
-    return dict(decoder=PHASE_FLOOR_DECODER, candidates=candidates, recovery=recovery,
-                correction=correction_rule or dict(PROMOTED_CORRECTION))
+# What the E1 experiment selected and the branch then adopted as Correction.PROGRESS. Round four's baseline
+# is this rule, because that is what production now ships and what a further intervention has to beat.
+ADOPTED_CORRECTION = {**PROMOTED_CORRECTION, 'contractionFactor': 1.0}
+
+
+def arm(correction_rule=None, candidates='SINGLE', recovery='NONE', recovery_budget_millis=None):
+    value = dict(decoder=PHASE_FLOOR_DECODER, candidates=candidates, recovery=recovery,
+                 correction=correction_rule or dict(PROMOTED_CORRECTION))
+    # Stated only where a round registers one, so an arm of an earlier round keeps the manifest it ran on.
+    if recovery_budget_millis is not None:
+        value['recoveryBudgetMillis'] = recovery_budget_millis
+    return value
 
 
 # One arm per registered experiment. The baseline is the promoted path exactly; every other arm differs
 # from it in one field, named in protocol.md beside the question it answers.
 ARMS = {
-    'baseline': arm(),
+    # The baseline is always the shipped default of the round that registers it. Rounds one to three ran
+    # against the promoted rule; round four runs against the rule the E1 selection made production.
+    'baseline': arm(ADOPTED_CORRECTION) if REVISION in ADOPTED_ROUNDS else arm(),
     # E1: the extension gate. E1a keeps the eight-iteration blocks and only stops refusing a trajectory
     # whose residual has not risen; E1b removes the gate by raising the base cap, which is the
     # configuration the diagnostic actually measured.
@@ -85,8 +98,15 @@ ARMS = {
     'E3': arm(recovery='RAMP_HANDOFF'),
     # E4: the same forward pass offers its prune decode as a second candidate.
     'E4': arm(candidates='DECODE_VARIANTS'),
+    # Round four. The handoff wins the most coverage of anything measured and its refusals are what it
+    # costs: accepted in a mean 1260 ms, refused at a median 6885 ms against the 8 s sub-wall. These two
+    # arms cut the sub-wall to a little above and a little below the slowest accepted handoff, on top of
+    # the adopted E1a correction, so the question is how much of the coverage survives a shorter wall.
+    'E3-2500': arm(ADOPTED_CORRECTION, recovery='RAMP_HANDOFF', recovery_budget_millis=2500),
+    'E3-4000': arm(ADOPTED_CORRECTION, recovery='RAMP_HANDOFF', recovery_budget_millis=4000),
 }
 ROUND_ONE = ['baseline', 'E1a', 'E1b', 'E2a', 'E2b', 'E3', 'E4']
+ROUND_FOUR = ['baseline', 'E3-2500', 'E3-4000']
 # The second round's combination arm is not written here: it is whatever the registered rules selected from
 # round one, so it is read from that round's analysis rather than chosen again.
 COMBINATION = 'E5'
@@ -123,6 +143,16 @@ def freeze(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open('x', encoding='utf-8') as stream:
         json.dump(value, stream, indent=1, sort_keys=True, allow_nan=False)
+
+
+def protocol_path():
+    """The registered protocol of this round.
+
+    Rounds one to three are registered against `protocol.md` and bind its SHA-256, so that document can
+    never be edited afterwards without invalidating them. A later round that declares new arms therefore
+    gets its own registered document rather than an addendum to a sealed one.
+    """
+    return STUDY / ('protocol-round4.md' if REVISION in ADOPTED_ROUNDS else 'protocol.md')
 
 
 def plan():
