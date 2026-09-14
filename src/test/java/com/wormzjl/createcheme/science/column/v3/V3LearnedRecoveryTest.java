@@ -221,6 +221,31 @@ class V3LearnedRecoveryTest {
         assertFalse(event.contains("handoffMs="), event);
     }
 
+    /**
+     * A progress extension without an early stop must extend, not stop at iteration zero.
+     *
+     * <p>The solver allocates its residual history when either the stall stop or the extension asks for one,
+     * and the stop used to test only whether the window reached back far enough. With the extension on and
+     * the stop off the window is zero, so the test compared each residual to itself and declared every
+     * attempt stalled on its first iteration. The combination is legal through the public options record and
+     * it destroyed the learned route: the campaign arm registered to measure what the abort costs read
+     * LNN_ONLY 0 of 330 instead of a number near the baseline's 162.</p>
+     */
+    @Test void anExtensionWithoutAnEarlyStopStillTakesItsIterations() {
+        V3ColumnInput input = drawInput();
+        V3NeuralInitializer model = fixed(displaced(acceptedProfile(input)));
+        var abortOff = new V3InitializationOptions(V3InitializationOptions.Mode.LNN_ONLY,
+                V3InitializationOptions.WetStart.AUTO, 16, 30_000,
+                new V3InitializationOptions.Correction(8, 48, 8, 0.5, 0, 0.0, 0.0));
+        assertFalse(abortOff.correction().stopsEarly());
+        assertTrue(abortOff.correction().extendsAttempts());
+        var outcome = V3ColumnCalculator.calculate(input, () -> {}, 0, 0, abortOff, model);
+        String events = String.join(" | ", outcome.diagnostics().events());
+        assertFalse(events.contains("at iteration 0 and"), "the stall stop fired with no stall window: " + events);
+        assertTrue(outcome.diagnostics().newtonIterations() > 0 || outcome.isSuccess(),
+                "the correction took no iterations at all: " + events);
+    }
+
     /** The bundled production model offers exactly the one seed it predicts. */
     @Test void theBundledModelOffersASingleCandidate() throws Exception {
         var model = V3NeuralModels.bundled();

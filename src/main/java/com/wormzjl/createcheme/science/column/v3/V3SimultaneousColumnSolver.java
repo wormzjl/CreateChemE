@@ -280,10 +280,17 @@ final class V3SimultaneousColumnSolver {
             // A rung whose residual has not fallen by the budget's factor over its window is not converging;
             // spending the rest of the iteration budget on it only delays the caller's own recovery. The floor
             // keeps this away from a rung that is merely closing slowly just above its tolerance.
+            //
+            // The history exists whenever the stall stop *or* the progress extension asked for it, so the stop
+            // itself has to test whether it was the one that asked. Without that test a caller who enables the
+            // extension and disables the stop gets `earlier == iteration`, which compares the residual to
+            // itself: every attempt stops at iteration zero with a residual that has "not fallen", and the
+            // whole learned route collapses. Reachable from the public API as
+            // {@code Correction(8, 48, 8, 0.5, 0, 0.0, 0.0)}; measured as LNN_ONLY 162 -> 0 on 330 inputs.
             if (stallResiduals != null) {
                 stallResiduals[iteration] = maximumResidual;
                 int earlier = iteration - budget.stallWindow();
-                if (earlier >= 0 && maximumResidual > budget.stallResidualFloor()
+                if (budget.stallWindow() > 0 && earlier >= 0 && maximumResidual > budget.stallResidualFloor()
                         && maximumResidual > budget.stallFactor() * stallResiduals[earlier]) {
                     return new Attempt.Failure("STALLED", state, new Evidence(iteration, maximumResidual, merit,
                             0.0, 0.0, "maximum scaled residual " + stallResiduals[earlier] + " at iteration "

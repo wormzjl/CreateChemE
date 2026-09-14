@@ -20,6 +20,13 @@ ALLOWED_SOURCE_DELTA = {
     'src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java',
     'src/main/java/com/wormzjl/createcheme/science/column/v3/V3InitializationOptions.java',
     'src/main/java/com/wormzjl/createcheme/science/column/v3/V3NeuralModels.java',
+    # Added after round one. The E2b arm measured a solver defect rather than its intervention: the stall
+    # stop is armed whenever the residual history exists, which the progress extension also asks for, so a
+    # caller who enabled the extension and disabled the stop compared each residual to itself and stopped
+    # every attempt at iteration zero. The fix gates the stop on its own window and is inert for every
+    # configuration with a positive window, which is every other arm and the shipped default; the re-run
+    # baseline of the round that carries the fix is the evidence for that.
+    'src/main/java/com/wormzjl/createcheme/science/column/v3/V3SimultaneousColumnSolver.java',
 }
 
 

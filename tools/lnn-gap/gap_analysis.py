@@ -31,6 +31,10 @@ def compact(record):
 
 def evidence(row, mode):
     value = dict(row['modes'][mode])
+    # A request the deadline cancelled never reached the branch that publishes solver diagnostics, so the
+    # probe omits these keys entirely. Absent is not zero and is normalised to null, not filled in.
+    for key in ('newtonIterations', 'solvePath', 'cpuMillis'):
+        value.setdefault(key, None)
     value['initializer'] = initializer(value)
     value['handoffMillis'] = handoff_millis(value)
     value['stalled'] = any(STALL_STOP.search(str(event)) for event in value.get('events') or [])
