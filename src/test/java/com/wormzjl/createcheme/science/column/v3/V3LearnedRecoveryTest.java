@@ -9,8 +9,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -32,7 +30,7 @@ import org.junit.jupiter.api.Test;
  * and still leaves the terminal iterate the recovery is supposed to pick up.</p>
  */
 class V3LearnedRecoveryTest {
-    private static final Path INPUTS = Path.of("tools", "transformer-promotion", "inputs", "validation-inputs.jsonl");
+    private static final String INPUTS = "/science/column/v3/neural/validation-inputs.jsonl";
     private static final Gson JSON = new GsonBuilder().serializeNulls().create();
 
     /** A column the classical route solves, with one small authored side draw, so a ramp exists. */
@@ -348,12 +346,16 @@ class V3LearnedRecoveryTest {
     /** The first {@code limit} frozen validation requests this model actually covers. */
     private static Map<String, V3ColumnInput> supportedRequests(V3NeuralInitializer model, int limit) throws Exception {
         var result = new LinkedHashMap<String, V3ColumnInput>();
-        for (String line : Files.readAllLines(INPUTS, StandardCharsets.UTF_8)) {
-            if (line.isBlank() || result.size() >= limit) continue;
-            JsonObject row = JsonParser.parseString(line).getAsJsonObject();
-            V3ColumnInput request = input(row.getAsJsonObject("input"));
-            if (model.predict(request, V3SolveControl.UNBOUNDED).isPresent())
-                result.put(row.get("id").getAsString(), request);
+        try (var stream = java.util.Objects.requireNonNull(
+                V3LearnedRecoveryTest.class.getResourceAsStream(INPUTS), INPUTS);
+             var reader = new java.io.BufferedReader(new java.io.InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            for (String line = reader.readLine(); line != null && result.size() < limit; line = reader.readLine()) {
+                if (line.isBlank()) continue;
+                JsonObject row = JsonParser.parseString(line).getAsJsonObject();
+                V3ColumnInput request = input(row.getAsJsonObject("input"));
+                if (model.predict(request, V3SolveControl.UNBOUNDED).isPresent())
+                    result.put(row.get("id").getAsString(), request);
+            }
         }
         assertEquals(limit, result.size(), "the frozen population must cover this model");
         return result;

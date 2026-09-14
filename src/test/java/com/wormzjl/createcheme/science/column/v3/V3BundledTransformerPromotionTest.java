@@ -11,8 +11,6 @@ import com.google.gson.JsonParser;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,9 +35,9 @@ class V3BundledTransformerPromotionTest {
     private static final String F0_SHA256 = "7f909d025e12cbc7e8457b459adfbc63e48f52fb9e98ce45b91e64e84ddd1962";
     private static final String F0_MODEL_ID = "trace-followup/F-20260911-s4160";
     private static final String PACKAGE_ID = "createcheme:tjl20_methane";
-    private static final Path INPUTS = Path.of("tools", "transformer-promotion", "inputs", "validation-inputs.jsonl");
-    private static final Path DIGESTS =
-            Path.of("tools", "neural-budget", "evidence", "decode-seed-digests-F0-progress-phase-floor.jsonl.gz");
+    private static final String INPUTS = "/science/column/v3/neural/validation-inputs.jsonl";
+    private static final String DIGESTS =
+            "/science/column/v3/neural/decode-seed-digests-F0-progress-phase-floor.jsonl.gz";
     private static final Gson JSON = new GsonBuilder().serializeNulls().create();
 
     // (a) and (d): the artifact the mod ships is the registered one, it parses once, and the model it
@@ -249,7 +247,8 @@ class V3BundledTransformerPromotionTest {
     /** id -> committed seed digest, or null where the qualified pipeline produced no seed. */
     private static Map<String, String> expectedDigests() throws Exception {
         var result = new LinkedHashMap<String, String>();
-        try (var stream = new GZIPInputStream(Files.newInputStream(DIGESTS));
+        try (var stream = new GZIPInputStream(java.util.Objects.requireNonNull(
+                V3BundledTransformerPromotionTest.class.getResourceAsStream(DIGESTS), DIGESTS));
              var reader = new java.io.BufferedReader(new java.io.InputStreamReader(stream, StandardCharsets.UTF_8))) {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 if (line.isBlank()) continue;
@@ -263,10 +262,14 @@ class V3BundledTransformerPromotionTest {
 
     private static Map<String, V3ColumnInput> requests() throws Exception {
         var result = new LinkedHashMap<String, V3ColumnInput>();
-        for (String line : Files.readAllLines(INPUTS, StandardCharsets.UTF_8)) {
-            if (line.isBlank()) continue;
-            JsonObject row = JsonParser.parseString(line).getAsJsonObject();
-            result.put(row.get("id").getAsString(), input(row.getAsJsonObject("input")));
+        try (var stream = java.util.Objects.requireNonNull(
+                V3BundledTransformerPromotionTest.class.getResourceAsStream(INPUTS), INPUTS);
+             var reader = new java.io.BufferedReader(new java.io.InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                if (line.isBlank()) continue;
+                JsonObject row = JsonParser.parseString(line).getAsJsonObject();
+                result.put(row.get("id").getAsString(), input(row.getAsJsonObject("input")));
+            }
         }
         return result;
     }

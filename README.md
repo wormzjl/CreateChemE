@@ -14,7 +14,7 @@ The mod is in an early proof-of-concept stage. The NeoForge 1.21.1 project integ
 
 The calculator provides editable column inputs, literature presets, side draws, steam feeds, pumparounds, and stream/composition results. A simultaneous MESH solver with stage and pressure continuation runs through one bounded server-owned solve service. Results must pass convergence and conservation checks before publication; server-authoritative admission and revision checks protect against stale results.
 
-V3 has its own Minecraft-independent thermodynamics implementation under `science.column.v3.thermo`. The reusable foundation under `science.thermo` and the single equilibrium-stage solver remain covered by thermodynamic-identity, flash, and conservation tests. Property reconstructions and model limitations are documented separately; see [TJL19 provenance](docs/tjl19-property-provenance.md).
+V3 has its own Minecraft-independent thermodynamics implementation under `science.column.v3.thermo`. The reusable foundation under `science.thermo` and the single equilibrium-stage solver remain covered by thermodynamic-identity, flash, and conservation tests. Additional property reconstructions and research notes are kept locally under `docs/`.
 
 The custom multicomponent fluid system, connected plant simulation, reaction models, continuous equipment operation, and final multiblock structures are not implemented yet.
 
@@ -22,9 +22,17 @@ The custom multicomponent fluid system, connected plant simulation, reaction mod
 
 The original V1 calculator, its solver, packets, and `createcheme:column_calculator` block/item/block-entity/menu registrations have been removed. This is a breaking change for worlds and inventories containing V1 calculators: there is no remapping or conversion of their saved inputs/results. Replace any V1 calculators in the previous version before upgrading a world that needs them. Existing V3 registration IDs, saved input schema, property-package IDs, and dataset revisions are preserved.
 
-Client and server must both run the refactored version; the network protocol version changed to reject the old packet set. The [removal record](docs/v1-calculator-removal-plan.md) describes scope and validation.
+Client and server must both run the refactored version; the network protocol version changed to reject the old packet set.
 
-## Verification
+## Building and verification
+
+Build the mod with Java 21 using the Gradle wrapper:
+
+```text
+./gradlew build
+```
+
+The build includes regression tests. The wrapper can provision the Java 21 toolchain. Mod jars are written to `build/libs/`.
 
 Run the unit suite with:
 
@@ -32,6 +40,6 @@ Run the unit suite with:
 ./gradlew test
 ```
 
-The standalone numerical benchmarks live in `benchmarks/`. They are intentionally separate from the production source set so they cannot become runtime dependencies.
+Runtime sources, resources, the Gradle wrapper, regression tests and their fixtures are tracked. The bundled Transformer weights and their model card under `src/main/resources/data/createcheme/neural/` are required runtime/provenance assets and stay in the repository. The server defaults to learned-first initialization with classical fallback; experimental models are not required to build or run the mod.
 
-The [V3 initializer experiments](tools/neural/README.md) include cached Generation 2 evidence and the [Generation 3 recovery and performance comparison](tools/neural/gen3-model.md). Experimental models are optional; all solver paths retain native physical acceptance checks.
+Research datasets, retired models, training/evaluation tools, branch handoffs and standalone timing/memory diagnostics are local, ignored files. Existing local research tasks can be loaded from `tools/development.gradle` when that file is present. A fresh clone builds and tests without those files. Scientific regression fixtures under `src/test/resources/` remain tracked.

@@ -42,23 +42,22 @@ scripts/
 design/
 research/
 docs/
-tools/*
-!tools/neural/
-!tools/hybrid-learning/
-!tools/hybrid-diagnosis/
-!tools/training-curation/
-!tools/trace-followup/
-!tools/capacity-followup/
-!tools/decoder-floor-followup/
-!tools/neural-budget/
-!tools/path-dependent-infeasible/
-!tools/liquid-supply-screen/
-!tools/integration/
-!tools/benchmark-population/
+/tools/
 
 # Claude × Codex collaboration runtime files
 .collab/
 CLAUDE.md
 .claude/
-!tools/transformer-promotion/
-!tools/lnn-gap/
+
+# Local branch handoffs and standalone diagnostic tools
+/BRANCH_HANDOFF.md
+/BRANCH_HANDOFF_ARTIFACTS.json
+/src/test/diagnostics/
+/src/test/java/**/V3ContinuationInvestigationProbe.java
+/src/test/java/**/V3ContinuationProfile.java
+/src/test/java/**/V3DiagnosticFixtures.java
+/src/test/java/**/V3MainOptimizationProbe.java
+/src/test/java/**/V3MemoryProbe.java
+/src/test/java/**/V3MemoryProfileSummary.java
+/src/test/java/**/V3VerificationDiagnosticProbe.java
+/src/test/java/**/V3FlashOptimizationProbe.java
