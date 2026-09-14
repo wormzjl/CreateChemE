@@ -58,6 +58,17 @@ public final class V3ColumnCalculator {
     private static final int CONDENSER_PHASE_CORRECTOR_MAXIMUM_ITERATIONS = 24;
     private static final int DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS = 40;
     private static final int DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS = 32;
+    /**
+     * Wall-clock allowance of one {@link V3InitializationOptions.Recovery#RAMP_HANDOFF}, inside the caller's
+     * own request deadline and never inside the learned allowance.
+     *
+     * <p>The handoff walks the same authored-feature ramp the classical route walks, so what it may spend is
+     * bounded by what that route costs: the most expensive classical rescue measured on the validation
+     * population's learned-only gap is 8.8 s, continuation included, and the handoff skips the continuation.
+     * Bounding it here rather than at the request deadline is what keeps a handoff that will not close from
+     * eating the classical restart {@code LNN_FIRST} still owes the caller afterwards.</p>
+     */
+    static final long NEURAL_RAMP_HANDOFF_BUDGET_MILLIS = 8_000L;
     /** Bounded reinsertion/removal passes over the always-on relative flow floor within one attempt. */
     private static final int MAXIMUM_FLOOR_SUPPORT_REFRESHES = 3;
     /** Only one of those passes may follow a stalled attempt; a second stall in a row is not new information. */
@@ -253,7 +264,8 @@ public final class V3ColumnCalculator {
         V3ColumnOutcome.Failure coolingFailure = staticCoolingAdmission(input);
         if (coolingFailure != null) return coolingFailure;
         long started = System.nanoTime();
-        NeuralProgress progress = new NeuralProgress(trace);
+        NeuralProgress progress = new NeuralProgress(trace,
+                options.recovery() == V3InitializationOptions.Recovery.RAMP_HANDOFF);
         V3SolveControl neuralControl = () -> {
             control.checkpoint(); // Whole-request cancellation always wins over the local neural budget.
             if (System.nanoTime() - started >= options.budgetMilliseconds() * 1_000_000L)
@@ -275,6 +287,9 @@ public final class V3ColumnCalculator {
                 V3NeuralSeed[] acceptedCandidate = {null};
                 V3ColumnOutcome outcome;
                 try {
+                    // The recorder keeps the branch beside the state, so a handoff after the loop always
+                    // reads the two from the same candidate even when the budget interrupted it mid-attempt.
+                    progress.enteredCandidate(prediction.branch());
                     outcome = correctNeuralSeed(input, prediction, options, neuralControl,
                             new SolvePolicy(cutoff, cutoff, closure,
                                     observer == null ? null : seed -> acceptedCandidate[0] = seed, progress));
@@ -324,8 +339,28 @@ public final class V3ColumnCalculator {
         }
         if (lastFailure != null && (lastFailure.code() == V3SolverFailureCode.PROPERTY_OUT_OF_RANGE
                 || lastFailure.code() == V3SolverFailureCode.INFEASIBLE_SPECIFICATION)) return lastFailure;
+        // The learned route has nothing left of its own. Before LNN_ONLY publishes its failure, and before
+        // LNN_FIRST throws the learned state away and restarts cold, the requested recovery gets the state
+        // the correction reached. It is bounded by its own sub-wall inside the caller's request deadline,
+        // and it publishes only a fully audited requested-geometry result, so a handoff that does not close
+        // leaves every published field exactly as it was.
+        String handoffNote = "";
+        if (options.recovery() == V3InitializationOptions.Recovery.RAMP_HANDOFF
+                && featureRampRequired(input) && progress.terminalState() != null) {
+            long[] spent = {0L};
+            V3ColumnOutcome handoff = neuralRampHandoff(input, progress.terminalState(), progress.terminalBranch(),
+                    control, cutoff, closure, observer, spent);
+            // The learned allowance is what the correction spent; the handoff reports its own cost beside it.
+            long neuralMillis = (System.nanoTime() - started) / 1_000_000 - spent[0];
+            handoffNote = "; handoffMs=" + spent[0];
+            if (handoff != null) {
+                return initializationEvent(handoff, "initializer=LNN_RAMP_HANDOFF; model=" + modelId
+                        + "; neuralMs=" + Math.max(0, neuralMillis) + handoffNote + "; " + reason);
+            }
+        }
         String event = "initializer=" + (options.mode() == V3InitializationOptions.Mode.LNN_ONLY ? "LNN_FAILED" : "CURRENT_BACKUP")
-                + "; model=" + modelId + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000 + "; " + reason;
+                + "; model=" + modelId + "; neuralMs=" + (System.nanoTime() - started) / 1_000_000
+                + handoffNote + "; " + reason;
         if (options.mode() == V3InitializationOptions.Mode.LNN_ONLY)
             return initializationEvent(lastFailure != null ? lastFailure
                     : neuralFailure(reason, progress), event);
@@ -375,23 +410,115 @@ public final class V3ColumnCalculator {
                 : pass.solverEvents();
         V3SolverDiagnostics diagnostics = diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), events, policy);
         if (publishesSuccess(pass.attempt(), pass.audit()) && pass.reachedRequestedProblem()
-                && pass.prepared().problem().input().equals(input) && !pass.prepared().problem().wetTraySet().isParametric()) {
-            V3ColumnProblem selected = pass.prepared().problem();
-            V3DryMeshState corrected = pass.attempt().state();
-            String revision = formulationRevision(input, policy.requestedCutoff(), policy.closureTolerance());
-            V3ColumnResult result = V3ColumnResult.accepted(selected,
-                    V3InputDigest.of(selected, revision, thermo.datasetRevision(), assumptionsRevision(input),
-                            policy.requestedCutoff(), policy.closureTolerance()),
-                    pass.audit(), pass.attempt().evidence().convergenceEvidence(), corrected, thermo, revision,
-                    V3ColumnDutyLedger.fromAccepted(selected, corrected, thermo, pass.feedMolarEnthalpyJoulesPerMol()));
-            var success = new V3ColumnOutcome.Success(result, diagnostics);
-            if (policy.observer() != null)
-                policy.observer().accept(V3NeuralSeed.capture(selected, corrected, thermo.datasetRevision()));
-            return success;
+                && publishesRequestedGeometry(pass, input)) {
+            return acceptLearnedPass(input, pass, thermo, policy, diagnostics);
         }
         return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE,
                 "Learned seed did not reach an audited requested solution", diagnostics);
     }
+
+    /** An audited pass may publish only when it solved the authored request itself, every wet row included. */
+    private static boolean publishesRequestedGeometry(V3SolvePass pass, V3ColumnInput input) {
+        return pass.prepared().problem().input().equals(input)
+                && !pass.prepared().problem().wetTraySet().isParametric();
+    }
+
+    /**
+     * Publishes an audited requested-geometry pass of the learned route as an accepted result.
+     *
+     * <p>Both learned publications go through here — the correction that closed from the seed, and the ramp
+     * handoff that closed from a failed one — so an accepted result carries the same digest, duty ledger and
+     * exported profile whichever of the two reached it.</p>
+     */
+    private static V3ColumnOutcome.Success acceptLearnedPass(V3ColumnInput input, V3SolvePass pass,
+            V3PengRobinsonThermo thermo, SolvePolicy policy, V3SolverDiagnostics diagnostics) {
+        V3ColumnProblem selected = pass.prepared().problem();
+        V3DryMeshState corrected = pass.attempt().state();
+        String revision = formulationRevision(input, policy.requestedCutoff(), policy.closureTolerance());
+        V3ColumnResult result = V3ColumnResult.accepted(selected,
+                V3InputDigest.of(selected, revision, thermo.datasetRevision(), assumptionsRevision(input),
+                        policy.requestedCutoff(), policy.closureTolerance()),
+                pass.audit(), pass.attempt().evidence().convergenceEvidence(), corrected, thermo, revision,
+                V3ColumnDutyLedger.fromAccepted(selected, corrected, thermo, pass.feedMolarEnthalpyJoulesPerMol()));
+        var success = new V3ColumnOutcome.Success(result, diagnostics);
+        if (policy.observer() != null)
+            policy.observer().accept(V3NeuralSeed.capture(selected, corrected, thermo.datasetRevision()));
+        return success;
+    }
+
+    /**
+     * Continues a failed learned correction onto the classical authored-feature ramp.
+     *
+     * <p>The classical route never solves a column carrying side draws, stage heat or steam directly. It
+     * solves a feature-free surrogate at the requested geometry by cold stage continuation, and then walks
+     * the authored parameters up in bounded rungs from that accepted state. On the columns a learned seed
+     * stalls on, it is that ramp, not the continuation, that closes them: the terminal rung is typically a
+     * handful of Newton iterations. This replaces the continuation — the expensive half — with the state the
+     * learned correction already reached, and hands the result to the unchanged ramp.</p>
+     *
+     * <p>The surrogate is the same geometry, the same branch and the same active component basis as the
+     * request, so the failed iterate is a valid seed for it; {@link #continuationSeed} is the projection the
+     * ramp itself uses for its own first fixed-geometry handoff, and it drops the free water a dry surrogate
+     * cannot carry. Nothing here is published unless the ramp reaches the authored input and its own fresh
+     * audit and final Newton certificate accept it.</p>
+     *
+     * <p>Returns null when the handoff does not produce an accepted requested result, for any reason: the
+     * caller then publishes exactly what it would have published without it. {@code spentMillis} always
+     * receives what the attempt cost, so a failed handoff is still accounted for.</p>
+     */
+    private static V3ColumnOutcome neuralRampHandoff(V3ColumnInput input, V3DryMeshState terminal,
+            V3CondenserPhaseBranch branch, V3SolveControl control, double cutoff, double closure,
+            java.util.function.Consumer<V3NeuralSeed> observer, long[] spentMillis) {
+        long started = System.nanoTime();
+        try {
+            if (branch == null) return null;
+            // The caller's deadline still wins; this only stops the handoff from spending what the classical
+            // restart LNN_FIRST owes afterwards is going to need.
+            V3SolveControl handoffControl = () -> {
+                control.checkpoint();
+                if (System.nanoTime() - started >= NEURAL_RAMP_HANDOFF_BUDGET_MILLIS * 1_000_000L)
+                    throw new HandoffBudgetExceeded();
+            };
+            V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
+            // Dropping the authored features changes neither the stage geometry, the condenser branch nor the
+            // active component basis, so the surrogate's topology is the one the failed iterate belongs to.
+            V3ColumnProblem surrogate = V3ColumnProblemResolver.resolve(
+                    withoutPumparounds(withoutSteamWithSurrogateDuty(withoutSideDraws(input))), branch);
+            if (V3OperatingDomainValidator.assess(surrogate, thermo)
+                    instanceof V3OperatingDomainValidator.Assessment.Rejected) return null;
+            SolvePolicy policy = new SolvePolicy(cutoff, cutoff, closure, observer);
+            V3DryMeshState seed = continuationSeed(surrogate, surrogate.topology(), terminal, thermo, handoffControl);
+            V3SolvePass base = solveSingleProblem(surrogate, thermo, seed, handoffControl,
+                    "lnn/ramp-handoff/dry-surrogate/fine-fd", ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                    MAXIMUM_NEWTON_ITERATIONS, policy);
+            if (!publishesSuccess(base.attempt(), base.audit())) return null;
+            V3SolvePass ramped = recoverWithDrawRamp(V3ColumnProblemResolver.resolve(input,
+                            base.prepared().problem().topology().condenserPhaseBranch()),
+                    thermo, base, handoffControl, policy, new CondenserAttempts());
+            if (!publishesSuccess(ramped.attempt(), ramped.audit()) || !publishesRequestedGeometry(ramped, input))
+                return null;
+            String solvePath = ramped.solvePath();
+            if (ramped.prepared().problem().topology().condenserPhaseBranch() == V3CondenserPhaseBranch.LIQUID_ONLY)
+                solvePath += "/liquid-only-condenser";
+            if (!input.sideDraws().isEmpty()) solvePath += "/draws-" + input.sideDraws().size();
+            if (!input.steamFeeds().isEmpty()) solvePath += "/steam-" + input.steamFeeds().size();
+            if (!input.pumparounds().isEmpty()) solvePath += "/heat-" + input.pumparounds().size();
+            return acceptLearnedPass(input, ramped, thermo, policy,
+                    diagnostics(ramped.attempt(), ramped.audit(), solvePath, ramped.solverEvents(), policy));
+        } catch (CancellationException cancelled) {
+            throw cancelled;
+        } catch (RuntimeException unavailable) {
+            // Every failure mode of the ramp is a reason not to publish, never a reason to change what the
+            // learned route already decided to publish: its own sub-wall, a path-dependent heat bound, a
+            // thermodynamic rejection or an internal guard all land here and leave the caller untouched.
+            return null;
+        } finally {
+            spentMillis[0] = (System.nanoTime() - started) / 1_000_000L;
+        }
+    }
+
+    /** The ramp handoff's own wall-clock allowance, inside the caller's request deadline. */
+    private static final class HandoffBudgetExceeded extends RuntimeException {}
 
     /**
      * The rung budget of the learned correction: the default cascade, plus the requested early stop.
@@ -449,15 +576,24 @@ public final class V3ColumnCalculator {
      */
     private static final class NeuralProgress implements V3NewtonTrace {
         private final V3NewtonTrace observer;
+        /**
+         * Whether this pass keeps the last state it observed for a recovery. Off by default, so the frozen
+         * path does not even write the reference, and no recovery can read a state nobody asked to keep.
+         */
+        private final boolean capturesTerminalState;
         private int attempts;
         private int iterations;
         private int completedIterations;
         private double maximumScaledResidual = Double.NaN;
         private int supportRefreshes;
         private int wetTrayRefreshes;
+        private V3CondenserPhaseBranch candidateBranch;
+        private V3DryMeshState terminalState;
+        private V3CondenserPhaseBranch terminalBranch;
 
-        private NeuralProgress(V3NewtonTrace observer) {
+        private NeuralProgress(V3NewtonTrace observer, boolean capturesTerminalState) {
             this.observer = Objects.requireNonNull(observer, "observer");
+            this.capturesTerminalState = capturesTerminalState;
         }
 
         @Override
@@ -470,6 +606,31 @@ public final class V3ColumnCalculator {
         public void sampledState(int iteration, V3DryMeshState state, V3MeshResidual residual, double scaledMerit) {
             observer.sampledState(iteration, state, residual, scaledMerit);
             noteIteration(iteration, residual);
+            if (capturesTerminalState) {
+                terminalState = state;
+                terminalBranch = candidateBranch;
+            }
+        }
+
+        /** The condenser branch of the candidate whose correction is about to run. */
+        private void enteredCandidate(V3CondenserPhaseBranch branch) {
+            candidateBranch = branch;
+        }
+
+        /**
+         * The last iterate any attempt of this pass evaluated, or null when none ever did.
+         *
+         * <p>It is a reference to an immutable state the solver has already published to this trace, so
+         * keeping it costs one field. It is the state of a stalled, capped or budget-interrupted attempt and
+         * is never an accepted result: the pass that reaches this point failed.</p>
+         */
+        private V3DryMeshState terminalState() {
+            return terminalState;
+        }
+
+        /** The branch that state belongs to; always the candidate that produced it. */
+        private V3CondenserPhaseBranch terminalBranch() {
+            return terminalBranch;
         }
 
         @Override

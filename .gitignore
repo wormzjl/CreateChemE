@@ -60,3 +60,4 @@ tools/*
 CLAUDE.md
 .claude/
 !tools/transformer-promotion/
+!tools/lnn-gap/

@@ -27,17 +27,27 @@ public final class V3NeuralModels {
 
     public static V3NeuralInitializer bundled() { return Holder.MODEL; }
 
-    private static final class Holder {
-        private static final V3NeuralInitializer MODEL = load();
-        private static V3NeuralInitializer load() {
-            try (var stream = V3NeuralModels.class.getResourceAsStream(ARTIFACT)) {
-                if (stream != null) return V3AnchorTransformerInitializer.read(stream,
-                        V3FactorizedNeuralFeatures.DecodeOptions.zeroPhaseFloor(QUALIFIED_ZERO_PHASE_FLOOR_FACTOR));
-            } catch (IOException | IllegalArgumentException invalid) {
-                // A corrupt or absent artifact never disables the solver: LNN_FIRST retains classical fallback
-                // and LNN_ONLY publishes its own typed failure.
-            }
-            return V3NeuralInitializer.UNAVAILABLE;
+    /**
+     * The same bundled bytes under an explicitly stated decode and candidate rule.
+     *
+     * <p>The decoder rule and the candidate rule are properties of the loading caller, not of the artifact,
+     * so a study that measures another pair states it here rather than editing what the mod ships.
+     * {@link #bundled()} is this method at the qualified pair, and nothing else in production calls it.</p>
+     */
+    static V3NeuralInitializer load(V3FactorizedNeuralFeatures.DecodeOptions decode,
+            V3AnchorTransformerInitializer.CandidateRule candidates) {
+        try (var stream = V3NeuralModels.class.getResourceAsStream(ARTIFACT)) {
+            if (stream != null) return V3AnchorTransformerInitializer.read(stream, decode, candidates);
+        } catch (IOException | IllegalArgumentException invalid) {
+            // A corrupt or absent artifact never disables the solver: LNN_FIRST retains classical fallback
+            // and LNN_ONLY publishes its own typed failure.
         }
+        return V3NeuralInitializer.UNAVAILABLE;
+    }
+
+    private static final class Holder {
+        private static final V3NeuralInitializer MODEL = load(
+                V3FactorizedNeuralFeatures.DecodeOptions.zeroPhaseFloor(QUALIFIED_ZERO_PHASE_FLOOR_FACTOR),
+                V3AnchorTransformerInitializer.CandidateRule.SINGLE);
     }
 }

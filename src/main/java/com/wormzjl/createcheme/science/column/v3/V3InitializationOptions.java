@@ -4,9 +4,32 @@ import java.util.Objects;
 
 /** Immutable admission snapshot. Neural budgets never replace the caller's overall deadline. */
 public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumIterations, int budgetMilliseconds,
-        Correction correction) {
+        Correction correction, Recovery recovery) {
     public enum Mode { LNN_FIRST, LNN_ONLY, CURRENT_ONLY }
     public enum WetStart { AUTO, DRY_START, PREDICTED_WET }
+
+    /**
+     * What a failed learned correction may do with the state it reached, before its route ends.
+     *
+     * <p>{@link #NONE} is the frozen production rule and the default: a learned pass that fails publishes its
+     * failure, {@code LNN_ONLY} stops there and {@code LNN_FIRST} restarts classically from the original
+     * input with no state carried over.</p>
+     *
+     * <p>{@link #RAMP_HANDOFF} gives that terminal state one more use. An input carrying side draws, stage
+     * heat or steam is solved classically by continuing a feature-free surrogate up to the authored
+     * parameters in bounded rungs, and on the columns the learned seed cannot close by itself that ramp is
+     * what closes them. The handoff re-solves the same feature-free surrogate from the failed learned state
+     * instead of from a cold stage continuation, and, if that surrogate is accepted, hands it to the
+     * unchanged ramp. It is skipped entirely when the learned attempt never produced a state — a rejected
+     * seed, an out-of-coverage request or a request-only typed failure — and when the input carries none of
+     * the three features, because then there is no ramp to hand anything to.</p>
+     *
+     * <p>The handoff spends the caller's own request deadline, never the learned allowance, under its own
+     * declared sub-wall; it runs before the classical restart in {@code LNN_FIRST} and as the last step in
+     * {@code LNN_ONLY}. A handoff that fails changes nothing about what is published except the diagnostic
+     * event that records what it cost.</p>
+     */
+    public enum Recovery { NONE, RAMP_HANDOFF }
 
     /**
      * How one learned correction attempt is allowed to spend Newton iterations.
@@ -78,10 +101,17 @@ public record V3InitializationOptions(Mode mode, WetStart wetStart, int maximumI
         this(mode, wetStart, maximumIterations, budgetMilliseconds, Correction.WALLS);
     }
 
+    /** The frozen recovery rule; a caller that does not ask for one keeps the historical failure path. */
+    public V3InitializationOptions(Mode mode, WetStart wetStart, int maximumIterations, int budgetMilliseconds,
+            Correction correction) {
+        this(mode, wetStart, maximumIterations, budgetMilliseconds, correction, Recovery.NONE);
+    }
+
     public V3InitializationOptions {
         Objects.requireNonNull(mode, "mode");
         Objects.requireNonNull(wetStart, "wetStart");
         Objects.requireNonNull(correction, "correction");
+        Objects.requireNonNull(recovery, "recovery");
         if (maximumIterations < 1 || maximumIterations > V3ColumnCalculator.MAXIMUM_NEWTON_ITERATIONS
                 || budgetMilliseconds < 1 || budgetMilliseconds > 60_000) {
             throw new IllegalArgumentException("Invalid neural initialization budget");

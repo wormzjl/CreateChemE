@@ -24,11 +24,32 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
     private static final String REVISION = "v3-anchor-augmented-1";
     private static final V3CondenserPhaseBranch[] BRANCHES = {V3CondenserPhaseBranch.LIQUID_ONLY,
             V3CondenserPhaseBranch.TWO_PHASE, V3CondenserPhaseBranch.VAPOR_ONLY};
+
+    /**
+     * How many seeds one prediction offers the learned entry, out of the same frozen weights and the same
+     * single forward pass.
+     *
+     * <p>{@link #SINGLE} is the qualified production rule: the loading caller's decode of the best legal
+     * condenser branch, and nothing else. {@link #DECODE_VARIANTS} offers that seed first and then the same
+     * network outputs decoded by the unchanged prune rule, which is a different seed wherever the loading
+     * rule lifted a phase the phase-total head zeroed. The learned entry already tries candidates in order
+     * inside one shared allowance, so the second seed costs a decode and whatever correction time is left,
+     * never a second inference.</p>
+     *
+     * <p>A second condenser branch is deliberately not offered: the branch is a one-hot input to the network
+     * and to {@link V3NativeAnchor}, so a second branch is a second anchor build and a second forward pass,
+     * which is not free in the way a second decode is.</p>
+     */
+    enum CandidateRule { SINGLE, DECODE_VARIANTS }
+
     private final Document model;
     /** Decoder variant selected by the loading caller, never by the model bytes. */
     private final V3FactorizedNeuralFeatures.DecodeOptions decode;
-    private V3AnchorTransformerInitializer(Document model, V3FactorizedNeuralFeatures.DecodeOptions decode) {
-        this.model = model; this.decode = decode;
+    /** Candidate rule selected by the loading caller, never by the model bytes. */
+    private final CandidateRule candidateRule;
+    private V3AnchorTransformerInitializer(Document model, V3FactorizedNeuralFeatures.DecodeOptions decode,
+            CandidateRule candidateRule) {
+        this.model = model; this.decode = decode; this.candidateRule = candidateRule;
     }
 
     static V3AnchorTransformerInitializer read(InputStream stream) throws IOException {
@@ -36,7 +57,13 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
     }
 
     static V3AnchorTransformerInitializer read(InputStream stream, V3FactorizedNeuralFeatures.DecodeOptions decode) throws IOException {
+        return read(stream, decode, CandidateRule.SINGLE);
+    }
+
+    static V3AnchorTransformerInitializer read(InputStream stream, V3FactorizedNeuralFeatures.DecodeOptions decode,
+            CandidateRule candidateRule) throws IOException {
         if (decode == null) throw new IllegalArgumentException("Missing pipeline decode options");
+        if (candidateRule == null) throw new IllegalArgumentException("Missing pipeline candidate rule");
         byte[] bytes = stream.readNBytes(8 * 1024 * 1024 + 1);
         if (bytes.length > 8 * 1024 * 1024) throw new IllegalArgumentException("Transformer artifact exceeds size limit");
         Document m = new Gson().fromJson(new String(bytes, StandardCharsets.UTF_8), Document.class);
@@ -61,7 +88,7 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
                 || d.minimumNodePressurePascal <= 0 || d.maximumNodePressurePascal < d.minimumNodePressurePascal
                 || d.pumparoundSplits == null || d.pumparoundSplits.stream().anyMatch(s -> s == null))
             throw new IllegalArgumentException("Invalid design constraints");
-        var result = new V3AnchorTransformerInitializer(m, decode);
+        var result = new V3AnchorTransformerInitializer(m, decode, candidateRule);
         result.checkLinear("embed", inputs(m), 64); result.checkNorm("output.0"); result.checkLinear("output.1", 64, 85);
         result.checkLinear("branch.0", 74, 64); result.checkLinear("branch.2", 64, 3);
         for (int i = 0; i < 2; i++) {
@@ -93,13 +120,45 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
         control.checkpoint();
         if (!supported(input)) return Optional.empty();
         Raw raw = raw(input, control);
-        int best = -1;
-        boolean reflux = input.specifications().stream().anyMatch(s -> s instanceof V3ColumnSpecification.OrganicRefluxRatio r && r.ratio() > 0);
-        for (int i = 0; i < 3; i++) if (model.branchesSeen[i] && !(i == 2 && reflux)
-                && (best < 0 || raw.branchLogits[i] > raw.branchLogits[best])) best = i;
+        int best = bestBranch(input, raw.branchLogits);
         if (best < 0 || !Double.isFinite(raw.branchLogits[best])) return Optional.empty();
         try { return Optional.of(V3FactorizedNeuralFeatures.decode(input, model.propertyRevision, BRANCHES[best], raw.values, model.presenceThreshold, decode)); }
         catch (IllegalArgumentException invalid) { return Optional.empty(); }
+    }
+
+    /**
+     * The seeds this model offers one request, in the order the learned entry should try them.
+     *
+     * <p>{@link CandidateRule#SINGLE} is exactly {@link #predict}. Under {@link
+     * CandidateRule#DECODE_VARIANTS} the same forward pass is decoded twice: first by the loading caller's
+     * rule, then by the unchanged prune rule. The two are offered only when they are actually different
+     * rules, and a decode that the seed contract rejects is simply not offered rather than failing the
+     * request.</p>
+     */
+    @Override public List<V3NeuralSeed> candidates(V3ColumnInput input, V3SolveControl control) {
+        if (candidateRule == CandidateRule.SINGLE || decode.equals(V3FactorizedNeuralFeatures.DecodeOptions.NONE))
+            return predict(input, control).stream().toList();
+        control.checkpoint();
+        if (!supported(input)) return List.of();
+        Raw raw = raw(input, control);
+        int best = bestBranch(input, raw.branchLogits);
+        if (best < 0 || !Double.isFinite(raw.branchLogits[best])) return List.of();
+        var seeds = new java.util.ArrayList<V3NeuralSeed>(2);
+        for (var options : List.of(decode, V3FactorizedNeuralFeatures.DecodeOptions.NONE)) {
+            control.checkpoint();
+            try { seeds.add(V3FactorizedNeuralFeatures.decode(input, model.propertyRevision, BRANCHES[best], raw.values, model.presenceThreshold, options)); }
+            catch (IllegalArgumentException invalid) { /* an inadmissible decode is not offered, never thrown */ }
+        }
+        return List.copyOf(seeds);
+    }
+
+    /** Highest-scoring branch the model saw in training and the request's own specifications allow. */
+    private int bestBranch(V3ColumnInput input, double[] logits) {
+        int best = -1;
+        boolean reflux = input.specifications().stream().anyMatch(s -> s instanceof V3ColumnSpecification.OrganicRefluxRatio r && r.ratio() > 0);
+        for (int i = 0; i < 3; i++) if (model.branchesSeen[i] && !(i == 2 && reflux)
+                && (best < 0 || logits[i] > logits[best])) best = i;
+        return best;
     }
 
     boolean supported(V3ColumnInput input) {
@@ -127,10 +186,7 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
     Raw raw(V3ColumnInput input, V3SolveControl control) {
         double[] global = normalize(V3GeneralNeuralFeatures.global(input), "g");
         double[] branch = linear(gelu(linear(global, "branch.0", control)), "branch.2", control);
-        int best = -1;
-        boolean reflux = input.specifications().stream().anyMatch(s -> s instanceof V3ColumnSpecification.OrganicRefluxRatio r && r.ratio() > 0);
-        for (int i = 0; i < 3; i++) if (model.branchesSeen[i] && !(i == 2 && reflux)
-                && (best < 0 || branch[i] > branch[best])) best = i;
+        int best = bestBranch(input, branch);
         if (best < 0 || !Double.isFinite(branch[best])) throw new IllegalArgumentException("No legal branch");
         var anchor = V3NativeAnchor.build(input, BRANCHES[best], control);
         double[][] features = V3GeneralNeuralFeatures.nodes(input, V3CondenserPhaseBranch.TWO_PHASE);
