@@ -4,3 +4,13 @@ tools/neural/gen3-cache-manifest.json -text
 tools/neural/gen3-selection.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 tools/neural/gen3-model-card.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 src/main/resources/data/createcheme/neural/v3-general-gen3-factorized.json -text
+
+# Every frozen population, per-case journal and bundled model artifact in this repository is identified by
+# the SHA-256 of its bytes, and a campaign harness refuses to run when that hash does not match. On a
+# core.autocrlf=true checkout git rewrites their line endings and every one of those assertions fails, on
+# files whose committed blobs are correct. Pin the stored bytes instead.
+*.jsonl -text
+src/main/resources/data/createcheme/neural/*.json -text
+tools/transformer-promotion/inputs/warmup.json -text
+tools/benchmark-population/v1/*.json -text
+tools/benchmark-population/v1/**/*.json -text

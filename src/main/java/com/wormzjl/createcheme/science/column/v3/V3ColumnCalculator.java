@@ -626,19 +626,8 @@ public final class V3ColumnCalculator {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         Objects.requireNonNull(initializerMode, "initializerMode");
-        V3LiquidSupplyScreen.requireRatio(liquidSupplyScreenRatio);
-        double totalDraw = input.sideDraws().stream().mapToDouble(V3SideDrawSpec::molarFlowMolPerSecond).sum();
-        double totalFeed = java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum();
-        if (totalDraw >= totalFeed) {
-            return terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
-                    "V3 total side draw rate must be less than the feed rate", "input/draws-" + input.sideDraws().size(), List.of());
-        }
-        // Generalises the gate above from the column's total balance to each tray's own liquid supply, on the
-        // same request-only terms and still before any flash or property evaluation.
-        V3ColumnOutcome.Failure unsuppliedDraws = liquidSupplyScreen(input, liquidSupplyScreenRatio);
-        if (unsuppliedDraws != null) return unsuppliedDraws;
-        V3ColumnOutcome.Failure inadmissibleCooling = staticCoolingAdmission(input);
-        if (inadmissibleCooling != null) return inadmissibleCooling;
+        RequestAdmission admission = requestOnlyAdmission(input, liquidSupplyScreenRatio);
+        if (admission.typed()) return admission.failure();
         CondenserAttempts condenserAttempts = new CondenserAttempts();
         if (initializerMode != V3ColumnInitializer.Mode.SEQUENTIAL_MATERIAL_VLE) {
             return calculateBranch(input, control, initializerMode, V3CondenserPhaseBranch.TWO_PHASE, policy, condenserAttempts);
@@ -657,6 +646,69 @@ public final class V3ColumnCalculator {
         if (!condenserAttempts.allowsColdRecovery() || condenserAttempts.hasAttempted(alternate)) return outcome;
         V3ColumnOutcome alternative = calculateBranch(input, control, initializerMode, alternate, policy, condenserAttempts);
         return alternative instanceof V3ColumnOutcome.Success ? alternative : outcome;
+    }
+
+    /**
+     * The verdict of the request-only admission, naming the gate that typed the request.
+     *
+     * <p>{@code gate} is {@code null} exactly when {@code failure} is, i.e. when the request is admitted.</p>
+     */
+    record RequestAdmission(String gate, V3ColumnOutcome.Failure failure) {
+        /** The gate names published by {@link #requestOnlyAdmission}, in the order the solver applies them. */
+        static final String TOTAL_DRAW_AT_LEAST_TOTAL_FEED = "totalDrawAtLeastTotalFeed";
+        static final String LIQUID_SUPPLY_SCREEN = "liquidSupplyScreen";
+        static final String STATIC_COOLING_ADMISSION = "staticCoolingAdmission";
+
+        static final RequestAdmission ADMITTED = new RequestAdmission(null, null);
+
+        /** Whether the request is typed {@code INFEASIBLE_SPECIFICATION} from the specification alone. */
+        boolean typed() {
+            return failure != null;
+        }
+    }
+
+    /**
+     * Every gate that types a request {@code INFEASIBLE_SPECIFICATION} from the specification alone.
+     *
+     * <p>This is the whole of the solver's request-only admission and the only place it is evaluated: the
+     * ordinary {@code calculate} path calls exactly this method, so an offline population screen that calls it
+     * reproduces production's verdict by construction rather than by a second implementation that can drift.
+     * The gates run in the order a request meets them:</p>
+     *
+     * <ol>
+     *   <li>{@code totalDraw >= totalFeed}, the column's overall material balance;</li>
+     *   <li>{@link V3LiquidSupplyScreen}, the same balance per tray, at the authored calibrated ratio;</li>
+     *   <li>{@link #staticCoolingAdmission}, the necessary bound on authored pumparound cooling.</li>
+     * </ol>
+     *
+     * <p>No solve, continuation or Newton step is performed. The first two gates read nothing but the request;
+     * the third evaluates one feed flash, and answers {@code ADMITTED} when the property package is
+     * unavailable, so a caller never gets a cooling verdict it could not compute. The state-dependent heat
+     * bounds are deliberately absent: they are measured on a continuation state and publish
+     * {@code NONCONVERGENCE}. See {@link PathDependentHeatBound}.</p>
+     *
+     * @throws IllegalArgumentException if the screen ratio is nonfinite or outside [0, 1]
+     */
+    static RequestAdmission requestOnlyAdmission(V3ColumnInput input, double liquidSupplyScreenRatio) {
+        Objects.requireNonNull(input, "input");
+        V3LiquidSupplyScreen.requireRatio(liquidSupplyScreenRatio);
+        double totalDraw = input.sideDraws().stream().mapToDouble(V3SideDrawSpec::molarFlowMolPerSecond).sum();
+        double totalFeed = java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum();
+        if (totalDraw >= totalFeed) {
+            return new RequestAdmission(RequestAdmission.TOTAL_DRAW_AT_LEAST_TOTAL_FEED,
+                    terminalFailure(V3SolverFailureCode.INFEASIBLE_SPECIFICATION,
+                            "V3 total side draw rate must be less than the feed rate",
+                            "input/draws-" + input.sideDraws().size(), List.of()));
+        }
+        // Generalises the gate above from the column's total balance to each tray's own liquid supply, on the
+        // same request-only terms and still before any flash or property evaluation.
+        V3ColumnOutcome.Failure unsuppliedDraws = liquidSupplyScreen(input, liquidSupplyScreenRatio);
+        if (unsuppliedDraws != null) return new RequestAdmission(RequestAdmission.LIQUID_SUPPLY_SCREEN, unsuppliedDraws);
+        V3ColumnOutcome.Failure inadmissibleCooling = staticCoolingAdmission(input);
+        if (inadmissibleCooling != null) {
+            return new RequestAdmission(RequestAdmission.STATIC_COOLING_ADMISSION, inadmissibleCooling);
+        }
+        return RequestAdmission.ADMITTED;
     }
 
     /**
