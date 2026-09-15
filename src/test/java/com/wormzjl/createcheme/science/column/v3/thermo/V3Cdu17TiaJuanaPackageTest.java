@@ -15,9 +15,9 @@ class V3Cdu17TiaJuanaPackageTest {
         V3Cdu17TiaJuanaPackage propertyPackage = V3Cdu17TiaJuanaPackage.INSTANCE;
 
         assertEquals(16, propertyPackage.componentBasis().componentCount());
-        assertEquals("methane", propertyPackage.componentBasis().componentId(0));
-        assertEquals("C4_CDU", propertyPackage.componentBasis().componentId(3));
-        assertEquals("PC12", propertyPackage.componentBasis().componentId(15));
+        assertEquals("Methane", propertyPackage.componentBasis().componentId(0));
+        assertEquals("cdu17_c4", propertyPackage.componentBasis().componentId(3));
+        assertEquals("cdu17_pc12", propertyPackage.componentBasis().componentId(15));
         assertEquals(0.0, propertyPackage.crudeFeed(V3Cdu17TiaJuanaPackage.ASSAY_ID).moleFractions()[0]);
         assertEquals(1.0, java.util.Arrays.stream(
                 propertyPackage.crudeFeed(V3Cdu17TiaJuanaPackage.ASSAY_ID).moleFractions()).sum(), 1.0e-14);
@@ -58,7 +58,7 @@ class V3Cdu17TiaJuanaPackageTest {
         for (int offset = 0; offset < vectors.size(); offset++) {
             V3CharacterizationVectors.Vector vector = vectors.get(offset);
             V3PropertyComponent component = propertyPackage.component(offset + 4);
-            assertEquals(vector.id(), component.id());
+            assertEquals("cdu17_" + vector.id().toLowerCase(java.util.Locale.ROOT), component.id());
             assertEquals(vector.criticalTemperatureKelvin(), component.criticalTemperatureKelvin(),
                     vector.criticalTemperatureKelvin() * 1.0e-9);
             assertEquals(vector.criticalPressurePascal(), component.criticalPressurePascal(),

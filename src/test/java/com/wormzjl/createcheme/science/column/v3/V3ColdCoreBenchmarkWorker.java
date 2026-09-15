@@ -492,7 +492,7 @@ public final class V3ColdCoreBenchmarkWorker {
         Map<String, Double> values = new LinkedHashMap<>();
         for (V3ColumnStreamProperties stream : streams) {
             for (V3ColumnStreamProperties.ComponentFraction fraction : stream.moleFractions()) {
-                if (!"h2o".equals(fraction.componentId())) values.merge(fraction.componentId(),
+                if (!"Water".equals(fraction.componentId())) values.merge(fraction.componentId(),
                         stream.molarFlowMolPerSecond() * fraction.moleFraction(), Double::sum);
             }
         }
@@ -501,7 +501,7 @@ public final class V3ColdCoreBenchmarkWorker {
 
     private static double waterProducts(List<V3ColumnStreamProperties> streams) {
         return streams.stream().flatMap(stream -> stream.moleFractions().stream()
-                .filter(fraction -> "h2o".equals(fraction.componentId()))
+                .filter(fraction -> "Water".equals(fraction.componentId()))
                 .map(fraction -> stream.molarFlowMolPerSecond() * fraction.moleFraction()))
                 .mapToDouble(Double::doubleValue).sum();
     }

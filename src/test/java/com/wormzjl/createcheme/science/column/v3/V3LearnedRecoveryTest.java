@@ -352,7 +352,7 @@ class V3LearnedRecoveryTest {
             for (String line = reader.readLine(); line != null && result.size() < limit; line = reader.readLine()) {
                 if (line.isBlank()) continue;
                 JsonObject row = JsonParser.parseString(line).getAsJsonObject();
-                V3ColumnInput request = input(row.getAsJsonObject("input"));
+                V3ColumnInput request = V3MaterialInputs.migrate(input(row.getAsJsonObject("input")), com.wormzjl.createcheme.science.material.MaterialCatalog.bundled());
                 if (model.predict(request, V3SolveControl.UNBOUNDED).isPresent())
                     result.put(row.get("id").getAsString(), request);
             }

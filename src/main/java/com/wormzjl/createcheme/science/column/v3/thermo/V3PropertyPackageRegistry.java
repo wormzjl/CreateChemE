@@ -1,19 +1,12 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
-import java.util.Map;
+import com.wormzjl.createcheme.science.material.MaterialRuntime;
 
-/** Fixed first-party V3 property-package registry; runtime package loading is intentionally unsupported. */
+/** Resolves immutable package data from the current calculation's catalog snapshot. */
 final class V3PropertyPackageRegistry {
-    private static final Map<String, V3PropertyPackage> PACKAGES = Map.of(
-            V3Cdu17TiaJuanaPackage.PACKAGE_ID, V3Cdu17TiaJuanaPackage.INSTANCE,
-            V3Tjl19PropertyPackage.PACKAGE_ID, V3Tjl19PropertyPackage.INSTANCE,
-            V3Tjl20MethanePropertyPackage.PACKAGE_ID, V3Tjl20MethanePropertyPackage.INSTANCE);
-
     private V3PropertyPackageRegistry() {}
 
     static V3PropertyPackage require(String packageId) {
-        V3PropertyPackage propertyPackage = PACKAGES.get(packageId);
-        if (propertyPackage == null) throw new IllegalArgumentException("Unsupported V3 property package: " + packageId);
-        return propertyPackage;
+        return new V3CatalogPropertyPackage(MaterialRuntime.current(),packageId);
     }
 }

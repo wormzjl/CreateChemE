@@ -112,7 +112,7 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
     @Override public String modelId() { return model.modelId; }
 
     /** The property dataset this model's targets were labelled against; a mismatch is not corrected. */
-    String propertyRevision() { return model.propertyRevision; }
+    String propertyRevision() { return com.wormzjl.createcheme.science.material.MaterialCatalog.bundled().requirePackage(model.packageId).scientificRevision(); }
 
     long parameterCount() { return parameterStorageBytes() / Double.BYTES; }
 
@@ -122,7 +122,7 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
         Raw raw = raw(input, control);
         int best = bestBranch(input, raw.branchLogits);
         if (best < 0 || !Double.isFinite(raw.branchLogits[best])) return Optional.empty();
-        try { return Optional.of(V3FactorizedNeuralFeatures.decode(input, model.propertyRevision, BRANCHES[best], raw.values, model.presenceThreshold, decode)); }
+        try { return Optional.of(V3FactorizedNeuralFeatures.decode(input, propertyRevision(), BRANCHES[best], raw.values, model.presenceThreshold, decode)); }
         catch (IllegalArgumentException invalid) { return Optional.empty(); }
     }
 
@@ -146,7 +146,7 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
         var seeds = new java.util.ArrayList<V3NeuralSeed>(2);
         for (var options : List.of(decode, V3FactorizedNeuralFeatures.DecodeOptions.NONE)) {
             control.checkpoint();
-            try { seeds.add(V3FactorizedNeuralFeatures.decode(input, model.propertyRevision, BRANCHES[best], raw.values, model.presenceThreshold, options)); }
+            try { seeds.add(V3FactorizedNeuralFeatures.decode(input, propertyRevision(), BRANCHES[best], raw.values, model.presenceThreshold, options)); }
             catch (IllegalArgumentException invalid) { /* an inadmissible decode is not offered, never thrown */ }
         }
         return List.copyOf(seeds);
@@ -162,6 +162,8 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
     }
 
     boolean supported(V3ColumnInput input) {
+        if (!com.wormzjl.createcheme.science.material.MaterialRuntime.isBundledScience(input.packageId())
+                || !com.wormzjl.createcheme.science.material.MaterialRuntime.current().requirePackage(input.packageId()).fingerprint().equals(model.propertyFingerprint)) return false;
         if (!input.packageId().equals(model.packageId) || !input.componentBasis().componentIds().equals(model.components)
                 || input.stageCount() < 2 || input.stageCount() > 64 || input.feedStageNumber() < 1 || input.feedStageNumber() > input.stageCount()
                 || input.pumparounds().size() > 4 || input.sideDraws().size() > 3 || input.steamFeeds().size() > 2
@@ -291,7 +293,7 @@ final class V3AnchorTransformerInitializer implements V3NeuralInitializer {
     private static final class Tensor { int[] shape; double[] values; }
     private static final class Design { double minimumNodePressurePascal, maximumNodePressurePascal; boolean steamAtSumpOnly; List<V3PumparoundSpec.Split> pumparoundSplits; }
     private static final class Document {
-        String featureRevision, modelType, modelId, packageId, propertyRevision, anchorLayout;
+        String featureRevision, modelType, modelId, packageId, propertyRevision, propertyFingerprint, anchorLayout;
         List<String> components, formulationRevisions; boolean[] branchesSeen;
         double presenceThreshold, traceFloorFraction; double[] globalMin, globalMax;
         Map<String, double[]> normalization; Map<String, Tensor> weights; Design designConstraints;

@@ -91,7 +91,7 @@ class V3SteamFeedContractTest {
 
         V3ColumnStreamProperties overhead = streams.stream().filter(stream -> stream.streamId().equals("overhead_vapor"))
                 .findFirst().orElseThrow();
-        assertEquals(4.0 / 14.0, fraction(overhead, "h2o").moleFraction(), 1.0e-12);
+        assertEquals(4.0 / 14.0, fraction(overhead, "Water").moleFraction(), 1.0e-12);
         assertTrue(fraction(overhead, "methane").moleFraction() > 0.0);
         assertTrue(fraction(overhead, "n-pentane").moleFraction() > 0.0);
         assertFalse(streams.stream().anyMatch(stream -> stream.streamId().equals("free_water")));
@@ -106,16 +106,16 @@ class V3SteamFeedContractTest {
                 new double[] {0.016, 0.072});
         V3ColumnStreamProperties overhead = streams.stream().filter(stream -> stream.streamId().equals("overhead_vapor"))
                 .findFirst().orElseThrow();
-        assertTrue(overhead.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("h2o")
+        assertTrue(overhead.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("Water")
                 && fraction.moleFraction() > 0.0));
         V3ColumnStreamProperties freeWater = streams.stream()
                 .filter(stream -> stream.streamId().equals("free_water")).findFirst().orElseThrow(
                         () -> new AssertionError("streams=" + streams));
         assertTrue(freeWater.molarFlowMolPerSecond() > 0.0);
-        assertEquals(List.of(new V3ColumnStreamProperties.ComponentFraction("h2o", 1.0, 1.0)), freeWater.moleFractions());
+        assertEquals(List.of(new V3ColumnStreamProperties.ComponentFraction("Water", 1.0, 1.0)), freeWater.moleFractions());
         V3ColumnStreamProperties distillate = streams.stream().filter(stream -> stream.streamId().equals("distillate_liquid"))
                 .findFirst().orElseThrow();
-        assertFalse(distillate.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("h2o")));
+        assertFalse(distillate.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("Water")));
     }
 
     @Test
@@ -145,7 +145,7 @@ class V3SteamFeedContractTest {
         V3ColumnStreamProperties overhead = streams.stream().filter(stream -> stream.streamId().equals("overhead_vapor"))
                 .findFirst().orElseThrow(() -> new AssertionError("streams=" + streams));
         assertEquals(4.0, overhead.molarFlowMolPerSecond());
-        assertEquals(List.of(new V3ColumnStreamProperties.ComponentFraction("h2o", 1.0, 1.0)), overhead.moleFractions());
+        assertEquals(List.of(new V3ColumnStreamProperties.ComponentFraction("Water", 1.0, 1.0)), overhead.moleFractions());
         assertFalse(streams.stream().anyMatch(stream -> stream.streamId().equals("free_water")));
 
         ZeroEnthalpyThermo thermo = new ZeroEnthalpyThermo(input.componentBasis());

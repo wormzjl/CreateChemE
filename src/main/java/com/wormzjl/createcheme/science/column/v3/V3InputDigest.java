@@ -72,7 +72,7 @@ public record V3InputDigest(String hexadecimalSha256) {
         }
         // Empty-list placement is intentional: dry digests retain their historical byte stream.
         if (!input.steamFeeds().isEmpty()) {
-            put(digest, "water-data-revision", V3WaterProperties.DATA_REVISION);
+            put(digest, "water-data-revision", V3WaterProperties.revision());
             for (V3SteamFeedSpec steam : input.steamFeeds()) {
                 put(digest, "steam-stage", steam.stageNumber());
                 put(digest, "steam-rate-bits", canonicalBits(steam.molarFlowMolPerSecond()));

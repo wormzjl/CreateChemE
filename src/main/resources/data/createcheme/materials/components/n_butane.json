@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "N-butane",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.n_butane",
+  "fallback": "N-butane",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

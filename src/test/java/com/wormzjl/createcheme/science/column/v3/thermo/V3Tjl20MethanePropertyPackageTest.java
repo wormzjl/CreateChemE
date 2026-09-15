@@ -8,7 +8,7 @@ class V3Tjl20MethanePropertyPackageTest {
     @Test void extendsTheFrozenDatasetWithoutChangingItsPropertiesOrInteractions() {
         var base = V3Tjl19PropertyPackage.INSTANCE;
         var extended = V3Tjl20MethanePropertyPackage.INSTANCE;
-        assertSame(extended, V3PropertyPackageRegistry.require(extended.packageId()));
+        assertEquals(extended.componentBasis(), V3PropertyPackageRegistry.require(extended.packageId()).componentBasis());
         assertEquals(20, extended.componentBasis().componentCount());
         assertNotEquals(base.datasetRevision(), extended.datasetRevision());
         double[][] original = base.binaryInteractions();

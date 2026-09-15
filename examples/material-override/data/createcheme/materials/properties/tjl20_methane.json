@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:tjl20_methane",
+  "component": "Methane",
+  "revision": "tjl20-methane-nist-r1",
+  "source": "Example override: illustrative hypothetical liquid density; not a measured dataset",
+  "molecular_weight_kg_per_mol": 0.0160428,
+  "normal_boiling_point_kelvin": 111.66,
+  "standard_liquid_density_kg_per_m3": 357.0,
+  "standard_temperature_kelvin": 288.7055555556,
+  "standard_pressure_pascal": 101325,
+  "temperature_min_kelvin": 298.15,
+  "temperature_max_kelvin": 900.0,
+  "estimated_heavy_residue": false,
+  "ideal_gas_cp": {
+    "type": "shifted_polynomial_5",
+    "reference_kelvin": 298.15,
+    "coefficients": [
+      35.605746481777615,
+      0.037000414354219455,
+      0.0001459299391720176,
+      -4.216765855568231e-07,
+      5.351033897511078e-10,
+      -2.715203964835217e-13
+    ]
+  },
+  "models": {
+    "pr78": {
+      "critical_temperature_kelvin": 190.564,
+      "critical_pressure_pascal": 4599200.0,
+      "acentric_factor": 0.01142
+    }
+  }
+}

@@ -144,7 +144,7 @@ public record V3ColumnStreamProperties(
         }
         double water = problem.waterVaporFlow(state, node);
         double total = hydrocarbonTotal + water;
-        double totalMass = hydrocarbonMass + water * V3WaterProperties.MOLAR_MASS_KG_PER_MOL;
+        double totalMass = hydrocarbonMass + water * V3WaterProperties.molarMass();
         // H2O belongs to the molecular vapor mixture here. It is deliberately absent from every
         // hydrocarbon-liquid composition; condensed water is published by freeWaterStream instead.
         List<ComponentFraction> fractions = new ArrayList<>(hydrocarbon.length + 1);
@@ -152,8 +152,8 @@ public record V3ColumnStreamProperties(
             fractions.add(new ComponentFraction(active.publicBasis().componentId(component), hydrocarbon[component] / total,
                     hydrocarbon[component] * molecularWeight.applyAsDouble(component) / totalMass));
         }
-        fractions.add(new ComponentFraction("h2o", water / total,
-                water * V3WaterProperties.MOLAR_MASS_KG_PER_MOL / totalMass));
+        fractions.add(new ComponentFraction("Water", water / total,
+                water * V3WaterProperties.molarMass() / totalMass));
         return new V3ColumnStreamProperties(streamId, displayName, phase, total, totalMass,
                 state.temperatureKelvin(node), problem.nodePressurePascal(node), 1.0, fractions);
     }
@@ -161,16 +161,16 @@ public record V3ColumnStreamProperties(
     private static V3ColumnStreamProperties freeWaterStream(V3ColumnProblem problem, V3DryMeshState state, double flow) {
         int node = problem.topology().condenserNode();
         return new V3ColumnStreamProperties("free_water", "Free water (drum)", "LIQUID", flow,
-                flow * V3WaterProperties.MOLAR_MASS_KG_PER_MOL, state.temperatureKelvin(node),
-                problem.nodePressurePascal(node), 0.0, List.of(new ComponentFraction("h2o", 1.0, 1.0)));
+                flow * V3WaterProperties.molarMass(), state.temperatureKelvin(node),
+                problem.nodePressurePascal(node), 0.0, List.of(new ComponentFraction("Water", 1.0, 1.0)));
     }
 
     private static V3ColumnStreamProperties waterVaporProduct(V3ColumnProblem problem, V3DryMeshState state) {
         int node = problem.topology().condenserNode();
         double flow = problem.waterCondenserSplit(state).vaporFlowMolPerSecond();
         return new V3ColumnStreamProperties("overhead_vapor", "Overhead steam", "VAPOR", flow,
-                flow * V3WaterProperties.MOLAR_MASS_KG_PER_MOL, state.temperatureKelvin(node),
-                problem.nodePressurePascal(node), 1.0, List.of(new ComponentFraction("h2o", 1.0, 1.0)));
+                flow * V3WaterProperties.molarMass(), state.temperatureKelvin(node),
+                problem.nodePressurePascal(node), 1.0, List.of(new ComponentFraction("Water", 1.0, 1.0)));
     }
 
     private static V3ColumnStreamProperties stream(

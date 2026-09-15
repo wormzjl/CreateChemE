@@ -49,8 +49,8 @@ final class V3HeatFeasibility {
                 + specification(input, V3ColumnSpecification.ReboilerDuty.class).watts();
         for (V3SteamFeedSpec steam : input.steamFeeds()) {
             available += steam.molarFlowMolPerSecond() * (V3WaterProperties.vaporMolarEnthalpy(steam.temperatureKelvin())
-                    - V3WaterProperties.liquidMolarEnthalpy(Math.max(V3WaterProperties.TRIPLE_POINT_KELVIN,
-                            Math.min(condenserTemperature, V3WaterProperties.CRITICAL_TEMPERATURE_KELVIN - 1.0))));
+                    - V3WaterProperties.liquidMolarEnthalpy(Math.max(V3WaterProperties.triplePoint(),
+                            Math.min(condenserTemperature, V3WaterProperties.criticalTemperature() - 1.0))));
         }
         return available;
     }

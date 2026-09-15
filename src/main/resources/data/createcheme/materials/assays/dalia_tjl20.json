@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:dalia",
+  "package": "createcheme:dalia_tjl20",
+  "components": [
+    "Methane",
+    "Ethane",
+    "Propane",
+    "Isobutane",
+    "N-butane",
+    "Isopentane",
+    "N-pentane",
+    "tjl19_pc01",
+    "tjl19_pc02",
+    "tjl19_pc03",
+    "tjl19_pc04",
+    "tjl19_pc05",
+    "tjl19_pc06",
+    "tjl19_pc07",
+    "tjl19_pc08",
+    "tjl19_pc09",
+    "tjl19_pc10",
+    "tjl19_pc11",
+    "tjl19_pc12",
+    "tjl19_pc13"
+  ],
+  "basis": "mass",
+  "amounts": [
+    0.0,
+    0.0,
+    0.0,
+    0.0004,
+    0.0014000000000000002,
+    0.0013,
+    0.0015,
+    0.0044000226896855,
+    0.02401985072743516,
+    0.03693307704727691,
+    0.055848807942953986,
+    0.07898762716331209,
+    0.09777189759767997,
+    0.10625360656274474,
+    0.12643196932499845,
+    0.15205692516303287,
+    0.15850614013147685,
+    0.11438758159739768,
+    0.03188575896557166,
+    0.007916735086434212
+  ],
+  "provenance": {
+    "source_reference": "DALIA26Y",
+    "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/dalia.pdf",
+    "source_pdf_sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+    "source_whole_crude": {
+      "density_15c_kg_per_m3": 917.8,
+      "sulfur_mass_percent": 0.52,
+      "nitrogen_mass_ppm": 2338.0,
+      "nickel_mass_ppm": 20.3,
+      "vanadium_mass_ppm": 8.4,
+      "iron_mass_ppm": 6.3,
+      "sodium_mass_ppm": 1.0,
+      "mercury_mass_ppb": 1.0,
+      "arsenic_mass_ppb": 135.0
+    },
+    "residual_mass_rounding_scale": 1.0012070006035003,
+    "tail": {
+      "model": "exponential_survival_constrained_by_residue_vabp",
+      "estimated_above_celsius": 590,
+      "scale_celsius": 89.3793103448276,
+      "remaining_at_590_volume_percent": 17.400000000000006,
+      "residue_550_plus_mean_celsius": 653.0,
+      "estimated_mass_percent_above_590": 19.170709415922396
+    }
+  },
+  "appearance": {
+    "color": "#201A16",
+    "transparency": 0.01,
+    "estimated": true
+  }
+}

@@ -242,6 +242,14 @@ public final class V3ColumnCalculator {
             double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
             java.util.function.Consumer<V3NeuralSeed> observer, double liquidSupplyScreenRatio,
             V3NewtonTrace trace) {
+        return com.wormzjl.createcheme.science.material.MaterialRuntime.pinned(input.packageId(),
+                () -> calculateInCatalog(input, control, cutoff, closureFraction, options, model, observer, liquidSupplyScreenRatio, trace));
+    }
+
+    private static V3ColumnOutcome calculateInCatalog(V3ColumnInput input, V3SolveControl control,
+            double cutoff, double closureFraction, V3InitializationOptions options, V3NeuralInitializer model,
+            java.util.function.Consumer<V3NeuralSeed> observer, double liquidSupplyScreenRatio,
+            V3NewtonTrace trace) {
         Objects.requireNonNull(input, "input");
         Objects.requireNonNull(control, "control");
         Objects.requireNonNull(options, "options");
@@ -783,6 +791,13 @@ public final class V3ColumnCalculator {
     }
 
     private static V3ColumnOutcome calculate(
+            V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode, SolvePolicy policy,
+            double liquidSupplyScreenRatio) {
+        return com.wormzjl.createcheme.science.material.MaterialRuntime.pinned(input.packageId(),
+                () -> calculateInCatalog(input, control, initializerMode, policy, liquidSupplyScreenRatio));
+    }
+
+    private static V3ColumnOutcome calculateInCatalog(
             V3ColumnInput input, V3SolveControl control, V3ColumnInitializer.Mode initializerMode, SolvePolicy policy,
             double liquidSupplyScreenRatio) {
         Objects.requireNonNull(input, "input");
@@ -2417,7 +2432,7 @@ public final class V3ColumnCalculator {
         for (int node = 1; node <= problem.topology().reboilerNode(); node++) {
             double water = problem.waterVaporFlow(state, node);
             double temperature = state.temperatureKelvin(node);
-            if (water == 0.0 || temperature >= 640.0 || temperature < V3WaterProperties.TRIPLE_POINT_KELVIN) continue;
+            if (water == 0.0 || temperature >= 640.0 || temperature < V3WaterProperties.triplePoint()) continue;
             double hydrocarbon = 0.0;
             for (int component = 0; component < state.componentCount(); component++) hydrocarbon += state.vaporFlow(node, component);
             maximumRatio = Math.max(maximumRatio, problem.nodePressurePascal(node) * water / (hydrocarbon + water)

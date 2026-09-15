@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "Water",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.water",
+  "fallback": "Water",
+  "appearance": {
+    "color": "#B9E4F2",
+    "transparency": 0.75,
+    "estimated": true
+  }
+}

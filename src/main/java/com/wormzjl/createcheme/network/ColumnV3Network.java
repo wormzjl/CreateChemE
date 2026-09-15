@@ -22,6 +22,8 @@ import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity;
+import com.wormzjl.createcheme.world.level.block.entity.ColumnInputPreset;
+import com.wormzjl.createcheme.science.material.MaterialRuntime;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Operation;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3State;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Status;
@@ -53,10 +55,10 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 8;
+    public static final int WIRE_SCHEMA_VERSION = 10;
 
     // Version 5 removes the legacy calculator packet family; both peers must use the V3-only protocol.
-    private static final String PROTOCOL_VERSION = "5";
+    private static final String PROTOCOL_VERSION = "7";
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -104,10 +106,10 @@ public final class ColumnV3Network {
         return nonce;
     }
 
-    /** Requests either fixed Holland Example 3-2 or the production Tia Juana draft from the server. */
-    public static long sendPreset(BlockPos blockPos, long expectedInputRevision, boolean holland) {
+    /** Requests one allowlisted input; the server resolves the catalog feed. */
+    public static long sendPreset(BlockPos blockPos, long expectedInputRevision, ColumnInputPreset preset) {
         long nonce = CLIENT_NONCE_SEQUENCE.incrementAndGet();
-        PacketDistributor.sendToServer(new PresetPayload(blockPos, nonce, expectedInputRevision, holland));
+        PacketDistributor.sendToServer(new PresetPayload(blockPos, nonce, expectedInputRevision, preset.id()));
         return nonce;
     }
 
@@ -185,18 +187,16 @@ public final class ColumnV3Network {
             reject(context, payload.blockPos(), payload.clientNonce(), "REJECTED_CONTEXT");
             return;
         }
-        V3ColumnInput preset = payload.holland()
-                ? V3HollandExample32.input() : ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        V3ColumnInput preset;
         try {
+            preset = ColumnInputPreset.fromId(payload.presetId()).input(MaterialRuntime.current());
             validateResolvedInput(preset);
         } catch (IllegalArgumentException invalid) {
             reject(context, payload.blockPos(), payload.clientNonce(),
                     "REJECTED_PRESET: " + bounded(invalid.getMessage()));
             return;
         }
-        String detail = payload.holland()
-                ? "Loaded fixed Holland (1981) Example 3-2 benchmark"
-                : "Loaded Tia Juana Light production draft";
+        String detail = "Loaded " + ColumnInputPreset.fromId(payload.presetId()).label() + " input preset";
         if (!calculator.tryLoadPreset(payload.expectedInputRevision(), preset, detail)) {
             reject(context, payload.blockPos(), payload.clientNonce(), "STALE_REVISION_OR_BUSY");
             return;
@@ -287,6 +287,16 @@ public final class ColumnV3Network {
                     && player.containerMenu instanceof ColumnCalculatorV3Menu menu
                     && menu.blockPos().equals(target.blockPos()) && menu.stillValid(player)) {
                 PacketDistributor.sendToPlayer(player, new StatePayload(target.blockPos(), state));
+            }
+        }
+    }
+
+    /** Refresh open calculators once after catalog publication, including naming-only changes. */
+    public static void refreshMaterialViewers(MinecraftServer server) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (player.containerMenu instanceof ColumnCalculatorV3Menu menu && menu.stillValid(player)) {
+                var calculator=resolveCalculator(player,menu.blockPos());
+                if(calculator!=null)PacketDistributor.sendToPlayer(player,new StatePayload(menu.blockPos(),calculator.state(0)));
             }
         }
     }
@@ -410,7 +420,7 @@ public final class ColumnV3Network {
     }
 
     private record PresetPayload(
-            BlockPos blockPos, long clientNonce, long expectedInputRevision, boolean holland)
+            BlockPos blockPos, long clientNonce, long expectedInputRevision, String presetId)
             implements CustomPacketPayload {
         private static final Type<PresetPayload> TYPE = new Type<>(
                 ResourceLocation.fromNamespaceAndPath(CreateChemE.MOD_ID, "load_column_v3_preset"));
@@ -420,7 +430,7 @@ public final class ColumnV3Network {
                 requireWireSchema(buffer);
                 return new PresetPayload(buffer.readBlockPos(),
                         nonNegative(buffer.readVarLong(), "client nonce"),
-                        nonNegative(buffer.readVarLong(), "input revision"), buffer.readBoolean());
+                        nonNegative(buffer.readVarLong(), "input revision"), readPresetId(buffer));
             }
 
             @Override
@@ -429,12 +439,13 @@ public final class ColumnV3Network {
                 buffer.writeBlockPos(payload.blockPos());
                 buffer.writeVarLong(payload.clientNonce());
                 buffer.writeVarLong(payload.expectedInputRevision());
-                buffer.writeBoolean(payload.holland());
+                buffer.writeUtf(payload.presetId(), 64);
             }
         };
 
         private PresetPayload {
             blockPos = Objects.requireNonNull(blockPos, "blockPos");
+            ColumnInputPreset.fromId(presetId);
             if (clientNonce < 0L || expectedInputRevision < 0L) {
                 throw new IllegalArgumentException("Invalid V3 preset request revision");
             }
@@ -444,6 +455,12 @@ public final class ColumnV3Network {
         public Type<? extends CustomPacketPayload> type() {
             return TYPE;
         }
+    }
+
+    private static String readPresetId(RegistryFriendlyByteBuf buffer) {
+        String id = buffer.readUtf(64);
+        try { return ColumnInputPreset.fromId(id).id(); }
+        catch (IllegalArgumentException invalid) { throw new DecoderException("Unknown column input preset", invalid); }
     }
 
     private record StateRequestPayload(BlockPos blockPos, long clientNonce) implements CustomPacketPayload {
@@ -549,6 +566,16 @@ public final class ColumnV3Network {
         state.displayResult().ifPresent(result -> writeDisplayResult(buffer, result));
         buffer.writeVarInt(state.diagnostics().size());
         for (String diagnostic : state.diagnostics()) buffer.writeUtf(diagnostic, MAX_DIAGNOSTIC_LENGTH);
+        buffer.writeVarInt(state.materialNames().size());
+        for (var entry : new java.util.TreeMap<>(state.materialNames()).entrySet()) {
+            buffer.writeUtf(entry.getKey(),64);
+            var n=entry.getValue();
+            buffer.writeUtf(n.id(),64); buffer.writeUtf(n.translationKey(),128); buffer.writeUtf(n.fallback(),128);
+            buffer.writeUtf(n.kind(),32);
+            buffer.writeBoolean(n.lowerKelvin()!=null); if(n.lowerKelvin()!=null)buffer.writeDouble(n.lowerKelvin());
+            buffer.writeBoolean(n.upperKelvin()!=null); if(n.upperKelvin()!=null)buffer.writeDouble(n.upperKelvin());
+            buffer.writeBoolean(n.estimated());
+        }
     }
 
     private static V3State readState(RegistryFriendlyByteBuf buffer) {
@@ -571,8 +598,16 @@ public final class ColumnV3Network {
         List<String> diagnostics = new ArrayList<>(count);
         for (int index = 0; index < count; index++) diagnostics.add(buffer.readUtf(MAX_DIAGNOSTIC_LENGTH));
         try {
+            var names=new java.util.LinkedHashMap<String,com.wormzjl.createcheme.science.material.MaterialName>();
+            int nameCount=readCount(buffer,2*V3ColumnStreamProperties.MAX_COMPONENTS,"material name");
+            for(int i=0;i<nameCount;i++) {
+                String key=buffer.readUtf(64), id=buffer.readUtf(64), translation=buffer.readUtf(128), fallback=buffer.readUtf(128), kind=buffer.readUtf(32);
+                Double lower=buffer.readBoolean()?buffer.readDouble():null, upper=buffer.readBoolean()?buffer.readDouble():null;
+                var name=new com.wormzjl.createcheme.science.material.MaterialName(id,translation,fallback,kind,lower,upper,buffer.readBoolean());
+                if(names.putIfAbsent(key,name)!=null)throw new DecoderException("Duplicate material name key");
+            }
             return new V3State(clientNonce, stateRevision, operationId, inputRevision, resultRevision, status, input,
-                    result, diagnostics);
+                    result, diagnostics,names);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 state", invalid);
         }

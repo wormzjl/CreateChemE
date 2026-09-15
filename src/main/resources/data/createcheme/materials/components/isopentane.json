@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "Isopentane",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.isopentane",
+  "fallback": "Isopentane",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

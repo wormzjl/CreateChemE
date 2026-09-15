@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "tjl19_pc08",
+  "kind": "petroleum_fraction",
+  "translation_key": "material.createcheme.tjl19_pc08",
+  "fallback": "Crude oil",
+  "cut": {
+    "estimated": true,
+    "derivation": "adjacent_nbp_midpoints",
+    "series": "tjl19",
+    "lower_kelvin": 651.0249814474507,
+    "upper_kelvin": 708.93315706082
+  },
+  "appearance": {
+    "color": "#8F7F57",
+    "transparency": 0.183,
+    "estimated": true
+  }
+}

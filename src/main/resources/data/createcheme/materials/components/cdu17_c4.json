@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "cdu17_c4",
+  "kind": "lump",
+  "translation_key": "material.createcheme.cdu17_c4",
+  "fallback": "C4 blend",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

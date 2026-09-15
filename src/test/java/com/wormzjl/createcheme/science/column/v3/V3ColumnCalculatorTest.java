@@ -95,7 +95,7 @@ class V3ColumnCalculatorTest {
         V3ColumnStreamProperties overhead = success.result().streams().stream()
                 .filter(stream -> stream.streamId().equals("overhead_vapor")).findFirst().orElseThrow();
         assertTrue(overhead.moleFractions().stream()
-                .anyMatch(fraction -> fraction.componentId().equals("h2o") && fraction.moleFraction() > 0.0));
+                .anyMatch(fraction -> fraction.componentId().equals("Water") && fraction.moleFraction() > 0.0));
     }
 
     @Test
@@ -142,7 +142,7 @@ class V3ColumnCalculatorTest {
         assertTrue(success.result().acceptanceAudit().accepted());
         assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")
-                && stream.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("h2o")
+                && stream.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("Water")
                 && fraction.moleFraction() > 0.0)));
         assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("free_water")));
     }
@@ -167,7 +167,7 @@ class V3ColumnCalculatorTest {
         assertTrue(success.result().acceptanceAudit().accepted());
         assertEquals(V3CondenserPhaseBranch.TWO_PHASE, success.result().problem().topology().condenserPhaseBranch());
         assertTrue(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("overhead_vapor")
-                && stream.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("h2o")
+                && stream.moleFractions().stream().anyMatch(fraction -> fraction.componentId().equals("Water")
                 && fraction.moleFraction() > 0.0)));
         assertFalse(success.result().streams().stream().anyMatch(stream -> stream.streamId().equals("free_water")));
     }
@@ -197,7 +197,7 @@ class V3ColumnCalculatorTest {
         V3ColumnStreamProperties freeWater = success.result().streams().stream()
                 .filter(stream -> stream.streamId().equals("free_water")).findFirst().orElseThrow();
         double vaporWater = overhead.molarFlowMolPerSecond() * overhead.moleFractions().stream()
-                .filter(fraction -> fraction.componentId().equals("h2o"))
+                .filter(fraction -> fraction.componentId().equals("Water"))
                 .findFirst().orElseThrow().moleFraction();
 
         assertTrue(vaporWater > 0.0, "the overhead vapor must carry molecular water");
@@ -249,7 +249,7 @@ class V3ColumnCalculatorTest {
                 input.feedComponentMolarFlowsMolPerSecond(), thermo.newWorkspace());
         V3MeshResidual initialResidual = new V3MeshResidualEvaluator(
                 problem, thermo, feedFlash.molarEnthalpyJoulesPerMol()).evaluate(seed, thermo.newWorkspace());
-        assertEquals("ethane", input.componentBasis().componentId(problem.activeComponentBasis().publicIndex(0)));
+        assertEquals("Ethane", input.componentBasis().componentId(problem.activeComponentBasis().publicIndex(0)));
         assertTrue(seed.vaporFlow(problem.topology().condenserNode(), 0) > 0.0);
         assertTrue(seed.liquidFlow(problem.topology().condenserNode(), 0) > 0.0);
         assertTrue(initialResidual.rows().stream().anyMatch(row -> row.equation().family()

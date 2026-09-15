@@ -260,8 +260,14 @@ public final class ProcessSolveServices {
     /** Immutable worker snapshot; configuration has already been read and converted by server-thread admission. */
     record V3ColumnCommand(
             V3ColumnInput input, double stageTraceCutoffMoleFraction, double convergenceClosureFraction,
-            V3InitializationOptions initialization, V3NeuralInitializer model, double liquidSupplyScreenRatio)
+            V3InitializationOptions initialization, V3NeuralInitializer model, double liquidSupplyScreenRatio,
+            com.wormzjl.createcheme.science.material.MaterialCatalog catalog)
             implements ProcessSolveCommand {
+        V3ColumnCommand(V3ColumnInput input, double cutoff, double closure,
+                V3InitializationOptions initialization, V3NeuralInitializer model, double screen) {
+            this(input, cutoff, closure, initialization, model, screen,
+                    com.wormzjl.createcheme.science.material.MaterialRuntime.current());
+        }
         /** Existing initializer-explicit callers retain the default request-only liquid-supply screen. */
         V3ColumnCommand(V3ColumnInput input, double cutoff, double closure,
                 V3InitializationOptions initialization, V3NeuralInitializer model) {
@@ -278,6 +284,7 @@ public final class ProcessSolveServices {
         }
 
         V3ColumnCommand {
+            Objects.requireNonNull(catalog, "catalog");
             Objects.requireNonNull(input, "input");
             Objects.requireNonNull(initialization, "initialization");
             Objects.requireNonNull(model, "model");
@@ -298,6 +305,10 @@ public final class ProcessSolveServices {
 
         @Override
         public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken) {
+            return com.wormzjl.createcheme.science.material.MaterialRuntime.with(catalog, input.packageId(),
+                    () -> solveInCatalog(cancellationToken));
+        }
+        private ProcessSolveResult solveInCatalog(BoundedCpuSolveService.CancellationToken cancellationToken) {
             cancellationToken.throwIfCancellationRequested();
             V3ColumnOutcome outcome = V3HollandExample32.isPackage(input.packageId())
                     && initialization.mode() != V3InitializationOptions.Mode.LNN_ONLY

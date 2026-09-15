@@ -9,28 +9,30 @@ package com.wormzjl.createcheme.science.column.v3.thermo;
  * vaporization enthalpy correlation.</p>
  */
 public final class V3WaterProperties {
-    public static final String DATA_REVISION = "water-iapws-shomate-r1";
-    public static final double MOLAR_MASS_KG_PER_MOL = 0.01801528;
-    public static final double TRIPLE_POINT_KELVIN = 273.16;
-    public static final double CRITICAL_TEMPERATURE_KELVIN = 647.096;
-    public static final double CRITICAL_PRESSURE_PASCAL = 22.064e6;
-    public static final double MAX_ENTHALPY_TEMPERATURE_KELVIN = 900.0;
 
-    private static final double REFERENCE_BOILING_TEMPERATURE_KELVIN = 373.15;
-    private static final double REFERENCE_VAPORIZATION_ENTHALPY_JOULES_PER_MOL = 40_660.0;
-    private static final double WATSON_EXPONENT = 0.38;
 
+    public static String revision() { return data().revision(); }
+    public static double molarMass() { return data().molarMass(); }
+    public static double triplePoint() { return data().triplePoint(); }
+    public static double criticalTemperature() { return data().criticalTemperature(); }
+    public static double criticalPressure() { return data().criticalPressure(); }
+    public static double maximumTemperature() { return data().maximumTemperature(); }
     private V3WaterProperties() {}
+
+    private static com.wormzjl.createcheme.science.material.MaterialCatalog.Water data() {
+        return com.wormzjl.createcheme.science.material.MaterialRuntime.water();
+    }
+
 
     /** Saturation pressure in Pa, valid from the triple point through the critical point. */
     public static double saturationPressurePascal(double temperatureKelvin) {
         requireSaturationTemperature(temperatureKelvin);
-        if (temperatureKelvin == CRITICAL_TEMPERATURE_KELVIN) return CRITICAL_PRESSURE_PASCAL;
-        double theta = 1.0 - temperatureKelvin / CRITICAL_TEMPERATURE_KELVIN;
-        double polynomial = -7.85951783 * theta + 1.84408259 * Math.pow(theta, 1.5)
-                - 11.7866497 * theta * theta * theta + 22.6807411 * Math.pow(theta, 3.5)
-                - 15.9618719 * theta * theta * theta * theta + 1.80122502 * Math.pow(theta, 7.5);
-        return CRITICAL_PRESSURE_PASCAL * Math.exp(CRITICAL_TEMPERATURE_KELVIN / temperatureKelvin * polynomial);
+        if (temperatureKelvin == data().criticalTemperature()) return data().criticalPressure();
+        double theta = 1.0 - temperatureKelvin / data().criticalTemperature();
+        double polynomial = data().saturation().get(0) * theta + data().saturation().get(1) * Math.pow(theta, 1.5)
+                + data().saturation().get(2) * theta * theta * theta + data().saturation().get(3) * Math.pow(theta, 3.5)
+                + data().saturation().get(4) * theta * theta * theta * theta + data().saturation().get(5) * Math.pow(theta, 7.5);
+        return data().criticalPressure() * Math.exp(data().criticalTemperature() / temperatureKelvin * polynomial);
     }
 
     /**
@@ -44,28 +46,28 @@ public final class V3WaterProperties {
      */
     public static double dLogSaturationPressureDT(double temperatureKelvin) {
         requireSaturationTemperature(temperatureKelvin);
-        double theta = 1.0 - temperatureKelvin / CRITICAL_TEMPERATURE_KELVIN;
-        double polynomial = -7.85951783 * theta + 1.84408259 * Math.pow(theta, 1.5)
-                - 11.7866497 * theta * theta * theta + 22.6807411 * Math.pow(theta, 3.5)
-                - 15.9618719 * theta * theta * theta * theta + 1.80122502 * Math.pow(theta, 7.5);
-        double slope = -7.85951783 + 1.5 * 1.84408259 * Math.sqrt(theta)
-                - 3.0 * 11.7866497 * theta * theta + 3.5 * 22.6807411 * Math.pow(theta, 2.5)
-                - 4.0 * 15.9618719 * theta * theta * theta + 7.5 * 1.80122502 * Math.pow(theta, 6.5);
-        return -CRITICAL_TEMPERATURE_KELVIN * polynomial / (temperatureKelvin * temperatureKelvin)
+        double theta = 1.0 - temperatureKelvin / data().criticalTemperature();
+        double polynomial = data().saturation().get(0) * theta + data().saturation().get(1) * Math.pow(theta, 1.5)
+                + data().saturation().get(2) * theta * theta * theta + data().saturation().get(3) * Math.pow(theta, 3.5)
+                + data().saturation().get(4) * theta * theta * theta * theta + data().saturation().get(5) * Math.pow(theta, 7.5);
+        double slope = data().saturation().get(0) + 1.5 * data().saturation().get(1) * Math.sqrt(theta)
+                + 3.0 * data().saturation().get(2) * theta * theta + 3.5 * data().saturation().get(3) * Math.pow(theta, 2.5)
+                + 4.0 * data().saturation().get(4) * theta * theta * theta + 7.5 * data().saturation().get(5) * Math.pow(theta, 6.5);
+        return -data().criticalTemperature() * polynomial / (temperatureKelvin * temperatureKelvin)
                 - slope / temperatureKelvin;
     }
 
     /** Inverts {@link #saturationPressurePascal(double)} by bounded bisection. */
     public static double saturationTemperatureKelvin(double pressurePascal) {
-        if (!Double.isFinite(pressurePascal) || pressurePascal <= 0.0 || pressurePascal > CRITICAL_PRESSURE_PASCAL) {
+        if (!Double.isFinite(pressurePascal) || pressurePascal <= 0.0 || pressurePascal > data().criticalPressure()) {
             throw new IllegalArgumentException("Water saturation pressure is outside the correlation envelope");
         }
-        double minimumPressure = saturationPressurePascal(TRIPLE_POINT_KELVIN);
+        double minimumPressure = saturationPressurePascal(data().triplePoint());
         if (pressurePascal < minimumPressure) {
             throw new IllegalArgumentException("Water saturation pressure is below the triple-point envelope");
         }
-        double low = TRIPLE_POINT_KELVIN;
-        double high = CRITICAL_TEMPERATURE_KELVIN;
+        double low = data().triplePoint();
+        double high = data().criticalTemperature();
         for (int iteration = 0; iteration < 80; iteration++) {
             double middle = 0.5 * (low + high);
             if (saturationPressurePascal(middle) < pressurePascal) low = middle;
@@ -79,8 +81,8 @@ public final class V3WaterProperties {
         requireEnthalpyTemperature(temperatureKelvin);
         double t = temperatureKelvin / 1_000.0;
         // NIST H2O(g), Shomate 500--1700 K; the smooth ideal-gas continuation is pinned for V3's lower envelope.
-        double kiloJoulesPerMol = 30.09200 * t + 6.832514 * t * t / 2.0 + 6.793435 * t * t * t / 3.0
-                - 2.534480 * t * t * t * t / 4.0 - 0.082139 / t - 250.8810 + 241.8264;
+        double kiloJoulesPerMol = data().shomate().get(0) * t + data().shomate().get(1) * t * t / 2.0 + data().shomate().get(2) * t * t * t / 3.0
+                + data().shomate().get(3) * t * t * t * t / 4.0 - data().shomate().get(4) / t + data().shomate().get(5) + data().shomate().get(6);
         return 1_000.0 * kiloJoulesPerMol;
     }
 
@@ -93,15 +95,15 @@ public final class V3WaterProperties {
     public static double dVaporMolarEnthalpyDT(double temperatureKelvin) {
         requireEnthalpyTemperature(temperatureKelvin);
         double t = temperatureKelvin / 1_000.0;
-        return 30.09200 + 6.832514 * t + 6.793435 * t * t - 2.534480 * t * t * t + 0.082139 / (t * t);
+        return data().shomate().get(0) + data().shomate().get(1) * t + data().shomate().get(2) * t * t + data().shomate().get(3) * t * t * t + data().shomate().get(4) / (t * t);
     }
 
     public static double vaporizationEnthalpy(double temperatureKelvin) {
         requireEnthalpyTemperature(temperatureKelvin);
-        if (temperatureKelvin >= CRITICAL_TEMPERATURE_KELVIN) return 0.0;
-        double reduced = (1.0 - temperatureKelvin / CRITICAL_TEMPERATURE_KELVIN)
-                / (1.0 - REFERENCE_BOILING_TEMPERATURE_KELVIN / CRITICAL_TEMPERATURE_KELVIN);
-        return REFERENCE_VAPORIZATION_ENTHALPY_JOULES_PER_MOL * Math.pow(Math.max(0.0, reduced), WATSON_EXPONENT);
+        if (temperatureKelvin >= data().criticalTemperature()) return 0.0;
+        double reduced = (1.0 - temperatureKelvin / data().criticalTemperature())
+                / (1.0 - data().boilingTemperature() / data().criticalTemperature());
+        return data().vaporizationEnthalpy() * Math.pow(Math.max(0.0, reduced), data().watsonExponent());
     }
 
     /**
@@ -114,11 +116,11 @@ public final class V3WaterProperties {
      */
     public static double dVaporizationEnthalpyDT(double temperatureKelvin) {
         requireEnthalpyTemperature(temperatureKelvin);
-        if (temperatureKelvin >= CRITICAL_TEMPERATURE_KELVIN) return 0.0;
-        double span = 1.0 - REFERENCE_BOILING_TEMPERATURE_KELVIN / CRITICAL_TEMPERATURE_KELVIN;
-        double reduced = (1.0 - temperatureKelvin / CRITICAL_TEMPERATURE_KELVIN) / span;
-        return REFERENCE_VAPORIZATION_ENTHALPY_JOULES_PER_MOL * WATSON_EXPONENT
-                * Math.pow(reduced, WATSON_EXPONENT - 1.0) * (-1.0 / (CRITICAL_TEMPERATURE_KELVIN * span));
+        if (temperatureKelvin >= data().criticalTemperature()) return 0.0;
+        double span = 1.0 - data().boilingTemperature() / data().criticalTemperature();
+        double reduced = (1.0 - temperatureKelvin / data().criticalTemperature()) / span;
+        return data().vaporizationEnthalpy() * data().watsonExponent()
+                * Math.pow(reduced, data().watsonExponent() - 1.0) * (-1.0 / (data().criticalTemperature() * span));
     }
 
     public static double liquidMolarEnthalpy(double temperatureKelvin) {
@@ -131,15 +133,15 @@ public final class V3WaterProperties {
     }
 
     private static void requireSaturationTemperature(double temperatureKelvin) {
-        if (!Double.isFinite(temperatureKelvin) || temperatureKelvin < TRIPLE_POINT_KELVIN
-                || temperatureKelvin > CRITICAL_TEMPERATURE_KELVIN) {
+        if (!Double.isFinite(temperatureKelvin) || temperatureKelvin < data().triplePoint()
+                || temperatureKelvin > data().criticalTemperature()) {
             throw new IllegalArgumentException("Water saturation temperature is outside the correlation envelope");
         }
     }
 
     private static void requireEnthalpyTemperature(double temperatureKelvin) {
-        if (!Double.isFinite(temperatureKelvin) || temperatureKelvin < TRIPLE_POINT_KELVIN
-                || temperatureKelvin > MAX_ENTHALPY_TEMPERATURE_KELVIN) {
+        if (!Double.isFinite(temperatureKelvin) || temperatureKelvin < data().triplePoint()
+                || temperatureKelvin > data().maximumTemperature()) {
             throw new IllegalArgumentException("Water enthalpy temperature is outside the correlation envelope");
         }
     }

@@ -1,0 +1,9 @@
+// Adds test classes only to this development launch, never to the production jar.
+allprojects {
+    afterEvaluate {
+        if (plugins.hasPlugin('net.neoforged.moddev')) {
+            neoForge.mods.createcheme.sourceSet(sourceSets.test)
+            neoForge.runs.gameTestServer.gameDirectory = file('build/material-gametest-server')
+        }
+    }
+}

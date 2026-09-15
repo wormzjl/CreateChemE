@@ -272,7 +272,7 @@ public final class V3ColumnProblem {
                 .filter(V3ColumnSpecification.CondenserOutletTemperature.class::isInstance)
                 .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst().orElseThrow().kelvin();
         if (topology.condenserPhaseBranch() == V3CondenserPhaseBranch.VAPOR_ONLY
-                || temperature >= V3WaterProperties.CRITICAL_TEMPERATURE_KELVIN) {
+                || temperature >= V3WaterProperties.criticalTemperature()) {
             return V3WaterCondenserRegime.ALL_VAPOR;
         }
         double waterFraction = V3WaterProperties.saturationPressurePascal(temperature) / pressures[topology.condenserNode()];

@@ -20,10 +20,10 @@ class V3PengRobinsonThermoTest {
         copy[0] = 1.0;
 
         assertEquals(PACKAGE_ID, thermo.packageId());
-        assertEquals("cdu17-tjl-kl1976-r2", thermo.datasetRevision());
+        assertEquals(com.wormzjl.createcheme.science.material.MaterialCatalog.bundled().requirePackage(PACKAGE_ID).scientificRevision(), thermo.datasetRevision());
         assertEquals(16, thermo.componentBasis().componentCount());
-        assertEquals("methane", thermo.componentBasis().componentId(0));
-        assertEquals("PC12", thermo.componentBasis().componentId(15));
+        assertEquals("Methane", thermo.componentBasis().componentId(0));
+        assertEquals("cdu17_pc12", thermo.componentBasis().componentId(15));
         assertEquals(1.0, sum(crude.moleFractions()), 1.0e-12);
         assertTrue(crude.moleFractions()[0] < 1.0);
     }

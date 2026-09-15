@@ -69,7 +69,7 @@ class V3WaterPropertyDerivativesTest {
     @Test
     void vaporisationEnthalpySlopeIsZeroFromTheCriticalPointUpward() {
         for (double temperature : new double[] {
-                V3WaterProperties.CRITICAL_TEMPERATURE_KELVIN, 700.0, V3WaterProperties.MAX_ENTHALPY_TEMPERATURE_KELVIN}) {
+                V3WaterProperties.criticalTemperature(), 700.0, V3WaterProperties.maximumTemperature()}) {
             assertEquals(0.0, V3WaterProperties.vaporizationEnthalpy(temperature), 0.0);
             assertEquals(0.0, V3WaterProperties.dVaporizationEnthalpyDT(temperature), 0.0);
         }

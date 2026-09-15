@@ -14,6 +14,10 @@ public final class V3ColumnResult {
     private final List<V3ColumnStreamProperties> streams;
     private final String formulationRevision;
     private final V3ColumnDutyLedger dutyLedger;
+    private final String datasetRevision;
+
+    /** Scientific identity captured during the solve; never reconstructed from a later live catalog. */
+    public String datasetRevision() { return datasetRevision; }
 
     private V3ColumnResult(
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
@@ -27,6 +31,10 @@ public final class V3ColumnResult {
             V3ColumnDutyLedger dutyLedger) {
         this.dutyLedger = dutyLedger;
         this.problem = Objects.requireNonNull(problem, "problem");
+        var catalogPackage = com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().get(problem.input().packageId());
+        this.datasetRevision = V3HollandExample32.isPackage(problem.input().packageId())
+                ? V3HollandExample32.DATASET_REVISION
+                : catalogPackage == null ? "unregistered-test-model" : catalogPackage.scientificRevision();
         this.inputDigest = Objects.requireNonNull(inputDigest, "inputDigest");
         this.acceptanceAudit = Objects.requireNonNull(acceptanceAudit, "acceptanceAudit");
         this.convergenceEvidence = Objects.requireNonNull(convergenceEvidence, "convergenceEvidence");

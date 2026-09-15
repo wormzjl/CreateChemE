@@ -14,6 +14,7 @@ import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3State;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Status;
+import com.wormzjl.createcheme.world.level.block.entity.ColumnInputPreset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +33,27 @@ import net.minecraft.world.entity.player.Inventory;
  * input. Every displayed stream row originates from an accepted MESH state, never from an in-progress candidate.</p>
  */
 public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<ColumnCalculatorV3Menu> {
+    private int materialMouseX, materialMouseY;
+    private com.wormzjl.createcheme.science.material.MaterialName hoveredMaterial;
+
+    @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        hoveredMaterial=null;
+        materialMouseX=mouseX-leftPos; materialMouseY=mouseY-topPos;
+        super.render(graphics,mouseX,mouseY,partialTick);
+        if(hoveredMaterial!=null) graphics.renderTooltip(font,java.util.List.of(
+                net.minecraft.network.chat.Component.literal(localizedMaterial(hoveredMaterial)),
+                net.minecraft.network.chat.Component.literal(hoveredMaterial.id())),java.util.Optional.empty(),mouseX,mouseY);
+    }
+
+    private static String localizedMaterial(com.wormzjl.createcheme.science.material.MaterialName n) {
+        String base=net.minecraft.network.chat.Component.translatableWithFallback(n.translationKey(),n.fallback()).getString();
+        if(!n.kind().equals("petroleum_fraction"))return base;
+        String range;
+        if(n.lowerKelvin()==null)range=net.minecraft.network.chat.Component.translatableWithFallback(n.rangeKey(),"%s, NBP below %s°C",base,n.upperCelsius()).getString();
+        else if(n.upperKelvin()==null)range=net.minecraft.network.chat.Component.translatableWithFallback(n.rangeKey(),"%s, NBP above %s°C",base,n.lowerCelsius()).getString();
+        else range=net.minecraft.network.chat.Component.translatableWithFallback(n.rangeKey(),"%s, NBP %s–%s°C",base,n.lowerCelsius(),n.upperCelsius()).getString();
+        return range+(n.estimated()?net.minecraft.network.chat.Component.translatableWithFallback("material.createcheme.estimated"," (estimated)").getString():"");
+    }
     private static final int CORE_EDITOR_COUNT = 9;
     private static final int SIDE_DRAW_COUNT = 3;
     private static final int COOLER_COUNT = V3ColumnInput.MAX_PUMPAROUNDS;
@@ -90,6 +112,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private Button heatTab;
     private Button convergenceTab;
     private Button preset;
+    private final List<Button> presetChoices = new ArrayList<>();
     private Button run;
     private Button previousStreamPage;
     private Button nextStreamPage;
@@ -126,6 +149,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         coreEditors.clear();
         sideDrawFields.clear();
         coolerFields.clear();
+        presetChoices.clear();
         steamFields = null;
 
         int tabY = topPos + 28;
@@ -137,8 +161,16 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 .bounds(leftPos + 162, tabY, 72, 20).build());
         convergenceTab = addRenderableWidget(Button.builder(Component.literal("Convergence"), button -> selectPage(Page.CONVERGENCE))
                 .bounds(leftPos + 238, tabY, 96, 20).build());
-        preset = addRenderableWidget(Button.builder(Component.literal("Load Holland 3-2"), button -> requestPreset())
+        preset = addRenderableWidget(Button.builder(Component.translatableWithFallback("gui.createcheme.column_presets", "Input presets"), button -> selectPage(Page.PRESETS))
                 .bounds(leftPos + 340, tabY, 128, 20).build());
+        ColumnInputPreset[] choices = ColumnInputPreset.values();
+        int presetWidth = Math.max(1, (imageWidth - 30) / 2);
+        for (int index=0; index<choices.length; index++) {
+            ColumnInputPreset choice=choices[index];
+            presetChoices.add(addRenderableWidget(Button.builder(
+                    Component.translatableWithFallback(choice.translationKey(), choice.label()), button -> requestPreset(choice))
+                    .bounds(leftPos+10+(index%2)*(presetWidth+10), topPos+CONTENT_TOP+44+(index/2)*30, presetWidth, 20).build()));
+        }
         run = addRenderableWidget(Button.builder(Component.literal("Run V3"), button -> requestCalculation())
                 .bounds(leftPos + 10, topPos + imageHeight - 29, 82, 20).build());
         previousStreamPage = addRenderableWidget(Button.builder(Component.literal("Previous streams"), button -> {
@@ -460,9 +492,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         streamsTab.active = page != Page.STREAMS;
         heatTab.active = !showHeat;
         convergenceTab.active = page != Page.CONVERGENCE;
-        preset.visible = showInputs;
+        preset.visible = showInputs || page == Page.PRESETS;
         preset.active = showInputs && !calculating && serverState != null;
-        preset.setMessage(Component.literal(holland ? "Load Tia Juana" : "Load Holland 3-2"));
+        for (Button choice : presetChoices) {
+            choice.visible = page == Page.PRESETS;
+            choice.active = choice.visible && !calculating && serverState != null;
+        }
         run.visible = showInputs || showHeat;
         run.setMessage(Component.literal(holland ? "Run Holland" : "Run V3"));
         run.active = (showInputs || showHeat) && !calculating && draftInput() != null;
@@ -484,9 +519,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         refreshControls();
     }
 
-    private void requestPreset() {
-        if (serverState == null) return;
-        if (!isHolland()) {
+    private void requestPreset(ColumnInputPreset choice) {
+        if (serverState == null || calculationRequested || serverState.status() == V3Status.CALCULATING) return;
+        if (choice == ColumnInputPreset.HOLLAND && !isHolland()) {
             String[][] drafts = coolerDrafts();
             boolean authored = false;
             for (String[] row : drafts) {
@@ -494,8 +529,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             }
             stashedCoolerDrafts = authored ? drafts : null;
             stashedCoolerSplits = authored ? coolerSplits.clone() : null;
+        } else if (choice != ColumnInputPreset.PILOT) {
+            stashedCoolerDrafts = null;
+            stashedCoolerSplits = null;
         }
-        ColumnV3Network.sendPreset(menu.blockPos(), serverState.inputRevision(), !isHolland());
+        ColumnV3Network.sendPreset(menu.blockPos(), serverState.inputRevision(), choice);
+        page = Page.INPUTS;
         calculationRequested = true;
         validation = "Loading server-owned V3 preset...";
         refreshControls();
@@ -560,13 +599,33 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         graphics.drawString(font, "Column Calculator V3 (Experimental)", 10, 8, TEXT, false);
         graphics.drawString(font, isHolland()
                 ? "Holland (1981) Example 3-2 | independent-oracle-seeded V3 benchmark"
-                : "Registered Tia Juana Light PR package | server-authoritative free-water V3", 10, 20, MUTED, false);
+                : abbreviateToWidth(currentPresetLabel() + " | Peng–Robinson", imageWidth-20), 10, 20, MUTED, false);
         switch (page) {
             case INPUTS -> renderInputs(graphics);
             case STREAMS -> renderStreams(graphics);
             case HEAT -> renderHeat(graphics);
             case CONVERGENCE -> renderConvergence(graphics);
+            case PRESETS -> renderPresets(graphics);
         }
+    }
+
+    private String currentPresetLabel() {
+        if (serverState == null) return "Waiting for input";
+        for (ColumnInputPreset choice : ColumnInputPreset.values()) {
+            if (choice.matches(serverState.input()))
+                return Component.translatableWithFallback(choice.translationKey(),choice.label()).getString();
+        }
+        return serverState.input().assayId();
+    }
+
+    private void renderPresets(GuiGraphics graphics) {
+        graphics.drawString(font, Component.translatableWithFallback("gui.createcheme.preset_choose",
+                "Choose an input preset"), 10, CONTENT_TOP, TEXT, false);
+        graphics.drawString(font, Component.translatableWithFallback("gui.createcheme.preset_replaces",
+                "Loading replaces the draft and clears its previous result."), 10, CONTENT_TOP+16, NOTICE, false);
+        graphics.drawWordWrap(font, Component.translatableWithFallback("gui.createcheme.preset_conditions",
+                "The five crude assays use the current Tia Juana column settings as editable starting points. Adjust operating conditions for each crude before running."),
+                10, CONTENT_TOP+174, imageWidth-20, MUTED);
     }
 
     private void renderInputs(GuiGraphics graphics) {
@@ -661,8 +720,13 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         List<V3ColumnStreamProperties.ComponentFraction> fractions = stream.moleFractions();
         for (int index = 0; index < fractions.size(); index++) {
             V3ColumnStreamProperties.ComponentFraction fraction = fractions.get(index);
+            var material=serverState.materialNames().getOrDefault(fraction.componentId(),
+                    com.wormzjl.createcheme.science.material.MaterialName.chemical(fraction.componentId()));
+            int rowY=tableY+12*(index+1);
+            if(materialMouseX>=x && materialMouseX<x+widths[0] && materialMouseY>=rowY && materialMouseY<rowY+12)
+                hoveredMaterial=material;
             drawTableRow(graphics, x, tableY + 12 * (index + 1), 12, widths, new String[] {
-                    fraction.componentId(), formatPercentage(fraction.moleFraction()), formatPercentage(fraction.massFraction())
+                    localizedMaterial(material), formatPercentage(fraction.moleFraction()), formatPercentage(fraction.massFraction())
             }, false);
         }
     }
@@ -1086,6 +1150,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     }
 
     private enum Page {
+        PRESETS,
         INPUTS,
         STREAMS,
         HEAT,

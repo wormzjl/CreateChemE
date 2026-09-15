@@ -110,8 +110,8 @@ public final class V3ColumnProblemResolver {
             if (feed.stageNumber() > input.stageCount() + 1) {
                 throw new IllegalArgumentException("V3 steam stage is outside the column");
             }
-            if (feed.temperatureKelvin() < V3WaterProperties.TRIPLE_POINT_KELVIN
-                    || feed.temperatureKelvin() > V3WaterProperties.MAX_ENTHALPY_TEMPERATURE_KELVIN) {
+            if (feed.temperatureKelvin() < V3WaterProperties.triplePoint()
+                    || feed.temperatureKelvin() > V3WaterProperties.maximumTemperature()) {
                 throw new IllegalArgumentException("V3 steam temperature is outside the water-property envelope");
             }
             double injectionPressure = input.topPressurePascal()
@@ -137,7 +137,7 @@ public final class V3ColumnProblemResolver {
                     .map(V3ColumnSpecification.CondenserOutletTemperature.class::cast).findFirst()
                     .orElseThrow(() -> new IllegalArgumentException(
                             "V3 steam input is missing a condenser-temperature specification")).kelvin();
-            if (condenserTemperature < V3WaterProperties.TRIPLE_POINT_KELVIN) {
+            if (condenserTemperature < V3WaterProperties.triplePoint()) {
                 throw new IllegalArgumentException("V3 free-water condenser temperature is below the ice-free property envelope");
             }
         }

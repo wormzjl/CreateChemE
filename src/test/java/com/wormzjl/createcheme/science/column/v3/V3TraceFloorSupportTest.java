@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 class V3TraceFloorSupportTest {
     private static final String STATE_RESOURCE =
             "/science/column/v3/tjl19-wet-three-pumparound-three-draw-stalled-state-java21.txt";
-    private static final String SPIKE_COMPONENT = "TJL_PC09";
+    private static final String SPIKE_COMPONENT = "tjl19_pc09";
     private static final int[] SPIKE_NODES = {10, 11, 12};
     private static final double SUMP_STEAM_MOL_PER_SECOND = 1_200.0 * 1_000.0 / 3_600.0;
     private static final double SUMP_STEAM_TEMPERATURE_KELVIN = 533.15;

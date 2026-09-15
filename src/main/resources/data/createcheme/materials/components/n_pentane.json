@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "N-pentane",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.n_pentane",
+  "fallback": "N-pentane",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

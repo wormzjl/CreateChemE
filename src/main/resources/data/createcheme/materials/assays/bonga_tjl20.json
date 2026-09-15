@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:bonga",
+  "package": "createcheme:bonga_tjl20",
+  "components": [
+    "Methane",
+    "Ethane",
+    "Propane",
+    "Isobutane",
+    "N-butane",
+    "Isopentane",
+    "N-pentane",
+    "tjl19_pc01",
+    "tjl19_pc02",
+    "tjl19_pc03",
+    "tjl19_pc04",
+    "tjl19_pc05",
+    "tjl19_pc06",
+    "tjl19_pc07",
+    "tjl19_pc08",
+    "tjl19_pc09",
+    "tjl19_pc10",
+    "tjl19_pc11",
+    "tjl19_pc12",
+    "tjl19_pc13"
+  ],
+  "basis": "mass",
+  "amounts": [
+    0.0,
+    0.0001,
+    0.0017000000000000001,
+    0.0017000000000000001,
+    0.0042,
+    0.004,
+    0.0042,
+    0.024904272798528634,
+    0.057100575297920286,
+    0.06245152664382925,
+    0.09016340693226081,
+    0.12652197755844433,
+    0.13568914385678943,
+    0.12445032668033923,
+    0.12197035900687771,
+    0.11689234765955055,
+    0.07678671640801857,
+    0.037000165372387865,
+    0.008537500641756497,
+    0.0016316811432968781
+  ],
+  "provenance": {
+    "source_reference": "BONGA25Y",
+    "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2025/bonga.pdf",
+    "source_pdf_sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+    "source_whole_crude": {
+      "density_15c_kg_per_m3": 888.4,
+      "sulfur_mass_percent": 0.26,
+      "nitrogen_mass_ppm": 1462.0,
+      "nickel_mass_ppm": 3.5,
+      "vanadium_mass_ppm": 0.3,
+      "iron_mass_ppm": 7.4,
+      "sodium_mass_ppm": 0.4,
+      "mercury_mass_ppb": 1.0,
+      "arsenic_mass_ppb": 213.0
+    },
+    "residual_mass_rounding_scale": 0.998275512274295,
+    "tail": {
+      "model": "exponential_survival_constrained_by_residue_vabp",
+      "estimated_above_celsius": 590,
+      "scale_celsius": 78.88679245283019,
+      "remaining_at_590_volume_percent": 5.299999999999997,
+      "residue_550_plus_mean_celsius": 637.0,
+      "estimated_mass_percent_above_590": 6.03700716845878
+    }
+  },
+  "appearance": {
+    "color": "#302219",
+    "transparency": 0.03,
+    "estimated": true
+  }
+}

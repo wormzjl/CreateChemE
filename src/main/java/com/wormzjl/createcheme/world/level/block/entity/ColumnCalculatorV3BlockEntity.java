@@ -119,6 +119,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             detail = V3HollandExample32.isPackage(operation.input().packageId())
                     ? "Success: Holland oracle and V3 audit agree; seven printed-table conflicts remain advisory"
                     : successDetail(success);
+            refreshMaterialFreshness();
         } else if (outcome instanceof V3ColumnOutcome.Failure failure) {
             status = V3Status.FAILED;
             detail = bounded(failure.code().name() + ": " + failure.summary());
@@ -176,6 +177,12 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
 
     /** Immutable view for a requester or broadcast viewer; it intentionally excludes workspaces and profiles. */
     public V3State state(long clientNonce) {
+        refreshMaterialFreshness();
+        java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> names = new java.util.LinkedHashMap<>();
+        for (String id : currentInput.componentBasis().componentIds()) names.put(id,
+                com.wormzjl.createcheme.science.material.MaterialRuntime.name(currentInput.packageId(), id));
+        if (displayResult != null) for (var stream : displayResult.streams()) for (var fraction : stream.moleFractions())
+            names.put(fraction.componentId(), com.wormzjl.createcheme.science.material.MaterialRuntime.name(currentInput.packageId(), fraction.componentId()));
         return new V3State(
                 clientNonce,
                 stateRevision,
@@ -185,7 +192,20 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 status,
                 currentInput,
                 Optional.ofNullable(displayResult),
-                List.of(detail));
+                List.of(detail), names);
+    }
+
+    private void refreshMaterialFreshness() {
+        if (displayResult == null || currentInput == null || activeOperation != null
+                || V3HollandExample32.isPackage(currentInput.packageId())) return;
+        if (!com.wormzjl.createcheme.science.material.MaterialRuntime.isCurrent(currentInput.packageId(),displayResult.datasetRevision())) {
+            if (status != V3Status.STALE) {
+                status = V3Status.STALE;
+                stateRevision = Math.incrementExact(stateRevision);
+                setChanged();
+            }
+            detail = "Material properties changed; recalculate this result";
+        }
     }
 
     public int statusCode() {
@@ -314,8 +334,17 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             V3Status status,
             V3ColumnInput input,
             Optional<V3ColumnDisplayResult> displayResult,
-            List<String> diagnostics) {
+            List<String> diagnostics,
+            java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
+        public V3State(long clientNonce, long stateRevision, long operationId, long inputRevision, long resultRevision,
+                V3Status status, V3ColumnInput input, Optional<V3ColumnDisplayResult> displayResult, List<String> diagnostics) {
+            this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,java.util.Map.of());
+        }
         public V3State {
+            materialNames = java.util.Map.copyOf(materialNames);
+            if (materialNames.size() > 2 * V3ColumnStreamProperties.MAX_COMPONENTS
+                    || materialNames.keySet().stream().anyMatch(id -> !id.matches("[A-Za-z][A-Za-z0-9_.:-]{0,63}")))
+                throw new IllegalArgumentException("Material naming descriptors exceed state bounds");
             if (clientNonce < 0L || stateRevision < 0L || operationId < 0L || inputRevision < 0L
                     || resultRevision < -1L) {
                 throw new IllegalArgumentException("V3 state revisions are invalid");
@@ -410,9 +439,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
 
     /** Current column preset: the literature operating conditions with a synthetic 0.5 mol% methane feed. */
     public static V3ColumnInput methaneCduInput() {
+        return assayCduInput("createcheme:tjl20_methane", "createcheme:tia_juana_light_methane");
+    }
+
+    /** Catalog feed at the current column's total molar rate and editable operating conditions. */
+    static V3ColumnInput assayCduInput(String packageId, String assayId) {
         V3ColumnInput original = literatureCduInput();
-        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane");
-        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light_methane");
+        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(packageId);
+        V3CrudeFeed crude = thermo.crudeFeed(assayId);
         double[] flows = crude.moleFractions();
         for (int component = 0; component < flows.length; component++) {
             flows[component] *= LITERATURE_FEED_MOL_PER_SECOND;
@@ -591,6 +625,9 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
                 tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws,
                 steamFeeds, pumparounds);
+        if (com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().containsKey(input.packageId()))
+            input = com.wormzjl.createcheme.science.column.v3.V3MaterialInputs.migrate(input,
+                    com.wormzjl.createcheme.science.material.MaterialRuntime.current());
         V3ColumnProblemResolver.validateInput(input);
         return input;
     }

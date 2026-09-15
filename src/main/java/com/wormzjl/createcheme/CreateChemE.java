@@ -135,6 +135,7 @@ public final class CreateChemE {
 
         // ProcessSolveServices is thread-confined to the logical server. Pin every lifecycle edge to the GAME bus.
         IEventBus gameEventBus = NeoForge.EVENT_BUS;
+        gameEventBus.addListener(com.wormzjl.createcheme.material.MaterialReloadListener::register);
         gameEventBus.addListener(CreateChemE::onServerStarting);
         gameEventBus.addListener(CreateChemE::onServerTickPost);
         gameEventBus.addListener(CreateChemE::onServerStopping);
@@ -209,6 +210,11 @@ public final class CreateChemE {
 
     private static void onServerTickPost(ServerTickEvent.Post event) {
         try {
+            var materialCatalog=com.wormzjl.createcheme.science.material.MaterialRuntime.active();
+            if (lastMaterialCatalog != materialCatalog) {
+                lastMaterialCatalog=materialCatalog;
+                ColumnV3Network.refreshMaterialViewers(event.getServer());
+            }
             ProcessSolveCoordinator.drainCompletedCalculations(event.getServer());
         } catch (RuntimeException exception) {
             LOGGER.error("process_solver lifecycle=DRAIN_FAILED", exception);
@@ -225,11 +231,14 @@ public final class CreateChemE {
         }
     }
 
+    private static com.wormzjl.createcheme.science.material.MaterialCatalog lastMaterialCatalog;
+
     private static void onServerStopped(ServerStoppedEvent event) {
         try {
             // ServerStopped can still fire after an abnormal lifecycle path that skipped ServerStopping.
             ProcessSolveCoordinator.stopCalculations(event.getServer());
             int remainingContexts = ProcessSolveServices.removeStoppedServer(event.getServer());
+            com.wormzjl.createcheme.science.material.MaterialRuntime.reset();
             if (remainingContexts != 0) {
                 LOGGER.error(
                         "process_solver lifecycle=STOPPED unexpected_remaining_contexts={}",

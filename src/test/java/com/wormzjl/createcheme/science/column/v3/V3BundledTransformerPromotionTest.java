@@ -48,7 +48,10 @@ class V3BundledTransformerPromotionTest {
             assertNotNull(stream, "the bundled Transformer artifact must be on the classpath");
             artifact = stream.readAllBytes();
         }
-        assertEquals(F0_SHA256, sha256(artifact), "bundled weight bytes are not the registered F0 export");
+        String legacyArtifact = new String(artifact, StandardCharsets.UTF_8)
+                .replaceAll("\"propertyFingerprint\": \"[a-f0-9]+\",\\r?\\n  ", "");
+        for (int i=1;i<=13;i++) legacyArtifact=legacyArtifact.replace(String.format("\"tjl19_pc%02d\"",i),String.format("\"TJL_PC%02d\"",i));
+        assertEquals(F0_SHA256, sha256(legacyArtifact.getBytes(StandardCharsets.UTF_8)), "only component metadata may change; registered weights must be identical");
 
         var model = V3NeuralModels.bundled();
         assertNotSame(V3NeuralInitializer.UNAVAILABLE, model, "the bundled model failed to parse");
@@ -105,7 +108,7 @@ class V3BundledTransformerPromotionTest {
         requests.entrySet().parallelStream().forEach(entry -> {
             var seed = model.predict(entry.getValue(), V3SolveControl.UNBOUNDED).orElse(null);
             if (seed == null) unsupported.add(entry.getKey());
-            else observed.put(entry.getKey(), seedDigest(seed));
+            else observed.put(entry.getKey(), legacySeedDigest(seed));
         });
 
         var mismatched = new ArrayList<String>();
@@ -117,6 +120,19 @@ class V3BundledTransformerPromotionTest {
                 "decoded seeds diverged from the qualified pipeline for " + mismatched.size() + " cases");
         assertEquals(expected.entrySet().stream().filter(e -> e.getValue() == null).count(), unsupported.size(),
                 "coverage moved: the model declined a different set of requests than the study recorded");
+    }
+
+    // Preserve the original independent numerical oracle by undoing identity-only migration before hashing.
+    private static String legacySeedDigest(V3NeuralSeed seed) {
+        var tree=JSON.toJsonTree(seed).getAsJsonObject();
+        tree.addProperty("propertyRevision","tjl20-methane-nist-r1");
+        var ids=tree.getAsJsonObject("input").getAsJsonObject("componentBasis").getAsJsonArray("componentIds");
+        for(int i=0;i<ids.size();i++) {
+            String id=ids.get(i).getAsString();
+            if(id.startsWith("tjl19_pc"))ids.set(i,new com.google.gson.JsonPrimitive("TJL_PC"+id.substring(8)));
+        }
+        var text=new StringBuilder(); canonicalize(tree,text);
+        return sha256(text.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     /** The digest routine of the study's sealing step, ported: Gson's tree, then Python's canonical dump. */
@@ -268,7 +284,7 @@ class V3BundledTransformerPromotionTest {
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 if (line.isBlank()) continue;
                 JsonObject row = JsonParser.parseString(line).getAsJsonObject();
-                result.put(row.get("id").getAsString(), input(row.getAsJsonObject("input")));
+                result.put(row.get("id").getAsString(), V3MaterialInputs.migrate(input(row.getAsJsonObject("input")), com.wormzjl.createcheme.science.material.MaterialCatalog.bundled()));
             }
         }
         return result;

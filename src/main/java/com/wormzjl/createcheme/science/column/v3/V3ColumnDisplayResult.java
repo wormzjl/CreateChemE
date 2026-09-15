@@ -1,6 +1,5 @@
 package com.wormzjl.createcheme.science.column.v3;
 
-import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,19 +65,13 @@ public record V3ColumnDisplayResult(
                 result.inputDigest().hexadecimalSha256(),
                 result.formulationRevision(),
                 V3ColumnCalculator.assumptionsRevision(result.problem().input()),
-                datasetRevision(result.problem().input().packageId()),
+                result.datasetRevision(),
                 success.diagnostics().newtonIterations(),
                 success.diagnostics().maximumScaledResidual(),
                 result.acceptanceAudit().checks().size(),
                 result.streams(),
                 result.dutyLedger(),
                 result.closureTolerance());
-    }
-
-    private static String datasetRevision(String packageId) {
-        return V3HollandExample32.isPackage(packageId)
-                ? V3HollandExample32.DATASET_REVISION
-                : V3PengRobinsonThermo.fromRegisteredPackage(packageId).datasetRevision();
     }
 
     private static String boundedDigest(String value) {

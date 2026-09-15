@@ -236,8 +236,8 @@ final class V3WetTraySet {
     static Saturation saturation(V3ColumnProblem problem, V3DryMeshState state, int node, double water) {
         double temperature = state.temperatureKelvin(node);
         if (!(water > 0.0) || !Double.isFinite(water)
-                || temperature < V3WaterProperties.TRIPLE_POINT_KELVIN
-                || temperature >= V3WaterProperties.CRITICAL_TEMPERATURE_KELVIN) {
+                || temperature < V3WaterProperties.triplePoint()
+                || temperature >= V3WaterProperties.criticalTemperature()) {
             return null;
         }
         double saturationPressure;
