@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
+import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.solver.SparseNewton;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
@@ -16,7 +17,11 @@ public final class PassiveIntervalSolver {
     }
     private final ErrorControl errorControl;
     public PassiveIntervalSolver(FluidThermodynamics model){this(model,ErrorControl.EMBEDDED);}
-    public PassiveIntervalSolver(FluidThermodynamics model,ErrorControl errorControl){this.model=Objects.requireNonNull(model);stepSolver=new TrBdf2StepSolver(model);this.errorControl=Objects.requireNonNull(errorControl);}
+    public PassiveIntervalSolver(FluidThermodynamics model,ErrorControl errorControl){this(model,errorControl,SolverOwnership.confinedToCurrentThread());}
+    /** Retained across island jobs: every nested workspace answers to the supplied latch. */
+    public PassiveIntervalSolver(FluidThermodynamics model,ErrorControl errorControl,SolverOwnership ownership) {
+        this.model=Objects.requireNonNull(model);stepSolver=new TrBdf2StepSolver(model,ownership);this.errorControl=Objects.requireNonNull(errorControl);
+    }
     public record Settings(double initialStep,double maximumStep,double relativeTolerance,int maximumAttempts) {
         public Settings {
             if(!Double.isFinite(initialStep)||initialStep<=0||!Double.isFinite(maximumStep)||maximumStep<initialStep

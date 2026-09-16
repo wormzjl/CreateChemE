@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
+import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.solver.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
@@ -10,13 +11,16 @@ public final class PassiveStepSolver {
     public enum Acceptance { FULL, APPROXIMATE }
     public static final double GRAVITY=9.80665;
     private final FluidThermodynamics model;
-    private final Thread owner=Thread.currentThread();
+    private final SolverOwnership ownership;
     private final Map<WorkspaceKey,SparseNewton.Workspace> workspaces=new LinkedHashMap<>();
     private final Map<WorkspaceKey,SparseNewton.Workspace> structures=new LinkedHashMap<>();
     private List<PassiveNetwork.Pipe> previousPipes=List.of();
     private List<Long> previousNodeIds=List.of();
     private double[] previousFlows=new double[0],previousHeads=new double[0];
-    public PassiveStepSolver(FluidThermodynamics model){this.model=Objects.requireNonNull(model);}
+    public PassiveStepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
+    public PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership) {
+        this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
+    }
     public record Result(List<FluidThermodynamics.State> states,double[] massFlows,double deltaTime,SparseNewton.Result numerical,
                          List<FlowControl.Mode> modes,double[] devicePressureChanges,double pumpWorkJoule,double[] externalMoles,double externalEnergyJoule,
                          List<PassiveNetwork.Inventory> inventories,List<ConservativeTransport.BoundaryTransfer> boundaries,List<PipeTransfer> pipeTransfers) {
@@ -30,7 +34,7 @@ public final class PassiveStepSolver {
     }
     public Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance) {
         Objects.requireNonNull(acceptance);SolverDiagnostics.count(SolverDiagnostics.implicitSolves);
-        if(Thread.currentThread()!=owner)throw new IllegalStateException("Each executing island job needs its own step workspace");
+        ownership.check("Each executing island job needs its own step workspace");
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
         if(graph.pipes().isEmpty()&&graph.scheduledTransfers().isEmpty())return new Result(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),new double[0],dt,
                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
@@ -56,7 +60,7 @@ public final class PassiveStepSolver {
                     equations.componentMask,List.copyOf(modes),Arrays.toString(boundaryClosed));
             var workspace=workspaces.get(key);
             var structure=new WorkspaceKey(0,key.nodeIds,key.kinds,key.pipes,key.phases,key.componentMask,key.modes,key.boundaryClosed);
-            if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace():previous.forkPreconditioner();workspaces.put(key,workspace);}
+            if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
             if(structures.size()>=4&&!structures.containsKey(structure))structures.remove(structures.keySet().iterator().next());structures.put(structure,workspace);
             SparseNewton.Result numerical;
             // Small headspaces amplify inventory roundoff into pressure/flow errors; solve these more tightly.

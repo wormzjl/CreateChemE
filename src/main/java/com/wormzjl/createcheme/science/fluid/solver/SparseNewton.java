@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.solver;
 
+import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.linalg.SparseLuSolver;
 import com.wormzjl.createcheme.science.fluid.linalg.SparseMatrix;
@@ -38,15 +39,18 @@ public final class SparseNewton {
 
     /** Reusable modified-Newton workspace for one unchanged equation structure on one worker. */
     public static final class Workspace {
-        private final Thread owner=Thread.currentThread();
+        private final SolverOwnership ownership;
         private Pattern pattern;
         private SparseMatrix matrix;
         private SparseLuSolver.Factorization factorization;
         private SparseLuSolver.Ordering ordering;
-        private void owned(){if(Thread.currentThread()!=owner)throw new IllegalStateException("Newton workspace belongs to its creating worker");}
+        public Workspace(){this(SolverOwnership.confinedToCurrentThread());}
+        /** Retained across jobs: the latch, not the creating thread, decides who may use it. */
+        public Workspace(SolverOwnership ownership){this.ownership=Objects.requireNonNull(ownership);}
+        private void owned(){ownership.check("Newton workspace belongs to the worker holding its solver latch");}
         public void invalidate(){owned();matrix=null;factorization=null;}
         /** Reuse immutable sparsity/coloring/order for another timestep, with fresh numeric factors. */
-        public Workspace forkStructure(){owned();var fork=new Workspace();fork.pattern=pattern;fork.ordering=ordering;return fork;}
+        public Workspace forkStructure(){owned();var fork=new Workspace(ownership);fork.pattern=pattern;fork.ordering=ordering;return fork;}
         /** Seed modified Newton with the previous timestep's Jacobian. All uses remain sequential
          * on this worker; poor contraction or failed line search refreshes from current equations.
          * The current nonlinear residual, not this approximation, decides convergence. */
@@ -160,7 +164,7 @@ public final class SparseNewton {
             }
         }
         var numeric=pattern.numericMatrix(derivatives);
-        try{if(workspace.ordering==null)workspace.ordering=SparseLuSolver.prepareOrdering(pattern.symbolicMatrix());workspace.factorization=SparseLuSolver.factor(numeric,workspace.ordering);workspace.matrix=numeric;}
+        try{if(workspace.ordering==null)workspace.ordering=SparseLuSolver.prepareOrdering(pattern.symbolicMatrix());workspace.factorization=SparseLuSolver.factor(numeric,workspace.ordering,workspace.ownership);workspace.matrix=numeric;}
         catch(SparseLuSolver.SolveFailure failure){workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);}
         return calls;
     }

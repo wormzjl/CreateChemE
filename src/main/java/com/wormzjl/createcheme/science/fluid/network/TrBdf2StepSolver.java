@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
+import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
 
@@ -15,8 +16,12 @@ public final class TrBdf2StepSolver {
         private Rate{flows=flows.clone();modes=List.copyOf(modes);}
     }
     private final Map<RateKey,Rate> endpointRates=new LinkedHashMap<>();
-    private final Thread owner=Thread.currentThread();
-    public TrBdf2StepSolver(FluidThermodynamics model){this.model=Objects.requireNonNull(model);implicit=new PassiveStepSolver(model);algebraic=new PassiveStepSolver(model);}
+    private final SolverOwnership ownership;
+    public TrBdf2StepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
+    public TrBdf2StepSolver(FluidThermodynamics model,SolverOwnership ownership) {
+        this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
+        implicit=new PassiveStepSolver(model,ownership);algebraic=new PassiveStepSolver(model,ownership);
+    }
 
     public record Trial(PassiveStepSolver.Result solution,List<FluidThermodynamics.State> estimatedStates,double[] estimatedMassFlows,List<ConservativeTransport.BoundaryTransfer> estimatedBoundaries) {
         public Trial(PassiveStepSolver.Result solution,List<FluidThermodynamics.State> estimatedStates,double[] estimatedMassFlows){this(solution,estimatedStates,estimatedMassFlows,solution.boundaries());}
@@ -37,7 +42,7 @@ public final class TrBdf2StepSolver {
     public PassiveStepSolver.Result solve(PassiveNetwork initial,double dt,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,StageGuard guard){return integrate(initial,dt,checkpoint,false,acceptance,guard).solution();}
     private Trial integrate(PassiveNetwork initial,double dt,Runnable checkpoint,boolean estimate,PassiveStepSolver.Acceptance acceptance,StageGuard guard) {
         Objects.requireNonNull(acceptance);Objects.requireNonNull(guard);
-        if(Thread.currentThread()!=owner)throw new IllegalStateException("TR-BDF2 workspace belongs to its creating worker");
+        ownership.check("TR-BDF2 workspace belongs to the worker holding its solver latch");
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
         if(initial.reservoirs().stream().anyMatch(n->n.kind()==PassiveNetwork.NodeKind.PORT))throw new IllegalArgumentException("Internal ports cannot be integrated");
         if(initial.pipes().isEmpty()&&initial.scheduledTransfers().isEmpty()){checkpoint.run();var unchanged=implicit.solve(initial,dt,checkpoint,acceptance);guard.check(unchanged.states(),unchanged.modes());return new Trial(unchanged,unchanged.states(),unchanged.massFlows());}

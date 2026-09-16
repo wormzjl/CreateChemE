@@ -45,6 +45,8 @@ public final class SolverDiagnostics {
     public static final LongAdder transportFactorNanos=new LongAdder();
     public static final LongAdder transportSolves=new LongAdder();
     public static final LongAdder transportSolveNanos=new LongAdder();
+    public static final LongAdder transportOrderings=new LongAdder();
+    public static final LongAdder transportOrderingNanos=new LongAdder();
     // ---- properties ----
     public static final LongAdder stateCalls=new LongAdder();
     public static final LongAdder temperatureTermsCalls=new LongAdder();
@@ -82,6 +84,7 @@ public final class SolverDiagnostics {
         map.put("luOrderings",luOrderings);map.put("luOrderingNanos",luOrderingNanos);
         map.put("transportFactorizations",transportFactorizations);map.put("transportFactorNanos",transportFactorNanos);
         map.put("transportSolves",transportSolves);map.put("transportSolveNanos",transportSolveNanos);
+        map.put("transportOrderings",transportOrderings);map.put("transportOrderingNanos",transportOrderingNanos);
         map.put("stateCalls",stateCalls);map.put("temperatureTermsCalls",temperatureTermsCalls);map.put("flashCalls",flashCalls);
         map.put("reconstructCalls",reconstructCalls);map.put("reconstructNanos",reconstructNanos);
         return Collections.unmodifiableMap(map);

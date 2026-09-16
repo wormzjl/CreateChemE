@@ -340,12 +340,17 @@ public final class ProcessSolveServices {
 
     /** Contains no live level, block entity, callback, or mutable server-owned collection. */
     public record FluidIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,double durationSeconds,
-                                     PassiveIntervalSolver.Settings settings,long wallBudgetNanos,FluidFallbackPolicy fallback) implements FluidSolveCommand {
+                                     PassiveIntervalSolver.Settings settings,long wallBudgetNanos,FluidFallbackPolicy fallback,
+                                     com.wormzjl.createcheme.runtime.fluid.RetainedSolver retained) implements FluidSolveCommand {
         public FluidIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,double durationSeconds,PassiveIntervalSolver.Settings settings,long wallBudgetNanos) {
             this(model,snapshot,durationSeconds,settings,wallBudgetNanos,FluidFallbackPolicy.disabled());
         }
+        /** Without a retained handle the job gets its own, which is the per-job solver of before. */
+        public FluidIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,double durationSeconds,PassiveIntervalSolver.Settings settings,long wallBudgetNanos,FluidFallbackPolicy fallback) {
+            this(model,snapshot,durationSeconds,settings,wallBudgetNanos,fallback,new com.wormzjl.createcheme.runtime.fluid.RetainedSolver());
+        }
         public FluidIslandCommand {
-            Objects.requireNonNull(model);Objects.requireNonNull(snapshot);Objects.requireNonNull(settings);Objects.requireNonNull(fallback);
+            Objects.requireNonNull(model);Objects.requireNonNull(snapshot);Objects.requireNonNull(settings);Objects.requireNonNull(fallback);Objects.requireNonNull(retained);
             if(!Double.isFinite(durationSeconds)||durationSeconds<=0||wallBudgetNanos<=0)throw new IllegalArgumentException("Invalid island solve budget");
             if(fallback.enabled()&&(fallback.softBudgetNanos()>=wallBudgetNanos||durationSeconds<.05||durationSeconds>20||!Double.isFinite(durationSeconds*20)
                     ||Math.abs(durationSeconds*20-Math.rint(durationSeconds*20))>1e-8))throw new IllegalArgumentException("Fallback needs tick-aligned duration and separate soft/hard budgets");
@@ -362,15 +367,14 @@ public final class ProcessSolveServices {
             long[] elapsed={0};
             Runnable hard=()->{cancellationToken.throwIfCancellationRequested();elapsed[0]=nanoClock.getAsLong()-start;if(elapsed[0]>=wallBudgetNanos)throw new FluidWallDeadline();};
             Runnable checkpoint=()->{hard.run();if(eligible&&elapsed[0]>=fallback.softBudgetNanos())throw new FluidSoftDeadline();};
-            var solver=new PassiveIntervalSolver(model);
             try {
                 try {
-                    var candidate=solver.solve(snapshot,durationSeconds,settings,checkpoint);hard.run();
+                    var candidate=retained.solve(model,snapshot,durationSeconds,settings,checkpoint);hard.run();
                     return new FluidIslandSolveResult(Optional.of(candidate),"FULL",elapsed[0],FallbackAllowance.NONE,Optional.of(ApproximationAnchor.fromFull(model,candidate)));
                 }catch(FluidSoftDeadline deadline) {
                     hard.run();var guard=fallback.anchor().orElseThrow().guard(model,snapshot);
                     var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,.0025,256);
-                    var candidate=solver.solveApproximate(snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
+                    var candidate=retained.solveApproximate(model,snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
                     return new FluidIslandSolveResult(Optional.of(candidate),"APPROXIMATE: soft budget",elapsed[0],fallback.allowance().accept(ticks,fallback.cadenceTicks()),fallback.anchor());
                 }
             }catch(FluidWallDeadline deadline){return new FluidIslandSolveResult(Optional.empty(),"HELD: wall deadline",elapsed[0],fallback.allowance(),fallback.anchor());}

@@ -70,6 +70,9 @@ public final class IslandCoordinator {
         // Ephemeral cost hint, not material state or a renewed fallback allowance. A restart
         // may rediscover the hint; saved inventory, cadence, debt and fences stay authoritative.
         private int maximumSliceTicks=Integer.MAX_VALUE;
+        // Ephemeral solver caches for this island's jobs; replaced, never mutated, on a revision
+        // bump, so a job still running under the old revision keeps its own handle.
+        private RetainedSolver retained=new RetainedSolver();
         private final Map<UUID,Long> fences=new HashMap<>();
         private Island(Snapshot saved,FluidThermodynamics model) {
             id=saved.id;revision=saved.revision;this.model=Objects.requireNonNull(model);graph=saved.graph;
@@ -125,7 +128,7 @@ public final class IslandCoordinator {
         owned();Objects.requireNonNull(reason);if(stopped||suspension!=null)return;
         suspension=reason;dispatcher.demand(0);
         for(var island:islands.values()) {
-            island.revision=Math.addExact(island.revision,1);island.suspended=true;island.status=reason;
+            island.revision=Math.addExact(island.revision,1);island.suspended=true;island.status=reason;island.retained=new RetainedSolver();
             island.anchor=island.anchor.map(a->new ApproximationAnchor("invalidated:property-reload",a.graph(),a.modes()));
         }
         var closing=List.copyOf(rounds);rounds.clear();
@@ -168,7 +171,7 @@ public final class IslandCoordinator {
                 var slice=island.clock.nextSlice(request,island.fence(),island.maximumSliceTicks).orElseThrow();
                 var attempt=new Attempt(island.id,island.revision,slice);
                 var policy=island.anchor.isPresent()?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
-                var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy);
+                var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
                 if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";break;}
                 island.clock.admitted(slice);island.status="SOLVING";
                 var entry=new Pending(attempt,island.clock.snapshot().onlineTick(),nanoClock.getAsLong());pending.put(request,entry);admitted.add(entry);dispatchedThisTick++;

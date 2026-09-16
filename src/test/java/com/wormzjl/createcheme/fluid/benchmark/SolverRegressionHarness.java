@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodec;
 import com.wormzjl.createcheme.runtime.fluid.FluidPresetCatalog;
 import com.wormzjl.createcheme.runtime.fluid.FluidSavedData;
+import com.wormzjl.createcheme.runtime.fluid.RetainedSolver;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.network.*;
@@ -45,8 +46,11 @@ final class SolverRegressionHarness {
     sealed interface Tolerance permits Exact,Relative {}
     record Exact() implements Tolerance {}
     /** {@code state} and {@code moles} are relative, {@code temperature} absolute in kelvin,
-     * {@code phaseFraction} absolute on a volume fraction, {@code flow} relative to max(|q|,1e-6). */
-    record Relative(double state,double temperature,double phaseFraction,double flow) implements Tolerance {}
+     * {@code phaseFraction} absolute on a volume fraction, {@code flow} relative to max(|q|,1e-6).
+     * A flow also passes within {@code flowAbsolute} kg/s, which is how the interval controller
+     * itself treats near-zero pipes (its own declared numerical floor is 1e-9 + 2e-9 m/dt kg/s);
+     * pass 0 for a purely relative flow gate. */
+    record Relative(double state,double temperature,double phaseFraction,double flow,double flowAbsolute) implements Tolerance {}
 
     /** {@code warmup} intervals are replayed from {@code start} and discarded before the measured
      * ones restart from {@code start}, so the recorded wall times are not a JIT transient. */
@@ -106,17 +110,19 @@ final class SolverRegressionHarness {
 
     // ---- replay --------------------------------------------------------------------------
 
-    /** Solves the fixture's consecutive five-second intervals, feeding the accepted graph forward. */
+    /** Solves the fixture's consecutive five-second intervals through one per-island retained
+     * solver handle, exactly as a coordinator-dispatched island job does, feeding the accepted
+     * graph forward. The warm-up pass uses its own handle, so the measured pass still starts cold. */
     static List<IntervalReport> replay(FluidThermodynamics model,Fixture fixture) {
-        var warm=fixture.start();
+        var warm=fixture.start();var warmupSolver=new RetainedSolver();
         for(int interval=0;interval<fixture.warmup();interval++)
-            warm=new PassiveIntervalSolver(model).solve(warm,5,PassiveIntervalSolver.Settings.defaults(),NOOP).graph();
-        var reports=new ArrayList<IntervalReport>();var graph=fixture.start();
+            warm=warmupSolver.solve(model,warm,5,PassiveIntervalSolver.Settings.defaults(),NOOP).graph();
+        var reports=new ArrayList<IntervalReport>();var graph=fixture.start();var retained=new RetainedSolver();
         for(int interval=0;interval<fixture.intervals();interval++) {
             SolverDiagnostics.reset();SolverDiagnostics.ENABLED=true;
             long allocated=THREADS.getCurrentThreadAllocatedBytes(),started=System.nanoTime();
             PassiveIntervalSolver.Result result;
-            try{result=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),NOOP);}
+            try{result=retained.solve(model,graph,5,PassiveIntervalSolver.Settings.defaults(),NOOP);}
             finally{SolverDiagnostics.ENABLED=false;}
             double milliseconds=(System.nanoTime()-started)/1e6;
             long bytes=THREADS.getCurrentThreadAllocatedBytes()-allocated;
@@ -137,7 +143,13 @@ final class SolverRegressionHarness {
 
     // ---- reference JSON ------------------------------------------------------------------
 
-    static Path reference(String fixture){return REFERENCES.resolve(fixture+".json");}
+    /** {@code -Dfluid.regression.references=<dir>} compares against (or captures into) another
+     * baseline set, which is how a later work package proves it is bitwise neutral against the
+     * commit before it rather than against the original 154007d capture. */
+    static Path reference(String fixture) {
+        String directory=System.getProperty("fluid.regression.references");
+        return (directory==null||directory.isBlank()?REFERENCES:Path.of(directory)).resolve(fixture+".json");
+    }
     static JsonObject encode(String fixture,List<IntervalReport> reports) {
         var root=new JsonObject();root.addProperty("fixture",fixture);
         var intervals=new JsonArray();
@@ -176,71 +188,98 @@ final class SolverRegressionHarness {
 
     // ---- comparison ----------------------------------------------------------------------
 
-    /** Returns one message per disagreement, empty when the replay matches the reference. */
-    static List<String> compare(String fixture,JsonObject reference,List<IntervalReport> actual,Tolerance tolerance) {
-        var failures=new ArrayList<String>();
+    /** Disagreements against the declared tolerance, plus the largest deviation actually seen in
+     * each quantity, which is reported whether or not the gate passes. */
+    record Comparison(List<String> failures,double state,double temperature,double phaseFraction,double flow,boolean substepsDiffer,
+                      String stateAt,String temperatureAt,String phaseAt,String flowAt) {
+        String deviations() {
+            return String.format(Locale.ROOT,"max deviation: state/moles %.3e relative (%s), temperature %.3e K (%s), "
+                            +"phase fraction %.3e (%s), flow %.3e relative (%s)%s",
+                    state,stateAt,temperature,temperatureAt,phaseFraction,phaseAt,flow,flowAt,substepsDiffer?"; substep counts differ":"");
+        }
+    }
+    private static final class Worst {
+        private double state,temperature,phaseFraction,flow;
+        private String stateAt="-",temperatureAt="-",phaseAt="-",flowAt="-";
+        private static String where(String at,String field,double expected,double actual) {
+            return at+" "+field+" reference "+expected+" -> "+actual;
+        }
+    }
+
+    static Comparison compare(String fixture,JsonObject reference,List<IntervalReport> actual,Tolerance tolerance) {
+        var failures=new ArrayList<String>();var worst=new Worst();boolean substeps=false;
         var intervals=reference.getAsJsonArray("intervals");
         if(intervals.size()!=actual.size()) {
             failures.add(fixture+": reference has "+intervals.size()+" intervals, replay produced "+actual.size());
-            return failures;
+            return new Comparison(failures,0,0,0,0,true,"-","-","-","-");
         }
-        for(int i=0;i<actual.size()&&failures.size()<40;i++) {
+        for(int i=0;i<actual.size();i++) {
             var expected=intervals.get(i).getAsJsonObject();var state=actual.get(i).state();String where=fixture+" interval "+i;
-            if(tolerance instanceof Exact) {
-                if(expected.get("accepted").getAsInt()!=state.accepted())
-                    failures.add(where+": accepted substeps "+expected.get("accepted").getAsInt()+" -> "+state.accepted());
-                if(expected.get("rejected").getAsInt()!=state.rejected())
-                    failures.add(where+": rejected substeps "+expected.get("rejected").getAsInt()+" -> "+state.rejected());
-            }
+            boolean differ=expected.get("accepted").getAsInt()!=state.accepted()||expected.get("rejected").getAsInt()!=state.rejected();
+            substeps|=differ;
+            if(differ&&tolerance instanceof Exact)failures.add(where+": substeps "+expected.get("accepted").getAsInt()+"/"
+                    +expected.get("rejected").getAsInt()+" -> "+state.accepted()+"/"+state.rejected());
             var nodes=expected.getAsJsonArray("nodes");
             if(nodes.size()!=state.nodes().size()){failures.add(where+": node count "+nodes.size()+" -> "+state.nodes().size());continue;}
-            for(int n=0;n<nodes.size()&&failures.size()<40;n++) {
+            for(int n=0;n<nodes.size();n++) {
                 var node=nodes.get(n).getAsJsonObject();var got=state.nodes().get(n);String at=where+" node "+got.id();
                 if(node.get("id").getAsLong()!=got.id()){failures.add(at+": identity "+node.get("id").getAsLong());continue;}
-                check(failures,at,"temperature",node.get("temperature").getAsDouble(),got.temperature(),tolerance,Quantity.TEMPERATURE,0);
-                check(failures,at,"pressure",node.get("pressure").getAsDouble(),got.pressure(),tolerance,Quantity.STATE,0);
-                check(failures,at,"mass",node.get("mass").getAsDouble(),got.mass(),tolerance,Quantity.STATE,0);
-                check(failures,at,"volume",node.get("volume").getAsDouble(),got.volume(),tolerance,Quantity.STATE,0);
                 double volume=node.get("volume").getAsDouble();
-                fraction(failures,at,"liquidVolume",node.get("liquidVolume").getAsDouble(),got.liquidVolume(),volume,got.volume(),tolerance);
-                fraction(failures,at,"vaporVolume",node.get("vaporVolume").getAsDouble(),got.vaporVolume(),volume,got.volume(),tolerance);
-                fraction(failures,at,"waterVolume",node.get("waterVolume").getAsDouble(),got.waterVolume(),volume,got.volume(),tolerance);
+                check(failures,worst,at,"temperature",node.get("temperature").getAsDouble(),got.temperature(),tolerance,Quantity.TEMPERATURE,0);
+                check(failures,worst,at,"pressure",node.get("pressure").getAsDouble(),got.pressure(),tolerance,Quantity.STATE,0);
+                check(failures,worst,at,"mass",node.get("mass").getAsDouble(),got.mass(),tolerance,Quantity.STATE,0);
+                check(failures,worst,at,"volume",volume,got.volume(),tolerance,Quantity.STATE,0);
+                fraction(failures,worst,at,"liquidVolume",node.get("liquidVolume").getAsDouble(),got.liquidVolume(),volume,got.volume(),tolerance);
+                fraction(failures,worst,at,"vaporVolume",node.get("vaporVolume").getAsDouble(),got.vaporVolume(),volume,got.volume(),tolerance);
+                fraction(failures,worst,at,"waterVolume",node.get("waterVolume").getAsDouble(),got.waterVolume(),volume,got.volume(),tolerance);
                 var moles=node.getAsJsonArray("moles");
                 if(moles.size()!=got.moles().length){failures.add(at+": component count "+moles.size()+" -> "+got.moles().length);continue;}
                 double total=0;for(var value:moles)total+=Math.abs(value.getAsDouble());
-                for(int c=0;c<moles.size()&&failures.size()<40;c++)
-                    check(failures,at,"moles["+c+"]",moles.get(c).getAsDouble(),got.moles()[c],tolerance,Quantity.STATE,1e-9*total);
+                for(int c=0;c<moles.size();c++)
+                    check(failures,worst,at,"moles["+c+"]",moles.get(c).getAsDouble(),got.moles()[c],tolerance,Quantity.STATE,1e-9*total);
             }
             var flows=expected.getAsJsonArray("flows");
             if(flows.size()!=state.flows().length){failures.add(where+": pipe count "+flows.size()+" -> "+state.flows().length);continue;}
-            for(int e=0;e<flows.size()&&failures.size()<40;e++)
-                check(failures,where+" pipe "+e,"averageMassFlow",flows.get(e).getAsDouble(),state.flows()[e],tolerance,Quantity.FLOW,0);
+            for(int e=0;e<flows.size();e++)
+                check(failures,worst,where+" pipe "+e,"averageMassFlow",flows.get(e).getAsDouble(),state.flows()[e],tolerance,Quantity.FLOW,0);
         }
-        return failures;
+        return new Comparison(List.copyOf(failures),worst.state,worst.temperature,worst.phaseFraction,worst.flow,substeps,worst.stateAt,worst.temperatureAt,worst.phaseAt,worst.flowAt);
     }
     private enum Quantity {STATE,TEMPERATURE,FLOW}
-    private static void check(List<String> failures,String at,String field,double expected,double actual,Tolerance tolerance,Quantity quantity,double floor) {
+    private static void check(List<String> failures,Worst worst,String at,String field,double expected,double actual,
+                              Tolerance tolerance,Quantity quantity,double floor) {
         if(Double.doubleToLongBits(expected)==Double.doubleToLongBits(actual))return;
+        double difference=Math.abs(expected-actual);
+        double scaled=switch(quantity) {
+            case TEMPERATURE->difference;
+            case FLOW->difference/Math.max(Math.abs(expected),1e-6);
+            case STATE->difference/Math.max(Math.abs(expected),Math.max(floor,Double.MIN_NORMAL));
+        };
+        switch(quantity) {
+            case TEMPERATURE->{if(scaled>worst.temperature){worst.temperature=scaled;worst.temperatureAt=Worst.where(at,field,expected,actual);}}
+            case FLOW->{if(scaled>worst.flow){worst.flow=scaled;worst.flowAt=Worst.where(at,field,expected,actual);}}
+            case STATE->{if(scaled>worst.state){worst.state=scaled;worst.stateAt=Worst.where(at,field,expected,actual);}}
+        }
         if(tolerance instanceof Relative relative) {
-            double difference=Math.abs(expected-actual),allowed=switch(quantity) {
-                case TEMPERATURE->relative.temperature();
-                case FLOW->relative.flow()*Math.max(Math.abs(expected),1e-6);
-                case STATE->relative.state()*Math.max(Math.abs(expected),floor);
-            };
-            if(difference<=allowed)return;
-            failures.add(at+" "+field+": expected "+expected+", got "+actual+" (difference "+difference+" > "+allowed+")");
+            if(quantity==Quantity.FLOW&&difference<=relative.flowAbsolute())return;
+            double allowed=switch(quantity){case TEMPERATURE->relative.temperature();case FLOW->relative.flow();case STATE->relative.state();};
+            if(scaled<=allowed)return;
+            if(failures.size()<40)failures.add(at+" "+field+": expected "+expected+", got "+actual+" (scaled deviation "+scaled+" > "+allowed+")");
             return;
         }
-        failures.add(at+" "+field+": expected "+expected+", got "+actual+" (difference "+Math.abs(expected-actual)+")");
+        if(failures.size()<40)failures.add(at+" "+field+": expected "+expected+", got "+actual+" (difference "+difference+")");
     }
-    private static void fraction(List<String> failures,String at,String field,double expected,double actual,double expectedVolume,double actualVolume,Tolerance tolerance) {
+    private static void fraction(List<String> failures,Worst worst,String at,String field,double expected,double actual,
+                                 double expectedVolume,double actualVolume,Tolerance tolerance) {
         if(Double.doubleToLongBits(expected)==Double.doubleToLongBits(actual))return;
+        double difference=Math.abs(expected/expectedVolume-actual/actualVolume);
+        if(difference>worst.phaseFraction){worst.phaseFraction=difference;worst.phaseAt=Worst.where(at,field,expected,actual);}
         if(tolerance instanceof Relative relative) {
-            double difference=Math.abs(expected/expectedVolume-actual/actualVolume);
             if(difference<=relative.phaseFraction())return;
-            failures.add(at+" "+field+" fraction: expected "+expected/expectedVolume+", got "+actual/actualVolume+" (difference "+difference+" > "+relative.phaseFraction()+")");
+            if(failures.size()<40)failures.add(at+" "+field+" fraction: expected "+expected/expectedVolume+", got "+actual/actualVolume
+                    +" (difference "+difference+" > "+relative.phaseFraction()+")");
             return;
         }
-        failures.add(at+" "+field+": expected "+expected+", got "+actual+" (difference "+Math.abs(expected-actual)+")");
+        if(failures.size()<40)failures.add(at+" "+field+": expected "+expected+", got "+actual+" (difference "+Math.abs(expected-actual)+")");
     }
 }

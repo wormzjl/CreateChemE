@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.linalg;
 
+import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import java.util.*;
 import org.ejml.data.DMatrixRMaj;
@@ -28,6 +29,7 @@ public final class SparseLuSolver {
     }
 
     public static Factorization factor(SparseMatrix matrix){return factor(matrix,prepareOrdering(matrix));}
+    public static Factorization factor(SparseMatrix matrix,Ordering ordering){return factor(matrix,ordering,SolverOwnership.confinedToCurrentThread());}
     /** Immutable permutation; any numeric matrix of the same dimension can use it. Reuse is an
      * ordering optimization only, never reuse of numeric factors or a structural-lock promise. */
     public static final class Ordering {
@@ -38,12 +40,16 @@ public final class SparseLuSolver {
         if(!SolverDiagnostics.ENABLED)return new Ordering(Objects.requireNonNull(matrix));
         long started=System.nanoTime();
         try{return new Ordering(Objects.requireNonNull(matrix));}
-        finally{SolverDiagnostics.luOrderingNanos.add(System.nanoTime()-started);SolverDiagnostics.luOrderings.increment();}
+        finally {
+            long elapsed=System.nanoTime()-started;
+            if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportOrderingNanos.add(elapsed);SolverDiagnostics.transportOrderings.increment();}
+            else{SolverDiagnostics.luOrderingNanos.add(elapsed);SolverDiagnostics.luOrderings.increment();}
+        }
     }
-    public static Factorization factor(SparseMatrix matrix,Ordering ordering) {
-        if(!SolverDiagnostics.ENABLED)return new Factorization(matrix,Objects.requireNonNull(ordering));
+    public static Factorization factor(SparseMatrix matrix,Ordering ordering,SolverOwnership ownership) {
+        if(!SolverDiagnostics.ENABLED)return new Factorization(matrix,Objects.requireNonNull(ordering),ownership);
         long started=System.nanoTime();
-        try{return new Factorization(matrix,Objects.requireNonNull(ordering));}
+        try{return new Factorization(matrix,Objects.requireNonNull(ordering),ownership);}
         finally {
             long elapsed=System.nanoTime()-started;
             if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportFactorNanos.add(elapsed);SolverDiagnostics.transportFactorizations.increment();}
@@ -51,9 +57,9 @@ public final class SparseLuSolver {
         }
     }
 
-    /** A reusable numeric factorization owned by the creating worker, never shared across threads. */
+    /** A reusable numeric factorization owned by the holder of its latch, never shared across threads. */
     public static final class Factorization {
-        private final Thread owner=Thread.currentThread();
+        private final SolverOwnership ownership;
         private final SparseMatrix matrix;
         private final double[] rowScale;
         private final int[] permutation;
@@ -61,7 +67,8 @@ public final class SparseLuSolver {
         private final double[] rhsWorkspace,residualWorkspace,magnitudeWorkspace;
         private final DMatrixRMaj b,x;
         private final org.ejml.interfaces.linsol.LinearSolverSparse<DMatrixSparseCSC,DMatrixRMaj> solver;
-        private Factorization(SparseMatrix matrix,Ordering ordering) {
+        private Factorization(SparseMatrix matrix,Ordering ordering,SolverOwnership ownership) {
+            this.ownership=Objects.requireNonNull(ownership,"ownership");
             this.matrix=Objects.requireNonNull(matrix,"matrix");int size=matrix.size();rowScale=new double[size];
             if(ordering.permutation.length!=size)throw new IllegalArgumentException("Ordering dimension mismatch");permutation=ordering.permutation;
             scaledValues=new double[matrix.nonzeroCount()];rowNorm=new double[size];
@@ -97,7 +104,7 @@ public final class SparseLuSolver {
             }
         }
         private double[][] solveMultiple0(double[][] rightHandSides) {
-            if(Thread.currentThread()!=owner)throw new IllegalStateException("Sparse factorization belongs to its creating worker");
+            ownership.check("Sparse factorization belongs to the worker holding its solver latch");
             Objects.requireNonNull(rightHandSides,"rightHandSides");int size=matrix.size();
             for(var input:rightHandSides) {
                 Objects.requireNonNull(input,"rightHandSide");

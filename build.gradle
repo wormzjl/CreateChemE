@@ -369,6 +369,8 @@ tasks.register('fluidSolverRegression', Test) {
     testLogging { showStandardStreams = true }
     if (providers.gradleProperty('fluidRegressionSnapshot').isPresent())
         systemProperty 'fluid.regression.snapshot', providers.gradleProperty('fluidRegressionSnapshot').get()
+    if (providers.gradleProperty('fluidRegressionReferences').isPresent())
+        systemProperty 'fluid.regression.references', providers.gradleProperty('fluidRegressionReferences').get()
     systemProperty 'fluid.regression.capture', providers.gradleProperty('fluidRegressionCapture').getOrElse('false')
     systemProperty 'fluid.regression.mode', providers.gradleProperty('fluidRegressionMode').getOrElse('declared')
     outputs.upToDateWhen { false }
