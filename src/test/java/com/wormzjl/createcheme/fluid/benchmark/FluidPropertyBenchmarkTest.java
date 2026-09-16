@@ -28,6 +28,13 @@ class FluidPropertyBenchmarkTest {
         output.put("waterLiquid",measure(()->model.waterLiquid(seed.temperature(),seed.pressure()).molarVolume(),2000));
         output.put("waterLiquidWithPreparedTemperature",measure(()->model.waterLiquid(seed.temperature(),seed.pressure(),prepared).molarVolume(),2000));
         output.put("saturationPressure",measure(()->model.saturationPressure(seed.temperature()),2000));
+        // The transport term the decode builds on top of state(), with and without its prepared terms.
+        var scratch=new com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace();
+        var transport=prepared.viscosities();
+        output.put("viscosityLiquid",measure(()->model.viscosity.liquid(seed.temperature(),seed.liquidView()).pascalSeconds(),2000));
+        output.put("viscosityLiquidPrepared",measure(()->model.viscosity.liquid(seed.temperature(),seed.liquidView(),transport).pascalSeconds(),2000));
+        output.put("viscosityVapor",measure(()->model.viscosity.vapor(seed.temperature(),seed.vaporView(),seed.waterVapor()),2000));
+        output.put("viscosityVaporPrepared",measure(()->model.viscosity.vapor(seed.temperature(),seed.vaporView(),seed.waterVapor(),scratch,transport),2000));
         output.put("standaloneTpInitializer",measure(()->model.flashTP(350,101325,n,()->{}).internalEnergy(),200));
         output.put("limitations","Microbenchmark only; measures direct state and TP initialization, not the UV inventory recovery or coupled network solve. No nested initializer permitted in network residuals.");
         Files.createDirectories(Path.of("build/reports/fluid"));Files.writeString(Path.of("build/reports/fluid/M1-property-cost.json"),new GsonBuilder().setPrettyPrinting().create().toJson(output));

@@ -586,4 +586,46 @@ against the 154007d references the deviations are C1's, digit for digit: state 1
 worst flow 8.0e-9 kg/s against a 3.18e-8 kg/s controller allowance.
 
 - Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `e604043`.
+### WP3-C4 - prepare pure-component viscosities per node temperature
+
+C1 and C2 left the transport term visible: after them a node decode paid 1300 ns for the liquid
+mixture viscosity and 1600 ns for the vapor one against a 3800 ns `state()`, so the `Transport` row
+the decode builds was still 43% on top of the state it describes. That is the measurement this
+optional item was gated on, and it is met.
+
+`MixtureViscosity.Prepared` holds one exact temperature's pure-component terms: the logarithm of
+each liquid viscosity with the regime it came from (supported carrier or conditional solute), each
+vapor viscosity with its square root, and the water liquid value. The composition-dependent mixing
+stays per evaluation - the logarithmic weighting, and Wilke's double loop, which is O(n^2) with a
+division per pair and is what remains of the vapor cost. `FluidThermodynamics.Prepared` carries the
+bundle next to the PR terms and the water state, so the per-node cache that already keyed on the
+exact temperature now covers transport too.
+
+Components are filled the first time a mixture actually contains one, never in advance: the
+correlations refuse temperatures outside their own range and the conditional-solute curves refuse
+temperatures outside their sampled domain, so eager preparation would have raised a property
+failure for a component the caller never asked about. Filling in index order keeps the first
+failure the same one the composition would have produced.
+
+| kernel | ns, C2 | ns, C4 |
+|---|---:|---:|
+| `viscosity.liquid` | 1300 | **100** |
+| `viscosity.vapor` | 1600 | **1300** (the Wilke loop) |
+| `state(...)` with the prepared temperature | 3700 | 3800 |
+
+| fixture | wall ms | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | node state() calls | allocated MB | KB per residual |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 31.9-34.6 -> 34.5 | 11/0 unchanged | 5.0 | 0.6 | 132 | 1782 | 28.6 -> 29.0 | 222 -> 225 |
+| quiet 11324, mean of 5 | 17.8-18.6 -> 16.9 | 11/0 unchanged | 5.8 | 0.8 | 172 | 1289 | 20.3 -> 20.6 | 121 -> 123 |
+| cold 11312, one interval | 1248-1250 -> **1149** | 52/15 unchanged | 135 | 41 | 8731 | 98070 | 1118.0 -> 1135.4 | 131 -> 133 |
+| 100-reservoir chain | 2236-2300 -> **1979** | 45/22 unchanged | 135 | 22 | 4149 | 246000 | 3169.1 -> 3230.3 | 782 -> 797 |
+
+Allocation rises by half a kilobyte per prepared temperature (four vectors over the basis), which is
+17 MB on the cold island and 61 MB on the chain, against 8% and 13% of their wall time. The quiet
+fixtures are inside their run-to-run spread; their warm intervals decode four nodes.
+
+- Verified EXACT (bitwise, substep counts included) against `build/probe/reference-c1`, on all four
+  fixtures, which is also the capture `e604043` proved itself against.
+- Gate: 793 JUnit tests, 14 GameTests, green.
 - Commit `PLACEHOLDER`.

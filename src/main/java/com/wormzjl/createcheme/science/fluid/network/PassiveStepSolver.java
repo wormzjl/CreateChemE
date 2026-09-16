@@ -372,10 +372,16 @@ public final class PassiveStepSolver {
         if(Math.abs(ea-eb-projection.pumpWork()-projection.externalEnergy())>1e-4+1e-6*(energyScale+Math.abs(projection.pumpWork())))throw new SparseNewton.Nonconvergence("Total energy balance failed");
     }
     private double viscosity(FluidThermodynamics.State s) {
+        return viscosity(s,null);
+    }
+    /** {@code prepared} must be this state's own temperature bundle, or {@code null} to evaluate
+     * the pure-component terms here as the standalone paths do. */
+    private double viscosity(FluidThermodynamics.State s,FluidThermodynamics.Prepared prepared) {
+        var terms=prepared==null?null:prepared.viscosities();
         double value=0;
-        if(s.liquidVolume()>0)value+=s.liquidVolume()*model.viscosity.liquid(s.temperature(),s.liquidView()).pascalSeconds();
-        if(s.waterVolume()>0)value+=s.waterVolume()*model.viscosity.waterLiquid(s.temperature());
-        if(s.vaporVolume()>0)value+=s.vaporVolume()*model.viscosity.vapor(s.temperature(),s.vaporView(),s.waterVapor(),viscosities);
+        if(s.liquidVolume()>0)value+=s.liquidVolume()*model.viscosity.liquid(s.temperature(),s.liquidView(),terms).pascalSeconds();
+        if(s.waterVolume()>0)value+=s.waterVolume()*model.viscosity.waterLiquid(s.temperature(),terms);
+        if(s.vaporVolume()>0)value+=s.vaporVolume()*model.viscosity.vapor(s.temperature(),s.vaporView(),s.waterVapor(),viscosities,terms);
         return value/s.volume();
     }
     private final class Equations implements SparseNewton.Equations {
@@ -499,7 +505,7 @@ public final class PassiveStepSolver {
                         if(cachedPrepared[i]==null||cachedPrepared[i].temperature()!=temperature)cachedPrepared[i]=model.prepare(temperature);
                     }
                     var state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedPrepared[i]);
-                    var transport=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),viscosity(state),state.enthalpy()/state.mass(),model.velocityLimit(state));
+                    var transport=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),viscosity(state,cachedPrepared[i]),state.enthalpy()/state.mass(),model.velocityLimit(state));
                     cachedStates[i]=state;cachedTransport[i]=transport;
                     if(layout[i]!=null)System.arraycopy(x,offsets[i],cachedVariables[i],0,layout[i].size());
                 }

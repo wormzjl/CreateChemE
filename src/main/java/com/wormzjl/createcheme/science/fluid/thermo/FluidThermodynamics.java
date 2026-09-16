@@ -251,6 +251,7 @@ public final class FluidThermodynamics {
         private final double temperature;
         private TranslatedPengRobinson.TemperatureTerms terms;
         private WaterRegion1.State referenceWater;
+        private MixtureViscosity.Prepared transport;
         private double saturationPressure=Double.NaN,vaporEnthalpy=Double.NaN;
         private Prepared(FluidThermodynamics owner,double temperature) {
             if(!Double.isFinite(temperature)||temperature<=0)throw new IllegalArgumentException("Invalid prepared temperature");
@@ -268,6 +269,10 @@ public final class FluidThermodynamics {
         }
         double vaporEnthalpy() {
             return Double.isNaN(vaporEnthalpy)?vaporEnthalpy=owner.vaporWaterEnthalpy(temperature):vaporEnthalpy;
+        }
+        /** The pure-component transport terms of this temperature, for the decode's Transport row. */
+        public MixtureViscosity.Prepared viscosities() {
+            return transport==null?transport=owner.viscosity.prepare(temperature):transport;
         }
     }
     public record WaterLiquid(double molarVolume,double molarEnthalpy) {}
