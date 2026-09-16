@@ -161,3 +161,36 @@ TransientQualificationTest (3), HydraulicReferenceQualificationTest (4), Hydraul
 SharedSourceDepletion (2), FluidFallbackQualification (6) and all other science.fluid tests.
 
 - Gate: 792 JUnit tests, 14 GameTests, green.
+- Commit `cad3474`.
+
+### The buffered module path still builds a solver per job: measured, not landed
+
+No production code constructs `FluidIslandCommand` with the per-job handle any more - the coordinator
+passes `island.retained` - but the module path never went through that constructor. A buffered
+interval becomes a `BufferedIslandCommand`, whose `ModuleTransferPlanner.prepare` builds its own
+`new PassiveIntervalSolver(model)` and solves the interval up to 1 + 12 + 12 times while it searches
+for a feasible transfer size. That solver is discarded with the job, so the module path still pays
+the full A2 cost: a fresh pattern, colouring, ordering and Jacobian per job, and a 1 s step restart.
+
+Routing the island's handle through it was implemented and measured: `RetainedSolver.run` leases the
+solver for a whole job (the planner's trials all share one lease and one latch), `prepare` takes the
+handle, `BufferedIslandCommand` carries it, and `CausalModuleCoordinator.command` passes
+`original.retained()` when it replaces the ordinary command. It works, and it fails one existing
+assertion, so it is **not** part of this branch:
+
+- `CausalModuleCoordinatorTest.restartWithPartialFeedOrPendingProductsContinuesTheSamePhysicalTrajectory`
+  compares a continuously running world against one restored from a checkpoint at tick 150/350 and
+  requires the reservoir internal energies to agree within 1e-4 J. With the shared handle it reports
+  -2.2547663751797843e8 J versus -2.2547663752132654e8 J: a difference of 3.3e-3 J on 2.25e8 J, i.e.
+  1.5e-11 relative, 33x over that absolute tolerance.
+- Cause, confirmed by re-running with a per-job handle in the module path only (which passes): a
+  restored island's retained solver is cold while the continuously running one is warm, so their
+  module intervals take different - equally converged - numerical paths. It is the same mechanism as
+  A2 and A1, now visible across a restart.
+- The ordinary path does not trip this test because its islands in that fixture have no pipes, so
+  their intervals never reach the Newton solve. The restart margin there is currently exactly 0.0 J.
+- Landing it therefore needs a decision on what restart equivalence should mean once solver state is
+  retained: an absolute 1e-4 J on a 225 MJ inventory is a bitwise assertion in disguise. The natural
+  re-expression is the relative bound the rest of this work uses (1e-6 relative on energy, which this
+  case would clear by five orders of magnitude). Until then the module path keeps its per-job solver,
+  which is correct, just not fast.
