@@ -400,9 +400,18 @@ public final class ProcessSolveServices {
     public record BufferedIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,long startTick,int durationTicks,
             List<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Input> inputs,
             List<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Withdrawal> withdrawals,
-            long wallBudgetNanos,FallbackAllowance previousAllowance,Optional<ApproximationAnchor> previousAnchor) implements FluidSolveCommand {
+            long wallBudgetNanos,FallbackAllowance previousAllowance,Optional<ApproximationAnchor> previousAnchor,
+            com.wormzjl.createcheme.runtime.fluid.RetainedSolver retained) implements FluidSolveCommand {
+        /** Without a retained handle the job gets its own, which is the per-job solver of before. */
+        public BufferedIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,long startTick,int durationTicks,
+                List<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Input> inputs,
+                List<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Withdrawal> withdrawals,
+                long wallBudgetNanos,FallbackAllowance previousAllowance,Optional<ApproximationAnchor> previousAnchor) {
+            this(model,snapshot,startTick,durationTicks,inputs,withdrawals,wallBudgetNanos,previousAllowance,previousAnchor,
+                    new com.wormzjl.createcheme.runtime.fluid.RetainedSolver());
+        }
         public BufferedIslandCommand {
-            Objects.requireNonNull(model);Objects.requireNonNull(snapshot);inputs=List.copyOf(inputs);withdrawals=List.copyOf(withdrawals);Objects.requireNonNull(previousAllowance);Objects.requireNonNull(previousAnchor);
+            Objects.requireNonNull(model);Objects.requireNonNull(snapshot);inputs=List.copyOf(inputs);withdrawals=List.copyOf(withdrawals);Objects.requireNonNull(previousAllowance);Objects.requireNonNull(previousAnchor);Objects.requireNonNull(retained);
             if(startTick<0||durationTicks<1||wallBudgetNanos<1||inputs.size()+withdrawals.size()>4096)throw new IllegalArgumentException("Invalid buffered interval");
         }
         @Override public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken token) {
@@ -410,7 +419,7 @@ public final class ProcessSolveServices {
             Runnable checkpoint=()->{token.throwIfCancellationRequested();if(System.nanoTime()-started>=wallBudgetNanos)throw new FluidWallDeadline();};
             Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> proposal=Optional.empty();String detail;
             try {
-                proposal=Optional.of(new com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner(model).prepare(snapshot,startTick,durationTicks,inputs,withdrawals,checkpoint));checkpoint.run();detail="FULL: buffered transfers";
+                proposal=Optional.of(new com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner(model).prepare(snapshot,startTick,durationTicks,inputs,withdrawals,checkpoint,retained));checkpoint.run();detail="FULL: buffered transfers";
             }catch(FluidWallDeadline|com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();detail="HELD: buffered interval "+held.getMessage();}
             token.throwIfCancellationRequested();long elapsed=System.nanoTime()-started;
             long cpu=WorkerAllocation.CpuTime.elapsed(cpuStart,WorkerAllocation.CpuTime.sample());

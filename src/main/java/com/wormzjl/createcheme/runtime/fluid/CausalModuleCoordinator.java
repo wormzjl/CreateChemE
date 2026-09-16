@@ -135,7 +135,10 @@ public final class CausalModuleCoordinator {
         }
         if(inputs.isEmpty()&&withdrawals.isEmpty())return original;
         var current=islands.snapshot(attempt.islandId());
-        return new ProcessSolveServices.BufferedIslandCommand(model,original.snapshot(),start,Math.toIntExact(end-start),inputs,withdrawals,original.wallBudgetNanos(),current.allowance(),current.anchor());
+        // A buffered interval is still this island's interval, so it keeps the island's retained
+        // solver and its invalidation: a revision bump replaces the handle before the next dispatch.
+        return new ProcessSolveServices.BufferedIslandCommand(model,original.snapshot(),start,Math.toIntExact(end-start),inputs,withdrawals,
+                original.wallBudgetNanos(),current.allowance(),current.anchor(),original.retained());
     }
 
     /** Preflight the complete ledger/module update before the island coordinator publishes its graph. */

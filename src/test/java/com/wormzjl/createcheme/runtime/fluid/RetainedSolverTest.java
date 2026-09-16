@@ -36,6 +36,23 @@ class RetainedSolverTest {
         return SolverDiagnostics.sample();
     }
 
+    @Test void sharingTheIslandSolverWithTheModulePlannerNeverCostsMoreWork() {
+        var model=model();var retained=new RetainedSolver();var planner=new ModuleTransferPlanner(model);
+        var next=retained.solve(model,graph(model),5,PassiveIntervalSolver.Settings.defaults(),()->{}).graph();
+        var withdrawal=List.of(new ModuleTransferPlanner.Withdrawal(new java.util.UUID(0,7),2,.01));
+        var shared=measure(()->planner.prepare(next,0,100,List.of(),withdrawal,()->{},retained));
+        var fresh=measure(()->planner.prepare(next,0,100,List.of(),withdrawal,()->{},new RetainedSolver()));
+        // A buffered interval introduces a transfer, so its trials deliberately start from the cold
+        // step: carrying the island's estimate into a boundary change made this interval cost 11
+        // Jacobian builds instead of 6. What still carries - pattern, colouring, ordering and
+        // preconditioner - can only remove work, never add it, and this fixture is small enough
+        // that it removes almost none; the gain is on islands whose node block dominates.
+        assertTrue(shared.value("jacobianBuilds")<=fresh.value("jacobianBuilds"),
+                "shared "+shared.value("jacobianBuilds")+" vs fresh "+fresh.value("jacobianBuilds")+" Jacobian builds");
+        assertTrue(shared.value("residualEvaluations")<=fresh.value("residualEvaluations"),
+                "shared "+shared.value("residualEvaluations")+" vs fresh "+fresh.value("residualEvaluations")+" residual evaluations");
+    }
+
     @Test void aRetainedSolverIsExclusiveAndIsHandedBackAfterEveryOutcome() {
         var model=model();var retained=new RetainedSolver();var settings=PassiveIntervalSolver.Settings.defaults();
         var graph=graph(model);var concurrent=new AtomicReference<Throwable>();

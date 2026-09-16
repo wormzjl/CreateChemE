@@ -163,34 +163,47 @@ SharedSourceDepletion (2), FluidFallbackQualification (6) and all other science.
 - Gate: 792 JUnit tests, 14 GameTests, green.
 - Commit `cad3474`.
 
-### The buffered module path still builds a solver per job: measured, not landed
+### Share the retained solver across module transfer trials
 
-No production code constructs `FluidIslandCommand` with the per-job handle any more - the coordinator
+No production code constructs `FluidIslandCommand` with a per-job handle any more - the coordinator
 passes `island.retained` - but the module path never went through that constructor. A buffered
-interval becomes a `BufferedIslandCommand`, whose `ModuleTransferPlanner.prepare` builds its own
-`new PassiveIntervalSolver(model)` and solves the interval up to 1 + 12 + 12 times while it searches
-for a feasible transfer size. That solver is discarded with the job, so the module path still pays
-the full A2 cost: a fresh pattern, colouring, ordering and Jacobian per job, and a 1 s step restart.
+interval becomes a `BufferedIslandCommand`, whose `ModuleTransferPlanner.prepare` built its own
+`new PassiveIntervalSolver(model)` and solved the interval up to 1 + 12 + 12 times while searching
+for a feasible transfer size, then discarded it: the full pre-A2 cost, once per buffered interval.
 
-Routing the island's handle through it was implemented and measured: `RetainedSolver.run` leases the
-solver for a whole job (the planner's trials all share one lease and one latch), `prepare` takes the
-handle, `BufferedIslandCommand` carries it, and `CausalModuleCoordinator.command` passes
-`original.retained()` when it replaces the ordinary command. It works, and it fails one existing
-assertion, so it is **not** part of this branch:
+`RetainedSolver.run` now leases the island's solver for a whole job - every trial shares one lease
+and one latch - `prepare` takes the handle, `BufferedIslandCommand` carries it, and
+`CausalModuleCoordinator.command` passes `original.retained()` when it replaces the ordinary
+command. Invalidation is unchanged: a revision bump replaces the handle before the next dispatch,
+and a held, failed or approximate outcome resets the step estimate.
 
-- `CausalModuleCoordinatorTest.restartWithPartialFeedOrPendingProductsContinuesTheSamePhysicalTrajectory`
-  compares a continuously running world against one restored from a checkpoint at tick 150/350 and
-  requires the reservoir internal energies to agree within 1e-4 J. With the shared handle it reports
-  -2.2547663751797843e8 J versus -2.2547663752132654e8 J: a difference of 3.3e-3 J on 2.25e8 J, i.e.
-  1.5e-11 relative, 33x over that absolute tolerance.
-- Cause, confirmed by re-running with a per-job handle in the module path only (which passes): a
-  restored island's retained solver is cold while the continuously running one is warm, so their
-  module intervals take different - equally converged - numerical paths. It is the same mechanism as
-  A2 and A1, now visible across a restart.
-- The ordinary path does not trip this test because its islands in that fixture have no pipes, so
-  their intervals never reach the Newton solve. The restart margin there is currently exactly 0.0 J.
-- Landing it therefore needs a decision on what restart equivalence should mean once solver state is
-  retained: an absolute 1e-4 J on a 225 MJ inventory is a bitwise assertion in disguise. The natural
-  re-expression is the relative bound the rest of this work uses (1e-6 relative on energy, which this
-  case would clear by five orders of magnitude). Until then the module path keeps its per-job solver,
-  which is correct, just not fast.
+One refinement came out of the measurement. A trial introduces a source or sink term, which is a
+boundary change rather than a continuation, so `Job.solveTrial` starts it from the cold step and
+leaves the island's estimate alone; only the transfer-free baseline solve continues and updates it.
+Without that rule the carried estimate made the measured buffered interval *more* expensive - 11
+Jacobian builds and 28 implicit solves against 6 and 37 for a fresh solver - because it opened with
+an oversized attempt on a freshly disturbed network. With it, sharing costs nothing and saves what
+the island has already built.
+
+Measured effect: the only module fixture available in this worktree is a 2-node island (a generator
+feeding one reservoir, in `RetainedSolverTest`), where sharing is neutral - 6 versus 6 Jacobian
+builds, 188 versus 190 residual evaluations, 21 versus 24 Jacobian colours, so a little structure
+carries and the rest is a matrix too small to matter. The saving scales with the node block, so
+showing it needs a multi-node module island: `FluidModuleProfileTest` would give that, but it needs
+a saved module world (`run/fluid-benchmark/pilot-module-warm-01`), which is build output and is not
+present here. The new test asserts the invariant the measurement does support - sharing never costs
+more work than a fresh solver - so a regression in the trial rule would be caught.
+
+Restart equivalence had to be re-expressed for this to land.
+`CausalModuleCoordinatorTest.restartWithPartialFeedOrPendingProductsContinuesTheSamePhysicalTrajectory`
+compared a continuously running world against one restored from a checkpoint at tick 150/350 with an
+absolute 1e-4 J on reservoir internal energy - a bitwise assertion in disguise on a 2.25e8 J
+inventory. A restored island's retained solver is cold while the continuously running one is warm, so
+their module intervals reach the same root along different paths: -2.2547663751797843e8 J versus
+-2.2547663752132654e8 J, 3.3e-3 J apart, 1.5e-11 relative. The comparison is now relative (1e-9) with
+the previous absolute bound as the floor for near-zero amounts, on both the component moles and the
+energy, with the reason stated in the test. Every conservation and ledger assertion there is
+untouched and still exact, including the stranded-parcel equality in the neighbouring tests.
+
+- Gate: 793 JUnit tests (1 new), 14 GameTests, green. The regression harness is unaffected - it does
+  not exercise the module path - and reports the same deviations as A1.

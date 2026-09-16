@@ -25,13 +25,26 @@ public final class ModuleTransferPlanner {
         reference=EnergyReference.sensible(model.components());
     }
     public Proposal prepare(PassiveNetwork original,long startTick,int durationTicks,List<Input> inputs,List<Withdrawal> withdrawals,Runnable checkpoint) {
+        return prepare(original,startTick,durationTicks,inputs,withdrawals,checkpoint,new RetainedSolver());
+    }
+    /** Plans through the island's retained solver, so a buffered interval reuses the same pattern,
+     * colouring, ordering and preconditioner as the island's ordinary intervals, across the whole
+     * feasibility search below - its trials share one lease. Only the transfer-free baseline solve
+     * continues the island's step estimate; each trial introduces a boundary change, so it starts
+     * from the cold step and leaves that estimate to the interval that is actually committed. */
+    public Proposal prepare(PassiveNetwork original,long startTick,int durationTicks,List<Input> inputs,List<Withdrawal> withdrawals,
+                            Runnable checkpoint,RetainedSolver retained) {
         if(startTick<0||durationTicks<1||!original.scheduledTransfers().isEmpty())throw new IllegalArgumentException("Invalid module interval");
         double seconds=durationTicks/20.0;var index=new HashMap<Long,Integer>();var used=new HashSet<Long>();
         for(int i=0;i<original.reservoirs().size();i++){var n=original.reservoirs().get(i);used.add(n.id());if(n.kind()==PassiveNetwork.NodeKind.RESERVOIR)index.put(n.id(),i);}
         var identities=new HashSet<UUID>();
         for(var input:inputs){if(input.dueTick>startTick||!identities.add(input.id)||!index.containsKey(input.reservoirId))throw new IllegalArgumentException("Future/duplicate/unknown input");validateBasis(input.remaining);}
         for(var output:withdrawals)if(!identities.add(output.id)||!index.containsKey(output.reservoirId))throw new IllegalArgumentException("Duplicate/unknown withdrawal");
-        var solver=new PassiveIntervalSolver(model);var settings=PassiveIntervalSolver.Settings.defaults();
+        return retained.run(model,solver->plan(solver,original,seconds,index,used,inputs,withdrawals,checkpoint));
+    }
+    private Proposal plan(RetainedSolver.Job solver,PassiveNetwork original,double seconds,Map<Long,Integer> index,Set<Long> used,
+                          List<Input> inputs,List<Withdrawal> withdrawals,Runnable checkpoint) {
+        var settings=PassiveIntervalSolver.Settings.defaults();
         // A feasible requested withdrawal needs only its actual coupled solve. Solving a closed
         // feed network first both duplicates work and creates a different startup transient.
         // Keep the conservative baseline/partial search below for an infeasible full request.
@@ -42,7 +55,7 @@ public final class ModuleTransferPlanner {
                 trial.add(new ScheduledTransfer.Withdrawal(id,index.get(withdrawal.reservoirId),withdrawal.maximumKg/seconds));mapped.put(id,withdrawal.id);
             }
             try {
-                var full=solver.solve(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
+                var full=solver.solveTrial(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
                 return completed(full,trial,mapped,Map.of());
             }catch(SparseNewton.Nonconvergence|IllegalArgumentException infeasible) {
                 checkpoint.run();
@@ -58,7 +71,7 @@ public final class ModuleTransferPlanner {
                 var transfer=new ScheduledTransfer.Injection(boundary,index.get(input.reservoirId),rates,material.energyJoule()/seconds);
                 var trial=new ArrayList<>(accepted);trial.add(transfer);
                 try {
-                    var result=solver.solve(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
+                    var result=solver.solveTrial(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
                     accepted.add(transfer);candidate=result;delivered.put(input.id,material);break;
                 }catch(SparseNewton.Nonconvergence|IllegalArgumentException infeasible) {
                     // Keep the previous feasible whole-interval proposal, including unrelated receiving flow.
@@ -70,7 +83,7 @@ public final class ModuleTransferPlanner {
             for(int attempt=0;attempt<12&&kg>0;attempt++,kg*=.5) {
                 checkpoint.run();var transfer=new ScheduledTransfer.Withdrawal(boundary,index.get(withdrawal.reservoirId),kg/seconds);var trial=new ArrayList<>(accepted);trial.add(transfer);
                 try {
-                    var result=solver.solve(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
+                    var result=solver.solveTrial(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
                     accepted.add(transfer);candidate=result;withdrawalIds.put(boundary,withdrawal.id);break;
                 }catch(SparseNewton.Nonconvergence|IllegalArgumentException infeasible) {}
             }

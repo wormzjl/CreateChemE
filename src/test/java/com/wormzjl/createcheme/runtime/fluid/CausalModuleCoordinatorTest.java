@@ -111,7 +111,15 @@ class CausalModuleCoordinatorTest {
                 var expected=uninterrupted.islands.snapshot(i);var actual=restored.islands.snapshot(i);
                 assertEquals(expected.clock(),actual.clock());assertEquals(expected.fences(),actual.fences());
                 var a=expected.graph().reservoirs().getFirst().inventory();var b=actual.graph().reservoirs().getFirst().inventory();
-                assertArrayEquals(a.moles(),b.moles(),1e-8);assertEquals(a.internalEnergy(),b.internalEnergy(),1e-4);
+                // A restart reproduces the trajectory to solver tolerance, not bitwise: the retained
+                // factorization and the carried step estimate are ephemeral cost hints, which a
+                // restored island rediscovers, so its intervals reach the same root along a slightly
+                // different path. Compare relatively with the previous absolute bound as the floor
+                // for near-zero amounts; the conservation and ledger assertions around this loop
+                // stay exact.
+                var moles=a.moles();var restoredMoles=b.moles();
+                for(int c=0;c<moles.length;c++)assertEquals(moles[c],restoredMoles[c],Math.max(1e-8,1e-9*Math.abs(moles[c])),"Component "+c);
+                assertEquals(a.internalEnergy(),b.internalEnergy(),Math.max(1e-4,1e-9*Math.abs(a.internalEnergy())));
             }
             restored.assertConserved();assertEquals(900,restored.modules.snapshots().getFirst().committedTick());
         }

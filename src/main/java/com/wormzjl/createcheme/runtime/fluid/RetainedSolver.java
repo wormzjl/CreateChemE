@@ -39,22 +39,53 @@ public final class RetainedSolver {
     private FluidThermodynamics model;
     private double stepHint=COLD_START_SECONDS;
 
+    /** One job's exclusive use of this island's solver. A job may integrate its interval more than
+     * once - the module planner searches feasible transfer sizes - and every attempt then shares
+     * the retained structure and preconditioner instead of rebuilding them per attempt. */
+    public interface Job {
+        PassiveIntervalSolver.Result solve(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint);
+        /** For an attempt that introduces a boundary change rather than continuing the island's
+         * trajectory - a trial source or sink term. It starts from the cold step, because the
+         * island's carried estimate describes the undisturbed problem, and it leaves that estimate
+         * alone, because a trial that is never committed must not steer the next interval. The
+         * retained pattern, colouring, ordering and preconditioner are still shared. */
+        PassiveIntervalSolver.Result solveTrial(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint);
+        PassiveIntervalSolver.Result solveApproximate(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,
+                                                      Runnable checkpoint,TrBdf2StepSolver.StageGuard guard);
+    }
+    /** Claims the latch for the whole job and returns it in a {@code finally}, including on
+     * cancellation and on the wall/soft deadlines. */
+    public <T>T run(FluidThermodynamics model,java.util.function.Function<Job,T> job) {
+        Objects.requireNonNull(job);var solver=acquire(model);
+        try{return job.apply(new Leased(solver));}
+        finally{ownership.release();}
+    }
     public PassiveIntervalSolver.Result solve(FluidThermodynamics model,PassiveNetwork snapshot,double duration,
                                               PassiveIntervalSolver.Settings settings,Runnable checkpoint) {
-        var solver=acquire(model);
-        try {
-            var result=solver.solve(snapshot,duration,settings,checkpoint,Math.min(stepHint,duration));
-            stepHint=solver.nextStepEstimate();return result;
-        }
-        catch(RuntimeException|Error failure){stepHint=COLD_START_SECONDS;throw failure;}
-        finally{ownership.release();}
+        return run(model,job->job.solve(snapshot,duration,settings,checkpoint));
     }
     public PassiveIntervalSolver.Result solveApproximate(FluidThermodynamics model,PassiveNetwork snapshot,double duration,
                                                          PassiveIntervalSolver.Settings settings,Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
-        var solver=acquire(model);
-        // A degraded interval is evidence that this island is struggling, so the next one restarts small.
-        try{return solver.solveApproximate(snapshot,duration,settings,checkpoint,guard);}
-        finally{stepHint=COLD_START_SECONDS;ownership.release();}
+        return run(model,job->job.solveApproximate(snapshot,duration,settings,checkpoint,guard));
+    }
+    private final class Leased implements Job {
+        private final PassiveIntervalSolver solver;
+        private Leased(PassiveIntervalSolver solver){this.solver=solver;}
+        @Override public PassiveIntervalSolver.Result solve(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint) {
+            try {
+                var result=solver.solve(snapshot,duration,settings,checkpoint,Math.min(stepHint,duration));
+                stepHint=solver.nextStepEstimate();return result;
+            }catch(RuntimeException|Error failure){stepHint=COLD_START_SECONDS;throw failure;}
+        }
+        @Override public PassiveIntervalSolver.Result solveTrial(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint) {
+            return solver.solve(snapshot,duration,settings,checkpoint,Math.min(COLD_START_SECONDS,duration));
+        }
+        @Override public PassiveIntervalSolver.Result solveApproximate(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,
+                                                                       Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
+            // A degraded interval is evidence that this island is struggling: restart the next one small.
+            try{return solver.solveApproximate(snapshot,duration,settings,checkpoint,guard);}
+            finally{stepHint=COLD_START_SECONDS;}
+        }
     }
     private PassiveIntervalSolver acquire(FluidThermodynamics model) {
         Objects.requireNonNull(model);ownership.acquire();
