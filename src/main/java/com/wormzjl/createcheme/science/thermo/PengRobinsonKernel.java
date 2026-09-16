@@ -39,10 +39,38 @@ public final class PengRobinsonKernel {
     private final double[] kappas;
     private final double[][] binaryInteractions;
     private final boolean rankOneMixing;
+    private final Mixing mixing;
+    /** The {@code i < j} entries with {@code k_ij != 0}, for {@link Mixing#SPARSE_PAIRS}; empty otherwise. */
+    private final int[] pairFirst;
+    private final int[] pairSecond;
+    private final double[] pairInteraction;
     private final double minimumTemperatureKelvin;
     private final double maximumTemperatureKelvin;
     private final double minimumPressurePascal;
     private final double maximumPressurePascal;
+
+    /**
+     * How the quadratic mixture sums are evaluated. Both plans compute the same classical rule
+     * {@code a_ij = sqrt(a_i a_j)(1 - k_ij)}; they differ only in the arithmetic that reaches it, and
+     * therefore only in roundoff.
+     */
+    public enum Mixing {
+        /**
+         * The column's plan: {@code O(n^2)} over the full interaction matrix, collapsing to a rank-one
+         * product when every {@code k_ij} is zero. Every V3 state has been evaluated this way and stays
+         * bitwise on it.
+         */
+        CLASSICAL,
+        /**
+         * {@code O(n + pairs)}: the row sums are the rank-one sum corrected by the few nonzero pairs,
+         * {@code S_i = sqrt(a_i) (sum_j q_j - sum_{j: k_ij != 0} k_ij q_j)} with {@code q_i = x_i sqrt(a_i)}.
+         * For a package whose interaction matrix is nearly empty - the fluid network's has 11 nonzero pairs
+         * among 21 components - this is the same rule at a fraction of the work. The mixture sums are then
+         * accumulated with the identical expressions {@link #CLASSICAL}'s dense branch uses, so the two
+         * differ only in how each {@code S_i} was summed.
+         */
+        SPARSE_PAIRS
+    }
 
     /**
      * @param criticalTemperaturesKelvin per component, in the caller's basis order
@@ -53,6 +81,17 @@ public final class PengRobinsonKernel {
             double[][] binaryInteractions,
             double minimumTemperatureKelvin, double maximumTemperatureKelvin,
             double minimumPressurePascal, double maximumPressurePascal) {
+        this(criticalTemperaturesKelvin, criticalPressuresPascal, acentricFactors, binaryInteractions,
+                minimumTemperatureKelvin, maximumTemperatureKelvin,
+                minimumPressurePascal, maximumPressurePascal, Mixing.CLASSICAL);
+    }
+
+    public PengRobinsonKernel(
+            double[] criticalTemperaturesKelvin, double[] criticalPressuresPascal, double[] acentricFactors,
+            double[][] binaryInteractions,
+            double minimumTemperatureKelvin, double maximumTemperatureKelvin,
+            double minimumPressurePascal, double maximumPressurePascal, Mixing mixing) {
+        this.mixing = Objects.requireNonNull(mixing, "mixing");
         Objects.requireNonNull(criticalTemperaturesKelvin, "criticalTemperaturesKelvin");
         Objects.requireNonNull(criticalPressuresPascal, "criticalPressuresPascal");
         Objects.requireNonNull(acentricFactors, "acentricFactors");
@@ -93,10 +132,32 @@ public final class PengRobinsonKernel {
             }
         }
         this.rankOneMixing = allZero;
+        int pairs = 0;
+        for (int i = 0; i < count; i++) for (int j = i + 1; j < count; j++) if (this.binaryInteractions[i][j] != 0.0) pairs++;
+        this.pairFirst = new int[pairs];
+        this.pairSecond = new int[pairs];
+        this.pairInteraction = new double[pairs];
+        int at = 0;
+        for (int i = 0; i < count; i++) for (int j = i + 1; j < count; j++) {
+            if (this.binaryInteractions[i][j] == 0.0) continue;
+            pairFirst[at] = i;
+            pairSecond[at] = j;
+            pairInteraction[at++] = this.binaryInteractions[i][j];
+        }
     }
 
     public int componentCount() { return count; }
+    /** True when the package has no nonzero interaction at all, whatever plan is selected. */
     public boolean usesRankOneMixing() { return rankOneMixing; }
+    public Mixing mixing() { return mixing; }
+    /** How many {@code i < j} interactions are nonzero; the work {@link Mixing#SPARSE_PAIRS} pays per evaluation. */
+    public int interactionPairCount() { return pairFirst.length; }
+    public double binaryInteraction(int first, int second) { return binaryInteractions[first][second]; }
+    public double[][] binaryInteractions() {
+        double[][] copy = new double[count][];
+        for (int i = 0; i < count; i++) copy[i] = binaryInteractions[i].clone();
+        return copy;
+    }
     /** {@code 0.07780 R Tc / Pc} for one component; the co-volume the mixture rule sums. */
     public double coVolume(int component) { return coVolumes[component]; }
     public Workspace newWorkspace() { return new Workspace(count); }
@@ -165,7 +226,28 @@ public final class PengRobinsonKernel {
         }
         double aMix;
         double daMixDt;
-        if (rankOneMixing) {
+        if (mixing == Mixing.SPARSE_PAIRS) {
+            // g_i = sum_j (1 - k_ij) q_j, reached as the rank-one sum minus the few pairs that are not zero.
+            double qSum = 0.0;
+            for (int i = 0; i < count; i++) qSum += workspace.q[i];
+            for (int i = 0; i < count; i++) workspace.g[i] = qSum;
+            for (int pair = 0; pair < pairFirst.length; pair++) {
+                int i = pairFirst[pair];
+                int j = pairSecond[pair];
+                double interaction = pairInteraction[pair];
+                workspace.g[i] -= interaction * workspace.q[j];
+                workspace.g[j] -= interaction * workspace.q[i];
+            }
+            // From here the dense branch's own expressions, so the two plans differ only in how g_i was summed.
+            aMix = 0.0;
+            daMixDt = 0.0;
+            for (int i = 0; i < count; i++) {
+                workspace.sumA[i] = workspace.sqrtA[i] * workspace.g[i];
+                aMix += workspace.q[i] * workspace.g[i];
+                double dq = workspace.composition[i] * workspace.daDt[i] / (2.0 * workspace.sqrtA[i]);
+                daMixDt += 2.0 * dq * workspace.g[i];
+            }
+        } else if (rankOneMixing) {
             double qSum = 0.0;
             double dqSum = 0.0;
             for (int i = 0; i < count; i++) {
@@ -196,10 +278,13 @@ public final class PengRobinsonKernel {
         double z = rootSelection.selectedCompressibility();
         double logRatio = Math.log((z + (1.0 + SQRT_TWO) * reducedB) / (z + (1.0 - SQRT_TWO) * reducedB));
         double attraction = reducedA / (2.0 * SQRT_TWO * Math.max(reducedB, 1.0e-300));
+        // Hoisted, not changed: the argument does not depend on i, so this is the same double the loop
+        // used to recompute n times, and one logarithm instead of one per component.
+        double freeVolumeLog = Math.log(z - reducedB);
         for (int i = 0; i < count; i++) {
             double bRatio = coVolumes[i] / bMix;
             double attractionRatio = 2.0 * workspace.sumA[i] / aMix - bRatio;
-            output.logFugacityCoefficients[i] = bRatio * (z - 1.0) - Math.log(z - reducedB)
+            output.logFugacityCoefficients[i] = bRatio * (z - 1.0) - freeVolumeLog
                     - attraction * attractionRatio * logRatio;
         }
         output.compressibility = z;
@@ -321,8 +406,18 @@ public final class PengRobinsonKernel {
      */
     public double secondTemperatureDerivative(
             double temperatureKelvin, Workspace workspace, double[] rootDt, double[] rootDt2, double[] crossDt) {
-        double[] x = workspace.composition;
-        // d(sqrt(a_i))/dT and its own derivative, from which every mixture temperature derivative follows.
+        prepareRootDerivatives(temperatureKelvin, workspace, rootDt, rootDt2);
+        return mixtureSecondTemperatureDerivative(workspace, rootDt, rootDt2, crossDt);
+    }
+
+    /**
+     * The temperature-only half of {@link #secondTemperatureDerivative}: {@code d sqrt(a_i)/dT} and its own
+     * derivative, from which every mixture temperature derivative follows. A caller that holds a prepared
+     * temperature fills these once with it and calls
+     * {@link #mixtureSecondTemperatureDerivative} per composition.
+     */
+    public void prepareRootDerivatives(
+            double temperatureKelvin, Workspace workspace, double[] rootDt, double[] rootDt2) {
         for (int i = 0; i < count; i++) {
             double secondADt = criticalA[i] * kappas[i] * (1.0 + kappas[i])
                     / (2.0 * Math.sqrt(temperatureKelvin * temperatureKelvin * temperatureKelvin
@@ -332,7 +427,24 @@ public final class PengRobinsonKernel {
                     - workspace.daDt[i] * workspace.daDt[i]
                     / (4.0 * workspace.sqrtA[i] * workspace.sqrtA[i] * workspace.sqrtA[i]);
         }
-        if (rankOneMixing) {
+    }
+
+    /** The composition-dependent half, on the root derivatives {@link #prepareRootDerivatives} filled. */
+    public double mixtureSecondTemperatureDerivative(
+            Workspace workspace, double[] rootDt, double[] rootDt2, double[] crossDt) {
+        double[] x = workspace.composition;
+        if (mixing == Mixing.SPARSE_PAIRS) {
+            double interactionSum = 0.0;
+            for (int i = 0; i < count; i++) interactionSum += x[i] * rootDt[i];
+            for (int i = 0; i < count; i++) crossDt[i] = interactionSum;
+            for (int pair = 0; pair < pairFirst.length; pair++) {
+                int i = pairFirst[pair];
+                int j = pairSecond[pair];
+                double interaction = pairInteraction[pair];
+                crossDt[i] -= interaction * x[j] * rootDt[j];
+                crossDt[j] -= interaction * x[i] * rootDt[i];
+            }
+        } else if (rankOneMixing) {
             double interactionSum = 0.0;
             for (int i = 0; i < count; i++) interactionSum += x[i] * rootDt[i];
             for (int i = 0; i < count; i++) crossDt[i] = interactionSum;
@@ -545,6 +657,8 @@ public final class PengRobinsonKernel {
 
         /** The normalized composition of the last evaluation. The caller must not mutate it. */
         public double[] compositionView() { return composition; }
+        /** {@code sqrt(a_i)} of the prepared temperature; zero exactly where the PR alpha term vanishes. */
+        public double[] attractionRootsView() { return sqrtA; }
         /** {@code S_i = sum_j x_j a_ij} of the last evaluation. The caller must not mutate it. */
         public double[] attractionRowsView() { return sumA; }
         public void clear() {

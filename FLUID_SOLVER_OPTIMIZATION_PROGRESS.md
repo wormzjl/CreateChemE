@@ -858,4 +858,108 @@ kernel tests, still passing against the promoted class.
 - Fluid trajectory: EXACT against `build/probe/reference-wp5` on all four fixtures, trivially - this
   commit touches no fluid code - and run anyway.
 - Gate: 793 JUnit tests, 14 GameTests, green.
-- Commit `<step1>`.
+- Commit `7d26793`.
+
+### WP6a-C3 - evaluate the network's Peng-Robinson phases on the shared kernel
+
+`TranslatedPengRobinson.TemperatureTerms` is gone, and with it the three 21 x 21 matrices it built for
+every distinct node temperature - 43.55% of all remaining allocation on the production pool, 34% of the
+cold island's interval and 41% of the chain's. `evaluate` now takes Z, `ln phi_i`, `H^R`, `a`, `b`,
+`da/dT`, `d2a/dT2` and the row sums `S_i` from the promoted kernel; what stays in this class is what the
+kernel does not model - the ideal-gas caloric polynomials, the constant volume translation, and the
+volumetric block (dv/dT, dv/dP, d2v/dT2, cp, dh/dP, the isothermal compressibility, the partial molar
+volumes), whose algebra is unchanged and is now applied to the kernel's terms.
+
+**The sparse-pair mixing plan (C3).** The kernel gained a second, explicitly selected plan. The classical
+rule is unchanged - {@code a_ij = sqrt(a_i a_j)(1 - k_ij)} - but the row sums are reached as the rank-one
+sum corrected by the few nonzero pairs, `S_i = sqrt(a_i)(sum_j q_j - sum_{j: k_ij != 0} k_ij q_j)`, which
+for `createcheme:tjl20_methane` plus nitrogen is 21 components and **11 pairs** instead of a 441-entry
+quadratic form. `a_mix` and `da_mix/dT` are then accumulated with the identical expressions the dense
+branch uses, so the two plans differ only in how each `S_i` was summed. The plan is selected by the fluid
+network's constructor alone: **V3 keeps `Mixing.CLASSICAL` and its bitwise arithmetic.**
+
+**The prepared temperature.** A `TranslatedPengRobinson.Workspace` replaces `TemperatureTerms` on
+`FluidThermodynamics.Prepared`, so the per-node exact-temperature cache from C1/C4 now carries the
+kernel's 3n pure-component vectors, the ideal-gas cp/h vectors and the root-derivative vectors instead of
+3n^2 + 5n doubles. Per evaluation the only allocation left is the `Phase` record and its two output
+arrays: the composition is normalized into the workspace rather than cloned, and the mixture sums are
+formed in place.
+
+Two order-preserving optimizations came out of the measurement rather than the plan, and both are bitwise
+on every path including V3's:
+
+- `d sqrt(a_i)/dT` and its own derivative depend on temperature alone - the dense form computed them once
+  per temperature into its matrices - so `prepareRootDerivatives` fills them with the prepared temperature
+  and `mixtureSecondTemperatureDerivative` does only the composition-weighted sums per evaluation. That is
+  21 square roots and 63 divisions per phase evaluation removed. `secondTemperatureDerivative` still calls
+  the two in sequence for `evaluateDerivatives`, in the order that method always used.
+- The kernel's fugacity loop recomputed `Math.log(z - reducedB)` on every component. The argument does not
+  depend on the component, so hoisting it is the same double n times over: one logarithm per evaluation
+  instead of 21.
+
+| kernel, median of 2000 after 2000 warm-up calls | ns at 7d26793 | ns here |
+|---|---:|---:|
+| `state(...)` with the prepared temperature | 2200 | **1800** |
+| `state(...)` without it | 8300 | **3900** |
+| `prepare(T)` | 100 | 100 |
+| `flashTP` (standalone TP initializer) | 147 700 | **77 600** |
+
+| fixture | wall ms | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | node state() calls | allocated MB | KB per residual |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 34.2-39.2 -> 28.8-35.6 | 11/0 unchanged | 5.0 | 0.6 | 132 | 1782 | 28.9 -> **18.6** | 225 -> 145 |
+| quiet 11312, warm intervals 2-4 | 4.6-5.9 -> 4.0-6.3 | 1/0 each | 2 | 0 | 4 | 300 | 5.5 -> **3.2** | - |
+| quiet 11324, mean of 5 | 17.0-18.3 -> 14.0-15.6 | 11/0 unchanged | 5.8 | 0.8 | 172 | 1289 | 20.5 -> **14.6** | 123 -> 87 |
+| cold 11312, one interval | 1115-1182 -> **936-947** | 52/15 unchanged | 135 | 41 | 8731 | 98070 | 1132.7 -> **718.9** | 133 -> 84 |
+| 100-reservoir chain | 1789-1855 -> **1407-1600** | 45/22 unchanged | 135 | 22 | 4149 | 246000 | 3223.3 -> **1759.7** | 795 -> 434 |
+
+Every substep count, implicit solve, Jacobian build, residual evaluation and node decode is unchanged.
+Allocation falls 36% on quiet 11312, 29% on quiet 11324, **37%** on the cold island and **45%** on the
+chain, which is `temperatureTerms`' share removed and nothing else: at 21 components its three matrices
+were 10.6 KB per prepared temperature, against 36 066 and 124 693 preparations on the two transients.
+Wall time falls 15-20% on the transients; the quiet fixtures' means are dominated by their two Jacobian
+intervals and their spread is wider than the effect, but their warm intervals now allocate 3.2 MB where
+they allocated 5.5.
+
+**The oracle.** `LegacyTranslatedPengRobinson` (test only) is this class as it stood at `7d26793`, kept
+verbatim - the dense matrices, the classical mixing read out of them, `PengRobinson78.compressibilityRoot`
+for Z. `TranslatedPengRobinsonOracleTest` holds every field of every `Phase` against it over 8
+temperatures x 6 pressures x both roots x 13 compositions (the assay-like heavy mixture, a light gas, one
+with six components at 1e-12, one with most components exactly zero, pure nitrogen, pure methane,
+equimolar, nitrogen plus the heaviest pseudo, and five from a fixed seed), twice: once on the package's
+real 11 pairs and once with the interaction matrix zeroed, which is the degenerate case of the same plan.
+
+The tolerance is argued from the arithmetic: the mixture sums carry a relative error of order `n * eps`,
+about 2.4e-15 over 21 components, and the volumetric block amplifies it through the `v - b` and
+`v^2 + 2bv - b^2` cancellations by two or three orders, so **1e-12**. The **measured maximum is 9.2e-13**
+(a partial molar volume in the zero-interaction case); every other field is at or below 3.7e-13, and the
+median deviation of every field is zero or one ulp.
+
+That holds on the 999 and 1012 grid points where the legacy's own compressibility is backward accurate.
+On the other 249 and 236 - the sub-kilopascal liquid root, where Z sits within a few ulp of B and the
+plain analytic Cardano formula loses most of its digits - the two differ by up to 4e-4 relative, and that
+difference is the kernel's root repair doing its job, not a regression: the test recomputes the cubic
+independently from the classical mixing rule and the PR78 critical constants and requires that the
+kernel's compressibility leave the strictly smaller residual in it. **0 regressions in 485 such states.**
+Nothing in production reaches them either way: `HydrocarbonModel` evaluates the liquid root only at its
+2 MPa reference pressure.
+
+Accuracy against the 154007d references, under the declared gate - unchanged from C1/A4b to three digits,
+so this item's own roundoff does not move the trajectory the previous work packages established:
+
+| quantity | gate | quiet 11312 | quiet 11324 | cold 11312 | chain |
+|---|---:|---:|---:|---:|---:|
+| state / moles, relative | 1e-6 | 9.97e-10 | 6.19e-10 | 3.92e-10 | 1.84e-9 |
+| temperature, K | 1e-4 | 1.25e-9 | 7.30e-10 | 4.30e-9 | 1.77e-8 |
+| phase volume fraction | 1e-6 | 5.50e-12 | 3.49e-12 | 1.99e-11 | 8.25e-11 |
+| average flow, worst absolute kg/s | - | 2.6e-9 | 7.9e-9 | 3.2e-9 | 4.7e-9 |
+| controller allowance there, kg/s | - | 3.18e-8 | 3.18e-8 | 3.18e-8 | 3.16e-8 |
+
+The roundoff this commit introduces on its own, against `build/probe/reference-wp5`: **4.8e-12 and
+6.9e-12 relative on state** for the two quiet islands, **8.9e-14 and 1.3e-13** for the cold island and the
+chain; 2.8e-13 to 1.1e-12 K; at most 5.8e-15 on a phase fraction; and at most 5.6e-11 kg/s on a flow,
+which is 0.18% of the controller's own allowance for that pipe. The promised ~1e-12.
+
+- Gate: 794 JUnit tests (1 new), 14 GameTests, green. Every `science.column.v3` suite passes unchanged,
+  which is the bitwise evidence for the column: the sparse-pair plan is selected by
+  `TranslatedPengRobinson`'s constructor and by nothing else.
+- Commit `<step2>`.

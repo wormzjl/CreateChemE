@@ -121,7 +121,7 @@ public final class FluidThermodynamics {
     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure) {
         return state(t,p,liquid.clone(),vapor.clone(),waterLiquid,waterVapor,hydrocarbonPressure,null,null);
     }
-    public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,TranslatedPengRobinson.TemperatureTerms terms) {
+    public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,TranslatedPengRobinson.Workspace terms) {
         return state(t,p,liquid.clone(),vapor.clone(),waterLiquid,waterVapor,hydrocarbonPressure,terms,null);
     }
     /** Every temperature-only property comes from the prepared bundle; a standalone caller passes
@@ -135,12 +135,12 @@ public final class FluidThermodynamics {
         return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,null,match(prepared,t));
     }
     private State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,
-                        TranslatedPengRobinson.TemperatureTerms terms,Prepared prepared) {
+                        TranslatedPengRobinson.Workspace terms,Prepared prepared) {
         SolverDiagnostics.count(SolverDiagnostics.stateCalls);
         int n=hydrocarbon.componentCount();
         if(liquid.length!=n||vapor.length!=n||!Double.isFinite(t)||!Double.isFinite(p)||t<273.16||t>600||p<100||p>2e6)throw new IllegalArgumentException("Fluid state outside domain");
         double nl=sum(liquid),nv=sum(vapor),volume=0,h=0,mass=0,gasVolume=0,vl=0,vw=0;
-        if(terms==null&&(nl>0||nv>0))terms=prepared==null?hydrocarbon.temperatureTerms(t):prepared.temperatureTerms();
+        if(terms==null&&(nl>0||nv>0))terms=prepared==null?hydrocarbon.prepare(t):prepared.pengRobinson();
         HydrocarbonModel.Phase lp=null,vp=null;
         if(nl>0) {lp=hydrocarbon.phase(t,p,liquid,PhaseRoot.LIQUID,terms);vl=nl*lp.molarVolume();volume+=vl;h+=nl*lp.molarEnthalpy();}
         if(nv>0) {vp=hydrocarbon.phase(t,hydrocarbonPressure,vapor,PhaseRoot.VAPOR,terms);gasVolume=nv*vp.molarVolume();h+=nv*vp.molarEnthalpy();}
@@ -164,11 +164,11 @@ public final class FluidThermodynamics {
         double[] hc=Arrays.copyOf(overall,n);double nh=sum(hc),w=overall[n];
         if(!Double.isFinite(w)||w<0||nh+w<=0)throw new IllegalArgumentException("Empty fluid initialization");
         if(nh==0)return state(t,p,hc,hc,p>=saturationPressure(t)?w:0,p>=saturationPressure(t)?0:w,0);
-        if(w==0) {var terms=hydrocarbon.temperatureTerms(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
+        if(w==0) {var terms=hydrocarbon.prepare(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
         double ps=saturationPressure(t);
-        TranslatedPengRobinson.TemperatureTerms terms=null;
+        TranslatedPengRobinson.Workspace terms=null;
         if(p>ps+1e-6) {
-            terms=hydrocarbon.temperatureTerms(t);
+            terms=hydrocarbon.prepare(t);
             double pc=p-ps;var split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
             double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
             double required=ps*vg/(R*t);
@@ -176,7 +176,7 @@ public final class FluidThermodynamics {
         }
         double low=1e-6,high=p;double[][] split=null;double pc=high;
         for(int iteration=0;iteration<70;iteration++) {
-            checkpoint.run();pc=(low+high)*.5;if(terms==null)terms=hydrocarbon.temperatureTerms(t);split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
+            checkpoint.run();pc=(low+high)*.5;if(terms==null)terms=hydrocarbon.prepare(t);split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
             double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
             double residual=vg>0?pc+w*R*t/vg-p:Double.POSITIVE_INFINITY;
             if(Math.abs(residual)<1e-8*p)break;
@@ -187,7 +187,7 @@ public final class FluidThermodynamics {
         return result;
     }
 
-    private double[][] splitHydrocarbon(double t,double liquidPressure,double vaporPressure,double[] amounts,Runnable checkpoint,TranslatedPengRobinson.TemperatureTerms terms) {
+    private double[][] splitHydrocarbon(double t,double liquidPressure,double vaporPressure,double[] amounts,Runnable checkpoint,TranslatedPengRobinson.Workspace terms) {
         int n=amounts.length;double total=sum(amounts);double[] z=amounts.clone(),k=new double[n],x=new double[n],y=new double[n];
         for(int i=0;i<n;i++) {z[i]/=total;var c=hydrocarbon.propertyPackage().properties().get(i).pr();
             k[i]=Math.exp(Math.clamp(Math.log(c.criticalPressure()/vaporPressure)+5.373*(1+c.acentricFactor())*(1-c.criticalTemperature()/t),-600,600));}
@@ -249,7 +249,7 @@ public final class FluidThermodynamics {
     public static final class Prepared {
         private final FluidThermodynamics owner;
         private final double temperature;
-        private TranslatedPengRobinson.TemperatureTerms terms;
+        private TranslatedPengRobinson.Workspace terms;
         private WaterRegion1.State referenceWater;
         private MixtureViscosity.Prepared transport;
         private double saturationPressure=Double.NaN,vaporEnthalpy=Double.NaN;
@@ -258,8 +258,10 @@ public final class FluidThermodynamics {
             this.owner=owner;this.temperature=temperature;
         }
         public double temperature() { return temperature; }
-        TranslatedPengRobinson.TemperatureTerms temperatureTerms() {
-            return terms==null?terms=owner.hydrocarbon.temperatureTerms(temperature):terms;
+        /** The prepared Peng-Robinson workspace of this temperature. It is mutable scratch, so a
+         * {@code Prepared} - like the node cache that holds it - belongs to one solving thread. */
+        TranslatedPengRobinson.Workspace pengRobinson() {
+            return terms==null?terms=owner.hydrocarbon.prepare(temperature):terms;
         }
         WaterRegion1.State referenceWater() {
             return referenceWater==null?referenceWater=WaterRegion1.evaluate(owner.water,temperature,HydrocarbonModel.REFERENCE_PRESSURE):referenceWater;

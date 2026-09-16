@@ -2,20 +2,30 @@ package com.wormzjl.createcheme.science.fluid.thermo;
 
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.thermo.PengRobinson78;
+import com.wormzjl.createcheme.science.thermo.PengRobinsonKernel;
 import com.wormzjl.createcheme.science.thermo.PhaseRoot;
 import com.wormzjl.createcheme.science.thermo.ThermoComponent;
 import java.util.List;
 
-/** Constant volume-translated PR78 with analytic fixed-composition volumetric/caloric derivatives. */
+/**
+ * Constant volume-translated PR78 with analytic fixed-composition volumetric/caloric derivatives.
+ *
+ * <p>The equation of state itself is the shared {@link PengRobinsonKernel} - the same arithmetic the column
+ * solves on - selected with {@link PengRobinsonKernel.Mixing#SPARSE_PAIRS}, because the network's package has
+ * 11 nonzero binary interactions among 21 components and the dense quadratic rule spent three n x n matrices
+ * per distinct temperature to express them. What stays here is what the kernel does not model: the ideal-gas
+ * caloric polynomials, the constant volume translation, and the volumetric block (dv/dT, dv/dP, d2v/dT2, cp,
+ * dh/dP, the isothermal compressibility and the partial molar volumes), which is explicit algebra in
+ * {@code (v, a, b, da/dT, d2a/dT2, S_i)} and is unchanged.
+ */
 public final class TranslatedPengRobinson {
     private static final double R = PengRobinson78.GAS_CONSTANT;
     private static final double SQRT_TWO = Math.sqrt(2);
     private static final double REFERENCE_T = 298.15;
     private final List<ThermoComponent> components;
-    private final double[] sqrtCriticalA,kappas,inverseSqrtCriticalTemperature,coVolumes;
-    private final double[][] interactions;
     private final double[][] heatCapacityCoefficients;
     private final double[] translations;
+    private final PengRobinsonKernel kernel;
 
     /** Cp coefficients are powers of (T - 298.15 K); each component has exactly six coefficients. */
     public TranslatedPengRobinson(List<ThermoComponent> components, double[][] interactions,
@@ -24,92 +34,109 @@ public final class TranslatedPengRobinson {
         int count = components.size();
         if (count == 0 || interactions.length != count || heatCapacityCoefficients.length != count
                 || translations.length != count) throw new IllegalArgumentException("Inconsistent property basis");
-        this.interactions = new double[count][];
         this.heatCapacityCoefficients = new double[count][];
         this.translations = translations.clone();
-        sqrtCriticalA=new double[count];kappas=new double[count];inverseSqrtCriticalTemperature=new double[count];coVolumes=new double[count];
+        double[] criticalTemperatures=new double[count],criticalPressures=new double[count],acentricFactors=new double[count];
         for (int i = 0; i < count; i++) {
             if (interactions[i].length != count || heatCapacityCoefficients[i].length != 6) {
                 throw new IllegalArgumentException("Invalid property matrix dimensions");
             }
-            this.interactions[i] = interactions[i].clone();
             this.heatCapacityCoefficients[i] = heatCapacityCoefficients[i].clone();
-            for (double value : this.interactions[i]) finite(value);
+            for (double value : interactions[i]) finite(value);
             for (double value : this.heatCapacityCoefficients[i]) finite(value);
             finite(this.translations[i]);
-            var component=components.get(i);double w=component.acentricFactor();
-            kappas[i]=w<=.491?.37464+1.54226*w-.26992*w*w:.379642+1.48503*w-.164423*w*w+.016666*w*w*w;
-            sqrtCriticalA[i]=Math.sqrt(.45724*R*R*component.criticalTemperatureKelvin()*component.criticalTemperatureKelvin()/component.criticalPressurePascal());
-            inverseSqrtCriticalTemperature[i]=1/Math.sqrt(component.criticalTemperatureKelvin());
-            coVolumes[i]=.07780*R*component.criticalTemperatureKelvin()/component.criticalPressurePascal();
+            var component=components.get(i);
+            criticalTemperatures[i]=component.criticalTemperatureKelvin();
+            criticalPressures[i]=component.criticalPressurePascal();
+            acentricFactors[i]=component.acentricFactor();
         }
         for (int i = 0; i < count; i++) for (int j = 0; j < count; j++) {
-            if (this.interactions[i][j] != this.interactions[j][i]) throw new IllegalArgumentException("Asymmetric interactions");
+            if (interactions[i][j] != interactions[j][i]) throw new IllegalArgumentException("Asymmetric interactions");
         }
+        // The kernel's own domain is left open: this class validates every state itself, with the messages it
+        // always produced, and a property package's validity range is the caller's business, not the EOS's.
+        kernel=new PengRobinsonKernel(criticalTemperatures,criticalPressures,acentricFactors,interactions,
+                Double.MIN_VALUE,Double.MAX_VALUE,Double.MIN_VALUE,Double.MAX_VALUE,
+                PengRobinsonKernel.Mixing.SPARSE_PAIRS);
     }
 
     public Phase evaluate(double temperature, double pressure, double[] amounts, PhaseRoot root) {
-        return evaluate(temperature,pressure,amounts,root,temperatureTerms(temperature));
+        return evaluate(temperature,pressure,amounts,root,prepare(temperature));
     }
 
-    /** Immutable coefficients for a single exact temperature; a solve workspace can reuse them across composition trials. */
-    public static final class TemperatureTerms {
+    /**
+     * One exact temperature's prepared state, and the scratch every evaluation at it reuses.
+     *
+     * <p>This replaces the immutable {@code TemperatureTerms} and its three n x n matrices. The mixing terms a
+     * workspace carries are the kernel's 3n pure-component vectors, and the composition-dependent sums that
+     * used to be read out of those matrices are now formed per evaluation in O(n + pairs). It is mutable
+     * scratch, so - like every other solver workspace here - it belongs to one solving thread at a time; the
+     * caller that holds it (a node's {@link FluidThermodynamics.Prepared}) already has that confinement.</p>
+     */
+    public static final class Workspace {
         private final TranslatedPengRobinson owner;
-        private final double temperature;
-        private final double[][] a,first,second;
+        private final PengRobinsonKernel.Workspace mixture;
+        private final PengRobinsonKernel.Evaluation evaluation;
         private final double[] heatCapacity,enthalpy;
-        private TemperatureTerms(TranslatedPengRobinson owner,double temperature,double[][] a,double[][] first,double[][] second,double[] cp,double[] h) {
-            this.owner=owner;this.temperature=temperature;this.a=a;this.first=first;this.second=second;heatCapacity=cp;enthalpy=h;
+        private final double[] rootDt,rootDt2,crossDt;
+        private double temperature=Double.NaN;
+        private Workspace(TranslatedPengRobinson owner) {
+            this.owner=owner;int count=owner.components.size();
+            mixture=owner.kernel.newWorkspace();evaluation=owner.kernel.newEvaluation();
+            heatCapacity=new double[count];enthalpy=new double[count];
+            rootDt=new double[count];rootDt2=new double[count];crossDt=new double[count];
         }
         public double temperature(){return temperature;}
     }
-    public TemperatureTerms temperatureTerms(double temperature) {
+
+    public Workspace newWorkspace() { return new Workspace(this); }
+
+    /** A workspace prepared at one temperature; a solve reuses it across every composition and pressure trial. */
+    public Workspace prepare(double temperature) {
+        Workspace workspace=new Workspace(this);
+        prepare(temperature,workspace);
+        return workspace;
+    }
+    public void prepare(double temperature,Workspace workspace) {
         SolverDiagnostics.count(SolverDiagnostics.temperatureTermsCalls);
+        if(workspace.owner!=this)throw new IllegalArgumentException("Temperature coefficients belong to another state/model");
         if(!Double.isFinite(temperature)||temperature<=0)throw new IllegalArgumentException("Invalid coefficient temperature");
-        int count=components.size();double[] sqrtAttraction=new double[count],slopeAlpha=new double[count],curvatureAlpha=new double[count],cp=new double[count],h=new double[count];
-        double sqrtT=Math.sqrt(temperature),inverseSqrtT=1/sqrtT,delta=temperature-REFERENCE_T;
+        int count=components.size();double delta=temperature-REFERENCE_T;
         for(int i=0;i<count;i++) {
-            double k=kappas[i],inverseSqrtTc=inverseSqrtCriticalTemperature[i],f=1+k*(1-sqrtT*inverseSqrtTc);
-            if(f==0)throw new IllegalArgumentException("Degenerate PR alpha derivative");
-            double df=-.5*k*inverseSqrtT*inverseSqrtTc,ddf=.25*k*inverseSqrtTc*inverseSqrtT/temperature;
-            sqrtAttraction[i]=sqrtCriticalA[i]*Math.abs(f);slopeAlpha[i]=2*df/f;curvatureAlpha[i]=2*(ddf/f-df*df/(f*f));
-            for(int term=5;term>=0;term--){cp[i]=cp[i]*delta+heatCapacityCoefficients[i][term];h[i]=h[i]*delta+heatCapacityCoefficients[i][term]/(term+1);}
-            h[i]*=delta;
+            double cp=0,h=0;
+            for(int term=5;term>=0;term--){cp=cp*delta+heatCapacityCoefficients[i][term];h=h*delta+heatCapacityCoefficients[i][term]/(term+1);}
+            workspace.heatCapacity[i]=cp;workspace.enthalpy[i]=h*delta;
         }
-        double[][] pair=new double[count][count],first=new double[count][count],second=new double[count][count];
-        for(int i=0;i<count;i++)for(int j=i;j<count;j++) {
-            double value=sqrtAttraction[i]*sqrtAttraction[j]*(1-interactions[i][j]),slope=.5*(slopeAlpha[i]+slopeAlpha[j]);
-            pair[i][j]=pair[j][i]=value;first[i][j]=first[j][i]=value*slope;second[i][j]=second[j][i]=value*(slope*slope+.5*(curvatureAlpha[i]+curvatureAlpha[j]));
-        }
-        return new TemperatureTerms(this,temperature,pair,first,second,cp,h);
+        kernel.prepareTemperature(temperature,workspace.mixture);
+        // sqrt(a_i) vanishes exactly where the PR alpha term does, which is where every d/dT below divides
+        // by zero. The same state the dense form refused as a degenerate alpha derivative.
+        double[] roots=workspace.mixture.attractionRootsView();
+        for(int i=0;i<count;i++)if(roots[i]==0)throw new IllegalArgumentException("Degenerate PR alpha derivative");
+        // The pure-component root derivatives depend on temperature alone, exactly like the dense form's
+        // three matrices did; only the composition-weighted sums below are per evaluation.
+        kernel.prepareRootDerivatives(temperature,workspace.mixture,workspace.rootDt,workspace.rootDt2);
+        workspace.temperature=temperature;
     }
 
-    public Phase evaluate(double temperature,double pressure,double[] amounts,PhaseRoot root,TemperatureTerms terms) {
+    public Phase evaluate(double temperature,double pressure,double[] amounts,PhaseRoot root,Workspace workspace) {
         if (!Double.isFinite(temperature) || temperature <= 0 || !Double.isFinite(pressure) || pressure <= 0) {
             throw new IllegalArgumentException("Positive finite temperature and pressure required");
         }
-        if(terms.owner!=this||temperature!=terms.temperature)throw new IllegalArgumentException("Temperature coefficients belong to another state/model");
-        double[] x = normalize(amounts);
-        double[] attractionRows=new double[x.length];
-        double b = 0, shift = 0, idealH = 0, idealCp = 0;
+        if(workspace.owner!=this||temperature!=workspace.temperature)throw new IllegalArgumentException("Temperature coefficients belong to another state/model");
+        if(amounts.length!=components.size())throw new IllegalArgumentException("Composition basis mismatch");
+        kernel.evaluate(temperature,pressure,amounts,
+                root==PhaseRoot.VAPOR?PengRobinsonKernel.Root.VAPOR:PengRobinsonKernel.Root.LIQUID,
+                workspace.mixture,workspace.evaluation);
+        double[] x=workspace.mixture.compositionView(),attractionRows=workspace.mixture.attractionRowsView();
+        double a=workspace.evaluation.aMix(),b=workspace.evaluation.bMix(),da=workspace.evaluation.daMixDt();
+        double dda=kernel.mixtureSecondTemperatureDerivative(workspace.mixture,workspace.rootDt,workspace.rootDt2,workspace.crossDt);
+        double shift = 0, idealH = 0, idealCp = 0;
         for (int i = 0; i < x.length; i++) {
-            b += x[i] * coVolumes[i];
             shift += x[i] * translations[i];
-            idealCp+=x[i]*terms.heatCapacity[i];idealH+=x[i]*terms.enthalpy[i];
+            idealCp+=x[i]*workspace.heatCapacity[i];idealH+=x[i]*workspace.enthalpy[i];
         }
-        double a = 0, da = 0, dda = 0;
-        for(int i=0;i<x.length;i++) {
-            double firstRow=0,secondRow=0;
-            for(int j=0;j<x.length;j++) {
-                if(x[j]==0)continue;
-                attractionRows[i]+=x[j]*terms.a[i][j];
-                if(x[i]==0)continue;
-                firstRow+=x[j]*terms.first[i][j];secondRow+=x[j]*terms.second[i][j];
-            }
-            a+=x[i]*attractionRows[i];da+=x[i]*firstRow;dda+=x[i]*secondRow;
-        }
-        double rt=R*temperature,reducedA=a*pressure/(rt*rt),reducedB=b*pressure/rt;
-        double z=PengRobinson78.compressibilityRoot(reducedA,reducedB,root),v=z*rt/pressure;
+        double rt=R*temperature;
+        double z=workspace.evaluation.compressibility(),v=z*rt/pressure;
         double denominator = v*v + 2*b*v - b*b;
         double dpdv = -R*temperature / ((v-b)*(v-b)) + 2*a*(v+b) / (denominator*denominator);
         double dpdt = R/(v-b) - da/denominator;
@@ -121,18 +148,17 @@ public final class TranslatedPengRobinson {
         double dvdtt = -(-dda/denominator + 2*dpdtv*dvdt + dpdvv*dvdt*dvdt)/dpdv;
         double physicalV = v + shift;
         double log = Math.log((v+(1+SQRT_TWO)*b)/(v+(1-SQRT_TWO)*b));
-        double h=idealH+rt*(z-1)+(temperature*da-a)/(2*SQRT_TWO*b)*log+pressure*shift;
+        double h=idealH+workspace.evaluation.residualEnthalpyJoulesPerMol()+pressure*shift;
         double dlogdv = 1/(v+(1+SQRT_TWO)*b) - 1/(v+(1-SQRT_TWO)*b);
         double cp = idealCp + pressure*dvdt - R + temperature*dda/(2*SQRT_TWO*b)*log
                 + (temperature*da-a)/(2*SQRT_TWO*b)*dlogdv*dvdt;
         double dhdp = physicalV - temperature*dvdt;
         double[] logPhi = new double[x.length];
         double[] partialVolumes = new double[x.length];
-        double freeVolumeLog=Math.log(z-reducedB),attractionFactor=a/(2*SQRT_TWO*b*rt);
+        double[] mixtureLogPhi=workspace.evaluation.logFugacityCoefficientsView();
         for (int i=0;i<x.length;i++) {
-            double bRatio=coVolumes[i]/b;
-            logPhi[i]=bRatio*(z-1)-freeVolumeLog-attractionFactor*(2*attractionRows[i]/a-bRatio)*log+pressure*translations[i]/rt;
-            double db=coVolumes[i]-b;
+            logPhi[i]=mixtureLogPhi[i]+pressure*translations[i]/rt;
+            double db=coVolume(i)-b;
             double pressureCompositionDerivative=-2*(attractionRows[i]-a)/denominator
                     +db*(R*temperature/((v-b)*(v-b))+2*a*(v-b)/(denominator*denominator));
             partialVolumes[i]=v-pressureCompositionDerivative/dpdv+translations[i];
@@ -147,17 +173,18 @@ public final class TranslatedPengRobinson {
                 a/(R*temperature*b)<5.8773599486044 || v/b>3.9513730355914);
     }
 
-    private double[] normalize(double[] amounts) {
-        if (amounts.length != components.size()) throw new IllegalArgumentException("Composition basis mismatch");
-        double[] x = amounts.clone();
-        double sum = 0;
-        for (double n : x) { if (!Double.isFinite(n) || n < 0) throw new IllegalArgumentException("Invalid composition"); sum += n; }
-        if (!(sum > 0) || !Double.isFinite(sum)) throw new IllegalArgumentException("Empty/nonfinite composition");
-        for (int i = 0; i < x.length; i++) x[i] /= sum;
-        return x;
-    }
+    private double coVolume(int component) { return kernel.coVolume(component); }
+
     private static void finite(double value) {
         if (!Double.isFinite(value)) throw new IllegalArgumentException("Nonfinite property coefficient");
+    }
+
+    /** The construction inputs, for the package's test-only legacy oracle. */
+    record Inputs(List<ThermoComponent> components,double[][] interactions,double[][] heatCapacityCoefficients,double[] translations) {}
+    Inputs inputs() {
+        double[][] cp=new double[heatCapacityCoefficients.length][];
+        for(int i=0;i<cp.length;i++)cp[i]=heatCapacityCoefficients[i].clone();
+        return new Inputs(components,kernel.binaryInteractions(),cp,translations.clone());
     }
 
     /** The arrays belong to the record from construction on; {@link #evaluate} builds them for it. */

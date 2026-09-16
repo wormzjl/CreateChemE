@@ -70,6 +70,9 @@ public final class SolverDiagnostics {
     public static final LongAdder transportOrderingNanos=new LongAdder();
     // ---- properties ----
     public static final LongAdder stateCalls=new LongAdder();
+    /** Peng-Robinson temperature preparations. The name is kept from the {@code TemperatureTerms} this
+     * counted before WP6a replaced those three n x n matrices with the shared kernel's 3n vectors, so the
+     * measurements across work packages stay comparable: it counts the same event either way. */
     public static final LongAdder temperatureTermsCalls=new LongAdder();
     public static final LongAdder flashCalls=new LongAdder();
     // ---- reconstruction ----

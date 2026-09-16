@@ -56,10 +56,12 @@ public final class HydrocarbonModel {
     public MaterialCatalog.Package propertyPackage() { return propertyPackage; }
 
     public Phase phase(double t,double p,double[] amounts,PhaseRoot root) {
-        return phase(t,p,amounts,root,translated.temperatureTerms(t));
+        return phase(t,p,amounts,root,translated.prepare(t));
     }
-    public TranslatedPengRobinson.TemperatureTerms temperatureTerms(double t){return translated.temperatureTerms(t);}
-    public Phase phase(double t,double p,double[] amounts,PhaseRoot root,TranslatedPengRobinson.TemperatureTerms terms) {
+    public TranslatedPengRobinson.Workspace prepare(double t){return translated.prepare(t);}
+    /** The translated EOS this model evaluates; the package's legacy oracle test differentiates against it. */
+    TranslatedPengRobinson translated(){return translated;}
+    public Phase phase(double t,double p,double[] amounts,PhaseRoot root,TranslatedPengRobinson.Workspace terms) {
         if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
         double minimumTemperature=0;
         for(int i=0;i<amounts.length;i++)if(amounts[i]>0)minimumTemperature=Math.max(minimumTemperature,propertyPackage.properties().get(i).minimumTemperature());
