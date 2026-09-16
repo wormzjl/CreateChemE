@@ -25,6 +25,10 @@ public final class SolverDiagnostics {
     /** TR-BDF2 companion defects answered by one linear filter, and by a complete nonlinear stage. */
     public static final LongAdder companionFilters=new LongAdder();
     public static final LongAdder companionSolves=new LongAdder();
+    /** Filtered defects already inside the stage solve's own Newton tolerance, whose estimate is zero. */
+    public static final LongAdder companionDefectsBelowTolerance=new LongAdder();
+    /** Linear filters whose point failed to solve the perturbed equations, handed to the nonlinear stage. */
+    public static final LongAdder companionFiltersRefused=new LongAdder();
     // ---- Newton ----
     public static final LongAdder newtonSolves=new LongAdder();
     public static final LongAdder newtonIterations=new LongAdder();
@@ -83,6 +87,8 @@ public final class SolverDiagnostics {
         var map=new LinkedHashMap<String,LongAdder>();
         map.put("implicitSolves",implicitSolves);map.put("activeSetPasses",activeSetPasses);
         map.put("companionFilters",companionFilters);map.put("companionSolves",companionSolves);
+        map.put("companionDefectsBelowTolerance",companionDefectsBelowTolerance);
+        map.put("companionFiltersRefused",companionFiltersRefused);
         map.put("newtonSolves",newtonSolves);map.put("newtonIterations",newtonIterations);map.put("newtonBacktracks",newtonBacktracks);
         map.put("residualEvaluations",residualEvaluations);map.put("residualEvaluationsInJacobian",residualEvaluationsInJacobian);
         map.put("jacobianBuilds",jacobianBuilds);map.put("jacobianColors",jacobianColors);map.put("jacobianNonzeros",jacobianNonzeros);

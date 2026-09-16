@@ -18,9 +18,10 @@ public final class PassiveStepSolver {
     private List<PassiveNetwork.Pipe> previousPipes=List.of();
     private long[] previousNodeIds=new long[0];
     private double[] previousFlows=new double[0],previousHeads=new double[0];
-    private Equations lastEquations;
-    private double[] lastVariables;
-    private SparseNewton.Workspace lastWorkspace;
+    /** The last successful solve, together with the Newton tolerance it converged under: the
+     * companion filter may not claim to resolve a defect the solve itself could not. */
+    private record LastSolve(Equations equations,double[] variables,SparseNewton.Workspace workspace,double newtonTolerance) {}
+    private LastSolve lastSolve;
     public PassiveStepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
     public PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership) {
         this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
@@ -39,7 +40,7 @@ public final class PassiveStepSolver {
     public Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance) {
         Objects.requireNonNull(acceptance);SolverDiagnostics.count(SolverDiagnostics.implicitSolves);
         ownership.check("Each executing island job needs its own step workspace");
-        lastEquations=null;lastVariables=null;lastWorkspace=null;
+        lastSolve=null;
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
         if(graph.pipes().isEmpty()&&graph.scheduledTransfers().isEmpty())return new Result(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),new double[0],dt,
                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
@@ -138,7 +139,7 @@ public final class PassiveStepSolver {
                     acceptedModes.set(edge,switch(pipe.control()){case FlowControl.Passive ignored->FlowControl.Mode.VELOCITY_LIMITED;case FlowControl.Pump ignored->FlowControl.Mode.PUMP_VELOCITY_LIMIT;case FlowControl.PressureValve ignored->FlowControl.Mode.VALVE_VELOCITY_LIMIT;});
                 }
             }
-            lastEquations=equations;lastVariables=x;lastWorkspace=workspace;
+            lastSolve=new LastSolve(equations,x,workspace,tolerance);
             return new Result(projection.states(),flows,dt,numerical,acceptedModes,heads,projection.pumpWork(),projection.externalMoles(),projection.externalEnergy(),projection.inventories(),projection.boundaries(),PipeTransfer.sample(graph,projection.states(),flows,dt));
         }
         throw new SparseNewton.Nonconvergence("Device active-set limit");
@@ -161,21 +162,53 @@ public final class PassiveStepSolver {
      * Returns {@code null} - and the caller must then run the full nonlinear stage - when there is
      * no matching last solve, when its factorization is gone or singular, when the linearized point
      * leaves the property domain, or when the reconstruction refuses it.
+     *
+     * <p>Two rules keep the filter inside what the engine can actually resolve, because unlike the
+     * nonlinear stage it has no residual of its own to answer to:
+     *
+     * <ul>
+     * <li>A defect whose scaled right-hand side is already inside the Newton tolerance that solve
+     *     converged under is not filtered at all: the correction is zero, because the engine cannot
+     *     resolve a target shift its own stage solve treats as converged. That is what the
+     *     nonlinear stage did - its Newton exited at iteration 0 and returned the stage-two point.</li>
+     * <li>Otherwise the filtered point must actually solve the perturbed equations: the residual it
+     *     leaves, {@code f(x+dx) - delta/scale}, may not exceed the solve's own tolerance or the
+     *     defect it was handed. The factorization may be a chord inherited from another step size -
+     *     {@link SparseNewton.Workspace#forkPreconditioner} carries it across substeps and intervals
+     *     - and such a chord is a fine search direction, which the nonlinear residual corrects, but
+     *     it is the implicit operator of <em>that</em> step, so as an error filter it can overshoot
+     *     severalfold. A quiescent island holds one chord for whole intervals, and the overshoot
+     *     lands in the flow unknowns, where it is many times the controller's own numerical
+     *     allowance and rejects steps that need no refinement. The check costs one residual
+     *     assembly and shares its node decode with the endpoint below.</li>
+     * </ul>
      */
     Companion companion(PassiveNetwork solved,PassiveNetwork corrected,double[][] deltaMoles,double[] deltaEnergy,
                         double[] heads,double dt,Runnable checkpoint) {
         ownership.check("Each executing island job needs its own step workspace");
-        var equations=lastEquations;
-        if(equations==null||equations.graph!=solved||equations.dt!=dt)return null;
+        var last=lastSolve;
+        if(last==null||last.equations.graph!=solved||last.equations.dt!=dt)return null;
+        var equations=last.equations;
         double[] rows=new double[equations.size];
         for(int node=0;node<equations.layout.length;node++) {
             if(equations.layout[node]==null||solved.reservoirs().get(node).junction())continue;
             equations.layout[node].targetRows(deltaMoles[node],deltaEnergy[node],rows,equations.offsets[node]);
         }
+        double defect=0;for(double row:rows)defect=Math.max(defect,Math.abs(row));
         List<FluidThermodynamics.State> states;double[] flows=new double[solved.pipes().size()];
         try {
-            double[] x=SparseNewton.applyFactorization(lastWorkspace,lastVariables,rows);
-            if(x==null)return null;
+            double[] x;
+            if(defect<=last.newtonTolerance) {
+                SolverDiagnostics.count(SolverDiagnostics.companionDefectsBelowTolerance);x=last.variables.clone();
+            }else {
+                x=SparseNewton.applyFactorization(last.workspace,last.variables,rows);
+                if(x==null)return null;
+                double left=0;double[] perturbed=equations.residual(x);
+                for(int row=0;row<perturbed.length;row++)left=Math.max(left,Math.abs(perturbed[row]-rows[row]));
+                if(left>Math.max(last.newtonTolerance,defect)) {
+                    SolverDiagnostics.count(SolverDiagnostics.companionFiltersRefused);return null;
+                }
+            }
             states=equations.states(x);
             for(int edge=0;edge<flows.length;edge++)flows[edge]=equations.boundaryClosed[edge]||equations.modes.get(edge)==FlowControl.Mode.CLOSED
                     ?0:x[equations.edgeOffset+edge];

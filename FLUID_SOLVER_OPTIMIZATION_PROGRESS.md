@@ -376,3 +376,79 @@ own attribution.
   `build/probe/reference-a4`, on all four fixtures.
 - Gate: 793 JUnit tests, 14 GameTests, green.
 - Commit `cffdcff`.
+
+### WP3-A4b - treat a companion defect below the Newton tolerance as unresolved
+
+The linear filter has no residual of its own to answer to, so two rules now keep it inside what the
+engine can resolve, and the second one is not the rule this item was planned around.
+
+**The tolerance rule (as specified).** When the filter's scaled right-hand side (`delta/scale`, the
+same scaling the stage-two Newton converged under) is at or below that solve's tolerance - 1e-9,
+1e-10 for a small headspace, 1e-6 approximate, now carried on the `LastSolve` holder - the
+correction is zero, because the engine cannot resolve a target shift its own stage solve treats as
+converged. That is what the nonlinear stage did: its Newton exited at iteration 0 and returned the
+stage-two point. It fires on 17 of 67 cold substeps, 0 of 67 chain substeps, and on the single
+substep of quiet 11312's warm intervals.
+
+**What the tolerance rule did not fix.** Alone it leaves quiet 11324 at 18/3 and moves quiet 11312
+from 14/1 to 16/2. The rejecting attempt is always the full 5 s step, where the defect is 1.3e-9 to
+5.0e-9 - just *above* the tolerance, because a 5 s step carries the largest target shift - so the
+rule never reaches it. Probing the term the controller actually rejects on (island 11324, pipe 13,
+1.24e-6 kg/s): the genuine order-three flow defect `e0*q0+e1*q1+e2*q2` is -8.9e-9 kg/s, and the
+filter contributes `ALPHA*(qc-q2)` = +5.4e-8 kg/s, six times larger and of the sign that should have
+cancelled it. Run with `companionFilter=NONLINEAR` at the same points, the filter term is
+-1.70e-8 against a +1.67e-8 defect: it cancels to 3e-10, which is why the nonlinear stage accepts
+every warm 5 s step.
+
+**Root cause: the filter may be applying another step's implicit operator.** `forkPreconditioner`
+carries a factorization across substeps and intervals, and a quiet island rebuilds no Jacobian at all
+after its first interval, so the 5 s attempt is filtered through a chord built at a stage step of
+0.54 s or less. As a Newton search direction that is fine - the nonlinear residual corrects it - but
+the TR-BDF2 filter *is* `(I-alpha*h*J)^-1`, so a chord from a smaller step under-damps, and the
+overshoot lands in the flow unknowns, where it is 1.4x the controller's own numerical allowance on a
+pipe carrying 1.2e-6 kg/s. Measured directly: on every warm 5 s attempt of both quiet islands the
+linearized point leaves a residual of 5.9e-9 to 2.3e-8 on the perturbed equations - 2.4 to 5 times
+the defect it was handed, i.e. the linear system was not solved at all.
+
+**The rule that follows: the filtered point must solve the perturbed equations.** After applying the
+factorization, `companion` evaluates `f(x+dx)-delta/scale` and refuses the filter when its max-norm
+exceeds `max(newtonTolerance, defect)`, which hands that substep to the nonlinear stage exactly as a
+missing factorization already does. It is the same self-check `SparseNewton.estimateCorrection`
+already applies to its own probe. The check costs one residual assembly and no node decodes: the
+endpoint decode that follows reads the same per-node cache, so `stateCalls` is unchanged on every
+fixture. Requiring the factorization to be the solve's own instead (a provenance test rather than a
+result test) was measured and rejected: it fixes the quiet islands equally but refuses 31 of 67 cold
+and 47 of 67 chain filters, costing +7% and +19% wall against this row's transients.
+
+| fixture | wall ms | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | node state() calls | allocated MB | KB per residual |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 53.5 -> 43.7 | 14/1 -> **11/0** | 6.4 -> 5.0 | 0.6 unchanged | 137 -> 132 | 2064 -> 1782 | 48.7 -> 40.2 | 364 -> 312 |
+| quiet 11312, warm intervals 2-4 | 7.6-11.3 -> 4.4-5.9 | 1/0 each | 2 | 0 | 6-14 -> 4 | 360-600 -> 300 | 8.4-13.7 -> 6.7 | - |
+| quiet 11324, mean of 5 | 39.8 -> 26.5 | 18/3 -> **11/0** | 8.6 -> 5.8 | 0.8 unchanged | 190 -> 172 | 1818 -> 1289 | 42.3 -> 30.3 | 228 -> 181 |
+| cold 11312, one interval | 1692 -> 1649 | 52/15 unchanged | 135 | 41 | 8731 | 98070 | 1906.4 -> 1903.2 | 224 -> 223 |
+| 100-reservoir chain | 2940 -> 3002 | 45/22 unchanged | 135 | 22 | 4149 | 246000 | 4631.6 -> 4645.1 | 1143 -> 1146 |
+
+Companion accounting per interval: quiet 11312 warm 1 filter, of which 1 below tolerance (interval 1
+refuses its one filter); quiet 11324 warm refuses its one filter every interval; cold 67 filters, 17
+below tolerance, 0 refused; chain 67 filters, 0 below tolerance, 0 refused. The transient wall
+figures are run noise around an unchanged trajectory - both single-interval fixtures compare
+**bitwise identical** (0.0 on every quantity) against a capture of 8889c7d in
+`build/probe/reference-wp2`, so the two new rules touch quiescent islands only.
+
+Accuracy against the 154007d references, under the declared gate:
+
+| quantity | gate | quiet 11312 | quiet 11324 | cold 11312 | chain |
+|---|---:|---:|---:|---:|---:|
+| state / moles, relative | 1e-6 | 1.0e-9 | 6.2e-10 | 3.9e-10 | 1.8e-9 |
+| temperature, K | 1e-4 | 1.2e-9 | 7.3e-10 | 4.3e-9 | 1.8e-8 |
+| phase volume fraction | 1e-6 | 5.5e-12 | 3.5e-12 | 2.0e-11 | 8.3e-11 |
+| average flow, worst absolute kg/s | - | 1.9e-9 | 8.0e-9 | 3.2e-9 | 4.7e-9 |
+| controller allowance there, kg/s | - | 3.18e-8 | 3.18e-8 | 3.18e-8 | 3.16e-8 |
+
+Against `reference-wp2` (8889c7d) the quiet fixtures move 1.0e-9 and 8.9e-10 on state, 3.8e-10 and
+5.1e-10 K, 7.0e-13 and 1.0e-12 on phase fraction, and at most 9.8e-9 kg/s on a flow - 31% of the
+controller's allowance for that pipe. Two new counters record the rules:
+`companionDefectsBelowTolerance` and `companionFiltersRefused`.
+
+- Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `PLACEHOLDER`.
