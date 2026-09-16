@@ -110,6 +110,7 @@ neoForge {
             systemProperty 'createcheme.fluid.stress.measurementSeconds', providers.gradleProperty('fluidStressMeasurementSeconds').getOrElse('120')
             systemProperty 'createcheme.fluid.stress.profile', providers.gradleProperty('fluidStressProfile').getOrElse('false')
             systemProperty 'createcheme.fluid.benchmark.memory', providers.gradleProperty('fluidBenchmarkMemory').getOrElse('false')
+            systemProperty 'createcheme.fluid.benchmark.diagnostics', providers.gradleProperty('fluidBenchmarkDiagnostics').getOrElse('false')
             if (providers.gradleProperty('fluidBenchmarkHeapMiB').isPresent()) {
                 def heapMiB = providers.gradleProperty('fluidBenchmarkHeapMiB').get().toInteger()
                 if (heapMiB < 512 || heapMiB > 16384) throw new GradleException('fluidBenchmarkHeapMiB must be between 512 and 16384')

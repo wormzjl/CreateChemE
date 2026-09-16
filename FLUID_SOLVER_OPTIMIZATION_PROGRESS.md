@@ -629,3 +629,41 @@ fixtures are inside their run-to-run spread; their warm intervals decode four no
   fixtures, which is also the capture `e604043` proved itself against.
 - Gate: 793 JUnit tests, 14 GameTests, green.
 - Commit `f814bc0`.
+
+## WP5 - production pool measurement
+
+Review section 3.5 left one question open that no replay can answer: the in-process counters charge
+18-28% of a single-threaded interval to linear algebra and 60-67% to residual evaluation, while JFR
+on the 12-worker stress run charges 66.5% to linear algebra and 21.5% to properties. That decides
+whether B3 (block/fill-aware LU) belongs before or after the residual work, so it is measured on the
+production pool, with the solver counters running there for the first time.
+
+### WP5-D1 - report the solver counters from the server benchmark
+
+`SolverDiagnostics` was thread-confined by contract: the `inJacobian` / `inReconstruct` nesting
+markers were plain static booleans, so twelve workers would have interleaved them and mis-charged
+each other's transport factorizations to the Newton buckets. The markers are now per thread (one
+`ThreadLocal` holder, entered and restored in the same `finally`), the counters were already
+`LongAdder`s and stay process-wide sums, and the nanosecond timers are per-thread deltas summed into
+those adders - under a pool they measure occupied thread time, whose sum over twelve workers exceeds
+the window by design. The attempt log is bounded at 200 000 records, with two new exact counters
+(`stepAttempts`, `stepAttemptsAccepted`) that survive the bound. `sample()` and `reset()` already
+returned every counter and cleared them; `reset()` now also clears the calling thread's markers.
+
+`-PfluidBenchmarkDiagnostics=true` (system property `createcheme.fluid.benchmark.diagnostics`) makes
+`FluidServerBenchmark` reset and enable the counters at the first measured tick - not at warm-up, so
+the readout is the steady state - and disable them as the first statement of `finish`, before the
+report is assembled. The readout lands in `report.json` under `solverDiagnostics`: `counters` (raw
+counts and nanosecond totals), `perAcceptedInterval` (the same divided by the accepted intervals
+published in the window), `attemptDominantTerms`, and the note that the nanoseconds are thread time.
+Cost with the property absent is unchanged: every site is still one volatile boolean read, and the
+thread-local holder is never allocated.
+
+- Trajectory: verified EXACT (bitwise, substep counts included) on all four fixtures against
+  `build/probe/reference-wp3`, captured at `c2580ed` before this change.
+- Confirmed end to end on a pilot run (`opt-wp5-smoke-r01`, `one` profile, 2 workers): the new key is
+  written, the Newton and transport buckets are separated (1 Newton factorization against 20
+  transport ones over 5 intervals), and `fluidServerBenchmark` parses the report with the extra key
+  (`runtime-audit.json` status `PASS`).
+- Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `%COMMIT%`.

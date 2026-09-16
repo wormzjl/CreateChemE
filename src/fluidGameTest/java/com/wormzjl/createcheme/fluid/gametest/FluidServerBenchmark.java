@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder;
 import com.wormzjl.createcheme.registry.ModBlocks;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
 import com.wormzjl.createcheme.runtime.fluid.*;
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.network.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind;
@@ -47,6 +48,9 @@ public final class FluidServerBenchmark {
         final long startTick,startNanos=System.nanoTime();
         final long startEpochMillis=System.currentTimeMillis();
         final boolean memoryEnabled=Boolean.getBoolean("createcheme.fluid.benchmark.memory");
+        /** Solver counters over the measurement window only; see {@link SolverDiagnostics}. */
+        final boolean diagnosticsEnabled=Boolean.getBoolean("createcheme.fluid.benchmark.diagnostics");
+        SolverDiagnostics.Sample diagnostics;
         final java.lang.management.MemoryMXBean memoryBean=memoryEnabled?java.lang.management.ManagementFactory.getMemoryMXBean():null;
         final List<java.lang.management.GarbageCollectorMXBean> gcBeans=memoryEnabled?java.lang.management.ManagementFactory.getGarbageCollectorMXBeans():List.of();
         final List<java.lang.management.BufferPoolMXBean> bufferPools=memoryEnabled?java.lang.management.ManagementFactory.getPlatformMXBeans(java.lang.management.BufferPoolMXBean.class):List.of();
@@ -225,7 +229,14 @@ public final class FluidServerBenchmark {
     }
     public static void afterTick(ServerTickEvent.Post event) {
         if(run==null||run.finished)return;long now=System.nanoTime(),meter=FluidRuntimeMeter.totalNanos(event.getServer());
-        if(run.measuring()){if(run.measuredStarted==0){run.measuredStarted=now;run.measuredStartEpochMillis=System.currentTimeMillis();}run.engineMillis.add((meter-run.lastMeter)/1e6);if(run.tickStarted!=0)run.tickMillis.add((now-run.tickStarted)/1e6);}
+        if(run.measuring()) {
+            if(run.measuredStarted==0) {
+                run.measuredStarted=now;run.measuredStartEpochMillis=System.currentTimeMillis();
+                // Warm-up work is not the production steady state; start the counters here.
+                if(run.diagnosticsEnabled){SolverDiagnostics.reset();SolverDiagnostics.ENABLED=true;}
+            }
+            run.engineMillis.add((meter-run.lastMeter)/1e6);if(run.tickStarted!=0)run.tickMillis.add((now-run.tickStarted)/1e6);
+        }
         run.lastMeter=meter;
         // GameTestServer normally ticks unpaced. Service its real server mailbox while waiting;
         // short solver completions can therefore refill workers between 20-TPS ticks.
@@ -233,6 +244,8 @@ public final class FluidServerBenchmark {
         long deadline=run.nextTick;event.getServer().managedBlock(()->System.nanoTime()>=deadline);
     }
     private static void finish(Run r) {
+        // Close the counters before anything else, so the readout covers the window and nothing after it.
+        if(r.diagnosticsEnabled){SolverDiagnostics.ENABLED=false;r.diagnostics=SolverDiagnostics.sample();}
         r.finished=true;r.world.observe(null);r.memoryTick(true);long now=System.nanoTime();
         var worker=r.samples.stream().map(Sample::timing).filter(m->m.workerNanos()>=0).map(m->m.workerNanos()/1e6).toList();
         var latency=r.samples.stream().map(s->s.timing().dispatchToPublicationNanos()/1e6).toList();long held=r.samples.stream().filter(s->!s.timing().accepted()).count();
@@ -260,6 +273,7 @@ public final class FluidServerBenchmark {
         report.put("samples",r.samples);report.put("rawEngineMillisecondsPerTick",r.engineMillis);report.put("rawTickSpacingMilliseconds",r.tickSpacingMillis);
         if(r.memoryEnabled){report.put("memorySamples",r.memorySamples);report.put("startEpochMillis",r.startEpochMillis);report.put("measuredStartEpochMillis",r.measuredStartEpochMillis);
             report.put("memoryNote","One-second JVM observations; heap used includes uncollected garbage. Use JFR after-GC heap and pause durations separately; GC MXBean time is collection time, not necessarily stop-the-world pause time. External process RSS/private bytes are separate from Java heap.");}
+        if(r.diagnostics!=null)report.put("solverDiagnostics",diagnostics(r,r.samples.size()-held,(now-r.measuredStarted)/1e9));
         report.put("warmupSamples",r.warmupSamples);report.put("warmupHeldIntervals",r.warmupSamples.stream().filter(s->!s.timing().accepted()).count());
         report.put("moduleCommittedTicks",finalState.modules().stream().map(FixedSplitModule.Snapshot::committedTick).toList());report.put("pendingTransferRecords",finalState.transfers().pending().size());report.put("plannedCapacityRecords",finalState.transfers().planned().size());
         report.put("qualificationNote","One fresh-JVM replicate only. Three replicates and one/many/module, worker-count, contention and soak coverage are required. Queue debt is present in each sample and is not hidden in worker timing.");
@@ -288,6 +302,32 @@ public final class FluidServerBenchmark {
         catch(java.io.IOException failure){throw new IllegalStateException("Could not write benchmark evidence",failure);}
         for(long chunk:fixture.chunks){var p=new ChunkPos(chunk);r.server.overworld().setChunkForced(p.x,p.z,false);}FluidRuntimeMeter.forget(r.server);
         r.helper.assertTrue(pass,"Paced benchmark failed; inspect the complete raw report");
+    }
+    /**
+     * The {@link SolverDiagnostics} readout for the measurement window. Counts and nanosecond totals
+     * are summed over every worker, so the nanosecond figures are occupied thread time and their sum
+     * legitimately exceeds the window's wall duration. The per-interval means divide by the accepted
+     * intervals published inside the window; work belonging to held intervals, to the jobs that
+     * straddle the window's edges, and to intervals published after it is counted in the totals but
+     * has no interval of its own here.
+     */
+    private static Map<String,Object> diagnostics(Run r,long acceptedIntervals,double measuredSeconds) {
+        var counters=new LinkedHashMap<String,Object>();var perInterval=new LinkedHashMap<String,Object>();
+        for(var name:SolverDiagnostics.names()) {
+            long value=r.diagnostics.value(name);counters.put(name,value);
+            perInterval.put(name,acceptedIntervals>0?value/(double)acceptedIntervals:null);
+        }
+        var dominant=new TreeMap<String,Long>();
+        for(var attempt:r.diagnostics.attempts())dominant.merge(attempt.accepted()?attempt.dominant():attempt.dominant()+"-rejected",1L,Long::sum);
+        var result=new LinkedHashMap<String,Object>();
+        result.put("note","Summed over all solver workers inside the measurement window; nanosecond totals are occupied thread time, not wall time.");
+        result.put("measuredSeconds",measuredSeconds);result.put("acceptedIntervals",acceptedIntervals);
+        result.put("workers",ProcessSolveServices.diagnostics(r.server).workerCount());
+        result.put("counters",counters);result.put("perAcceptedInterval",perInterval);
+        result.put("recordedAttempts",r.diagnostics.attempts().size());
+        result.put("attemptLogTruncated",r.diagnostics.attempts().size()>=SolverDiagnostics.MAXIMUM_ATTEMPTS);
+        result.put("attemptDominantTerms",dominant);
+        return result;
     }
     private static Double percentile(List<Double> values,double fraction){if(values.isEmpty())return null;var sorted=new ArrayList<>(values);Collections.sort(sorted);return sorted.get(Math.min(sorted.size()-1,(int)Math.ceil(fraction*sorted.size())-1));}
     private static Map<String,Object> statistics(List<Double> values){var result=new LinkedHashMap<String,Object>();result.put("count",values.size());result.put("median",percentile(values,.5));result.put("p95",percentile(values,.95));result.put("max",percentile(values,1));return result;}

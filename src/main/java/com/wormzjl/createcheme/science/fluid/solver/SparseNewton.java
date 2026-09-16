@@ -189,10 +189,10 @@ public final class SparseNewton {
     }
     private static int differentiate(Equations equations,double[] x,double[] f,double differenceStep,Runnable checkpoint,Workspace workspace) {
         if(!SolverDiagnostics.ENABLED)return differentiate0(equations,x,f,differenceStep,checkpoint,workspace);
-        SolverDiagnostics.inJacobian=true;
+        boolean outer=SolverDiagnostics.enterJacobian();
         try{return differentiate0(equations,x,f,differenceStep,checkpoint,workspace);}
         finally {
-            SolverDiagnostics.inJacobian=false;SolverDiagnostics.jacobianBuilds.increment();
+            SolverDiagnostics.leaveJacobian(outer);SolverDiagnostics.jacobianBuilds.increment();
             SolverDiagnostics.jacobianColors.add(workspace.pattern.groups.size());
             if(workspace.matrix!=null)SolverDiagnostics.jacobianNonzeros.add(workspace.matrix.nonzeroCount());
         }
@@ -224,7 +224,7 @@ public final class SparseNewton {
         for(double value:variables)if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite trial variable");
         if(SolverDiagnostics.ENABLED) {
             SolverDiagnostics.residualEvaluations.increment();
-            if(SolverDiagnostics.inJacobian)SolverDiagnostics.residualEvaluationsInJacobian.increment();
+            if(SolverDiagnostics.inJacobian())SolverDiagnostics.residualEvaluationsInJacobian.increment();
         }
         double[] result=equations.residual(variables);
         if(result.length!=size)throw new IllegalStateException("Equation count changed within a Newton pass");

@@ -21,10 +21,10 @@ public final class ConservativeTransport {
     public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
                                          double dt,FluidThermodynamics model,Runnable checkpoint) {
         if(!SolverDiagnostics.ENABLED)return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint);
-        long started=System.nanoTime();boolean previous=SolverDiagnostics.inReconstruct;SolverDiagnostics.inReconstruct=true;
+        long started=System.nanoTime();boolean previous=SolverDiagnostics.enterReconstruct();
         try{return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint);}
         finally {
-            SolverDiagnostics.inReconstruct=previous;
+            SolverDiagnostics.leaveReconstruct(previous);
             SolverDiagnostics.reconstructNanos.add(System.nanoTime()-started);SolverDiagnostics.reconstructCalls.increment();
         }
     }

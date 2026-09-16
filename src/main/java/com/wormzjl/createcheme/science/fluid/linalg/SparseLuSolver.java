@@ -47,7 +47,7 @@ public final class SparseLuSolver {
         try{return new Ordering(Objects.requireNonNull(matrix));}
         finally {
             long elapsed=System.nanoTime()-started;
-            if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportOrderingNanos.add(elapsed);SolverDiagnostics.transportOrderings.increment();}
+            if(SolverDiagnostics.inReconstruct()){SolverDiagnostics.transportOrderingNanos.add(elapsed);SolverDiagnostics.transportOrderings.increment();}
             else{SolverDiagnostics.luOrderingNanos.add(elapsed);SolverDiagnostics.luOrderings.increment();}
         }
     }
@@ -103,7 +103,7 @@ public final class SparseLuSolver {
             try{return factor0(matrix,ordering);}
             finally {
                 long elapsed=System.nanoTime()-started;
-                if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportFactorNanos.add(elapsed);SolverDiagnostics.transportFactorizations.increment();}
+                if(SolverDiagnostics.inReconstruct()){SolverDiagnostics.transportFactorNanos.add(elapsed);SolverDiagnostics.transportFactorizations.increment();}
                 else{SolverDiagnostics.luFactorNanos.add(elapsed);SolverDiagnostics.luFactorizations.increment();}
             }
         }
@@ -225,7 +225,7 @@ public final class SparseLuSolver {
             try{return held().solveMultiple(rightHandSides,verification);}
             finally {
                 long elapsed=System.nanoTime()-started;int count=rightHandSides==null?0:rightHandSides.length;
-                if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportSolveNanos.add(elapsed);SolverDiagnostics.transportSolves.add(count);}
+                if(SolverDiagnostics.inReconstruct()){SolverDiagnostics.transportSolveNanos.add(elapsed);SolverDiagnostics.transportSolves.add(count);}
                 else{SolverDiagnostics.luSolveNanos.add(elapsed);SolverDiagnostics.luSolves.add(count);}
             }
         }
