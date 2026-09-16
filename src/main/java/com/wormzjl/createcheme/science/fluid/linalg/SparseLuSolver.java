@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.linalg;
 
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import java.util.*;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.data.DMatrixSparseCSC;
@@ -26,15 +27,29 @@ public final class SparseLuSolver {
         return factor(matrix).solveMultiple(rightHandSides);
     }
 
-    public static Factorization factor(SparseMatrix matrix){return new Factorization(matrix,new Ordering(matrix));}
+    public static Factorization factor(SparseMatrix matrix){return factor(matrix,prepareOrdering(matrix));}
     /** Immutable permutation; any numeric matrix of the same dimension can use it. Reuse is an
      * ordering optimization only, never reuse of numeric factors or a structural-lock promise. */
     public static final class Ordering {
         private final int[] permutation;
         private Ordering(SparseMatrix matrix){permutation=ordering(matrix);}
     }
-    public static Ordering prepareOrdering(SparseMatrix matrix){return new Ordering(Objects.requireNonNull(matrix));}
-    public static Factorization factor(SparseMatrix matrix,Ordering ordering){return new Factorization(matrix,Objects.requireNonNull(ordering));}
+    public static Ordering prepareOrdering(SparseMatrix matrix) {
+        if(!SolverDiagnostics.ENABLED)return new Ordering(Objects.requireNonNull(matrix));
+        long started=System.nanoTime();
+        try{return new Ordering(Objects.requireNonNull(matrix));}
+        finally{SolverDiagnostics.luOrderingNanos.add(System.nanoTime()-started);SolverDiagnostics.luOrderings.increment();}
+    }
+    public static Factorization factor(SparseMatrix matrix,Ordering ordering) {
+        if(!SolverDiagnostics.ENABLED)return new Factorization(matrix,Objects.requireNonNull(ordering));
+        long started=System.nanoTime();
+        try{return new Factorization(matrix,Objects.requireNonNull(ordering));}
+        finally {
+            long elapsed=System.nanoTime()-started;
+            if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportFactorNanos.add(elapsed);SolverDiagnostics.transportFactorizations.increment();}
+            else{SolverDiagnostics.luFactorNanos.add(elapsed);SolverDiagnostics.luFactorizations.increment();}
+        }
+    }
 
     /** A reusable numeric factorization owned by the creating worker, never shared across threads. */
     public static final class Factorization {
@@ -72,6 +87,16 @@ public final class SparseLuSolver {
         }
         public double[] solve(double[] rightHandSide){return solveMultiple(new double[][]{rightHandSide})[0];}
         public double[][] solveMultiple(double[][] rightHandSides) {
+            if(!SolverDiagnostics.ENABLED)return solveMultiple0(rightHandSides);
+            long started=System.nanoTime();
+            try{return solveMultiple0(rightHandSides);}
+            finally {
+                long elapsed=System.nanoTime()-started;int count=rightHandSides==null?0:rightHandSides.length;
+                if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportSolveNanos.add(elapsed);SolverDiagnostics.transportSolves.add(count);}
+                else{SolverDiagnostics.luSolveNanos.add(elapsed);SolverDiagnostics.luSolves.add(count);}
+            }
+        }
+        private double[][] solveMultiple0(double[][] rightHandSides) {
             if(Thread.currentThread()!=owner)throw new IllegalStateException("Sparse factorization belongs to its creating worker");
             Objects.requireNonNull(rightHandSides,"rightHandSides");int size=matrix.size();
             for(var input:rightHandSides) {
@@ -91,8 +116,10 @@ public final class SparseLuSolver {
                 solver.solve(b,x);double[] result=new double[size];
                 for(int row=0;row<size;row++){result[row]=x.get(permutation[row],0);if(!Double.isFinite(result[row]))throw new SolveFailure("Sparse LU produced a nonfinite solution");}
                 for(int refinement=0;refinement<4;refinement++) {
+                    SolverDiagnostics.count(SolverDiagnostics.luChecks);
                     try{checkResidual(rhs,result);break;}
                     catch(SolveFailure failure) {
+                        SolverDiagnostics.count(SolverDiagnostics.luRefinements);
                         if(refinement==3)throw failure;double[] residual=rhs.clone();
                         for(int column=0;column<size;column++)for(int entry=matrix.columnStart(column);entry<matrix.columnEnd(column);entry++) {
                             int row=matrix.rowAt(entry);residual[row]=Math.fma(-scaledValues[entry],result[column],residual[row]);

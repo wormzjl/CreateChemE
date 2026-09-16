@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.solver.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
@@ -28,7 +29,7 @@ public final class PassiveStepSolver {
         return solve(graph,dt,checkpoint,Acceptance.FULL);
     }
     public Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance) {
-        Objects.requireNonNull(acceptance);
+        Objects.requireNonNull(acceptance);SolverDiagnostics.count(SolverDiagnostics.implicitSolves);
         if(Thread.currentThread()!=owner)throw new IllegalStateException("Each executing island job needs its own step workspace");
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
         if(graph.pipes().isEmpty()&&graph.scheduledTransfers().isEmpty())return new Result(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),new double[0],dt,
@@ -47,7 +48,8 @@ public final class PassiveStepSolver {
         boolean[] boundaryClosed=new boolean[graph.pipes().size()];var seen=new HashSet<String>();
         int maximumPasses=Math.min(512,16+2*graph.reservoirs().size()+2*graph.pipes().size());
         for(int pass=0;pass<maximumPasses;pass++) {
-            checkpoint.run();if(!seen.add(modes.toString()+Arrays.toString(boundaryClosed)+seeds.stream().map(PassiveStepSolver::phaseSignature).toList()))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
+            checkpoint.run();SolverDiagnostics.count(SolverDiagnostics.activeSetPasses);
+            if(!seen.add(modes.toString()+Arrays.toString(boundaryClosed)+seeds.stream().map(PassiveStepSolver::phaseSignature).toList()))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
             var equations=new Equations(graph,dt,modes,boundaryClosed,seeds);
             var key=new WorkspaceKey(Double.doubleToLongBits(dt),graph.reservoirs().stream().map(PassiveNetwork.Reservoir::id).toList(),
                     graph.reservoirs().stream().map(PassiveNetwork.Reservoir::kind).toList(),graph.pipes(),seeds.stream().map(PassiveStepSolver::phaseSignature).toList(),

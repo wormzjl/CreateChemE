@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.solver.SparseNewton;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
@@ -57,6 +58,8 @@ public final class PassiveIntervalSolver {
                     double pipeError=flowError(accepted,full.massFlows(),trial.estimatedMassFlows(),trial.estimatedMassFlows(),h,grossTransferred,duration);
                     double sourceError=initial.scheduledTransfers().isEmpty()?0:boundaryError(full.boundaries(),trial.estimatedBoundaries());
                     double error=Math.max(Math.max(stateError,pipeError),sourceError);
+                    SolverDiagnostics.attempt(attempt,h,error<=settings.relativeTolerance,
+                            sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state",error);
                     if(error>settings.relativeTolerance)throw new AccuracyRejection("Embedded "+(sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state")+" error "+error,error);
                     accepted=replace(accepted,full);last=full;elapsed+=h;acceptedCount++;consecutiveRejects=0;
                     work+=full.pumpWorkJoule();boundaries.addAll(full.boundaries());var flows=full.massFlows();
@@ -73,6 +76,7 @@ public final class PassiveIntervalSolver {
                 // Across a transition, retain the entire coarse-versus-refined discrepancy.
                 double error=Math.max(error(full.states(),second.states()),flowError(accepted,full.massFlows(),first.massFlows(),second.massFlows(),h,grossTransferred,duration))/(regimes.smooth()?3:1);
                 if(!initial.scheduledTransfers().isEmpty())error=Math.max(error,boundaryError(full,first,second)/(regimes.smooth()?3:1));
+                SolverDiagnostics.attempt(attempt,h,error<=settings.relativeTolerance,"refinement",error);
                 if(error>settings.relativeTolerance)throw new AccuracyRejection("Step refinement error "+error,error);
                 accepted=replace(accepted,second);last=second;elapsed+=h;acceptedCount+=2;consecutiveRejects=0;
                 work+=first.pumpWorkJoule()+second.pumpWorkJoule();boundaries.addAll(first.boundaries());boundaries.addAll(second.boundaries());

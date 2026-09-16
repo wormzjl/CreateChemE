@@ -359,6 +359,20 @@ tasks.register('fluidModuleProfile', Test) {
         jvmArgs "-XX:StartFlightRecording=filename=${layout.buildDirectory.file('reports/fluid/M9/module-receiver.jfr').get().asFile.absolutePath},settings=profile,dumponexit=true"
     }
 }
+tasks.register('fluidSolverRegression', Test) {
+    group = 'verification'
+    description = 'Replays saved islands against the captured solver reference states and reports solver cost.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter { includeTestsMatching 'com.wormzjl.createcheme.fluid.benchmark.FluidSolverRegressionTest'; failOnNoMatchingTests = true }
+    maxParallelForks = 1
+    testLogging { showStandardStreams = true }
+    if (providers.gradleProperty('fluidRegressionSnapshot').isPresent())
+        systemProperty 'fluid.regression.snapshot', providers.gradleProperty('fluidRegressionSnapshot').get()
+    systemProperty 'fluid.regression.capture', providers.gradleProperty('fluidRegressionCapture').getOrElse('false')
+    systemProperty 'fluid.regression.mode', providers.gradleProperty('fluidRegressionMode').getOrElse('declared')
+    outputs.upToDateWhen { false }
+}
 tasks.named('test', Test) {
     exclude '**/fluid/benchmark/**'
 }

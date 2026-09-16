@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.fluid.thermo;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity;
 import com.wormzjl.createcheme.science.material.MaterialCatalog;
 import com.wormzjl.createcheme.science.thermo.PhaseRoot;
@@ -114,6 +115,7 @@ public final class FluidThermodynamics {
         return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,null);
     }
     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,TranslatedPengRobinson.TemperatureTerms terms) {
+        SolverDiagnostics.count(SolverDiagnostics.stateCalls);
         int n=hydrocarbon.componentCount();
         if(liquid.length!=n||vapor.length!=n||!Double.isFinite(t)||!Double.isFinite(p)||t<273.16||t>600||p<100||p>2e6)throw new IllegalArgumentException("Fluid state outside domain");
         double nl=sum(liquid),nv=sum(vapor),volume=0,h=0,mass=0,gasVolume=0,vl=0,vw=0;
@@ -136,6 +138,7 @@ public final class FluidThermodynamics {
 
     /** Initializer/boundary flash only. The time-step solver must not call this in residual evaluation. */
     public State flashTP(double t,double p,double[] overall,Runnable checkpoint) {
+        SolverDiagnostics.count(SolverDiagnostics.flashCalls);
         int n=hydrocarbon.componentCount();if(overall.length!=n+1)throw new IllegalArgumentException("Fluid basis mismatch");
         double[] hc=Arrays.copyOf(overall,n);double nh=sum(hc),w=overall[n];
         if(!Double.isFinite(w)||w<0||nh+w<=0)throw new IllegalArgumentException("Empty fluid initialization");

@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.thermo;
 
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.thermo.PengRobinson78;
 import com.wormzjl.createcheme.science.thermo.PhaseRoot;
 import com.wormzjl.createcheme.science.thermo.ThermoComponent;
@@ -63,6 +64,7 @@ public final class TranslatedPengRobinson {
         public double temperature(){return temperature;}
     }
     public TemperatureTerms temperatureTerms(double temperature) {
+        SolverDiagnostics.count(SolverDiagnostics.temperatureTermsCalls);
         if(!Double.isFinite(temperature)||temperature<=0)throw new IllegalArgumentException("Invalid coefficient temperature");
         int count=components.size();double[] sqrtAttraction=new double[count],slopeAlpha=new double[count],curvatureAlpha=new double[count],cp=new double[count],h=new double[count];
         double sqrtT=Math.sqrt(temperature),inverseSqrtT=1/sqrtT,delta=temperature-REFERENCE_T;

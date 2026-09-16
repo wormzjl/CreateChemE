@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.solver;
 
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.linalg.SparseLuSolver;
 import com.wormzjl.createcheme.science.fluid.linalg.SparseMatrix;
 import java.util.*;
@@ -57,7 +58,7 @@ public final class SparseNewton {
     }
     public static Result solve(Equations equations,double[] initial,Settings settings,Runnable checkpoint,Workspace workspace) {
         Objects.requireNonNull(equations);Objects.requireNonNull(settings);Objects.requireNonNull(checkpoint);
-        Objects.requireNonNull(workspace).owned();
+        Objects.requireNonNull(workspace).owned();SolverDiagnostics.count(SolverDiagnostics.newtonSolves);
         int n=equations.size();if(n==0||initial.length!=n)throw new IllegalArgumentException("Invalid equation dimension");
         if(workspace.pattern==null)workspace.pattern=new Pattern(n,equations.columnRows());
         if(workspace.pattern.offsets.length!=n+1)throw new IllegalArgumentException("Newton workspace structure changed");
@@ -67,6 +68,7 @@ public final class SparseNewton {
             checkpoint.run();
             if(norm<=settings.tolerance())return new Result(x,norm,iteration,calls,lastNonzeros,pattern.groups.size());
             if(iteration==settings.iterations())break;
+            SolverDiagnostics.count(SolverDiagnostics.newtonIterations);
             boolean fresh=refresh;
             if(refresh) {
                 calls+=differentiate(equations,x,f,settings.differenceStep(),checkpoint,workspace);
@@ -80,7 +82,8 @@ public final class SparseNewton {
             double alpha=Math.min(1,equations.maximumStep(x,direction));boolean accepted=false;
             if(!Double.isFinite(alpha)||alpha<=0)throw new Nonconvergence("No feasible Newton direction",x);
             for(int backtrack=0;backtrack<settings.backtracks();backtrack++,alpha*=.5) {
-                checkpoint.run();double[] candidate=x.clone();for(int i=0;i<n;i++)candidate[i]+=alpha*direction[i];
+                checkpoint.run();if(backtrack>0)SolverDiagnostics.count(SolverDiagnostics.newtonBacktracks);
+                double[] candidate=x.clone();for(int i=0;i<n;i++)candidate[i]+=alpha*direction[i];
                 try {
                     calls++;double[] next=evaluate(equations,candidate,n);double nextNorm=norm(next);
                     // Natural (affine-invariant) merit prevents a nearly exact hydraulic row from
@@ -130,6 +133,16 @@ public final class SparseNewton {
         throw new Nonconvergence("Linearized error estimate does not contract inside the supported domain");
     }
     private static int differentiate(Equations equations,double[] x,double[] f,double differenceStep,Runnable checkpoint,Workspace workspace) {
+        if(!SolverDiagnostics.ENABLED)return differentiate0(equations,x,f,differenceStep,checkpoint,workspace);
+        SolverDiagnostics.inJacobian=true;
+        try{return differentiate0(equations,x,f,differenceStep,checkpoint,workspace);}
+        finally {
+            SolverDiagnostics.inJacobian=false;SolverDiagnostics.jacobianBuilds.increment();
+            SolverDiagnostics.jacobianColors.add(workspace.pattern.groups.size());
+            if(workspace.matrix!=null)SolverDiagnostics.jacobianNonzeros.add(workspace.matrix.nonzeroCount());
+        }
+    }
+    private static int differentiate0(Equations equations,double[] x,double[] f,double differenceStep,Runnable checkpoint,Workspace workspace) {
         var pattern=workspace.pattern;int n=x.length,calls=0;double[] derivatives=new double[pattern.rows.length],steps=new double[n];
         for(int column=0;column<n;column++)steps[column]=differenceStep*equations.differenceScale(column,x[column]);
         for(int[] group:pattern.groups) {
@@ -153,6 +166,10 @@ public final class SparseNewton {
     }
     private static double[] evaluate(Equations equations,double[] variables,int size) {
         for(double value:variables)if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite trial variable");
+        if(SolverDiagnostics.ENABLED) {
+            SolverDiagnostics.residualEvaluations.increment();
+            if(SolverDiagnostics.inJacobian)SolverDiagnostics.residualEvaluationsInJacobian.increment();
+        }
         double[] result=equations.residual(variables);
         if(result.length!=size)throw new IllegalStateException("Equation count changed within a Newton pass");
         for(double value:result)if(!Double.isFinite(value))throw new IllegalArgumentException("Nonfinite trial residual");
