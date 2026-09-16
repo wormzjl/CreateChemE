@@ -24,10 +24,13 @@ public final class TrBdf2StepSolver {
     }
     private final Map<RateKey,Rate> endpointRates=new LinkedHashMap<>();
     private final SolverOwnership ownership;
+    /** One per island: both stage solvers and the endpoint rate below refill the same EJML storage. */
+    private final ConservativeTransport.Workspace transport;
     public TrBdf2StepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
     public TrBdf2StepSolver(FluidThermodynamics model,SolverOwnership ownership) {
         this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
-        implicit=new PassiveStepSolver(model,ownership);algebraic=new PassiveStepSolver(model,ownership);
+        transport=new ConservativeTransport.Workspace(ownership);
+        implicit=new PassiveStepSolver(model,ownership,transport);algebraic=new PassiveStepSolver(model,ownership,transport);
     }
 
     public record Trial(PassiveStepSolver.Result solution,List<FluidThermodynamics.State> estimatedStates,double[] estimatedMassFlows,List<ConservativeTransport.BoundaryTransfer> estimatedBoundaries) {
@@ -123,7 +126,7 @@ public final class TrBdf2StepSolver {
         var endpoint=PassiveIntervalSolver.replace(initial,second);var endpointPorts=new ArrayList<PassiveNetwork.Reservoir>();
         for(var node:endpoint.reservoirs())endpointPorts.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),node.state(),
                 node.kind()==PassiveNetwork.NodeKind.RESERVOIR?PassiveNetwork.NodeKind.PORT:node.kind(),node.inventory()));
-        var endpointRate=ConservativeTransport.reconstruct(new PassiveNetwork(endpointPorts,initial.pipes()),second.states(),second.massFlows(),second.devicePressureChanges(),1,model,checkpoint);
+        var endpointRate=ConservativeTransport.reconstruct(new PassiveNetwork(endpointPorts,initial.pipes()),second.states(),second.massFlows(),second.devicePressureChanges(),1,model,checkpoint,transport);
         cache(endpoint,endpointRate,second.massFlows(),second.modes(),acceptance);
         var q=initialFlows.clone();var q1=first.massFlows();var q2=second.massFlows();
         for(int i=0;i<q.length;i++)q[i]=A*ALPHA*(q[i]+q1[i])+ALPHA*q2[i];

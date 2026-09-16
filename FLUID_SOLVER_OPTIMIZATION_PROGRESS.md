@@ -743,3 +743,73 @@ Answers to the five questions the brief asked, in full in the document:
 
 - Measurement only; no solver code changed for it.
 - Commit `cc7c845`.
+
+## WP6a - thermo kernel consolidation
+
+Baseline for this work package is `79c6c7e`, captured into `build/probe/reference-wp5`
+(`-PfluidRegressionCapture=true -PfluidRegressionReferences=build/probe/reference-wp5`); the two
+commits before it changed no code, so this is also the trajectory `dba6179` proved EXACT against
+`build/probe/reference-wp3`.
+
+| fixture, 79c6c7e | wall ms | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | node state() calls | allocated MB | KB per residual |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 36.2 | 11/0 | 5.0 | 0.6 | 132 | 1782 | 29.0 | 225 |
+| quiet 11324, mean of 5 | 17.3 | 11/0 | 5.8 | 0.8 | 172 | 1289 | 20.6 | 123 |
+| cold 11312, one interval | 1091 | 52/15 | 135 | 41 | 8731 | 98070 | 1135.4 | 133 |
+| 100-reservoir chain | 1825 | 45/22 | 135 | 22 | 4149 | 246000 | 3230.3 | 797 |
+
+`temperatureTermsCalls` on the same baseline - the allocation site WP5 measured at 43.55% of the
+production pool's remaining allocation - is 762 and 514 per quiet interval, **36 085** on the cold
+island and **124 599** on the chain. At three 21x21 matrices (10.6 KB) per call that is 34% of the
+cold interval's allocation and 41% of the chain's, which is what step 2 removes.
+
+### WP6a-B2b - reuse the transport ordering and factorization storage across intervals
+
+`ConservativeTransport.reconstruct` built a fresh `SparseLuSolver.Storage` - an EJML LU solver, a CSC
+copy, two dense vectors, a sorter and the scaling buffers - and a fresh fill-reducing ordering on
+every call, three or four times per interval for the life of the island. That is the one part of B2
+the WP2 item never applied. The new `ConservativeTransport.Workspace` holds one storage that every
+reconstruction refills in place, plus a four-entry ordering cache keyed by structure; `TrBdf2StepSolver`
+creates one and hands it to both of its stage solvers and to its own endpoint-rate reconstruction, so
+an island holds exactly one, retained by A2's per-island solver.
+
+Reuse is bitwise by construction. A `Storage` clears every buffer it reads before reading it and its
+`verified` flag is reset by each factorization, so a refilled storage behaves as a fresh one; each
+transport factorization is consumed inside the reconstruction that produced it, so no holder can be
+superseded. The ordering key is the sparsity pattern **and a bitmask of the stored entries that are
+exactly zero**, because the reverse Cuthill-McKee graph skips a stored zero - so a cached permutation
+is the permutation a fresh computation would have produced, not merely a valid one.
+
+| fixture | wall ms | transport factorizations | transport orderings | LU storages | transport factor ms | transport ordering ms | allocated MB |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 36.2 -> 34.2-39.2 | 9.0 unchanged | 9.0 -> **1.4** | 9.4 -> **0.6** | 0.41 -> 0.12 | 0.014 -> 0.001 | 29.0 -> 28.9 |
+| quiet 11324, mean of 5 | 17.3 -> 17.0-18.3 | 9.0 unchanged | 9.0 -> **0.4** | 9.4 -> **0.6** | 0.18 -> 0.07 | 0.008 -> 0.000 | 20.6 -> 20.5 |
+| cold 11312, one interval | 1091 -> 1115-1182 | 269 unchanged | 269 -> **25** | 271 -> **3** | 2.33 -> 1.61-1.77 | 0.25 -> 0.05 | 1135.4 -> 1132.7 |
+| 100-reservoir chain | 1825 -> 1789-1855 | 269 unchanged | 269 -> **2** | 271 -> **3** | 3.02 -> 2.23-2.40 | 0.11 -> 0.01 | 3230.3 -> 3223.3 |
+
+Every substep count, implicit solve, Jacobian build, residual evaluation and `state()` call is
+unchanged. A warm quiet interval now builds **no** ordering and **no** storage at all; the three
+storages left on the transient fixtures are the island's one transport storage and A2/B2's two Newton
+ones, created once with the solver. The chain's 269 reconstructions share **two** structures and the
+cold island's 269 share 25 (its active set moves nodes between the free and junction blocks), so the
+four-entry cache is sized for what the fixtures actually produce. Wall time is inside the run-to-run
+spread on every fixture - the item removes 0.2-0.7 ms of a 1.1-1.8 s transient interval and about
+0.3 ms of a 5 ms warm one - and the counters are the evidence, as the method says.
+
+**The `IdentityHashMap$KeyIterator` (2.00% of all pool allocation, "worth a look during WP6") is not
+ours and is not removable.** All eight samples in `build/reports/fluid/analysis-claude-wp5/alloc-head.txt`
+carry the identical stack `IdentityHashMap$KeySet.iterator()` <- `Collections$SetFromMap.iterator()`
+<- `jdk.internal.misc.TerminatingThreadLocal.threadTerminated()` <- `Thread.exit()`, and the four
+inside the measured window (21:23:32-21:25:32) are on `IO-Worker-1`, `IO-Worker-4`, `Worker-Main-4`
+and `modloading-worker-0` - not one of them a solver thread. Their extrapolated weights sum to
+214.2 MB against the window's 10.7 GiB, which reproduces the 2.00% exactly, and 202.7 MB of it is the
+single sample on the mod-loading worker that finally died five minutes after boot. It is JFR's
+per-sample extrapolation applied to four ~32-byte iterator allocations on thread death, not a
+per-interval map iteration: no identity map is iterated anywhere on the fluid solver's path
+(`ProcessSolveServices.STATES` and `FluidWorldAuthority.SERVERS` are only ever `get`/`put`/`remove`).
+Nothing to replace with a list or an array.
+
+- Verified EXACT (bitwise, substep counts included) against `build/probe/reference-wp5` on all four
+  fixtures, twice, in two separate runs.
+- Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `<step0>`.

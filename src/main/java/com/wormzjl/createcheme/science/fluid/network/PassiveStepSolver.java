@@ -25,9 +25,16 @@ public final class PassiveStepSolver {
     /** Owned by this solver, which the ownership latch confines to one worker at a time. */
     private final com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace viscosities=
             new com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace();
+    /** The island's retained transport linear algebra; the TR-BDF2 solver hands the same one to both
+     * of its stage solvers and uses it for the endpoint rate, so an island holds exactly one. */
+    private final ConservativeTransport.Workspace transport;
     public PassiveStepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
     public PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership) {
+        this(model,ownership,new ConservativeTransport.Workspace(Objects.requireNonNull(ownership)));
+    }
+    PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership,ConservativeTransport.Workspace transport) {
         this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
+        this.transport=Objects.requireNonNull(transport);
     }
     public record Result(List<FluidThermodynamics.State> states,double[] massFlows,double deltaTime,SparseNewton.Result numerical,
                          List<FlowControl.Mode> modes,double[] devicePressureChanges,double pumpWorkJoule,double[] externalMoles,double externalEnergyJoule,
@@ -125,7 +132,7 @@ public final class PassiveStepSolver {
                 var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
                 if(Math.abs(flows[edge])>massFlowLimit(pipe,upstream)*(1+2e-8)+1e-12)throw new SparseNewton.Nonconvergence("Velocity constraint did not close");
             }
-            var projection=ConservativeTransport.reconstruct(graph,states,flows,heads,dt,model,checkpoint);
+            var projection=ConservativeTransport.reconstruct(graph,states,flows,heads,dt,model,checkpoint,transport);
             changedSeeds=phaseCorrection(graph,projection.states(),checkpoint,true);if(changedSeeds!=null){seeds=changedSeeds;continue;}
             var reconstructed=x.clone();
             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
@@ -215,7 +222,7 @@ public final class PassiveStepSolver {
             states=equations.states(x);
             for(int edge=0;edge<flows.length;edge++)flows[edge]=equations.boundaryClosed[edge]||equations.modes.get(edge)==FlowControl.Mode.CLOSED
                     ?0:x[equations.edgeOffset+edge];
-            var projection=ConservativeTransport.reconstruct(corrected,states,flows,heads,dt,model,checkpoint);
+            var projection=ConservativeTransport.reconstruct(corrected,states,flows,heads,dt,model,checkpoint,transport);
             return new Companion(projection.states(),flows,projection.boundaries());
         }catch(SparseLuSolver.SolveFailure|SparseNewton.Nonconvergence|IllegalArgumentException outsideTheLinearization){return null;}
     }

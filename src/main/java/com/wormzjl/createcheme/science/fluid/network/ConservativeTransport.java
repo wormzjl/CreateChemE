@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
+import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.linalg.*;
 import com.wormzjl.createcheme.science.fluid.solver.*;
@@ -9,6 +10,62 @@ import java.util.*;
 /** Conservative reconstruction for a candidate's already-solved flows; it does not solve hydraulics or flash. */
 public final class ConservativeTransport {
     private ConservativeTransport() {}
+    /**
+     * One island's transport linear algebra, retained across its reconstructions the way
+     * {@code SparseNewton.Workspace.Shared} is retained across a fork family: one EJML storage that
+     * every reconstruction refills in place, and the fill-reducing ordering of each structure the
+     * island actually produces.
+     *
+     * <p>Without it each reconstruction built its own {@link SparseLuSolver.Storage} - an EJML
+     * solver, a CSC copy, two dense vectors, a sorter and the scaling buffers - and its own
+     * ordering, three or four times per interval for the life of the island. The stage graphs
+     * alternate (the algebraic port solve, the two implicit stages and the endpoint rate do not
+     * share a sparsity pattern), so the orderings are a small keyed cache while the storage, which
+     * reshapes itself, is single and shared.
+     *
+     * <p>Reuse is bitwise: a {@link SparseLuSolver.Storage} clears every buffer it reads before
+     * reading it and its {@code verified} flag is reset by each factorization, and an ordering is
+     * only reused for a matrix with the identical structure, so it is the permutation a fresh
+     * computation would have produced. Each factorization is consumed inside the reconstruction
+     * that produced it, so no holder can be superseded by the next one.
+     */
+    public static final class Workspace {
+        private static final int RETAINED_ORDERINGS=4;
+        private final SparseLuSolver.Storage factors;
+        private final LinkedHashMap<Structure,SparseLuSolver.Ordering> orderings=new LinkedHashMap<>();
+        public Workspace(SolverOwnership ownership){factors=new SparseLuSolver.Storage(ownership);}
+        private SparseLuSolver.Factorization factor(SparseMatrix matrix) {
+            var structure=Structure.of(matrix);
+            var ordering=orderings.get(structure);
+            if(ordering==null) {
+                if(orderings.size()>=RETAINED_ORDERINGS)orderings.remove(orderings.keySet().iterator().next());
+                ordering=SparseLuSolver.prepareOrdering(matrix);orderings.put(structure,ordering);
+            }
+            return factors.factor(matrix,ordering);
+        }
+    }
+    /** Everything the ordering depends on: the sparsity pattern, and which stored entries are
+     * exactly zero, because the reverse Cuthill-McKee graph skips a stored zero. */
+    private record Structure(int size,int[] offsets,int[] rows,long[] zeros) {
+        private static Structure of(SparseMatrix matrix) {
+            int size=matrix.size(),count=matrix.nonzeroCount();
+            int[] offsets=new int[size+1],rows=new int[count];long[] zeros=new long[(count+63)/64];
+            for(int column=0;column<size;column++)offsets[column]=matrix.columnStart(column);
+            offsets[size]=count;
+            for(int entry=0;entry<count;entry++) {
+                rows[entry]=matrix.rowAt(entry);
+                if(matrix.valueAt(entry)==0)zeros[entry>>6]|=1L<<(entry&63);
+            }
+            return new Structure(size,offsets,rows,zeros);
+        }
+        @Override public boolean equals(Object other) {
+            return other instanceof Structure key&&size==key.size&&Arrays.equals(offsets,key.offsets)
+                    &&Arrays.equals(rows,key.rows)&&Arrays.equals(zeros,key.zeros);
+        }
+        @Override public int hashCode() {
+            return 31*(31*(31*size+Arrays.hashCode(offsets))+Arrays.hashCode(rows))+Arrays.hashCode(zeros);
+        }
+    }
     public record BoundaryTransfer(long nodeId,double[] moles,double totalEnergyJoule) {
         public BoundaryTransfer{moles=moles.clone();}
         @Override public double[] moles(){return moles.clone();}
@@ -18,18 +75,23 @@ public final class ConservativeTransport {
         public Projection{inventories=List.copyOf(inventories);states=List.copyOf(states);boundaries=List.copyOf(boundaries);externalMoles=externalMoles.clone();}
         @Override public double[] externalMoles(){return externalMoles.clone();}
     }
+    /** One-shot: a caller with no retained island workspace builds fresh linear algebra, as before. */
     public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
                                          double dt,FluidThermodynamics model,Runnable checkpoint) {
-        if(!SolverDiagnostics.ENABLED)return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint);
+        return reconstruct(graph,candidate,flows,heads,dt,model,checkpoint,null);
+    }
+    public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
+                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace) {
+        if(!SolverDiagnostics.ENABLED)return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace);
         long started=System.nanoTime();boolean previous=SolverDiagnostics.enterReconstruct();
-        try{return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint);}
+        try{return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace);}
         finally {
             SolverDiagnostics.leaveReconstruct(previous);
             SolverDiagnostics.reconstructNanos.add(System.nanoTime()-started);SolverDiagnostics.reconstructCalls.increment();
         }
     }
     private static Projection reconstruct0(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
-                                         double dt,FluidThermodynamics model,Runnable checkpoint) {
+                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace) {
         int nodes=graph.reservoirs().size(),components=model.hydrocarbon.componentCount()+1;
         if(candidate.size()!=nodes||flows.length!=graph.pipes().size()||heads.length!=flows.length||!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Invalid transport reconstruction");
         int[] index=new int[nodes];Arrays.fill(index,-1);int count=0;
@@ -79,7 +141,9 @@ public final class ConservativeTransport {
         // One backward-error check on the first component vector qualifies this factorization; the
         // remaining component columns are bounded by the junction continuity and conservation
         // checks below, which are the quantities this solve exists to produce.
-        try{solved=SparseLuSolver.factor(matrix(columns)).solveMultiple(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);}
+        try{var system=matrix(columns);
+            solved=(workspace==null?SparseLuSolver.factor(system):workspace.factor(system))
+                    .solveMultiple(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);}
         catch(SparseLuSolver.SolveFailure failure){throw new SparseNewton.Nonconvergence("Transport reconstruction failed: "+failure.getMessage());}
         double[][] moles=new double[nodes][];var states=new ArrayList<FluidThermodynamics.State>();
         for(int node=0;node<nodes;node++) {
