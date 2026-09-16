@@ -525,4 +525,65 @@ are A4b's, unchanged to three digits (state 1.0e-9 / 6.2e-10 / 3.9e-10 / 1.8e-9,
 / 7.3e-10 / 4.3e-9 / 1.8e-8 K, flow at most 8.0e-9 kg/s against a 3.18e-8 kg/s allowance).
 
 - Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `d91e13d`.
+### WP3-C2 - stop cloning and streaming inside the residual
+
+Pure removal of copies: every counter, substep sequence and committed state is **bitwise identical**
+to the previous commit on all four fixtures (`-PfluidRegressionReferences=build/probe/reference-c1
+-PfluidRegressionMode=exact`, 0.0 on every quantity).
+
+**Ownership instead of copies.** `FluidThermodynamics.State`, `TranslatedPengRobinson.Phase` and
+`HydrocarbonModel.Phase` no longer clone in their constructors; the arrays belong to the record from
+construction on. The copying accessors stay exactly as they were for every caller outside the
+solver - the checkpoint codec, `FluidView`, the module and runtime paths all still receive copies -
+and the solver packages read through named no-copy views (`liquidView`, `vaporView`,
+`logFugacityView`, `logFugacityCoefficientsView`, `partialMolarVolumesView`, each documented as
+"the caller must not mutate"). Every construction site was audited so no array is reachable twice:
+`state(...)` copies a caller's arrays and `adoptingState(...)` is the entry for a caller that
+allocated them for that call alone (`PhaseLayout.decode`, `ConservativeTransport.repartition`); the
+vapor `HydrocarbonModel.Phase` adopts the translated evaluation's coefficients, whose enclosing
+record is discarded on the same line; the liquid one adopts `GlobalLiquidResponse.logFugacity`'s
+freshly built result, which clones its own input. Per node decode that removes six clones of the
+component basis and, per residual, two more per node in `PhaseLayout.residual` alone.
+
+**Loops instead of streams, without moving a digit.** `Arrays.stream(x).sum()` is not a plain loop:
+`DoubleStream.sum` accumulates with Kahan compensation, so a naive loop would have changed results.
+`PhaseLayout.sum` reproduces `Collectors.sumWithCompensation` and `computeFinalSum` exactly - same
+order, same negated low-order term, same spurious-NaN rule - which is what lets this commit be
+bitwise identical while the stream objects disappear from the residual (two per node in the
+equilibrium rows, one per junction, two per layout). `junctionResidual` also stops boxing its
+component basis into an `ArrayList<Integer>` per evaluation: the graph fixes that list, so it is
+built once with the layout.
+
+**Scratch instead of garbage.** `Equations` keeps its residual scratch (`targets`, `energy`,
+`incoming`, `incomingMass`, `incomingEnergy`, `netMass`, the junction mass fractions) and the
+per-node variable snapshots, all refilled per evaluation; the returned residual stays a fresh array,
+because `SparseNewton` holds the current and the candidate at once. `MixtureViscosity.vapor` takes a
+three-vector workspace owned by the step solver instead of allocating per decoded node.
+`PipeResistance.pressureDrop` and `PassiveNetwork.Pipe.pressureDrop` compute the same arithmetic and
+the same checks without a `Loss` record per section per edge - the residual reads nothing else from
+one - and the initial-flow bisection, 50 iterations per pipe, stops allocating too.
+
+| fixture | wall ms | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | node state() calls | allocated MB | KB per residual |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 44.8-45.3 -> 31.9-34.6 | 11/0 unchanged | 5.0 | 0.6 | 132 | 1782 | 41.8 -> **28.6** | 325 -> 222 |
+| quiet 11324, mean of 5 | 20.6-20.9 -> 17.8-18.6 | 11/0 unchanged | 5.8 | 0.8 | 172 | 1289 | 30.1 -> **20.3** | 180 -> 121 |
+| cold 11312, one interval | 1307-1328 -> 1248-1250 | 52/15 unchanged | 135 | 41 | 8731 | 98070 | 1883.0 -> **1118.0** | 221 -> 131 |
+| 100-reservoir chain | 2329-2334 -> 2236-2300 | 45/22 unchanged | 135 | 22 | 4149 | 246000 | 4694.4 -> **3169.1** | 1159 -> 782 |
+
+`state()` with a prepared temperature 3800 -> 3700 ns, without 7900 -> 7100 ns (the same
+microbenchmark as C1). The allocation removed per residual evaluation is 88 KB on the cold island
+(765 MB over 8731 evaluations) and 368 KB on the chain (1525 MB over 4149, a 100-node island against
+the 30-node one the 316 KB profile figure was measured on). The KB-per-residual column is the
+interval's whole allocation divided by its residual evaluations, so it still carries the Jacobian
+colouring, the factorizations and the transport reconstructions; what is left inside the residual
+itself is the decode's two component vectors per node, the `Transport` record that caches them, and
+`temperatureTerms`' three n x n matrices per distinct temperature, which is C3's item.
+
+Accuracy: bitwise identical to `d91e13d` (EXACT on all four fixtures). Under the declared gate
+against the 154007d references the deviations are C1's, digit for digit: state 1.0e-9 / 6.2e-10 /
+3.9e-10 / 1.8e-9, temperature 1.2e-9 / 7.3e-10 / 4.3e-9 / 1.8e-8 K, phase fraction at most 8.3e-11,
+worst flow 8.0e-9 kg/s against a 3.18e-8 kg/s controller allowance.
+
+- Gate: 793 JUnit tests, 14 GameTests, green.
 - Commit `PLACEHOLDER`.

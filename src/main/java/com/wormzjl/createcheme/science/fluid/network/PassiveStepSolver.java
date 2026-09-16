@@ -22,6 +22,9 @@ public final class PassiveStepSolver {
      * companion filter may not claim to resolve a defect the solve itself could not. */
     private record LastSolve(Equations equations,double[] variables,SparseNewton.Workspace workspace,double newtonTolerance) {}
     private LastSolve lastSolve;
+    /** Owned by this solver, which the ownership latch confines to one worker at a time. */
+    private final com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace viscosities=
+            new com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace();
     public PassiveStepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
     public PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership) {
         this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
@@ -315,8 +318,8 @@ public final class PassiveStepSolver {
         var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
         var upstream=a.state().pressure()>=b.state().pressure()?a.state():b.state();double rho=upstream.mass()/upstream.volume(),mu=viscosity(upstream);
         double driving=a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation());
-        double lo=0,hi=1;while(pipe.loss(hi,rho,mu).pressureDrop()<Math.abs(driving)&&hi<1e6)hi*=2;
-        for(int j=0;j<50;j++){double mid=(lo+hi)/2;if(pipe.loss(mid,rho,mu).pressureDrop()>Math.abs(driving))hi=mid;else lo=mid;}
+        double lo=0,hi=1;while(pipe.pressureDrop(hi,rho,mu)<Math.abs(driving)&&hi<1e6)hi*=2;
+        for(int j=0;j<50;j++){double mid=(lo+hi)/2;if(pipe.pressureDrop(mid,rho,mu)>Math.abs(driving))hi=mid;else lo=mid;}
         var donor=graph.reservoirs().get(driving>=0?pipe.first():pipe.second()).state();
         return Math.copySign(Math.min((lo+hi)/2,massFlowLimit(pipe,donor)),driving);
     }
@@ -370,9 +373,9 @@ public final class PassiveStepSolver {
     }
     private double viscosity(FluidThermodynamics.State s) {
         double value=0;
-        if(s.liquidVolume()>0)value+=s.liquidVolume()*model.viscosity.liquid(s.temperature(),s.liquid()).pascalSeconds();
+        if(s.liquidVolume()>0)value+=s.liquidVolume()*model.viscosity.liquid(s.temperature(),s.liquidView()).pascalSeconds();
         if(s.waterVolume()>0)value+=s.waterVolume()*model.viscosity.waterLiquid(s.temperature());
-        if(s.vaporVolume()>0)value+=s.vaporVolume()*model.viscosity.vapor(s.temperature(),s.vapor(),s.waterVapor());
+        if(s.vaporVolume()>0)value+=s.vaporVolume()*model.viscosity.vapor(s.temperature(),s.vaporView(),s.waterVapor(),viscosities);
         return value/s.volume();
     }
     private final class Equations implements SparseNewton.Equations {
@@ -383,6 +386,13 @@ public final class PassiveStepSolver {
         final FluidThermodynamics.Prepared[] cachedPrepared;
         final boolean[] amountVariables;
         final double[] differenceFloors;
+        /** Residual scratch. Every one of these is written before it is read within a single
+         * evaluation and never escapes it, and the evaluations of one solve are sequential on the
+         * worker holding the latch, so they are filled again rather than allocated again. The
+         * returned residual is not among them: {@link SparseNewton} holds the current and the
+         * candidate residual at the same time. */
+        final double[][] targets,incoming;
+        final double[] energy,incomingMass,incomingEnergy,netMass,fractions;
         Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[] mask) {
             this.modes=List.copyOf(modes);
             this.seeds=List.copyOf(seeds);
@@ -403,6 +413,10 @@ public final class PassiveStepSolver {
             for(int node=0;node<count;node++)if(layout[node]!=null)for(int local=0;local<layout[node].size();local++) {
                 amountVariables[offsets[node]+local]=layout[node].totalAmountVariable(local);differenceFloors[offsets[node]+local]=layout[node].differenceScale(local,0);
             }
+            int components=oldAmounts[0].length;
+            targets=new double[count][components];incoming=new double[count][components];fractions=new double[components];
+            energy=new double[count];incomingMass=new double[count];incomingEnergy=new double[count];netMass=new double[count];
+            for(int node=0;node<count;node++)if(layout[node]!=null)cachedVariables[node]=new double[layout[node].size()];
         }
         private void buildSparsity() {
             int count=layout.length;
@@ -466,7 +480,7 @@ public final class PassiveStepSolver {
                         if(predictedDrop>0)x[edgeOffset+i]*=Math.clamp((a.state().pressure()-valve.targetPressure())/predictedDrop,0,1);
                         double rho=a.state().mass()/a.state().volume();
                         x[controlOffsets[i]]=(a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation())
-                                -pipe.loss(x[edgeOffset+i],rho,viscosity(a.state())).pressureDrop())/1e5;
+                                -pipe.pressureDrop(x[edgeOffset+i],rho,viscosity(a.state())))/1e5;
                     }
                     continue;
                 }
@@ -487,7 +501,7 @@ public final class PassiveStepSolver {
                     var state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedPrepared[i]);
                     var transport=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),viscosity(state),state.enthalpy()/state.mass(),model.velocityLimit(state));
                     cachedStates[i]=state;cachedTransport[i]=transport;
-                    if(layout[i]!=null)cachedVariables[i]=Arrays.copyOfRange(x,offsets[i],offsets[i]+layout[i].size());
+                    if(layout[i]!=null)System.arraycopy(x,offsets[i],cachedVariables[i],0,layout[i].size());
                 }
                 states.add(cachedStates[i]);
             }
@@ -495,9 +509,12 @@ public final class PassiveStepSolver {
         }
         private record Transport(double[] moles,double density,double viscosity,double specificEnthalpy,double velocityLimit) {}
         public double[] residual(double[] x) {
-            var states=states(x);double[][] targets=new double[layout.length][];double[] energy=new double[layout.length],f=new double[size];
-            double[][] incoming=new double[layout.length][oldAmounts[0].length];double[] incomingMass=new double[layout.length],incomingEnergy=new double[layout.length],netMass=new double[layout.length];
-            for(int i=0;i<layout.length;i++){targets[i]=oldAmounts[i].clone();energy[i]=graph.reservoirs().get(i).inventory().internalEnergy();}
+            var states=states(x);double[] f=new double[size];
+            Arrays.fill(incomingMass,0);Arrays.fill(incomingEnergy,0);Arrays.fill(netMass,0);
+            for(int i=0;i<layout.length;i++) {
+                System.arraycopy(oldAmounts[i],0,targets[i],0,targets[i].length);Arrays.fill(incoming[i],0);
+                energy[i]=graph.reservoirs().get(i).inventory().internalEnergy();
+            }
             for(var transfer:graph.scheduledTransfers()) {
                 int node=transfer.node();var state=states.get(node);double elevation=graph.reservoirs().get(node).elevation();
                 if(transfer instanceof ScheduledTransfer.Withdrawal withdrawal) {
@@ -515,18 +532,18 @@ public final class PassiveStepSolver {
                 int donor=flow>=0?a:b;var upstream=states.get(donor);var transport=cachedTransport[donor];double rho=transport.density;
                 int receiver=flow>=0?b:a;netMass[a]-=flow;netMass[b]+=flow;
                 double dz=graph.reservoirs().get(b).elevation()-graph.reservoirs().get(a).elevation();
-                var loss=pipe.loss(flow,rho,transport.viscosity);
+                double loss=pipe.pressureDrop(flow,rho,transport.viscosity);
                 int control=controlOffsets[edge];double head=control<0?0:x[control]*1e5;
                 double signedHead=pipe.control() instanceof FlowControl.Pump?head:-head;
                 double driving=states.get(a).pressure()-states.get(b).pressure()-rho*GRAVITY*dz+signedHead;
-                f[edgeOffset+edge]=(driving-loss.pressureDrop())/1e5;
+                f[edgeOffset+edge]=(driving-loss)/1e5;
                 if(canClamp(modes.get(edge))&&!boundaryClosed[edge]) {
                     int direction=flow>=0?0:1;
                     // A colored Jacobian perturbs only a few nodes. Unchanged immutable donor
                     // properties have the same cap and loss; keep one entry per edge/direction.
                     if(capSources[edge][direction]!=transport) {
                         double limit=rho*pipe.minimumArea()*transport.velocityLimit;
-                        capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.loss(limit,rho,transport.viscosity).pressureDrop();capSources[edge][direction]=transport;
+                        capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.pressureDrop(limit,rho,transport.viscosity);capSources[edge][direction]=transport;
                     }
                     double limit=capMassFlows[edge][direction],limitDrop=capPressureDrops[edge][direction];
                     // A saturated pressure/flow law: the unused driving pressure is throttled.
@@ -560,7 +577,7 @@ public final class PassiveStepSolver {
                 if(layout[i]==null)continue;
                 if(!graph.reservoirs().get(i).junction())layout[i].residual(states.get(i),targets[i],energy[i],graph.reservoirs().get(i).inventory().volume(),f,offsets[i],x,cachedPrepared[i]);
                 else {
-                    var previous=graph.reservoirs().get(i).state();double[] fractions=new double[incoming[i].length];double specificH;
+                    var previous=graph.reservoirs().get(i).state();double specificH;
                     if(incomingMass[i]>1e-14) {
                         for(int c=0;c<fractions.length;c++)fractions[c]=incoming[i][c]*model.molecularWeight(c)/incomingMass[i];
                         specificH=incomingEnergy[i]/incomingMass[i];

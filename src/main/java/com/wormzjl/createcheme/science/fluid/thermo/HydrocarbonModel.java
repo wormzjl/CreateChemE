@@ -71,14 +71,14 @@ public final class HydrocarbonModel {
         if(root==PhaseRoot.VAPOR) {
             var gas=translated.evaluate(t,p,amounts,root,terms);
             return new Phase(gas.molarVolume(),gas.molarEnthalpy(),gas.molarInternalEnergy(),
-                    gas.volumePressureDerivative(),gas.logFugacityCoefficients(),gas.vaporBranch());
+                    gas.volumePressureDerivative(),gas.logFugacityCoefficientsView(),gas.vaporBranch());
         }
         var reference=translated.evaluate(t,REFERENCE_PRESSURE,amounts,PhaseRoot.LIQUID,terms);
         var liquid=liquidResponse.evaluate(t,p,REFERENCE_PRESSURE,reference.molarVolume(),
                 reference.volumeTemperatureDerivative(),reference.volumeSecondTemperatureDerivative(),
                 reference.molarEnthalpy(),reference.heatCapacity());
         double[] phi=liquidResponse.logFugacity(t,p,REFERENCE_PRESSURE,liquid.pressureIntegral(),
-                reference.logFugacityCoefficients(),reference.partialMolarVolumes());
+                reference.logFugacityCoefficientsView(),reference.partialMolarVolumesView());
         return new Phase(liquid.molarVolume(),liquid.molarEnthalpy(),liquid.molarInternalEnergy(),
                 liquid.volumePressureDerivative(),phi,false);
     }
@@ -98,9 +98,13 @@ public final class HydrocarbonModel {
         } catch(java.io.IOException error) { throw new IllegalStateException("Cannot read fluid calibration",error); }
     }
     private record Calibration(double temperature,double pressure,double volume) {}
+    /** The coefficients belong to the record from construction on. {@link #phase} is the only place
+     * one is built, from an array allocated for it: the liquid response's result, or the vapor
+     * evaluation's own, whose enclosing record it discards on the same line. */
     public record Phase(double molarVolume,double molarEnthalpy,double molarInternalEnergy,
                         double volumePressureDerivative,double[] logFugacity,boolean vaporBranch) {
-        public Phase { logFugacity=logFugacity.clone(); }
         @Override public double[] logFugacity() { return logFugacity.clone(); }
+        /** The coefficients themselves, for the solver packages. The caller must not mutate them. */
+        public double[] logFugacityView() { return logFugacity; }
     }
 }

@@ -67,6 +67,13 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
             for(var section:sections){var value=PipeResistance.evaluate(section,flow,density,viscosity);pressure+=value.pressureDrop();derivative+=value.massFlowDerivative();reynolds=Math.max(reynolds,value.reynolds());}
             return new PipeResistance.Loss(pressure,derivative,reynolds);
         }
+        /** The run's pressure drop, accumulated in the same order as {@link #loss} and without its
+         * records: the residual evaluates this per edge and reads nothing else from the loss. */
+        public double pressureDrop(double flow,double density,double viscosity) {
+            double pressure=0;
+            for(var section:sections)pressure+=PipeResistance.pressureDrop(section,flow,density,viscosity);
+            return pressure;
+        }
         public double minimumArea(){double area=Double.POSITIVE_INFINITY;for(var section:sections)area=Math.min(area,section.area());return area;}
     }
 }

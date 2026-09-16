@@ -72,10 +72,27 @@ public final class MixtureViscosity {
         return c.dynamicViscosityPascalSeconds(temperature,c.minimumPressurePascal());
     }
 
+    /** Per-thread scratch for {@link #vapor}: three vectors over the basis, reused across decodes
+     * by the solver that owns it instead of allocated per decoded node. */
+    public static final class Workspace {
+        private double[] n=new double[0],mu,sqrtMu;
+        private void resize(int count) {
+            if(n.length==count){Arrays.fill(mu,0);Arrays.fill(sqrtMu,0);return;}
+            n=new double[count];mu=new double[count];sqrtMu=new double[count];
+        }
+    }
     public double vapor(double temperature,double[] amounts,double waterMoles) {
+        return vapor(temperature,amounts,waterMoles,null);
+    }
+    public double vapor(double temperature,double[] amounts,double waterMoles,Workspace workspace) {
         checkBasis(amounts);
         if(!Double.isFinite(waterMoles)||waterMoles<0)throw new IllegalArgumentException("Invalid water amount");
-        int count=amounts.length+1;double[] n=Arrays.copyOf(amounts,count),mu=new double[count],sqrtMu=new double[count];
+        int count=amounts.length+1;double[] n,mu,sqrtMu;
+        if(workspace==null){n=Arrays.copyOf(amounts,count);mu=new double[count];sqrtMu=new double[count];}
+        else {
+            workspace.resize(count);n=workspace.n;mu=workspace.mu;sqrtMu=workspace.sqrtMu;
+            System.arraycopy(amounts,0,n,0,amounts.length);
+        }
         n[count-1]=waterMoles;
         for(int i=0;i<amounts.length;i++) {
             if(n[i]==0)continue;

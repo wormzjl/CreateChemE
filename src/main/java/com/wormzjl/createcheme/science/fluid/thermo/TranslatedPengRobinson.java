@@ -160,16 +160,16 @@ public final class TranslatedPengRobinson {
         if (!Double.isFinite(value)) throw new IllegalArgumentException("Nonfinite property coefficient");
     }
 
+    /** The arrays belong to the record from construction on; {@link #evaluate} builds them for it. */
     public record Phase(double molarVolume, double molarEnthalpy, double molarInternalEnergy,
                         double volumeTemperatureDerivative, double volumePressureDerivative,
                         double heatCapacity, double enthalpyPressureDerivative,
                         double isothermalCompressibility, double[] logFugacityCoefficients,
                         double volumeSecondTemperatureDerivative,double[] partialMolarVolumes,boolean vaporBranch) {
-        public Phase {
-            logFugacityCoefficients = logFugacityCoefficients.clone();
-            partialMolarVolumes = partialMolarVolumes.clone();
-        }
         @Override public double[] logFugacityCoefficients() { return logFugacityCoefficients.clone(); }
         @Override public double[] partialMolarVolumes() { return partialMolarVolumes.clone(); }
+        /** The coefficients themselves, for the solver packages. The caller must not mutate them. */
+        public double[] logFugacityCoefficientsView() { return logFugacityCoefficients; }
+        public double[] partialMolarVolumesView() { return partialMolarVolumes; }
     }
 }

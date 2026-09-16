@@ -13,6 +13,16 @@ public final class PipeResistance {
     }
     public record Loss(double pressureDrop,double massFlowDerivative,double reynolds) {}
     public static Loss evaluate(Geometry pipe,double massFlow,double density,double viscosity) {
+        double[] rest=new double[2];
+        return new Loss(pressureDrop(pipe,massFlow,density,viscosity,rest),rest[0],rest[1]);
+    }
+    /** The pressure drop alone, which is all the residual reads, without a record per section per
+     * edge per evaluation. Same arithmetic and same checks as {@link #evaluate}. */
+    public static double pressureDrop(Geometry pipe,double massFlow,double density,double viscosity) {
+        return pressureDrop(pipe,massFlow,density,viscosity,null);
+    }
+    /** {@code rest}, when present, receives the mass-flow derivative and the Reynolds number. */
+    private static double pressureDrop(Geometry pipe,double massFlow,double density,double viscosity,double[] rest) {
         if(!Double.isFinite(massFlow)||!Double.isFinite(density)||density<=0||!Double.isFinite(viscosity)||viscosity<=0) {
             throw new IllegalArgumentException("Invalid pipe transport properties");
         }
@@ -32,6 +42,7 @@ public final class PipeResistance {
         }
         loss+=pipe.minorLoss*coefficient*q*q;derivative+=2*pipe.minorLoss*coefficient*q;
         if(!Double.isFinite(loss)||!Double.isFinite(derivative)||derivative<=0)throw new IllegalArgumentException("Nonfinite pipe pressure loss");
-        return new Loss(Math.copySign(loss,massFlow),derivative,re);
+        if(rest!=null){rest[0]=derivative;rest[1]=re;}
+        return Math.copySign(loss,massFlow);
     }
 }

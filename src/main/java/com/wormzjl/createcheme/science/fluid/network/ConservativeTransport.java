@@ -87,7 +87,7 @@ public final class ConservativeTransport {
             double total=0,molesPerKg=0;
             for(int c=0;c<components;c++){double w=solved[c][index[node]];if(w<0||!Double.isFinite(w))throw new SparseNewton.Nonconvergence("Negative transport reconstruction");fractions[node][c]=w;total+=w;molesPerKg+=w/molecularWeight[c];}
             if(Math.abs(total-1)>1e-8)throw new SparseNewton.Nonconvergence("Junction mass continuity does not close");
-            double mass=reservoir.junction()?Arrays.stream(PhaseLayout.totalAmounts(candidate.get(node))).sum()/molesPerKg:endMass[node];
+            double mass=reservoir.junction()?PhaseLayout.sum(PhaseLayout.totalAmounts(candidate.get(node)))/molesPerKg:endMass[node];
             moles[node]=new double[components];for(int c=0;c<components;c++)moles[node][c]=mass*fractions[node][c]/molecularWeight[c];
             states.add(repartition(model,candidate.get(node),moles[node]));
         }
@@ -130,7 +130,7 @@ public final class ConservativeTransport {
         return new Projection(inventories,states,boundaries,external,externalEnergy,pumpWork);
     }
     static FluidThermodynamics.State repartition(FluidThermodynamics model,FluidThermodynamics.State state,double[] moles) {
-        double[] oldL=state.liquid(),oldV=state.vapor(),l=new double[oldL.length],v=new double[l.length];
+        double[] oldL=state.liquidView(),oldV=state.vaporView(),l=new double[oldL.length],v=new double[l.length];
         for(int c=0;c<l.length;c++) {
             double total=oldL[c]+oldV[c];
             if(total==0){if(state.liquidVolume()>0)l[c]=moles[c];else v[c]=moles[c];}
@@ -141,7 +141,7 @@ public final class ConservativeTransport {
         if(water==0){wl=state.vaporVolume()>0?0:moles[l.length];wv=moles[l.length]-wl;}
         else if(state.waterLiquid()<state.waterVapor()){wl=moles[l.length]*(state.waterLiquid()/water);wv=moles[l.length]-wl;}
         else{wv=moles[l.length]*(state.waterVapor()/water);wl=moles[l.length]-wv;}
-        return model.state(state.temperature(),state.pressure(),l,v,wl,wv,state.hydrocarbonPartialPressure());
+        return model.adoptingState(state.temperature(),state.pressure(),l,v,wl,wv,state.hydrocarbonPartialPressure(),null);
     }
     private static void add(List<TreeMap<Integer,Double>> columns,int column,int row,double value){columns.get(column).merge(row,value,Double::sum);}
     private static SparseMatrix matrix(List<TreeMap<Integer,Double>> columns) {

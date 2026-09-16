@@ -119,14 +119,19 @@ public final class FluidThermodynamics {
 
     /** Direct properties of specified phase amounts, without an inner flash. */
     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure) {
-        return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,null,null);
+        return state(t,p,liquid.clone(),vapor.clone(),waterLiquid,waterVapor,hydrocarbonPressure,null,null);
     }
     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,TranslatedPengRobinson.TemperatureTerms terms) {
-        return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,terms,null);
+        return state(t,p,liquid.clone(),vapor.clone(),waterLiquid,waterVapor,hydrocarbonPressure,terms,null);
     }
     /** Every temperature-only property comes from the prepared bundle; a standalone caller passes
      * {@code null} and each one is computed here, exactly as the mixing terms already were. */
     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,Prepared prepared) {
+        return state(t,p,liquid.clone(),vapor.clone(),waterLiquid,waterVapor,hydrocarbonPressure,null,match(prepared,t));
+    }
+    /** The returned state adopts {@code liquid} and {@code vapor} instead of copying them: for a
+     * caller that allocated them for this call and never reads or writes them again. */
+    public State adoptingState(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,Prepared prepared) {
         return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,null,match(prepared,t));
     }
     private State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,
@@ -199,7 +204,7 @@ public final class FluidThermodynamics {
             for(int i=0;i<n;i++){x[i]/=xs;y[i]/=ys;}
             var pl=hydrocarbon.phase(t,liquidPressure,x,PhaseRoot.LIQUID,terms);
             var pv=hydrocarbon.phase(t,vaporPressure,y,PhaseRoot.VAPOR,terms);
-            double error=0;double[] fl=pl.logFugacity(),fv=pv.logFugacity();
+            double error=0;double[] fl=pl.logFugacityView(),fv=pv.logFugacityView();
             for(int i=0;i<n;i++) {double target=fl[i]-fv[i]+Math.log(liquidPressure/vaporPressure);
                 if(!Double.isFinite(target)||Math.abs(target)>600)throw new IllegalArgumentException("Equilibrium ratio outside numerical range");
                 if(z[i]>0)error=Math.max(error,Math.abs(target-Math.log(k[i])));k[i]=Math.exp(.5*Math.log(k[i])+.5*target);}
@@ -266,14 +271,22 @@ public final class FluidThermodynamics {
         }
     }
     public record WaterLiquid(double molarVolume,double molarEnthalpy) {}
+    /**
+     * The phase amounts belong to the record from construction on. {@link #state} is the only
+     * place one is built: it copies a caller's arrays, and {@link #adoptingState} is the entry for
+     * a caller that allocated them for this call alone, so a state still never shares an array with
+     * anything a caller can reach.
+     */
     public record State(double temperature,double pressure,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,
                         double hydrocarbonPartialPressure,double waterPartialPressure,double volume,double enthalpy,double internalEnergy,
                         double mass,double liquidVolume,double waterVolume,double vaporVolume,HydrocarbonModel.Phase liquidProperties,
                         HydrocarbonModel.Phase vaporProperties) {
-        public State {liquid=liquid.clone();vapor=vapor.clone();}
         /** Conserved component basis length, with water in the final position. */
         public int componentCount(){return liquid.length+1;}
         @Override public double[] liquid(){return liquid.clone();}
         @Override public double[] vapor(){return vapor.clone();}
+        /** The amounts themselves, for the solver packages. The caller must not mutate them. */
+        public double[] liquidView(){return liquid;}
+        public double[] vaporView(){return vapor;}
     }
 }
