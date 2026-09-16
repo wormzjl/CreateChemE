@@ -49,8 +49,12 @@ class RetainedSolverTest {
         // that it removes almost none; the gain is on islands whose node block dominates.
         assertTrue(shared.value("jacobianBuilds")<=fresh.value("jacobianBuilds"),
                 "shared "+shared.value("jacobianBuilds")+" vs fresh "+fresh.value("jacobianBuilds")+" Jacobian builds");
-        assertTrue(shared.value("residualEvaluations")<=fresh.value("residualEvaluations"),
-                "shared "+shared.value("residualEvaluations")+" vs fresh "+fresh.value("residualEvaluations")+" residual evaluations");
+        // Node decodes, not residual evaluations: a block-structured Jacobian build perturbs one
+        // column at a time instead of evaluating the whole island per colour, so it never reaches
+        // SparseNewton's residual counter at all and that counter no longer spans both halves of
+        // the work. Every decode does, inside a Jacobian build and outside one.
+        assertTrue(shared.value("stateCalls")<=fresh.value("stateCalls"),
+                "shared "+shared.value("stateCalls")+" vs fresh "+fresh.value("stateCalls")+" node decodes");
     }
 
     @Test void aRetainedSolverIsExclusiveAndIsHandedBackAfterEveryOutcome() {

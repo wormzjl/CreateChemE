@@ -18,6 +18,24 @@ public final class SparseNewton {
         int[][] columnRows();
         default double differenceScale(int column,double value){return Math.max(1,Math.abs(value));}
         default double maximumStep(double[] variables,double[] direction){return 1;}
+        /**
+         * Optional block-structured Jacobian: fills {@code entries}, the values of the pattern
+         * {@code columnRows()} declares in column-major order ({@code entryOffsets} indexes it per
+         * column, {@code entryRows} is the row of each entry), with the same one-sided differences
+         * {@link #residual} would produce column by column. An implementation that can re-evaluate
+         * one perturbed column's rows without a whole-system residual pass replaces the coloured
+         * sweep with it; the arithmetic of every entry must be the coloured sweep's, which is why
+         * the row formulas have to be shared rather than restated.
+         *
+         * <p>Returns the number of residual evaluations to charge the caller, or a negative number
+         * when this call could not be completed - a trial outside the property domain, say - and
+         * the coloured sweep must run instead. A refusal may leave {@code entries} partly written;
+         * the coloured sweep overwrites every one of them.</p>
+         */
+        default int differentiateEntries(double[] variables,double[] residual,double differenceStep,
+                                         int[] entryOffsets,int[] entryRows,double[] entries,Runnable checkpoint) {
+            return -1;
+        }
     }
     public record Settings(int iterations,double tolerance,double differenceStep,int backtracks) {
         public Settings {
@@ -95,13 +113,17 @@ public final class SparseNewton {
         if(workspace.pattern==null)workspace.pattern=new Pattern(n,equations.columnRows());
         if(workspace.pattern.offsets.length!=n+1)throw new IllegalArgumentException("Newton workspace structure changed");
         var pattern=workspace.pattern;int calls=1,lastNonzeros=0,iterationsSinceRefresh=0;boolean refresh=!workspace.preconditioned();double[] x=initial.clone();
+        boolean openedPreconditioned=!refresh;
+        if(openedPreconditioned)SolverDiagnostics.count(SolverDiagnostics.newtonSolvesPreconditioned);
         checkpoint.run();double[] f=evaluate(equations,x,n);double norm=norm(f);
         for(int iteration=0;iteration<=settings.iterations();iteration++) {
             checkpoint.run();
             if(norm<=settings.tolerance())return new Result(x,norm,iteration,calls,lastNonzeros,pattern.groups.size());
             if(iteration==settings.iterations())break;
             SolverDiagnostics.count(SolverDiagnostics.newtonIterations);
+            if(openedPreconditioned)SolverDiagnostics.count(SolverDiagnostics.newtonIterationsPreconditioned);
             boolean fresh=refresh;
+            SolverDiagnostics.count(fresh?SolverDiagnostics.newtonIterationsFresh:SolverDiagnostics.newtonIterationsStale);
             if(refresh) {
                 calls+=differentiate(equations,x,f,settings.differenceStep(),checkpoint,workspace);
                 lastNonzeros=workspace.matrix.nonzeroCount();refresh=false;iterationsSinceRefresh=0;
@@ -110,14 +132,15 @@ public final class SparseNewton {
             double[] direction;
             lastNonzeros=workspace.matrix.nonzeroCount();
             try{direction=workspace.factorization.solve(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);}
-            catch(SparseLuSolver.SolveFailure failure){if(!fresh){refresh=true;continue;}workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);}
+            catch(SparseLuSolver.SolveFailure failure){if(!fresh){SolverDiagnostics.count(SolverDiagnostics.newtonRefreshesFailed);refresh=true;continue;}workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);}
             double alpha=Math.min(1,equations.maximumStep(x,direction));boolean accepted=false;
             if(!Double.isFinite(alpha)||alpha<=0)throw new Nonconvergence("No feasible Newton direction",x);
             for(int backtrack=0;backtrack<settings.backtracks();backtrack++,alpha*=.5) {
                 checkpoint.run();if(backtrack>0)SolverDiagnostics.count(SolverDiagnostics.newtonBacktracks);
                 double[] candidate=x.clone();for(int i=0;i<n;i++)candidate[i]+=alpha*direction[i];
                 try {
-                    calls++;double[] next=evaluate(equations,candidate,n);double nextNorm=norm(next);
+                    calls++;SolverDiagnostics.count(fresh?SolverDiagnostics.newtonStepEvaluationsFresh:SolverDiagnostics.newtonStepEvaluationsStale);
+                    double[] next=evaluate(equations,candidate,n);double nextNorm=norm(next);
                     // Natural (affine-invariant) merit prevents a nearly exact hydraulic row from
                     // forcing tiny steps while stiff liquid-volume/material rows still need correction.
                     // Acceptance is measured in the same linearized state coordinates as the Newton step.
@@ -126,6 +149,7 @@ public final class SparseNewton {
                     if(!descent) {
                         double merit=norm(direction),nextMerit;
                         // A merit probe is only compared against the current merit, never committed.
+                        SolverDiagnostics.count(SolverDiagnostics.newtonMeritProbes);
                         try{nextMerit=norm(workspace.factorization.solve(next,SparseLuSolver.Verification.NONE));}
                         catch(SparseLuSolver.SolveFailure failure){continue;}
                         descent=nextMerit<merit*(1-1e-4*alpha);reduction=nextMerit/merit;
@@ -135,6 +159,7 @@ public final class SparseNewton {
                         // colored Jacobian. Keep a contracting chord iteration a little longer;
                         // stalled searches still force a fresh Jacobian immediately.
                         refresh=reduction>.8||++iterationsSinceRefresh>=8;
+                        if(refresh)SolverDiagnostics.count(reduction>.8?SolverDiagnostics.newtonRefreshesStalled:SolverDiagnostics.newtonRefreshesAged);
                         x=candidate;f=next;norm=nextNorm;accepted=true;break;
                     }
                 }catch(IllegalArgumentException outsideDomain){ /* A smaller Newton step may stay in the valid domain. */ }
@@ -144,10 +169,11 @@ public final class SparseNewton {
                 // check matters: pay it here, so a genuinely bad factorization still refreshes.
                 try{workspace.factorization.verify(rhs,direction);}
                 catch(SparseLuSolver.SolveFailure failure) {
-                    if(!fresh){refresh=true;continue;}
+                    if(!fresh){SolverDiagnostics.count(SolverDiagnostics.newtonRefreshesFailed);refresh=true;continue;}
                     workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);
                 }
-                if(!fresh){refresh=true;continue;}workspace.invalidate();throw new Nonconvergence("Newton line search stalled at residual "+norm,x);
+                if(!fresh){SolverDiagnostics.count(SolverDiagnostics.newtonRefreshesFailed);refresh=true;continue;}
+                workspace.invalidate();throw new Nonconvergence("Newton line search stalled at residual "+norm,x);
             }
         }
         workspace.invalidate();
@@ -200,6 +226,11 @@ public final class SparseNewton {
     private static int differentiate0(Equations equations,double[] x,double[] f,double differenceStep,Runnable checkpoint,Workspace workspace) {
         var pattern=workspace.pattern;int n=x.length,calls=0;
         double[] derivatives=workspace.derivatives(pattern.rows.length),steps=workspace.steps(n);
+        int blocks=equations.differentiateEntries(x,f,differenceStep,pattern.offsets,pattern.rows,derivatives,checkpoint);
+        if(blocks>=0) {
+            SolverDiagnostics.count(SolverDiagnostics.jacobianBlockBuilds);
+            return factor(x,derivatives,workspace,pattern,blocks);
+        }
         for(int column=0;column<n;column++)steps[column]=differenceStep*equations.differenceScale(column,x[column]);
         for(int[] group:pattern.groups) {
             checkpoint.run();double[] trial=x.clone();for(int column:group)trial[column]+=steps[column];double[] perturbed=null;
@@ -215,6 +246,10 @@ public final class SparseNewton {
                 if(!found)throw new Nonconvergence("No finite Jacobian trial at variable "+column,x);
             }
         }
+        return factor(x,derivatives,workspace,pattern,calls);
+    }
+    /** The ordering, numeric matrix and factorization are the same whichever sweep filled the entries. */
+    private static int factor(double[] x,double[] derivatives,Workspace workspace,Pattern pattern,int calls) {
         var numeric=pattern.numericMatrix(derivatives);
         try{if(workspace.ordering==null)workspace.ordering=SparseLuSolver.prepareOrdering(pattern.symbolicMatrix());workspace.factorization=workspace.shared.factors.factor(numeric,workspace.ordering);workspace.matrix=numeric;}
         catch(SparseLuSolver.SolveFailure failure){workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);}

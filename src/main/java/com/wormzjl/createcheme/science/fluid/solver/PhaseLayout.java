@@ -135,12 +135,25 @@ public final class PhaseLayout {
     }
     public void residual(FluidThermodynamics.State state,double[] targetAmounts,double targetEnergy,double targetVolume,double[] result,int offset,
                          double[] variables,FluidThermodynamics.Prepared prepared) {
+        double[] l=state.liquidView(),v=state.vaporView();
+        int row=balanceRows(state,targetAmounts,targetEnergy,targetVolume,result,offset);
+        equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
+    }
+    /**
+     * The rows a change of this node's accumulated targets can move, and no others: the component
+     * balances, the water balance, the energy balance and the volume closure. The equilibrium and
+     * closure rows below them read the decoded state alone, so a Jacobian sweep that perturbs a
+     * <em>neighbour</em> leaves them at exactly the residual it already evaluated. Returns the
+     * first row after this block.
+     */
+    public int balanceRows(FluidThermodynamics.State state,double[] targetAmounts,double targetEnergy,double targetVolume,
+                           double[] result,int offset) {
         double[] l=state.liquidView(),v=state.vaporView();int row=offset;
         for(int i:components)result[row++]=(l[i]+v[i]-targetAmounts[i])/componentScales[i];
         if(waterLiquidIndex>=0||waterVaporIndex>=0)result[row++]=(state.waterLiquid()+state.waterVapor()-targetAmounts[l.length])/componentScales[l.length];
         result[row++]=(state.internalEnergy()-targetEnergy)/energyScale;
         result[row++]=(state.volume()-targetVolume)/targetVolume;
-        equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
+        return row;
     }
     /**
      * The change {@link #residual} would show if this node's target amounts and internal energy
@@ -163,7 +176,15 @@ public final class PhaseLayout {
     }
     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                                  double netMassFlow,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared) {
-        double[] l=state.liquidView(),v=state.vaporView();var n=totalAmounts(state,l,v);
+        double[] l=state.liquidView(),v=state.vaporView();
+        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,result,offset);
+        equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
+    }
+    /** The mixing block of {@link #junctionResidual}: everything the inflow and the net flow move,
+     * and nothing the equilibrium rows below it read. Returns the first row after this block. */
+    public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
+                            double netMassFlow,double[] result,int offset) {
+        var n=totalAmounts(state,state.liquidView(),state.vaporView());
         int row=offset;
         for(int index=0;index<junctionBasis.length-1;index++) {
             int i=junctionBasis[index];double mw=i==n.length-1?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(i);
@@ -172,7 +193,7 @@ public final class PhaseLayout {
         result[row++]=netMassFlow; // 1 kg/s reference scale
         result[row++]=(state.enthalpy()/state.mass()-incomingSpecificEnthalpy)/Math.max(1,energyScale/state.mass());
         result[row++]=sum(n)/amountScale-1;
-        equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
+        return row;
     }
     private void equilibriumResidual(FluidThermodynamics.State state,double[] l,double[] v,double[] result,int row,int offset,double[] variables,
                                      FluidThermodynamics.Prepared prepared) {

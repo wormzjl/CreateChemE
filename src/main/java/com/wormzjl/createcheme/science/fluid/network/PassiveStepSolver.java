@@ -136,6 +136,7 @@ public final class PassiveStepSolver {
             changedSeeds=phaseCorrection(graph,projection.states(),checkpoint,true);if(changedSeeds!=null){seeds=changedSeeds;continue;}
             var reconstructed=x.clone();
             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
+            SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
             double maximumResidual=0;for(double residual:equations.residual(reconstructed))maximumResidual=Math.max(maximumResidual,Math.abs(residual));
             if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6))throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);
             if(acceptance==Acceptance.APPROXIMATE)checkApproximation(equations,reconstructed,projection.states(),flows,workspace,checkpoint);
@@ -213,6 +214,7 @@ public final class PassiveStepSolver {
             }else {
                 x=SparseNewton.applyFactorization(last.workspace,last.variables,rows);
                 if(x==null)return null;
+                SolverDiagnostics.count(SolverDiagnostics.companionFilterResiduals);
                 double left=0;double[] perturbed=equations.residual(x);
                 for(int row=0;row<perturbed.length;row++)left=Math.max(left,Math.abs(perturbed[row]-rows[row]));
                 if(left>Math.max(last.newtonTolerance,defect)) {
@@ -391,6 +393,7 @@ public final class PassiveStepSolver {
         if(s.vaporVolume()>0)value+=s.vaporVolume()*model.viscosity.vapor(s.temperature(),s.vaporView(),s.waterVapor(),viscosities,terms);
         return value/s.volume();
     }
+    /** The rows a block Jacobian sweep has to re-evaluate for one perturbed node or edge column. */
     private final class Equations implements SparseNewton.Equations {
         final PassiveNetwork graph;final double dt;final PhaseLayout[] layout;final int[] offsets;
         final int edgeOffset,size;final double[][] oldAmounts;int[][] sparsity;final List<FlowControl.Mode> modes;final int[] controlOffsets;final boolean[] boundaryClosed;final List<FluidThermodynamics.State> seeds;
@@ -399,6 +402,10 @@ public final class PassiveStepSolver {
         final FluidThermodynamics.Prepared[] cachedPrepared;
         final boolean[] amountVariables;
         final double[] differenceFloors;
+        /** Edge indices incident to each node, ascending - which is the order the whole-island
+         * residual accumulates that node's targets, energy and junction inflows in, so a per-node
+         * re-assembly reproduces every accumulator bit for bit. */
+        final int[][] nodeEdges;
         /** Residual scratch. Every one of these is written before it is read within a single
          * evaluation and never escapes it, and the evaluations of one solve are sequential on the
          * worker holding the latch, so they are filled again rather than allocated again. The
@@ -430,6 +437,14 @@ public final class PassiveStepSolver {
             targets=new double[count][components];incoming=new double[count][components];fractions=new double[components];
             energy=new double[count];incomingMass=new double[count];incomingEnergy=new double[count];netMass=new double[count];
             for(int node=0;node<count;node++)if(layout[node]!=null)cachedVariables[node]=new double[layout[node].size()];
+            int[] degree=new int[count];
+            for(var pipe:graph.pipes()){degree[pipe.first()]++;degree[pipe.second()]++;}
+            nodeEdges=new int[count][];for(int node=0;node<count;node++)nodeEdges[node]=new int[degree[node]];
+            Arrays.fill(degree,0);
+            for(int edge=0;edge<graph.pipes().size();edge++) {
+                var pipe=graph.pipes().get(edge);
+                nodeEdges[pipe.first()][degree[pipe.first()]++]=edge;nodeEdges[pipe.second()][degree[pipe.second()]++]=edge;
+            }
         }
         private void buildSparsity() {
             int count=layout.length;
@@ -503,105 +518,261 @@ public final class PassiveStepSolver {
             return x;
         }
         List<FluidThermodynamics.State> states(double[] x) {
+            decode(x);
             var states=new ArrayList<FluidThermodynamics.State>(layout.length);
+            for(var state:cachedStates)states.add(state);
+            return states;
+        }
+        /** Brings the per-node decode cache up to {@code x}; the residual reads the arrays directly. */
+        private void decode(double[] x) {
             for(int i=0;i<layout.length;i++) {
                 boolean same=cachedStates[i]!=null&&(layout[i]==null||Arrays.mismatch(x,offsets[i],offsets[i]+layout[i].size(),cachedVariables[i],0,cachedVariables[i].length)<0);
-                if(!same) {
-                    if(layout[i]!=null) {
-                        double temperature=layout[i].temperature(x,offsets[i]);
-                        if(cachedPrepared[i]==null||cachedPrepared[i].temperature()!=temperature)cachedPrepared[i]=model.prepare(temperature);
-                    }
-                    var state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedPrepared[i]);
-                    var transport=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),viscosity(state,cachedPrepared[i]),state.enthalpy()/state.mass(),model.velocityLimit(state));
-                    cachedStates[i]=state;cachedTransport[i]=transport;
-                    if(layout[i]!=null)System.arraycopy(x,offsets[i],cachedVariables[i],0,layout[i].size());
+                if(same)continue;
+                if(layout[i]!=null) {
+                    double temperature=layout[i].temperature(x,offsets[i]);
+                    if(cachedPrepared[i]==null||cachedPrepared[i].temperature()!=temperature)cachedPrepared[i]=model.prepare(temperature);
                 }
-                states.add(cachedStates[i]);
+                var state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedPrepared[i]);
+                var transport=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),viscosity(state,cachedPrepared[i]),state.enthalpy()/state.mass(),model.velocityLimit(state));
+                cachedStates[i]=state;cachedTransport[i]=transport;
+                if(layout[i]!=null)System.arraycopy(x,offsets[i],cachedVariables[i],0,layout[i].size());
             }
-            return states;
         }
         private record Transport(double[] moles,double density,double viscosity,double specificEnthalpy,double velocityLimit) {}
         public double[] residual(double[] x) {
-            var states=states(x);double[] f=new double[size];
-            Arrays.fill(incomingMass,0);Arrays.fill(incomingEnergy,0);Arrays.fill(netMass,0);
-            for(int i=0;i<layout.length;i++) {
-                System.arraycopy(oldAmounts[i],0,targets[i],0,targets[i].length);Arrays.fill(incoming[i],0);
-                energy[i]=graph.reservoirs().get(i).inventory().internalEnergy();
-            }
+            decode(x);double[] f=new double[size];
+            assemble(x,cachedStates,cachedTransport,cachedPrepared,f);
+            return f;
+        }
+        /**
+         * One complete residual from already decoded node states. The three passes are the whole
+         * island's version of the three assemblies a block Jacobian sweep performs for a single
+         * perturbed column, and they are the only place each row's formula exists.
+         */
+        private void assemble(double[] x,FluidThermodynamics.State[] st,Transport[] tr,FluidThermodynamics.Prepared[] pr,double[] f) {
+            for(int node=0;node<layout.length;node++)if(layout[node]!=null)nodeAccumulate(node,x,st,tr);
+            for(int edge=0;edge<graph.pipes().size();edge++)edgeRows(edge,x,st,tr,f);
+            for(int node=0;node<layout.length;node++)if(layout[node]!=null)nodeRows(node,x,st,pr,f);
+        }
+        /**
+         * This node's accumulated backward-Euler targets: the inventory it started from, the
+         * scheduled transfers that name it, and every incident edge in edge order - which is the
+         * order the whole-island loop reached them in, so the sums are the same doubles. A node
+         * without a layout owns nothing and is only ever a donor or receiver, so its accumulators
+         * are never read.
+         */
+        private void nodeAccumulate(int node,double[] x,FluidThermodynamics.State[] st,Transport[] tr) {
+            double[] target=targets[node],in=incoming[node];
+            System.arraycopy(oldAmounts[node],0,target,0,target.length);Arrays.fill(in,0);
+            double stored=graph.reservoirs().get(node).inventory().internalEnergy(),mass=0,heat=0,net=0;
+            double elevation=graph.reservoirs().get(node).elevation();
             for(var transfer:graph.scheduledTransfers()) {
-                int node=transfer.node();var state=states.get(node);double elevation=graph.reservoirs().get(node).elevation();
+                if(transfer.node()!=node)continue;
+                var state=st[node];
                 if(transfer instanceof ScheduledTransfer.Withdrawal withdrawal) {
-                    double mass=dt*withdrawal.massKgPerSecond();var n=cachedTransport[node].moles;
-                    for(int c=0;c<n.length;c++)targets[node][c]-=mass*n[c]/state.mass();
-                    energy[node]-=mass*state.enthalpy()/state.mass();
+                    double withdrawn=dt*withdrawal.massKgPerSecond();var n=tr[node].moles;
+                    for(int c=0;c<n.length;c++)target[c]-=withdrawn*n[c]/state.mass();
+                    stored-=withdrawn*state.enthalpy()/state.mass();
                 } else if(transfer instanceof ScheduledTransfer.Injection input) {
                     var rates=input.molesPerSecond();double massRate=0;
-                    for(int c=0;c<rates.length;c++){targets[node][c]+=dt*rates[c];massRate+=rates[c]*model.molecularWeight(c);}
-                    energy[node]+=dt*(input.totalEnergyPerSecond()-massRate*GRAVITY*elevation);
+                    for(int c=0;c<rates.length;c++){target[c]+=dt*rates[c];massRate+=rates[c]*model.molecularWeight(c);}
+                    stored+=dt*(input.totalEnergyPerSecond()-massRate*GRAVITY*elevation);
                 }
             }
-            for(int edge=0;edge<graph.pipes().size();edge++) {
+            for(int edge:nodeEdges[node]) {
                 var pipe=graph.pipes().get(edge);int a=pipe.first(),b=pipe.second();double flow=x[edgeOffset+edge];
-                int donor=flow>=0?a:b;var upstream=states.get(donor);var transport=cachedTransport[donor];double rho=transport.density;
-                int receiver=flow>=0?b:a;netMass[a]-=flow;netMass[b]+=flow;
-                double dz=graph.reservoirs().get(b).elevation()-graph.reservoirs().get(a).elevation();
-                double loss=pipe.pressureDrop(flow,rho,transport.viscosity);
-                int control=controlOffsets[edge];double head=control<0?0:x[control]*1e5;
-                double signedHead=pipe.control() instanceof FlowControl.Pump?head:-head;
-                double driving=states.get(a).pressure()-states.get(b).pressure()-rho*GRAVITY*dz+signedHead;
-                f[edgeOffset+edge]=(driving-loss)/1e5;
-                if(canClamp(modes.get(edge))&&!boundaryClosed[edge]) {
-                    int direction=flow>=0?0:1;
-                    // A colored Jacobian perturbs only a few nodes. Unchanged immutable donor
-                    // properties have the same cap and loss; keep one entry per edge/direction.
-                    if(capSources[edge][direction]!=transport) {
-                        double limit=rho*pipe.minimumArea()*transport.velocityLimit;
-                        capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.pressureDrop(limit,rho,transport.viscosity);capSources[edge][direction]=transport;
-                    }
-                    double limit=capMassFlows[edge][direction],limitDrop=capPressureDrops[edge][direction];
-                    // A saturated pressure/flow law: the unused driving pressure is throttled.
-                    // The same bounded flow unknown enters every component and enthalpy balance.
-                    // No post-solve clipping, temperature prescription, or inventory adjustment.
-                    if(Math.abs(driving)>limitDrop)f[edgeOffset+edge]=(Math.copySign(limit,driving)-flow)/Math.max(limit,1e-8);
+                boolean first=node==a;int donor=flow>=0?a:b;var upstream=st[donor];var transport=tr[donor];
+                boolean receiver=node==(flow>=0?b:a);
+                net+=first?-flow:flow;
+                var amounts=transport.moles;double moving=dt*flow;
+                for(int c=0;c<amounts.length;c++){double moved=moving*amounts[c]/upstream.mass();target[c]+=first?-moved:moved;}
+                double donorZ=graph.reservoirs().get(donor).elevation(),h=transport.specificEnthalpy;
+                if(receiver) {
+                    mass+=Math.abs(flow);
+                    for(int c=0;c<amounts.length;c++)in[c]+=Math.abs(flow)*amounts[c]/upstream.mass();
+                    heat+=Math.abs(flow)*(h+GRAVITY*(donorZ-elevation));
                 }
-                if(boundaryClosed[edge]&&control<0)f[edgeOffset+edge]=flow;
-                if(control>=0)f[control]=switch(modes.get(edge)) {
-                    case PUMP_TARGET->(flow/(states.get(a).mass()/states.get(a).volume())-((FlowControl.Pump)pipe.control()).targetVolumeFlow())/.01;
-                    case PUMP_HEAD_LIMIT->(head-((FlowControl.Pump)pipe.control()).maximumAddedPressure())/1e5;
-                    case VALVE_REGULATING->(states.get(a).pressure()-((FlowControl.PressureValve)pipe.control()).targetPressure())/1e5;
-                    case VALVE_OPEN->head/1e5;
-                    case CLOSED->flow;
-                    case PASSIVE,VELOCITY_LIMITED,PUMP_VELOCITY_LIMIT,VALVE_VELOCITY_LIMIT->throw new IllegalStateException("Presentation-only or passive mode has actuator unknown");
-                };
-                var amounts=transport.moles;double transfer=dt*flow;
-                for(int c=0;c<amounts.length;c++){double moved=transfer*amounts[c]/upstream.mass();targets[a][c]-=moved;targets[b][c]+=moved;}
-                double donorZ=graph.reservoirs().get(donor).elevation();double h=transport.specificEnthalpy;
-                incomingMass[receiver]+=Math.abs(flow);
-                for(int c=0;c<amounts.length;c++)incoming[receiver][c]+=Math.abs(flow)*amounts[c]/upstream.mass();
-                incomingEnergy[receiver]+=Math.abs(flow)*(h+GRAVITY*(donorZ-graph.reservoirs().get(receiver).elevation()));
-                energy[a]-=transfer*(h+GRAVITY*(donorZ-graph.reservoirs().get(a).elevation()));
-                energy[b]+=transfer*(h+GRAVITY*(donorZ-graph.reservoirs().get(b).elevation()));
-                if(pipe.control() instanceof FlowControl.Pump pump) {
-                    double power=Math.max(0,flow)/(states.get(a).mass()/states.get(a).volume())*Math.max(0,head)/pump.efficiency();
-                    energy[b]+=dt*power;incomingEnergy[b]+=power;
+                stored+=(first?-1:1)*moving*(h+GRAVITY*(donorZ-elevation));
+                if(!first&&pipe.control() instanceof FlowControl.Pump pump) {
+                    int control=controlOffsets[edge];double head=control<0?0:x[control]*1e5;
+                    double power=Math.max(0,flow)/(st[a].mass()/st[a].volume())*Math.max(0,head)/pump.efficiency();
+                    stored+=dt*power;heat+=power;
                 }
             }
-            for(int i=0;i<layout.length;i++) {
-                if(layout[i]==null)continue;
-                if(!graph.reservoirs().get(i).junction())layout[i].residual(states.get(i),targets[i],energy[i],graph.reservoirs().get(i).inventory().volume(),f,offsets[i],x,cachedPrepared[i]);
-                else {
-                    var previous=graph.reservoirs().get(i).state();double specificH;
-                    if(incomingMass[i]>1e-14) {
-                        for(int c=0;c<fractions.length;c++)fractions[c]=incoming[i][c]*model.molecularWeight(c)/incomingMass[i];
-                        specificH=incomingEnergy[i]/incomingMass[i];
-                    }else {
-                        for(int c=0;c<fractions.length;c++)fractions[c]=oldAmounts[i][c]*model.molecularWeight(c)/previous.mass();
-                        specificH=previous.enthalpy()/previous.mass();
-                    }
-                    layout[i].junctionResidual(states.get(i),fractions,specificH,netMass[i],f,offsets[i],x,cachedPrepared[i]);
+            energy[node]=stored;incomingMass[node]=mass;incomingEnergy[node]=heat;netMass[node]=net;
+        }
+        /** The hydraulic row of one edge and its actuator row, from the two endpoint states alone. */
+        private void edgeRows(int edge,double[] x,FluidThermodynamics.State[] st,Transport[] tr,double[] f) {
+            var pipe=graph.pipes().get(edge);int a=pipe.first(),b=pipe.second();double flow=x[edgeOffset+edge];
+            int donor=flow>=0?a:b;var transport=tr[donor];double rho=transport.density;
+            double dz=graph.reservoirs().get(b).elevation()-graph.reservoirs().get(a).elevation();
+            double loss=pipe.pressureDrop(flow,rho,transport.viscosity);
+            int control=controlOffsets[edge];double head=control<0?0:x[control]*1e5;
+            double signedHead=pipe.control() instanceof FlowControl.Pump?head:-head;
+            double driving=st[a].pressure()-st[b].pressure()-rho*GRAVITY*dz+signedHead;
+            f[edgeOffset+edge]=(driving-loss)/1e5;
+            if(canClamp(modes.get(edge))&&!boundaryClosed[edge]) {
+                int direction=flow>=0?0:1;
+                // A colored Jacobian perturbs only a few nodes. Unchanged immutable donor
+                // properties have the same cap and loss; keep one entry per edge/direction.
+                if(capSources[edge][direction]!=transport) {
+                    double limit=rho*pipe.minimumArea()*transport.velocityLimit;
+                    capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.pressureDrop(limit,rho,transport.viscosity);capSources[edge][direction]=transport;
                 }
+                double limit=capMassFlows[edge][direction],limitDrop=capPressureDrops[edge][direction];
+                // A saturated pressure/flow law: the unused driving pressure is throttled.
+                // The same bounded flow unknown enters every component and enthalpy balance.
+                // No post-solve clipping, temperature prescription, or inventory adjustment.
+                if(Math.abs(driving)>limitDrop)f[edgeOffset+edge]=(Math.copySign(limit,driving)-flow)/Math.max(limit,1e-8);
             }
-            return f;
+            if(boundaryClosed[edge]&&control<0)f[edgeOffset+edge]=flow;
+            if(control>=0)f[control]=switch(modes.get(edge)) {
+                case PUMP_TARGET->(flow/(st[a].mass()/st[a].volume())-((FlowControl.Pump)pipe.control()).targetVolumeFlow())/.01;
+                case PUMP_HEAD_LIMIT->(head-((FlowControl.Pump)pipe.control()).maximumAddedPressure())/1e5;
+                case VALVE_REGULATING->(st[a].pressure()-((FlowControl.PressureValve)pipe.control()).targetPressure())/1e5;
+                case VALVE_OPEN->head/1e5;
+                case CLOSED->flow;
+                case PASSIVE,VELOCITY_LIMITED,PUMP_VELOCITY_LIMIT,VALVE_VELOCITY_LIMIT->throw new IllegalStateException("Presentation-only or passive mode has actuator unknown");
+            };
+        }
+        /**
+         * The Jacobian from per-node block perturbations instead of a coloured whole-island sweep.
+         *
+         * <p>One local column at a time, for every node that owns one: the node is decoded at the
+         * perturbed point and only the rows that can see it are re-assembled - its own block, the
+         * block of each neighbour across an incident edge (whose backward-Euler targets carry this
+         * node's composition and specific enthalpy when it is the donor), and the hydraulic and
+         * actuator rows of those edges. The flow and actuator columns sweep the same way over their
+         * own edge. Every such row is produced by the same {@link #nodeAccumulate},
+         * {@link #edgeRows} and {@link #nodeRows} the whole-island residual uses, in the same
+         * accumulation order, so each entry is the double the coloured sweep computed: the
+         * colouring guarantees that no other column in a group can reach a row, which is exactly
+         * the statement that evaluating that row with one column perturbed gives the same value.</p>
+         *
+         * <p>The cost this removes is the assembly, not the decodes. The coloured sweep already
+         * decodes each node once per one of its own columns - the colour groups are
+         * {@code (column, independent node set)} pairs - but it pays a complete island residual,
+         * every node block and every edge row, for each of those 143-191 groups.</p>
+         */
+        public int differentiateEntries(double[] x,double[] f,double differenceStep,int[] entryOffsets,int[] entryRows,
+                                        double[] entries,Runnable checkpoint) {
+            if(sparsity==null)buildSparsity();
+            FluidThermodynamics.State[] st,baseStates;Transport[] tr,baseTransport;FluidThermodynamics.Prepared[] pr,basePrepared;
+            double[] trial,perturbed;
+            try {
+                decode(x);
+                st=cachedStates.clone();tr=cachedTransport.clone();pr=cachedPrepared.clone();
+                baseStates=cachedStates.clone();baseTransport=cachedTransport.clone();basePrepared=cachedPrepared.clone();
+                trial=x.clone();perturbed=new double[size];
+            }catch(IllegalArgumentException outsideDomain) {
+                SolverDiagnostics.count(SolverDiagnostics.jacobianBlockFallbacks);return -1;
+            }
+            int columns=0;
+            try {
+                for(int node=0;node<layout.length;node++) {
+                    if(layout[node]==null)continue;
+                    for(int local=0;local<layout[node].size();local++) {
+                        checkpoint.run();columns++;
+                        int column=offsets[node]+local;
+                        double step=differenceStep*differenceScale(column,x[column]);
+                        trial[column]+=step;
+                        double temperature=layout[node].temperature(trial,offsets[node]);
+                        var prepared=basePrepared[node]!=null&&basePrepared[node].temperature()==temperature?basePrepared[node]:model.prepare(temperature);
+                        var state=layout[node].decode(trial,offsets[node],prepared);
+                        st[node]=state;pr[node]=prepared;
+                        tr[node]=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),
+                                viscosity(state,prepared),state.enthalpy()/state.mass(),model.velocityLimit(state));
+                        // Seed every neighbour before recomputing any of them: parallel pipes reach
+                        // the same node twice, and a seed must never overwrite a recomputed row.
+                        for(int edge:nodeEdges[node])seed(other(edge,node),perturbed,f);
+                        nodeAccumulate(node,trial,st,tr);nodeRows(node,trial,st,pr,perturbed);
+                        for(int edge:nodeEdges[node]) {
+                            edgeRows(edge,trial,st,tr,perturbed);
+                            int other=other(edge,node);
+                            if(layout[other]!=null&&carries(edge,node,trial)) {
+                                nodeAccumulate(other,trial,st,tr);nodeTargetRows(other,st,perturbed);
+                            }
+                        }
+                        write(entryOffsets,entryRows,entries,column,perturbed,f,step);
+                        st[node]=baseStates[node];tr[node]=baseTransport[node];pr[node]=basePrepared[node];
+                        trial[column]=x[column];
+                    }
+                }
+                for(int edge=0;edge<graph.pipes().size();edge++) {
+                    checkpoint.run();
+                    var pipe=graph.pipes().get(edge);
+                    for(int which=0;which<2;which++) {
+                        int column=which==0?edgeOffset+edge:controlOffsets[edge];
+                        if(column<0)continue;
+                        columns++;
+                        double step=differenceStep*differenceScale(column,x[column]);
+                        trial[column]+=step;
+                        edgeRows(edge,trial,st,tr,perturbed);
+                        // No node is decoded again, so only the two endpoints' inflow rows move.
+                        for(int node:new int[]{pipe.first(),pipe.second()})if(layout[node]!=null) {
+                            seed(node,perturbed,f);nodeAccumulate(node,trial,st,tr);nodeTargetRows(node,st,perturbed);
+                        }
+                        write(entryOffsets,entryRows,entries,column,perturbed,f,step);
+                        trial[column]=x[column];
+                    }
+                }
+            }catch(IllegalArgumentException outsideDomain) {
+                // A perturbed node left the property domain. The coloured sweep has a bounded
+                // one-sided stencil for exactly that, so hand the whole build back to it.
+                SolverDiagnostics.count(SolverDiagnostics.jacobianBlockFallbacks);return -1;
+            }
+            SolverDiagnostics.count(SolverDiagnostics.jacobianBlockColumns,columns);
+            return columns;
+        }
+        private int other(int edge,int node) {
+            var pipe=graph.pipes().get(edge);return pipe.first()==node?pipe.second():pipe.first();
+        }
+        /** A row this column cannot move keeps the value the base residual already produced for it. */
+        private void seed(int node,double[] perturbed,double[] f) {
+            if(layout[node]!=null)System.arraycopy(f,offsets[node],perturbed,offsets[node],layout[node].size());
+        }
+        private void write(int[] entryOffsets,int[] entryRows,double[] entries,int column,double[] perturbed,double[] f,double step) {
+            for(int entry=entryOffsets[column];entry<entryOffsets[column+1];entry++) {
+                int row=entryRows[entry];entries[entry]=(perturbed[row]-f[row])/step;
+            }
+        }
+        /** The balance, energy, volume, equilibrium and closure rows this node owns. */
+        private void nodeRows(int node,double[] x,FluidThermodynamics.State[] st,FluidThermodynamics.Prepared[] pr,double[] f) {
+            if(!graph.reservoirs().get(node).junction()) {
+                layout[node].residual(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node],x,pr[node]);
+                return;
+            }
+            layout[node].junctionResidual(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x,pr[node]);
+        }
+        /**
+         * Only the rows a change of this node's inflow can move. A block sweep that perturbs one of
+         * this node's <em>neighbours</em> leaves the decoded state here untouched, so the volume
+         * closure, the equilibrium rows and the amount normalization are the base residual's own
+         * doubles and the sweep seeds them from it rather than recomputing them.
+         */
+        private void nodeTargetRows(int node,FluidThermodynamics.State[] st,double[] f) {
+            if(!graph.reservoirs().get(node).junction())
+                layout[node].balanceRows(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node]);
+            else layout[node].junctionRows(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node]);
+        }
+        /** Fills {@link #fractions} with this junction's incoming mass fractions and returns its
+         * incoming specific enthalpy, falling back to the stored guess when nothing arrives. */
+        private double junctionInflow(int node) {
+            var previous=graph.reservoirs().get(node).state();
+            if(incomingMass[node]>1e-14) {
+                for(int c=0;c<fractions.length;c++)fractions[c]=incoming[node][c]*model.molecularWeight(c)/incomingMass[node];
+                return incomingEnergy[node]/incomingMass[node];
+            }
+            for(int c=0;c<fractions.length;c++)fractions[c]=oldAmounts[node][c]*model.molecularWeight(c)/previous.mass();
+            return previous.enthalpy()/previous.mass();
+        }
+        /** Whether this edge can carry a change of {@code node}'s decoded state into the other
+         * endpoint's rows: the transported amounts and enthalpy are the donor's, and a pump's
+         * shaft power is metered on the first endpoint's density. */
+        private boolean carries(int edge,int node,double[] x) {
+            var pipe=graph.pipes().get(edge);
+            return node==(x[edgeOffset+edge]>=0?pipe.first():pipe.second())
+                    ||node==pipe.first()&&pipe.control() instanceof FlowControl.Pump;
         }
     }
 }

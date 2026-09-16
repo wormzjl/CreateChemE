@@ -48,6 +48,31 @@ public final class SolverDiagnostics {
     public static final LongAdder jacobianBuilds=new LongAdder();
     public static final LongAdder jacobianColors=new LongAdder();
     public static final LongAdder jacobianNonzeros=new LongAdder();
+    /**
+     * Where a Newton iteration's search direction came from, so the cost of the modified-Newton
+     * chord can be told from the cost of a fresh Jacobian. {@code newtonSolvesPreconditioned}
+     * counts the solves that opened on an inherited factorization instead of building one, and
+     * {@code newtonIterationsPreconditioned} the iterations those solves spent; the fresh/stale
+     * pair splits every iteration by whether its own direction came from a Jacobian built in that
+     * iteration, and the step-evaluation pair splits the line-search residuals the same way.
+     */
+    /** Jacobian builds assembled from per-node block perturbations, the columns they swept, and the
+     * builds that had to fall back to the coloured whole-island sweep. */
+    public static final LongAdder jacobianBlockBuilds=new LongAdder();
+    public static final LongAdder jacobianBlockColumns=new LongAdder();
+    public static final LongAdder jacobianBlockFallbacks=new LongAdder();
+    public static final LongAdder newtonSolvesPreconditioned=new LongAdder();
+    public static final LongAdder newtonIterationsPreconditioned=new LongAdder();
+    public static final LongAdder newtonIterationsFresh=new LongAdder();
+    public static final LongAdder newtonIterationsStale=new LongAdder();
+    public static final LongAdder newtonStepEvaluationsFresh=new LongAdder();
+    public static final LongAdder newtonStepEvaluationsStale=new LongAdder();
+    /** Triangular solves spent on the affine-invariant merit probe, which is compared and discarded. */
+    public static final LongAdder newtonMeritProbes=new LongAdder();
+    /** Why the modified-Newton chord was given up: poor contraction, age, or a failed step. */
+    public static final LongAdder newtonRefreshesStalled=new LongAdder();
+    public static final LongAdder newtonRefreshesAged=new LongAdder();
+    public static final LongAdder newtonRefreshesFailed=new LongAdder();
     // ---- sparse linear algebra, Newton side ----
     public static final LongAdder luFactorizations=new LongAdder();
     public static final LongAdder luFactorNanos=new LongAdder();
@@ -68,8 +93,20 @@ public final class SolverDiagnostics {
     public static final LongAdder transportSolveNanos=new LongAdder();
     public static final LongAdder transportOrderings=new LongAdder();
     public static final LongAdder transportOrderingNanos=new LongAdder();
+    // ---- residuals outside the Newton loop ----
+    /**
+     * Residual evaluations that do not go through {@link com.wormzjl.createcheme.science.fluid.solver.SparseNewton}
+     * and are therefore absent from {@link #residualEvaluations}: the equation gate the conservative
+     * reconstruction has to pass, and the check that the linearized companion point actually solves
+     * the perturbed equations.
+     */
+    public static final LongAdder verificationResiduals=new LongAdder();
+    public static final LongAdder companionFilterResiduals=new LongAdder();
     // ---- properties ----
     public static final LongAdder stateCalls=new LongAdder();
+    /** The subset of {@link #stateCalls} performed while building a Jacobian: the node decodes a
+     * block-structured or analytic Jacobian is trying to remove. */
+    public static final LongAdder stateCallsInJacobian=new LongAdder();
     /** Peng-Robinson temperature preparations. The name is kept from the {@code TemperatureTerms} this
      * counted before WP6a replaced those three n x n matrices with the shared kernel's 3n vectors, so the
      * measurements across work packages stay comparable: it counts the same event either way. */
@@ -130,6 +167,16 @@ public final class SolverDiagnostics {
         map.put("newtonSolves",newtonSolves);map.put("newtonIterations",newtonIterations);map.put("newtonBacktracks",newtonBacktracks);
         map.put("residualEvaluations",residualEvaluations);map.put("residualEvaluationsInJacobian",residualEvaluationsInJacobian);
         map.put("jacobianBuilds",jacobianBuilds);map.put("jacobianColors",jacobianColors);map.put("jacobianNonzeros",jacobianNonzeros);
+        map.put("jacobianBlockBuilds",jacobianBlockBuilds);map.put("jacobianBlockColumns",jacobianBlockColumns);
+        map.put("jacobianBlockFallbacks",jacobianBlockFallbacks);
+        map.put("newtonSolvesPreconditioned",newtonSolvesPreconditioned);
+        map.put("newtonIterationsPreconditioned",newtonIterationsPreconditioned);
+        map.put("newtonIterationsFresh",newtonIterationsFresh);map.put("newtonIterationsStale",newtonIterationsStale);
+        map.put("newtonStepEvaluationsFresh",newtonStepEvaluationsFresh);map.put("newtonStepEvaluationsStale",newtonStepEvaluationsStale);
+        map.put("newtonMeritProbes",newtonMeritProbes);
+        map.put("newtonRefreshesStalled",newtonRefreshesStalled);map.put("newtonRefreshesAged",newtonRefreshesAged);
+        map.put("newtonRefreshesFailed",newtonRefreshesFailed);
+        map.put("verificationResiduals",verificationResiduals);map.put("companionFilterResiduals",companionFilterResiduals);
         map.put("luFactorizations",luFactorizations);map.put("luFactorNanos",luFactorNanos);
         map.put("luSolves",luSolves);map.put("luSolveNanos",luSolveNanos);
         map.put("luChecks",luChecks);map.put("luRefinements",luRefinements);
@@ -138,7 +185,8 @@ public final class SolverDiagnostics {
         map.put("transportFactorizations",transportFactorizations);map.put("transportFactorNanos",transportFactorNanos);
         map.put("transportSolves",transportSolves);map.put("transportSolveNanos",transportSolveNanos);
         map.put("transportOrderings",transportOrderings);map.put("transportOrderingNanos",transportOrderingNanos);
-        map.put("stateCalls",stateCalls);map.put("temperatureTermsCalls",temperatureTermsCalls);map.put("flashCalls",flashCalls);
+        map.put("stateCalls",stateCalls);map.put("stateCallsInJacobian",stateCallsInJacobian);
+        map.put("temperatureTermsCalls",temperatureTermsCalls);map.put("flashCalls",flashCalls);
         map.put("reconstructCalls",reconstructCalls);map.put("reconstructNanos",reconstructNanos);
         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
         return Collections.unmodifiableMap(map);

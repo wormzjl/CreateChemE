@@ -1034,3 +1034,143 @@ production pool's remaining allocation, is gone; the transport storages (1.19%) 
 candidates it named - the `PipeTransfer`/`ConservativeTransport` records at 9.39%, `PhaseLayout` at 6.49%,
 `PassiveNetwork$Inventory.moles`' defensive clone at 1.93% - are untouched, and B4's analytic node blocks
 now have the derivative bundle they need.
+
+## WP6b - analytic node Jacobian
+
+Baseline for this work package is `9e7d81b`, captured into `build/probe/reference-wp6a`
+(`-PfluidRegressionCapture=true -PfluidRegressionReferences=build/probe/reference-wp6a`).
+
+| fixture, 9e7d81b | wall ms | allocated MB | substeps acc/rej | implicit solves | Jacobian builds | LU | residual evaluations | node state() calls | of those in the Jacobian |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, 5 intervals | 154.5 | 93.0 | 11/0 | 25 | 3 | 3 | 659 | 8910 | 4320 |
+| quiet 11324, 5 intervals | 74.9 | 73.0 | 11/0 | 29 | 4 | 4 | 859 | 6444 | 3456 |
+| cold 11312, one interval | 935.3 | 716.8 | 52/15 | 135 | 41 | 41 | 8731 | 98070 | 59040 |
+| 100-reservoir chain | 1437.7 | 1770.3 | 45/22 | 135 | 22 | 22 | 4149 | 246000 | 105600 |
+
+Wall time is the median of three runs in one session; the counters are exact and are the primary
+evidence, as the method says.
+
+### WP6b step 0 - where the transient residual evaluations go
+
+Eleven new counters split the Newton loop by what a residual evaluation was spent on and where a
+search direction came from (`newtonSolvesPreconditioned`, `newtonIterationsPreconditioned`,
+`newtonIterationsFresh`/`Stale`, `newtonStepEvaluationsFresh`/`Stale`, `newtonMeritProbes`,
+`newtonRefreshesStalled`/`Aged`/`Failed`), two count the residual evaluations that never reach
+`SparseNewton` at all (`verificationResiduals` for the reconstruction's equation gate,
+`companionFilterResiduals` for the linear filter's self-check), and `stateCallsInJacobian` splits the
+node decodes the same way the existing `residualEvaluationsInJacobian` splits the evaluations.
+
+The counters close exactly, on every fixture:
+`residualEvaluations = newtonSolves + residualEvaluationsInJacobian + newtonIterations + newtonBacktracks`
+- one opening evaluation per Newton solve, the coloured sweep, and one line-search evaluation per
+iteration plus one per backtrack.
+
+| bucket, cold 11312 (one interval) | count | share of 8731 |
+|---|---:|---:|
+| Jacobian colouring (41 builds x 191 colours) | 7831 | 89.7% |
+| Newton opening evaluation (one per solve) | 135 | 1.5% |
+| line search on a fresh Jacobian | 41 | 0.5% |
+| line search on a stale chord | 724 | 8.3% |
+| backtracks (included in the two lines above) | 4 | - |
+| *outside* `SparseNewton`: reconstruction equation gate | 135 | - |
+| *outside* `SparseNewton`: companion filter self-check | 50 | - |
+
+| bucket, 100-chain (one interval) | count | share of 4149 |
+|---|---:|---:|
+| Jacobian colouring (22 builds x 143 colours) | 3146 | 75.8% |
+| Newton opening evaluation | 135 | 3.3% |
+| line search on a fresh Jacobian | 25 | 0.6% |
+| line search on a stale chord | 843 | 20.3% |
+| backtracks (included above) | 26 | - |
+| reconstruction equation gate / companion self-check | 135 / 67 | - |
+
+| chord reuse | cold 11312 | 100-chain |
+|---|---:|---:|
+| Newton iterations per implicit solve | 761 / 135 = **5.64** | 842 / 135 = **6.24** |
+| solves that opened on an inherited factorization | **133 of 135** | **133 of 135** |
+| iterations spent by those solves | 752 of 761 | 829 of 842 |
+| iterations whose direction came from a chord | **720 (94.6%)** | **820 (97.4%)** |
+| iterations that built their own Jacobian | 41 | 22 |
+| refreshes: stalled (contraction > 0.8) / aged (8 iterations) / failed step | 13 / 33 / 0 | 0 / 44 / 0 |
+| LU factorizations | 41 | 22 |
+| triangular solves (761 + 5 merit + 50 companion; 842 + 26 + 67) | 816 | 935 |
+| merit probes | 5 | 26 |
+
+**What this says about how much a cheaper Jacobian can buy.** The colouring is 90% of the cold
+island's residual evaluations but only part of its wall time: the same counters put 41 LU
+factorizations at 325 ms and 816 triangular solves at 89 ms of a 935 ms interval, and 98 070 node
+decodes at roughly 310 ms. A Jacobian build is therefore about 7.6 ms of factorization on top of its
+assembly, so **refreshing more often cannot pay**: the 41 builds already cost about 500 ms of the
+interval, and refreshing on every one of the 761 iterations would cost 5.8 s of factorization alone
+unless the iteration count fell eighteenfold. Step 3 is measured in both directions for that reason.
+
+The second finding sets step 1's ceiling. The coloured sweep already decodes each node **once per one
+of its own columns**: 59 040 decodes over 41 builds is 1440 per build, and 1440 = 30 nodes x (47
+columns + one restore). Greedy colouring numbers the columns in index order, so a colour group is one
+(column, independent node set) pair and consecutive groups perturb the same nodes. A block sweep's
+floor is 30 x 47 = 1410 per build - **2% fewer decodes, not fewer**. What a block sweep removes is
+the whole-island assembly behind each of the 191 colours, not the properties.
+
+### WP6b step 1 - build the Jacobian from per-node block perturbations
+
+`Equations.residual` is now three passes over shared per-node and per-edge assemblies -
+`nodeAccumulate` (this node's backward-Euler targets, energy, junction inflow and net flow, from the
+edges incident to it in edge order), `edgeRows` (one edge's hydraulic and actuator rows) and
+`nodeRows` (the block that node owns) - and `SparseNewton.Equations` gained an optional
+`differentiateEntries` that fills the pattern's values directly. `PassiveStepSolver.Equations`
+implements it by perturbing one local column at a time: the node is decoded at the perturbed point
+and only the rows that can see it are re-assembled - its own block, the hydraulic and actuator rows
+of its incident edges, and the *inflow rows only* of a neighbour across an edge this node donates
+across. The flow and actuator columns sweep the same way over their own edge, where no node is
+decoded again at all.
+
+Bitwise identity is by construction rather than by luck. Every row comes out of the same three
+methods the whole-island residual calls, so no formula is restated; the accumulators are refilled in
+edge order, which is the order the island loop reached them in, so the sums are the same doubles; and
+a row a column cannot move is seeded from the base residual instead of recomputed, which is the value
+the coloured sweep would have differenced to exactly zero. Two rules earn that seeding: a neighbour's
+volume closure, equilibrium and normalization rows read its decoded state alone
+(`PhaseLayout.balanceRows` and `junctionRows` are the split that makes this expressible without a
+second copy of the arithmetic), and a neighbour is reached at all only when this node is the donor on
+that edge or meters a pump's shaft power on it. Parallel pipes reach the same neighbour twice, so
+every neighbour is seeded before any is recomputed.
+
+The sparsity pattern, the column ordering, the RCM ordering and the numeric matrix are untouched -
+`differentiateEntries` fills exactly `columnRows()`'s entries in exactly its order and hands them to
+the same factorization step - so B2's workspace and fork-family storage keys stay valid. Verified:
+the `jacobianNonzeros`, `luStorages`, `luOrderings` and `transportOrderings` counters are identical
+on all four fixtures.
+
+A perturbed node that leaves the property domain hands the whole build back to the coloured sweep,
+which has the bounded one-sided stencil for it (`jacobianBlockFallbacks`). **It fired 0 times on all
+four fixtures.**
+
+| fixture | wall ms | allocated MB | residual evaluations | block columns | node decodes | of those in the Jacobian |
+|---|---:|---:|---:|---:|---:|---:|
+| quiet 11312, 5 intervals | 154.5 -> 153.9 | 93.0 -> **85.4** | 659 -> 86 | 4365 | 8910 -> 8820 | 4320 -> 4230 |
+| quiet 11324, 5 intervals | 74.9 -> **72.3** | 73.0 -> **65.8** | 859 -> 95 | 3492 | 6444 -> 6372 | 3456 -> 3384 |
+| cold 11312, one interval | 935.3 -> **916.9** | 716.8 -> **605.3** | 8731 -> 900 | 59655 | 98070 -> 96840 | 59040 -> 57810 |
+| 100-reservoir chain | 1437.7 -> **1369.6** | 1770.3 -> **1687.7** | 4149 -> 1003 | 105578 | 246000 -> 243800 | 105600 -> 103400 |
+
+Substep counts, implicit solves, active-set passes, Jacobian builds, LU factorizations, triangular
+solves, orderings and reconstructions are all unchanged; the residual-evaluation column falls to the
+Newton loop's own evaluations because the sweep no longer goes through one.
+
+Wall time is the median of three runs of each tree in the same session (`build/probe/wp6b/base-*.json`
+and `block-*.json`); the spreads were 925-1023 against 905-950 ms on the cold island and 1420-1444
+against 1358-1417 ms on the chain. The measured effect is **-2% to -5% on the transients and inside
+the spread on the quiet islands**, which is what the step-0 census predicts and is worth stating
+plainly: a coloured build assembles 191 x (30 node blocks + 45 edge rows), a block build 1410 full
+node blocks plus about 2100 partial ones and 4200 edge rows, so the expensive part - the 42
+logarithms in a node's equilibrium rows - falls about fourfold, not sixtyfold, and the decodes and
+the LU do not move at all. Allocation is the clearer gain: the colour loop's `x.clone()` (11.6 KB per
+colour) and the fresh residual array per evaluation (11.6 KB) are both gone, along with the
+`ArrayList` every residual built to return its states, which is **16% of the cold island's allocation
+and 10% of quiet 11324's**.
+
+- Verified EXACT (bitwise, substep counts included) against `build/probe/reference-wp6a` on all four
+  fixtures, twice.
+- `RetainedSolverTest.sharingTheIslandSolverWithTheModulePlannerNeverCostsMoreWork` measured its
+  "sharing never costs more work" invariant on `residualEvaluations`, which no longer spans a
+  Jacobian build. It now measures `stateCalls`, the node decodes, which span both halves.
+- Gate: 795 JUnit tests, 14 GameTests, green.

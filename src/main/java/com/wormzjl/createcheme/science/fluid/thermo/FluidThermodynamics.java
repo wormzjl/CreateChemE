@@ -136,7 +136,10 @@ public final class FluidThermodynamics {
     }
     private State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,
                         TranslatedPengRobinson.Workspace terms,Prepared prepared) {
-        SolverDiagnostics.count(SolverDiagnostics.stateCalls);
+        if(SolverDiagnostics.ENABLED) {
+            SolverDiagnostics.stateCalls.increment();
+            if(SolverDiagnostics.inJacobian())SolverDiagnostics.stateCallsInJacobian.increment();
+        }
         int n=hydrocarbon.componentCount();
         if(liquid.length!=n||vapor.length!=n||!Double.isFinite(t)||!Double.isFinite(p)||t<273.16||t>600||p<100||p>2e6)throw new IllegalArgumentException("Fluid state outside domain");
         double nl=sum(liquid),nv=sum(vapor),volume=0,h=0,mass=0,gasVolume=0,vl=0,vw=0;
