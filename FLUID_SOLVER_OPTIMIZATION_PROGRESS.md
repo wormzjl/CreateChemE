@@ -1137,9 +1137,17 @@ every neighbour is seeded before any is recomputed.
 
 The sparsity pattern, the column ordering, the RCM ordering and the numeric matrix are untouched -
 `differentiateEntries` fills exactly `columnRows()`'s entries in exactly its order and hands them to
-the same factorization step - so B2's workspace and fork-family storage keys stay valid. Verified:
-the `jacobianNonzeros`, `luStorages`, `luOrderings` and `transportOrderings` counters are identical
-on all four fixtures.
+the same factorization step - so B2's workspace and fork-family storage keys stay valid. Verified by
+comparing every counter on all four fixtures: `jacobianNonzeros`, `jacobianBuilds`,
+`luFactorizations`, `luSolves`, `luChecks`, `luOrderings`, `luStorages`, `transportFactorizations`,
+`transportOrderings`, `transportSolves`, `implicitSolves`, `activeSetPasses`, `newtonSolves`,
+`newtonIterations`, `newtonBacktracks`, `reconstructCalls`, `companionFilters`/`companionSolves` and
+the accepted/rejected substep counts are **identical**. Exactly two counters move:
+`residualEvaluations`, because the sweep no longer goes through one, and `temperatureTermsCalls`, by
+**precisely the number of decodes saved** (-1230 on the cold island against -1230 decodes, -2200 on
+the chain against -2200). Both are the same event: the coloured sweep had to decode each node once
+more per build to restore it to its base temperature after its own temperature column, and that
+restore also re-prepared the temperature; the block sweep keeps the base prepared bundle instead.
 
 A perturbed node that leaves the property domain hands the whole build back to the coloured sweep,
 which has the bounded one-sided stencil for it (`jacobianBlockFallbacks`). **It fired 0 times on all
