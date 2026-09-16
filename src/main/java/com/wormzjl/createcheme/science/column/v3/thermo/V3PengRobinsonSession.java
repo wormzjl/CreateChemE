@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
+import com.wormzjl.createcheme.science.thermo.PengRobinsonKernel;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,13 +13,38 @@ import java.util.Objects;
  */
 final class V3PengRobinsonSession {
     private final V3PropertyPackage propertyPackage;
-    private final V3PengRobinsonKernel kernel;
+    private final PengRobinsonKernel kernel;
     private final V3ComponentBasis componentBasis;
 
     private V3PengRobinsonSession(V3PropertyPackage propertyPackage) {
         this.propertyPackage = Objects.requireNonNull(propertyPackage, "propertyPackage");
-        this.kernel = new V3PengRobinsonKernel(propertyPackage);
+        this.kernel = kernelFor(propertyPackage);
         this.componentBasis = propertyPackage.componentBasis();
+    }
+
+    /**
+     * Reads a registered package's critical constants, interactions and validity domain into the shared
+     * {@link PengRobinsonKernel}. The kernel used to take {@code V3PropertyPackage} directly; it now lives in
+     * {@code science.thermo} so the fluid network evaluates on the same arithmetic, and this is the only place
+     * that knows how a V3 package presents that data. Every value handed over is the one the kernel read
+     * through the interface before, so the arithmetic is unchanged.
+     */
+    static PengRobinsonKernel kernelFor(V3PropertyPackage propertyPackage) {
+        Objects.requireNonNull(propertyPackage, "propertyPackage");
+        int count = propertyPackage.componentBasis().componentCount();
+        double[] criticalTemperatures = new double[count];
+        double[] criticalPressures = new double[count];
+        double[] acentricFactors = new double[count];
+        for (int component = 0; component < count; component++) {
+            V3PropertyComponent properties = propertyPackage.component(component);
+            criticalTemperatures[component] = properties.criticalTemperatureKelvin();
+            criticalPressures[component] = properties.criticalPressurePascal();
+            acentricFactors[component] = properties.acentricFactor();
+        }
+        return new PengRobinsonKernel(criticalTemperatures, criticalPressures, acentricFactors,
+                propertyPackage.binaryInteractions(),
+                propertyPackage.minimumTemperatureKelvin(), propertyPackage.maximumTemperatureKelvin(),
+                propertyPackage.minimumPressurePascal(), propertyPackage.maximumPressurePascal());
     }
 
     static V3PengRobinsonSession registeredPackage(String packageId) {
@@ -61,7 +87,7 @@ final class V3PengRobinsonSession {
             double temperatureKelvin, double pressurePascal, double[] composition, V3Phase phase, Session session) {
         try {
             kernel.evaluate(temperatureKelvin, pressurePascal, composition,
-                    phase == V3Phase.LIQUID ? V3PengRobinsonKernel.Root.LIQUID : V3PengRobinsonKernel.Root.VAPOR,
+                    phase == V3Phase.LIQUID ? PengRobinsonKernel.Root.LIQUID : PengRobinsonKernel.Root.VAPOR,
                     session.workspace, session.evaluation(phase));
         } catch (IllegalArgumentException exception) {
             throw new V3ThermoException(V3ThermoException.Code.DOMAIN, phase,
@@ -77,7 +103,7 @@ final class V3PengRobinsonSession {
             double temperatureKelvin, double pressurePascal, double[] composition, V3Phase phase, Session session) {
         try {
             kernel.evaluateDerivatives(temperatureKelvin, pressurePascal, composition,
-                    phase == V3Phase.LIQUID ? V3PengRobinsonKernel.Root.LIQUID : V3PengRobinsonKernel.Root.VAPOR,
+                    phase == V3Phase.LIQUID ? PengRobinsonKernel.Root.LIQUID : PengRobinsonKernel.Root.VAPOR,
                     session.workspace, session.derivatives(phase));
         } catch (IllegalArgumentException exception) {
             throw new V3ThermoException(V3ThermoException.Code.DOMAIN, phase,
@@ -115,26 +141,26 @@ final class V3PengRobinsonSession {
     }
 
     static final class Session {
-        private final V3PengRobinsonKernel.Workspace workspace;
-        private final V3PengRobinsonKernel.Evaluation liquid;
-        private final V3PengRobinsonKernel.Evaluation vapor;
-        private V3PengRobinsonKernel.Derivatives liquidDerivatives;
-        private V3PengRobinsonKernel.Derivatives vaporDerivatives;
-        private final V3PengRobinsonKernel kernel;
+        private final PengRobinsonKernel.Workspace workspace;
+        private final PengRobinsonKernel.Evaluation liquid;
+        private final PengRobinsonKernel.Evaluation vapor;
+        private PengRobinsonKernel.Derivatives liquidDerivatives;
+        private PengRobinsonKernel.Derivatives vaporDerivatives;
+        private final PengRobinsonKernel kernel;
 
-        private Session(V3PengRobinsonKernel kernel) {
+        private Session(PengRobinsonKernel kernel) {
             this.kernel = kernel;
             workspace = kernel.newWorkspace();
             liquid = kernel.newEvaluation();
             vapor = kernel.newEvaluation();
         }
 
-        private V3PengRobinsonKernel.Evaluation evaluation(V3Phase phase) {
+        private PengRobinsonKernel.Evaluation evaluation(V3Phase phase) {
             return phase == V3Phase.LIQUID ? liquid : vapor;
         }
 
         /** Allocated on first use: a solve that never asks for derivatives never pays for their storage. */
-        private V3PengRobinsonKernel.Derivatives derivatives(V3Phase phase) {
+        private PengRobinsonKernel.Derivatives derivatives(V3Phase phase) {
             if (phase == V3Phase.LIQUID) {
                 if (liquidDerivatives == null) liquidDerivatives = kernel.newDerivatives();
                 return liquidDerivatives;
@@ -143,7 +169,7 @@ final class V3PengRobinsonSession {
             return vaporDerivatives;
         }
 
-        V3PengRobinsonKernel.Derivatives derivativesOf(V3Phase phase) {
+        PengRobinsonKernel.Derivatives derivativesOf(V3Phase phase) {
             return derivatives(phase);
         }
 

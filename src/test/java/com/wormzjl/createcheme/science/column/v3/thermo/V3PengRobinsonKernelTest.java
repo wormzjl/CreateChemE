@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.wormzjl.createcheme.science.thermo.PengRobinsonKernel;
 import com.wormzjl.createcheme.science.thermo.PengRobinson78;
 import com.wormzjl.createcheme.science.thermo.PhaseProperties;
 import com.wormzjl.createcheme.science.thermo.PhaseRoot;
@@ -14,11 +15,11 @@ class V3PengRobinsonKernelTest {
     @Test
     void rankOneKernelMatchesIndependentClassicalPrReference() {
         V3Cdu17TiaJuanaPackage propertyPackage = V3Cdu17TiaJuanaPackage.INSTANCE;
-        V3PengRobinsonKernel kernel = new V3PengRobinsonKernel(propertyPackage);
+        PengRobinsonKernel kernel = V3PengRobinsonSession.kernelFor(propertyPackage);
         double[] feed = propertyPackage.crudeFeed(V3Cdu17TiaJuanaPackage.ASSAY_ID).moleFractions();
-        V3PengRobinsonKernel.Workspace workspace = kernel.newWorkspace();
-        V3PengRobinsonKernel.Evaluation liquid = kernel.newEvaluation();
-        V3PengRobinsonKernel.Evaluation vapor = kernel.newEvaluation();
+        PengRobinsonKernel.Workspace workspace = kernel.newWorkspace();
+        PengRobinsonKernel.Evaluation liquid = kernel.newEvaluation();
+        PengRobinsonKernel.Evaluation vapor = kernel.newEvaluation();
         kernel.evaluatePair(500.0, 250_000.0, feed, feed, workspace, liquid, vapor);
 
         PengRobinson78 reference = PengRobinson78.withoutBinaryInteractions(java.util.stream.IntStream
@@ -41,14 +42,14 @@ class V3PengRobinsonKernelTest {
 
     @Test
     void sharedPairWorkspaceDoesNotNeedANewEosObjectPerPhase() {
-        V3PengRobinsonKernel kernel = new V3PengRobinsonKernel(V3Cdu17TiaJuanaPackage.INSTANCE);
+        PengRobinsonKernel kernel = V3PengRobinsonSession.kernelFor(V3Cdu17TiaJuanaPackage.INSTANCE);
         double[] composition = new double[16];
         composition[1] = 0.2;
         composition[5] = 0.3;
         composition[10] = 0.5;
-        V3PengRobinsonKernel.Workspace workspace = kernel.newWorkspace();
-        V3PengRobinsonKernel.Evaluation liquid = kernel.newEvaluation();
-        V3PengRobinsonKernel.Evaluation vapor = kernel.newEvaluation();
+        PengRobinsonKernel.Workspace workspace = kernel.newWorkspace();
+        PengRobinsonKernel.Evaluation liquid = kernel.newEvaluation();
+        PengRobinsonKernel.Evaluation vapor = kernel.newEvaluation();
 
         kernel.evaluatePair(450.0, 300_000.0, composition, composition, workspace, liquid, vapor);
         assertTrue(Double.isFinite(liquid.residualEnthalpyJoulesPerMol()));
@@ -57,19 +58,19 @@ class V3PengRobinsonKernelTest {
 
     @Test
     void packageEnvelopeBoundsBothWilsonAndRigorousPaths() {
-        V3PengRobinsonKernel kernel = new V3PengRobinsonKernel(V3Cdu17TiaJuanaPackage.INSTANCE);
+        PengRobinsonKernel kernel = V3PengRobinsonSession.kernelFor(V3Cdu17TiaJuanaPackage.INSTANCE);
         assertThrows(IllegalArgumentException.class, () -> kernel.wilsonK(901.0, 250_000.0, new double[16]));
         assertThrows(IllegalArgumentException.class, () -> kernel.wilsonK(500.0, 2_100_000.0, new double[16]));
     }
 
     @Test
     void evaluationDoesNotExposeMutableFugacityWorkspace() {
-        V3PengRobinsonKernel kernel = new V3PengRobinsonKernel(V3Cdu17TiaJuanaPackage.INSTANCE);
+        PengRobinsonKernel kernel = V3PengRobinsonSession.kernelFor(V3Cdu17TiaJuanaPackage.INSTANCE);
         double[] composition = new double[16];
         composition[1] = 0.4;
         composition[10] = 0.6;
-        V3PengRobinsonKernel.Evaluation evaluation = kernel.newEvaluation();
-        kernel.evaluate(450.0, 300_000.0, composition, V3PengRobinsonKernel.Root.LIQUID,
+        PengRobinsonKernel.Evaluation evaluation = kernel.newEvaluation();
+        kernel.evaluate(450.0, 300_000.0, composition, PengRobinsonKernel.Root.LIQUID,
                 kernel.newWorkspace(), evaluation);
 
         double original = evaluation.logFugacityCoefficient(1);

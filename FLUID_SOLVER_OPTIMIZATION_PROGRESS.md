@@ -812,4 +812,50 @@ Nothing to replace with a list or an array.
 - Verified EXACT (bitwise, substep counts included) against `build/probe/reference-wp5` on all four
   fixtures, twice, in two separate runs.
 - Gate: 793 JUnit tests, 14 GameTests, green.
-- Commit `<step0>`.
+- Commit `dff77da`.
+
+### WP6a-1 - promote the column's Peng-Robinson kernel to the shared thermo package
+
+`science/column/v3/thermo/V3PengRobinsonKernel` (package-private) becomes
+`science/thermo/PengRobinsonKernel` (public). Every expression is the one the column has been
+running, in the same order; the only change is where the critical constants come from. The kernel
+took a `V3PropertyPackage` and read `component(i).criticalTemperatureKelvin()` inside
+`prepareTemperature`, `evaluateDerivatives` and `wilsonK`; it now reads three arrays the constructor
+filled with exactly those doubles, so it no longer depends on the column and the fluid network can
+construct one. `V3PengRobinsonSession.kernelFor(V3PropertyPackage)` is the single place that knows
+how a V3 package presents that data, and `V3PengRobinsonSession`/`V3PengRobinsonThermo` remain the
+column's façade unchanged in behaviour.
+
+Two refactors inside the promoted class, both order-preserving. The `d^2 a_mix/dT^2` block of
+`evaluateDerivatives` - the pure-component root derivatives, the interaction-weighted cross sum and
+the mixture second derivative - became `secondTemperatureDerivative(T, workspace, rootDt, rootDt2,
+crossDt)`, called from exactly where it used to sit, because step 2's volumetric block needs that
+scalar and a second expression for it would be a second thing to keep correct. The BIP matrix is
+deep-copied rather than adopted, which a public constructor has to do; V3's package already returned
+a fresh array per call, so nothing it does changes.
+
+Three accessors were added for step 2 and none of them compute anything: `coVolume(int)`,
+`Workspace.compositionView()`/`attractionRowsView()`, `Evaluation.daMixDt()` and the no-copy views of
+the fugacity and derivative vectors.
+
+Tests. The root-selection half of `V3PengRobinsonRootPrecisionTest` moved with the kernel to
+`science/thermo/PengRobinsonKernelRootPrecisionTest` (the ninety-digit `BigDecimal` oracle, the
+Cardano-repair regressions, the coalescence-band branch policy), unchanged but for the type name. Its
+one remaining case drives `V3FeedFlash`, which is package-private to the column, so it stayed behind
+as `V3PengRobinsonRootPrecisionTest`. `V3PengRobinsonKernelTest` and `V3PengRobinsonDerivativesTest`
+stayed in the column's test package as well, and now exercise the promoted class through
+`kernelFor`: both are built on `V3Cdu17TiaJuanaPackage`, a 133-line package-private test fixture that
+three other V3 tests also use and that implements the package-private `V3PropertyPackage`, so moving
+them would have meant copying that fixture and that interface into `science.thermo`. Keeping them
+where their data lives is also the stronger evidence for the bitwise claim: they are the column's own
+kernel tests, still passing against the promoted class.
+
+- V3 is bitwise unchanged: 483 tests across 86 `science.column.v3` classes pass, including
+  `V3PengRobinsonKernelTest`, `V3PengRobinsonDerivativesTest`, `V3PengRobinsonThermoTest`,
+  `V3PengRobinsonRootPrecisionTest`, the pinned-state suites (`V3TraceFloorSupportTest`,
+  `V3ConvergenceClosureTest`, `V3PumparoundCalculatorTest`, `V3SideDrawContractTest`,
+  `V3SteamFeedContractTest`, `V3FlashTruncationColumnTest`) and the Holland benchmark case.
+- Fluid trajectory: EXACT against `build/probe/reference-wp5` on all four fixtures, trivially - this
+  commit touches no fluid code - and run anyway.
+- Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `<step1>`.

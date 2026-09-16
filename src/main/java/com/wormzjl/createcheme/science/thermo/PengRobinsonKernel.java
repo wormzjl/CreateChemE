@@ -1,14 +1,20 @@
-package com.wormzjl.createcheme.science.column.v3.thermo;
+package com.wormzjl.createcheme.science.thermo;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Allocation-free PR78 hydrocarbon kernel for a V3 property package. One {@link Workspace} belongs to one solve;
- * liquid and vapor evaluations at a common temperature share its temperature-dependent pure-component arithmetic.
+ * Allocation-free PR78 hydrocarbon kernel. One {@link Workspace} belongs to one solve; liquid and vapor
+ * evaluations at a common temperature share its temperature-dependent pure-component arithmetic.
+ *
+ * <p>Promoted unchanged from the V3 column's package so the fluid network can evaluate its phases on the
+ * same arithmetic. The only difference from the column-private original is where the critical constants
+ * come from: they are read into arrays by the constructor instead of through a property-package interface
+ * on every use, so the class no longer depends on the column, and every expression below is the one the
+ * column has been running.</p>
  */
-final class V3PengRobinsonKernel {
-    static final double GAS_CONSTANT = 8.31446261815324;
+public final class PengRobinsonKernel {
+    public static final double GAS_CONSTANT = 8.31446261815324;
     private static final double SQRT_TWO = Math.sqrt(2.0);
     private static final double ROOT_EPSILON = 1.0e-12;
     private static final double COALESCENCE_DISCRIMINANT_TOLERANCE = 1.0e-16;
@@ -24,8 +30,10 @@ final class V3PengRobinsonKernel {
      */
     private static final double COALESCENCE_SLOPE_TOLERANCE = 1.0e-10;
 
-    private final V3PropertyPackage propertyPackage;
     private final int count;
+    private final double[] criticalTemperatures;
+    private final double[] criticalPressures;
+    private final double[] acentricFactors;
     private final double[] criticalA;
     private final double[] coVolumes;
     private final double[] kappas;
@@ -36,31 +44,48 @@ final class V3PengRobinsonKernel {
     private final double minimumPressurePascal;
     private final double maximumPressurePascal;
 
-    V3PengRobinsonKernel(V3PropertyPackage propertyPackage) {
-        this.propertyPackage = Objects.requireNonNull(propertyPackage, "propertyPackage");
-        this.minimumTemperatureKelvin = propertyPackage.minimumTemperatureKelvin();
-        this.maximumTemperatureKelvin = propertyPackage.maximumTemperatureKelvin();
-        this.minimumPressurePascal = propertyPackage.minimumPressurePascal();
-        this.maximumPressurePascal = propertyPackage.maximumPressurePascal();
-        this.count = propertyPackage.componentBasis().componentCount();
+    /**
+     * @param criticalTemperaturesKelvin per component, in the caller's basis order
+     * @param binaryInteractions square, symmetric, zero diagonal; copied
+     */
+    public PengRobinsonKernel(
+            double[] criticalTemperaturesKelvin, double[] criticalPressuresPascal, double[] acentricFactors,
+            double[][] binaryInteractions,
+            double minimumTemperatureKelvin, double maximumTemperatureKelvin,
+            double minimumPressurePascal, double maximumPressurePascal) {
+        Objects.requireNonNull(criticalTemperaturesKelvin, "criticalTemperaturesKelvin");
+        Objects.requireNonNull(criticalPressuresPascal, "criticalPressuresPascal");
+        Objects.requireNonNull(acentricFactors, "acentricFactors");
+        Objects.requireNonNull(binaryInteractions, "binaryInteractions");
+        this.minimumTemperatureKelvin = minimumTemperatureKelvin;
+        this.maximumTemperatureKelvin = maximumTemperatureKelvin;
+        this.minimumPressurePascal = minimumPressurePascal;
+        this.maximumPressurePascal = maximumPressurePascal;
+        this.count = criticalTemperaturesKelvin.length;
+        if (criticalPressuresPascal.length != count || acentricFactors.length != count) {
+            throw new IllegalArgumentException("Invalid critical-property dimension");
+        }
+        this.criticalTemperatures = criticalTemperaturesKelvin.clone();
+        this.criticalPressures = criticalPressuresPascal.clone();
+        this.acentricFactors = acentricFactors.clone();
         this.criticalA = new double[count];
         this.coVolumes = new double[count];
         this.kappas = new double[count];
-        this.binaryInteractions = propertyPackage.binaryInteractions();
-        if (binaryInteractions.length != count) throw new IllegalArgumentException("Invalid BIP matrix dimension");
+        this.binaryInteractions = new double[binaryInteractions.length][];
+        for (int i = 0; i < binaryInteractions.length; i++) this.binaryInteractions[i] = binaryInteractions[i].clone();
+        if (this.binaryInteractions.length != count) throw new IllegalArgumentException("Invalid BIP matrix dimension");
         boolean allZero = true;
         for (int i = 0; i < count; i++) {
-            if (binaryInteractions[i].length != count) throw new IllegalArgumentException("Invalid BIP matrix row");
-            V3PropertyComponent component = propertyPackage.component(i);
+            if (this.binaryInteractions[i].length != count) throw new IllegalArgumentException("Invalid BIP matrix row");
             criticalA[i] = 0.45724 * GAS_CONSTANT * GAS_CONSTANT
-                    * component.criticalTemperatureKelvin() * component.criticalTemperatureKelvin()
-                    / component.criticalPressurePascal();
-            coVolumes[i] = 0.07780 * GAS_CONSTANT * component.criticalTemperatureKelvin()
-                    / component.criticalPressurePascal();
-            kappas[i] = kappa(component.acentricFactor());
+                    * criticalTemperatures[i] * criticalTemperatures[i]
+                    / criticalPressures[i];
+            coVolumes[i] = 0.07780 * GAS_CONSTANT * criticalTemperatures[i]
+                    / criticalPressures[i];
+            kappas[i] = kappa(this.acentricFactors[i]);
             for (int j = 0; j < count; j++) {
-                double value = binaryInteractions[i][j];
-                if (!Double.isFinite(value) || Math.abs(value - binaryInteractions[j][i]) > 1.0e-14
+                double value = this.binaryInteractions[i][j];
+                if (!Double.isFinite(value) || Math.abs(value - this.binaryInteractions[j][i]) > 1.0e-14
                         || (i == j && Math.abs(value) > 1.0e-14)) {
                     throw new IllegalArgumentException("BIP matrix must be finite, symmetric, and zero diagonal");
                 }
@@ -70,27 +95,28 @@ final class V3PengRobinsonKernel {
         this.rankOneMixing = allZero;
     }
 
-    int componentCount() { return count; }
-    boolean usesRankOneMixing() { return rankOneMixing; }
-    Workspace newWorkspace() { return new Workspace(count); }
-    Evaluation newEvaluation() { return new Evaluation(count); }
-    Derivatives newDerivatives() { return new Derivatives(count); }
+    public int componentCount() { return count; }
+    public boolean usesRankOneMixing() { return rankOneMixing; }
+    /** {@code 0.07780 R Tc / Pc} for one component; the co-volume the mixture rule sums. */
+    public double coVolume(int component) { return coVolumes[component]; }
+    public Workspace newWorkspace() { return new Workspace(count); }
+    public Evaluation newEvaluation() { return new Evaluation(count); }
+    public Derivatives newDerivatives() { return new Derivatives(count); }
 
     /** Wilson K initialisation only; accepted states use rigorous fugacity refreshes. */
-    void wilsonK(double temperatureKelvin, double pressurePascal, double[] output) {
+    public void wilsonK(double temperatureKelvin, double pressurePascal, double[] output) {
         requirePackageState(temperatureKelvin, pressurePascal);
         requireLength(output, "output");
         for (int i = 0; i < count; i++) {
-            V3PropertyComponent component = propertyPackage.component(i);
             output[i] = Math.exp(Math.clamp(
-                    Math.log(component.criticalPressurePascal() / pressurePascal)
-                            + 5.373 * (1.0 + component.acentricFactor())
-                            * (1.0 - component.criticalTemperatureKelvin() / temperatureKelvin),
+                    Math.log(criticalPressures[i] / pressurePascal)
+                            + 5.373 * (1.0 + acentricFactors[i])
+                            * (1.0 - criticalTemperatures[i] / temperatureKelvin),
                     -40.0, 40.0));
         }
     }
 
-    void evaluate(
+    public void evaluate(
             double temperatureKelvin, double pressurePascal, double[] composition, Root root,
             Workspace workspace, Evaluation output) {
         prepareTemperature(temperatureKelvin, workspace);
@@ -98,7 +124,7 @@ final class V3PengRobinsonKernel {
     }
 
     /** Shares temperature-dependent pure-component values between two phase evaluations. */
-    void evaluatePair(
+    public void evaluatePair(
             double temperatureKelvin, double pressurePascal, double[] liquidComposition, double[] vaporComposition,
             Workspace workspace, Evaluation liquidOutput, Evaluation vaporOutput) {
         prepareTemperature(temperatureKelvin, workspace);
@@ -106,7 +132,7 @@ final class V3PengRobinsonKernel {
         evaluatePrepared(temperatureKelvin, pressurePascal, vaporComposition, Root.VAPOR, workspace, vaporOutput);
     }
 
-    void prepareTemperature(double temperatureKelvin, Workspace workspace) {
+    public void prepareTemperature(double temperatureKelvin, Workspace workspace) {
         Objects.requireNonNull(workspace, "workspace");
         if (!Double.isFinite(temperatureKelvin) || temperatureKelvin < minimumTemperatureKelvin
                 || temperatureKelvin > maximumTemperatureKelvin) {
@@ -114,12 +140,11 @@ final class V3PengRobinsonKernel {
         }
         if (workspace.preparedTemperature == Double.doubleToLongBits(temperatureKelvin)) return;
         for (int i = 0; i < count; i++) {
-            V3PropertyComponent component = propertyPackage.component(i);
-            double sqrtTr = Math.sqrt(temperatureKelvin / component.criticalTemperatureKelvin());
+            double sqrtTr = Math.sqrt(temperatureKelvin / criticalTemperatures[i]);
             double alphaTerm = 1.0 + kappas[i] * (1.0 - sqrtTr);
             workspace.a[i] = criticalA[i] * alphaTerm * alphaTerm;
             workspace.daDt[i] = -criticalA[i] * kappas[i] * alphaTerm
-                    / Math.sqrt(temperatureKelvin * component.criticalTemperatureKelvin());
+                    / Math.sqrt(temperatureKelvin * criticalTemperatures[i]);
             workspace.sqrtA[i] = Math.sqrt(workspace.a[i]);
         }
         workspace.preparedTemperature = Double.doubleToLongBits(temperatureKelvin);
@@ -209,7 +234,7 @@ final class V3PengRobinsonKernel {
      * and its mixture sum reproducing {@code H^R} is a genuine check of the temperature derivative against the
      * closed-form residual enthalpy, because the two are computed from different expressions.</p>
      */
-    void evaluateDerivatives(
+    public void evaluateDerivatives(
             double temperatureKelvin, double pressurePascal, double[] composition, Root root,
             Workspace workspace, Derivatives output) {
         Objects.requireNonNull(output, "output");
@@ -236,33 +261,8 @@ final class V3PengRobinsonKernel {
         double upper = z + (1.0 - SQRT_TWO) * reducedB;
         double logRatio = Math.log(lower / upper);
         double attraction = reducedA / (2.0 * SQRT_TWO * Math.max(reducedB, 1.0e-300));
-        // d(sqrt(a_i))/dT and its own derivative, from which every mixture temperature derivative follows.
-        for (int i = 0; i < count; i++) {
-            V3PropertyComponent component = propertyPackage.component(i);
-            double secondADt = criticalA[i] * kappas[i] * (1.0 + kappas[i])
-                    / (2.0 * Math.sqrt(temperatureKelvin * temperatureKelvin * temperatureKelvin
-                    * component.criticalTemperatureKelvin()));
-            output.rootDt[i] = workspace.daDt[i] / (2.0 * workspace.sqrtA[i]);
-            output.rootDt2[i] = secondADt / (2.0 * workspace.sqrtA[i])
-                    - workspace.daDt[i] * workspace.daDt[i]
-                    / (4.0 * workspace.sqrtA[i] * workspace.sqrtA[i] * workspace.sqrtA[i]);
-        }
-        if (rankOneMixing) {
-            double interactionSum = 0.0;
-            for (int i = 0; i < count; i++) interactionSum += x[i] * output.rootDt[i];
-            for (int i = 0; i < count; i++) output.crossDt[i] = interactionSum;
-        } else {
-            for (int i = 0; i < count; i++) {
-                double sum = 0.0;
-                for (int j = 0; j < count; j++) sum += (1.0 - binaryInteractions[i][j]) * x[j] * output.rootDt[j];
-                output.crossDt[i] = sum;
-            }
-        }
-        double secondDaDt = 0.0;
-        for (int i = 0; i < count; i++) {
-            secondDaDt += 2.0 * x[i] * (output.rootDt2[i] * (workspace.sumA[i] / workspace.sqrtA[i])
-                    + output.rootDt[i] * output.crossDt[i]);
-        }
+        double secondDaDt = secondTemperatureDerivative(
+                temperatureKelvin, workspace, output.rootDt, output.rootDt2, output.crossDt);
         double reducedADt = reducedA * (daDt / a - 2.0 / temperatureKelvin);
         double reducedBDt = -reducedB / temperatureKelvin;
         double zDt = zByReducedA * reducedADt + zByReducedB * reducedBDt;
@@ -310,8 +310,49 @@ final class V3PengRobinsonKernel {
         }
     }
 
-    /** Package-local precision qualifier; the EOS owns phase selection and its coalescence policy. */
-    static RootSelection selectRoot(double reducedA, double reducedB, Root root) {
+    /**
+     * {@code d^2 a_mix / dT^2} of the mixture the preceding evaluation left in {@code workspace}, filling the
+     * three caller-owned scratch vectors it needs on the way: {@code d sqrt(a_i)/dT}, its own derivative, and
+     * the interaction-weighted composition sum {@code sum_j (1-k_ij) x_j d sqrt(a_j)/dT}.
+     *
+     * <p>One expression, two callers: {@link #evaluateDerivatives} needs the two root vectors and the cross
+     * sum again for {@code d ln phi_i/dT}, and the network's volumetric block needs only the scalar. Splitting
+     * it would give the same number two arithmetic paths.</p>
+     */
+    public double secondTemperatureDerivative(
+            double temperatureKelvin, Workspace workspace, double[] rootDt, double[] rootDt2, double[] crossDt) {
+        double[] x = workspace.composition;
+        // d(sqrt(a_i))/dT and its own derivative, from which every mixture temperature derivative follows.
+        for (int i = 0; i < count; i++) {
+            double secondADt = criticalA[i] * kappas[i] * (1.0 + kappas[i])
+                    / (2.0 * Math.sqrt(temperatureKelvin * temperatureKelvin * temperatureKelvin
+                    * criticalTemperatures[i]));
+            rootDt[i] = workspace.daDt[i] / (2.0 * workspace.sqrtA[i]);
+            rootDt2[i] = secondADt / (2.0 * workspace.sqrtA[i])
+                    - workspace.daDt[i] * workspace.daDt[i]
+                    / (4.0 * workspace.sqrtA[i] * workspace.sqrtA[i] * workspace.sqrtA[i]);
+        }
+        if (rankOneMixing) {
+            double interactionSum = 0.0;
+            for (int i = 0; i < count; i++) interactionSum += x[i] * rootDt[i];
+            for (int i = 0; i < count; i++) crossDt[i] = interactionSum;
+        } else {
+            for (int i = 0; i < count; i++) {
+                double sum = 0.0;
+                for (int j = 0; j < count; j++) sum += (1.0 - binaryInteractions[i][j]) * x[j] * rootDt[j];
+                crossDt[i] = sum;
+            }
+        }
+        double secondDaDt = 0.0;
+        for (int i = 0; i < count; i++) {
+            secondDaDt += 2.0 * x[i] * (rootDt2[i] * (workspace.sumA[i] / workspace.sqrtA[i])
+                    + rootDt[i] * crossDt[i]);
+        }
+        return secondDaDt;
+    }
+
+    /** Precision qualifier; the EOS owns phase selection and its coalescence policy. */
+    public static RootSelection selectRoot(double reducedA, double reducedB, Root root) {
         Objects.requireNonNull(root, "root");
         if (!Double.isFinite(reducedA) || reducedA < 0.0 || !Double.isFinite(reducedB) || reducedB < 0.0) {
             throw new IllegalArgumentException("PR reduced parameters must be finite and nonnegative");
@@ -480,9 +521,9 @@ final class V3PengRobinsonKernel {
                 : 0.379642 + 1.48503 * omega - 0.164423 * omega * omega + 0.016666 * omega * omega * omega;
     }
 
-    enum Root { LIQUID, VAPOR }
+    public enum Root { LIQUID, VAPOR }
 
-    static final class Workspace {
+    public static final class Workspace {
         private final double[] composition;
         private final double[] a;
         private final double[] daDt;
@@ -502,14 +543,18 @@ final class V3PengRobinsonKernel {
             sumA = new double[count];
         }
 
-        void clear() {
+        /** The normalized composition of the last evaluation. The caller must not mutate it. */
+        public double[] compositionView() { return composition; }
+        /** {@code S_i = sum_j x_j a_ij} of the last evaluation. The caller must not mutate it. */
+        public double[] attractionRowsView() { return sumA; }
+        public void clear() {
             preparedTemperature = Long.MIN_VALUE;
             Arrays.fill(composition, 0.0);
         }
     }
 
     /** Caller-owned mutable output; public V3 results defensively copy the fugacity coefficients. */
-    static final class Evaluation {
+    public static final class Evaluation {
         private final double[] logFugacityCoefficients;
         private double compressibility;
         private double residualEnthalpyJoulesPerMol;
@@ -523,14 +568,18 @@ final class V3PengRobinsonKernel {
             logFugacityCoefficients = new double[count];
         }
 
-        double[] logFugacityCoefficients() { return logFugacityCoefficients.clone(); }
-        double logFugacityCoefficient(int component) { return logFugacityCoefficients[component]; }
-        double compressibility() { return compressibility; }
-        double residualEnthalpyJoulesPerMol() { return residualEnthalpyJoulesPerMol; }
-        double aMix() { return aMix; }
-        double bMix() { return bMix; }
-        int physicalRootCount() { return physicalRootCount; }
-        double rootSeparation() { return rootSeparation; }
+        public double[] logFugacityCoefficients() { return logFugacityCoefficients.clone(); }
+        /** The coefficients themselves, for a caller that copies them itself. Must not be mutated. */
+        public double[] logFugacityCoefficientsView() { return logFugacityCoefficients; }
+        public double logFugacityCoefficient(int component) { return logFugacityCoefficients[component]; }
+        public double compressibility() { return compressibility; }
+        public double residualEnthalpyJoulesPerMol() { return residualEnthalpyJoulesPerMol; }
+        public double aMix() { return aMix; }
+        public double bMix() { return bMix; }
+        /** {@code d a_mix / dT}, recorded by the evaluation that produced {@link #aMix()}. */
+        public double daMixDt() { return daMixDt; }
+        public int physicalRootCount() { return physicalRootCount; }
+        public double rootSeparation() { return rootSeparation; }
     }
 
     /**
@@ -540,7 +589,7 @@ final class V3PengRobinsonKernel {
      * {@code -R T^2 (d ln phi_i / dT)}, which is already here, and a second copy of the same numbers under a
      * different name is a second thing to keep correct.</p>
      */
-    static final class Derivatives {
+    public static final class Derivatives {
         private final Evaluation evaluation;
         private final double[] dLogPhiDt;
         private final double[][] dLogPhiDn;
@@ -564,16 +613,20 @@ final class V3PengRobinsonKernel {
             attractionRatio = new double[count];
         }
 
-        Evaluation evaluation() { return evaluation; }
-        double[] dLogPhiDt() { return dLogPhiDt.clone(); }
-        double[][] dLogPhiDn() {
+        public Evaluation evaluation() { return evaluation; }
+        public double[] dLogPhiDt() { return dLogPhiDt.clone(); }
+        public double[][] dLogPhiDn() {
             double[][] copy = new double[dLogPhiDn.length][];
             for (int row = 0; row < copy.length; row++) copy[row] = dLogPhiDn[row].clone();
             return copy;
         }
-        double[] partialMolarResidualEnthalpy() { return partialMolarResidualEnthalpy.clone(); }
-        double dResidualEnthalpyDt() { return dResidualEnthalpyDt; }
+        /** The row itself, for a caller assembling a Jacobian block. Must not be mutated. */
+        public double[] dLogPhiDnRowView(int component) { return dLogPhiDn[component]; }
+        public double[] dLogPhiDtView() { return dLogPhiDt; }
+        public double[] partialMolarResidualEnthalpy() { return partialMolarResidualEnthalpy.clone(); }
+        public double[] partialMolarResidualEnthalpyView() { return partialMolarResidualEnthalpy; }
+        public double dResidualEnthalpyDt() { return dResidualEnthalpyDt; }
     }
 
-    record RootSelection(double selectedCompressibility, int physicalRootCount, double rootSeparation) {}
+    public record RootSelection(double selectedCompressibility, int physicalRootCount, double rootSeparation) {}
 }

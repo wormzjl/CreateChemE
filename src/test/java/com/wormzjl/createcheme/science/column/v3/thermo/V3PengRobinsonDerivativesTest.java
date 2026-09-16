@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
+import com.wormzjl.createcheme.science.thermo.PengRobinsonKernel;
 import java.util.List;
 import java.util.Random;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -194,16 +195,16 @@ class V3PengRobinsonDerivativesTest {
      */
     @Test
     void rankOneMixingDerivativesMatchTheGeneralQuadraticPath() {
-        V3PengRobinsonKernel rankOne = new V3PengRobinsonKernel(V3Cdu17TiaJuanaPackage.INSTANCE);
-        V3PengRobinsonKernel general = new V3PengRobinsonKernel(new BarelyInteractingPackage());
+        PengRobinsonKernel rankOne = V3PengRobinsonSession.kernelFor(V3Cdu17TiaJuanaPackage.INSTANCE);
+        PengRobinsonKernel general = V3PengRobinsonSession.kernelFor(new BarelyInteractingPackage());
         assertTrue(rankOne.usesRankOneMixing());
         assertFalse(general.usesRankOneMixing());
         double[] composition = V3Cdu17TiaJuanaPackage.INSTANCE
                 .crudeFeed(V3Cdu17TiaJuanaPackage.ASSAY_ID).moleFractions();
         int count = composition.length;
-        for (V3PengRobinsonKernel.Root root : V3PengRobinsonKernel.Root.values()) {
-            V3PengRobinsonKernel.Derivatives first = rankOne.newDerivatives();
-            V3PengRobinsonKernel.Derivatives second = general.newDerivatives();
+        for (PengRobinsonKernel.Root root : PengRobinsonKernel.Root.values()) {
+            PengRobinsonKernel.Derivatives first = rankOne.newDerivatives();
+            PengRobinsonKernel.Derivatives second = general.newDerivatives();
             rankOne.evaluateDerivatives(480.0, 250_000.0, composition, root, rankOne.newWorkspace(), first);
             general.evaluateDerivatives(480.0, 250_000.0, composition, root, general.newWorkspace(), second);
             double scale = 0.0;

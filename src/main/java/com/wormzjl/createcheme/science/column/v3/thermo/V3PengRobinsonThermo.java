@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
+import com.wormzjl.createcheme.science.thermo.PengRobinsonKernel;
 import java.util.Objects;
 
 /** Immutable V3 hydrocarbon PR78 façade backed by a solve-local one-way property-session adapter. */
@@ -102,7 +103,7 @@ public final class V3PengRobinsonThermo implements V3ThermoModel, V3ThermoDeriva
         normalizeInto(composition, workspace.normalizedOverall, workspace);
         session.evaluateDerivatives(temperatureKelvin, pressurePascal, workspace.normalizedOverall, phase,
                 workspace.prSession);
-        V3PengRobinsonKernel.Derivatives derivatives = workspace.prSession.derivativesOf(phase);
+        PengRobinsonKernel.Derivatives derivatives = workspace.prSession.derivativesOf(phase);
         double[] partialMolar = derivatives.partialMolarResidualEnthalpy();
         for (int component = 0; component < partialMolar.length; component++) {
             partialMolar[component] += session.componentIdealGasEnthalpy(component, temperatureKelvin);
