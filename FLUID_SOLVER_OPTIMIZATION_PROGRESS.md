@@ -1577,3 +1577,107 @@ pipe, the same character as A1's and A4b's; the state and temperature deviations
 the declared gate and one order above the roundoff the previous work packages introduced, which is the
 truncation error itself and is what a 1e-6 cutoff is expected to cost. Substep counts move on the
 quiescent fixtures, as they do for every item since A1.
+
+### WP7-B3 - the cutoff measurement
+
+Two runs of each cutoff in one session, alternating, against `build/probe/reference-wp6b` under the
+DECLARED gate. The counters are exact and are the primary evidence; wall time is given as the two
+runs, because the quiet fixtures' run-to-run spread is wider than this item's effect on them.
+
+| fixture | cutoff | wall ms | alloc MB | unknowns per node | n | substeps acc/rej | implicit solves | Jacobian builds | block columns | node decodes | reactivations |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, 5 intervals | 0 | 163.9 / 147.3 | 83.9 | 47 | 1455 | 11/0 | 25 | 3 | 4365 | 8820 | 0 |
+| | **1e-6** | 149.8 / 158.9 | 87.8 | **41** | **1275** | 11/0 | 29 | 3 | 3825 | 9420 | 0 |
+| | 1e-5 | 145.0 / 159.7 | 103.3 | **40** | **1245** | 11/0 | 25 | 4 | 4980 | 10 380 | 0 |
+| quiet 11324, 5 intervals | 0 | 71.4 / 72.3 | 64.8 | 47 | 873 | 11/0 | 29 | 4 | 3492 | 6372 | 0 |
+| | **1e-6** | 66.0 / 72.4 | 64.1 | **41** | **765** | 11/0 | 28 | 4 | 3060 | 6426 | 0 |
+| | 1e-5 | 54.3 / 74.6 | 58.4 | **40** | **747** | 11/0 | 24 | 4 | 2988 | 5778 | 0 |
+| cold 11312, one interval | 0 | 894.5 / 892.6 | 588.9 | 47 | 1455 | 52/15 | 135 | 41 | 59 655 | 96 840 | 0 |
+| | **1e-6** | **767.3 / 765.0** | 557.6 | **41** | **1275** | 52/15 | 135 | 41 | 52 275 | 89 430 | 0 |
+| | 1e-5 | 767.5 / 771.8 | 576.3 | **40** | **1245** | 52/**17** | 141 | 44 | 54 780 | 92 340 | 0 |
+| 100-reservoir chain | 0 | 1406.8 / 1402.1 | 1647.5 | 47 | 4799 | 45/22 | 135 | 22 | 105 578 | 243 800 | 0 |
+| | **1e-6** | **1160.3 / 1115.7** | 1639.5 | **41** | **4199** | 45/22 | 135 | 23 | 96 577 | 233 400 | 0 |
+| | 1e-5 | 1158.2 / 1126.4 | 1570.9 | **40** | **4099** | 46/22 | 137 | 21 | 86 079 | 225 300 | 0 |
+
+**The node block is 47 -> 41 at 1e-6, exactly what the review forecast.** The unknowns-per-node column
+is `traceOmittedUnknowns / truncatedNodePasses`, which is **6.000 on every fixture at 1e-6 and 7.000 on
+every fixture at 1e-5** - the same six vapour-side heavy ends the census found, plus one more when the
+cutoff moves an order. `n` is read independently out of `jacobianBlockColumns / jacobianBuilds` and
+closes exactly against it: 30 x 47 + 45 pipes = 1455 becomes 30 x 41 + 45 = 1275, and 100 x 47 + 99 =
+4799 becomes 100 x 41 + 99 = 4199. The system is 12.4% smaller in both cases.
+
+**The transients pay for it and the quiescent ones do not.** Cold island **-14%** wall (893 -> 766 ms,
+both runs, a 2 ms spread each), chain **-19%** (1404 -> 1138), allocation -5% and flat. The quiet
+islands are inside their spread, which is what the earlier work packages predicted: they build almost
+no Jacobian, so a smaller block removes assembly work they were not doing, and the triangular solve
+and the transport reconstruction that dominate their warm intervals scale with a matrix that is now
+12% smaller in a bucket worth a few hundred microseconds.
+
+**1e-5 buys nothing and is not worth the accuracy.** It removes one more unknown per node and reaches
+a *smaller* n, and it is not faster on any fixture: the cold island trades its one extra unknown for
+**two more rejected substeps, six more implicit solves and three more Jacobian builds** (767 ms
+against 767), and quiet 11312 for one more Jacobian build, 30 more Newton iterations and 18% more
+allocation. The extra truncation costs more in step-control churn than the smaller block saves.
+
+Accuracy against the committed 154007d references, under the declared gate:
+
+| quantity | gate | cutoff | quiet 11312 | quiet 11324 | cold 11312 | chain |
+|---|---:|---|---:|---:|---:|---:|
+| state / moles, relative | 1e-6 | 0 | 0.00 | 0.00 | 0.00 | 0.00 |
+| | | **1e-6** | 1.15e-8 | 1.19e-8 | 8.72e-9 | 1.30e-8 |
+| | | 1e-5 | 3.88e-7 | 3.92e-7 | 3.22e-7 | 2.86e-7 |
+| temperature, K | 1e-4 | 0 | 0.00 | 0.00 | 0.00 | 0.00 |
+| | | **1e-6** | 2.29e-6 | 2.29e-6 | 2.27e-6 | 2.29e-6 |
+| | | 1e-5 | 4.09e-5 | 4.09e-5 | 4.02e-5 | 3.75e-5 |
+| phase volume fraction | 1e-6 | **1e-6** | 1.44e-9 | 1.44e-9 | 1.34e-9 | 1.53e-9 |
+| | | 1e-5 | 3.33e-8 | 3.34e-8 | 3.04e-8 | 1.78e-8 |
+| worst flow, absolute kg/s | - | **1e-6** | 2.1e-9 | 7.1e-9 | 2.4e-9 | 5.5e-9 |
+| | | 1e-5 | 2.0e-9 | 7.3e-9 | 8.7e-8 | 2.0e-8 |
+
+The gate passes at both cutoffs, but the margin is the argument. At **1e-6** the deviations are two
+orders inside every clause - the truncation error is an order above the roundoff the previous work
+packages introduced and two orders below what the gate calls a difference. At **1e-5** they are 30
+times larger and only **2.4x** inside the temperature clause and **2.6x** inside the state clause, and
+the cold island's worst flow deviation is 8.7e-8 kg/s, 2.7 times the interval controller's own
+numerical allowance for that pipe (it passes only because that pipe carries enough for the relative
+clause to cover it). That is the review's "1e-4 marginal" arriving a decade earlier than it estimated,
+and it is why the hard cap sits at 1e-5 rather than higher: 1e-5 is the last value that still fits,
+not a value to run at.
+
+**The default stays at 1e-6, as decided.** It delivers the entire measured gain, the DECLARED gate
+passes with two orders of margin on every fixture, and the whole 808-test suite - including every
+accuracy suite the earlier items were qualified on: `CadenceTrajectoryQualification`,
+`TransientQualification`, `HydraulicReferenceQualification`, `HydraulicMatrix`,
+`SharedSourceDepletion`, `FluidFallbackQualification`, `CausalModuleCoordinator`,
+`ModuleTransferPlanner`, `BufferedTransfers`, `BufferedCommit` - and the 14 GameTests pass at it.
+
+**Reactivation fired zero times on all four fixtures at both cutoffs.** It is a latent guard, like
+`flashTP` on the same path: the seed of each pass is the previous state of the same island, the
+support derived from it is the support that state satisfies, and `TraceTruncationLayoutTest` proves
+directly that a converged equilibrium point reactivates nothing. It is not dead code - the
+displaced-methane fixtures in `TraceTruncationLayoutTest` and `TraceTruncationStepTest` drive it
+through the layout and through a complete implicit step - but its cost on a quiescent island is one
+comparison per omitted component per converged pass, and its value is that a component cannot be
+locked out of a phase permanently, which without it nothing else would prevent: the transport
+reconstruction splits by the candidate's own phase ratio, and a ratio of exactly zero stays zero.
+
+### WP7 summary: 8bfa7ef -> HEAD
+
+| fixture | wall ms | allocated MB | unknowns per node | n | substeps acc/rej | block columns | node decodes |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, 5 intervals | 157.3 -> 149.8-158.9 | 85.7 -> 87.8 | 47 -> **41** | 1455 -> **1275** | 11/0 unchanged | 4365 -> 3825 | 8820 -> 9420 |
+| quiet 11324, 5 intervals | 71.6 -> 66.0-72.4 | 65.7 -> 64.1 | 47 -> **41** | 873 -> **765** | 11/0 unchanged | 3492 -> 3060 | 6372 -> 6426 |
+| cold 11312, one interval | 928.8 -> **765-767** | 605.3 -> 557.6 | 47 -> **41** | 1455 -> **1275** | 52/15 unchanged | 59 655 -> 52 275 | 96 840 -> 89 430 |
+| 100-reservoir chain | 1321.8 -> **1116-1160** | 1687.6 -> 1639.5 | 47 -> **41** | 4799 -> **4199** | 45/22 unchanged | 105 578 -> 96 577 | 243 800 -> 233 400 |
+
+Nitrogen is shared catalog data rather than a private per-model rewrite of the parsed resource map,
+and the network's basis is a registered package a datapack can see; the trace truncation the review
+put last is landed with its exact off switch, its reinsertion guard and a measured default.
+
+**V3 is bitwise unchanged.** The only column-side edit in this work package is the rename of
+`V3TraceTruncationPolicy` to `science/thermo/TraceTruncationPolicy` - the same record, the same
+expressions, the same 1e-2 ceiling - and the import lines that follow it. **483 tests across 86
+`science.column.v3` classes pass unchanged**, including the pinned-state ones (`V3TraceFloorSupportTest`,
+`V3ConvergenceClosureTest`, `V3PumparoundCalculatorTest`, `V3SideDrawContractTest`,
+`V3SteamFeedContractTest`, `V3FlashTruncationColumnTest`, `V3FlashTruncationValuesTest`) and the
+Holland benchmark case. The column's own package still has exactly its twenty components.
