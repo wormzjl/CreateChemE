@@ -153,11 +153,6 @@ public final class PengRobinsonKernel {
     /** How many {@code i < j} interactions are nonzero; the work {@link Mixing#SPARSE_PAIRS} pays per evaluation. */
     public int interactionPairCount() { return pairFirst.length; }
     public double binaryInteraction(int first, int second) { return binaryInteractions[first][second]; }
-    public double[][] binaryInteractions() {
-        double[][] copy = new double[count][];
-        for (int i = 0; i < count; i++) copy[i] = binaryInteractions[i].clone();
-        return copy;
-    }
     /** {@code 0.07780 R Tc / Pc} for one component; the co-volume the mixture rule sums. */
     public double coVolume(int component) { return coVolumes[component]; }
     public Workspace newWorkspace() { return new Workspace(count); }

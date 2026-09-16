@@ -306,14 +306,6 @@ public final class TranslatedPengRobinson {
         if (!Double.isFinite(value)) throw new IllegalArgumentException("Nonfinite property coefficient");
     }
 
-    /** The construction inputs, for the package's test-only legacy oracle. */
-    record Inputs(List<ThermoComponent> components,double[][] interactions,double[][] heatCapacityCoefficients,double[] translations) {}
-    Inputs inputs() {
-        double[][] cp=new double[heatCapacityCoefficients.length][];
-        for(int i=0;i<cp.length;i++)cp[i]=heatCapacityCoefficients[i].clone();
-        return new Inputs(components,kernel.binaryInteractions(),cp,translations.clone());
-    }
-
     /** The arrays belong to the record from construction on; {@link #evaluate} builds them for it. */
     public record Phase(double molarVolume, double molarEnthalpy, double molarInternalEnergy,
                         double volumeTemperatureDerivative, double volumePressureDerivative,

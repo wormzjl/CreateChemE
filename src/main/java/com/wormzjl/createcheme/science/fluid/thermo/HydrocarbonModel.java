@@ -59,7 +59,7 @@ public final class HydrocarbonModel {
         return phase(t,p,amounts,root,translated.prepare(t));
     }
     public TranslatedPengRobinson.Workspace prepare(double t){return translated.prepare(t);}
-    /** The translated EOS this model evaluates; the package's legacy oracle test differentiates against it. */
+    /** The translated EOS this model evaluates; the package's derivative test differentiates against it. */
     TranslatedPengRobinson translated(){return translated;}
     /** Caller-owned derivative storage for an analytic node Jacobian; one per solve, refilled per node. */
     public TranslatedPengRobinson.Derivatives newDerivatives(){return translated.newDerivatives();}

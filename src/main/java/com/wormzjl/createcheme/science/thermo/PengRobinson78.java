@@ -163,12 +163,6 @@ public final class PengRobinson78 {
         return normalized;
     }
 
-    /** Exposes the existing root selection for property adapters that already have their mixing terms. */
-    public static double compressibilityRoot(double reducedA,double reducedB,PhaseRoot phaseRoot) {
-        if(!Double.isFinite(reducedA)||!Double.isFinite(reducedB)||reducedB<0)throw new IllegalArgumentException("Invalid reduced PR coefficients");
-        return selectRoot(reducedA,reducedB,Objects.requireNonNull(phaseRoot));
-    }
-
     private static double selectRoot(double reducedA, double reducedB, PhaseRoot phaseRoot) {
         double c2 = -(1.0 - reducedB);
         double c1 = reducedA - 3.0 * square(reducedB) - 2.0 * reducedB;
