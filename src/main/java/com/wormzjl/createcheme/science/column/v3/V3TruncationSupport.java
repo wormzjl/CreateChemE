@@ -1,6 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3;
 
-import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +12,7 @@ import java.util.Objects;
  * loses its equilibrium row. Support is derived from the final deciding seed and frozen throughout Newton.
  */
 final class V3TruncationSupport {
-    static final double MAX_CUTOFF_MOLE_FRACTION = V3TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION;
+    static final double MAX_CUTOFF_MOLE_FRACTION = TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION;
     /**
      * Relative flow below which a component is not an independent unknown on a stage, and below which a
      * component material balance is not scaled any further down.
@@ -743,7 +743,7 @@ final class V3TruncationSupport {
     }
 
     static void requireCutoff(double cutoff) {
-        V3TraceTruncationPolicy.requireCutoff(cutoff);
+        TraceTruncationPolicy.requireCutoff(cutoff);
     }
 
     private static void requireComponentCount(int componentCount) {

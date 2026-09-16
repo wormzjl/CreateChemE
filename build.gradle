@@ -374,6 +374,8 @@ tasks.register('fluidSolverRegression', Test) {
         systemProperty 'fluid.regression.references', providers.gradleProperty('fluidRegressionReferences').get()
     systemProperty 'fluid.regression.capture', providers.gradleProperty('fluidRegressionCapture').getOrElse('false')
     systemProperty 'fluid.regression.mode', providers.gradleProperty('fluidRegressionMode').getOrElse('declared')
+    if (providers.gradleProperty('fluidRegressionTraceCutoff').isPresent())
+        systemProperty 'fluid.regression.traceCutoff', providers.gradleProperty('fluidRegressionTraceCutoff').get()
     outputs.upToDateWhen { false }
 }
 tasks.named('test', Test) {

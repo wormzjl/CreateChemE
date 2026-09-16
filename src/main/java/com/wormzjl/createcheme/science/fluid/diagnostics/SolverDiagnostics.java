@@ -116,6 +116,18 @@ public final class SolverDiagnostics {
     public static final LongAdder reconstructCalls=new LongAdder();
     public static final LongAdder reconstructNanos=new LongAdder();
 
+    // ---- phase-specific trace truncation ----
+    /**
+     * Unknowns the frozen per-component phase support removed from an implicit solve, summed over the
+     * nodes of every active-set pass: one per component the seed put below the trace cutoff in one of
+     * the two hydrocarbon phases. Each also removes one equilibrium row, so the system stays square.
+     * {@code truncatedNodePasses} counts the node blocks that lost at least one, which is what the
+     * per-node average is taken over, and {@code traceReactivations} counts the components the
+     * converged fugacity coefficients put back into both phases.
+     */
+    public static final LongAdder traceOmittedUnknowns=new LongAdder();
+    public static final LongAdder truncatedNodePasses=new LongAdder();
+    public static final LongAdder traceReactivations=new LongAdder();
     // ---- adaptive step control ----
     /** Every interval attempt, and the accepted subset; exact even when the attempt log is full. */
     public static final LongAdder stepAttempts=new LongAdder();
@@ -188,6 +200,8 @@ public final class SolverDiagnostics {
         map.put("stateCalls",stateCalls);map.put("stateCallsInJacobian",stateCallsInJacobian);
         map.put("temperatureTermsCalls",temperatureTermsCalls);map.put("flashCalls",flashCalls);
         map.put("reconstructCalls",reconstructCalls);map.put("reconstructNanos",reconstructNanos);
+        map.put("traceOmittedUnknowns",traceOmittedUnknowns);map.put("truncatedNodePasses",truncatedNodePasses);
+        map.put("traceReactivations",traceReactivations);
         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
         return Collections.unmodifiableMap(map);
     }

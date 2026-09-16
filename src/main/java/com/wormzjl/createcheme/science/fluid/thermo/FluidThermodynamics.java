@@ -5,12 +5,26 @@ import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity;
 import com.wormzjl.createcheme.science.material.MaterialCatalog;
 import com.wormzjl.createcheme.science.thermo.PhaseRoot;
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import java.util.Arrays;
+import java.util.Objects;
 
 /** Immutable fluid property snapshot and standalone TP initializer; coupled steps consume phase() directly. */
 public final class FluidThermodynamics {
     public static final double R=8.31446261815324;
     public static final double DEFAULT_MAXIMUM_VELOCITY=100;
+    /**
+     * The network's ceiling on the trace cutoff, a thousandth of the column's. The column verifies a
+     * truncated flash against an unmasked reference and declares explicit error budgets, so it may
+     * ask for a percent; the network has no reference to answer to inside a Newton pass, and the
+     * energy it can misplace by folding an omitted phase into the retained one is bounded by
+     * {@code sum_omitted y_i n_V |h_i^V - h_i^L|}, i.e. by the cutoff times the phase amount times
+     * the largest enthalpy of vaporization on the basis. At 1e-5 that is still inside the interval
+     * controller's own energy gate; above it, it is not.
+     */
+    public static final double MAX_TRACE_CUTOFF_MOLE_FRACTION=1e-5;
+    /** The gameplay default for a network model built without an explicit cutoff. */
+    public static final double DEFAULT_TRACE_CUTOFF_MOLE_FRACTION=0;
     public final HydrocarbonModel hydrocarbon;
     public final MixtureViscosity viscosity;
     public final double waterMolecularWeight;
@@ -22,6 +36,11 @@ public final class FluidThermodynamics {
     private final MaterialCatalog.Water water;
     private final double waterEnthalpyOffset;
     private final double maximumVelocity;
+    /** Carried on the model, like {@link #maximumVelocity}, because every retained solver, workspace
+     * and factorization is keyed on the model: replacing it is what makes a changed cutoff reach a
+     * running island deterministically, and {@code ApproximationAnchor.revision} carries it so a
+     * saved fallback anchor built under a different unknown set cannot be reused. */
+    private final TraceTruncationPolicy tracePolicy;
 
     /**
      * The canonical gameplay basis, which includes nitrogen. {@code packageId} is resolved through
@@ -34,7 +53,15 @@ public final class FluidThermodynamics {
         return forNetwork(catalog,packageId,liquidCompressibility,DEFAULT_MAXIMUM_VELOCITY);
     }
     public static FluidThermodynamics forNetwork(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity) {
-        return new FluidThermodynamics(catalog,FluidMaterialCatalog.resolveNetworkPackage(catalog,packageId),liquidCompressibility,maximumVelocity);
+        return forNetwork(catalog,packageId,liquidCompressibility,maximumVelocity,DEFAULT_TRACE_CUTOFF_MOLE_FRACTION);
+    }
+    /** {@code traceCutoffMoleFraction} is the configured network cutoff: 0 is the exact off switch,
+     * and the ceiling is {@link #MAX_TRACE_CUTOFF_MOLE_FRACTION}. */
+    public static FluidThermodynamics forNetwork(MaterialCatalog catalog,String packageId,double liquidCompressibility,
+                                                 double maximumVelocity,double traceCutoffMoleFraction) {
+        TraceTruncationPolicy.requireCutoff(traceCutoffMoleFraction,MAX_TRACE_CUTOFF_MOLE_FRACTION);
+        return new FluidThermodynamics(catalog,FluidMaterialCatalog.resolveNetworkPackage(catalog,packageId),liquidCompressibility,
+                maximumVelocity,TraceTruncationPolicy.of(traceCutoffMoleFraction));
     }
 
     /** Placement initializer only. Persistence must restore inventory instead of calling this again. */
@@ -50,7 +77,13 @@ public final class FluidThermodynamics {
         this(catalog,packageId,liquidCompressibility,DEFAULT_MAXIMUM_VELOCITY);
     }
     public FluidThermodynamics(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity) {
+        this(catalog,packageId,liquidCompressibility,maximumVelocity,TraceTruncationPolicy.OFF);
+    }
+    public FluidThermodynamics(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity,
+                               TraceTruncationPolicy tracePolicy) {
         if(!Double.isFinite(maximumVelocity)||maximumVelocity<=0)throw new IllegalArgumentException("Positive finite maximum velocity required");
+        TraceTruncationPolicy.requireCutoff(Objects.requireNonNull(tracePolicy,"tracePolicy").cutoffMoleFraction(),MAX_TRACE_CUTOFF_MOLE_FRACTION);
+        this.tracePolicy=tracePolicy;
         this.maximumVelocity=maximumVelocity;
         hydrocarbon=new HydrocarbonModel(catalog,packageId,liquidCompressibility);
         viscosity=new MixtureViscosity(catalog,packageId);
@@ -90,6 +123,8 @@ public final class FluidThermodynamics {
     public double saturationPressure(Prepared prepared) { return own(prepared).saturationPressure(); }
     public double vaporWaterEnthalpy(double t) { return V3WaterProperties.vaporMolarEnthalpy(water,t); }
     public double maximumVelocityMetresPerSecond(){return maximumVelocity;}
+    /** The per-node phase support the step solver freezes its Newton unknowns with. */
+    public TraceTruncationPolicy traceTruncation(){return tracePolicy;}
     /** A hydraulic rate bound only; temperature and phase allocation still come from the EOS/energy equations. */
     public double velocityLimit(State state){return Math.min(maximumVelocity,isothermalAcousticBound(state));}
     /** Frozen-phase isothermal acoustic bound used by the configured hydraulic velocity clamp. */

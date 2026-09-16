@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import java.util.Objects;
 
 /**
@@ -33,7 +34,7 @@ public record V3FlashTruncationEvidence(
 
     public V3FlashTruncationEvidence {
         Objects.requireNonNull(status, "status");
-        V3TraceTruncationPolicy.requireCutoff(cutoffMoleFraction);
+        TraceTruncationPolicy.requireCutoff(cutoffMoleFraction);
         if (cutoffMoleFraction == 0.0) cutoffMoleFraction = 0.0;
         if (omittedLiquidComponents < 0 || omittedVaporComponents < 0
                 || referenceIterations < 0 || reducedIterations < 0
@@ -72,7 +73,7 @@ public record V3FlashTruncationEvidence(
             if (!omissions || !errorsEvaluated) {
                 throw new IllegalArgumentException("Applied V3 flash truncation needs omissions and evaluated errors");
             }
-            V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.of(cutoffMoleFraction);
+            TraceTruncationPolicy policy = TraceTruncationPolicy.of(cutoffMoleFraction);
             if (allocationError > policy.maximumPhaseAllocationError()
                     || betaError > policy.maximumVaporFractionError()
                     || maxPhaseCompositionError > policy.maximumPhaseCompositionError()

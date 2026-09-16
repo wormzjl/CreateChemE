@@ -25,8 +25,13 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
         if(known!=null&&known.model.get()==model)return known;
         String thermodynamic="fluid-trbdf2-r1:"+model.hydrocarbon.revision()+":"+model.viscosity.revision();
         // One publication, so a reader can never pair a model with another model's strings.
+        // The trace cutoff joins the hydraulic acceptance law, not the thermodynamic reference: it
+        // changes which unknowns a Newton pass carries, so an anchor recorded under another cutoff
+        // describes a different numerical path and must not be reused - but it changes no property
+        // data, so a saved island's inventory and energy stay readable across a change of it.
         var built=new Revisions(new WeakReference<>(model),thermodynamic,
-                thermodynamic+":velocity-clamp-v1:trace-relative-v1:max="+Double.toHexString(model.maximumVelocityMetresPerSecond()));
+                thermodynamic+":velocity-clamp-v1:trace-relative-v1:max="+Double.toHexString(model.maximumVelocityMetresPerSecond())
+                        +":trace="+Double.toHexString(model.traceTruncation().cutoffMoleFraction()));
         cached=built;return built;
     }
     public static ApproximationAnchor fromFull(FluidThermodynamics model,PassiveIntervalSolver.Result full) {

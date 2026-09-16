@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,17 +16,17 @@ class V3FlashTruncationValuesTest {
 
     @Test
     void policyAcceptsBothBoundsAndCanonicalizesNegativeZero() {
-        assertEquals(1.0e-2, V3TraceTruncationPolicy.MAX_CUTOFF);
-        for (double cutoff : new double[]{0.0, -0.0, V3TraceTruncationPolicy.MAX_CUTOFF}) {
-            V3TraceTruncationPolicy policy = new V3TraceTruncationPolicy(cutoff);
-            assertDoesNotThrow(() -> V3TraceTruncationPolicy.requireCutoff(cutoff));
-            assertEquals(policy, V3TraceTruncationPolicy.of(cutoff));
+        assertEquals(1.0e-2, TraceTruncationPolicy.MAX_CUTOFF);
+        for (double cutoff : new double[]{0.0, -0.0, TraceTruncationPolicy.MAX_CUTOFF}) {
+            TraceTruncationPolicy policy = new TraceTruncationPolicy(cutoff);
+            assertDoesNotThrow(() -> TraceTruncationPolicy.requireCutoff(cutoff));
+            assertEquals(policy, TraceTruncationPolicy.of(cutoff));
             assertEquals(cutoff > 0.0, policy.enabled());
             if (cutoff == 0.0) {
                 assertEquals(0L, Double.doubleToRawLongBits(policy.cutoffMoleFraction()));
                 assertEquals(0L, Double.doubleToRawLongBits(
-                        V3TraceTruncationPolicy.of(cutoff).cutoffMoleFraction()));
-                assertEquals(V3TraceTruncationPolicy.OFF, policy);
+                        TraceTruncationPolicy.of(cutoff).cutoffMoleFraction()));
+                assertEquals(TraceTruncationPolicy.OFF, policy);
             }
         }
     }
@@ -33,17 +34,17 @@ class V3FlashTruncationValuesTest {
     @Test
     void policyRejectsOutOfRangeAndNonfiniteCutoffsAtEveryEntryPoint() {
         for (double cutoff : new double[]{-Double.MIN_VALUE,
-                Math.nextUp(V3TraceTruncationPolicy.MAX_CUTOFF), Double.NaN,
+                Math.nextUp(TraceTruncationPolicy.MAX_CUTOFF), Double.NaN,
                 Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}) {
-            assertThrows(IllegalArgumentException.class, () -> new V3TraceTruncationPolicy(cutoff));
-            assertThrows(IllegalArgumentException.class, () -> V3TraceTruncationPolicy.of(cutoff));
-            assertThrows(IllegalArgumentException.class, () -> V3TraceTruncationPolicy.requireCutoff(cutoff));
+            assertThrows(IllegalArgumentException.class, () -> new TraceTruncationPolicy(cutoff));
+            assertThrows(IllegalArgumentException.class, () -> TraceTruncationPolicy.of(cutoff));
+            assertThrows(IllegalArgumentException.class, () -> TraceTruncationPolicy.requireCutoff(cutoff));
         }
     }
 
     @Test
     void enabledBudgetsUseOverallAllocationAndDimensionedEnthalpyScales() {
-        V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.of(CUTOFF);
+        TraceTruncationPolicy policy = TraceTruncationPolicy.of(CUTOFF);
 
         assertTrue(policy.enabled());
         assertEquals(8.0 * CUTOFF, policy.maximumPhaseAllocationError());
@@ -55,12 +56,12 @@ class V3FlashTruncationValuesTest {
         assertEquals(policy.maximumEnthalpyErrorJoulesPerMol(12_345.0),
                 policy.maximumEnthalpyErrorJoulesPerMol(-12_345.0));
         assertEquals(1.0e-6,
-                V3TraceTruncationPolicy.of(1.0e-12).maximumEnthalpyErrorJoulesPerMol(0.0));
+                TraceTruncationPolicy.of(1.0e-12).maximumEnthalpyErrorJoulesPerMol(0.0));
     }
 
     @Test
     void disabledPolicyHasZeroBudgetsIncludingTheEnthalpyFloor() {
-        V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.OFF;
+        TraceTruncationPolicy policy = TraceTruncationPolicy.OFF;
 
         assertFalse(policy.enabled());
         assertEquals(0.0, policy.maximumPhaseAllocationError());
@@ -72,8 +73,8 @@ class V3FlashTruncationValuesTest {
 
     @Test
     void enthalpyBudgetRejectsNonfiniteReferencesEvenWhenDisabled() {
-        for (V3TraceTruncationPolicy policy : new V3TraceTruncationPolicy[]{
-                V3TraceTruncationPolicy.OFF, V3TraceTruncationPolicy.of(CUTOFF)}) {
+        for (TraceTruncationPolicy policy : new TraceTruncationPolicy[]{
+                TraceTruncationPolicy.OFF, TraceTruncationPolicy.of(CUTOFF)}) {
             for (double enthalpy : new double[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}) {
                 assertThrows(IllegalArgumentException.class,
                         () -> policy.maximumEnthalpyErrorJoulesPerMol(enthalpy));
@@ -89,7 +90,7 @@ class V3FlashTruncationValuesTest {
         V3FlashResult reference = V3FlashResult.twoPhase(7, 0.25, liquid, vapor, 1_234.0, "reference");
 
         V3FlashPhaseSupport support = V3FlashPhaseSupport.derive(
-                overall, reference, V3TraceTruncationPolicy.of(CUTOFF));
+                overall, reference, TraceTruncationPolicy.of(CUTOFF));
 
         assertEquals(6, support.componentCount());
         assertEquals(V3FlashPhaseSupport.PhaseSupport.ABSENT, support.phaseSupport(0));
@@ -114,7 +115,7 @@ class V3FlashTruncationValuesTest {
         V3FlashResult reference = V3FlashResult.twoPhase(7, 0.5, liquid, vapor, 1_234.0, "threshold");
 
         V3FlashPhaseSupport support = V3FlashPhaseSupport.derive(
-                overallComposition(0.5, liquid, vapor), reference, V3TraceTruncationPolicy.of(CUTOFF));
+                overallComposition(0.5, liquid, vapor), reference, TraceTruncationPolicy.of(CUTOFF));
 
         assertEquals(V3FlashPhaseSupport.PhaseSupport.LIQUID_ONLY, support.phaseSupport(0));
         assertEquals(V3FlashPhaseSupport.PhaseSupport.VAPOR_ONLY, support.phaseSupport(1));
@@ -131,7 +132,7 @@ class V3FlashTruncationValuesTest {
         V3FlashResult reference = V3FlashResult.twoPhase(7, 0.25, liquid, vapor, 1_234.0, "reference");
 
         V3FlashPhaseSupport support = V3FlashPhaseSupport.derive(
-                overallComposition(0.25, liquid, vapor), reference, V3TraceTruncationPolicy.OFF);
+                overallComposition(0.25, liquid, vapor), reference, TraceTruncationPolicy.OFF);
 
         assertTrue(support.isIdentity());
         assertEquals(V3FlashPhaseSupport.PhaseSupport.ABSENT, support.phaseSupport(0));
@@ -148,7 +149,7 @@ class V3FlashTruncationValuesTest {
         V3FlashResult reference = V3FlashResult.twoPhase(7, 0.25, liquid, vapor, 1_234.0, "reference");
 
         V3FlashPhaseSupport support = V3FlashPhaseSupport.derive(
-                overallComposition(0.25, liquid, vapor), reference, V3TraceTruncationPolicy.of(CUTOFF));
+                overallComposition(0.25, liquid, vapor), reference, TraceTruncationPolicy.of(CUTOFF));
 
         assertTrue(support.isIdentity());
         assertEquals(V3FlashPhaseSupport.PhaseSupport.BOTH, support.phaseSupport(0));
@@ -160,7 +161,7 @@ class V3FlashTruncationValuesTest {
     @Test
     void singlePhaseSupportIsIdentityWithOnlyItsNaturalPhase() {
         double[] composition = {0.0, 0.0001, 0.9999};
-        V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.of(CUTOFF);
+        TraceTruncationPolicy policy = TraceTruncationPolicy.of(CUTOFF);
         V3FlashPhaseSupport liquidSupport = V3FlashPhaseSupport.derive(composition,
                 V3FlashResult.liquid(4, composition, -1_234.0, "liquid"), policy);
         V3FlashPhaseSupport vaporSupport = V3FlashPhaseSupport.derive(composition,
@@ -187,7 +188,7 @@ class V3FlashTruncationValuesTest {
         double[] overall = overallComposition(0.25, liquid, vapor);
         V3FlashResult reference = V3FlashResult.twoPhase(7, 0.25, liquid, vapor, 1_234.0, "reference");
         V3FlashPhaseSupport support = V3FlashPhaseSupport.derive(
-                overall, reference, V3TraceTruncationPolicy.of(CUTOFF));
+                overall, reference, TraceTruncationPolicy.of(CUTOFF));
 
         liquid[0] = 1.0;
         vapor[1] = 1.0;
@@ -207,7 +208,7 @@ class V3FlashTruncationValuesTest {
     void supportRejectsMalformedOverallCompositionAndInconsistentBasis() {
         V3FlashResult reference = V3FlashResult.twoPhase(7, 0.25,
                 new double[]{0.4, 0.6}, new double[]{0.8, 0.2}, 1_234.0, "reference");
-        V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.of(CUTOFF);
+        TraceTruncationPolicy policy = TraceTruncationPolicy.of(CUTOFF);
         for (double[] overall : new double[][]{new double[0], {0.0, 0.0}, {0.3, 0.3},
                 {-0.1, 1.1}, {Double.NaN, 1.0}, {Double.POSITIVE_INFINITY, 0.0}, {1.0}}) {
             assertThrows(IllegalArgumentException.class,
@@ -322,7 +323,7 @@ class V3FlashTruncationValuesTest {
 
     @Test
     void appliedEvidenceAcceptsBudgetBoundariesButRejectsTheNextRepresentableValue() {
-        V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.of(CUTOFF);
+        TraceTruncationPolicy policy = TraceTruncationPolicy.of(CUTOFF);
         double[] budgets = {policy.maximumPhaseAllocationError(), policy.maximumVaporFractionError(),
                 policy.maximumPhaseCompositionError(), 0.0, policy.maximumEnthalpyErrorJoulesPerMol(1_234.0)};
 
@@ -380,7 +381,7 @@ class V3FlashTruncationValuesTest {
                     V3FlashTruncationEvidence.Status.APPLIED, CUTOFF, 1, 0, 7, 3, true,
                     0.0, 0.0, 0.0, 0.0, 0.0, enthalpy, "invalid enthalpy"));
         }
-        for (double cutoff : new double[]{-Double.MIN_VALUE, Math.nextUp(V3TraceTruncationPolicy.MAX_CUTOFF),
+        for (double cutoff : new double[]{-Double.MIN_VALUE, Math.nextUp(TraceTruncationPolicy.MAX_CUTOFF),
                 Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}) {
             assertThrows(IllegalArgumentException.class, () -> new V3FlashTruncationEvidence(
                     V3FlashTruncationEvidence.Status.APPLIED, cutoff, 1, 0, 7, 3, true,

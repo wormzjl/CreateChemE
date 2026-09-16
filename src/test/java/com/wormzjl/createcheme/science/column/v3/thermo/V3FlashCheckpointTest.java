@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.Test;
 /** Callback failures are caller failures, even when their type also describes a recoverable flash failure. */
 class V3FlashCheckpointTest {
     private static final String PACKAGE_ID = "createcheme:cdu17_tjl_acs2018";
-    private static final V3TraceTruncationPolicy POLICY = V3TraceTruncationPolicy.of(1.0e-6);
+    private static final TraceTruncationPolicy POLICY = TraceTruncationPolicy.of(1.0e-6);
 
     @Test
     void oneShotThermoFailureDuringReducedWorkEscapesInsteadOfBecomingFallback() {

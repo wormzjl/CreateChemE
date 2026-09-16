@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -26,7 +27,7 @@ class V3FlashTruncationTest {
         V3FlashResult unrestricted = thermo.flashTP(500.0, 250_000.0, input, thermo.newWorkspace());
 
         V3FlashResult off = thermo.flashTP(500.0, 250_000.0, input,
-                V3TraceTruncationPolicy.OFF, thermo.newWorkspace());
+                TraceTruncationPolicy.OFF, thermo.newWorkspace());
 
         assertSameFlashValues(unrestricted, off);
         assertEquals(unrestricted.detail(), off.detail());
@@ -41,7 +42,7 @@ class V3FlashTruncationTest {
     void stateQualifiedHeavyVaporOmissionPreservesEveryComponentAndAuditsItsReferenceErrors() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE_ID);
         double[] feed = binaryFeed(thermo, 0.5);
-        V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.of(CUTOFF);
+        TraceTruncationPolicy policy = TraceTruncationPolicy.of(CUTOFF);
         V3FlashResult reference = thermo.flashTP(500.0, 250_000.0, feed, thermo.newWorkspace());
         assertEquals(V3FeedPhase.TWO_PHASE, reference.phase(), reference::detail);
         assertTrue(reference.vaporComposition()[PC12] > 0.0);
@@ -86,7 +87,7 @@ class V3FlashTruncationTest {
         assertTrue(reference.vaporComposition()[PC12] > CUTOFF);
 
         V3FlashResult requested = thermo.flashTP(638.15, 137_250.0, feed,
-                V3TraceTruncationPolicy.of(CUTOFF), thermo.newWorkspace());
+                TraceTruncationPolicy.of(CUTOFF), thermo.newWorkspace());
 
         assertEquals("NO_CANDIDATES", requested.truncationEvidence().status().name());
         assertEquals(0, requested.truncationEvidence().omittedLiquidComponents());
@@ -99,7 +100,7 @@ class V3FlashTruncationTest {
     void singlePhaseClassificationIsNotOverriddenByComponentIdentityOrTruncation() {
         V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE_ID);
         double[] feed = thermo.crudeFeed(ASSAY_ID).moleFractions();
-        V3TraceTruncationPolicy policy = V3TraceTruncationPolicy.of(CUTOFF);
+        TraceTruncationPolicy policy = TraceTruncationPolicy.of(CUTOFF);
 
         V3FlashResult liquid = thermo.flashTP(298.15, 250_000.0, feed, policy, thermo.newWorkspace());
         V3FlashResult vapor = thermo.flashTP(900.0, 50_000.0, feed, policy, thermo.newWorkspace());
@@ -122,7 +123,7 @@ class V3FlashTruncationTest {
         V3ThermoWorkspace workspace = thermo.newWorkspace();
         double[] binary = binaryFeed(thermo, 0.5);
         V3FlashResult truncated = thermo.flashTP(500.0, 250_000.0, binary,
-                V3TraceTruncationPolicy.of(CUTOFF), workspace);
+                TraceTruncationPolicy.of(CUTOFF), workspace);
         assertEquals("APPLIED", truncated.truncationEvidence().status().name());
         double[] savedLiquid = truncated.liquidComposition();
         double[] savedVapor = truncated.vaporComposition();
@@ -150,7 +151,7 @@ class V3FlashTruncationTest {
         AtomicInteger checkpoints = new AtomicInteger();
 
         CancellationException actual = assertThrows(CancellationException.class,
-                () -> thermo.flashTP(500.0, 250_000.0, feed, V3TraceTruncationPolicy.of(CUTOFF), workspace,
+                () -> thermo.flashTP(500.0, 250_000.0, feed, TraceTruncationPolicy.of(CUTOFF), workspace,
                         () -> { if (checkpoints.incrementAndGet() >= 3) throw cancelled; }));
 
         assertSame(cancelled, actual);

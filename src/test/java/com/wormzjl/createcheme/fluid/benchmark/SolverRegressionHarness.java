@@ -78,8 +78,14 @@ final class SolverRegressionHarness {
     record IntervalReport(String fixture,int index,double wallMilliseconds,long allocatedBytes,
                           IntervalState state,SolverDiagnostics.Sample diagnostics) {}
 
+    /** {@code -Dfluid.regression.traceCutoff=<mole fraction>} overrides the shipped network default,
+     * which is how the EXACT gate is run at the exact off switch and how the cutoff comparison is
+     * measured; absent, the harness measures what the network ships with. */
     static FluidThermodynamics model() {
-        return FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
+        String cutoff=System.getProperty("fluid.regression.traceCutoff");
+        return FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9,
+                FluidThermodynamics.DEFAULT_MAXIMUM_VELOCITY,
+                cutoff==null||cutoff.isBlank()?FluidThermodynamics.DEFAULT_TRACE_CUTOFF_MOLE_FRACTION:Double.parseDouble(cutoff));
     }
 
     // ---- snapshot resolution -------------------------------------------------------------

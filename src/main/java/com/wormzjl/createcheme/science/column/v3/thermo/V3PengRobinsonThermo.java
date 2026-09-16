@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import com.wormzjl.createcheme.science.column.v3.V3ComponentBasis;
 import com.wormzjl.createcheme.science.thermo.PengRobinsonKernel;
 import java.util.Objects;
@@ -139,7 +140,7 @@ public final class V3PengRobinsonThermo implements V3ThermoModel, V3ThermoDeriva
      * unrestricted for independent audits. Zero cutoff follows exactly that original numerical path.
      */
     public V3FlashResult flashTP(double temperatureKelvin, double pressurePascal, double[] overallComposition,
-                                 V3TraceTruncationPolicy policy, V3ThermoWorkspace workspace) {
+                                 TraceTruncationPolicy policy, V3ThermoWorkspace workspace) {
         return flashTP(temperatureKelvin, pressurePascal, overallComposition, policy, workspace, NO_CHECKPOINT);
     }
 
@@ -149,7 +150,7 @@ public final class V3PengRobinsonThermo implements V3ThermoModel, V3ThermoDeriva
      * Returned evidence distinguishes disabled/identity/reduced/fallback paths and counts their iterations.
      */
     public V3FlashResult flashTP(double temperatureKelvin, double pressurePascal, double[] overallComposition,
-                                 V3TraceTruncationPolicy policy, V3ThermoWorkspace workspace, Runnable checkpoint) {
+                                 TraceTruncationPolicy policy, V3ThermoWorkspace workspace, Runnable checkpoint) {
         Objects.requireNonNull(policy, "policy");
         Objects.requireNonNull(checkpoint, "checkpoint");
         normalizeInto(overallComposition, workspace.normalizedOverall, workspace);

@@ -7,7 +7,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3Phase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoWorkspace;
-import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 
 /** Input-only, branch-conditioned native anchor. Each call owns its workspace.
  * Ordinary construction failures return a zero anchor and a separate availability
@@ -56,7 +56,7 @@ final class V3NativeAnchor {
         }
         @Override public V3FlashResult flashTP(double t, double p, double[] x, V3ThermoWorkspace w) {
             control.checkpoint();
-            var result = delegate.flashTP(t, p, x, V3TraceTruncationPolicy.of(0), w, control::checkpoint);
+            var result = delegate.flashTP(t, p, x, TraceTruncationPolicy.of(0), w, control::checkpoint);
             control.checkpoint(); return result;
         }
     }

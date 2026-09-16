@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class V3TruncatedFlashNumericsTest {
     private static final double TRACE = 1.0e-8;
     private static final double[] OVERALL = {0.4, 0.2, 0.4};
-    private static final V3TraceTruncationPolicy POLICY = V3TraceTruncationPolicy.of(1.0e-6);
+    private static final TraceTruncationPolicy POLICY = TraceTruncationPolicy.of(1.0e-6);
 
     @Test
     void phaseOnlyRachfordRiceTermsConserveEveryComponentWithoutInfiniteLogK() {

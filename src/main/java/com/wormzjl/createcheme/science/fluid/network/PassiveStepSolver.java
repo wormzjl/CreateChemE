@@ -5,6 +5,7 @@ import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.linalg.SparseLuSolver;
 import com.wormzjl.createcheme.science.fluid.solver.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.thermo.PhaseSupport;
 import java.util.*;
 
 /** One simultaneous backward-Euler step with a fixed phase regime; no nested TP/UV/PH flash. */
@@ -75,12 +76,13 @@ public final class PassiveStepSolver {
             checkpoint.run();SolverDiagnostics.count(SolverDiagnostics.activeSetPasses);
             int[] phases=new int[seeds.size()];for(int i=0;i<phases.length;i++)phases[i]=phaseCode(seeds.get(i));
             byte[] modeCodes=new byte[modes.size()];for(int i=0;i<modeCodes.length;i++)modeCodes[i]=(byte)modes.get(i).ordinal();
+            var supports=supports(graph,seeds,componentMask);
             // The active-set state is exactly what varies between passes, so the structure key is
             // also the cycle key: repeating one means the pass sequence cannot make progress.
-            var structure=new WorkspaceKey(0,nodeIds,kinds,graph.pipes(),phases,componentMask,modeCodes,boundaryClosed.clone());
+            var structure=new WorkspaceKey(0,nodeIds,kinds,graph.pipes(),phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone());
             if(!seen.add(structure))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
-            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,componentMask);
-            var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,graph.pipes(),phases,componentMask,modeCodes,structure.boundaryClosed);
+            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,componentMask,supports);
+            var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,graph.pipes(),phases,componentMask,structure.supports,modeCodes,structure.boundaryClosed);
             var workspace=workspaces.get(key);
             if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
             if(structures.size()>=4&&!structures.containsKey(structure))structures.remove(structures.keySet().iterator().next());structures.put(structure,workspace);
@@ -229,21 +231,46 @@ public final class PassiveStepSolver {
         }catch(SparseLuSolver.SolveFailure|SparseNewton.Nonconvergence|IllegalArgumentException outsideTheLinearization){return null;}
     }
     /** Value key over compact codes instead of rendered strings and boxed lists; the arrays belong
-     * to the key from construction on, so a caller must hand over a snapshot of anything it mutates. */
+     * to the key from construction on, so a caller must hand over a snapshot of anything it mutates.
+     * {@code supports} is the per-node, per-component phase support flattened in node order: it
+     * decides how many unknowns and rows each node block has, so the sparsity pattern, the colouring,
+     * the ordering and every retained factorization belong to it as much as to the phase code. */
     private record WorkspaceKey(long stepBits,long[] nodeIds,byte[] kinds,List<PassiveNetwork.Pipe> pipes,
-                                int[] phases,boolean[] componentMask,byte[] modes,boolean[] boundaryClosed) {
+                                int[] phases,boolean[] componentMask,byte[] supports,byte[] modes,boolean[] boundaryClosed) {
         @Override public boolean equals(Object other) {
             return other instanceof WorkspaceKey key&&stepBits==key.stepBits&&Arrays.equals(nodeIds,key.nodeIds)
                     &&Arrays.equals(kinds,key.kinds)&&pipes.equals(key.pipes)&&Arrays.equals(phases,key.phases)
-                    &&Arrays.equals(componentMask,key.componentMask)&&Arrays.equals(modes,key.modes)
-                    &&Arrays.equals(boundaryClosed,key.boundaryClosed);
+                    &&Arrays.equals(componentMask,key.componentMask)&&Arrays.equals(supports,key.supports)
+                    &&Arrays.equals(modes,key.modes)&&Arrays.equals(boundaryClosed,key.boundaryClosed);
         }
         @Override public int hashCode() {
             int hash=31*Long.hashCode(stepBits)+Arrays.hashCode(nodeIds);
             hash=31*(31*hash+Arrays.hashCode(kinds))+pipes.hashCode();
             hash=31*(31*hash+Arrays.hashCode(phases))+Arrays.hashCode(componentMask);
+            hash=31*hash+Arrays.hashCode(supports);
             return 31*(31*hash+Arrays.hashCode(modes))+Arrays.hashCode(boundaryClosed);
         }
+    }
+    /**
+     * Every node's frozen per-component phase support for one pass, derived from that pass's seeds
+     * and never from a Newton iterate. A fixed node owns no unknowns and gets none.
+     */
+    private PhaseSupport[][] supports(PassiveNetwork graph,List<FluidThermodynamics.State> seeds,boolean[] componentMask) {
+        var supports=new PhaseSupport[seeds.size()][];
+        for(int node=0;node<supports.length;node++)
+            if(!graph.reservoirs().get(node).fixed())
+                supports[node]=PhaseLayout.support(seeds.get(node),componentMask,model.traceTruncation(),null);
+        return supports;
+    }
+    /** The support arrays as one flat byte array for the workspace and cycle keys. */
+    private byte[] supportCodes(PhaseSupport[][] supports) {
+        int components=model.hydrocarbon.componentCount();
+        byte[] codes=new byte[supports.length*components];
+        for(int node=0;node<supports.length;node++) {
+            if(supports[node]==null){Arrays.fill(codes,node*components,(node+1)*components,(byte)-1);continue;}
+            for(int c=0;c<components;c++)codes[node*components+c]=(byte)supports[node][c].ordinal();
+        }
+        return codes;
     }
     private static long[] nodeIds(PassiveNetwork graph) {
         long[] ids=new long[graph.reservoirs().size()];
@@ -413,7 +440,8 @@ public final class PassiveStepSolver {
          * candidate residual at the same time. */
         final double[][] targets,incoming;
         final double[] energy,incomingMass,incomingEnergy,netMass,fractions;
-        Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[] mask) {
+        Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[] mask,
+                  PhaseSupport[][] supports) {
             this.modes=List.copyOf(modes);
             this.seeds=List.copyOf(seeds);
             this.boundaryClosed=boundaryClosed.clone();
@@ -424,7 +452,13 @@ public final class PassiveStepSolver {
             int cursor=0;
             for(int i=0;i<count;i++) {
                 var state=graph.reservoirs().get(i).state();offsets[i]=cursor;oldAmounts[i]=graph.reservoirs().get(i).inventory().moles();
-                if(!graph.reservoirs().get(i).fixed()){layout[i]=new PhaseLayout(model,seeds.get(i),mask,oldAmounts[i]);cursor+=layout[i].size();}
+                if(!graph.reservoirs().get(i).fixed()) {
+                    layout[i]=new PhaseLayout(model,seeds.get(i),mask,oldAmounts[i],supports[i]);cursor+=layout[i].size();
+                    if(SolverDiagnostics.ENABLED) {
+                        int omitted=layout[i].singlePhaseComponentCount();
+                        if(omitted>0){SolverDiagnostics.traceOmittedUnknowns.add(omitted);SolverDiagnostics.truncatedNodePasses.increment();}
+                    }
+                }
             }
             edgeOffset=cursor;cursor+=graph.pipes().size();controlOffsets=new int[graph.pipes().size()];Arrays.fill(controlOffsets,-1);
             for(int i=0;i<controlOffsets.length;i++)if(!(graph.pipes().get(i).control() instanceof FlowControl.Passive))controlOffsets[i]=cursor++;

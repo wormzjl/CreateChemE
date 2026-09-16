@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import java.util.Objects;
 
 /**
@@ -20,7 +21,7 @@ final class V3FlashPhaseSupport {
     }
 
     static V3FlashPhaseSupport derive(
-            double[] normalizedOverall, V3FlashResult reference, V3TraceTruncationPolicy policy) {
+            double[] normalizedOverall, V3FlashResult reference, TraceTruncationPolicy policy) {
         Objects.requireNonNull(normalizedOverall, "normalizedOverall");
         Objects.requireNonNull(reference, "reference");
         Objects.requireNonNull(policy, "policy");

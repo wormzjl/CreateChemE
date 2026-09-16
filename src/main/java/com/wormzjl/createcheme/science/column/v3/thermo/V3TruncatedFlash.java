@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.column.v3.thermo;
 
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import java.util.Objects;
 
 /**
@@ -15,7 +16,7 @@ final class V3TruncatedFlash {
     private V3TruncatedFlash() {}
 
     static V3FlashResult resolve(V3PengRobinsonThermo model, double temperature, double pressure,
-                                 V3ThermoWorkspace workspace, V3TraceTruncationPolicy policy,
+                                 V3ThermoWorkspace workspace, TraceTruncationPolicy policy,
                                  Runnable checkpoint) {
         Objects.requireNonNull(model, "model");
         Objects.requireNonNull(workspace, "workspace");
@@ -213,7 +214,7 @@ final class V3TruncatedFlash {
 
     /** Fresh full-basis reference/error check, also exposed package-locally for adversarial numerical tests. */
     static V3FlashTruncationEvidence assess(double[] overall, V3FlashResult reference, V3FlashResult candidate,
-                                           V3FlashPhaseSupport support, V3TraceTruncationPolicy policy,
+                                           V3FlashPhaseSupport support, TraceTruncationPolicy policy,
                                            double[] targetLogK) {
         double[] referenceLiquid = reference.liquidComposition();
         double[] referenceVapor = reference.vaporComposition();
@@ -277,14 +278,14 @@ final class V3TruncatedFlash {
                 reference.molarEnthalpyJoulesPerMol(), detail);
     }
 
-    private static V3FlashTruncationEvidence referenceOnly(V3FlashResult reference, V3TraceTruncationPolicy policy,
+    private static V3FlashTruncationEvidence referenceOnly(V3FlashResult reference, TraceTruncationPolicy policy,
                                                            V3FlashTruncationEvidence.Status status, String detail) {
         return new V3FlashTruncationEvidence(status, policy.cutoffMoleFraction(), 0, 0, reference.iterations(), 0,
                 false, 0.0, 0.0, 0.0, 0.0, 0.0, reference.molarEnthalpyJoulesPerMol(), detail);
     }
 
     private static V3FlashTruncationEvidence rejectedWithoutMetrics(V3FlashResult reference, V3FlashPhaseSupport support,
-                                                                    V3TraceTruncationPolicy policy, int iterations,
+                                                                    TraceTruncationPolicy policy, int iterations,
                                                                     String detail) {
         return new V3FlashTruncationEvidence(V3FlashTruncationEvidence.Status.FALLBACK, policy.cutoffMoleFraction(),
                 support.omittedLiquidCount(), support.omittedVaporCount(), reference.iterations(), iterations,

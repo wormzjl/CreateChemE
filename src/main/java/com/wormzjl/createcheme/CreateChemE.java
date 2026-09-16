@@ -10,6 +10,7 @@ import com.wormzjl.createcheme.registry.ModMenus;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
 import com.wormzjl.createcheme.runtime.WorkerAllocation;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import com.wormzjl.createcheme.science.column.v3.V3InitializationOptions;
 import com.wormzjl.createcheme.science.column.v3.V3NeuralModels;
 import com.wormzjl.createcheme.science.column.v3.V3NeuralInitializer;
@@ -43,7 +44,7 @@ public final class CreateChemE {
     private static final ModConfigSpec.IntValue SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue FLUID_INITIAL_INTERVAL_SECONDS,FLUID_WALL_BUDGET_MILLISECONDS;
-    private static final ModConfigSpec.DoubleValue FLUID_LIQUID_COMPRESSIBILITY,FLUID_INITIAL_VOLUME,FLUID_INITIAL_TEMPERATURE,FLUID_INITIAL_PRESSURE,FLUID_MAXIMUM_VELOCITY;
+    private static final ModConfigSpec.DoubleValue FLUID_LIQUID_COMPRESSIBILITY,FLUID_INITIAL_VOLUME,FLUID_INITIAL_TEMPERATURE,FLUID_INITIAL_PRESSURE,FLUID_MAXIMUM_VELOCITY,FLUID_TRACE_CUTOFF;
     private static final ModConfigSpec.BooleanValue FLUID_DEBUG_CHAT,FLUID_ADAPTIVE_CADENCE;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
@@ -87,6 +88,16 @@ public final class CreateChemE {
         FLUID_INITIAL_VOLUME=builder.comment("Volume of newly placed reservoirs in cubic metres. Applied on server start.").defineInRange("reservoirVolumeCubicMetres",1.0,.001,1000.0);
         FLUID_INITIAL_TEMPERATURE=builder.comment("One-time nitrogen charge temperature in kelvin for newly placed reservoirs.").defineInRange("initialNitrogenTemperatureKelvin",298.15,273.16,600.0);
         FLUID_INITIAL_PRESSURE=builder.comment("One-time nitrogen charge absolute pressure in pascals for newly placed reservoirs.").defineInRange("initialNitrogenPressurePascal",101325.0,100.0,2000000.0);
+        FLUID_TRACE_CUTOFF=builder
+                .comment("Trace cutoff as a mole fraction for the hydraulic network's Newton unknowns, not a feed filter.",
+                        "A component whose seed mole fraction is below this in one hydrocarbon phase and at or above it",
+                        "in the other keeps a single unknown - its component total, in the phase it is actually in - and",
+                        "loses its equilibrium row; the omitted phase is held at exactly zero, so every component total,",
+                        "transport split and conservation audit stays exact. The converged fugacity coefficients put a",
+                        "component back into both phases as soon as its equilibrium fraction reaches ten times this value.",
+                        "0 is the exact off switch: the identical numerical path, not a very small cutoff.",
+                        "Applied on server start.")
+                .defineInRange("fluidTraceCutoffMoleFraction",1e-6,0,FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION);
         FLUID_DEBUG_CHAT=builder.comment("Report held fluid intervals in chat, at most once per second; full details remain in the server log.").define("debugChat",false);
         builder.pop();
         builder.push("columnV3");
@@ -172,9 +183,9 @@ public final class CreateChemE {
     public static boolean calculationLoggingEnabled() {
         return CALCULATION_LOGGING.getAsBoolean();
     }
-    public record FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity) {}
+    public record FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction) {}
     public static FluidOptions fluidOptions() {
-        return new FluidOptions(20*FLUID_INITIAL_INTERVAL_SECONDS.getAsInt(),1_000_000L*FLUID_WALL_BUDGET_MILLISECONDS.getAsInt(),FLUID_LIQUID_COMPRESSIBILITY.get(),FLUID_INITIAL_VOLUME.get(),FLUID_INITIAL_TEMPERATURE.get(),FLUID_INITIAL_PRESSURE.get(),FLUID_DEBUG_CHAT.getAsBoolean(),FLUID_ADAPTIVE_CADENCE.getAsBoolean(),FLUID_MAXIMUM_VELOCITY.get());
+        return new FluidOptions(20*FLUID_INITIAL_INTERVAL_SECONDS.getAsInt(),1_000_000L*FLUID_WALL_BUDGET_MILLISECONDS.getAsInt(),FLUID_LIQUID_COMPRESSIBILITY.get(),FLUID_INITIAL_VOLUME.get(),FLUID_INITIAL_TEMPERATURE.get(),FLUID_INITIAL_PRESSURE.get(),FLUID_DEBUG_CHAT.getAsBoolean(),FLUID_ADAPTIVE_CADENCE.getAsBoolean(),FLUID_MAXIMUM_VELOCITY.get(),FLUID_TRACE_CUTOFF.get());
     }
 
     /**

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.wormzjl.createcheme.science.column.v3.thermo.V3CrudeFeed;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
-import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import org.junit.jupiter.api.Test;
@@ -62,14 +62,14 @@ class V3FlashTruncationColumnTest {
 
     @Test
     void stageSupportAndFlashPolicyShareExactlyTheSameCutoffDomain() {
-        assertEquals(V3TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION, V3TruncationSupport.MAX_CUTOFF_MOLE_FRACTION);
-        for (double cutoff : new double[] {0.0, -0.0, 1.0e-6, V3TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION}) {
+        assertEquals(TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION, V3TruncationSupport.MAX_CUTOFF_MOLE_FRACTION);
+        for (double cutoff : new double[] {0.0, -0.0, 1.0e-6, TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION}) {
             assertDoesNotThrow(() -> V3TruncationSupport.requireCutoff(cutoff));
-            assertDoesNotThrow(() -> V3TraceTruncationPolicy.requireCutoff(cutoff));
+            assertDoesNotThrow(() -> TraceTruncationPolicy.requireCutoff(cutoff));
         }
         for (double cutoff : new double[] {-1.0e-6, 0.010001, Double.NaN, Double.POSITIVE_INFINITY}) {
             assertThrows(IllegalArgumentException.class, () -> V3TruncationSupport.requireCutoff(cutoff));
-            assertThrows(IllegalArgumentException.class, () -> V3TraceTruncationPolicy.requireCutoff(cutoff));
+            assertThrows(IllegalArgumentException.class, () -> TraceTruncationPolicy.requireCutoff(cutoff));
         }
     }
 

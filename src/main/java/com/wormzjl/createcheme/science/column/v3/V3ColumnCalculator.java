@@ -6,7 +6,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoException;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3ThermoModel;
-import com.wormzjl.createcheme.science.column.v3.thermo.V3TraceTruncationPolicy;
+import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3WaterProperties;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -1594,7 +1594,7 @@ public final class V3ColumnCalculator {
         return policy.attemptCutoff() > 0.0
                 ? thermo.flashTP(problem.input().feedTemperatureKelvin(),
                         problem.nodePressurePascal(problem.topology().feedTrayNumber()),
-                        problem.input().feedComponentMolarFlowsMolPerSecond(), V3TraceTruncationPolicy.of(policy.attemptCutoff()),
+                        problem.input().feedComponentMolarFlowsMolPerSecond(), TraceTruncationPolicy.of(policy.attemptCutoff()),
                         thermo.newWorkspace(), control::checkpoint)
                 : thermo.flashTP(problem.input().feedTemperatureKelvin(),
                         problem.nodePressurePascal(problem.topology().feedTrayNumber()),

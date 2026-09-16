@@ -1407,3 +1407,82 @@ Test changes, all forced by nitrogen becoming catalog-wide rather than model-pri
 - Verified EXACT (bitwise, substep counts included) against `build/probe/reference-wp6b` on all four
   fixtures: 0.0 on state/moles, temperature, phase fraction and flow.
 - Gate: 796 JUnit tests (1 new), 14 GameTests (`-PfluidGameTestRunId=wp7a01`), green.
+
+### WP7-B1 - carry a per-component phase support through the node layout
+
+`V3TraceTruncationPolicy` is `science/thermo/TraceTruncationPolicy`: a pure move plus a rename, like
+WP6a's kernel promotion, with every expression and every error budget the column has been running.
+Its `MAX_CUTOFF_MOLE_FRACTION` stays the column's 1e-2 - a V3 request declares explicit error budgets
+and verifies a truncated flash against an unmasked reference, so it may ask for a percent - and
+`requireCutoff` gained an overload taking the caller's own ceiling. The fluid network's ceiling is
+`FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION` = **1e-5**, a thousand times smaller, because a
+Newton pass has no reference to answer to: what it can misplace is
+`sum_omitted y_i n_V |h_i^V - h_i^L|`, the cutoff times the phase amount times the largest enthalpy of
+vaporization on the basis, and at 1e-5 that is still inside the interval controller's own energy gate.
+
+`science/thermo/PhaseSupport` is the shared four-valued support (`ABSENT`, `BOTH`, `LIQUID_ONLY`,
+`VAPOR_ONLY`) with V3's selection rule on one point's phase compositions, including its tie rule: a
+component below the cutoff in **both** phases keeps both, because the reference cannot say which phase
+it belongs to.
+
+**The layout.** `PhaseLayout.support(seed, mask, policy, promoted)` derives one node's support from the
+seed state - never from an in-flight iterate - and the layout is built from that array. A one-phase
+component gets **one** unknown, its component total, in the phase it is actually in; it loses its
+`ln(v/l)` unknown and, with it, its equilibrium row, so the block stays square. `decode` writes
+**exactly zero** to the omitted phase, which is what keeps every component total, every transport
+split and the conservation audit exact rather than approximately exact: `ConservativeTransport`
+repartitions by the candidate's own phase ratio, and a ratio of exactly zero stays exactly zero.
+`encode` folds an omitted trace into the retained phase, which is the whole of the approximation - a
+phase-split error, never a material one. The component balance rows, the water rows, the energy and
+volume closures, the junction mixing block and `targetRows` are untouched, so the companion filter,
+the block Jacobian sweep and the reconstruction read the same row layout they always did; the block
+sweep already iterated `layout.size()` and indexed through `columnRows()`, so it shortened by itself.
+
+**Where the setting lives.** The cutoff is carried on `FluidThermodynamics`, exactly like
+`maximumVelocity`: the mod config entry `fluid.fluidTraceCutoffMoleFraction` (range `[0, 1e-5]`,
+default 1e-6, applied on server start) reaches `FluidWorldAuthority.model`, which builds one model per
+`(package, compressibility)` from the captured options, so every worker and every island solve on the
+same value. That is also the settings revision the brief asked for: `RetainedSolver.acquire` replaces
+an island's whole interval solver - pattern, colouring, ordering, preconditioner and TR-BDF2 endpoint
+rate - whenever the model identity changes, and a changed cutoff is a changed model.
+`ApproximationAnchor`'s **full** revision gained `:trace=<hex>`, so a saved degraded-mode anchor
+recorded under another cutoff is no longer eligible; the **thermodynamic** revision, which the
+checkpoint codec persists and refuses to load without, is deliberately unchanged, because a cutoff
+changes which unknowns a pass carries and no property datum.
+
+**The keys.** The per-node support joins the phase code in both `WorkspaceKey`s - the workspace key and
+the active-set cycle key - flattened as one byte per node per component. It has to: the support decides
+how many unknowns and rows a node block has, so the sparsity pattern, the colouring, the fill-reducing
+ordering and every retained factorization belong to it. `SparseNewton.Workspace` fork families and B2's
+shared storage are unaffected, because a structure change already replaces the workspace.
+
+**Diagnostics.** `traceOmittedUnknowns` (unknowns removed, summed over the node blocks of every pass),
+`truncatedNodePasses` (the blocks that lost at least one) and `traceReactivations` (filled by the next
+commit).
+
+**The off switch is the pre-truncation path, not a small cutoff.** At cutoff 0 every present component
+derives to `BOTH`, `amountIndex` reproduces the old `liquidActive ? liquidIndex : vaporIndex`, and the
+`BOTH` branch of `encode`/`decode`/`equilibriumResidual` is the branch the code already had. Verified
+three ways: `TraceTruncationLayoutTest` holds the unknown count, the encode and the residual of an
+explicitly-`OFF` layout bitwise against the two-argument constructor's; the whole 803-test JUnit suite
+runs at cutoff 0, because `FluidThermodynamics.DEFAULT_TRACE_CUTOFF_MOLE_FRACTION` is still 0 in this
+commit; and the replay harness compares **EXACT** against `build/probe/reference-wp6b` on all four
+fixtures - 0.0 on state/moles, temperature, phase fraction and flow, substep counts included.
+
+The shipped in-game default is already the configured 1e-6, so the 14 GameTests run truncated. The
+library default that the harness and the unit suite see is flipped to match in the next commit,
+together with reactivation - until a converged state can put a component back, a component truncated
+at one interval boundary can only be restored by `InventoryEquilibrium`'s occasional full refresh, so
+the two belong to the same measurement.
+
+Seven new tests in `TraceTruncationLayoutTest`: the derivation against an independently computed
+expectation on the gameplay basis at both cutoffs plus the tie and off cases; the bitwise off switch;
+one unknown and one row removed per omitted phase with the balance count unchanged; the omitted phase
+exactly zero with component totals preserved to four ulp; a truncated fixed-inventory solve reaching
+the same temperature, pressure and totals as the untruncated target; the 1e-5 cap enforced and 0
+accepted while the column keeps 1e-2; and free water, steam and the small-headspace regime proven
+untouched by the cutoff across four states.
+
+- Verified EXACT (bitwise, substep counts included) against `build/probe/reference-wp6b` on all four
+  fixtures at `-PfluidRegressionTraceCutoff=0`.
+- Gate: 803 JUnit tests (7 new), 14 GameTests (`-PfluidGameTestRunId=wp7b01`), green.

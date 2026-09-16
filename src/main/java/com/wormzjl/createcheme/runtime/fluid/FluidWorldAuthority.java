@@ -85,7 +85,10 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public static void stop(MinecraftServer server){find(server).ifPresent(FluidWorldAuthority::close);}
     public static void forget(MinecraftServer server){var world=SERVERS.remove(server);if(world!=null)world.close();}
     private void owned(){if(!server.isSameThread())throw new IllegalStateException("Fluid authority requires the logical server thread");}
-    private FluidThermodynamics model(FluidCheckpointCodec.PackageKey key){return models.computeIfAbsent(key,k->FluidThermodynamics.forNetwork(catalog,k.packageId(),k.compressibility(),options.maximumVelocity()));}
+    /** Every island of this world solves on a model built from the same captured options, so the
+     * configured trace cutoff is one value for every worker and every retained solver: a retained
+     * solver is replaced whenever its model identity changes, and the model is the cutoff's home. */
+    private FluidThermodynamics model(FluidCheckpointCodec.PackageKey key){return models.computeIfAbsent(key,k->FluidThermodynamics.forNetwork(catalog,k.packageId(),k.compressibility(),options.maximumVelocity(),options.traceCutoffMoleFraction()));}
     private static ResourceKey<Level> dimension(String name){return ResourceKey.create(Registries.DIMENSION,ResourceLocation.parse(name));}
     public List<FluidPresetCatalog.Preset> presets(){owned();return presetCache;}
     public List<String> components(){owned();return componentNames;}
