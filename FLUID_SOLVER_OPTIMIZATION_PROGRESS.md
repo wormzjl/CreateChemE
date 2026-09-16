@@ -341,3 +341,38 @@ tests.
 
 - Gate: 793 JUnit tests, 14 GameTests, green.
 - Commit `bc14098`.
+
+### WP2-C5 - remove per-job string building and per-pass string keys
+
+`ApproximationAnchor` concatenated both revision strings from immutable model identity on every
+call, once per dispatched island job; the allocation profile found that as 0.99% of all sampled
+allocation, essentially all of the solver's string building. They are built once per model now and
+held in one weak-keyed slot, published as a single immutable record so a reader can never pair a
+model with another model's strings and so caching one cannot keep its property catalog alive.
+
+`PassiveStepSolver` keyed the active-set cycle check on
+`modes.toString()+Arrays.toString(boundaryClosed)+`phase signatures, and the workspace maps on boxed
+identity lists plus two more rendered strings, rebuilding all of it on every pass. A phase signature
+is four flags, so it is an `int`; modes and node kinds are ordinals, so they are `byte`s; the
+component mask, node identities and kinds depend on the graph alone, so they are evaluated once per
+solve rather than once per pass, which is why the mask moved out of `Equations`. The cycle key is
+now the structure key the workspace maps already needed - within one solve every other field of it
+is constant, so the two have the same equality semantics - and the previous-flow guard compares
+`long[]` identities instead of building a `List<Long>` three times per solve.
+
+| fixture | allocated MB | everything else |
+|---|---:|---|
+| quiet 11312, mean of 5 | 48.7 -> 48.6 | unchanged |
+| quiet 11324, mean of 5 | 42.4 -> 42.3 | unchanged |
+| cold 11312, one interval | 1908.2 -> 1906.9 | unchanged |
+| 100-reservoir chain | 4636.3 -> 4633.3 | unchanged |
+
+Every counter, substep sequence and wall time is inside run noise: the replay harness drives
+`RetainedSolver` directly and never reaches the job dispatch path where the anchor strings were
+built, so the item's larger half is not observable on these fixtures and is carried by the profile's
+own attribution.
+
+- Verified EXACT (bitwise, substep counts included) against a capture of `bc14098` in
+  `build/probe/reference-a4`, on all four fixtures.
+- Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `cffdcff`.
