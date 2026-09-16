@@ -742,4 +742,4 @@ Answers to the five questions the brief asked, in full in the document:
   five young collections and no mixed cycle the after-GC floor is warm-up debris, not live data.
 
 - Measurement only; no solver code changed for it.
-- Commit `%COMMIT%`.
+- Commit `cc7c845`.
