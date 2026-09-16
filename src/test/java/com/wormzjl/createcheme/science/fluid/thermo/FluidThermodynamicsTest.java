@@ -26,7 +26,10 @@ class FluidThermodynamicsTest {
         var water=pure(20);var l=model.flashTP(300,101325,water,()->{});closure(water,l);assertEquals(1,l.waterLiquid());
         var steam=model.flashTP(400,100000,water,()->{});closure(water,steam);assertEquals(1,steam.waterVapor());
         var methane=pure(0);var gas=model.flashTP(300,101325,methane,()->{});closure(methane,gas);assertEquals(1,gas.vapor()[0],1e-8);
+        assertEquals(21,gas.componentCount());double[] exposed=gas.vapor();exposed[0]=0;
+        assertEquals(1,gas.vapor()[0],1e-8,"State component access must remain defensive");
         var pentane=pure(6);var liquid=model.flashTP(300,1e6,pentane,()->{});closure(pentane,liquid);assertEquals(1,liquid.liquid()[6],1e-8);
+        exposed=liquid.liquid();exposed[6]=0;assertEquals(1,liquid.liquid()[6],1e-8,"State component access must remain defensive");
     }
     @Test void crudePresetsAndThreePhaseWaterMaintainComponentInventory() {
         var catalog=MaterialCatalog.bundled();

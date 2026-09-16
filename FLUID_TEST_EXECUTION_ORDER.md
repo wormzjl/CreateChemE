@@ -2,7 +2,9 @@
 
 Updated 2026-09-16. The acceptance matrix in `FLUID_NETWORK_ACCEPTANCE.md` remains authoritative. This document gives the next testing assignments; an assignment is not a pass.
 
-Class/tool consolidation is now verified by 789 unit tests, 14 GameTests and 12 Python checks. The new candidate is `dd99bfd044c0e268ff6c69d5985c7fa20f6a8eb6aa01325f81889abe97946eeb`; section A records the completed historical `8dae23fe...` group. Future performance runs must use the actual candidate hash and cannot be pooled with pre-consolidation artifacts. Use `examples/Fluid-Benchmarks.py` subcommands for all benchmark audit/summary operations.
+Class/tool consolidation was committed as `a5dedf6`. Subsequent RAM optimization is verified by 790 unit tests, 14 GameTests and 13 Python checks, with all 60 cadence rows and the canonical report unchanged. The current candidate is `0e61828aebbaaa1251c804014856e05fb2719c0ae93a151a4ae7c3b590d895be`; section A records the completed historical `8dae23fe...` group. Future performance runs must use the actual candidate hash and cannot be pooled with earlier artifacts. Use `examples/Fluid-Benchmarks.py` subcommands for benchmark audit/summary/memory operations. Subsequent agent assignments use Sol, as requested; Luna ownership below records already completed historical work.
+
+The RAM checkpoint is complete: one matched 4 GiB baseline/candidate pair and a separate optimized 3 GiB capacity probe, all 100 networks advancing with conservation and clean runtime audits. Allocation per accepted simulated second falls 55.05% in the matched pair; fixed-heap resident RAM barely changes. Nonzero holds and differing host load prevent a sustained-performance or speedup claim. See `FLUID_NETWORK_STRESS_TEST.md` for exact evidence. Sections B–D remain open; future capacity qualification needs repeats under controlled host load and a loaded-world/soak workload.
 
 ## A. Complete the current two-worker module replicate group
 

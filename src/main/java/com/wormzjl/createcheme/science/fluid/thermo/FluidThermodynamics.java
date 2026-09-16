@@ -140,29 +140,30 @@ public final class FluidThermodynamics {
         double[] hc=Arrays.copyOf(overall,n);double nh=sum(hc),w=overall[n];
         if(!Double.isFinite(w)||w<0||nh+w<=0)throw new IllegalArgumentException("Empty fluid initialization");
         if(nh==0)return state(t,p,hc,hc,p>=saturationPressure(t)?w:0,p>=saturationPressure(t)?0:w,0);
-        if(w==0) {var split=splitHydrocarbon(t,p,p,hc,checkpoint);return state(t,p,split[0],split[1],0,0,p);}
+        if(w==0) {var terms=hydrocarbon.temperatureTerms(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
         double ps=saturationPressure(t);
+        TranslatedPengRobinson.TemperatureTerms terms=null;
         if(p>ps+1e-6) {
-            double pc=p-ps;var split=splitHydrocarbon(t,p,pc,hc,checkpoint);
-            double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR).molarVolume():0;
+            terms=hydrocarbon.temperatureTerms(t);
+            double pc=p-ps;var split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
+            double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
             double required=ps*vg/(R*t);
-            if(required<=w)return state(t,p,split[0],split[1],w-required,required,pc);
+            if(required<=w)return state(t,p,split[0],split[1],w-required,required,pc,terms);
         }
         double low=1e-6,high=p;double[][] split=null;double pc=high;
         for(int iteration=0;iteration<70;iteration++) {
-            checkpoint.run();pc=(low+high)*.5;split=splitHydrocarbon(t,p,pc,hc,checkpoint);
-            double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR).molarVolume():0;
+            checkpoint.run();pc=(low+high)*.5;if(terms==null)terms=hydrocarbon.temperatureTerms(t);split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
+            double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
             double residual=vg>0?pc+w*R*t/vg-p:Double.POSITIVE_INFINITY;
             if(Math.abs(residual)<1e-8*p)break;
             if(residual>0)high=pc;else low=pc;
         }
-        var result=state(t,p,split[0],split[1],0,w,pc);
+        var result=state(t,p,split[0],split[1],0,w,pc,terms);
         if(Math.abs(pc+result.waterPartialPressure-p)>1e-6*p)throw new IllegalArgumentException("Hybrid TP initialization did not converge");
         return result;
     }
 
-    private double[][] splitHydrocarbon(double t,double liquidPressure,double vaporPressure,double[] amounts,Runnable checkpoint) {
-        var terms=hydrocarbon.temperatureTerms(t);
+    private double[][] splitHydrocarbon(double t,double liquidPressure,double vaporPressure,double[] amounts,Runnable checkpoint,TranslatedPengRobinson.TemperatureTerms terms) {
         int n=amounts.length;double total=sum(amounts);double[] z=amounts.clone(),k=new double[n],x=new double[n],y=new double[n];
         for(int i=0;i<n;i++) {z[i]/=total;var c=hydrocarbon.propertyPackage().properties().get(i).pr();
             k[i]=Math.exp(Math.clamp(Math.log(c.criticalPressure()/vaporPressure)+5.373*(1+c.acentricFactor())*(1-c.criticalTemperature()/t),-600,600));}
@@ -204,6 +205,8 @@ public final class FluidThermodynamics {
                         double mass,double liquidVolume,double waterVolume,double vaporVolume,HydrocarbonModel.Phase liquidProperties,
                         HydrocarbonModel.Phase vaporProperties) {
         public State {liquid=liquid.clone();vapor=vapor.clone();}
+        /** Conserved component basis length, with water in the final position. */
+        public int componentCount(){return liquid.length+1;}
         @Override public double[] liquid(){return liquid.clone();}
         @Override public double[] vapor(){return vapor.clone();}
     }

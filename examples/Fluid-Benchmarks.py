@@ -3,11 +3,13 @@
 Run from the checkout root with Python 3. No third-party packages are required.
 """
 import argparse
+import csv
 import hashlib
 import json
 import math
 import re
 from collections import Counter, defaultdict
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 
@@ -17,6 +19,15 @@ RUNTIME_ERRORS = (
     "Encountered an unexpected exception",
     "Game test server crashed",
     "process_solver lifecycle=STOPPED_WITH_FAULT",
+    "OutOfMemoryError",
+)
+
+MEMORY_JFR_EVENTS = (
+    "jdk.ObjectAllocationSample",
+    "jdk.GarbageCollection",
+    "jdk.GCPhasePause",
+    "jdk.GCHeapSummary",
+    "jdk.CPULoad",
 )
 
 
@@ -63,6 +74,394 @@ def stress_statistics(values):
         "p95": summary["p95"],
         "max": summary["max"],
     }
+
+
+def memory_statistics(values):
+    values = sorted(values)
+    summary = statistics(values)
+    return {
+        "count": summary["count"],
+        "min": values[0] if values else None,
+        "median": summary["median"],
+        "p95": summary["p95"],
+        "p99": values[math.ceil(len(values) * 0.99) - 1] if values else None,
+        "max": summary["max"],
+    }
+
+
+def parse_jfr_duration_seconds(value):
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return float(value)
+    match = re.fullmatch(r"PT(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(\d+(?:\.\d+)?)S", value)
+    if not match:
+        raise ValueError(f"Unsupported JFR duration: {value!r}")
+    hours, minutes, seconds = (float(part or 0) for part in match.groups())
+    return hours * 3600 + minutes * 60 + seconds
+
+
+def parse_jfr_time(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def jfr_class_name(value):
+    name = value.get("name", "<unknown>") if isinstance(value, dict) else str(value)
+    dimensions = len(name) - len(name.lstrip("["))
+    if not dimensions:
+        return name.replace("/", ".")
+    component = name[dimensions:]
+    primitives = {"B": "byte", "C": "char", "D": "double", "F": "float", "I": "int",
+                  "J": "long", "S": "short", "Z": "boolean"}
+    if component in primitives:
+        base = primitives[component]
+    elif component.startswith("L") and component.endswith(";"):
+        base = component[1:-1].replace("/", ".")
+    else:
+        base = component.replace("/", ".")
+    return base + "[]" * dimensions
+
+
+def jfr_allocation_site(values):
+    frames = (values.get("stackTrace") or {}).get("frames") or []
+    if not frames:
+        return "<no-stack>"
+    method = frames[0].get("method") or {}
+    owner = (method.get("type") or {}).get("name", "<unknown>").replace("/", ".")
+    return f"{owner}.{method.get('name', '<unknown>')}"
+
+
+def ranked_weights(weights, total, limit):
+    return [
+        {"name": name, "sampledWeightBytes": weight,
+         "share": weight / total if total else None}
+        for name, weight in sorted(weights.items(), key=lambda item: (-item[1], item[0]))[:limit]
+    ]
+
+
+def summarize_memory_events(events, measurement_start=None, measurement_end=None, top=15):
+    start = parse_jfr_time(measurement_start) if isinstance(measurement_start, str) else measurement_start
+    end = parse_jfr_time(measurement_end) if isinstance(measurement_end, str) else measurement_end
+    if (start is None) != (end is None) or (start is not None and end <= start):
+        raise ValueError("Measurement start and end must form a positive explicit window")
+
+    first_time = last_time = None
+    allocation_weight = allocation_samples = gc_events = 0
+    allocation_types, allocation_sites = Counter(), Counter()
+    pause_millis, heap_before, heap_after = [], [], []
+    jvm_cpu_load, machine_cpu_load = [], []
+    clipped_pause_events = 0
+    for event in events:
+        event_type = event.get("type")
+        values = event.get("values") or {}
+        if event_type not in MEMORY_JFR_EVENTS or "startTime" not in values:
+            continue
+        timestamp = parse_jfr_time(values["startTime"])
+        event_end = timestamp
+        if event_type == "jdk.GCPhasePause":
+            duration_seconds = parse_jfr_duration_seconds(values["duration"])
+            event_end = timestamp + timedelta(seconds=duration_seconds)
+        first_time = timestamp if first_time is None or timestamp < first_time else first_time
+        last_time = event_end if last_time is None or event_end > last_time else last_time
+        if event_type == "jdk.GCPhasePause":
+            if start is None:
+                pause_millis.append(duration_seconds * 1000)
+            else:
+                overlap_start = max(timestamp, start)
+                overlap_end = min(event_end, end)
+                if overlap_end > overlap_start:
+                    overlap_seconds = (overlap_end - overlap_start).total_seconds()
+                    pause_millis.append(overlap_seconds * 1000)
+                    clipped_pause_events += timestamp < start or event_end > end
+            continue
+        if start is not None and not (start <= timestamp < end):
+            continue
+        if event_type == "jdk.ObjectAllocationSample":
+            weight = values["weight"]
+            if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
+                raise ValueError("Allocation sample weight must be a nonnegative integer")
+            allocation_samples += 1
+            allocation_weight += weight
+            allocation_types[jfr_class_name(values.get("objectClass", {}))] += weight
+            allocation_sites[jfr_allocation_site(values)] += weight
+        elif event_type == "jdk.GarbageCollection":
+            gc_events += 1
+        elif event_type == "jdk.CPULoad":
+            jvm_cpu_load.append(values["jvmUser"] + values["jvmSystem"])
+            machine_cpu_load.append(values["machineTotal"])
+        else:
+            heap_used = values["heapUsed"]
+            if not isinstance(heap_used, int) or isinstance(heap_used, bool) or heap_used < 0:
+                raise ValueError("GC heap-used value must be a nonnegative integer")
+            if values["when"] == "Before GC":
+                heap_before.append(heap_used)
+            elif values["when"] == "After GC":
+                heap_after.append(heap_used)
+
+    effective_start = start or first_time
+    effective_end = end or last_time
+    if effective_start is None or effective_end is None:
+        raise ValueError("JFR export contains none of the required memory events")
+    duration_seconds = (effective_end - effective_start).total_seconds()
+    total_pause = sum(pause_millis)
+    pause_summary = memory_statistics(pause_millis)
+    pause_summary["total"] = total_pause
+    pause_summary["fractionOfWindow"] = total_pause / (duration_seconds * 1000) if duration_seconds > 0 else None
+    return {
+        "window": {
+            "start": effective_start.isoformat(),
+            "end": effective_end.isoformat(),
+            "durationSeconds": duration_seconds,
+            "explicit": start is not None,
+        },
+        "allocationSamples": allocation_samples,
+        "sampledAllocationWeightBytes": allocation_weight,
+        "sampledAllocationWeightBytesPerSecond": allocation_weight / duration_seconds if duration_seconds > 0 else None,
+        "topAllocationTypes": ranked_weights(allocation_types, allocation_weight, top),
+        "topAllocationSites": ranked_weights(allocation_sites, allocation_weight, top),
+        "gcCollectionEvents": gc_events,
+        "gcPauseEvents": len(pause_millis),
+        "gcPauseClippedEvents": clipped_pause_events,
+        "gcPauseMilliseconds": pause_summary,
+        "heapUsedBeforeGcBytes": memory_statistics(heap_before),
+        "heapUsedAfterGcBytes": memory_statistics(heap_after),
+        "cpuLoad": {
+            "jvmFraction": {
+                "count": len(jvm_cpu_load),
+                "mean": sum(jvm_cpu_load) / len(jvm_cpu_load) if jvm_cpu_load else None,
+                "p95": statistics(jvm_cpu_load)["p95"],
+            },
+            "machineFraction": {
+                "count": len(machine_cpu_load),
+                "mean": sum(machine_cpu_load) / len(machine_cpu_load) if machine_cpu_load else None,
+                "p95": statistics(machine_cpu_load)["p95"],
+            },
+        },
+        "semantics": {
+            "sampledAllocationWeightBytes": "JFR sampled allocation weight estimates allocation pressure; it is neither exact allocated bytes nor live retained memory.",
+            "heapUsedAfterGcBytes": "Heap used after a collector event is an observed heap-occupancy point, not a retained-object measurement or a hard live-set floor.",
+            "gcCounts": "Collection-event count and pause-event count are separate; one collection may have multiple pauses and concurrent work.",
+            "gcPauseMilliseconds": "Pause events that overlap the measurement boundaries are included, with duration clipped to the exact window.",
+            "cpuLoad": "JFR CPULoad samples are fractions of total host CPU capacity; these are means of timestamp-selected samples, not isolated CPU-time attribution.",
+        },
+    }
+
+
+def iter_jfr_json_events(stream, chunk_size=1024 * 1024):
+    decoder = json.JSONDecoder()
+    buffer = ""
+    position = 0
+    found_events = False
+    end_of_input = False
+    while True:
+        if position:
+            buffer = buffer[position:]
+            position = 0
+        if not end_of_input and not buffer:
+            chunk = stream.read(chunk_size)
+            if chunk:
+                buffer += chunk
+            else:
+                end_of_input = True
+        if not found_events:
+            match = re.search(r'"events"\s*:\s*\[', buffer)
+            if match:
+                position = match.end()
+                found_events = True
+                continue
+            if end_of_input:
+                raise ValueError("JFR JSON export has no recording.events array")
+            buffer = buffer[-32:]
+            chunk = stream.read(chunk_size)
+            if chunk:
+                buffer += chunk
+            else:
+                end_of_input = True
+            continue
+        while position < len(buffer) and (buffer[position].isspace() or buffer[position] == ","):
+            position += 1
+        if position < len(buffer) and buffer[position] == "]":
+            return
+        try:
+            event, position = decoder.raw_decode(buffer, position)
+            yield event
+        except json.JSONDecodeError:
+            if end_of_input:
+                raise ValueError("Truncated or invalid event in JFR JSON export")
+            if position:
+                buffer = buffer[position:]
+                position = 0
+            chunk = stream.read(chunk_size)
+            if chunk:
+                buffer += chunk
+            else:
+                end_of_input = True
+            continue
+
+
+def memory_benchmark_metadata(report):
+    manifest = report.get("manifest", {})
+    fields = ("status", "profile", "processId", "startEpochMillis", "measuredStartEpochMillis",
+              "warmupTicks", "warmupHeldIntervals", "measuredSeconds", "elapsedSeconds", "workers",
+              "islands", "heldIntervals", "approximateIntervals", "everyIslandAdvanced",
+              "stressIntegrityPassed", "finalDebtSeconds")
+    return {
+        "runId": manifest.get("runId"),
+        "artifactSha256": manifest.get("artifactSha256"),
+        "fixtureClassesSha256": manifest.get("fixtureClassesSha256"),
+        "configSha256": manifest.get("configSha256"),
+        **{field: report.get(field) for field in fields if field in report},
+    }
+
+
+def summarize_scientific_progress(report):
+    samples = report.get("samples", [])
+    accepted = [sample for sample in samples if sample.get("timing", {}).get("accepted") is True]
+    simulated_seconds = sum(
+        (sample["timing"]["endTick"] - sample["timing"]["startTick"]) / 20
+        for sample in accepted
+    )
+    measured_seconds = report.get("measuredSeconds")
+    islands = report.get("islands")
+    return {
+        "acceptedIntervals": len(accepted),
+        "simulatedSecondsAdvanced": simulated_seconds,
+        "measuredSeconds": measured_seconds,
+        "equivalentFiveSecondIntervalsPerSecond": (
+            simulated_seconds / (5 * measured_seconds) if measured_seconds else None
+        ),
+        "aggregateRealtimeRatio": (
+            simulated_seconds / (islands * measured_seconds) if islands and measured_seconds else None
+        ),
+        "heldIntervals": report.get("heldIntervals"),
+        "approximateIntervals": report.get("approximateIntervals"),
+        "everyIslandAdvanced": report.get("everyIslandAdvanced"),
+        "stressIntegrityPassed": report.get("stressIntegrityPassed"),
+    }
+
+
+def summarize_jvm_memory_samples(report):
+    marker = report.get("measuredStartEpochMillis")
+    duration = report.get("measuredSeconds")
+    end_millis = marker + 1000 * duration if isinstance(marker, (int, float)) and isinstance(duration, (int, float)) else None
+    samples = [
+        sample for sample in report.get("memorySamples", [])
+        if sample.get("measured") is True
+        and (end_millis is None or marker <= sample["epochMillis"] < end_millis)
+    ]
+    if not samples:
+        return {"available": False, "sampleCount": 0}
+    byte_fields = (
+        "heapUsed",
+        "heapCommitted",
+        "heapMax",
+        "nonHeapUsed",
+        "directBufferBytes",
+        "mappedBufferBytes",
+    )
+    result = {
+        "available": True,
+        "sampleCount": len(samples),
+        "firstEpochMillis": min(sample["epochMillis"] for sample in samples),
+        "lastEpochMillis": max(sample["epochMillis"] for sample in samples),
+    }
+    for field in byte_fields:
+        values = [sample[field] for sample in samples if isinstance(sample.get(field), (int, float))]
+        result[field] = memory_statistics(values)
+    for field in ("gcCount", "gcMillis"):
+        values = [sample[field] for sample in samples if isinstance(sample.get(field), (int, float))]
+        result[f"{field}Delta"] = max(values) - min(values) if values else None
+    return result
+
+
+def summarize_rss_csv(path, start, end):
+    rows = []
+    with path.open(newline="", encoding="utf-8-sig") as stream:
+        for row in csv.DictReader(stream):
+            epoch_millis = int(row["epochMillis"])
+            if start.timestamp() * 1000 <= epoch_millis < end.timestamp() * 1000:
+                rows.append({key: int(value) for key, value in row.items() if value not in (None, "")})
+    if not rows:
+        raise ValueError("RSS CSV has no samples in the measurement window")
+    return {
+        "sampleCount": len(rows),
+        "firstEpochMillis": min(row["epochMillis"] for row in rows),
+        "lastEpochMillis": max(row["epochMillis"] for row in rows),
+        "workingSetBytes": memory_statistics([row["workingSetBytes"] for row in rows]),
+        "privateBytes": memory_statistics([row["privateBytes"] for row in rows]),
+        "peakWorkingSetBytesProcessLifetime": max(
+            (row["peakWorkingSetBytes"] for row in rows if "peakWorkingSetBytes" in row),
+            default=None,
+        ),
+        "semantics": {
+            "workingSetBytes": "The maximum is the largest sampled working set inside the measurement window.",
+            "peakWorkingSetBytesProcessLifetime": "The OS counter is process-lifetime peak working set, even when observed inside the measurement window.",
+        },
+    }
+
+
+def build_memory_summary(jfr_events, report, measurement_start, measurement_end, rss_csv=None, top=15):
+    result = summarize_memory_events(jfr_events, measurement_start, measurement_end, top)
+    result["benchmark"] = memory_benchmark_metadata(report)
+    result["scientificProgress"] = summarize_scientific_progress(report)
+    result["jvmMemorySamples"] = summarize_jvm_memory_samples(report)
+    progress = result["scientificProgress"]
+    weight = result["sampledAllocationWeightBytes"]
+    alignment = memory_window_alignment(report, measurement_start, measurement_end)
+    result["scientificProgressAlignment"] = alignment
+    result["sampledAllocationWeightPerAcceptedInterval"] = (
+        weight / progress["acceptedIntervals"]
+        if alignment["aligned"] and progress["acceptedIntervals"]
+        else None
+    )
+    result["sampledAllocationWeightPerSimulatedSecond"] = (
+        weight / progress["simulatedSecondsAdvanced"]
+        if alignment["aligned"] and progress["simulatedSecondsAdvanced"]
+        else None
+    )
+    result["rssSamples"] = summarize_rss_csv(rss_csv, parse_jfr_time(measurement_start), parse_jfr_time(measurement_end)) if rss_csv else None
+    return result
+
+
+def memory_window_alignment(report, start, end):
+    marker = report.get("measuredStartEpochMillis")
+    duration = report.get("measuredSeconds")
+    if not isinstance(marker, (int, float)) or not isinstance(duration, (int, float)):
+        return {
+            "aligned": False,
+            "reason": "Report lacks exact measuredStartEpochMillis/measuredSeconds markers; progress normalization is suppressed.",
+        }
+    actual_start, actual_end = parse_jfr_time(start), parse_jfr_time(end)
+    expected_start = datetime.fromtimestamp(marker / 1000, timezone.utc)
+    expected_end = expected_start + timedelta(seconds=duration)
+    tolerance_seconds = 0.001
+    aligned = (
+        abs((actual_start - expected_start).total_seconds()) <= tolerance_seconds
+        and abs((actual_end - expected_end).total_seconds()) <= tolerance_seconds
+    )
+    return {
+        "aligned": aligned,
+        "reason": (
+            "JFR window matches the report's measured phase markers."
+            if aligned
+            else "Explicit JFR window differs from the report's measured phase; progress normalization is suppressed."
+        ),
+    }
+
+
+def measurement_window(report, explicit_start=None, explicit_end=None):
+    if explicit_start is not None or explicit_end is not None:
+        if explicit_start is None or explicit_end is None:
+            raise ValueError("Both explicit measurement timestamps are required")
+        start, end = parse_jfr_time(explicit_start), parse_jfr_time(explicit_end)
+    else:
+        start_millis = report.get("measuredStartEpochMillis")
+        measured_seconds = report.get("measuredSeconds")
+        if not isinstance(start_millis, (int, float)) or not isinstance(measured_seconds, (int, float)):
+            raise ValueError("Report lacks measuredStartEpochMillis/measuredSeconds; provide explicit timestamps")
+        start = datetime.fromtimestamp(start_millis / 1000, timezone.utc)
+        end = start + timedelta(seconds=measured_seconds)
+    if end <= start:
+        raise ValueError("Measurement window must have positive duration")
+    return start.isoformat(), end.isoformat()
 
 
 def validate_measured_slices(report):
@@ -432,6 +831,35 @@ def build_parser():
         type=Path,
         default=Path("build/libs/createcheme-0.1.0.jar"),
     )
+
+    memory_parser = commands.add_parser(
+        "memory",
+        help="Summarize JFR memory events with benchmark and optional process telemetry",
+    )
+    memory_parser.add_argument(
+        "--jfr-json",
+        type=Path,
+        required=True,
+        help="JSON from jfr print containing allocation, GC pause, collection and heap-summary events",
+    )
+    memory_parser.add_argument(
+        "--jfr-recording",
+        type=Path,
+        help="Original .jfr recording retained as the authoritative source",
+    )
+    memory_parser.add_argument("--report", type=Path, required=True, help="Matching benchmark report.json")
+    memory_parser.add_argument("--rss-csv", type=Path, help="Optional 1 Hz process working-set/private-byte CSV")
+    memory_parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("build/reports/fluid/memory-summary.json"),
+    )
+    memory_parser.add_argument(
+        "--measurement-start",
+        help="ISO-8601 override for reports without measuredStartEpochMillis",
+    )
+    memory_parser.add_argument("--measurement-end", help="ISO-8601 exclusive measurement-window end")
+    memory_parser.add_argument("--top", type=int, default=15, help="Number of allocation types/sites to retain")
     return parser
 
 
@@ -462,9 +890,33 @@ def main(argv=None):
             f"{len(result['contentionReports'])} contention reports; {args.output}"
         )
         return 0
-    result = summarize_stress(args.root, args.artifact)
+    if args.command == "stress":
+        result = summarize_stress(args.root, args.artifact)
+        write_json(args.output, result)
+        print(f"{len(result['runs'])} stress runs; {args.output}")
+        return 0
+    if args.top < 1:
+        parser.error("--top must be positive")
+    report = json.loads(args.report.read_text(encoding="utf-8"))
+    try:
+        start, end = measurement_window(report, args.measurement_start, args.measurement_end)
+        with args.jfr_json.open(encoding="utf-8") as stream:
+            result = build_memory_summary(
+                iter_jfr_json_events(stream), report, start, end, args.rss_csv, args.top
+            )
+    except ValueError as error:
+        parser.error(str(error))
+    result["sources"] = {
+        "jfrJson": str(args.jfr_json),
+        "jfrRecording": str(args.jfr_recording) if args.jfr_recording else None,
+        "benchmarkReport": str(args.report),
+        "rssCsv": str(args.rss_csv) if args.rss_csv else None,
+    }
     write_json(args.output, result)
-    print(f"{len(result['runs'])} stress runs; {args.output}")
+    print(
+        f"{result['allocationSamples']} allocation samples, {result['gcPauseEvents']} GC pauses; "
+        f"{args.output}"
+    )
     return 0
 
 

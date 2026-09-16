@@ -109,6 +109,12 @@ neoForge {
             systemProperty 'createcheme.fluid.stress.warmupSeconds', providers.gradleProperty('fluidStressWarmupSeconds').getOrElse('60')
             systemProperty 'createcheme.fluid.stress.measurementSeconds', providers.gradleProperty('fluidStressMeasurementSeconds').getOrElse('120')
             systemProperty 'createcheme.fluid.stress.profile', providers.gradleProperty('fluidStressProfile').getOrElse('false')
+            systemProperty 'createcheme.fluid.benchmark.memory', providers.gradleProperty('fluidBenchmarkMemory').getOrElse('false')
+            if (providers.gradleProperty('fluidBenchmarkHeapMiB').isPresent()) {
+                def heapMiB = providers.gradleProperty('fluidBenchmarkHeapMiB').get().toInteger()
+                if (heapMiB < 512 || heapMiB > 16384) throw new GradleException('fluidBenchmarkHeapMiB must be between 512 and 16384')
+                jvmArguments.addAll("-Xms${heapMiB}m", "-Xmx${heapMiB}m")
+            }
             systemProperty 'createcheme.fluid.benchmark.testFailure', providers.gradleProperty('fluidBenchmarkTestFailure').getOrElse('false')
             systemProperty 'createcheme.fluid.benchmark.output', layout.buildDirectory.file("reports/fluid/M9/${runId}/report.json").get().asFile.absolutePath
             systemProperty 'createcheme.fluid.benchmark.manifest', layout.projectDirectory.file("run/fluid-benchmark/${runId}/manifest.json").asFile.absolutePath
@@ -320,7 +326,8 @@ tasks.register('fluidServerBenchmark') {
         def logFile = new File(fluidBenchmarkDirectory, 'logs/latest.log')
         if (!logFile.isFile() || !fluidBenchmarkReportFile.isFile()) throw new GradleException('Missing benchmark report/runtime log')
         def patterns = ['Error executing task on Server', 'process_solver lifecycle=DRAIN_FAILED',
-                'Encountered an unexpected exception', 'Game test server crashed', 'process_solver lifecycle=STOPPED_WITH_FAULT']
+                'Encountered an unexpected exception', 'Game test server crashed', 'process_solver lifecycle=STOPPED_WITH_FAULT',
+                'OutOfMemoryError']
         def matches = logFile.readLines('UTF-8').findAll { line -> patterns.any { line.contains(it) } }
         def report = new groovy.json.JsonSlurper().parse(fluidBenchmarkReportFile)
         def digest = { byte[] bytes -> java.security.MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }

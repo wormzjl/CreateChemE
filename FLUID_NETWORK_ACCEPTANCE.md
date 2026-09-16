@@ -6,7 +6,13 @@ Updated 2026-09-16. Branch: `codex/simulation-fluid-network`.
 
 ## Verified build
 
-### Current class/tool consolidation checkpoint
+### Current RAM optimization checkpoint
+
+Artifact `0e61828aebbaaa1251c804014856e05fb2719c0ae93a151a4ae7c3b590d895be` passes **790 unit tests, all 14 GameTests and build** (`build/fluid-memory-regression.log`), plus **13 Python tool checks**. All 60 P31 cadence rows and the complete canonical report exactly match the consolidated baseline. Immutable coefficient reuse and fewer duplicate snapshots preserve equations, defensive-copy boundaries, conservation tolerances and concurrency ownership.
+
+Matched 4 GiB stress runs reduce sampled allocation per accepted simulated second by 55.05% and GC pause by 62.24%; peak sampled resident process RAM falls 0.67%. The optimized 3 GiB capacity probe also passes stress integrity, using 3,576.94 MiB peak sampled resident memory versus 4,632.66 MiB at 4 GiB. All runs advance every network with zero approximation, runtime errors and JFR data loss. Nonzero holds remain; useful progress is lower and host load differs. These single-run characterizations establish neither a general speedup nor ordinary M9 qualification. See [RAM results and limitations](FLUID_NETWORK_STRESS_TEST.md).
+
+### Previous class/tool consolidation checkpoint
 
 Artifact `dd99bfd044c0e268ff6c69d5985c7fa20f6a8eb6aa01325f81889abe97946eeb` passes **789 unit tests, all 14 GameTests, and build** (`build/fluid-consolidation-regression.log`). The consolidated Python benchmark tool passes **12 tests**. Sol subagents consolidated shared fixtures and benchmark analysis while the parent consolidated production worker utilities and conserved-component mapping.
 

@@ -1,6 +1,76 @@
-# 100-network CPU stress test
+# 100-network CPU and RAM stress test
 
-## Latest stress characterization (before class consolidation) — 2026-09-16
+## RAM optimization results — 2026-09-16
+
+The committed consolidated baseline is `a5dedf6`. A Sol subagent implemented allocation reductions and another Sol subagent analyzed the recordings. The parent reviewed the changes and ran the three benchmarks sequentially. All runs used the fixture below, automatic allocation capped at twelve workers, 60 s warmup and 120 s measurement. The first two runs fixed both initial and maximum heap at 4 GiB; the third was a separate 3 GiB capacity probe.
+
+| Measured result | Baseline, 4 GiB | Optimized, 4 GiB | Optimized, 3 GiB |
+|---|---:|---:|---:|
+| Run ID | `memory-baseline-4g-r01` | `memory-candidate-4g-r01` | `memory-candidate-3g-r01` |
+| Sampled allocation weight, MiB/s | 6,919.56 | 2,928.59 | 2,658.10 |
+| Sampled allocated bytes / accepted simulated second | 50,510,048 | 22,703,401 | 22,720,265 |
+| Total stop-the-world GC pause, ms | 3,123.124 | 1,179.215 | 1,415.293 |
+| GC pause p95, ms | 7.168 | 6.242 | 4.497 |
+| Heap used median / p95, MiB, 1 Hz samples | 2,256.4 / 3,511.2 | 1,540.4 / 3,202.3 | 1,965.9 / 2,847.5 |
+| Peak sampled heap used, MiB | 4,076.5 | 3,690.5 | 3,009.0 |
+| Peak sampled resident process RAM, MiB | 4,663.69 | 4,632.66 | 3,576.94 |
+| Peak sampled private committed memory, MiB | 4,721.32 | 4,699.04 | 3,633.45 |
+| Useful equivalent five-second intervals/s | 28.7297 | 27.0519 | 24.5351 |
+| Accepted simulated seconds, summed over networks | 17,241.70 | 16,239.05 | 14,725.65 |
+| Warmup / measured holds | 300 / 339 | 277 / 51 | 259 / 48 |
+| Final maximum simulation debt, s | 3.75 | 4.00 | 4.40 |
+| Mean JVM / whole-machine CPU, JFR samples | 51.37% / 73.36% | 21.08% / 44.24% | 18.42% / 25.50% |
+
+At the same 4 GiB heap, estimated allocation per accepted simulated second fell **55.05%**, allocation per wall second fell **57.68%**, and total GC pause fell **62.24%**. Peak sampled resident RAM fell only **0.67%**: reducing temporary garbage does not automatically release a fixed committed heap to the OS. Useful progress was 5.84% lower in this single pair, so this is not a demonstrated throughput speedup. Host CPU load also differed substantially; retries, warmup and catch-up affect the end-to-end comparison.
+
+The separate 3 GiB probe passed integrity and advanced every network. Its peak sampled resident RAM was **1,055.72 MiB lower** than the optimized 4 GiB run (22.79%), while useful progress was 9.30% lower and total GC pause was 20.02% higher. Allocation per accepted simulated second was almost unchanged (+0.074%). This supports operation of this unloaded-network fixture at 3 GiB; the baseline was not tested at 3 GiB, and the lower heap cap itself changes footprint. Normal gameplay heap defaults are unchanged. Loaded worlds, rendering and a long soak need their own capacity measurements.
+
+### What changed and what remains expensive
+
+The baseline JFR attributed 13.47% of sampled allocation weight to temperature-coefficient construction, 5.00%/4.77% to liquid/vapor snapshots and 3.70% to fugacity snapshots. Production changes reuse one immutable coefficient set through a constant-temperature flash, retain one exact-temperature coefficient hint per fixed-inventory equation object, and reuse local defensive snapshots through residual evaluation. Sparse-phase encoding fetches fugacity arrays lazily, once per phase; reservoir validation reads a scalar component count instead of cloning an array merely to inspect its length. The coefficient hint is published through a volatile reference and each evaluation uses its own local reference. There is no global cache or shared mutable scratch buffer.
+
+Public defensive copying, equations, summation order, phase/domain/velocity gates, conservation tolerances and worker ownership remain intact. Sparse matrix construction and numerical differentiation still allocate heavily; pooling their mutable storage would require explicit ownership and cancellation checks. Startup/recovery holds and aggregate-load cadence classification also remain open. Lower allocation alone does not close these performance weaknesses.
+
+### Verification and evidence
+
+**790 unit tests, all 14 GameTests, build, and 13 Python tool tests pass.** All 60 P31 cadence rows and the complete canonical report are exactly unchanged. Java evidence is `build/fluid-memory-regression.log`; Python tests cover streaming input, measurement boundaries, GC pause clipping, mismatched-window normalization and runtime-error markers. No physics gate was relaxed.
+
+Every RAM run passes stress integrity: all 100 networks advance with fixture chunks unloaded, zero approximation, conserved components/energy, and a clean runtime audit including `OutOfMemoryError`. Maximum component errors are `4.420e-7 / 4.324e-7 / 4.487e-7` tolerance units; energy errors are `2.261e-9 / 2.620e-9 / 2.127e-9`. Each JFR has zero `jdk.DataLoss` events. The nonzero holds remain failures of clean sustained performance; these are not ordinary M9 qualification passes.
+
+Artifact identities:
+
+- Baseline production JAR SHA-256: `dd99bfd044c0e268ff6c69d5985c7fa20f6a8eb6aa01325f81889abe97946eeb`.
+- Optimized production JAR SHA-256, both heaps: `0e61828aebbaaa1251c804014856e05fb2719c0ae93a151a4ae7c3b590d895be`.
+- Identical benchmark fixture SHA-256 in all three runs: `3d9fbe2737707d6672f2f5dddc0c8a6eaf9c5ed25b79de5bd9336a020e77462d`.
+- Identical engine configuration SHA-256: `b402ffed27993f9aba7efcff3e54f73adc5a965a2af3cbd02c36b61889c0b16e`. Heap differences are recorded separately in JVM arguments and observed maximum heap.
+
+Raw `report.json`, `runtime-audit.json`, `stress.jfr`, `memory-start.json` and `process-memory.csv` are preserved under `build/reports/fluid/M9/<run-id>/`; runtime logs are under `run/fluid-benchmark/<run-id>/logs/latest.log`. Compact summaries are `build/reports/fluid/<run-id>-summary.json`. These generated files are local evidence, not checked-in binaries. Large intermediate JFR JSON exports were removed and can be regenerated with the commands below.
+
+## RAM benchmark protocol — 2026-09-16
+
+The consolidated implementation was committed as `a5dedf6` before optimization. Memory comparisons use the same 100-network fixture, automatic twelve-worker ceiling, 60 s warmup + 120 s measurement, JFR profile recording, and explicit `-Xms4096m -Xmx4096m`. `-PfluidBenchmarkMemory=true` enables test-only one-second heap/nonheap/direct-buffer and GC-counter observations, a PID identity file, and UTC phase markers. `-PfluidBenchmarkHeapMiB=4096` fixes the heap for both sides; it does not change normal gameplay defaults.
+
+Run one measured JVM at a time, with no concurrent tests, builds or JFR exports. A lightweight persistent PowerShell sampler reads the identified process's working set, private bytes and process-lifetime peak working set once per second into `process-memory.csv`. It ends when the benchmark writes its report. The sampler is read-only and does not request a full GC. Generated data stays under `build/reports/fluid/M9/<run-id>/`.
+
+Interpretation rules:
+
+- JFR allocation **weight** estimates temporary allocation pressure; it is not retained or live RAM. Also normalize it by accepted simulated seconds, since retries and catch-up can change useful work per wall second.
+- JVM heap-used samples include garbage awaiting collection. After-GC observations are reported separately and are not a retained-object census or leak proof.
+- Count `jdk.GCPhasePause` duration for stop-the-world pause cost. GC collection events, pause events and MXBean collection-time deltas have different semantics.
+- Process working set includes native/shared memory; private bytes are committed private memory and are not interchangeable with resident RAM. Label the OS lifetime-peak counter separately from the measured-window sample maximum.
+- Use recorded measurement UTC markers, not an assumed offset into a JFR. Keep artifact, fixture, heap, thread and property revisions with every result; report holds, conservation and actual scientific progress alongside memory statistics.
+
+Commands (use a fresh run ID and Java 21):
+
+```powershell
+.\gradlew.bat fluidServerBenchmark -PfluidBenchmarkRunId=<run-id> -PfluidBenchmarkProfile=stress100 -PfluidBenchmarkWorkers=0 -PfluidStressWarmupSeconds=60 -PfluidStressMeasurementSeconds=120 -PfluidStressProfile=true -PfluidBenchmarkMemory=true -PfluidBenchmarkHeapMiB=4096 --offline --console=plain
+jfr print --json --stack-depth 1 --events jdk.ObjectAllocationSample,jdk.GarbageCollection,jdk.GCPhasePause,jdk.GCHeapSummary,jdk.CPULoad build/reports/fluid/M9/<run-id>/stress.jfr > build/reports/fluid/M9/<run-id>/memory-events.json
+python examples/Fluid-Benchmarks.py memory --report build/reports/fluid/M9/<run-id>/report.json --jfr-json build/reports/fluid/M9/<run-id>/memory-events.json --jfr-recording build/reports/fluid/M9/<run-id>/stress.jfr --rss-csv build/reports/fluid/M9/<run-id>/process-memory.csv --output build/reports/fluid/<run-id>-summary.json
+```
+
+The `memory` analysis is part of the consolidated benchmark tool. It streams large JFR JSON exports rather than loading the entire recording into Python memory. Measurement windows are half-open; pause durations are clipped to their overlap with the window. Explicit timestamp overrides that differ from the report's measured interval suppress per-progress allocation normalization. Supplying the original recording allows the tool to check JFR data loss.
+
+## Earlier stress characterization (before class consolidation) — 2026-09-16
 
 Luna reran `luna-stress100-12cap-r01` on production artifact `8dae23fe56e0139ec0b4d00c0931fddea208bd9708c896553695057578338d3a`, automatic workers, 60 s warmup + 120 s measurement, with JFR enabled. All 100 networks / 1,993 reservoirs advanced with fixture chunks unloaded; allocated/active/outstanding maxima were 12. Component/energy errors were `3.9744e-7` / `1.8586e-9` tolerance units. Runtime audit passed with zero errors. These establish integrity and bounded concurrency.
 

@@ -55,9 +55,12 @@ Benchmark analysis is grouped in one standard-library Python tool:
 python examples/Fluid-Benchmarks.py audit <run-id>
 python examples/Fluid-Benchmarks.py summarize
 python examples/Fluid-Benchmarks.py stress
+python examples/Fluid-Benchmarks.py memory --help
 ```
 
 Use `--help` on the tool or a subcommand for paths/options. `audit` returns a failing exit code for runtime errors; stress summaries always retain `qualification: false`. Asset generation and scientific reference-data preparation remain separate tools because they have different inputs and responsibilities.
+
+For RAM profiling, add `-PfluidBenchmarkMemory=true -PfluidBenchmarkHeapMiB=4096 -PfluidStressProfile=true` to the `stress100` benchmark. The optional heap setting fixes both initial and maximum heap (512–16,384 MiB); it affects the benchmark JVM only. One-second JVM observations and measurement timestamps are written into its report. The `memory` subcommand combines those observations with streamed JFR allocation/GC/CPU events and an optional process-RAM CSV. See [RAM protocol, commands and results](FLUID_NETWORK_STRESS_TEST.md). Normal gameplay heap defaults are unchanged; the successful unloaded-network 3 GiB probe is not a loaded-world sizing recommendation.
 
 The existing isolated MCP test world is `run/mcp-client/saves/Fluid M8 MCP`. Launch it with `runMcpClient`; this requires the pinned MCP mod described in the progress record. It contains the former sonic-flow refusal reproduction as well as working pump/valve fixtures. Its saved pre-clamp state is retained as the portable regression fixture `src/test/resources/fluid/mcp-held-drain-checkpoint.json`.
 

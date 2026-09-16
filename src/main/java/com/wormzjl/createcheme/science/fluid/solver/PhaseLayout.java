@@ -40,7 +40,7 @@ public final class PhaseLayout {
         boolean resolveTraces=seed.vaporVolume()/seed.volume()<.01;
         componentScales=new double[l.length+1];for(int c=0;c<l.length;c++)componentScales[c]=!resolveTraces||conservedReference!=null&&conservedReference[c]==0?amountScale:Math.max(1e-30,l[c]+v[c]);
         componentScales[l.length]=!resolveTraces||conservedReference!=null&&conservedReference[l.length]==0?amountScale:Math.max(1e-30,seed.waterLiquid()+seed.waterVapor());
-        differenceScales=encode(seed);
+        differenceScales=encode(seed,l,v);
         if(!resolveTraces)for(int local=0;local<size;local++)if(totalAmountVariable(local))differenceScales[local]=Math.max(1e-4,differenceScales[local]);
         if(conservedReference!=null) {
             for(int c:components)if(conservedReference[c]==0){int at=liquidActive?liquidIndex[c]:vaporIndex[c];differenceScales[at]=Math.max(1e-4,differenceScales[at]);}
@@ -62,12 +62,21 @@ public final class PhaseLayout {
     public double temperature(double[] variables,int offset){return 350*Math.exp(variables[offset+temperatureIndex]);}
     public boolean hasHydrocarbons(){return liquidActive||vaporActive;}
     public double[] encode(FluidThermodynamics.State state) {
-        double[] x=new double[size],l=state.liquid(),v=state.vapor();
+        return encode(state,state.liquid(),state.vapor());
+    }
+    private double[] encode(FluidThermodynamics.State state,double[] l,double[] v) {
+        double[] x=new double[size],fl=null,fv=null;double phaseAmountRatio=0;
         for(int i:components){
             if(liquidActive&&vaporActive) {
                 x[liquidIndex[i]]=(l[i]+v[i])/amountScale;
-                x[vaporIndex[i]]=l[i]>0&&v[i]>0?Math.log(v[i])-Math.log(l[i]):Math.log(Arrays.stream(v).sum()/Arrays.stream(l).sum())
-                        +state.liquidProperties().logFugacity()[i]-state.vaporProperties().logFugacity()[i]+Math.log(state.pressure()/state.hydrocarbonPartialPressure());
+                if(l[i]>0&&v[i]>0)x[vaporIndex[i]]=Math.log(v[i])-Math.log(l[i]);
+                else {
+                    if(fl==null) {
+                        phaseAmountRatio=Math.log(Arrays.stream(v).sum()/Arrays.stream(l).sum());
+                        fl=state.liquidProperties().logFugacity();fv=state.vaporProperties().logFugacity();
+                    }
+                    x[vaporIndex[i]]=phaseAmountRatio+fl[i]-fv[i]+Math.log(state.pressure()/state.hydrocarbonPartialPressure());
+                }
             }
             else if(liquidIndex[i]>=0)x[liquidIndex[i]]=l[i]/amountScale;
             else if(vaporIndex[i]>=0)x[vaporIndex[i]]=v[i]/amountScale;
@@ -104,12 +113,12 @@ public final class PhaseLayout {
         if(waterLiquidIndex>=0||waterVaporIndex>=0)result[row++]=(state.waterLiquid()+state.waterVapor()-targetAmounts[l.length])/componentScales[l.length];
         result[row++]=(state.internalEnergy()-targetEnergy)/energyScale;
         result[row++]=(state.volume()-targetVolume)/targetVolume;
-        equilibriumResidual(state,result,row,offset,variables);
+        equilibriumResidual(state,l,v,result,row,offset,variables);
     }
     /** Zero-holdup mixing: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization. */
     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                                  double netMassFlow,double[] result,int offset,double[] variables) {
-        var n=totalAmounts(state);var present=new ArrayList<Integer>();for(int i:components)present.add(i);
+        double[] l=state.liquid(),v=state.vapor();var n=totalAmounts(state,l,v);var present=new ArrayList<Integer>();for(int i:components)present.add(i);
         if(waterLiquidIndex>=0||waterVaporIndex>=0)present.add(n.length-1);
         int row=offset;
         for(int index=0;index<present.size()-1;index++) {
@@ -119,10 +128,9 @@ public final class PhaseLayout {
         result[row++]=netMassFlow; // 1 kg/s reference scale
         result[row++]=(state.enthalpy()/state.mass()-incomingSpecificEnthalpy)/Math.max(1,energyScale/state.mass());
         result[row++]=Arrays.stream(n).sum()/amountScale-1;
-        equilibriumResidual(state,result,row,offset,variables);
+        equilibriumResidual(state,l,v,result,row,offset,variables);
     }
-    private void equilibriumResidual(FluidThermodynamics.State state,double[] result,int row,int offset,double[] variables) {
-        double[] l=state.liquid(),v=state.vapor();
+    private void equilibriumResidual(FluidThermodynamics.State state,double[] l,double[] v,double[] result,int row,int offset,double[] variables) {
         if(liquidActive&&vaporActive) {
             if(state.liquidProperties()==null||state.vaporProperties()==null)throw new IllegalArgumentException("A phase vanished inside a fixed-regime Newton trial");
             double nl=Arrays.stream(l).sum(),nv=Arrays.stream(v).sum();
@@ -135,17 +143,28 @@ public final class PhaseLayout {
         if(row!=offset+size)throw new IllegalStateException("Phase equation/unknown count mismatch");
     }
     public static double[] totalAmounts(FluidThermodynamics.State state) {
-        double[] l=state.liquid(),v=state.vapor(),n=Arrays.copyOf(l,l.length+1);
+        return totalAmounts(state,state.liquid(),state.vapor());
+    }
+    private static double[] totalAmounts(FluidThermodynamics.State state,double[] l,double[] v) {
+        double[] n=Arrays.copyOf(l,l.length+1);
         for(int i=0;i<l.length;i++)n[i]+=v[i];n[l.length]=state.waterLiquid()+state.waterVapor();return n;
     }
     public SparseNewton.Equations fixedInventory(double[] amounts,double energy,double volume) {
         double[] target=amounts.clone();
         return new SparseNewton.Equations(){
+            private volatile com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.TemperatureTerms temperatureTerms;
             public int size(){return PhaseLayout.this.size;}
             public double differenceScale(int column,double value){return PhaseLayout.this.differenceScale(column,value);}
             public double maximumStep(double[] x,double[] direction){double alpha=1;for(int c=0;c<x.length;c++)if(totalAmountVariable(c)&&x[c]>0&&direction[c]<0)alpha=Math.min(alpha,.99*x[c]/-direction[c]);return alpha;}
             public int[][] columnRows(){int[][] rows=new int[size()][size()];for(int[] column:rows)for(int i=0;i<column.length;i++)column[i]=i;return rows;}
-            public double[] residual(double[] x){double[] f=new double[size()];PhaseLayout.this.residual(decode(x,0),target,energy,volume,f,0,x);return f;}
+            public double[] residual(double[] x){
+                double temperature=PhaseLayout.this.temperature(x,0);
+                var localTerms=temperatureTerms;
+                if(hasHydrocarbons()&&(localTerms==null||localTerms.temperature()!=temperature)) {
+                    localTerms=model.hydrocarbon.temperatureTerms(temperature);temperatureTerms=localTerms;
+                }
+                double[] f=new double[size()];PhaseLayout.this.residual(decode(x,0,localTerms),target,energy,volume,f,0,x);return f;
+            }
         };
     }
 }

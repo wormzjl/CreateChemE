@@ -33,6 +33,10 @@ public final class FluidServerBenchmark {
     private FluidServerBenchmark() {}
     private record Fixture(FluidThermodynamics model,FluidCheckpointCodec.Checkpoint checkpoint,WorldTopologyLedger.Snapshot topology,Set<Long> chunks,int physicalPipes,int compressedPipes) {}
     private record Sample(long island,IslandCoordinator.Metrics timing,String status,PassiveStepSolver.Acceptance acceptance,int substeps,int rejectedSubsteps,Double readyToPublicationMillis) {}
+    /** Test-only one-second observations. Heap usage includes garbage awaiting collection; it is not retained live size. */
+    private record MemorySample(long onlineTick,long epochMillis,double sinceStartSeconds,boolean measured,
+                                long heapUsed,long heapCommitted,long heapMax,long nonHeapUsed,
+                                long directBufferBytes,long mappedBufferBytes,long gcCount,long gcMillis) {}
     private static final class Run {
         final MinecraftServer server;final GameTestHelper helper;final FluidWorldAuthority world;
         final boolean pilot=Boolean.getBoolean("createcheme.fluid.benchmark.pilot");
@@ -41,6 +45,13 @@ public final class FluidServerBenchmark {
         final int warmupTicks=stress?20*Math.max(10,Integer.getInteger("createcheme.fluid.stress.warmupSeconds",60)):pilot?20*Math.max(5,Integer.getInteger("createcheme.fluid.benchmark.pilotWarmupSeconds",5)):2400,targetIntervals=pilot?5:200;
         final long stressMeasurementNanos=1_000_000_000L*Math.max(20,Integer.getInteger("createcheme.fluid.stress.measurementSeconds",120));
         final long startTick,startNanos=System.nanoTime();
+        final long startEpochMillis=System.currentTimeMillis();
+        final boolean memoryEnabled=Boolean.getBoolean("createcheme.fluid.benchmark.memory");
+        final java.lang.management.MemoryMXBean memoryBean=memoryEnabled?java.lang.management.ManagementFactory.getMemoryMXBean():null;
+        final List<java.lang.management.GarbageCollectorMXBean> gcBeans=memoryEnabled?java.lang.management.ManagementFactory.getGarbageCollectorMXBeans():List.of();
+        final List<java.lang.management.BufferPoolMXBean> bufferPools=memoryEnabled?java.lang.management.ManagementFactory.getPlatformMXBeans(java.lang.management.BufferPoolMXBean.class):List.of();
+        final List<MemorySample> memorySamples=new ArrayList<>();
+        long measuredStartEpochMillis,lastMemoryTick=Long.MIN_VALUE;
         final List<Sample> samples=new ArrayList<>();final List<Double> engineMillis=new ArrayList<>(),tickMillis=new ArrayList<>(),tickSpacingMillis=new ArrayList<>();
         final List<Sample> warmupSamples=new ArrayList<>();
         final Map<Long,Long> seen=new HashMap<>();final double[] external=new double[22];
@@ -49,7 +60,25 @@ public final class FluidServerBenchmark {
         FluidContentionProbe competing;long contentionStartTick,contentionFinishedTick,maximumDebtTicks;int maximumOutstanding,maximumReady;boolean bounded=true;
         final List<Map<String,Object>> contentionSamples=new ArrayList<>();
         final List<Map<String,Object>> stressSamples=new ArrayList<>();
-        Run(GameTestHelper helper){this.helper=helper;server=helper.getLevel().getServer();world=FluidWorldAuthority.find(server).orElseThrow();startTick=world.onlineTick();FluidRuntimeMeter.enable(server);world.observe(this::published);}
+        Run(GameTestHelper helper){
+            this.helper=helper;server=helper.getLevel().getServer();world=FluidWorldAuthority.find(server).orElseThrow();startTick=world.onlineTick();FluidRuntimeMeter.enable(server);world.observe(this::published);
+            if(memoryEnabled) {
+                var path=Path.of(System.getProperty("createcheme.fluid.benchmark.output")).resolveSibling("memory-start.json");
+                try {Files.createDirectories(path.getParent());Files.writeString(path,new GsonBuilder().setPrettyPrinting().create().toJson(Map.of(
+                        "processId",ProcessHandle.current().pid(),"startEpochMillis",startEpochMillis,
+                        "warmupTicks",warmupTicks,"heapMaxBytes",memoryBean.getHeapMemoryUsage().getMax())));}
+                catch(java.io.IOException failure){throw new IllegalStateException("Cannot write memory benchmark identity",failure);}
+                memoryTick(true);
+            }
+        }
+        void memoryTick(boolean force) {
+            if(!memoryEnabled||(!force&&(world.onlineTick()%20!=0||lastMemoryTick==world.onlineTick())))return;
+            lastMemoryTick=world.onlineTick();var heap=memoryBean.getHeapMemoryUsage();long count=0,millis=0,direct=0,mapped=0;
+            for(var gc:gcBeans){if(gc.getCollectionCount()>=0)count+=gc.getCollectionCount();if(gc.getCollectionTime()>=0)millis+=gc.getCollectionTime();}
+            for(var pool:bufferPools){if(pool.getName().equals("direct"))direct+=pool.getMemoryUsed();else if(pool.getName().equals("mapped"))mapped+=pool.getMemoryUsed();}
+            memorySamples.add(new MemorySample(world.onlineTick(),System.currentTimeMillis(),(System.nanoTime()-startNanos)/1e9,
+                    measuredStarted!=0,heap.getUsed(),heap.getCommitted(),heap.getMax(),memoryBean.getNonHeapMemoryUsage().getUsed(),direct,mapped,count,millis));
+        }
         boolean measuring(){return world.onlineTick()-startTick>=warmupTicks;}
         boolean enoughSamples() {
             if(stress)return measuredStarted>0&&System.nanoTime()-measuredStarted>=stressMeasurementNanos;
@@ -189,14 +218,14 @@ public final class FluidServerBenchmark {
     }
     public static void beforeTick(ServerTickEvent.Pre event) {
         if(run==null||run.finished)return;long now=System.nanoTime();
-        run.contentionTick();run.stressTick();
+        run.contentionTick();run.stressTick();run.memoryTick(false);
         if(run.measuring()&&run.previousTickStarted!=0)run.tickSpacingMillis.add((now-run.previousTickStarted)/1e6);
         run.tickStarted=now;run.previousTickStarted=now;
         run.eligibleTickStarts.put(run.world.onlineTick()+1,now);if(run.eligibleTickStarts.size()>8192)run.eligibleTickStarts.pollFirstEntry();
     }
     public static void afterTick(ServerTickEvent.Post event) {
         if(run==null||run.finished)return;long now=System.nanoTime(),meter=FluidRuntimeMeter.totalNanos(event.getServer());
-        if(run.measuring()){if(run.measuredStarted==0)run.measuredStarted=now;run.engineMillis.add((meter-run.lastMeter)/1e6);if(run.tickStarted!=0)run.tickMillis.add((now-run.tickStarted)/1e6);}
+        if(run.measuring()){if(run.measuredStarted==0){run.measuredStarted=now;run.measuredStartEpochMillis=System.currentTimeMillis();}run.engineMillis.add((meter-run.lastMeter)/1e6);if(run.tickStarted!=0)run.tickMillis.add((now-run.tickStarted)/1e6);}
         run.lastMeter=meter;
         // GameTestServer normally ticks unpaced. Service its real server mailbox while waiting;
         // short solver completions can therefore refill workers between 20-TPS ticks.
@@ -204,7 +233,7 @@ public final class FluidServerBenchmark {
         long deadline=run.nextTick;event.getServer().managedBlock(()->System.nanoTime()>=deadline);
     }
     private static void finish(Run r) {
-        r.finished=true;r.world.observe(null);long now=System.nanoTime();
+        r.finished=true;r.world.observe(null);r.memoryTick(true);long now=System.nanoTime();
         var worker=r.samples.stream().map(Sample::timing).filter(m->m.workerNanos()>=0).map(m->m.workerNanos()/1e6).toList();
         var latency=r.samples.stream().map(s->s.timing().dispatchToPublicationNanos()/1e6).toList();long held=r.samples.stream().filter(s->!s.timing().accepted()).count();
         var endToEnd=r.samples.stream().map(Sample::readyToPublicationMillis).filter(Objects::nonNull).toList();
@@ -229,6 +258,8 @@ public final class FluidServerBenchmark {
         report.put("workerMilliseconds",statistics(worker));report.put("dispatchToPublicationMilliseconds",statistics(latency));report.put("engineServerMillisecondsPerTick",statistics(r.engineMillis));report.put("wholeTickMilliseconds",statistics(r.tickMillis));report.put("tickSpacingMilliseconds",statistics(r.tickSpacingMillis));
         report.put("readyToPublicationMilliseconds",statistics(endToEnd));report.put("latencyDefinition","Start of the eligible server tick to atomic publication; includes readiness queue/debt and the cohort barrier. Missing bounded timing history fails qualification.");
         report.put("samples",r.samples);report.put("rawEngineMillisecondsPerTick",r.engineMillis);report.put("rawTickSpacingMilliseconds",r.tickSpacingMillis);
+        if(r.memoryEnabled){report.put("memorySamples",r.memorySamples);report.put("startEpochMillis",r.startEpochMillis);report.put("measuredStartEpochMillis",r.measuredStartEpochMillis);
+            report.put("memoryNote","One-second JVM observations; heap used includes uncollected garbage. Use JFR after-GC heap and pause durations separately; GC MXBean time is collection time, not necessarily stop-the-world pause time. External process RSS/private bytes are separate from Java heap.");}
         report.put("warmupSamples",r.warmupSamples);report.put("warmupHeldIntervals",r.warmupSamples.stream().filter(s->!s.timing().accepted()).count());
         report.put("moduleCommittedTicks",finalState.modules().stream().map(FixedSplitModule.Snapshot::committedTick).toList());report.put("pendingTransferRecords",finalState.transfers().pending().size());report.put("plannedCapacityRecords",finalState.transfers().planned().size());
         report.put("qualificationNote","One fresh-JVM replicate only. Three replicates and one/many/module, worker-count, contention and soak coverage are required. Queue debt is present in each sample and is not hidden in worker timing.");

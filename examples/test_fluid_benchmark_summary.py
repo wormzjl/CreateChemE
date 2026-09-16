@@ -6,6 +6,7 @@ Run outside paced performance measurements, like other validation work.
 import copy
 import hashlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -66,6 +67,8 @@ class BenchmarkEvidenceTest(unittest.TestCase):
         self.assertEqual(Path("candidate.jar"), summary.artifact)
         stress = parser.parse_args(["stress", "--artifact", "candidate.jar"])
         self.assertEqual(Path("candidate.jar"), stress.artifact)
+        memory = parser.parse_args(["memory", "--jfr-json", "events.json", "--report", "report.json"])
+        self.assertEqual(Path("events.json"), memory.jfr_json)
 
     def test_audit_scans_every_runtime_marker_and_records_hashes(self):
         path, log_path = self.record()
@@ -99,6 +102,85 @@ class BenchmarkEvidenceTest(unittest.TestCase):
         result = SUMMARY.summarize_stress(self.root, Path(self.temp.name) / "missing.jar")
         self.assertIs(False, result["qualification"])
         self.assertEqual(["stress"], [run["run"] for run in result["runs"]])
+
+    def test_memory_parser_aligns_window_and_keeps_memory_semantics_separate(self):
+        start = "2026-09-16T06:00:00+00:00"
+        events = {"recording": {"events": [
+            {"type": "jdk.ObjectAllocationSample", "values": {
+                "startTime": "2026-09-16T06:00:01+00:00", "weight": 400,
+                "objectClass": {"name": "[D"}, "stackTrace": {"frames": [{"method": {
+                    "type": {"name": "example/Solver"}, "name": "solve"}}]}}},
+            {"type": "jdk.ObjectAllocationSample", "values": {
+                "startTime": "2026-09-16T06:00:11+00:00", "weight": 900,
+                "objectClass": {"name": "[I"}}},
+            {"type": "jdk.GarbageCollection", "values": {
+                "startTime": "2026-09-16T06:00:02+00:00"}},
+            {"type": "jdk.GCPhasePause", "values": {
+                "startTime": "2026-09-16T06:00:02+00:00", "duration": "PT0.0125S"}},
+            {"type": "jdk.GCPhasePause", "values": {
+                "startTime": "2026-09-16T05:59:59.995+00:00", "duration": "PT0.01S"}},
+            {"type": "jdk.GCPhasePause", "values": {
+                "startTime": "2026-09-16T06:00:09.995+00:00", "duration": "PT0.01S"}},
+            {"type": "jdk.GCPhasePause", "values": {
+                "startTime": "2026-09-16T06:00:10.001+00:00", "duration": "PT0.01S"}},
+            {"type": "jdk.GCHeapSummary", "values": {
+                "startTime": "2026-09-16T06:00:02+00:00", "when": "Before GC", "heapUsed": 1000}},
+            {"type": "jdk.GCHeapSummary", "values": {
+                "startTime": "2026-09-16T06:00:02.0125+00:00", "when": "After GC", "heapUsed": 400}},
+            {"type": "jdk.CPULoad", "values": {
+                "startTime": "2026-09-16T06:00:03+00:00", "jvmUser": 0.4,
+                "jvmSystem": 0.1, "machineTotal": 0.7}},
+        ]}}
+        stream = io.StringIO(json.dumps(events))
+        parsed = list(SUMMARY.iter_jfr_json_events(stream, chunk_size=13))
+        start_millis = int(SUMMARY.parse_jfr_time(start).timestamp() * 1000)
+        report = {
+            "measuredStartEpochMillis": start_millis, "measuredSeconds": 10, "islands": 1,
+            "samples": [{"timing": {"accepted": True, "startTick": 1200, "endTick": 1300}}],
+            "memorySamples": [
+                {"epochMillis": start_millis + 1000, "measured": True, "heapUsed": 300,
+                 "heapCommitted": 500, "heapMax": 4096, "nonHeapUsed": 100,
+                 "directBufferBytes": 20, "mappedBufferBytes": 0, "gcCount": 4, "gcMillis": 40},
+                {"epochMillis": start_millis + 9000, "measured": True, "heapUsed": 350,
+                 "heapCommitted": 500, "heapMax": 4096, "nonHeapUsed": 110,
+                 "directBufferBytes": 25, "mappedBufferBytes": 0, "gcCount": 6, "gcMillis": 55},
+                {"epochMillis": start_millis + 10000, "measured": True, "heapUsed": 4000,
+                 "heapCommitted": 500, "heapMax": 4096, "nonHeapUsed": 110,
+                 "directBufferBytes": 25, "mappedBufferBytes": 0, "gcCount": 99, "gcMillis": 999},
+            ],
+        }
+        rss_path = Path(self.temp.name) / "rss.csv"
+        rss_path.write_text(
+            "epochMillis,workingSetBytes,privateBytes,peakWorkingSetBytes\n"
+            f"{start_millis + 1000},700,800,900\n{start_millis + 9000},750,850,950\n",
+            encoding="utf-8",
+        )
+        window_start, window_end = SUMMARY.measurement_window(report)
+        result = SUMMARY.build_memory_summary(parsed, report, window_start, window_end, rss_path, top=2)
+        self.assertEqual(400, result["sampledAllocationWeightBytes"])
+        self.assertEqual("double[]", result["topAllocationTypes"][0]["name"])
+        self.assertEqual("example.Solver.solve", result["topAllocationSites"][0]["name"])
+        self.assertEqual(1, result["gcCollectionEvents"])
+        self.assertEqual(3, result["gcPauseEvents"])
+        self.assertEqual(2, result["gcPauseClippedEvents"])
+        self.assertAlmostEqual(22.5, result["gcPauseMilliseconds"]["total"])
+        self.assertEqual(400, result["heapUsedAfterGcBytes"]["max"])
+        self.assertEqual(0.5, result["cpuLoad"]["jvmFraction"]["mean"])
+        self.assertEqual(0.7, result["cpuLoad"]["machineFraction"]["mean"])
+        self.assertEqual(5, result["scientificProgress"]["simulatedSecondsAdvanced"])
+        self.assertEqual(0.1, result["scientificProgress"]["equivalentFiveSecondIntervalsPerSecond"])
+        self.assertIs(True, result["scientificProgressAlignment"]["aligned"])
+        self.assertEqual(80, result["sampledAllocationWeightPerSimulatedSecond"])
+        self.assertEqual(2, result["jvmMemorySamples"]["gcCountDelta"])
+        self.assertEqual(15, result["jvmMemorySamples"]["gcMillisDelta"])
+        self.assertEqual(350, result["jvmMemorySamples"]["heapUsed"]["max"])
+        self.assertEqual(750, result["rssSamples"]["workingSetBytes"]["max"])
+        self.assertEqual(950, result["rssSamples"]["peakWorkingSetBytesProcessLifetime"])
+        shifted = SUMMARY.build_memory_summary(
+            parsed, report, "2026-09-16T06:00:00.5+00:00", "2026-09-16T06:00:10.5+00:00"
+        )
+        self.assertIs(False, shifted["scientificProgressAlignment"]["aligned"])
+        self.assertIsNone(shifted["sampledAllocationWeightPerSimulatedSecond"])
 
     def test_three_clean_processes_complete_only_this_group(self):
         for index in range(1, 4):

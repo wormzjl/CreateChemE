@@ -6,6 +6,14 @@ Work order: `design/SIMULATION_ENGINE_AND_FLUID_NETWORK_WORK_ORDER.md` (local re
 
 ## Latest verification — 2026-09-16
 
+### RAM profiling and allocation reduction (Sol implementation and analysis)
+
+Committed the consolidated baseline as `a5dedf6`, then profiled the 100-network fixture with identical 4 GiB heaps. Reusing immutable temperature coefficients and local defensive snapshots reduces sampled allocation per accepted simulated second by **55.05%** and total GC pause by **62.24%**. Peak sampled process resident memory falls only **0.67%** at fixed heap. A separate successful 3 GiB probe lowers peak resident memory from 4,632.66 to 3,576.94 MiB, with lower useful throughput. Host load differs across these single runs; no general speedup or loaded-world capacity guarantee is claimed.
+
+**Verified:** 790 unit tests, 14 GameTests, build and 13 Python checks pass. All 60 P31 cadence rows and the canonical report remain exactly unchanged. Current production JAR SHA-256: `0e61828aebbaaa1251c804014856e05fb2719c0ae93a151a4ae7c3b590d895be`. Each RAM run advances all 100 networks, preserves conservation/unloaded-chunk operation, has zero approximation/runtime errors/JFR data loss, and retains nonzero holds. Ordinary M9 qualification, startup recovery, aggregate-load cadence and near-depletion gaps remain open.
+
+The consolidated benchmark CLI now includes `memory`; optional JVM/MXBean instrumentation and heap controls are confined to the benchmark. Normal game heap defaults and numerical gates are unchanged. Full protocol, identities, metrics and limitations: [CPU and RAM stress results](FLUID_NETWORK_STRESS_TEST.md). Java regression log: `build/fluid-memory-regression.log`.
+
 ### Class and tool consolidation (Sol review)
 
 - Shared worker sizing, demand hysteresis and CPU sampling now live in `runtime/WorkerAllocation.java`, replacing three small utility files. Configuration defaults/bounds use that same policy; the twelve-worker automatic ceiling and 200-tick shrink delay are unchanged. Existing worker-policy test methods are grouped in `WorkerAllocationTest`.
