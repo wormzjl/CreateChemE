@@ -261,3 +261,83 @@ property evaluations, not the linear algebra.
   `build/probe/reference-wp1`, on all four fixtures.
 - Gate: 793 JUnit tests, 14 GameTests, green.
 - Commit `cb5a881`.
+
+### WP2-A4 - estimate the TR-BDF2 error with a linear filter instead of a nonlinear solve
+
+The embedded order-three companion ran a complete nonlinear `implicit.solve` on a perturbed
+inventory - one of the three coupled Newton solves per substep, with its own active-set loop and
+reconstruction - only to filter the defect. That stage differs from stage two by nothing but the
+reservoir target inventories, and `PhaseLayout.residual` subtracts the target on a reservoir's
+component and energy rows only, so the shift is `J*dx = delta/scale` on those rows and zero on the
+volume, equilibrium, hydraulic and junction rows. `PassiveStepSolver` keeps the last successful
+solve's equations, converged variables and Newton workspace; `companion()` applies that
+factorization once (`Verification.NONE`, the result is never committed), decodes the endpoint and
+reconstructs it on the corrected base exactly as an ordinary solve would. The nonlinear stage
+remains the fallback - no matching last solve, a superseded or singular factorization, a decoded
+point outside the property domain, a refused reconstruction - and is selectable through the
+package-visible `TrBdf2StepSolver.companionFilter`; `companionFilters` and `companionSolves` count
+both. It fires: quiet island 11312 falls back once in its first interval, where the linearized flows
+do not survive the transport reconstruction.
+
+| fixture | wall ms | substeps acc/rej | implicit solves | companion filter/solve | Jacobian builds | LU factor ms | residual evaluations | allocated MB |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 67.4 -> 52.3 | 11/0 -> 14/1 | 6.8 -> 6.4 | 0/11 -> 14/1 | 0.8 -> 0.6 | 46.0 -> 32.8 | 193 -> 137 | 63.8 -> 48.6 |
+| quiet 11324, mean of 5 | 27.8 -> 36.9 | 11/0 -> 18/3 | 6.8 -> 8.6 | 0/11 -> 21/0 | 0.8 unchanged | 18.6 -> 29.7 | 175 -> 190 | 31.3 -> 42.3 |
+| cold 11312, one interval | 1848 -> 1697 | 50/16 -> 52/15 | 199 -> **135** | 0/66 -> 67/0 | 47 -> 41 | 326 -> 293 | 9993 -> 8731 | 2132.6 -> 1906.9 |
+| 100-reservoir chain | 3334 -> 2985 | 46/23 -> 45/22 | 208 -> **135** | 0/69 -> 67/0 | 23 -> 22 | 228 -> 213 | 4513 -> 4149 | 5203.2 -> 4633.3 |
+
+Implicit solves per substep are 3 -> 2 exactly, on both transient fixtures (135 = 2 x 67 attempts
+plus the one algebraic port solve).
+
+**Linear versus nonlinear estimate.** Both were computed at the same stage-two state on every
+substep of all four fixtures (a scratch build that ran the nonlinear stage alongside the filter and
+was reverted before this commit). Ratios are linear/nonlinear on the interval controller's own two
+terms:
+
+| fixture | substeps compared | state term, min/median/max | pipe term, min/median/max | linear endpoint vs nonlinear endpoint |
+|---|---:|---|---|---|
+| cold 11312 | 67 | 0.854 / 0.9997 / 1.094 | 0.024 / 1.000 / 1.176 | median 2.2%, max 12.4% of the correction |
+| 100-chain | 67 | 0.987 / 1.000 / 1.052 | 0.987 / 1.000 / 1.066 | median 1.2%, max 9.6% |
+| quiet 11312 | 25 | 0.005 / 1.000 / 258 | 0.002 / 0.991 / 452 | max 1.3e-8 absolute, on 1e-11..1e-8 terms |
+| quiet 11324 | 23 | 0.012 / 1.000 / 176 | 0.012 / 1.000 / 188 | max 1.2e-8 absolute |
+
+On the transients, where the estimate actually controls the step, the two agree within 10% on the
+state term and 18% on the pipe term, which also settles the sign: a flipped sign would put the ratio
+near 3 and the endpoint disagreement at twice the correction, not at 2% of it. The quiescent
+extremes are not a disagreement about the defect but about the estimator's floor: on 16 of 25 and 15
+of 23 of those substeps the **nonlinear** stage exits at Newton iteration 0, because the perturbed
+residual is already inside its 1e-9 solve tolerance, and reports a correction of exactly zero. The
+linear filter has no tolerance and resolves it. Both estimates are five to seven orders below the
+1e-3 step tolerance there.
+
+That extra sensitivity is the item's one cost. Island 11312 still reaches one substep per 5 s
+interval from the third interval on and gets 22% cheaper; island 11324 now rejects the full 5 s step
+on three of its five intervals (the term that trips is the pipe term on pipes carrying 1e-8 to
+1e-6 kg/s, where a 8e-8 kg/s difference in the estimated average flow is 2.7 times the controller's
+own numerical allowance) and is 33% more expensive. Every accepted step still meets the unchanged
+error criteria, and refining a step makes the committed trajectory more accurate, not less. Adding
+the base point's own residual to the right-hand side - `J*dx = delta/scale - r`, which is the
+consistent linearization when the base point is the reconstruction rather than the Newton root - was
+measured and rejected: it moved the reference deviations by less than a factor of two and cost two
+more rejections on 11324 and one more on 11312.
+
+Accuracy against the 154007d references, under the declared gate
+(`1e-6` relative state, `1e-4` K, `1e-6` phase fraction, `1e-3` flow or the controller's allowance):
+
+| quantity | gate | quiet 11312 | quiet 11324 | cold 11312 | chain |
+|---|---:|---:|---:|---:|---:|
+| state / moles, relative | 1e-6 | 2.0e-9 | 9.6e-10 | 3.9e-10 | 1.8e-9 |
+| temperature, K | 1e-4 | 1.2e-9 | 6.6e-10 | 4.3e-9 | 1.8e-8 |
+| phase volume fraction | 1e-6 | 5.6e-12 | 3.3e-12 | 2.0e-11 | 8.3e-11 |
+| average flow, worst absolute kg/s | - | 7.0e-9 | 6.6e-9 | 3.2e-9 | 4.7e-9 |
+| controller allowance there, kg/s | - | 3.18e-8 | 3.18e-8 | 3.18e-8 | 3.16e-8 |
+
+Every flow deviation is at most 22% of the controller's own allowance for that pipe, the same
+character as A1's. The suites named for this item pass unchanged: CadenceTrajectoryQualification,
+TransientQualification (3), HydraulicReferenceQualification (4), HydraulicMatrix (4),
+SharedSourceDepletion (2), FluidFallbackQualification (6), CausalModuleCoordinator (6),
+ModuleTransferPlanner (3), BufferedTransfers (4), BufferedCommit (1), and all other science.fluid
+tests.
+
+- Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `bc14098`.

@@ -16,7 +16,7 @@ public final class PassiveStepSolver {
     private final Map<WorkspaceKey,SparseNewton.Workspace> workspaces=new LinkedHashMap<>();
     private final Map<WorkspaceKey,SparseNewton.Workspace> structures=new LinkedHashMap<>();
     private List<PassiveNetwork.Pipe> previousPipes=List.of();
-    private List<Long> previousNodeIds=List.of();
+    private long[] previousNodeIds=new long[0];
     private double[] previousFlows=new double[0],previousHeads=new double[0];
     private Equations lastEquations;
     private double[] lastVariables;
@@ -54,17 +54,23 @@ public final class PassiveStepSolver {
             case FlowControl.PressureValve valve->graph.reservoirs().get(pipe.first()).state().pressure()>valve.targetPressure()+.01
                     ?FlowControl.Mode.VALVE_OPEN:FlowControl.Mode.CLOSED;
         });
-        boolean[] boundaryClosed=new boolean[graph.pipes().size()];var seen=new HashSet<String>();
+        boolean[] boundaryClosed=new boolean[graph.pipes().size()];var seen=new HashSet<WorkspaceKey>();
+        // Constant for this solve: every pass keys on the same graph identity and component support.
+        long[] nodeIds=nodeIds(graph);byte[] kinds=new byte[nodeIds.length];
+        for(int i=0;i<kinds.length;i++)kinds[i]=(byte)graph.reservoirs().get(i).kind().ordinal();
+        boolean[] componentMask=componentMask(graph);
         int maximumPasses=Math.min(512,16+2*graph.reservoirs().size()+2*graph.pipes().size());
         for(int pass=0;pass<maximumPasses;pass++) {
             checkpoint.run();SolverDiagnostics.count(SolverDiagnostics.activeSetPasses);
-            if(!seen.add(modes.toString()+Arrays.toString(boundaryClosed)+seeds.stream().map(PassiveStepSolver::phaseSignature).toList()))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
-            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds);
-            var key=new WorkspaceKey(Double.doubleToLongBits(dt),graph.reservoirs().stream().map(PassiveNetwork.Reservoir::id).toList(),
-                    graph.reservoirs().stream().map(PassiveNetwork.Reservoir::kind).toList(),graph.pipes(),seeds.stream().map(PassiveStepSolver::phaseSignature).toList(),
-                    equations.componentMask,List.copyOf(modes),Arrays.toString(boundaryClosed));
+            int[] phases=new int[seeds.size()];for(int i=0;i<phases.length;i++)phases[i]=phaseCode(seeds.get(i));
+            byte[] modeCodes=new byte[modes.size()];for(int i=0;i<modeCodes.length;i++)modeCodes[i]=(byte)modes.get(i).ordinal();
+            // The active-set state is exactly what varies between passes, so the structure key is
+            // also the cycle key: repeating one means the pass sequence cannot make progress.
+            var structure=new WorkspaceKey(0,nodeIds,kinds,graph.pipes(),phases,componentMask,modeCodes,boundaryClosed.clone());
+            if(!seen.add(structure))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
+            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,componentMask);
+            var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,graph.pipes(),phases,componentMask,modeCodes,structure.boundaryClosed);
             var workspace=workspaces.get(key);
-            var structure=new WorkspaceKey(0,key.nodeIds,key.kinds,key.pipes,key.phases,key.componentMask,key.modes,key.boundaryClosed);
             if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
             if(structures.size()>=4&&!structures.containsKey(structure))structures.remove(structures.keySet().iterator().next());structures.put(structure,workspace);
             SparseNewton.Result numerical;
@@ -110,7 +116,7 @@ public final class PassiveStepSolver {
                 }
                 if(next!=mode&&!changed){modes.set(i,next);changed=true;}
             }
-            if(changed){seeds=states;previousPipes=graph.pipes();previousNodeIds=graph.reservoirs().stream().map(PassiveNetwork.Reservoir::id).toList();previousFlows=flows.clone();previousHeads=heads.clone();continue;}
+            if(changed){seeds=states;previousPipes=graph.pipes();previousNodeIds=nodeIds;previousFlows=flows.clone();previousHeads=heads.clone();continue;}
             for(int edge=0;edge<flows.length;edge++) {
                 var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
                 if(Math.abs(flows[edge])>massFlowLimit(pipe,upstream)*(1+2e-8)+1e-12)throw new SparseNewton.Nonconvergence("Velocity constraint did not close");
@@ -123,7 +129,7 @@ public final class PassiveStepSolver {
             if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6))throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);
             if(acceptance==Acceptance.APPROXIMATE)checkApproximation(equations,reconstructed,projection.states(),flows,workspace,checkpoint);
             checkConservation(graph,projection);
-            previousPipes=graph.pipes();previousNodeIds=graph.reservoirs().stream().map(PassiveNetwork.Reservoir::id).toList();previousFlows=flows.clone();previousHeads=heads.clone();
+            previousPipes=graph.pipes();previousNodeIds=nodeIds;previousFlows=flows.clone();previousHeads=heads.clone();
             var acceptedModes=new ArrayList<>(modes);
             for(int edge=0;edge<flows.length;edge++) {
                 var pipe=graph.pipes().get(edge);
@@ -177,8 +183,37 @@ public final class PassiveStepSolver {
             return new Companion(projection.states(),flows,projection.boundaries());
         }catch(SparseLuSolver.SolveFailure|SparseNewton.Nonconvergence|IllegalArgumentException outsideTheLinearization){return null;}
     }
-    private record WorkspaceKey(long stepBits,List<Long> nodeIds,List<PassiveNetwork.NodeKind> kinds,List<PassiveNetwork.Pipe> pipes,
-                                List<String> phases,String componentMask,List<FlowControl.Mode> modes,String boundaryClosed) {}
+    /** Value key over compact codes instead of rendered strings and boxed lists; the arrays belong
+     * to the key from construction on, so a caller must hand over a snapshot of anything it mutates. */
+    private record WorkspaceKey(long stepBits,long[] nodeIds,byte[] kinds,List<PassiveNetwork.Pipe> pipes,
+                                int[] phases,boolean[] componentMask,byte[] modes,boolean[] boundaryClosed) {
+        @Override public boolean equals(Object other) {
+            return other instanceof WorkspaceKey key&&stepBits==key.stepBits&&Arrays.equals(nodeIds,key.nodeIds)
+                    &&Arrays.equals(kinds,key.kinds)&&pipes.equals(key.pipes)&&Arrays.equals(phases,key.phases)
+                    &&Arrays.equals(componentMask,key.componentMask)&&Arrays.equals(modes,key.modes)
+                    &&Arrays.equals(boundaryClosed,key.boundaryClosed);
+        }
+        @Override public int hashCode() {
+            int hash=31*Long.hashCode(stepBits)+Arrays.hashCode(nodeIds);
+            hash=31*(31*hash+Arrays.hashCode(kinds))+pipes.hashCode();
+            hash=31*(31*hash+Arrays.hashCode(phases))+Arrays.hashCode(componentMask);
+            return 31*(31*hash+Arrays.hashCode(modes))+Arrays.hashCode(boundaryClosed);
+        }
+    }
+    private static long[] nodeIds(PassiveNetwork graph) {
+        long[] ids=new long[graph.reservoirs().size()];
+        for(int i=0;i<ids.length;i++)ids[i]=graph.reservoirs().get(i).id();
+        return ids;
+    }
+    /** Components any vessel or scheduled injection can supply; a Newton pass carries unknowns for
+     * all of them, so an absent component can still arrive through a pipe. Depends on the graph
+     * only, so it is evaluated once per solve rather than once per active-set pass. */
+    private boolean[] componentMask(PassiveNetwork graph) {
+        boolean[] mask=new boolean[model.hydrocarbon.componentCount()];
+        for(var node:graph.reservoirs())if(node.kind()!=PassiveNetwork.NodeKind.VOID){var amounts=node.inventory().moles();for(int c=0;c<mask.length;c++)mask[c]|=amounts[c]>0;}
+        for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection input){var amounts=input.molesPerSecond();for(int c=0;c<mask.length;c++)mask[c]|=amounts[c]>0;}
+        return mask;
+    }
     /** Online trust check against a contracting correction of the complete coupled equations, not separate flashes. */
     private void checkApproximation(Equations equations,double[] point,List<FluidThermodynamics.State> candidate,double[] flows,SparseNewton.Workspace workspace,Runnable checkpoint) {
         var estimate=SparseNewton.estimateCorrection(equations,point,checkpoint,workspace);var probe=estimate.probe();var corrected=equations.states(probe);
@@ -270,12 +305,15 @@ public final class PassiveStepSolver {
             boolean waterComplete=state.waterLiquid()>0&&state.waterVapor()>0||state.waterLiquid()+state.waterVapor()==0;
             if(converged&&hydroComplete&&waterComplete&&(state.vaporProperties()==null||state.vaporProperties().vaporBranch())){corrected.add(state);continue;}
             var equilibrium=model.flashTP(state.temperature(),state.pressure(),PhaseLayout.totalAmounts(state),checkpoint);
-            if(!phaseSignature(state).equals(phaseSignature(equilibrium))&&!changed){changed=true;corrected.add(equilibrium);}else corrected.add(state);
+            if(phaseCode(state)!=phaseCode(equilibrium)&&!changed){changed=true;corrected.add(equilibrium);}else corrected.add(state);
         }
         return changed?corrected:null;
     }
-    private static String phaseSignature(FluidThermodynamics.State state) {
-        return (state.liquidVolume()>0?"L":"")+(state.vaporProperties()!=null?"G":"")+(state.waterLiquid()>0?"W":"")+(state.waterVapor()>0?"S":"");
+    /** Which phases this state carries, as four flags: hydrocarbon liquid, hydrocarbon vapor, free
+     * water and steam. Only ever compared for equality, so it needs no rendering. */
+    private static int phaseCode(FluidThermodynamics.State state) {
+        return (state.liquidVolume()>0?1:0)|(state.vaporProperties()!=null?2:0)
+                |(state.waterLiquid()>0?4:0)|(state.waterVapor()>0?8:0);
     }
     private static boolean boundaryAllowed(PassiveNetwork graph,PassiveNetwork.Pipe pipe,double flow) {
         var a=graph.reservoirs().get(pipe.first()).kind();var b=graph.reservoirs().get(pipe.second()).kind();
@@ -310,10 +348,9 @@ public final class PassiveStepSolver {
         final double[][] cachedVariables;final FluidThermodynamics.State[] cachedStates;final Transport[] cachedTransport;
         final Transport[][] capSources;final double[][] capMassFlows,capPressureDrops;
         final com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.TemperatureTerms[] cachedTemperatureTerms;
-        final String componentMask;
         final boolean[] amountVariables;
         final double[] differenceFloors;
-        Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds) {
+        Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[] mask) {
             this.modes=List.copyOf(modes);
             this.seeds=List.copyOf(seeds);
             this.boundaryClosed=boundaryClosed.clone();
@@ -321,10 +358,6 @@ public final class PassiveStepSolver {
             capSources=new Transport[graph.pipes().size()][2];capMassFlows=new double[graph.pipes().size()][2];capPressureDrops=new double[graph.pipes().size()][2];
             cachedVariables=new double[count][];cachedStates=new FluidThermodynamics.State[count];cachedTransport=new Transport[count];
             cachedTemperatureTerms=new com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.TemperatureTerms[count];
-            boolean[] mask=new boolean[model.hydrocarbon.componentCount()];
-            for(var node:graph.reservoirs())if(node.kind()!=PassiveNetwork.NodeKind.VOID){var amounts=node.inventory().moles();for(int c=0;c<mask.length;c++)mask[c]|=amounts[c]>0;}
-            for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection input){var amounts=input.molesPerSecond();for(int c=0;c<mask.length;c++)mask[c]|=amounts[c]>0;}
-            componentMask=Arrays.toString(mask);
             int cursor=0;
             for(int i=0;i<count;i++) {
                 var state=graph.reservoirs().get(i).state();offsets[i]=cursor;oldAmounts[i]=graph.reservoirs().get(i).inventory().moles();
@@ -387,8 +420,8 @@ public final class PassiveStepSolver {
         double[] initial() {
             double[] x=new double[size];for(int i=0;i<layout.length;i++)if(layout[i]!=null){var encoded=layout[i].encode(seeds.get(i));System.arraycopy(encoded,0,x,offsets[i],encoded.length);}
             boolean warmFlow=graph.reservoirs().stream().anyMatch(node->node.junction()||node.fixed())
-                    ||graph.pipes().stream().anyMatch(pipe->!phaseSignature(graph.reservoirs().get(pipe.first()).state()).equals(phaseSignature(graph.reservoirs().get(pipe.second()).state())));
-            boolean previousAvailable=previousPipes.equals(graph.pipes())&&previousNodeIds.equals(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::id).toList());
+                    ||graph.pipes().stream().anyMatch(pipe->phaseCode(graph.reservoirs().get(pipe.first()).state())!=phaseCode(graph.reservoirs().get(pipe.second()).state()));
+            boolean previousAvailable=previousPipes.equals(graph.pipes())&&Arrays.equals(previousNodeIds,nodeIds(graph));
             for(int i=0;i<graph.pipes().size();i++) {
                 var pipe=graph.pipes().get(i);var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
                 if(boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED)continue;

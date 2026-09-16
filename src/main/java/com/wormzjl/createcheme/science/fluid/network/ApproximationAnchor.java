@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import java.lang.ref.WeakReference;
 import java.util.*;
 
 /** The immutable last full solution. Approximate commits must not replace this episode anchor. */
@@ -10,8 +11,24 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
         if(modes.size()!=graph.pipes().size())throw new IllegalArgumentException("Anchor mode count mismatch");
     }
     /** Keep saved thermodynamic reference compatibility separate from the hydraulic acceptance law. */
-    public static String thermodynamicRevision(FluidThermodynamics model){return "fluid-trbdf2-r1:"+model.hydrocarbon.revision()+":"+model.viscosity.revision();}
-    public static String revision(FluidThermodynamics model){return thermodynamicRevision(model)+":velocity-clamp-v1:trace-relative-v1:max="+Double.toHexString(model.maximumVelocityMetresPerSecond());}
+    public static String thermodynamicRevision(FluidThermodynamics model){return revisions(model).thermodynamic;}
+    public static String revision(FluidThermodynamics model){return revisions(model).full;}
+    /** Both strings are concatenated from immutable model identity, so they are built once per
+     * model instead of once per dispatched island job, where the profile found the string building.
+     * One slot is enough: a dimension solves against one property package at a time, and a miss
+     * only rebuilds them. The reference is weak so caching a model cannot keep its catalog alive. */
+    private record Revisions(WeakReference<FluidThermodynamics> model,String thermodynamic,String full) {}
+    private static volatile Revisions cached;
+    private static Revisions revisions(FluidThermodynamics model) {
+        Objects.requireNonNull(model);
+        var known=cached;
+        if(known!=null&&known.model.get()==model)return known;
+        String thermodynamic="fluid-trbdf2-r1:"+model.hydrocarbon.revision()+":"+model.viscosity.revision();
+        // One publication, so a reader can never pair a model with another model's strings.
+        var built=new Revisions(new WeakReference<>(model),thermodynamic,
+                thermodynamic+":velocity-clamp-v1:trace-relative-v1:max="+Double.toHexString(model.maximumVelocityMetresPerSecond()));
+        cached=built;return built;
+    }
     public static ApproximationAnchor fromFull(FluidThermodynamics model,PassiveIntervalSolver.Result full) {
         if(full.acceptance()!=PassiveStepSolver.Acceptance.FULL)throw new IllegalArgumentException("Only a full result may renew the anchor");
         return new ApproximationAnchor(revision(model),full.graph(),full.endpointModes());
