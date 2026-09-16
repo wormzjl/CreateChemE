@@ -10,7 +10,8 @@ import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
 
 /**
  * Sequential sparse LU with row equilibration, refinement, and a backward-error check.
- * Each call owns its EJML workspace. No shared mutable solver, internal executor, or structure-lock promise.
+ * A {@link Storage} owns one EJML workspace and is refilled in place by successive factorizations of
+ * the same solver; it is never shared across threads and never promises a locked structure.
  * This verifies a linear solve, not convergence or conditioning of the calling nonlinear problem.
  */
 public final class SparseLuSolver {
@@ -30,6 +31,10 @@ public final class SparseLuSolver {
 
     public static Factorization factor(SparseMatrix matrix){return factor(matrix,prepareOrdering(matrix));}
     public static Factorization factor(SparseMatrix matrix,Ordering ordering){return factor(matrix,ordering,SolverOwnership.confinedToCurrentThread());}
+    /** One-shot: fresh storage for a caller that will not factor the same structure again. */
+    public static Factorization factor(SparseMatrix matrix,Ordering ordering,SolverOwnership ownership) {
+        return new Storage(ownership).factor(matrix,ordering);
+    }
     /** Immutable permutation; any numeric matrix of the same dimension can use it. Reuse is an
      * ordering optimization only, never reuse of numeric factors or a structural-lock promise. */
     public static final class Ordering {
@@ -46,17 +51,6 @@ public final class SparseLuSolver {
             else{SolverDiagnostics.luOrderingNanos.add(elapsed);SolverDiagnostics.luOrderings.increment();}
         }
     }
-    public static Factorization factor(SparseMatrix matrix,Ordering ordering,SolverOwnership ownership) {
-        if(!SolverDiagnostics.ENABLED)return new Factorization(matrix,Objects.requireNonNull(ordering),ownership);
-        long started=System.nanoTime();
-        try{return new Factorization(matrix,Objects.requireNonNull(ordering),ownership);}
-        finally {
-            long elapsed=System.nanoTime()-started;
-            if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportFactorNanos.add(elapsed);SolverDiagnostics.transportFactorizations.increment();}
-            else{SolverDiagnostics.luFactorNanos.add(elapsed);SolverDiagnostics.luFactorizations.increment();}
-        }
-    }
-
     /**
      * How much of a solve batch pays for the backward-error check (a full sparse mat-vec per
      * vector) before its result is trusted. The check is a factorization property, not a
@@ -72,29 +66,68 @@ public final class SparseLuSolver {
         NONE
     }
 
-    /** A reusable numeric factorization owned by the holder of its latch, never shared across threads. */
-    public static final class Factorization {
-        private boolean verified;
+    /**
+     * One worker's reusable sparse-LU workspace: the EJML solver instance, the CSC copy of the
+     * equilibrated matrix handed to it, and the scaling, solve and refinement buffers. Successive
+     * factorizations of the same structure refill it in place, which is what keeps EJML's L/U
+     * capacity: {@code LuUpLooking_DSCC.initialize} reshapes its own {@code L}/{@code U} to
+     * {@code 4*nnz+n} on every {@code decompose}, and that only allocates while the capacity still
+     * has to grow. The refill supersedes every {@link Factorization} handed out before it - a
+     * modified-Newton holder of one must build its own, which is exactly what a refresh does.
+     *
+     * <p>EJML 0.44's sparse LU cannot take the review's other suggestion:
+     * {@code LuUpLooking_DSCC.setStructureLocked(true)} throws ("Pivots change depending on
+     * numerical values and not just the matrix's structure") and {@code isStructureLocked()} is
+     * hard-coded false, so there is no symbolic phase to keep and no reason to feed the LU explicit
+     * structural zeros.
+     */
+    public static final class Storage {
+        private static final double[] NO_VALUES=new double[0];
         private final SolverOwnership ownership;
-        private final SparseMatrix matrix;
-        private final double[] rowScale;
-        private final int[] permutation;
-        private final double[] scaledValues,rowNorm;
-        private final double[] rhsWorkspace,residualWorkspace,magnitudeWorkspace;
-        private final DMatrixRMaj b,x;
-        private final org.ejml.interfaces.linsol.LinearSolverSparse<DMatrixSparseCSC,DMatrixRMaj> solver;
-        private Factorization(SparseMatrix matrix,Ordering ordering,SolverOwnership ownership) {
-            this.ownership=Objects.requireNonNull(ownership,"ownership");
-            this.matrix=Objects.requireNonNull(matrix,"matrix");int size=matrix.size();rowScale=new double[size];
-            if(ordering.permutation.length!=size)throw new IllegalArgumentException("Ordering dimension mismatch");permutation=ordering.permutation;
-            scaledValues=new double[matrix.nonzeroCount()];rowNorm=new double[size];
-            rhsWorkspace=new double[size];residualWorkspace=new double[size];magnitudeWorkspace=new double[size];
-            b=new DMatrixRMaj(size,1);x=new DMatrixRMaj(size,1);
-            if(size==0){solver=null;return;}
-            for(int entry=0;entry<matrix.nonzeroCount();entry++){int row=matrix.rowAt(entry);rowScale[row]=Math.max(rowScale[row],Math.abs(matrix.valueAt(entry)));}
+        private int generation;
+        private boolean verified;
+        private SparseMatrix matrix;
+        private int[] permutation=new int[0],inverse=new int[0];
+        private double[] rowScale=NO_VALUES,scaledValues=NO_VALUES,rowNorm=NO_VALUES;
+        private double[] rhsWorkspace=NO_VALUES,residualWorkspace=NO_VALUES,magnitudeWorkspace=NO_VALUES;
+        private DMatrixRMaj b,x;
+        private DMatrixSparseCSC a;
+        private org.ejml.ops.SortCoupledArray_F64 sorter;
+        private org.ejml.interfaces.linsol.LinearSolverSparse<DMatrixSparseCSC,DMatrixRMaj> solver;
+        public Storage(SolverOwnership ownership) {
+            this.ownership=Objects.requireNonNull(ownership,"ownership");SolverDiagnostics.count(SolverDiagnostics.luStorages);
+        }
+        public Factorization factor(SparseMatrix matrix,Ordering ordering) {
+            if(!SolverDiagnostics.ENABLED)return factor0(matrix,ordering);
+            long started=System.nanoTime();
+            try{return factor0(matrix,ordering);}
+            finally {
+                long elapsed=System.nanoTime()-started;
+                if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportFactorNanos.add(elapsed);SolverDiagnostics.transportFactorizations.increment();}
+                else{SolverDiagnostics.luFactorNanos.add(elapsed);SolverDiagnostics.luFactorizations.increment();}
+            }
+        }
+        private Factorization factor0(SparseMatrix matrix,Ordering ordering) {
+            ownership.check("Sparse factorization belongs to the worker holding its solver latch");
+            Objects.requireNonNull(matrix,"matrix");Objects.requireNonNull(ordering,"ordering");
+            int size=matrix.size(),nonzeros=matrix.nonzeroCount();
+            if(ordering.permutation.length!=size)throw new IllegalArgumentException("Ordering dimension mismatch");
+            // Everything below overwrites the previous factorization, including on failure.
+            generation++;verified=false;this.matrix=matrix;permutation=ordering.permutation;
+            if(rowScale.length<size) {
+                rowScale=new double[size];rowNorm=new double[size];inverse=new int[size];
+                rhsWorkspace=new double[size];residualWorkspace=new double[size];magnitudeWorkspace=new double[size];
+            }
+            if(scaledValues.length<nonzeros)scaledValues=new double[nonzeros];
+            Arrays.fill(rowScale,0,size,0);Arrays.fill(rowNorm,0,size,0);
+            if(size==0)return new Factorization(this);
+            for(int entry=0;entry<nonzeros;entry++){int row=matrix.rowAt(entry);rowScale[row]=Math.max(rowScale[row],Math.abs(matrix.valueAt(entry)));}
             for(int row=0;row<size;row++)if(rowScale[row]==0)throw new SolveFailure("Singular matrix: empty or zero row "+row);
-            for(int e=0;e<scaledValues.length;e++){int row=matrix.rowAt(e);scaledValues[e]=matrix.valueAt(e)/rowScale[row];rowNorm[row]+=Math.abs(scaledValues[e]);}
-            var a=new DMatrixSparseCSC(size,size,matrix.nonzeroCount());int[] inverse=new int[size];
+            for(int e=0;e<nonzeros;e++){int row=matrix.rowAt(e);scaledValues[e]=matrix.valueAt(e)/rowScale[row];rowNorm[row]+=Math.abs(scaledValues[e]);}
+            if(solver==null) {
+                b=new DMatrixRMaj(size,1);x=new DMatrixRMaj(size,1);a=new DMatrixSparseCSC(size,size,nonzeros);
+                sorter=new org.ejml.ops.SortCoupledArray_F64();solver=LinearSolverFactory_DSCC.lu(FillReducing.NONE);
+            }else{b.reshape(size,1);x.reshape(size,1);a.reshape(size,size,nonzeros);}
             for(int old=0;old<size;old++)inverse[permutation[old]]=old;
             int stored=0;
             for(int column=0;column<size;column++) {
@@ -104,16 +137,11 @@ public final class SparseLuSolver {
                 }
             }
             a.col_idx[size]=stored;a.nz_length=stored;a.indicesSorted=false;
-            a.sortIndices(null);
-            solver=LinearSolverFactory_DSCC.lu(FillReducing.NONE);
+            a.sortIndices(sorter);
             if(!solver.setA(a))throw new SolveFailure("Sparse LU rejected a singular matrix");
+            return new Factorization(this);
         }
-        public double[] solve(double[] rightHandSide){return solve(rightHandSide,Verification.EACH);}
-        public double[] solve(double[] rightHandSide,Verification verification){return solveMultiple(new double[][]{rightHandSide},verification)[0];}
-        public double[][] solveMultiple(double[][] rightHandSides){return solveMultiple(rightHandSides,Verification.EACH);}
-        /** Re-checks a solution this factorization produced earlier; used when the Newton step it
-         * gave did not contract, so a genuinely bad factorization is still caught and refreshed. */
-        public void verify(double[] rightHandSide,double[] solution) {
+        private void verify(double[] rightHandSide,double[] solution) {
             ownership.check("Sparse factorization belongs to the worker holding its solver latch");
             int size=matrix.size();if(size==0)return;
             if(rightHandSide.length!=size||solution.length!=size)throw new IllegalArgumentException("Right-hand-side dimension mismatch");
@@ -122,17 +150,7 @@ public final class SparseLuSolver {
                 if(!Double.isFinite(scaled[row]))throw new SolveFailure("Right-hand side overflow during scaling");}
             SolverDiagnostics.count(SolverDiagnostics.luChecks);checkResidual(scaled,solution);verified=true;
         }
-        public double[][] solveMultiple(double[][] rightHandSides,Verification verification) {
-            if(!SolverDiagnostics.ENABLED)return solveMultiple0(rightHandSides,verification);
-            long started=System.nanoTime();
-            try{return solveMultiple0(rightHandSides,verification);}
-            finally {
-                long elapsed=System.nanoTime()-started;int count=rightHandSides==null?0:rightHandSides.length;
-                if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportSolveNanos.add(elapsed);SolverDiagnostics.transportSolves.add(count);}
-                else{SolverDiagnostics.luSolveNanos.add(elapsed);SolverDiagnostics.luSolves.add(count);}
-            }
-        }
-        private double[][] solveMultiple0(double[][] rightHandSides,Verification verification) {
+        private double[][] solveMultiple(double[][] rightHandSides,Verification verification) {
             ownership.check("Sparse factorization belongs to the worker holding its solver latch");Objects.requireNonNull(verification);
             Objects.requireNonNull(rightHandSides,"rightHandSides");int size=matrix.size();
             for(var input:rightHandSides) {
@@ -179,6 +197,36 @@ public final class SparseLuSolver {
                 if(!Double.isFinite(residual[row])||!Double.isFinite(magnitude[row])){checkBackwardError(matrix,rowScale,rhs,result);return;}
                 if(Math.abs(residual[row])>MAXIMUM_BACKWARD_ERROR*magnitude[row]
                         &&Math.abs(residual[row])/Math.max(Double.MIN_NORMAL,norm)>16*Math.ulp(1.0)*rowNorm[row])throw new SolveFailure("Sparse LU backward error exceeds tolerance at row "+row);
+            }
+        }
+    }
+
+    /** A numeric factorization held in its {@link Storage}; usable until that storage is refilled. */
+    public static final class Factorization {
+        private final Storage storage;
+        private final int generation;
+        private Factorization(Storage storage){this.storage=storage;this.generation=storage.generation;}
+        /** True once a later factorization refilled the shared storage. The holder must then build
+         * its own factorization instead of using this one as a chord. */
+        public boolean superseded(){return storage.generation!=generation;}
+        private Storage held() {
+            if(superseded())throw new SolveFailure("Sparse factorization was superseded by a later one in the same storage");
+            return storage;
+        }
+        public double[] solve(double[] rightHandSide){return solve(rightHandSide,Verification.EACH);}
+        public double[] solve(double[] rightHandSide,Verification verification){return solveMultiple(new double[][]{rightHandSide},verification)[0];}
+        public double[][] solveMultiple(double[][] rightHandSides){return solveMultiple(rightHandSides,Verification.EACH);}
+        /** Re-checks a solution this factorization produced earlier; used when the Newton step it
+         * gave did not contract, so a genuinely bad factorization is still caught and refreshed. */
+        public void verify(double[] rightHandSide,double[] solution){held().verify(rightHandSide,solution);}
+        public double[][] solveMultiple(double[][] rightHandSides,Verification verification) {
+            if(!SolverDiagnostics.ENABLED)return held().solveMultiple(rightHandSides,verification);
+            long started=System.nanoTime();
+            try{return held().solveMultiple(rightHandSides,verification);}
+            finally {
+                long elapsed=System.nanoTime()-started;int count=rightHandSides==null?0:rightHandSides.length;
+                if(SolverDiagnostics.inReconstruct){SolverDiagnostics.transportSolveNanos.add(elapsed);SolverDiagnostics.transportSolves.add(count);}
+                else{SolverDiagnostics.luSolveNanos.add(elapsed);SolverDiagnostics.luSolves.add(count);}
             }
         }
     }

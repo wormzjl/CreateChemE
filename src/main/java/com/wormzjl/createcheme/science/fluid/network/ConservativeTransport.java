@@ -148,6 +148,6 @@ public final class ConservativeTransport {
         int count=columns.size();int[] offsets=new int[count+1];for(int c=0;c<count;c++)offsets[c+1]=offsets[c]+columns.get(c).size();
         int[] rows=new int[offsets[count]];double[] values=new double[rows.length];int at=0;
         for(var column:columns)for(var entry:column.entrySet()){rows[at]=entry.getKey();values[at++]=entry.getValue();}
-        return new SparseMatrix(count,offsets,rows,values);
+        return SparseMatrix.adopting(count,offsets,rows,values);
     }
 }

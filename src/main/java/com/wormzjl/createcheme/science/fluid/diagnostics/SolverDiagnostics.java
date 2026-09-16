@@ -40,6 +40,10 @@ public final class SolverDiagnostics {
     public static final LongAdder luRefinements=new LongAdder();
     public static final LongAdder luOrderings=new LongAdder();
     public static final LongAdder luOrderingNanos=new LongAdder();
+    /** Reusable factorization workspaces allocated; every further factorization refills one. */
+    public static final LongAdder luStorages=new LongAdder();
+    /** Newton workspaces that found their preconditioner superseded by a sibling's refactorization. */
+    public static final LongAdder luSupersededFactorizations=new LongAdder();
     // ---- sparse linear algebra, conservative transport side ----
     public static final LongAdder transportFactorizations=new LongAdder();
     public static final LongAdder transportFactorNanos=new LongAdder();
@@ -82,6 +86,7 @@ public final class SolverDiagnostics {
         map.put("luSolves",luSolves);map.put("luSolveNanos",luSolveNanos);
         map.put("luChecks",luChecks);map.put("luRefinements",luRefinements);
         map.put("luOrderings",luOrderings);map.put("luOrderingNanos",luOrderingNanos);
+        map.put("luStorages",luStorages);map.put("luSupersededFactorizations",luSupersededFactorizations);
         map.put("transportFactorizations",transportFactorizations);map.put("transportFactorNanos",transportFactorNanos);
         map.put("transportSolves",transportSolves);map.put("transportSolveNanos",transportSolveNanos);
         map.put("transportOrderings",transportOrderings);map.put("transportOrderingNanos",transportOrderingNanos);

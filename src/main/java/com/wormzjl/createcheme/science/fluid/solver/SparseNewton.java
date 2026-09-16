@@ -39,22 +39,50 @@ public final class SparseNewton {
 
     /** Reusable modified-Newton workspace for one unchanged equation structure on one worker. */
     public static final class Workspace {
+        /** Difference and factorization storage shared by a whole fork family: one timestep's
+         * workspace is forked from the previous one, they are used strictly in sequence, and a
+         * refactorization by any of them supersedes the older factors, which is the same event a
+         * modified-Newton refresh already handles. */
+        private static final class Shared {
+            private final SparseLuSolver.Storage factors;
+            private double[] derivatives=new double[0],steps=new double[0];
+            private Shared(SolverOwnership ownership){factors=new SparseLuSolver.Storage(ownership);}
+        }
         private final SolverOwnership ownership;
+        private final Shared shared;
         private Pattern pattern;
         private SparseMatrix matrix;
         private SparseLuSolver.Factorization factorization;
         private SparseLuSolver.Ordering ordering;
         public Workspace(){this(SolverOwnership.confinedToCurrentThread());}
         /** Retained across jobs: the latch, not the creating thread, decides who may use it. */
-        public Workspace(SolverOwnership ownership){this.ownership=Objects.requireNonNull(ownership);}
+        public Workspace(SolverOwnership ownership) {
+            this.ownership=Objects.requireNonNull(ownership);shared=new Shared(ownership);
+        }
+        private Workspace(Workspace parent){ownership=parent.ownership;shared=parent.shared;}
         private void owned(){ownership.check("Newton workspace belongs to the worker holding its solver latch");}
         public void invalidate(){owned();matrix=null;factorization=null;}
         /** Reuse immutable sparsity/coloring/order for another timestep, with fresh numeric factors. */
-        public Workspace forkStructure(){owned();var fork=new Workspace(ownership);fork.pattern=pattern;fork.ordering=ordering;return fork;}
+        public Workspace forkStructure(){owned();var fork=new Workspace(this);fork.pattern=pattern;fork.ordering=ordering;return fork;}
         /** Seed modified Newton with the previous timestep's Jacobian. All uses remain sequential
-         * on this worker; poor contraction or failed line search refreshes from current equations.
-         * The current nonlinear residual, not this approximation, decides convergence. */
+         * on this worker; poor contraction, a failed line search or a sibling's refactorization
+         * refreshes from current equations. The current nonlinear residual, not this approximation,
+         * decides convergence. */
         public Workspace forkPreconditioner(){owned();var fork=forkStructure();fork.matrix=matrix;fork.factorization=factorization;return fork;}
+        /** A usable preconditioner: built, and not superseded by a sibling timestep's refresh. */
+        private boolean preconditioned() {
+            if(factorization==null)return false;
+            if(!factorization.superseded())return true;
+            SolverDiagnostics.count(SolverDiagnostics.luSupersededFactorizations);matrix=null;factorization=null;return false;
+        }
+        private double[] derivatives(int length) {
+            if(shared.derivatives.length!=length)shared.derivatives=new double[length];
+            return shared.derivatives;
+        }
+        private double[] steps(int length) {
+            if(shared.steps.length!=length)shared.steps=new double[length];
+            return shared.steps;
+        }
     }
 
     public static Result solve(Equations equations,double[] initial,Settings settings,Runnable checkpoint) {
@@ -66,7 +94,7 @@ public final class SparseNewton {
         int n=equations.size();if(n==0||initial.length!=n)throw new IllegalArgumentException("Invalid equation dimension");
         if(workspace.pattern==null)workspace.pattern=new Pattern(n,equations.columnRows());
         if(workspace.pattern.offsets.length!=n+1)throw new IllegalArgumentException("Newton workspace structure changed");
-        var pattern=workspace.pattern;int calls=1,lastNonzeros=0,iterationsSinceRefresh=0;boolean refresh=workspace.factorization==null;double[] x=initial.clone();
+        var pattern=workspace.pattern;int calls=1,lastNonzeros=0,iterationsSinceRefresh=0;boolean refresh=!workspace.preconditioned();double[] x=initial.clone();
         checkpoint.run();double[] f=evaluate(equations,x,n);double norm=norm(f);
         for(int iteration=0;iteration<=settings.iterations();iteration++) {
             checkpoint.run();
@@ -137,7 +165,7 @@ public final class SparseNewton {
         if(before<=1e-12)return new CorrectionEstimate(point,before,before);
         double[] rhs=residual.clone();for(int i=0;i<n;i++)rhs[i]=-rhs[i];
         for(int attempt=0;attempt<2;attempt++) {
-            checkpoint.run();if(workspace.factorization==null||attempt>0)differentiate(equations,point,residual,1e-6,checkpoint,workspace);
+            checkpoint.run();if(!workspace.preconditioned()||attempt>0)differentiate(equations,point,residual,1e-6,checkpoint,workspace);
             try {
                 var correction=workspace.factorization.solve(rhs);var probe=point.clone();for(int i=0;i<n;i++)probe[i]+=correction[i];
                 double after=norm(evaluate(equations,probe,n));
@@ -157,7 +185,8 @@ public final class SparseNewton {
         }
     }
     private static int differentiate0(Equations equations,double[] x,double[] f,double differenceStep,Runnable checkpoint,Workspace workspace) {
-        var pattern=workspace.pattern;int n=x.length,calls=0;double[] derivatives=new double[pattern.rows.length],steps=new double[n];
+        var pattern=workspace.pattern;int n=x.length,calls=0;
+        double[] derivatives=workspace.derivatives(pattern.rows.length),steps=workspace.steps(n);
         for(int column=0;column<n;column++)steps[column]=differenceStep*equations.differenceScale(column,x[column]);
         for(int[] group:pattern.groups) {
             checkpoint.run();double[] trial=x.clone();for(int column:group)trial[column]+=steps[column];double[] perturbed=null;
@@ -174,7 +203,7 @@ public final class SparseNewton {
             }
         }
         var numeric=pattern.numericMatrix(derivatives);
-        try{if(workspace.ordering==null)workspace.ordering=SparseLuSolver.prepareOrdering(pattern.symbolicMatrix());workspace.factorization=SparseLuSolver.factor(numeric,workspace.ordering,workspace.ownership);workspace.matrix=numeric;}
+        try{if(workspace.ordering==null)workspace.ordering=SparseLuSolver.prepareOrdering(pattern.symbolicMatrix());workspace.factorization=workspace.shared.factors.factor(numeric,workspace.ordering);workspace.matrix=numeric;}
         catch(SparseLuSolver.SolveFailure failure){workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);}
         return calls;
     }
@@ -222,12 +251,13 @@ public final class SparseNewton {
             for(int c=0;c<offsets.length-1;c++){for(int e=offsets[c];e<offsets[c+1];e++)if(values[e]!=0)count++;starts[c+1]=count;}
             int[] numericRows=new int[count];double[] numericValues=new double[count];int at=0;
             for(int e=0;e<values.length;e++)if(values[e]!=0){numericRows[at]=rows[e];numericValues[at++]=values[e];}
-            return new SparseMatrix(offsets.length-1,starts,numericRows,numericValues);
+            return SparseMatrix.adopting(offsets.length-1,starts,numericRows,numericValues);
         }
         SparseMatrix symbolicMatrix() {
             // A zero-flow startup hides couplings that become nonzero as transport starts.
             // Order using the stable dependency graph; numeric LU still receives only nonzeros.
-            double[] entries=new double[rows.length];Arrays.fill(entries,1);return new SparseMatrix(offsets.length-1,offsets,rows,entries);
+            double[] entries=new double[rows.length];Arrays.fill(entries,1);
+            return SparseMatrix.adopting(offsets.length-1,offsets.clone(),rows.clone(),entries);
         }
     }
 }

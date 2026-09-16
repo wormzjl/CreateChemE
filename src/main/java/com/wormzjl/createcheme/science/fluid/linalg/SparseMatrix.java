@@ -10,13 +10,30 @@ public final class SparseMatrix {
     private final double[] values;
 
     public SparseMatrix(int size, int[] columnOffsets, int[] rows, double[] values) {
+        this(size, columnOffsets, rows, values, true);
+    }
+
+    /**
+     * Adopts arrays the caller has just built and never touches again: the defensive copy is
+     * skipped, every structural and finiteness check is unchanged, and the result stays deeply
+     * immutable because the caller gives up its references. For solver-internal assembly, where a
+     * colored Jacobian is three freshly allocated arrays per build.
+     */
+    public static SparseMatrix adopting(int size, int[] columnOffsets, int[] rows, double[] values) {
+        return new SparseMatrix(size, columnOffsets, rows, values, false);
+    }
+
+    private SparseMatrix(int size, int[] columnOffsets, int[] rows, double[] values, boolean copy) {
         if (size < 0 || size == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Invalid matrix size");
         }
         this.size = size;
-        this.columnOffsets = Objects.requireNonNull(columnOffsets, "columnOffsets").clone();
-        this.rows = Objects.requireNonNull(rows, "rows").clone();
-        this.values = Objects.requireNonNull(values, "values").clone();
+        Objects.requireNonNull(columnOffsets, "columnOffsets");
+        Objects.requireNonNull(rows, "rows");
+        Objects.requireNonNull(values, "values");
+        this.columnOffsets = copy ? columnOffsets.clone() : columnOffsets;
+        this.rows = copy ? rows.clone() : rows;
+        this.values = copy ? values.clone() : values;
         if (this.columnOffsets.length != size + 1 || this.rows.length != this.values.length
                 || this.columnOffsets[0] != 0 || this.columnOffsets[size] != this.values.length) {
             throw new IllegalArgumentException("Inconsistent CSC dimensions");
