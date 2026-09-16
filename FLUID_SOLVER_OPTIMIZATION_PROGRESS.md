@@ -962,4 +962,47 @@ which is 0.18% of the controller's own allowance for that pipe. The promised ~1e
 - Gate: 794 JUnit tests (1 new), 14 GameTests, green. Every `science.column.v3` suite passes unchanged,
   which is the bitwise evidence for the column: the sparse-pair plan is selected by
   `TranslatedPengRobinson`'s constructor and by nothing else.
-- Commit `<step2>`.
+- Commit `ac4f120`.
+
+### WP6a-B4 - expose the phase derivatives for the analytic node Jacobian
+
+API only; the solver is bitwise unchanged. `TranslatedPengRobinson.differentiate` fills a caller-owned
+`Derivatives` bundle - one per solve, refilled per node, never allocating - with the value block and every
+first derivative of it:
+
+| exposed | from | note |
+|---|---|---|
+| `logFugacityCompositionDerivative(i,j)`, `...RowView(i)` | the kernel's `d ln phi_i/dn_j` | the translation does not depend on composition, so this is the kernel's unchanged |
+| `logFugacityTemperatureDerivativeView()` | the kernel's `d ln phi_i/dT` minus `P c_i/(R T^2)` | the translation's own temperature derivative |
+| `logFugacityPressureDerivativeView()` | `v_i/(R T) - 1/P` | the exact identity, on the translated partial molar volumes, so the translation cancels |
+| `partialMolarEnthalpyView()` | ideal + the kernel's `dH^R/dn_i` + `P c_i` | these sum to the molar enthalpy |
+| `partialMolarResidualEnthalpyView()` | the kernel's, untranslated | `-R T^2 d ln phi_i/dT` |
+| `residualEnthalpyTemperatureDerivative()` | the kernel's `dH^R/dT` at constant P | |
+| `values()` | v, h, u, dv/dT, dv/dP, cp, dh/dP, the isothermal compressibility, d2v/dT2, Z, the ideal-gas cp, the partial molar volumes and `ln phi_i` | the same numbers a `Phase` carries, in a buffer instead of a record |
+
+`FluidThermodynamics.newHydrocarbonDerivatives()` and `hydrocarbonDerivatives(t,p,amounts,root,prepared,out)`
+are the entry from a prepared node temperature, so WP6b reaches this without touching package internals.
+The documented boundary: the bundle is the equation of state at the pressure it was evaluated at.
+`HydrocarbonModel.phase` passes a vapor its own pressure but evaluates a liquid at the 2 MPa reference and
+then corrects it with `GlobalLiquidResponse`; a liquid node block has to differentiate that correction
+itself, and the free water and the ideal water vapor that `state` composes on top are likewise the caller's.
+Nothing here applies them, and the javadoc says so at both entry points.
+
+`evaluate` and `differentiate` now share one body: the volumetric block writes into a `Values` buffer that
+the workspace owns for `evaluate` (which copies out of it into the immutable `Phase`, the same two arrays it
+always allocated) and that the `Derivatives` owns for `differentiate` (which copies nothing).
+
+`TranslatedPengRobinsonDerivativesTest` holds every exposed derivative against central differences over 9
+states x both roots on the 21-component network package, refusing any probe whose endpoints do not stay on
+the same cubic root. Steps: 1 mK, 1 umol in a mole, one part in ten thousand of the pressure. **Worst
+agreement 7.6e-8 relative** (`dv/dP`, a quantity of order 1e-13 with heavy cancellation); `d ln phi_i/dn_j`
+6.4e-9 over 7182 comparisons, `d ln phi_i/dT` 2.1e-10 over 378, `d ln phi_i/dP` 3.6e-9, the partial molar
+enthalpies 1.1e-8 over 342, the partial molar volumes 1.4e-8, `cp` 1.8e-10, `d2v/dT2` 8.8e-9. Two identities
+need no differencing and hold to roundoff: the partial molar enthalpies sum to the molar enthalpy to
+**4.4e-15**, and the volumetric heat capacity equals the ideal-gas capacity plus the kernel's `dH^R/dT` -
+a completely separate expression - to **1.9e-15**.
+
+- Verified EXACT (bitwise, substep counts included) against a capture of `ac4f120` in
+  `build/probe/reference-wp6a-step2`, on all four fixtures.
+- Gate: 795 JUnit tests (1 new), 14 GameTests, green.
+- Commit `<step3>`.

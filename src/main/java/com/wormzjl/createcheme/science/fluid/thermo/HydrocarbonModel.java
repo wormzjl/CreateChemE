@@ -61,6 +61,21 @@ public final class HydrocarbonModel {
     public TranslatedPengRobinson.Workspace prepare(double t){return translated.prepare(t);}
     /** The translated EOS this model evaluates; the package's legacy oracle test differentiates against it. */
     TranslatedPengRobinson translated(){return translated;}
+    /** Caller-owned derivative storage for an analytic node Jacobian; one per solve, refilled per node. */
+    public TranslatedPengRobinson.Derivatives newDerivatives(){return translated.newDerivatives();}
+    /**
+     * Every first derivative of one hydrocarbon phase, filled into {@code output} without allocating.
+     *
+     * <p>This is the equation of state at the pressure given, which is what {@link #phase} passes it for a
+     * vapor. For a liquid {@link #phase} evaluates at {@link #REFERENCE_PRESSURE} and then applies
+     * {@link GlobalLiquidResponse}; a caller assembling a liquid node block must differentiate that
+     * correction itself, because nothing here applies it.</p>
+     */
+    public void differentiate(double t,double p,double[] amounts,PhaseRoot root,
+                              TranslatedPengRobinson.Workspace terms,TranslatedPengRobinson.Derivatives output) {
+        if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
+        translated.differentiate(t,p,amounts,root,terms,output);
+    }
     public Phase phase(double t,double p,double[] amounts,PhaseRoot root,TranslatedPengRobinson.Workspace terms) {
         if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
         double minimumTemperature=0;

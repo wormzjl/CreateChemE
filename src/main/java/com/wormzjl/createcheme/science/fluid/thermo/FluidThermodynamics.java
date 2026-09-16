@@ -226,6 +226,24 @@ public final class FluidThermodynamics {
 
     /** The temperature-only property bundle for one exact node temperature. */
     public Prepared prepare(double temperature) { return new Prepared(this,temperature); }
+
+    /** Caller-owned hydrocarbon derivative storage for an analytic node Jacobian: one per solve, not per node. */
+    public TranslatedPengRobinson.Derivatives newHydrocarbonDerivatives(){return hydrocarbon.newDerivatives();}
+    /**
+     * Every first derivative of one hydrocarbon phase at a prepared node temperature, filled into
+     * {@code output} without allocating: {@code d ln phi_i/dn_j}, {@code d ln phi_i/dT}, {@code d ln phi_i/dP},
+     * the partial molar enthalpies and residual enthalpies, {@code dH^R/dT}, and the volumetric block.
+     *
+     * <p>The bundle describes the equation of state at the pressure given. {@link HydrocarbonModel#phase}
+     * passes a vapor its own pressure, but evaluates a liquid at the 2 MPa reference and then corrects it
+     * with {@link GlobalLiquidResponse}; a caller assembling a liquid node block must differentiate that
+     * correction itself. {@link #state} composes the phases, the free water and the ideal water vapor on top
+     * of this, and their derivatives are the caller's too - this exposes the equation of state, not the node.</p>
+     */
+    public void hydrocarbonDerivatives(double t,double p,double[] amounts,PhaseRoot root,Prepared prepared,
+                                       TranslatedPengRobinson.Derivatives output) {
+        hydrocarbon.differentiate(t,p,amounts,root,match(prepared,t).pengRobinson(),output);
+    }
     private Prepared own(Prepared prepared) {
         if(prepared.owner!=this)throw new IllegalArgumentException("Prepared temperature belongs to another model");
         return prepared;
