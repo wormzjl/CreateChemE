@@ -281,9 +281,9 @@ do not survive the transport reconstruction.
 
 | fixture | wall ms | substeps acc/rej | implicit solves | companion filter/solve | Jacobian builds | LU factor ms | residual evaluations | allocated MB |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| quiet 11312, mean of 5 | 67.4 -> 52.3 | 11/0 -> 14/1 | 6.8 -> 6.4 | 0/11 -> 14/1 | 0.8 -> 0.6 | 46.0 -> 32.8 | 193 -> 137 | 63.8 -> 48.6 |
-| quiet 11324, mean of 5 | 27.8 -> 36.9 | 11/0 -> 18/3 | 6.8 -> 8.6 | 0/11 -> 21/0 | 0.8 unchanged | 18.6 -> 29.7 | 175 -> 190 | 31.3 -> 42.3 |
-| cold 11312, one interval | 1848 -> 1697 | 50/16 -> 52/15 | 199 -> **135** | 0/66 -> 67/0 | 47 -> 41 | 326 -> 293 | 9993 -> 8731 | 2132.6 -> 1906.9 |
+| quiet 11312, mean of 5 | 67.4 -> 52.3 | 11/0 -> 14/1 | 6.8 -> 6.4 | 0/11 -> 14/1 | 0.8 -> 0.6 | 46.0 -> 30.9 | 193 -> 137 | 63.8 -> 48.6 |
+| quiet 11324, mean of 5 | 27.8 -> 36.9 | 11/0 -> 18/3 | 6.8 -> 8.6 | 0/11 -> 21/0 | 0.8 unchanged | 18.6 -> 22.2 | 175 -> 190 | 31.3 -> 42.3 |
+| cold 11312, one interval | 1848 -> 1697 | 50/16 -> 52/15 | 199 -> **135** | 0/66 -> 67/0 | 47 -> 41 | 326 -> 291 | 9993 -> 8731 | 2132.6 -> 1906.9 |
 | 100-reservoir chain | 3334 -> 2985 | 46/23 -> 45/22 | 208 -> **135** | 0/69 -> 67/0 | 23 -> 22 | 228 -> 213 | 4513 -> 4149 | 5203.2 -> 4633.3 |
 
 Implicit solves per substep are 3 -> 2 exactly, on both transient fixtures (135 = 2 x 67 attempts
