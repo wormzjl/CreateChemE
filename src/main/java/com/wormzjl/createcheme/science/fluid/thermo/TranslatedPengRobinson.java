@@ -157,9 +157,6 @@ public final class TranslatedPengRobinson {
         public double logFugacityCompositionDerivative(int component,int respectTo) {
             return mixture.dLogPhiDnRowView(component)[respectTo];
         }
-        public double[] logFugacityCompositionDerivativeRowView(int component) {
-            return mixture.dLogPhiDnRowView(component);
-        }
         /** {@code d ln phi_i / dT} at constant pressure and composition, including the volume translation. */
         public double[] logFugacityTemperatureDerivativeView(){return dLogPhiDt;}
         /** {@code d ln phi_i / dP} at constant temperature and composition: {@code v_i/(RT) - 1/P}. */

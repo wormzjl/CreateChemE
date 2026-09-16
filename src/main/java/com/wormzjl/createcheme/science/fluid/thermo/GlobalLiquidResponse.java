@@ -5,7 +5,6 @@ package com.wormzjl.createcheme.science.fluid.thermo;
  * v(P)=v(ref)*exp(-k*(P-Pref)); pressure corrections are integrated consistently into Gibbs energy/enthalpy.
  */
 public final class GlobalLiquidResponse {
-    public static final double DEFAULT_COMPRESSIBILITY_PER_PASCAL = 1e-9;
     private static final double R = 8.31446261815324;
     private final double compressibility;
 

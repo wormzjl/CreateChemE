@@ -102,7 +102,6 @@ public final class PhaseLayout {
     /** Resolve trace amounts relative to their own scale rather than the bulk water inventory. */
     public double differenceScale(int local,double value){return Math.max(Math.abs(value),totalAmountVariable(local)?Math.max(1e-30,Math.abs(differenceScales[local])):1);}
     public double temperature(double[] variables,int offset){return 350*Math.exp(variables[offset+temperatureIndex]);}
-    public boolean hasHydrocarbons(){return liquidActive||vaporActive;}
     public double[] encode(FluidThermodynamics.State state) {
         return encode(state,state.liquidView(),state.vaporView());
     }

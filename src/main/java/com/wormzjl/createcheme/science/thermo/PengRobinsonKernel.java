@@ -150,9 +150,6 @@ public final class PengRobinsonKernel {
     /** True when the package has no nonzero interaction at all, whatever plan is selected. */
     public boolean usesRankOneMixing() { return rankOneMixing; }
     public Mixing mixing() { return mixing; }
-    /** How many {@code i < j} interactions are nonzero; the work {@link Mixing#SPARSE_PAIRS} pays per evaluation. */
-    public int interactionPairCount() { return pairFirst.length; }
-    public double binaryInteraction(int first, int second) { return binaryInteractions[first][second]; }
     /** {@code 0.07780 R Tc / Pc} for one component; the co-volume the mixture rule sums. */
     public double coVolume(int component) { return coVolumes[component]; }
     public Workspace newWorkspace() { return new Workspace(count); }
