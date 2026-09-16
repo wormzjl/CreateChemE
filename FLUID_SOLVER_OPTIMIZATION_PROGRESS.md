@@ -628,4 +628,4 @@ fixtures are inside their run-to-run spread; their warm intervals decode four no
 - Verified EXACT (bitwise, substep counts included) against `build/probe/reference-c1`, on all four
   fixtures, which is also the capture `e604043` proved itself against.
 - Gate: 793 JUnit tests, 14 GameTests, green.
-- Commit `PLACEHOLDER`.
+- Commit `f814bc0`.
