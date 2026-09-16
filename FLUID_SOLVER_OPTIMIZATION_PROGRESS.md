@@ -666,4 +666,80 @@ thread-local holder is never allocated.
   transport ones over 5 intervals), and `fluidServerBenchmark` parses the report with the extra key
   (`runtime-audit.json` status `PASS`).
 - Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `dba6179`.
+
+### WP5-D2 - the measurement (documentation/FLUID_POOL_MEASUREMENT.md)
+
+Three runs, one Gradle invocation at a time: `opt-wp5-stress100-12w-r01` (HEAD, stress100, 12
+workers, 60 s warm-up + 120 s, JFR + memory + diagnostics), `opt-wp5-one-2w-r01` (HEAD, the `one`
+design gate, 2 workers, 200 intervals), and `opt-wp5-baseline-stress100-12w-r01` (154007d, same
+settings, from a throwaway worktree that was removed afterwards). The same-session baseline
+reproduces the stored `memory-candidate-4g-r01` within run noise (p50 56.56 vs 55.44 ms, allocation
+3.22 vs 2.93 GiB/s, worker CPU 0.2067 vs 0.1825 of the host), so there is no host drift and the
+HEAD numbers stand on their own. The analysis scripts reproduce the published baseline buckets
+(numeric LU 42.43% vs 42.26%, solves 20.92% vs 21.32%), so the method is the published one.
+
+| stress100, 12 workers, 120 s window | 154007d same session | HEAD | factor |
+|---|---:|---:|---|
+| worker ms p50 / p95 / p99 / max | 56.56 / 122.53 / 1594.5 / 2000.76 | **3.28 / 5.88 / 10.17 / 15.56** | 17x / 21x / 157x / 128x |
+| jobs measured / held / at the 2 s wall | 3312 / 86 / 12 | 2400 / **0** / **0** | - |
+| substeps per accepted, p50 / mean / max | 3 / 3.32 / 35 | **1 / 1.00 / 1** | - |
+| allocation rate / per accepted interval | 3.22 GiB/s / 122.8 MiB | **0.087 GiB/s / 4.47 MiB** | 37x / 27.5x |
+| GC pauses / total / share of window | 483 / 1466 ms / 1.22% | **6 / 45.3 ms / 0.038%** | 32x |
+| collections forced by humongous allocation | 214 of 393 | **0 of 5** | - |
+| worker CPU (ThreadCPULoad / sample ratio) | 0.2067 / 11 859 samples | **0.0066 / 331 samples** | 31x / 36x |
+| aggregate realtime ratio | 1.262 (draining debt) | **1.000** (at cadence) | - |
+| `one` profile gate p50 / p95 / max | 112.1 / 167.2 / 206.3 (review) | **8.96 / 10.20 / 15.94** | 13x / 16x / 13x |
+
+| exclusive worker CPU | 154007d measured | HEAD warm-up | HEAD measured |
+|---|---:|---:|---:|
+| EJML numeric LU factorization | 42.43% | 38.82% | **0.60%** |
+| triangular solves + verification | 20.92% | 18.82% | 50.45% |
+| all sparse linear algebra | 65.80% | 57.84% | 51.06% |
+| Jacobian colouring / `differentiate` own | 3.47% | 3.30% | **0.00%** |
+| residual + properties (all buckets) | 27.33% | 34.19% | 37.16% |
+| water path (`WaterRegion1` / `MaterialRuntime`) | 7.56% | 0.34% | 0.60% |
+
+The counters tell the whole story in three zeroes: over 2400 measured production intervals the
+Newton side performed **0 Jacobian builds, 0 LU factorizations and 0 RCM orderings**. A1's carried
+step makes a quiet 5 s interval one substep, A2's retained solver supplies a preconditioner built
+during warm-up, and the chord iteration closes it in 2.77 Newton iterations and 4.80 residual
+evaluations per interval. The only factorizations left are the four `ConservativeTransport`
+reconstructions per interval, which still build a fresh ordering, factorization and EJML storage
+every time - the one part of B2 that was never applied, worth 0.018 ms of a 3.50 ms job.
+
+Answers to the five questions the brief asked, in full in the document:
+
+- **(a) resolved, both halves.** The pool profile was real: HEAD's own warm-up window, which is the
+  cold regime with twelve saturated workers, reproduces the baseline shape (LU 38.82%, linear
+  algebra 57.84%, `differentiate` inclusive 67.27%), so top-frame attribution is refuted and the
+  mechanism was hypothesis (b) - the profiled pool was doing transient work the quiet replays never
+  did. Contention (hypothesis a) was real but secondary: 80.6 ms pool p50 against 51.2 ms
+  single-threaded on the same 30-reservoir island at 154007d. Per-job cost now matches the replay
+  exactly: pool p50 4.44 ms on a 30-reservoir island against 5.6-6.4 ms for `quiet-11312`'s warm
+  intervals single-threaded.
+- **(b)** p50 17x, p95 21x, max 128x, held intervals and wall hits to zero, allocation 27.5x per
+  interval, GC pause share 32x, worker CPU 31x; per simulated second, 17.4 ms of worker wall down to
+  0.70 ms. Better than the review's "52 ms -> about 10 ms" forecast for steps 1-3, because the
+  carried step collapsed the quiet interval to one substep instead of three.
+- **(c) B3 is not next.** Its target no longer exists in the steady state; a perfect block LU that
+  made all linear algebra free would move p50 from 3.28 to 1.6-2.4 ms and p95 from 5.88 to 2.9-4.3
+  ms, i.e. p95 from 0.29% of the 2 s budget to 0.22%. It still pays on transients (warm-up is 38.8%
+  numeric LU), but as cold-start work. WP6 and WP7 rank ahead: the residual and its properties are
+  37.2% of quiet worker CPU, `temperatureTerms` is 43.55% of all remaining allocation (C3), and
+  truncation shrinks the one bucket that still dominates the quiet window. The unfinished B2 item -
+  caching the transport ordering and structure per island - is worth more per unit effort than B3.
+- **(d)** Zero wall hits, zero held intervals, zero rejected substeps and 2400 of 2400 attempts
+  accepted in the measured window; the pipe term dominated 15 attempts and rejected none.
+  `COLD_START_SECONDS` already covers what A5 was written for (warm-up held 271 -> 33, warm-up p50
+  53 -> 4.2 ms), but the genuine cold solve still runs to 59 substeps, 18 rejections and 1.97 s, and
+  seven warm-up jobs came within 30 ms of the wall. The optional ledger-impact flow criterion is
+  **not needed** and should not be adopted: it trades ledger accuracy for speed in a regime where
+  nothing is being held and where B3/WP6/WP7 all help without touching the flow integral.
+- **(e)** 4.47 MiB per accepted interval, humongous share zero (`growMaxLength` 13.57% -> 0.32%, no
+  humongous-caused collection). What remains is `temperatureTerms` at 43.55%, transport records at
+  9.39%, PR evaluate 6.85%, `PhaseLayout` 6.49%. The live set is not measurable on this run: with
+  five young collections and no mixed cycle the after-GC floor is warm-up debris, not live data.
+
+- Measurement only; no solver code changed for it.
 - Commit `%COMMIT%`.
