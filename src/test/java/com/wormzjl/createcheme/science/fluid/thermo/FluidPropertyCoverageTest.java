@@ -15,8 +15,12 @@ class FluidPropertyCoverageTest {
         var catalog = MaterialCatalog.bundled();
         var rows = new ArrayList<Map<String,Object>>();
         var failures = new ArrayList<String>();
+        // One gameplay model on the registered network package - the crude packages share its
+        // twenty-component basis exactly and differ only in their assay, which is what production
+        // does: {@code FluidPresetCatalog} computes each crude composition on its own package and
+        // pads it onto this one basis.
+        var model = FluidThermodynamics.forNetwork(catalog, FluidMaterialCatalog.NETWORK_PACKAGE, 1e-9);
         for (String packageId : List.of("createcheme:tjl20_methane", "createcheme:wti_light_export_tjl20", "createcheme:cold_lake_blend_tjl20")) {
-            var model = FluidThermodynamics.forNetwork(catalog, packageId, 1e-9);
             var propertyPackage = catalog.requirePackage(packageId);
             var n = Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(packageId)
                     .crudeFeed(propertyPackage.assays().keySet().iterator().next()).moleFractions(), 22);

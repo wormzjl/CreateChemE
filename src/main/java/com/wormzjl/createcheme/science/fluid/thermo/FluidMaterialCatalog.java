@@ -1,43 +1,52 @@
 package com.wormzjl.createcheme.science.fluid.thermo;
 
-import com.google.gson.*;
 import com.wormzjl.createcheme.science.material.MaterialCatalog;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 
-/** Private fluid snapshot extension. Never publishes to MaterialRuntime or edits V3's catalog. */
+/**
+ * The registered material package the fluid network runs on, and the saved package ids that resolve
+ * to it.
+ *
+ * <p>Nitrogen used to exist only as a private in-memory extension of the column's package, built per
+ * model by appending a component, a property, an alias and a zero assay amount to a copy of the
+ * parsed resources. It is shared catalog data now: {@code createcheme:tjl20_methane_nitrogen} is the
+ * column's twenty components and properties in their declared order, followed by nitrogen, on the
+ * same {@code createcheme:tjl20} interaction set with {@code missing_interactions: zero} and the same
+ * water model. The column's own package is untouched and still has exactly twenty components.</p>
+ *
+ * <p>The extension produced a package with that content under the <em>column's</em> id, so a world
+ * saved before this change names {@code createcheme:tjl20_methane} in its island entries. Such an id
+ * is migrated here on load; the scientific revision the codec compares is unchanged, because the
+ * registered package carries the same revision string, the same components, properties, interactions,
+ * water and assay the extension produced, hence the same fingerprint. The next save writes the
+ * registered id.</p>
+ */
 public final class FluidMaterialCatalog {
-    private static final String ROOT="data/createcheme/materials/";
+    /** The gameplay basis: the crude basis plus nitrogen, with water last in the conserved basis. */
+    public static final String NETWORK_PACKAGE="createcheme:tjl20_methane_nitrogen";
+    /** The column's package, which the network basis extends by exactly one component. */
+    public static final String CRUDE_BASIS_PACKAGE="createcheme:tjl20_methane";
+    public static final String NITROGEN="Nitrogen";
+    /** Package ids a saved world may still name for a network island. */
+    private static final Map<String,String> MIGRATED=Map.of(CRUDE_BASIS_PACKAGE,NETWORK_PACKAGE);
+
     private FluidMaterialCatalog() {}
-    public static MaterialCatalog withNitrogen(MaterialCatalog original,String packageId) {
-        if(original.requirePackage(packageId).components().contains("Nitrogen"))return original;
-        var resources=new HashMap<>(original.resources());
-        resources.put(ROOT+"components/fluid_nitrogen.json","""
-                {"schema_version":1,"id":"Nitrogen","kind":"chemical","translation_key":"material.createcheme.nitrogen",
-                 "fallback":"Nitrogen","appearance":{"color":"#DCE8FA","transparency":0.95,"estimated":true}}
-                """);
-        try(var input=FluidMaterialCatalog.class.getResourceAsStream("/data/createcheme/fluid/nitrogen_property.json")) {
-            if(input==null)throw new IllegalStateException("Missing nitrogen property data");
-            resources.put(ROOT+"properties/fluid_nitrogen.json",new String(input.readAllBytes(),StandardCharsets.UTF_8));
-        }catch(IOException failure){throw new IllegalStateException("Cannot read nitrogen properties",failure);}
-        boolean found=false;
-        for(var entry:original.resources().entrySet()) {
-            if(!entry.getKey().startsWith(ROOT))continue;
-            var json=JsonParser.parseString(entry.getValue()).getAsJsonObject();
-            if(entry.getKey().startsWith(ROOT+"packages/")&&json.get("id").getAsString().equals(packageId)) {
-                json.getAsJsonArray("components").add("Nitrogen");json.getAsJsonArray("properties").add("createcheme:fluid_nitrogen");
-                json.getAsJsonObject("aliases").addProperty("N2","Nitrogen");
-                json.addProperty("revision","fluid-nitrogen-r1");json.addProperty("missing_interactions","zero");
-                json.getAsJsonArray("advisory_evidence").add("NITROGEN_EXTENSION: initial charge is conserved inventory; nitrogen/hydrocarbon PR interactions estimated zero; no nitrogen dissolution in the separate free-water phase.");
-                resources.put(entry.getKey(),json.toString());found=true;
-            }else if(entry.getKey().startsWith(ROOT+"assays/")&&json.get("package").getAsString().equals(packageId)) {
-                if(json.get("basis").getAsString().equals("standard_liquid_volume"))throw new IllegalArgumentException("Nitrogen extension requires a mass/mole assay basis");
-                json.getAsJsonArray("components").add("Nitrogen");json.getAsJsonArray("amounts").add(0);
-                resources.put(entry.getKey(),json.toString());
-            }
-        }
-        if(!found)throw new IllegalArgumentException("Missing package resource "+packageId);
-        return MaterialCatalog.parse(resources);
+
+    /**
+     * The registered network package for a requested or saved id: the id itself when it carries
+     * nitrogen, the migrated id for a pre-registration save, and a refusal otherwise. The network
+     * basis is the package's components plus water, and every persisted composition, device spec and
+     * preset is indexed in that order, so a package without nitrogen cannot be run silently.
+     */
+    public static String resolveNetworkPackage(MaterialCatalog catalog,String packageId) {
+        Objects.requireNonNull(catalog,"catalog");Objects.requireNonNull(packageId,"packageId");
+        String resolved=MIGRATED.getOrDefault(packageId,packageId);
+        var registered=catalog.requirePackage(resolved);
+        if(!registered.components().contains(NITROGEN))
+            throw new IllegalArgumentException("The fluid network basis requires a \""+NITROGEN+"\" component: package "
+                    +packageId+" has "+registered.components().size()+" components and none of them is nitrogen. Use "
+                    +NETWORK_PACKAGE+", or register the same extension for this package.");
+        return resolved;
     }
 }

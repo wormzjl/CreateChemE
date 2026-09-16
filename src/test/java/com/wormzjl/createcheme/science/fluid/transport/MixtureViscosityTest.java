@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class MixtureViscosityTest {
     @Test void dissolvedReferencesMatchIndependentApiCheckpointsWithoutExtrapolatingPureLiquidTables() throws Exception {
-        String id="createcheme:tjl20_methane";var catalog=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.withNitrogen(MaterialCatalog.bundled(),id);
+        String id=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.NETWORK_PACKAGE;var catalog=MaterialCatalog.bundled();
         var model=new MixtureViscosity(catalog,id);var p=catalog.requirePackage(id);
         try(var input=getClass().getResourceAsStream("/data/createcheme/fluid/dissolved_viscosity.json")) {
             var json=JsonParser.parseReader(new InputStreamReader(input,StandardCharsets.UTF_8)).getAsJsonObject();

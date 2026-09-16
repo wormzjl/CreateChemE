@@ -1305,3 +1305,105 @@ the per-column decode inside `differentiateEntries` and nothing outside it chang
 (`liquidActive`, `vaporActive`, the water indices, the partial-pressure index) for every row it
 writes and indexes entries through `columnRows()`, so a per-component support mask that drops rows
 and columns changes the layout and nothing in the sweep.
+
+## WP7 - trace truncation and nitrogen
+
+Baseline for this work package is `8bfa7ef`, captured into `build/probe/reference-wp6b`
+(`-PfluidRegressionCapture=true -PfluidRegressionReferences=build/probe/reference-wp6b`).
+
+| fixture, 8bfa7ef | wall ms | allocated MB | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | node decodes | block columns |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, 5 intervals | 157.3 | 85.7 | 11/0 | 25 | 3 | 86 | 8820 | 4365 |
+| quiet 11324, 5 intervals | 71.6 | 65.7 | 11/0 | 29 | 4 | 95 | 6372 | 3492 |
+| cold 11312, one interval | 928.8 | 605.3 | 52/15 | 135 | 41 | 900 | 96 840 | 59 655 |
+| 100-reservoir chain | 1321.8 | 1687.6 | 45/22 | 135 | 22 | 1003 | 243 800 | 105 578 |
+
+### WP7-A - register nitrogen in the shared material catalog
+
+Nitrogen existed only as `FluidMaterialCatalog.withNitrogen`: a private per-model rewrite of the
+parsed resource map that appended a component, a property, an `N2` alias, a `zero`
+`missing_interactions` policy, an advisory line and a zero assay amount to a **copy of the column's
+own package**, under the column's own id. Every network model re-parsed the whole catalog to get it,
+the property data sat outside `data/createcheme/materials/` where the reload listener never looked,
+and no datapack could see or override any of it.
+
+It is shared data now. `createcheme:tjl20_methane_nitrogen` is the column's twenty components and
+properties in their declared order followed by `Nitrogen`, on the same `createcheme:tjl20`
+interaction set with `missing_interactions: zero`, the same `createcheme:water` model, the same
+temperature/pressure validity, the aliases plus `N2`, its own revision `fluid-nitrogen-r1` and the
+`NITROGEN_EXTENSION` advisory line. `data/createcheme/fluid/nitrogen_property.json` moved verbatim to
+`materials/properties/nitrogen.json`, keeping the property id `createcheme:fluid_nitrogen`, and the
+inline component JSON became `materials/components/nitrogen.json`. The column's package is byte for
+byte the file it was.
+
+**The property id is persisted, so it did not move.** `Package.fingerprint` hashes the `Property`
+records and `Property.id` is one of their fields; the fingerprint is half of `scientificRevision()`,
+which `FluidCheckpointCodec` writes into every saved island as `propertyRevision` and refuses to load
+without. Renaming the property to `createcheme:nitrogen` would have invalidated every saved world for
+a cosmetic reason.
+
+**The package does carry an assay,** contrary to the brief's guess, for the same reason: the private
+extension appended `Nitrogen` with amount 0 to the package's assay, so the assay list is inside the
+fingerprint too. `assays/tjl20_nitrogen.json` is the Tia Juana Light composition on the network
+basis - the same id, the same twenty amounts, nitrogen at zero - which makes the registered package
+reproduce the extension's `scientificRevision()` **exactly**. `NitrogenInitializationTest` rebuilds
+the private extension from the unextended resources and asserts that equality, so the claim is
+derived on every run instead of pinned to a hash. It also makes the package self-describing:
+`assayAppearance(NETWORK_PACKAGE, ...)` and a crude feed on the network basis both resolve, which
+they could not if the package declared no assay at all.
+
+**Package-id audit.** Every site that persists or compares a package id:
+
+| site | what it holds | after |
+|---|---|---|
+| `FluidCheckpointCodec.IslandEntry.packageId` (saved JSON) | the id the island solves on | new saves write `createcheme:tjl20_methane_nitrogen`; an old save naming `createcheme:tjl20_methane` is migrated by `FluidMaterialCatalog.resolveNetworkPackage` when the model is resolved, and `FluidWorldAuthority` rewrites the entry on the next save |
+| `FluidCheckpointCodec.Island.propertyRevision` | `fluid-trbdf2-r1:<scientificRevision>:...` | **unchanged string**, because the revision and the fingerprint are unchanged |
+| `FluidCheckpointCodec.PackageKey` (model cache key) | in-memory only | carries whichever id the entry named; both resolve to one model |
+| `ApproximationAnchor` thermodynamic/full revisions | derived from the model | unchanged |
+| `FluidWorldAuthority`, `FluidPropertyReloadGuard` | `FluidPresetCatalog.NETWORK_PACKAGE` | the registered id |
+| `MaterialRuntime.water()` fallback `createcheme:tjl20_methane` | the water model when the context package is unknown | untouched; both packages declare `createcheme:water`, and the network context package is registered now, so the fallback is not reached |
+| `FluidServerBenchmark` `propertyRevision` in `report.json` | `ApproximationAnchor.revision(model)` | unchanged |
+| GameTest fixtures naming `"createcheme:tjl20_methane"` | encode/decode round trips | migrate on model resolution; all 14 pass unchanged |
+| `ColumnInputPreset`, `ColumnCalculatorV3BlockEntity`, every `science.column.v3` site | the column's package | untouched |
+
+`FluidThermodynamics.forNetwork` no longer rewrites a catalog: it resolves the id and constructs from
+the registered package, and a package with no `Nitrogen` component is refused with a message naming
+the package and the expected one instead of silently producing a shorter basis.
+`FluidPresetCatalog.resolve` checks the crude packages against the twenty-component
+`CRUDE_BASIS_PACKAGE` and separately checks that the network package **is** that basis plus nitrogen:
+the same components and properties in the same order with nitrogen appended, the same water model,
+the same interaction matrix with a zero nitrogen row and column, and pure-component viscosity data
+for nitrogen in both phases. That is the invariant `Arrays.copyOf(n,22)` and
+`FluidDeviceSpec.nitrogen()` (index 20) rely on, and it was previously only implied by the order the
+private extension happened to append in.
+
+**`MaterialCatalog` hunks (merge-conflict risk against the material-quality workstream).** Two lines,
+both the same fix: assay appearances were stored and read by bare assay id, while assay identity is
+`(package, id)` everywhere else in the class, so two packages declaring the same composition on
+different bases returned each other's colour depending on parse order.
+
+- `parse`, the per-package assay loop: `assayAppearances.put(string(a,"id"), ...)` becomes
+  `assayAppearances.put(id + "/" + string(a,"id"), ...)`.
+- `assayAppearance(packageId, assayId)`: `getOrDefault(assayId, ...)` becomes
+  `getOrDefault(packageId + "/" + assayId, ...)`.
+
+No assay or package JSON the workstream is editing was touched; the two new data files, the moved
+property file and `materials-index.json`'s four new entries are additions.
+
+Test changes, all forced by nitrogen becoming catalog-wide rather than model-private:
+
+- `FluidPropertyCoverageTest` built three network models, one per crude package, to sample the
+  "gameplay basis with nitrogen". Only one package carries nitrogen now, and the three crude packages
+  share its twenty-component basis exactly, so the test builds **one** model on the network package
+  and runs the three crude compositions through it - which is what production does, since
+  `FluidPresetCatalog` computes each composition on its own package and pads it onto this one basis.
+- `ViscosityTest` iterates every package's properties against the exported DWSIM API report and
+  dereferenced the record unconditionally. Nitrogen's curves are NIST isobar tables, not DWSIM
+  samples, so that report has no record for it: the loop now skips a property with no record, next to
+  the existing skip for a record with no checkpoints.
+- `MixtureViscosityTest` and `NitrogenInitializationTest` called `withNitrogen` directly and now name
+  the registered package.
+
+- Verified EXACT (bitwise, substep counts included) against `build/probe/reference-wp6b` on all four
+  fixtures: 0.0 on state/moles, temperature, phase fraction and flow.
+- Gate: 796 JUnit tests (1 new), 14 GameTests (`-PfluidGameTestRunId=wp7a01`), green.

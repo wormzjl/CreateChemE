@@ -76,7 +76,9 @@ public final class MaterialCatalog {
     public FluidAppearance assayAppearance(String packageId, String assayId) {
         if (!requirePackage(packageId).assays().containsKey(assayId))
             throw new IllegalArgumentException("Assay is outside package: " + assayId);
-        return assayAppearances.getOrDefault(assayId, FluidAppearance.DEFAULT);
+        // Assay identity is (package, id) everywhere else in this class, so the appearance is keyed
+        // that way too: one composition may be declared on two packages with different bases.
+        return assayAppearances.getOrDefault(packageId + "/" + assayId, FluidAppearance.DEFAULT);
     }
 
     /** Selected pure-component viscosity data, absent when that phase has no dataset. No mixing rule is implied. */
@@ -228,7 +230,7 @@ public final class MaterialCatalog {
             waterModels.put(id, string(o,"water_model"));
             var assays=new HashMap<String,Assay>();
             for(var a:group(groups,"assays").values()) if(string(a,"package").equals(id)) checked(origins,a,() -> {
-                assayAppearances.put(string(a,"id"), readAppearance(a));
+                assayAppearances.put(id + "/" + string(a,"id"), readAppearance(a));
                 List<String> axis=strings(a,"components"); List<Double> amounts=numbers(a,"amounts",ids.size());
                 double total=amounts.stream().mapToDouble(Double::doubleValue).sum();
                 if(!axis.equals(ids) || amounts.stream().anyMatch(v->v<0) || total<=0 || !Double.isFinite(total)) throw new IllegalArgumentException("Invalid assay components/amounts");

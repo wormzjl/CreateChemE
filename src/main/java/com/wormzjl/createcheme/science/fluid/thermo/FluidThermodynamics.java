@@ -23,18 +23,24 @@ public final class FluidThermodynamics {
     private final double waterEnthalpyOffset;
     private final double maximumVelocity;
 
-    /** Canonical gameplay basis includes nitrogen; direct construction retains an explicitly supplied test/science basis. */
+    /**
+     * The canonical gameplay basis, which includes nitrogen. {@code packageId} is resolved through
+     * {@link FluidMaterialCatalog#resolveNetworkPackage} - it is the registered network package, or a
+     * pre-registration saved id that migrates to it - and a package without nitrogen is refused
+     * rather than silently run on a shorter basis. Direct construction retains an explicitly supplied
+     * test/science basis.
+     */
     public static FluidThermodynamics forNetwork(MaterialCatalog catalog,String packageId,double liquidCompressibility) {
         return forNetwork(catalog,packageId,liquidCompressibility,DEFAULT_MAXIMUM_VELOCITY);
     }
     public static FluidThermodynamics forNetwork(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity) {
-        return new FluidThermodynamics(FluidMaterialCatalog.withNitrogen(catalog,packageId),packageId,liquidCompressibility,maximumVelocity);
+        return new FluidThermodynamics(catalog,FluidMaterialCatalog.resolveNetworkPackage(catalog,packageId),liquidCompressibility,maximumVelocity);
     }
 
     /** Placement initializer only. Persistence must restore inventory instead of calling this again. */
     public State initialNitrogenCharge(double volume,double temperature,double pressure,Runnable checkpoint) {
         if(!Double.isFinite(volume)||volume<=0)throw new IllegalArgumentException("Positive finite vessel volume required");
-        int nitrogen=hydrocarbon.components().indexOf("Nitrogen");if(nitrogen<0)throw new IllegalStateException("Network basis has no nitrogen");
+        int nitrogen=hydrocarbon.components().indexOf(FluidMaterialCatalog.NITROGEN);if(nitrogen<0)throw new IllegalStateException("Network basis has no nitrogen");
         double[] n=new double[hydrocarbon.componentCount()+1];n[nitrogen]=1;
         var unit=flashTP(temperature,pressure,n,checkpoint);n[nitrogen]=volume/unit.volume();
         return flashTP(temperature,pressure,n,checkpoint);

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "Nitrogen",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.nitrogen",
+  "fallback": "Nitrogen",
+  "appearance": {
+    "color": "#DCE8FA",
+    "transparency": 0.95,
+    "estimated": true
+  }
+}
