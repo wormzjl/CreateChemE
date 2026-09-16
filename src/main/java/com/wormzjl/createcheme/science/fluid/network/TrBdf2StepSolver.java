@@ -9,12 +9,6 @@ import java.util.*;
  * Inventories are stage right-hand sides, not new physical initializations. No stage may commit independently.
  */
 public final class TrBdf2StepSolver {
-    /** How the embedded order-three companion defect is filtered. LINEAR applies the stage-two
-     * factorization once, which is the standard TR-BDF2 estimate; NONLINEAR re-solves the perturbed
-     * step completely, which is what this did before and is still the fallback whenever the linear
-     * filter cannot be produced. A switch for qualification runs, never changed in production. */
-    enum CompanionFilter { LINEAR, NONLINEAR }
-    static volatile CompanionFilter companionFilter=CompanionFilter.LINEAR;
     private static final double GAMMA=2-Math.sqrt(2), ALPHA=GAMMA/2, A=1/(GAMMA*(2-GAMMA));
     private final FluidThermodynamics model;
     private final PassiveStepSolver implicit,algebraic;
@@ -155,8 +149,7 @@ public final class TrBdf2StepSolver {
         var correctedGraph=new PassiveNetwork(correctedBase,initial.pipes(),initial.scheduledTransfers());
         // The companion stage changes nothing but those targets, so one solve of the stage-two
         // Jacobian answers it. The complete nonlinear stage stays the fallback and the reference.
-        var filtered=companionFilter==CompanionFilter.LINEAR
-                ?implicit.companion(secondGraph,correctedGraph,deltaMoles,deltaEnergy,second.devicePressureChanges(),ALPHA*dt,checkpoint):null;
+        var filtered=implicit.companion(secondGraph,correctedGraph,deltaMoles,deltaEnergy,second.devicePressureChanges(),ALPHA*dt,checkpoint);
         List<FluidThermodynamics.State> correctedStates;double[] qc;List<ConservativeTransport.BoundaryTransfer> correctedBoundaries;
         if(filtered!=null) {
             SolverDiagnostics.count(SolverDiagnostics.companionFilters);
