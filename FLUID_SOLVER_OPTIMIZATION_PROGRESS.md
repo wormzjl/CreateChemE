@@ -1174,3 +1174,126 @@ and 10% of quiet 11324's**.
   "sharing never costs more work" invariant on `residualEvaluations`, which no longer spans a
   Jacobian build. It now measures `stateCalls`, the node decodes, which span both halves.
 - Gate: 795 JUnit tests, 14 GameTests, green.
+
+### WP6b step 3 - the refresh policy, measured in both directions
+
+The hypothesis this step was written around is that a cheap Jacobian can be refreshed more often and
+pay for itself in Newton iterations. Step 0 already showed the premise does not hold here, and the
+measurement confirms it: what a refresh costs is the **factorization**, which no change to the sweep
+makes cheaper. Seven alternatives to `reduction > 0.8 || iterationsSinceRefresh >= 8` were measured
+through a temporary system-property switch in `SparseNewton` (`// PROBE`, reverted before the commit
+above; the tree at `1687e2d` carries none of it), each against the committed 154007d references under
+the DECLARED gate.
+
+Two runs of each, in one session. `stall` drops the age limit, `lax` is `0.9 / 16`, `verylax` is
+`0.95 / 32`, `age4` and `age16` change only the age limit, `eager` is `0.5 / 4`.
+
+| policy | cold 11312 wall ms | builds | Newton iterations | node decodes | LU ms | chain wall ms | builds | iterations | decodes | LU ms |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| **default (0.8 / 8)** | 879 / 1195 | 41 | 761 | 96 840 | 304 | **1339 / 1333** | 22 | 842 | 243 800 | 195 |
+| stall (0.8 / none) | **717 / 627** | 15 | 1312 | 76 200 | 118 | 1926 / 1754 | 13 | 2009 | 333 500 | 119 |
+| lax (0.9 / 16) | 809 / 726 | 25 | 1251 | 90 270 | 196 | 1343 / 1317 | 9 | 1481 | 252 600 | 83 |
+| verylax (0.95 / 32) | **705 / 619** | 15 | 1386 | 78 840 | 105 | 2025 / 1740 | 13 | 2009 | 333 500 | 136 |
+| age16 (0.8 / 16) | 810 | 30 | 1067 | 91 500 | 234 | 1383 | 9 | 1481 | 252 600 | 88 |
+| age4 (0.8 / 4) | 1230 | 76 | 586 | 141 900 | 556 | 2331 | 73 | 615 | 462 400 | 666 |
+| eager (0.5 / 4) | 1344 | 80 | 573 | 146 670 | 616 | 2351 | 74 | 613 | 466 700 | 660 |
+| **always (every iteration)** | **2565 / 2201** | 195 | 332 | 301 500 | 1385 | **5558 / 4911** | 222 | 361 | 1 135 900 | 2016 |
+
+| policy | quiet 11312: builds / iterations / decodes | quiet 11324: builds / iterations / decodes |
+|---|---|---|
+| default | 3 / 36 / 8820 | 4 / 45 / 6372 |
+| stall | 3 / 36 / 8820 (identical) | 4 / 45 / 6372 (identical) |
+| lax | 3 / 51 / 9720 | 4 / 45 / 6372 (identical) |
+| verylax | 4 / 92 / 15 570 (12/1 substeps) | 3 / 76 / 7488 |
+| always | 4 / 23 / 8970 | 4 / 24 / 5400 |
+
+**Refreshing every iteration does cut iterations - and loses anyway.** It is the only policy that
+makes the Jacobian nearly exact at every step, and it works as advertised on the iteration count:
+761 -> 332 on the cold island, 842 -> 361 on the chain, a 2.3x reduction. It is nevertheless **2.9x
+and 4.2x slower**, because 195 and 222 factorizations cost 1.39 s and 2.02 s by themselves. A
+factorization is 7.6 ms at n = 1455 and 9.2 ms at n = 4799; a Newton iteration is one triangular
+solve plus about 30 (cold) or 100 (chain) node decodes, well under a millisecond. The brief's premise
+- a fresh Jacobian costing little more than a residual - is false by two orders of magnitude, and
+block structure does not change that, because it removes assembly and the factorization is untouched.
+
+**No policy beats the current one on both transients.** The two fixtures want opposite things.
+On the cold island a build costs 1410 decodes and saves only ~30 per iteration, so fewer builds is a
+clear win: `stall` and `verylax` cut builds 41 -> 15, decodes 96 840 -> 76-79k and wall by **25-30%**.
+On the chain a build costs 4800 decodes but an iteration costs ~100, so the same change trades 62 400
+saved decodes for 63 900 added ones plus 1167 extra triangular solves at 150 us, and costs **32-40%**.
+`lax`/`age16` sit between: cold -8 to -14%, chain +0.3 to +3.5% wall but **+17% allocation** (1688 ->
+1973 MB), and on quiet 11312 they add iterations (36 -> 51) and decodes for nothing. `stall` alone is
+bit-for-bit identical on both quiet islands, because their chords never reach eight iterations.
+
+**Nothing is committed for this step.** The current policy is the only one that is never much worse
+than the best on any fixture, and every candidate that wins somewhere loses more elsewhere.
+
+What the data does point at, for WP7 or later: the right rule is not a constant. Whether a refresh
+pays is the ratio of one factorization to one iteration, and both are already measured at runtime
+(`luFactorNanos` against the decode count of a residual evaluation). A policy keyed on the measured
+ratio would take the cold island's 25-30% without the chain's 32-40%, because it is exactly the
+quantity the two fixtures disagree about - n = 1455 with 30 decodes per iteration against n = 4799
+with 100. That is a change to the controller, not to the Jacobian, and it should be measured against
+these eight rows.
+
+### WP6b step 2 - the analytic node self-block: not landed, and why
+
+Step 2 was scoped to replace the FD node self-block with one assembled from the WP6a derivative
+bundle. It is **not implemented**. Two findings from steps 0 and 3 lower its value below what the
+remaining risk justifies, and one blocker makes the specified acceptance test unreachable as written.
+
+**The prize is smaller than the brief assumed.** The coloured sweep was already decoding each node
+once per one of its own columns (step 0), so an analytic block does not remove "191 residual
+evaluations per build" - it removes the 57 810 of 96 840 node decodes that happen inside a Jacobian
+build on the cold island, and 103 400 of 243 800 on the chain. At roughly 3.2 us a decode
+(`state()` 1.8 us plus the `Transport` row's mixture viscosity at 1.4 us) that is **about 185 ms of a
+920 ms cold interval and 330 ms of a 1340 ms chain interval, 20-24%**. Against that: WP5 measured
+**zero Jacobian builds over 2400 production intervals**, so the whole item is cold-start and
+transient work.
+
+**The self-block alone buys nothing.** A node's perturbed decode is needed by more than its own rows:
+the neighbour inflow rows read the donor's `moles/mass` and specific enthalpy, and the hydraulic row
+reads the donor's density, mixture viscosity and velocity cap. Making only the self-block analytic
+leaves all 47 decodes per node in place and saves only their assembly - which step 1 has already
+taken. To remove the decodes, the whole **node interface** has to be analytic: moles and mass
+(trivial from the decode), volume and enthalpy (partial molar volumes and enthalpies, `dv/dT`,
+`dv/dP`, `cp`, `dh/dP` - all in the bundle, plus the `GlobalLiquidResponse` chain and the IF97
+Region 1 temperature derivatives for free water), pressure and partial pressures (trivial), the
+mixture viscosity (logarithmic liquid mixing and Wilke vapor mixing are both differentiable in the
+amounts, plus `dV/dx` for the volume weighting), and the isothermal acoustic velocity cap.
+
+**The blocker.** Two terms are not reachable from the WP6a bundle:
+
+1. `HydrocarbonModel.phase(LIQUID)` evaluates the EOS at the 2 MPa reference and corrects it with
+   `GlobalLiquidResponse.logFugacity`, which adds `v_i * I(P) / (R T)` to each `ln phi_i`, where
+   `v_i` is the partial molar volume at the reference pressure. Its composition derivative therefore
+   needs `d v_i / d n_j`, the **second** composition derivative of the molar volume, which the bundle
+   does not carry. At the network's conditions `I/(RT)` is about -653 per m3/mol, so the neglected
+   term is roughly 0.1% to 10% of an entry of the liquid fugacity sub-block - harmless for Newton,
+   fatal for the specified "1e-6 relative per nonzero entry" test. There is a route:
+   `d v_i/d n_j = R T * d/dP [d ln phi_i/d n_j]` by the symmetry of second derivatives, so two extra
+   `differentiate` calls at `Pref +/- delta` give the whole block by central differences - but that is
+   an analytic block with a finite-differenced term inside it, and it should be a deliberate decision
+   rather than a silent one.
+2. `FluidThermodynamics.isothermalAcousticBound` needs `d(dv/dP)/dx` of the vapor, a second pressure
+   derivative that is likewise absent. It only reaches the residual through the velocity-saturated
+   branch of the hydraulic row (`|driving| > limitDrop`), so the practical answer is to fall back to
+   the block sweep for a build with any saturated edge and measure how often that is - but it has to
+   be measured, not assumed.
+
+**What a continuation should do, in order.** (a) Decide the two items above - most likely: add
+`d v_i/d n_j` to `PengRobinsonKernel` analytically (it is closed form in the same
+`(v, a, b, S_i, dP/dv, dP/dn_i)` algebra the volumetric block already uses, and adding a method there
+changes no V3 arithmetic), and take the saturated-edge fallback. (b) Assemble the interface
+derivative per node - `moles`, `mass`, `volume`, `enthalpy`, `internalEnergy`, `pressure`,
+`hydrocarbonPartialPressure`, `waterPartialPressure`, `density`, `specificEnthalpy`, `viscosity` -
+because every cross-node and edge term is a chain rule on it, and the backward-Euler transport terms
+are linear in the flows so they need nothing else. (c) Then the rows, per regime branch, and the
+random-state FD comparison the brief specifies. Step 1's `nodeAccumulate` / `edgeRows` / `nodeRows`
+split and the `differentiateEntries` hook are the seam this plugs into: the analytic path replaces
+the per-column decode inside `differentiateEntries` and nothing outside it changes.
+
+**Keep it regime-driven for WP7.** The block assembly already reads `PhaseLayout`'s regime
+(`liquidActive`, `vaporActive`, the water indices, the partial-pressure index) for every row it
+writes and indexes entries through `columnRows()`, so a per-component support mask that drops rows
+and columns changes the layout and nothing in the sweep.
