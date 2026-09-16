@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.wormzjl.createcheme.mcpcompat.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["ScreenInputMixin", "HotkeyMixin", "MinecraftInputInvoker"],
+  "injectors": {"defaultRequire": 1}
+}

@@ -16,6 +16,7 @@ public final class CreateChemEClient {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenus.COLUMN_CALCULATOR_V3.get(), ColumnCalculatorV3Screen::new);
+        event.register(ModMenus.FLUID_DEVICE.get(),com.wormzjl.createcheme.client.gui.screens.inventory.FluidDeviceScreen::new);
     }
 
 }

@@ -11,7 +11,15 @@ import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockE
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.world.level.Level;
+import com.wormzjl.createcheme.science.fluid.network.PassiveNetwork;
+import com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.network.ApproximationAnchor;
+import com.wormzjl.createcheme.science.fluid.network.ApproximationRejected;
+import com.wormzjl.createcheme.runtime.fluid.FluidFallbackPolicy;
+import com.wormzjl.createcheme.runtime.fluid.FallbackAllowance;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -62,15 +70,21 @@ public final class ProcessSolveServices {
             throw new IllegalStateException("Process solve service already exists for this server");
         }
         long epoch = SERVER_EPOCH_SEQUENCE.incrementAndGet();
-        BoundedCpuSolveService<ColumnTarget, ProcessSolveCommand, ProcessSolveResult> service =
+        var wakeup=new CompletionWakeup(action->server.tell(new TickTask(0,action)),()->{
+            var current=STATES.get(server);
+            if(current==null||current.stopResult!=null)return;
+            com.wormzjl.createcheme.network.ProcessSolveCoordinator.drainCompletedCalculations(server);
+        });
+        BoundedCpuSolveService<SolveTarget, ProcessSolveCommand, ProcessSolveResult> service =
                 new BoundedCpuSolveService<>(epoch, new BoundedCpuSolveService.Config(
                         config.workerCount(),
                         config.readyCapacity(),
                         "createcheme-cpu-solve-",
                         true,
                         config.gracefulShutdown(),
-                        config.forcedShutdown()));
-        STATES.put(server, new ServerState(service, config));
+                        config.forcedShutdown()),wakeup::signal);
+        STATES.put(server, new ServerState(service, config,wakeup));
+        if(config.dynamicWorkers())service.setWorkerLimit(1);
         BoundedCpuSolveService.Diagnostics diagnostics = service.diagnostics();
         return new ServerStarted(
                 epoch,
@@ -97,6 +111,49 @@ public final class ProcessSolveServices {
                 request.operation().input().packageId());
     }
 
+    /** Fluid islands share the existing workers and queue with V3; their wall budget starts on the worker. */
+    public static AdmissionResult submitFluidIsland(MinecraftServer server,FluidIslandRequest request,FluidSolveCommand command) {
+        requireServerThread(server);Objects.requireNonNull(request);Objects.requireNonNull(command);
+        var state=STATES.get(server);
+        if(state!=null) {
+            var diagnostics=Diagnostics.from(state.service.diagnostics());
+            if(state.requestsBySequence.values().stream().anyMatch(context->context.request().target().equals(request.target())))return new AdmissionResult(Admission.OWNER_BUSY,diagnostics);
+            // Fluid readiness stays in the coordinator's owner set. Fill all idle workers, but do not
+            // occupy every queue slot with catch-up jobs ahead of newly arriving calculator/module work.
+            if(diagnostics.readyJobs()>0||diagnostics.activeWorkers()>=diagnostics.workerCount())return new AdmissionResult(Admission.QUEUE_FULL,diagnostics);
+        }
+        return submit(server,request,command,command.model().hydrocarbon.revision()+":"+command.model().viscosity.revision());
+    }
+
+    public static Diagnostics diagnostics(MinecraftServer server) {
+        requireServerThread(server);var state=STATES.get(server);return state==null?Diagnostics.EMPTY:Diagnostics.from(state.service.diagnostics());
+    }
+    /** Independent fluid owners report readiness without queueing their snapshots. Other module
+     * and calculator jobs already owned by the service share the same demand budget. */
+    public static void fluidWorkerDemand(MinecraftServer server,int eligibleOwners) {
+        requireServerThread(server);if(eligibleOwners<0)throw new IllegalArgumentException("Negative fluid demand");
+        var state=STATES.get(server);if(state==null||state.stopResult!=null)return;
+        state.fluidDemand=eligibleOwners;allocateWorkers(server,state,0);
+    }
+    private static void allocateWorkers(MinecraftServer server,ServerState state,int incoming) {
+        if(state.allocator==null)return;
+        int demand=Math.addExact(state.service.diagnostics().outstandingJobs(),Math.addExact(state.fluidDemand,incoming));
+        state.service.setWorkerLimit(state.allocator.observe(demand,Integer.toUnsignedLong(server.getTickCount())));
+    }
+    /** Installs the one world coordinator's owner-thread readiness pump; workers never invoke it. */
+    public static Runnable setReadinessPump(MinecraftServer server,Runnable pump) {
+        requireServerThread(server);var state=STATES.get(server);if(state==null)throw new IllegalStateException("Process service is not started");var previous=state.readinessPump;state.readinessPump=Objects.requireNonNull(pump);return previous;
+    }
+    public static void pumpReady(MinecraftServer server) {
+        requireServerThread(server);var state=STATES.get(server);if(state!=null&&state.stopResult==null)state.readinessPump.run();
+    }
+
+    /** Cancellation does not release owner/worker capacity until the terminal completion is drained. */
+    public static BoundedCpuSolveService.CancellationResult cancelRequest(MinecraftServer server,long requestId) {
+        requireServerThread(server);var state=STATES.get(server);var context=state==null?null:state.requestsBySequence.get(requestId);
+        return context==null?BoundedCpuSolveService.CancellationResult.NOT_FOUND:state.service.cancel(context.stamp(),BoundedCpuSolveService.CancelReason.STALE_REVISION);
+    }
+
     private static AdmissionResult submit(
             MinecraftServer server,
             ProcessSolveRequest request,
@@ -110,9 +167,10 @@ public final class ProcessSolveServices {
             throw new IllegalStateException("Duplicate process-solve request sequence");
         }
 
+        allocateWorkers(server,state,request instanceof FluidIslandRequest&&state.fluidDemand>0?0:1);
         long now = System.nanoTime();
-        long deadline = now + state.config.solveDeadline().toNanos();
-        var stamp = new BoundedCpuSolveService.JobStamp<>(
+        long deadline = request instanceof FluidIslandRequest?BoundedCpuSolveService.NO_DEADLINE:now + state.config.solveDeadline().toNanos();
+        var stamp = new BoundedCpuSolveService.JobStamp<SolveTarget>(
                 state.service.serverEpoch(),
                 request.requestId(),
                 request.target(),
@@ -125,6 +183,7 @@ public final class ProcessSolveServices {
         Diagnostics diagnostics = Diagnostics.from(serviceDiagnostics);
         Admission admission = Admission.from(serviceAdmission);
         if (admission == Admission.ACCEPTED) {
+            if(request instanceof FluidIslandRequest&&state.fluidDemand>0)state.fluidDemand--;
             RequestContext old = state.requestsBySequence.put(
                     request.requestId(), new RequestContext(request, diagnostics, stamp));
             if (old != null) {
@@ -137,11 +196,18 @@ public final class ProcessSolveServices {
     /** Drains safely-published worker completions on the logical server thread. */
     public static List<ProcessSolveCompletion> drainCompletions(MinecraftServer server, int maximum) {
         requireServerThread(server);
+        if(maximum<1)throw new IllegalArgumentException("maximum must be positive");
         ServerState state = STATES.get(server);
         if (state == null) {
             return List.of();
         }
-        return drain(state, maximum);
+        int tick=server.getTickCount();if(state.lastDrainTick!=tick){state.lastDrainTick=tick;state.drainedThisTick=0;}
+        int remaining=Math.min(maximum,Math.max(0,MAXIMUM_COMPLETIONS_PER_TICK-state.drainedThisTick));
+        // A wakeup can arrive after this tick has consumed its budget. Keep the terminal
+        // message queued for the next tick; the underlying service requires a positive drain.
+        if(remaining==0)return List.of();
+        var result=drain(state,remaining);
+        state.drainedThisTick+=result.size();return result;
     }
 
     /** Stops admission and performs the owned bounded two-phase shutdown. */
@@ -155,6 +221,7 @@ public final class ProcessSolveServices {
             return StopResult.alreadyStopped(state.stopResult.shutdownReport());
         }
 
+        state.wakeup.close();
         BoundedCpuSolveService.ShutdownReport shutdown =
                 state.service.shutdown(state.config.gracefulShutdown(), state.config.forcedShutdown());
         List<ProcessSolveCompletion> completions = drain(state, Integer.MAX_VALUE);
@@ -190,7 +257,7 @@ public final class ProcessSolveServices {
     }
 
     private static List<ProcessSolveCompletion> drain(ServerState state, int maximum) {
-        List<BoundedCpuSolveService.Completion<ColumnTarget, ProcessSolveResult>> completed =
+        List<BoundedCpuSolveService.Completion<SolveTarget, ProcessSolveResult>> completed =
                 state.service.drainCompletions(maximum);
         if (completed.isEmpty()) {
             return List.of();
@@ -203,6 +270,8 @@ public final class ProcessSolveServices {
             }
             if (context.request() instanceof V3ColumnRequest v3Request) {
                 result.add(new V3ColumnCompletion(v3Request, context.admissionDiagnostics(), v3Completion(completion)));
+            } else if(context.request() instanceof FluidIslandRequest fluidRequest) {
+                result.add(new FluidIslandCompletion(fluidRequest,context.admissionDiagnostics(),fluidCompletion(completion)));
             } else {
                 throw new IllegalStateException("Unknown process-solve request family");
             }
@@ -211,7 +280,7 @@ public final class ProcessSolveServices {
     }
 
     private static BoundedCpuSolveService.Completion<ColumnTarget, V3ColumnOutcome> v3Completion(
-            BoundedCpuSolveService.Completion<ColumnTarget, ProcessSolveResult> completion) {
+            BoundedCpuSolveService.Completion<SolveTarget, ProcessSolveResult> completion) {
         Optional<V3ColumnOutcome> outcome = completion.result().map(result -> {
             if (!(result instanceof V3ColumnSolveResult v3)) {
                 throw new IllegalStateException("V3 request completed with a non-V3 process result");
@@ -219,8 +288,16 @@ public final class ProcessSolveServices {
             return v3.outcome();
         });
         return new BoundedCpuSolveService.Completion<>(
-                completion.stamp(), completion.status(), outcome, completion.failure(), completion.detail(),
+                stampFor(completion.stamp(),ColumnTarget.class), completion.status(), outcome, completion.failure(), completion.detail(),
                 completion.enqueuedNanos(), completion.startedNanos(), completion.completedNanos());
+    }
+
+    private static <T extends SolveTarget> BoundedCpuSolveService.JobStamp<T> stampFor(BoundedCpuSolveService.JobStamp<SolveTarget> stamp,Class<T> type) {
+        return new BoundedCpuSolveService.JobStamp<>(stamp.serverEpoch(),stamp.sequence(),type.cast(stamp.owner()),stamp.inputRevision(),stamp.datasetRevision(),stamp.deadlineNanos());
+    }
+    private static BoundedCpuSolveService.Completion<FluidIslandTarget,FluidIslandSolveResult> fluidCompletion(BoundedCpuSolveService.Completion<SolveTarget,ProcessSolveResult> completion) {
+        var result=completion.result().map(value->{if(!(value instanceof FluidIslandSolveResult fluid))throw new IllegalStateException("Fluid request completed with a different result family");return fluid;});
+        return new BoundedCpuSolveService.Completion<>(stampFor(completion.stamp(),FluidIslandTarget.class),completion.status(),result,completion.failure(),completion.detail(),completion.enqueuedNanos(),completion.startedNanos(),completion.completedNanos());
     }
 
     private static void requireServerThread(MinecraftServer server) {
@@ -250,12 +327,93 @@ public final class ProcessSolveServices {
     }
 
     /** Immutable worker envelope. Adding a job family extends this sealed protocol, never the executor count. */
-    public sealed interface ProcessSolveCommand permits V3ColumnCommand {
+    public sealed interface ProcessSolveCommand permits V3ColumnCommand,FluidSolveCommand {
         ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken);
     }
 
     /** Immutable worker result envelope routed only after main-thread completion draining. */
-    public sealed interface ProcessSolveResult permits V3ColumnSolveResult {}
+    public sealed interface ProcessSolveResult permits V3ColumnSolveResult,FluidIslandSolveResult {}
+
+    public sealed interface FluidSolveCommand extends ProcessSolveCommand permits FluidIslandCommand,BufferedIslandCommand {
+        FluidThermodynamics model();
+    }
+
+    /** Contains no live level, block entity, callback, or mutable server-owned collection. */
+    public record FluidIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,double durationSeconds,
+                                     PassiveIntervalSolver.Settings settings,long wallBudgetNanos,FluidFallbackPolicy fallback) implements FluidSolveCommand {
+        public FluidIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,double durationSeconds,PassiveIntervalSolver.Settings settings,long wallBudgetNanos) {
+            this(model,snapshot,durationSeconds,settings,wallBudgetNanos,FluidFallbackPolicy.disabled());
+        }
+        public FluidIslandCommand {
+            Objects.requireNonNull(model);Objects.requireNonNull(snapshot);Objects.requireNonNull(settings);Objects.requireNonNull(fallback);
+            if(!Double.isFinite(durationSeconds)||durationSeconds<=0||wallBudgetNanos<=0)throw new IllegalArgumentException("Invalid island solve budget");
+            if(fallback.enabled()&&(fallback.softBudgetNanos()>=wallBudgetNanos||durationSeconds<.05||durationSeconds>20||!Double.isFinite(durationSeconds*20)
+                    ||Math.abs(durationSeconds*20-Math.rint(durationSeconds*20))>1e-8))throw new IllegalArgumentException("Fallback needs tick-aligned duration and separate soft/hard budgets");
+        }
+        @Override public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken) {
+            long cpuStart=WorkerAllocation.CpuTime.sample();
+            var result=(FluidIslandSolveResult)solve(cancellationToken,System::nanoTime);
+            long cpu=WorkerAllocation.CpuTime.elapsed(cpuStart,WorkerAllocation.CpuTime.sample());
+            return new FluidIslandSolveResult(result.candidate(),result.detail(),result.workerNanos(),cpu,result.proposedAllowance(),result.proposedAnchor());
+        }
+        ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken,java.util.function.LongSupplier nanoClock) {
+            Objects.requireNonNull(cancellationToken);Objects.requireNonNull(nanoClock);long start=nanoClock.getAsLong();
+            long ticks=Math.round(durationSeconds*20);boolean eligible=fallback.enabled()&&fallback.anchor().orElseThrow().propertyRevision().equals(ApproximationAnchor.revision(model))&&fallback.allowance().permits(ticks,fallback.cadenceTicks());
+            long[] elapsed={0};
+            Runnable hard=()->{cancellationToken.throwIfCancellationRequested();elapsed[0]=nanoClock.getAsLong()-start;if(elapsed[0]>=wallBudgetNanos)throw new FluidWallDeadline();};
+            Runnable checkpoint=()->{hard.run();if(eligible&&elapsed[0]>=fallback.softBudgetNanos())throw new FluidSoftDeadline();};
+            var solver=new PassiveIntervalSolver(model);
+            try {
+                try {
+                    var candidate=solver.solve(snapshot,durationSeconds,settings,checkpoint);hard.run();
+                    return new FluidIslandSolveResult(Optional.of(candidate),"FULL",elapsed[0],FallbackAllowance.NONE,Optional.of(ApproximationAnchor.fromFull(model,candidate)));
+                }catch(FluidSoftDeadline deadline) {
+                    hard.run();var guard=fallback.anchor().orElseThrow().guard(model,snapshot);
+                    var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,.0025,256);
+                    var candidate=solver.solveApproximate(snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
+                    return new FluidIslandSolveResult(Optional.of(candidate),"APPROXIMATE: soft budget",elapsed[0],fallback.allowance().accept(ticks,fallback.cadenceTicks()),fallback.anchor());
+                }
+            }catch(FluidWallDeadline deadline){return new FluidIslandSolveResult(Optional.empty(),"HELD: wall deadline",elapsed[0],fallback.allowance(),fallback.anchor());}
+            catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected failed) {
+                cancellationToken.throwIfCancellationRequested();return new FluidIslandSolveResult(Optional.empty(),"HELD: "+failed.getMessage(),elapsed[0],fallback.allowance(),fallback.anchor());
+            }
+        }
+    }
+    private static final class FluidWallDeadline extends RuntimeException {}
+    private static final class FluidSoftDeadline extends RuntimeException {}
+    public record FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,long workerCpuNanos,
+                                        FallbackAllowance proposedAllowance,Optional<ApproximationAnchor> proposedAnchor,
+                                        Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> materialTransfers) implements ProcessSolveResult {
+        public FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,long workerCpuNanos,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor) {
+            this(candidate,detail,workerNanos,workerCpuNanos,allowance,anchor,Optional.empty());
+        }
+        public FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor) {
+            this(candidate,detail,workerNanos,-1,allowance,anchor);
+        }
+        public FluidIslandSolveResult {Objects.requireNonNull(candidate);Objects.requireNonNull(detail);Objects.requireNonNull(proposedAllowance);Objects.requireNonNull(proposedAnchor);Objects.requireNonNull(materialTransfers);if(workerNanos<0||workerCpuNanos < -1)throw new IllegalArgumentException("Invalid worker elapsed time");if(materialTransfers.isPresent()&&(candidate.isEmpty()||materialTransfers.orElseThrow().candidate()!=candidate.orElseThrow()))throw new IllegalArgumentException("Material ledger/result mismatch");}
+    }
+    /** New material boundaries require full qualification; failed probes never consume pending inputs. */
+    public record BufferedIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,long startTick,int durationTicks,
+            List<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Input> inputs,
+            List<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Withdrawal> withdrawals,
+            long wallBudgetNanos,FallbackAllowance previousAllowance,Optional<ApproximationAnchor> previousAnchor) implements FluidSolveCommand {
+        public BufferedIslandCommand {
+            Objects.requireNonNull(model);Objects.requireNonNull(snapshot);inputs=List.copyOf(inputs);withdrawals=List.copyOf(withdrawals);Objects.requireNonNull(previousAllowance);Objects.requireNonNull(previousAnchor);
+            if(startTick<0||durationTicks<1||wallBudgetNanos<1||inputs.size()+withdrawals.size()>4096)throw new IllegalArgumentException("Invalid buffered interval");
+        }
+        @Override public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken token) {
+            long started=System.nanoTime(),cpuStart=WorkerAllocation.CpuTime.sample();
+            Runnable checkpoint=()->{token.throwIfCancellationRequested();if(System.nanoTime()-started>=wallBudgetNanos)throw new FluidWallDeadline();};
+            Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> proposal=Optional.empty();String detail;
+            try {
+                proposal=Optional.of(new com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner(model).prepare(snapshot,startTick,durationTicks,inputs,withdrawals,checkpoint));checkpoint.run();detail="FULL: buffered transfers";
+            }catch(FluidWallDeadline|com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();detail="HELD: buffered interval "+held.getMessage();}
+            token.throwIfCancellationRequested();long elapsed=System.nanoTime()-started;
+            long cpu=WorkerAllocation.CpuTime.elapsed(cpuStart,WorkerAllocation.CpuTime.sample());
+            var candidate=proposal.map(com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal::candidate);
+            return new FluidIslandSolveResult(candidate,detail,elapsed,cpu,candidate.isPresent()?FallbackAllowance.NONE:previousAllowance,candidate.map(r->ApproximationAnchor.fromFull(model,r)).or(()->previousAnchor),proposal);
+        }
+    }
 
     /** Immutable worker snapshot; configuration has already been read and converted by server-thread admission. */
     record V3ColumnCommand(
@@ -328,20 +486,41 @@ public final class ProcessSolveServices {
     }
 
     /** Stable block identity; no loaded level or block entity is retained. */
-    public record ColumnTarget(ResourceKey<Level> dimension, BlockPos blockPos) {
+    public sealed interface SolveTarget permits ColumnTarget,FluidIslandTarget {}
+    public record ColumnTarget(ResourceKey<Level> dimension, BlockPos blockPos) implements SolveTarget {
         public ColumnTarget {
             Objects.requireNonNull(dimension, "dimension");
             blockPos = Objects.requireNonNull(blockPos, "blockPos").immutable();
         }
     }
 
+    public record FluidIslandTarget(ResourceKey<Level> dimension,long islandId) implements SolveTarget {
+        public FluidIslandTarget {Objects.requireNonNull(dimension);if(islandId<=0)throw new IllegalArgumentException("Invalid island identity");}
+    }
+
     /** Immutable server-thread request context retained until exactly one terminal completion is drained. */
-    public sealed interface ProcessSolveRequest permits V3ColumnRequest {
+    public sealed interface ProcessSolveRequest permits V3ColumnRequest,FluidIslandRequest {
         long requestId();
 
-        ColumnTarget target();
+        SolveTarget target();
 
         long inputRevision();
+    }
+
+    /** Server-only delivery context; the handler is never included in the worker command. */
+    public record FluidIslandRequest(long requestId,FluidIslandTarget target,long inputRevision,FluidCompletionHandler handler) implements ProcessSolveRequest {
+        public FluidIslandRequest {Objects.requireNonNull(target);Objects.requireNonNull(handler);if(requestId<=0||inputRevision<0)throw new IllegalArgumentException("Invalid fluid request stamp");}
+    }
+    public interface FluidCompletionHandler {
+        void completed(FluidIslandCompletion completion);
+        void abandoned(FluidIslandRequest request);
+    }
+    public record FluidIslandCompletion(FluidIslandRequest request,Diagnostics admissionDiagnostics,
+            BoundedCpuSolveService.Completion<FluidIslandTarget,FluidIslandSolveResult> completion) implements ProcessSolveCompletion {
+        public FluidIslandCompletion {
+            Objects.requireNonNull(request);Objects.requireNonNull(admissionDiagnostics);Objects.requireNonNull(completion);
+            if(request.requestId()!=completion.stamp().sequence()||!request.target().equals(completion.stamp().owner())||request.inputRevision()!=completion.stamp().inputRevision())throw new IllegalArgumentException("Fluid completion stamp mismatch");
+        }
     }
 
     /** Immutable V3 pilot metadata retained only on the server thread until worker completion drains. */
@@ -383,7 +562,7 @@ public final class ProcessSolveServices {
     }
 
     /** Marker for the central router; only it may drain the shared completion queue. */
-    public sealed interface ProcessSolveCompletion permits V3ColumnCompletion {}
+    public sealed interface ProcessSolveCompletion permits V3ColumnCompletion,FluidIslandCompletion {}
 
     public record AdmissionResult(Admission admission, Diagnostics diagnostics) {
         public AdmissionResult {
@@ -429,7 +608,10 @@ public final class ProcessSolveServices {
             int readyCapacity,
             Duration solveDeadline,
             Duration gracefulShutdown,
-            Duration forcedShutdown) {
+            Duration forcedShutdown,boolean dynamicWorkers) {
+        public Config(int workerCount,int readyCapacity,Duration solveDeadline,Duration gracefulShutdown,Duration forcedShutdown) {
+            this(workerCount,readyCapacity,solveDeadline,gracefulShutdown,forcedShutdown,false);
+        }
         public Config {
             if (workerCount < 1 || readyCapacity < 1) {
                 throw new IllegalArgumentException("Worker and ready capacities must be positive");
@@ -472,19 +654,26 @@ public final class ProcessSolveServices {
     private record RequestContext(
             ProcessSolveRequest request,
             Diagnostics admissionDiagnostics,
-            BoundedCpuSolveService.JobStamp<ColumnTarget> stamp) {}
+            BoundedCpuSolveService.JobStamp<SolveTarget> stamp) {}
 
     private static final class ServerState {
-        private final BoundedCpuSolveService<ColumnTarget, ProcessSolveCommand, ProcessSolveResult> service;
+        private final BoundedCpuSolveService<SolveTarget, ProcessSolveCommand, ProcessSolveResult> service;
         private final Config config;
+        private final CompletionWakeup wakeup;
+        private final WorkerAllocation.Demand allocator;
+        private int fluidDemand;
+        private Runnable readinessPump=()->{};
+        private int lastDrainTick=Integer.MIN_VALUE,drainedThisTick;
         private final Map<Long, RequestContext> requestsBySequence = new LinkedHashMap<>();
         private StopResult stopResult;
 
         private ServerState(
-                BoundedCpuSolveService<ColumnTarget, ProcessSolveCommand, ProcessSolveResult> service,
-                Config config) {
+                BoundedCpuSolveService<SolveTarget, ProcessSolveCommand, ProcessSolveResult> service,
+                Config config,CompletionWakeup wakeup) {
             this.service = service;
             this.config = config;
+            this.wakeup=wakeup;
+            this.allocator=config.dynamicWorkers()?new WorkerAllocation.Demand(config.workerCount()):null;
         }
     }
 

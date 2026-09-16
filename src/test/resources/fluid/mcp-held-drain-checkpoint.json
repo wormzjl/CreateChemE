@@ -1,0 +1,389 @@
+{
+  "version": 1,
+  "islands": [
+    {
+      "dimension": "minecraft:overworld",
+      "packageId": "createcheme:tjl20_methane",
+      "compressibility": 1e-09,
+      "propertyRevision": "fluid-trbdf2-r1:fluid-nitrogen-r1:7781afaaad17de4926015ebf321c0b106766dd5c131668f54962a8825ed25bd5:fluid-shared-k-v1:nist-liquid-calibration-20260915:k=0x1.12e0be826d695p-30:cb6773ed32b52aefb268f9c5610e288c8cecdbc6c682522b54d0be703c92b533:log-liquid-wilke-v1:dwsim-conditional-solute-v1",
+      "reference": {
+        "revision": "createcheme:sensible-298.15K-v1",
+        "components": [
+          "Methane",
+          "Ethane",
+          "Propane",
+          "Isobutane",
+          "N-butane",
+          "Isopentane",
+          "N-pentane",
+          "tjl19_pc01",
+          "tjl19_pc02",
+          "tjl19_pc03",
+          "tjl19_pc04",
+          "tjl19_pc05",
+          "tjl19_pc06",
+          "tjl19_pc07",
+          "tjl19_pc08",
+          "tjl19_pc09",
+          "tjl19_pc10",
+          "tjl19_pc11",
+          "tjl19_pc12",
+          "tjl19_pc13",
+          "Nitrogen",
+          "Water"
+        ],
+        "offsets": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "formationQualified": false
+      },
+      "id": 13,
+      "revision": 5,
+      "graph": {
+        "nodes": [
+          {
+            "id": 1,
+            "elevation": -60.0,
+            "kind": "RESERVOIR",
+            "inventory": {
+              "volume": 1.0,
+              "moles": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                40.885900539851086,
+                26832.498847181145
+              ],
+              "internalEnergy": -1196133502.2084172
+            },
+            "phase": {
+              "temperature": 298.1843946438496,
+              "pressure": 200000.00000016004,
+              "liquid": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "vapor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                40.885900539851086
+              ],
+              "waterLiquid": 26831.839399519868,
+              "waterVapor": 0.6594476612765364,
+              "hydrocarbonPressure": 196823.66976839013
+            }
+          },
+          {
+            "id": 5,
+            "elevation": -60.0,
+            "kind": "GENERATOR",
+            "inventory": {
+              "volume": 1.0,
+              "moles": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                55292.32198761313
+              ],
+              "internalEnergy": -2464800108.484037
+            },
+            "phase": {
+              "temperature": 298.15,
+              "pressure": 200000.0,
+              "liquid": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "vapor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "waterLiquid": 55292.32198761313,
+              "waterVapor": 0.0,
+              "hydrocarbonPressure": 0.0
+            }
+          },
+          {
+            "id": 10,
+            "elevation": -60.0,
+            "kind": "VOID",
+            "inventory": {
+              "volume": 1.0,
+              "moles": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                40.88590053985597,
+                0.0
+              ],
+              "internalEnergy": -101626.67105611984
+            },
+            "phase": {
+              "temperature": 298.15,
+              "pressure": 101325.0,
+              "liquid": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+              ],
+              "vapor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                40.88590053985597
+              ],
+              "waterLiquid": 0.0,
+              "waterVapor": 0.0,
+              "hydrocarbonPressure": 101325.0
+            }
+          }
+        ],
+        "pipes": [
+          {
+            "id": 4943940569429734,
+            "first": 0,
+            "second": 2,
+            "sections": [
+              {
+                "length": 1.0,
+                "diameter": 0.05,
+                "roughness": 4.5e-05,
+                "minorLoss": 0.0
+              }
+            ],
+            "control": {
+              "kind": "passive",
+              "target": 0.0,
+              "limit": 0.0,
+              "efficiency": 0.0
+            }
+          },
+          {
+            "id": 6785562986016405171,
+            "first": 0,
+            "second": 1,
+            "sections": [
+              {
+                "length": 1.0,
+                "diameter": 0.05,
+                "roughness": 4.5e-05,
+                "minorLoss": 0.0
+              }
+            ],
+            "control": {
+              "kind": "passive",
+              "target": 0.0,
+              "limit": 0.0,
+              "efficiency": 0.0
+            }
+          }
+        ]
+      },
+      "clock": {
+        "onlineTick": 44380,
+        "committedTick": 19257,
+        "retryAtTick": 44458,
+        "cadenceTicks": 90
+      },
+      "allowance": {
+        "acceptedIntervals": 0,
+        "advancedTicks": 0,
+        "capturedCadenceTicks": 0
+      },
+      "anchor": null,
+      "history": null,
+      "status": "HELD: Substep refinement exhausted: Unsupported sonic flow: reduce pressure difference or pump target",
+      "fences": {}
+    }
+  ],
+  "transfers": {
+    "revision": 0,
+    "buffers": [],
+    "pending": [],
+    "productionCapacity": null
+  },
+  "modules": null
+}

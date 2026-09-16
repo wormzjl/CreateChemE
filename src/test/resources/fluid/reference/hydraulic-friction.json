@@ -1,0 +1,202 @@
+{
+  "source": "https://usepa.github.io/EPANET2.2/12_analysis_algorithms.html",
+  "generator": "examples/Generate-Hydraulic-References.py; Decimal precision 60",
+  "rows": [
+    {
+      "reynolds": 1000,
+      "relativeRoughness": "0",
+      "specifiedDarcyFactor": "0.0640000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 1000,
+      "relativeRoughness": "0.0001",
+      "specifiedDarcyFactor": "0.0640000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 1000,
+      "relativeRoughness": "0.001",
+      "specifiedDarcyFactor": "0.0640000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 1000,
+      "relativeRoughness": "0.01",
+      "specifiedDarcyFactor": "0.0640000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 2000,
+      "relativeRoughness": "0",
+      "specifiedDarcyFactor": "0.0320000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 2000,
+      "relativeRoughness": "0.0001",
+      "specifiedDarcyFactor": "0.0320000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 2000,
+      "relativeRoughness": "0.001",
+      "specifiedDarcyFactor": "0.0320000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 2000,
+      "relativeRoughness": "0.01",
+      "specifiedDarcyFactor": "0.0320000000000000000000000000000000000000000000000000000000000",
+      "regime": "laminar",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 3000,
+      "relativeRoughness": "0",
+      "specifiedDarcyFactor": "0.0329115998785154549350498498687383882097909328300856163404462",
+      "regime": "transition",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 3000,
+      "relativeRoughness": "0.0001",
+      "specifiedDarcyFactor": "0.0329632275913780574071323656301479539651083235486921780419922",
+      "regime": "transition",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 3000,
+      "relativeRoughness": "0.001",
+      "specifiedDarcyFactor": "0.0334214788934467747347455317517010093207730860462022544539018",
+      "regime": "transition",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 3000,
+      "relativeRoughness": "0.01",
+      "specifiedDarcyFactor": "0.0375289684642545219889321259088506209170370205335855782936898",
+      "regime": "transition",
+      "colebrookDarcyFactor": null
+    },
+    {
+      "reynolds": 4000,
+      "relativeRoughness": "0",
+      "specifiedDarcyFactor": "0.0405514907300852592591101757569358972872105759942243253799654",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0399070140556348979215194020518490000327686760934198829508751"
+    },
+    {
+      "reynolds": 4000,
+      "relativeRoughness": "0.0001",
+      "specifiedDarcyFactor": "0.0406678363070315080337920003495296646637710233618938824918534",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0400084312335554990607054582346990711549268548972989911088835"
+    },
+    {
+      "reynolds": 4000,
+      "relativeRoughness": "0.001",
+      "specifiedDarcyFactor": "0.0416954355080014258584352895541355898164632877825456137886149",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0409103898628461332339811580510844279875005984634717503951764"
+    },
+    {
+      "reynolds": 4000,
+      "relativeRoughness": "0.01",
+      "specifiedDarcyFactor": "0.0506144857982588175433926480103074052530747840485304973395909",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0490822694478997303417232744578187210308638320820436861842107"
+    },
+    {
+      "reynolds": 5000,
+      "relativeRoughness": "0",
+      "specifiedDarcyFactor": "0.0378459413914737706103646469610794544672740888190909195607759",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0373927275780473933226796019087999709351988517885245578962579"
+    },
+    {
+      "reynolds": 5000,
+      "relativeRoughness": "0.0001",
+      "specifiedDarcyFactor": "0.0379741041262385050008150331251604941449586254352177914092825",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0375045180141303510268331335991050909990415423751539507279811"
+    },
+    {
+      "reynolds": 5000,
+      "relativeRoughness": "0.001",
+      "specifiedDarcyFactor": "0.0391005799526743228245543877352723096370255315767031260703317",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0384953590005396080121732383325821378063474096581075760594736"
+    },
+    {
+      "reynolds": 5000,
+      "relativeRoughness": "0.01",
+      "specifiedDarcyFactor": "0.0485955321568217182071893535706035474973976386924102900246985",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0472590786857959430029447470770503100528643481940602486515177"
+    },
+    {
+      "reynolds": 10000,
+      "relativeRoughness": "0",
+      "specifiedDarcyFactor": "0.0309720965333221400541411728247897304505853096955483030483734",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0308829503534876909377983295109116571848160930726451975781088"
+    },
+    {
+      "reynolds": 10000,
+      "relativeRoughness": "0.0001",
+      "specifiedDarcyFactor": "0.0311487003280122471715833335178748032124301168329758126816131",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0310372122009986263929716524964681147588562831152624043088115"
+    },
+    {
+      "reynolds": 10000,
+      "relativeRoughness": "0.001",
+      "specifiedDarcyFactor": "0.0326653453179118509733742092381639744036683520997502178583354",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0323818063630927207736016909611545430660446560066389775687532"
+    },
+    {
+      "reynolds": 10000,
+      "relativeRoughness": "0.01",
+      "specifiedDarcyFactor": "0.0440417948218645168457807206971404066829250761076665499544380",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0431265847068116936025399280021667512918298722323569460383081"
+    },
+    {
+      "reynolds": 100000,
+      "relativeRoughness": "0",
+      "specifiedDarcyFactor": "0.0178625778924375735442149485207359130116080343331508217670111",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0179897730842738380030857502268596171320217094924341314934169"
+    },
+    {
+      "reynolds": 100000,
+      "relativeRoughness": "0.0001",
+      "specifiedDarcyFactor": "0.0184524453075663792286755385583122814697576208670323862951233",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0185138660774716426720453489416103017682912371414787722714167"
+    },
+    {
+      "reynolds": 100000,
+      "relativeRoughness": "0.001",
+      "specifiedDarcyFactor": "0.0223424121639518329285292938675553442492339246048075149043481",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0221745359445150753892523090337368534713781091460039512778027"
+    },
+    {
+      "reynolds": 100000,
+      "relativeRoughness": "0.01",
+      "specifiedDarcyFactor": "0.0387509318048575715666611938985235370960629554918202187830697",
+      "regime": "turbulent",
+      "colebrookDarcyFactor": "0.0385035435273350950740152692120727484231401441292073797433453"
+    }
+  ]
+}

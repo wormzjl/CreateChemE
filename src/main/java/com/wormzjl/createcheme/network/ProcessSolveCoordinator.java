@@ -24,8 +24,13 @@ public final class ProcessSolveCoordinator {
     /** Drains and routes at most the configured bounded number of terminal worker messages. */
     public static void drainCompletedCalculations(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        com.wormzjl.createcheme.runtime.fluid.FluidRuntimeMeter.enter(server);
+        try {
+        com.wormzjl.createcheme.runtime.fluid.FluidWorldAuthority.refreshProperties(server);
         route(server, ProcessSolveServices.drainCompletions(
                 server, ProcessSolveServices.MAXIMUM_COMPLETIONS_PER_TICK));
+        ProcessSolveServices.pumpReady(server);
+        } finally {com.wormzjl.createcheme.runtime.fluid.FluidRuntimeMeter.exit(server);}
     }
 
     /** Stops the one owned service and routes every terminal/abandoned job family before lifecycle teardown. */
@@ -65,6 +70,8 @@ public final class ProcessSolveCoordinator {
         for (ProcessSolveCompletion completion : completions) {
             if (completion instanceof V3ColumnCompletion v3) {
                 ColumnV3Network.handleRoutedCompletion(server, v3);
+            } else if(completion instanceof ProcessSolveServices.FluidIslandCompletion fluid) {
+                fluid.request().handler().completed(fluid);
             } else {
                 throw new IllegalStateException("Unknown process-solve completion family");
             }
@@ -74,6 +81,8 @@ public final class ProcessSolveCoordinator {
     private static void routeAbandoned(MinecraftServer server, ProcessSolveRequest request) {
         if (request instanceof V3ColumnRequest v3) {
             ColumnV3Network.handleRoutedAbandoned(server, v3);
+        } else if(request instanceof ProcessSolveServices.FluidIslandRequest fluid) {
+            fluid.handler().abandoned(fluid);
         } else {
             throw new IllegalStateException("Unknown process-solve request family");
         }

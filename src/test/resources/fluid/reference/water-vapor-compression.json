@@ -1,0 +1,106 @@
+[
+  {
+    "temperatureKelvin": 300,
+    "partialPressurePascal": 3500.0,
+    "referenceCompressibility": 0.00028617866254297767,
+    "idealCompressibility": 0.00028571428571428574,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=3.43&PHigh=3.5&PInc=0.035&T=300&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-300K-3500Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 350,
+    "partialPressurePascal": 41500.0,
+    "referenceCompressibility": 2.4307854000122307e-05,
+    "idealCompressibility": 2.4096385542168674e-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=40.67&PHigh=41.5&PInc=0.415&T=350&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-350K-41500Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 375,
+    "partialPressurePascal": 100000,
+    "referenceCompressibility": 1.015667160065494e-05,
+    "idealCompressibility": 1e-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=98.0&PHigh=100.0&PInc=1.0&T=375&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-375K-100000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 385,
+    "partialPressurePascal": 150000,
+    "referenceCompressibility": 6.810060961194736e-06,
+    "idealCompressibility": 6.666666666666667e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=147.0&PHigh=150.0&PInc=1.5&T=385&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-385K-150000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 400,
+    "partialPressurePascal": 150000,
+    "referenceCompressibility": 6.78190747239778e-06,
+    "idealCompressibility": 6.666666666666667e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=147.0&PHigh=150.0&PInc=1.5&T=400&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-400K-150000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 600,
+    "partialPressurePascal": 150000,
+    "referenceCompressibility": 6.6855529118759515e-06,
+    "idealCompressibility": 6.666666666666667e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=147.0&PHigh=150.0&PInc=1.5&T=600&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-600K-150000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 900,
+    "partialPressurePascal": 150000,
+    "referenceCompressibility": 6.6693603693672554e-06,
+    "idealCompressibility": 6.666666666666667e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=147.0&PHigh=150.0&PInc=1.5&T=900&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-900K-150000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 380,
+    "partialPressurePascal": 125000,
+    "referenceCompressibility": 8.150102442650754e-06,
+    "idealCompressibility": 8e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=122.5&PHigh=125.0&PInc=1.25&T=380&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-380K-125000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 450,
+    "partialPressurePascal": 250000,
+    "referenceCompressibility": 4.067430335147071e-06,
+    "idealCompressibility": 4e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=245.0&PHigh=250.0&PInc=2.5&T=450&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-450K-250000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 500,
+    "partialPressurePascal": 400000,
+    "referenceCompressibility": 2.5433786674960584e-06,
+    "idealCompressibility": 2.5e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=392.0&PHigh=400.0&PInc=4.0&T=500&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-500K-400000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 600,
+    "partialPressurePascal": 800000,
+    "referenceCompressibility": 1.2709496754482175e-06,
+    "idealCompressibility": 1.25e-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=784.0&PHigh=800.0&PInc=8.0&T=600&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-600K-800000Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 750,
+    "partialPressurePascal": 1500000,
+    "referenceCompressibility": 6.753405632249112e-07,
+    "idealCompressibility": 6.666666666666667e-07,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=1470.0&PHigh=1500.0&PInc=15.0&T=750&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-750K-1.5e+06Pa.tsv"
+  },
+  {
+    "temperatureKelvin": 900,
+    "partialPressurePascal": 2000000,
+    "referenceCompressibility": 5.040401330520083e-07,
+    "idealCompressibility": 5e-07,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=1960.0&PHigh=2000.0&PInc=20.0&T=900&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm",
+    "raw": "steam-900K-2e+06Pa.tsv"
+  }
+]

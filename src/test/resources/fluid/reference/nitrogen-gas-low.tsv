@@ -1,0 +1,2 @@
+Temperature (K)	Pressure (kPa)	Density (mol/l)	Volume (l/mol)	Internal Energy (kJ/mol)	Enthalpy (kJ/mol)	Entropy (J/mol*K)	Cv (J/mol*K)	Cp (J/mol*K)	Sound Spd. (m/s)	Joule-Thomson (K/MPa)	Viscosity (uPa*s)	Therm. Cond. (W/m*K)	Phase
+273.160000000	100.000000000	0.0440495972234	22.7016831715	5.66456462790	7.93473294505	189.036402231	20.8106735163	29.1730172800	336.973564994	2.58593523022	16.6289796420	0.0240013077598	vapor

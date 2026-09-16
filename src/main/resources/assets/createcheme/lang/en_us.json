@@ -1,8 +1,8 @@
 {
   "block.createcheme.column_calculator_v3": "Column Calculator V3 (Experimental)",
-  "material.createcheme.nbp_range": "%s, NBP %s–%s°C",
-  "material.createcheme.nbp_below": "%s, NBP below %s°C",
-  "material.createcheme.nbp_above": "%s, NBP above %s°C",
+  "material.createcheme.nbp_range": "%s, NBP %s\u2013%s\u00b0C",
+  "material.createcheme.nbp_below": "%s, NBP below %s\u00b0C",
+  "material.createcheme.nbp_above": "%s, NBP above %s\u00b0C",
   "material.createcheme.estimated": " (estimated)",
   "material.createcheme.cdu17_c4": "C4 blend",
   "material.createcheme.cdu17_pc01": "Crude oil",
@@ -49,5 +49,12 @@
   "gui.createcheme.column_presets": "Input presets",
   "gui.createcheme.preset_choose": "Choose an input preset",
   "gui.createcheme.preset_replaces": "Loading replaces the draft and clears its previous result.",
-  "gui.createcheme.preset_conditions": "The five crude assays use the current Tia Juana column settings as editable starting points. Adjust operating conditions for each crude before running."
+  "gui.createcheme.preset_conditions": "The five crude assays use the current Tia Juana column settings as editable starting points. Adjust operating conditions for each crude before running.",
+  "block.createcheme.fluid_reservoir": "Fluid Reservoir",
+  "block.createcheme.fluid_pipe": "Process Fluid Pipe",
+  "block.createcheme.fluid_pump": "Process Fluid Pump",
+  "block.createcheme.pressure_control_valve": "Pressure Control Valve",
+  "block.createcheme.fluid_generator": "Fluid Generator",
+  "block.createcheme.fluid_void": "Fluid Void",
+  "item.createcheme.fluid_debugger": "Fluid Network Probe"
 }

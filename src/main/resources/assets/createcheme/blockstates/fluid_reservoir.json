@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "createcheme:block/fluid_reservoir"
+    },
+    "facing=east": {
+      "model": "createcheme:block/fluid_reservoir",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "createcheme:block/fluid_reservoir",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "createcheme:block/fluid_reservoir",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "createcheme:block/fluid_reservoir",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "createcheme:block/fluid_reservoir",
+      "x": 90
+    }
+  }
+}

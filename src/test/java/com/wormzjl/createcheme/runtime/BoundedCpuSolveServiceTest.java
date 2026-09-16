@@ -345,6 +345,23 @@ class BoundedCpuSolveServiceTest {
         }
     }
 
+    @Test void parallelismCanGrowAndShrinkWithoutCancellingActiveOwnersOrLosingQueuedWork() throws Exception {
+        var release=new CountDownLatch(1);var firstStarted=new CountDownLatch(1);var secondStarted=new CountDownLatch(1);
+        try(var service=new BoundedCpuSolveService<Owner,Snapshot,SolveResult>(81,testConfig(4,4,true))) {
+            service.setWorkerLimit(1);
+            assertEquals(Admission.ACCEPTED,service.trySubmit(stamp(81,1,"first"),new Snapshot("one"),(s,t)->{firstStarted.countDown();release.await();return new SolveResult(s.value());}));
+            await(firstStarted);
+            assertEquals(Admission.ACCEPTED,service.trySubmit(stamp(81,2,"second"),new Snapshot("two"),(s,t)->{secondStarted.countDown();release.await();return new SolveResult(s.value());}));
+            assertEquals(1,service.diagnostics().readyJobs());service.setWorkerLimit(2);await(secondStarted);
+            assertEquals(2,service.diagnostics().activeWorkers());service.setWorkerLimit(1);
+            assertEquals(2,service.diagnostics().activeWorkers(),"Shrink must not release active ownership");
+            assertEquals(Admission.ACCEPTED,service.trySubmit(stamp(81,3,"third"),new Snapshot("three"),(s,t)->new SolveResult(s.value())));
+            release.countDown();var results=awaitCompletions(service,3);
+            assertTrue(results.stream().allMatch(r->r.status()==TerminalStatus.SUCCESS));assertEquals(0,service.diagnostics().outstandingJobs());
+            org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,()->service.setWorkerLimit(5));
+        } finally {release.countDown();}
+    }
+
     private static Config testConfig(int workerCount, int readyCapacity, boolean daemonThreads) {
         return new Config(
                 workerCount,

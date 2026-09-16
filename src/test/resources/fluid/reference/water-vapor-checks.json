@@ -1,0 +1,119 @@
+[
+  {
+    "temperatureKelvin": 300,
+    "partialPressurePascal": 3500.0,
+    "referenceVolume": 0.711422569252,
+    "idealVolume": 0.7126682244131348,
+    "relativeError": 0.0017509356815099686,
+    "referenceViscosity": 9.759669153919999E-06,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=3.5&PHigh=3.5&PInc=1&T=300&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 350,
+    "partialPressurePascal": 41500.0,
+    "referenceVolume": 0.0695184683381,
+    "idealVolume": 0.07012197388803937,
+    "relativeError": 0.008681226217531757,
+    "referenceViscosity": 1.14305034335E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=41.5&PHigh=41.5&PInc=1&T=350&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 375,
+    "partialPressurePascal": 100000,
+    "referenceVolume": 0.0307151016067,
+    "idealVolume": 0.031179234818074646,
+    "relativeError": 0.015110912453351721,
+    "referenceViscosity": 1.2304903780899999E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=100&PHigh=100&PInc=1&T=375&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 385,
+    "partialPressurePascal": 150000,
+    "referenceVolume": 0.020914922149,
+    "idealVolume": 0.02134045405325998,
+    "relativeError": 0.02034585169518932,
+    "referenceViscosity": 1.26460759945E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=150&PHigh=150&PInc=1&T=385&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 400,
+    "partialPressurePascal": 150000,
+    "referenceVolume": 0.0218069648107,
+    "idealVolume": 0.022171900315075307,
+    "relativeError": 0.016734814200105808,
+    "referenceViscosity": 1.32387864752E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=150&PHigh=150&PInc=1&T=400&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 600,
+    "partialPressurePascal": 150000,
+    "referenceVolume": 0.0331570669056,
+    "idealVolume": 0.03325785047261296,
+    "relativeError": 0.003039580289170285,
+    "referenceViscosity": 2.14202560141E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=150&PHigh=150&PInc=1&T=600&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 900,
+    "partialPressurePascal": 150000,
+    "referenceVolume": 0.049855813699,
+    "idealVolume": 0.04988677570891944,
+    "relativeError": 0.0006210310818788312,
+    "referenceViscosity": 3.36822671492E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=150&PHigh=150&PInc=1&T=900&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 380,
+    "partialPressurePascal": 125000,
+    "referenceVolume": 0.0248315522638,
+    "idealVolume": 0.025275966359185848,
+    "relativeError": 0.01789715321316132,
+    "referenceViscosity": 1.2473850357999999E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=125&PHigh=125&PInc=1&T=380&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 450,
+    "partialPressurePascal": 250000,
+    "referenceVolume": 0.014723005452,
+    "idealVolume": 0.01496603271267583,
+    "relativeError": 0.016506633884511457,
+    "referenceViscosity": 1.51987107159E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=250&PHigh=250&PInc=1&T=450&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 500,
+    "partialPressurePascal": 400000,
+    "referenceVolume": 0.0102185155939,
+    "idealVolume": 0.01039307827269155,
+    "relativeError": 0.017082978167176854,
+    "referenceViscosity": 1.72174304099E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=400&PHigh=400&PInc=1&T=500&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 600,
+    "partialPressurePascal": 800000,
+    "referenceVolume": 0.00613373228645,
+    "idealVolume": 0.00623584696361493,
+    "relativeError": 0.016648049245727714,
+    "referenceViscosity": 2.1365052770199997E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=800&PHigh=800&PInc=1&T=600&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 750,
+    "partialPressurePascal": 1500000,
+    "referenceVolume": 0.00410355827599,
+    "idealVolume": 0.004157231309076619,
+    "relativeError": 0.013079632230559746,
+    "referenceViscosity": 2.76363751881E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=1500&PHigh=1500&PInc=1&T=750&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  },
+  {
+    "temperatureKelvin": 900,
+    "partialPressurePascal": 2000000,
+    "referenceVolume": 0.00371088646637,
+    "idealVolume": 0.0037415081781689576,
+    "relativeError": 0.00825185897668046,
+    "referenceViscosity": 3.3758754546699994E-05,
+    "source": "https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Data&Type=IsoTherm&Digits=12&PLow=2000&PHigh=2000&PInc=1&T=900&RefState=DEF&TUnit=K&PUnit=kPa&DUnit=mol%2Fl&HUnit=kJ%2Fmol&WUnit=m%2Fs&VisUnit=uPa*s&STUnit=N%2Fm"
+  }
+]

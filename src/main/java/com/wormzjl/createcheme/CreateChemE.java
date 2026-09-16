@@ -8,6 +8,7 @@ import com.wormzjl.createcheme.registry.ModBlocks;
 import com.wormzjl.createcheme.registry.ModItems;
 import com.wormzjl.createcheme.registry.ModMenus;
 import com.wormzjl.createcheme.runtime.ProcessSolveServices;
+import com.wormzjl.createcheme.runtime.WorkerAllocation;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnCalculator;
 import com.wormzjl.createcheme.science.column.v3.V3InitializationOptions;
 import com.wormzjl.createcheme.science.column.v3.V3NeuralModels;
@@ -36,10 +37,14 @@ public final class CreateChemE {
     private static final ModConfigSpec CONFIG_SPEC;
     private static final ModConfigSpec.BooleanValue CALCULATION_LOGGING;
     private static final ModConfigSpec.IntValue SOLVER_WORKERS;
+    private static final ModConfigSpec.IntValue SOLVER_AUTOMATIC_WORKER_LIMIT;
     private static final ModConfigSpec.IntValue SOLVER_READY_CAPACITY;
     private static final ModConfigSpec.IntValue SOLVER_DEADLINE_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
+    private static final ModConfigSpec.IntValue FLUID_INITIAL_INTERVAL_SECONDS,FLUID_WALL_BUDGET_MILLISECONDS;
+    private static final ModConfigSpec.DoubleValue FLUID_LIQUID_COMPRESSIBILITY,FLUID_INITIAL_VOLUME,FLUID_INITIAL_TEMPERATURE,FLUID_INITIAL_PRESSURE,FLUID_MAXIMUM_VELOCITY;
+    private static final ModConfigSpec.BooleanValue FLUID_DEBUG_CHAT,FLUID_ADAPTIVE_CADENCE;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_LIQUID_SUPPLY_SCREEN_RATIO;
@@ -55,8 +60,11 @@ public final class CreateChemE {
                 .define("enableCalculationLogging", true);
         builder.push("solver");
         SOLVER_WORKERS = builder
-                .comment("Platform workers for CPU-bound process solves. Keep at 1 unless measurements justify 2.")
-                .defineInRange("workers", 1, 1, 2);
+                .comment("Shared CPU solve workers. 0 allocates by demand within automaticWorkerLimit and available processors - 2; 1-32 sets a fixed limit.",
+                        "Applied when the server starts. Performance qualification uses an explicit value of 2.")
+                .defineInRange("workers", 0, 0, WorkerAllocation.MAXIMUM_WORKERS);
+        SOLVER_AUTOMATIC_WORKER_LIMIT=builder.comment("Maximum shared CPU workers in automatic mode; idle capacity scales down with demand.")
+                .defineInRange("automaticWorkerLimit",WorkerAllocation.DEFAULT_AUTOMATIC_LIMIT,1,WorkerAllocation.MAXIMUM_WORKERS);
         SOLVER_READY_CAPACITY = builder
                 .comment("Maximum admitted process solves waiting for a worker.")
                 .defineInRange("readyQueueCapacity", 8, 1, 32);
@@ -69,6 +77,17 @@ public final class CreateChemE {
         SOLVER_FORCED_SHUTDOWN_MILLISECONDS = builder
                 .comment("Bounded wait after solver-worker interruption, in milliseconds.")
                 .defineInRange("forcedShutdownMilliseconds", 1_000, 0, 10_000);
+        builder.pop();
+        builder.push("fluid");
+        FLUID_INITIAL_INTERVAL_SECONDS=builder.comment("Starting hydraulic cadence for newly created islands. Existing saved clocks retain their cadence; adaptation uses 1-20 s.").defineInRange("initialIntervalSeconds",5,1,20);
+        FLUID_ADAPTIVE_CADENCE=builder.comment("Adapt island cadence to measured CPU load. Disable for reproducible fixed-cadence qualification; saved simulation debt is retained.").define("adaptiveCadence",true);
+        FLUID_WALL_BUDGET_MILLISECONDS=builder.comment("Hard worker budget per island interval; 75% is reserved for the full solve. Applied on server start.").defineInRange("wallBudgetMilliseconds",2000,100,60000);
+        FLUID_LIQUID_COMPRESSIBILITY=builder.comment("One liquid compressibility for every liquid, in 1/Pa, for a new fluid world. Existing saves retain their recorded model until explicit migration.").defineInRange("liquidCompressibility",1e-9,1e-12,5e-7);
+        FLUID_MAXIMUM_VELOCITY=builder.comment("Maximum bulk pipe velocity in m/s, also limited by the current fluid's acoustic bound. Caps mass transfer inside the coupled equations; does not set temperature. Captured on server start.").defineInRange("maximumVelocityMetresPerSecond",100.0,.01,100000.0);
+        FLUID_INITIAL_VOLUME=builder.comment("Volume of newly placed reservoirs in cubic metres. Applied on server start.").defineInRange("reservoirVolumeCubicMetres",1.0,.001,1000.0);
+        FLUID_INITIAL_TEMPERATURE=builder.comment("One-time nitrogen charge temperature in kelvin for newly placed reservoirs.").defineInRange("initialNitrogenTemperatureKelvin",298.15,273.16,600.0);
+        FLUID_INITIAL_PRESSURE=builder.comment("One-time nitrogen charge absolute pressure in pascals for newly placed reservoirs.").defineInRange("initialNitrogenPressurePascal",101325.0,100.0,2000000.0);
+        FLUID_DEBUG_CHAT=builder.comment("Report held fluid intervals in chat, at most once per second; full details remain in the server log.").define("debugChat",false);
         builder.pop();
         builder.push("columnV3");
         COLUMN_V3_INITIALIZER_MODE = builder
@@ -130,6 +149,7 @@ public final class CreateChemE {
         ModBlockEntities.register(modEventBus);
         ModMenus.register(modEventBus);
         modEventBus.addListener(ColumnV3Network::register);
+        modEventBus.addListener(com.wormzjl.createcheme.network.FluidNetwork::register);
         modEventBus.addListener(CreateChemE::addCreativeTabItem);
         modContainer.registerConfig(ModConfig.Type.COMMON, CONFIG_SPEC, "createcheme-common.toml");
 
@@ -140,10 +160,21 @@ public final class CreateChemE {
         gameEventBus.addListener(CreateChemE::onServerTickPost);
         gameEventBus.addListener(CreateChemE::onServerStopping);
         gameEventBus.addListener(CreateChemE::onServerStopped);
+        gameEventBus.addListener(CreateChemE::onFluidChunkLoaded);
+    }
+    private static void onFluidChunkLoaded(net.neoforged.neoforge.event.level.ChunkEvent.Load event) {
+        if(event.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+            var server=level.getServer();var dimension=level.dimension();long chunk=event.getChunk().getPos().toLong();
+            server.execute(()->com.wormzjl.createcheme.runtime.fluid.FluidWorldAuthority.find(server).ifPresent(world->world.loadedChunk(dimension,chunk)));
+        }
     }
 
     public static boolean calculationLoggingEnabled() {
         return CALCULATION_LOGGING.getAsBoolean();
+    }
+    public record FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity) {}
+    public static FluidOptions fluidOptions() {
+        return new FluidOptions(20*FLUID_INITIAL_INTERVAL_SECONDS.getAsInt(),1_000_000L*FLUID_WALL_BUDGET_MILLISECONDS.getAsInt(),FLUID_LIQUID_COMPRESSIBILITY.get(),FLUID_INITIAL_VOLUME.get(),FLUID_INITIAL_TEMPERATURE.get(),FLUID_INITIAL_PRESSURE.get(),FLUID_DEBUG_CHAT.getAsBoolean(),FLUID_ADAPTIVE_CADENCE.getAsBoolean(),FLUID_MAXIMUM_VELOCITY.get());
     }
 
     /**
@@ -181,6 +212,7 @@ public final class CreateChemE {
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.COLUMN_CALCULATOR_V3.get());
+            event.accept(ModItems.FLUID_RESERVOIR.get());event.accept(ModItems.FLUID_PIPE.get());event.accept(ModItems.FLUID_PUMP.get());event.accept(ModItems.PRESSURE_CONTROL_VALVE.get());event.accept(ModItems.FLUID_GENERATOR.get());event.accept(ModItems.FLUID_VOID.get());event.accept(ModItems.FLUID_DEBUGGER.get());
         }
     }
 
@@ -191,6 +223,7 @@ public final class CreateChemE {
                 columnV3NeuralModel(); // Parse the selected immutable artifact before admitting normal work.
             ProcessSolveServices.ServerStarted started =
                     ProcessSolveServices.startServer(server, solveServiceConfig());
+            com.wormzjl.createcheme.runtime.fluid.FluidWorldAuthority.start(server);
             if (calculationLoggingEnabled()) {
                 LOGGER.info(
                         "process_solver lifecycle=STARTED epoch={} workers={} ready_capacity={} "
@@ -209,6 +242,7 @@ public final class CreateChemE {
     }
 
     private static void onServerTickPost(ServerTickEvent.Post event) {
+        com.wormzjl.createcheme.runtime.fluid.FluidRuntimeMeter.enter(event.getServer());
         try {
             var materialCatalog=com.wormzjl.createcheme.science.material.MaterialRuntime.active();
             if (lastMaterialCatalog != materialCatalog) {
@@ -216,14 +250,18 @@ public final class CreateChemE {
                 ColumnV3Network.refreshMaterialViewers(event.getServer());
             }
             ProcessSolveCoordinator.drainCompletedCalculations(event.getServer());
+            com.wormzjl.createcheme.runtime.fluid.FluidWorldAuthority.tick(event.getServer());
         } catch (RuntimeException exception) {
             LOGGER.error("process_solver lifecycle=DRAIN_FAILED", exception);
             throw exception;
+        } finally {
+            com.wormzjl.createcheme.runtime.fluid.FluidRuntimeMeter.exit(event.getServer());
         }
     }
 
     private static void onServerStopping(ServerStoppingEvent event) {
         try {
+            com.wormzjl.createcheme.runtime.fluid.FluidWorldAuthority.stop(event.getServer());
             ProcessSolveCoordinator.stopCalculations(event.getServer());
         } catch (RuntimeException exception) {
             LOGGER.error("process_solver lifecycle=STOP_FAILED", exception);
@@ -236,6 +274,8 @@ public final class CreateChemE {
     private static void onServerStopped(ServerStoppedEvent event) {
         try {
             // ServerStopped can still fire after an abnormal lifecycle path that skipped ServerStopping.
+            com.wormzjl.createcheme.runtime.fluid.FluidWorldAuthority.forget(event.getServer());
+            com.wormzjl.createcheme.runtime.fluid.FluidRuntimeMeter.forget(event.getServer());
             ProcessSolveCoordinator.stopCalculations(event.getServer());
             int remainingContexts = ProcessSolveServices.removeStoppedServer(event.getServer());
             com.wormzjl.createcheme.science.material.MaterialRuntime.reset();
@@ -254,11 +294,12 @@ public final class CreateChemE {
 
     private static ProcessSolveServices.Config solveServiceConfig() {
         return new ProcessSolveServices.Config(
-                SOLVER_WORKERS.getAsInt(),
+                WorkerAllocation.resolve(
+                        SOLVER_WORKERS.getAsInt(), Runtime.getRuntime().availableProcessors(),SOLVER_AUTOMATIC_WORKER_LIMIT.getAsInt()),
                 SOLVER_READY_CAPACITY.getAsInt(),
                 Duration.ofMillis(SOLVER_DEADLINE_MILLISECONDS.getAsInt()),
                 Duration.ofMillis(SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS.getAsInt()),
-                Duration.ofMillis(SOLVER_FORCED_SHUTDOWN_MILLISECONDS.getAsInt()));
+                Duration.ofMillis(SOLVER_FORCED_SHUTDOWN_MILLISECONDS.getAsInt()),SOLVER_WORKERS.getAsInt()==0);
     }
 
 }

@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -25,12 +24,12 @@ import java.util.function.LongSupplier;
  * <p>The thread that constructs this service owns admission, cancellation, completion draining, and shutdown.
  * Those methods fail fast when called by another thread. Worker threads receive only the supplied immutable snapshot
  * and a cooperative cancellation token. They publish immutable terminal messages through a blocking queue and never
- * invoke a caller callback.</p>
+ * invoke a result callback. An optional lightweight signal only wakes the owner's mailbox.</p>
  *
  * <p>Owner keys must have stable {@code equals}/{@code hashCode}; owner keys, snapshots, and results must be deeply
  * immutable for the duration of a job. One job per owner remains outstanding until its terminal completion is
- * drained. The executor uses a {@link SynchronousQueue}, so its only backlog is the bounded, owner-thread-confined
- * ready queue exposed by {@link Diagnostics}.</p>
+ * drained. A bounded executor handoff queue covers the completion-before-worker-return race;
+ * the only admitted backlog is the bounded owner-thread ready queue exposed by {@link Diagnostics}.</p>
  *
  * @param <O> immutable owner-key type
  * @param <S> immutable solve-snapshot type
@@ -51,6 +50,7 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
     private final Config config;
     private final Thread ownerThread;
     private final LongSupplier nanoTime;
+    private final Runnable completionSignal;
     private final int maximumOutstanding;
     private final ArrayDeque<JobControl> readyJobs;
     private final Map<O, JobControl> jobsByOwner;
@@ -60,6 +60,7 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
 
     private boolean accepting = true;
     private int activeWorkers;
+    private int workerLimit;
 
     /** Creates a service with one daemon platform worker and an eight-job ready queue. */
     public BoundedCpuSolveService(long serverEpoch) {
@@ -71,12 +72,22 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
         this(serverEpoch, config, System::nanoTime);
     }
 
+    /** The signal may run on a worker or owner; it must only enqueue a bounded owner-thread wakeup. */
+    public BoundedCpuSolveService(long serverEpoch,Config config,Runnable completionSignal) {
+        this(serverEpoch,config,System::nanoTime,completionSignal);
+    }
+
     BoundedCpuSolveService(long serverEpoch, Config config, LongSupplier nanoTime) {
+        this(serverEpoch,config,nanoTime,()->{});
+    }
+    private BoundedCpuSolveService(long serverEpoch,Config config,LongSupplier nanoTime,Runnable completionSignal) {
         this.serverEpoch = serverEpoch;
         this.config = Objects.requireNonNull(config, "config");
         this.nanoTime = Objects.requireNonNull(nanoTime, "nanoTime");
+        this.completionSignal=Objects.requireNonNull(completionSignal,"completionSignal");
         this.ownerThread = Thread.currentThread();
         this.maximumOutstanding = Math.addExact(config.workerCount(), config.readyCapacity());
+        this.workerLimit = config.workerCount();
         this.readyJobs = new ArrayDeque<>(config.readyCapacity());
         this.jobsByOwner = new HashMap<>(maximumOutstanding);
         this.completions = new ArrayBlockingQueue<>(maximumOutstanding);
@@ -94,7 +105,10 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
                 config.workerCount(),
                 0L,
                 TimeUnit.MILLISECONDS,
-                new SynchronousQueue<>(),
+                // A terminal can be drained just before its WorkerTask returns. Reserve at most
+                // one handoff per worker so the successor does not depend on a later game tick.
+                // Admission and the ready backlog remain bounded by this service's own counters.
+                new ArrayBlockingQueue<>(config.workerCount()),
                 threadFactory,
                 new ThreadPoolExecutor.AbortPolicy());
     }
@@ -138,7 +152,7 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
             return Admission.ACCEPTED;
         }
 
-        if (readyJobs.isEmpty() && activeWorkers < config.workerCount()) {
+        if (readyJobs.isEmpty() && activeWorkers < workerLimit) {
             DispatchResult dispatched = dispatch(control);
             if (dispatched == DispatchResult.DISPATCHED) {
                 return Admission.ACCEPTED;
@@ -227,12 +241,22 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
         requireOwnerThread();
         return new Diagnostics(
                 accepting,
-                config.workerCount(),
+                workerLimit,
                 activeWorkers,
                 readyJobs.size(),
                 config.readyCapacity(),
                 jobsByOwner.size(),
                 completions.size());
+    }
+
+    /** Changes admission parallelism within the startup capacity. Active jobs keep ownership and
+     * finish normally when shrinking; no cancellation or queue-capacity expansion is implied. */
+    public void setWorkerLimit(int workers) {
+        requireOwnerThread();
+        if(workers<1||workers>config.workerCount())throw new IllegalArgumentException("Worker limit outside startup capacity");
+        if(!accepting||workers==workerLimit)return;
+        workerLimit=workers;executor.setCorePoolSize(workers);
+        dispatchReadyJobs();
     }
 
     /** Catastrophic worker errors are retained even though ordinary task failures arrive as completions. */
@@ -318,7 +342,7 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
     }
 
     private void dispatchReadyJobs() {
-        while (activeWorkers < config.workerCount() && !readyJobs.isEmpty()) {
+        while (activeWorkers < workerLimit && !readyJobs.isEmpty()) {
             JobControl control = readyJobs.removeFirst();
             if (control.token.isDeadlineExceeded()) {
                 control.publish(deadlineCompletion(control, nanoTime.getAsLong()));
@@ -713,6 +737,7 @@ public final class BoundedCpuSolveService<O, S, R> implements AutoCloseable {
                         : desiredCompletion;
                 if (state.compareAndSet(current, TERMINAL)) {
                     completions.add(new CompletedJob(this, actualCompletion));
+                    try{completionSignal.run();}catch(RuntimeException failure){lastUncaughtWorkerFailure.compareAndSet(null,Failure.from(failure));}
                     return;
                 }
             }

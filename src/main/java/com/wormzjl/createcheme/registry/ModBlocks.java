@@ -11,6 +11,15 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(CreateChemE.MOD_ID);
+    public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_RESERVOIR=fluid("fluid_reservoir",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.RESERVOIR);
+    public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_PIPE=fluid("fluid_pipe",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.PIPE);
+    public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_PUMP=fluid("fluid_pump",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.PUMP);
+    public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> PRESSURE_CONTROL_VALVE=fluid("pressure_control_valve",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.VALVE);
+    public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_GENERATOR=fluid("fluid_generator",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.GENERATOR);
+    public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_VOID=fluid("fluid_void",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.VOID);
+    private static DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> fluid(String name,com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind kind) {
+        return BLOCKS.registerBlock(name,p->new com.wormzjl.createcheme.world.level.block.FluidDeviceBlock(kind,p),BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5F).sound(SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
+    }
 
     public static final DeferredBlock<ColumnCalculatorV3Block> COLUMN_CALCULATOR_V3 = BLOCKS.registerBlock(
             "column_calculator_v3",

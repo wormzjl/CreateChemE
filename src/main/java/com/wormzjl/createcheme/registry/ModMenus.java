@@ -12,6 +12,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class ModMenus {
     public static final DeferredRegister<MenuType<?>> MENU_TYPES =
             DeferredRegister.create(Registries.MENU, CreateChemE.MOD_ID);
+    public static final DeferredHolder<MenuType<?>,MenuType<com.wormzjl.createcheme.world.inventory.FluidDeviceMenu>> FLUID_DEVICE=MENU_TYPES.register("fluid_device",()->IMenuTypeExtension.create(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu::new));
 
     public static final DeferredHolder<MenuType<?>, MenuType<ColumnCalculatorV3Menu>> COLUMN_CALCULATOR_V3 =
             MENU_TYPES.register(

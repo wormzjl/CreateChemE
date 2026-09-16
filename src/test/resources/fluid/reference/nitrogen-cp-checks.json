@@ -1,0 +1,129 @@
+{
+  "maximumCpFitRelativeError": 0.0002197784580737494,
+  "points": [
+    {
+      "temperatureKelvin": 273.16,
+      "referenceCp": 29.113617766094325
+    },
+    {
+      "temperatureKelvin": 294.0477040986338,
+      "referenceCp": 29.12170963562548
+    },
+    {
+      "temperatureKelvin": 314.9354081972676,
+      "referenceCp": 29.134229619753665
+    },
+    {
+      "temperatureKelvin": 335.8231122959014,
+      "referenceCp": 29.152077378016422
+    },
+    {
+      "temperatureKelvin": 356.7108163945352,
+      "referenceCp": 29.176155395396446
+    },
+    {
+      "temperatureKelvin": 377.59852049316896,
+      "referenceCp": 29.207368071638356
+    },
+    {
+      "temperatureKelvin": 398.48622459180274,
+      "referenceCp": 29.24662113548605
+    },
+    {
+      "temperatureKelvin": 419.3739286904365,
+      "referenceCp": 29.29482125780152
+    },
+    {
+      "temperatureKelvin": 440.2616327890703,
+      "referenceCp": 29.352875789976174
+    },
+    {
+      "temperatureKelvin": 461.14933688770407,
+      "referenceCp": 29.421692583319352
+    },
+    {
+      "temperatureKelvin": 482.03704098633784,
+      "referenceCp": 29.502179861993074
+    },
+    {
+      "temperatureKelvin": 502.9247450849717,
+      "referenceCp": 29.59283841767141
+    },
+    {
+      "temperatureKelvin": 523.8124491836054,
+      "referenceCp": 29.683410738648863
+    },
+    {
+      "temperatureKelvin": 544.7001532822392,
+      "referenceCp": 29.78675278347096
+    },
+    {
+      "temperatureKelvin": 565.587857380873,
+      "referenceCp": 29.900272994305475
+    },
+    {
+      "temperatureKelvin": 586.4755614795068,
+      "referenceCp": 30.021846029845097
+    },
+    {
+      "temperatureKelvin": 607.3632655781406,
+      "referenceCp": 30.14971826056976
+    },
+    {
+      "temperatureKelvin": 628.2509696767744,
+      "referenceCp": 30.282434881134485
+    },
+    {
+      "temperatureKelvin": 649.1386737754082,
+      "referenceCp": 30.418783168039624
+    },
+    {
+      "temperatureKelvin": 670.0263778740419,
+      "referenceCp": 30.55774792102788
+    },
+    {
+      "temperatureKelvin": 690.9140819726757,
+      "referenceCp": 30.698476187581896
+    },
+    {
+      "temperatureKelvin": 711.8017860713096,
+      "referenceCp": 30.840249124276216
+    },
+    {
+      "temperatureKelvin": 732.6894901699434,
+      "referenceCp": 30.98245939125904
+    },
+    {
+      "temperatureKelvin": 753.5771942685772,
+      "referenceCp": 31.124592870458343
+    },
+    {
+      "temperatureKelvin": 774.4648983672109,
+      "referenceCp": 31.266213787570184
+    },
+    {
+      "temperatureKelvin": 795.3526024658447,
+      "referenceCp": 31.4069525323695
+    },
+    {
+      "temperatureKelvin": 816.2403065644785,
+      "referenceCp": 31.546495632209894
+    },
+    {
+      "temperatureKelvin": 837.1280106631123,
+      "referenceCp": 31.68457745441899
+    },
+    {
+      "temperatureKelvin": 858.015714761746,
+      "referenceCp": 31.82097330508999
+    },
+    {
+      "temperatureKelvin": 878.9034188603798,
+      "referenceCp": 31.955493662017233
+    },
+    {
+      "temperatureKelvin": 899.7911229590136,
+      "referenceCp": 32.0879793336594
+    }
+  ]
+}

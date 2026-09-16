@@ -1,0 +1,18 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="createcheme_mcp_compat"
+version="1.0.0"
+displayName="CreateChemE MCP Test Compatibility"
+description="Test-client input dispatch compatibility for Minecraft MCP 0.3.0."
+
+[[mixins]]
+config="createcheme_mcp_compat.mixins.json"
+
+[[dependencies.createcheme_mcp_compat]]
+modId="mcpmod"
+type="required"
+versionRange="[0.3.0,0.4.0)"
+side="CLIENT"
