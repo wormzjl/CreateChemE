@@ -380,7 +380,7 @@ public final class PassiveStepSolver {
         final int edgeOffset,size;final double[][] oldAmounts;int[][] sparsity;final List<FlowControl.Mode> modes;final int[] controlOffsets;final boolean[] boundaryClosed;final List<FluidThermodynamics.State> seeds;
         final double[][] cachedVariables;final FluidThermodynamics.State[] cachedStates;final Transport[] cachedTransport;
         final Transport[][] capSources;final double[][] capMassFlows,capPressureDrops;
-        final com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.TemperatureTerms[] cachedTemperatureTerms;
+        final FluidThermodynamics.Prepared[] cachedPrepared;
         final boolean[] amountVariables;
         final double[] differenceFloors;
         Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[] mask) {
@@ -390,7 +390,7 @@ public final class PassiveStepSolver {
             this.graph=graph;this.dt=dt;int count=graph.reservoirs().size();layout=new PhaseLayout[count];offsets=new int[count];oldAmounts=new double[count][];
             capSources=new Transport[graph.pipes().size()][2];capMassFlows=new double[graph.pipes().size()][2];capPressureDrops=new double[graph.pipes().size()][2];
             cachedVariables=new double[count][];cachedStates=new FluidThermodynamics.State[count];cachedTransport=new Transport[count];
-            cachedTemperatureTerms=new com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.TemperatureTerms[count];
+            cachedPrepared=new FluidThermodynamics.Prepared[count];
             int cursor=0;
             for(int i=0;i<count;i++) {
                 var state=graph.reservoirs().get(i).state();offsets[i]=cursor;oldAmounts[i]=graph.reservoirs().get(i).inventory().moles();
@@ -480,11 +480,11 @@ public final class PassiveStepSolver {
             for(int i=0;i<layout.length;i++) {
                 boolean same=cachedStates[i]!=null&&(layout[i]==null||Arrays.mismatch(x,offsets[i],offsets[i]+layout[i].size(),cachedVariables[i],0,cachedVariables[i].length)<0);
                 if(!same) {
-                    if(layout[i]!=null&&layout[i].hasHydrocarbons()) {
+                    if(layout[i]!=null) {
                         double temperature=layout[i].temperature(x,offsets[i]);
-                        if(cachedTemperatureTerms[i]==null||cachedTemperatureTerms[i].temperature()!=temperature)cachedTemperatureTerms[i]=model.hydrocarbon.temperatureTerms(temperature);
+                        if(cachedPrepared[i]==null||cachedPrepared[i].temperature()!=temperature)cachedPrepared[i]=model.prepare(temperature);
                     }
-                    var state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedTemperatureTerms[i]);
+                    var state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedPrepared[i]);
                     var transport=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),viscosity(state),state.enthalpy()/state.mass(),model.velocityLimit(state));
                     cachedStates[i]=state;cachedTransport[i]=transport;
                     if(layout[i]!=null)cachedVariables[i]=Arrays.copyOfRange(x,offsets[i],offsets[i]+layout[i].size());
@@ -558,7 +558,7 @@ public final class PassiveStepSolver {
             }
             for(int i=0;i<layout.length;i++) {
                 if(layout[i]==null)continue;
-                if(!graph.reservoirs().get(i).junction())layout[i].residual(states.get(i),targets[i],energy[i],graph.reservoirs().get(i).inventory().volume(),f,offsets[i],x);
+                if(!graph.reservoirs().get(i).junction())layout[i].residual(states.get(i),targets[i],energy[i],graph.reservoirs().get(i).inventory().volume(),f,offsets[i],x,cachedPrepared[i]);
                 else {
                     var previous=graph.reservoirs().get(i).state();double[] fractions=new double[incoming[i].length];double specificH;
                     if(incomingMass[i]>1e-14) {
@@ -568,7 +568,7 @@ public final class PassiveStepSolver {
                         for(int c=0;c<fractions.length;c++)fractions[c]=oldAmounts[i][c]*model.molecularWeight(c)/previous.mass();
                         specificH=previous.enthalpy()/previous.mass();
                     }
-                    layout[i].junctionResidual(states.get(i),fractions,specificH,netMass[i],f,offsets[i],x);
+                    layout[i].junctionResidual(states.get(i),fractions,specificH,netMass[i],f,offsets[i],x,cachedPrepared[i]);
                 }
             }
             return f;

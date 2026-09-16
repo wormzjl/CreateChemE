@@ -20,6 +20,14 @@ class FluidPropertyBenchmarkTest {
         output.put("propertyRevision",model.hydrocarbon.revision());output.put("viscosityRevision",model.viscosity.revision());
         output.put("fixture","TJL20 + 0.2 mol water per mol hydrocarbon; 350 K; 101325 Pa");
         output.put("directPhaseState",measure(()->model.state(seed.temperature(),seed.pressure(),seed.liquid(),seed.vapor(),seed.waterLiquid(),seed.waterVapor(),seed.hydrocarbonPartialPressure()).internalEnergy(),2000));
+        // What a residual evaluation pays per node once the temperature-only properties are prepared:
+        // the mixing terms, the reference-pressure Region 1 water state, saturation and vapor enthalpy.
+        var prepared=model.prepare(seed.temperature());
+        output.put("directPhaseStateWithPreparedTemperature",measure(()->model.state(seed.temperature(),seed.pressure(),seed.liquid(),seed.vapor(),seed.waterLiquid(),seed.waterVapor(),seed.hydrocarbonPartialPressure(),prepared).internalEnergy(),2000));
+        output.put("prepareTemperature",measure(()->model.prepare(seed.temperature()).temperature(),2000));
+        output.put("waterLiquid",measure(()->model.waterLiquid(seed.temperature(),seed.pressure()).molarVolume(),2000));
+        output.put("waterLiquidWithPreparedTemperature",measure(()->model.waterLiquid(seed.temperature(),seed.pressure(),prepared).molarVolume(),2000));
+        output.put("saturationPressure",measure(()->model.saturationPressure(seed.temperature()),2000));
         output.put("standaloneTpInitializer",measure(()->model.flashTP(350,101325,n,()->{}).internalEnergy(),200));
         output.put("limitations","Microbenchmark only; measures direct state and TP initialization, not the UV inventory recovery or coupled network solve. No nested initializer permitted in network residuals.");
         Files.createDirectories(Path.of("build/reports/fluid"));Files.writeString(Path.of("build/reports/fluid/M1-property-cost.json"),new GsonBuilder().setPrettyPrinting().create().toJson(output));

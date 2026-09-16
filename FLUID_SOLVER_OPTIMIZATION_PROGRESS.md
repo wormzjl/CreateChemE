@@ -451,4 +451,78 @@ controller's allowance for that pipe. Two new counters record the rules:
 `companionDefectsBelowTolerance` and `companionFiltersRefused`.
 
 - Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `16f9cfd`.
+### WP3-C1 - evaluate water properties without the thread-local context and cache them per node temperature
+
+Three changes to the most expensive primitive in the solver, which the probe measured at 2.34 us of
+a 4.4 us node `state()`:
+
+**(a) No context on the property path.** `V3WaterProperties` now has an explicit-argument form of
+every correlation taking the `MaterialCatalog.Water` record, with the context forms delegating to
+them, and `WaterRegion1.evaluate` takes the record for its saturation domain check.
+`FluidThermodynamics` resolves the record once in its constructor - through
+`MaterialRuntime.with(catalog,packageId,MaterialRuntime::water)`, so the resolution including its
+fallback package is exactly the one the context form performed - and never touches `MaterialRuntime`
+again. That removes a `Context` allocation and a `ThreadLocal` set/remove per `saturationPressure`,
+`vaporWaterEnthalpy` and `waterLiquid` call, and a `ThreadLocal.get` plus two immutable-map probes
+per coefficient access, about eight per saturation call (`MapN.probe` alone was 3.1% of pool CPU).
+
+**(b) No `Math.pow` in IF97 Region 1.** The 34 terms need `x^0..x^32` and `y^-43..y^17`; both tables
+are built once per evaluation by multiplication, negative exponents from the reciprocal, instead of
+up to six `Math.pow` calls per term (about 100 per evaluation). Deviation from the pow form over the
+whole Region 1 domain: **6.3e-14** on specific volume, 5.4e-13 on cp, 8.4e-13 on dv/dT, 9.4e-13 on
+dv/dP, 1.6e-12 on d2v/dT2. Enthalpy reaches 1.8e-11 and internal energy 2.5e-9 relative, both at the
+triple point, where the IF97 datum puts them through zero and a relative measure is meaningless
+(1.8e-11 of 0.6 J/kg). At the 2 MPa reference pressure, the only pressure the fluid model ever
+evaluates Region 1 at, the maximum over 273.16-485 K is **3.3e-13**, on dv/dT. The IAPWS checkpoints
+in `WaterRegion1Test` (v to 5e-12, h and u to 1e-3 J/kg, cp to 1e-4) pass unchanged.
+
+**(c) A prepared temperature per node.** `Equations.cachedTemperatureTerms` becomes
+`cachedPrepared`, a `FluidThermodynamics.Prepared` holding the PR mixing terms, the
+reference-pressure Region 1 state, the saturation pressure and the ideal-gas water-vapor enthalpy -
+every property that depends on temperature alone. `state`, `waterLiquid` and `saturationPressure`
+take it; the standalone paths pass `null` and compute each member as before. Members are computed on
+first use, because a trial point can be outside the domain of a property it does not use. A colored
+Jacobian perturbation of a node's composition or pressure columns, and every residual at an unchanged
+node temperature, now reuse all four: measured, one prepared bundle serves 2.0 (chain) to 2.7 (cold)
+`state()` calls.
+
+Unit costs on this host (median of 2000 after 2000 warm-up calls, `FluidPropertyBenchmarkTest`,
+TJL20 + 0.2 mol water per mol hydrocarbon at 350 K; the clock granularity is 100 ns, and the probe's
+154007d figures in brackets come from a different host):
+
+| kernel | ns |
+|---|---:|
+| `state(...)` with the prepared temperature | **3800** [4400 with prepared terms only] |
+| `state(...)` without it | 7900 [5600] |
+| `prepare(T)` | 100 |
+| `waterLiquid(T,P)`, evaluating Region 1 | **200** [2338] |
+| `waterLiquid(T,P)` with the prepared temperature | 100 |
+| `saturationPressure(T)` | 100 [450] |
+
+| fixture | wall ms | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | node state() calls | allocated MB | KB per residual |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 43.7-44.0 -> 44.8-45.3 | 11/0 unchanged | 5.0 | 0.6 | 132 | 1782 | 40.2 -> 41.8 | 312 -> 325 |
+| quiet 11324, mean of 5 | 26.4-27.8 -> **20.6-20.9** | 11/0 unchanged | 5.8 | 0.8 | 172 | 1289 | 30.3 -> 30.1 | 181 -> 180 |
+| cold 11312, one interval | 1649-1730 -> **1307-1328** | 52/15 unchanged | 135 | 41 | 8731 | 98070 | 1903.2 -> 1883.0 | 223 -> 221 |
+| 100-reservoir chain | 2802-3002 -> **2329-2334** | 45/22 unchanged | 135 | 22 | 4149 | 246000 | 4645.1 -> 4694.4 | 1146 -> 1159 |
+
+Every counter is unchanged: this item changes no decision, only the cost of evaluating the same
+properties. Wall times are the range over two runs of each commit in the same session. Quiet 11312 is
+the one fixture that does not improve, and its mean is 82% two intervals that build three Jacobians
+and factorize them (its warm intervals are 4 residual evaluations and 300 node decodes, where the
+triangular solve and the transport reconstruction dominate and the LU timer alone moves 5.8-10.7 ms
+between runs). Allocation is flat: the power tables are two arrays per Region 1 evaluation, 776 B,
+which is why the chain - 124599 prepared temperatures - pays 49 MB more while the cold island, whose
+bundles are reused more, pays 20 MB less. Where the 316 KB per residual evaluation actually goes is
+C2's item.
+
+Accuracy. The two fixtures whose A4b trajectory was bitwise identical to 8889c7d isolate this item's
+own roundoff against `build/probe/reference-wp2`: **cold 11312 8.0e-14 relative on state, 8.5e-13 K,
+3.7e-15 on phase fraction; chain 1.5e-13, 1.2e-12 K, 6.4e-15**, substep counts unchanged on both -
+the promised ~1e-12 or below. Under the declared gate against the 154007d references the deviations
+are A4b's, unchanged to three digits (state 1.0e-9 / 6.2e-10 / 3.9e-10 / 1.8e-9, temperature 1.2e-9
+/ 7.3e-10 / 4.3e-9 / 1.8e-8 K, flow at most 8.0e-9 kg/s against a 3.18e-8 kg/s allowance).
+
+- Gate: 793 JUnit tests, 14 GameTests, green.
 - Commit `PLACEHOLDER`.

@@ -15,8 +15,11 @@ public final class FluidThermodynamics {
     public final MixtureViscosity viscosity;
     public final double waterMolecularWeight;
     private final GlobalLiquidResponse liquidResponse;
-    private final MaterialCatalog catalog;
-    private final String packageId;
+    /** Resolved once from the catalog and package this model was built for, instead of through the
+     * calculation context on every water evaluation: the context costs a {@code Context} allocation
+     * and a {@code ThreadLocal} set/remove per call, and a coefficient read inside costs a
+     * {@code ThreadLocal} lookup and two immutable-map probes. */
+    private final MaterialCatalog.Water water;
     private final double waterEnthalpyOffset;
     private final double maximumVelocity;
 
@@ -43,16 +46,15 @@ public final class FluidThermodynamics {
     public FluidThermodynamics(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity) {
         if(!Double.isFinite(maximumVelocity)||maximumVelocity<=0)throw new IllegalArgumentException("Positive finite maximum velocity required");
         this.maximumVelocity=maximumVelocity;
-        this.catalog=catalog;this.packageId=packageId;
         hydrocarbon=new HydrocarbonModel(catalog,packageId,liquidCompressibility);
         viscosity=new MixtureViscosity(catalog,packageId);
         waterMolecularWeight=catalog.requirePackage(packageId).water().molarMass();
         liquidResponse=new GlobalLiquidResponse(liquidCompressibility);
-        var reference=waterLiquidRaw(298.15,101325);
-        waterEnthalpyOffset=inContext(()->V3WaterProperties.liquidMolarEnthalpy(298.15))-reference.molarEnthalpy();
-    }
-    private <T>T inContext(java.util.function.Supplier<T> action) {
-        return com.wormzjl.createcheme.science.material.MaterialRuntime.with(catalog,packageId,action);
+        // The same resolution the context form performs, including its fallback package.
+        water=com.wormzjl.createcheme.science.material.MaterialRuntime.with(catalog,packageId,
+                com.wormzjl.createcheme.science.material.MaterialRuntime::water);
+        var reference=waterLiquidRaw(298.15,101325,null);
+        waterEnthalpyOffset=V3WaterProperties.liquidMolarEnthalpy(water,298.15)-reference.molarEnthalpy();
     }
     /** Conserved component basis: registered hydrocarbon/gas components, followed by water. */
     public int componentCount() { return hydrocarbon.componentCount()+1; }
@@ -76,9 +78,11 @@ public final class FluidThermodynamics {
         return weights;
     }
     public double saturationPressure(double t) {
-        return t>=647.096?Double.POSITIVE_INFINITY:inContext(()->V3WaterProperties.saturationPressurePascal(t));
+        return t>=647.096?Double.POSITIVE_INFINITY:V3WaterProperties.saturationPressurePascal(water,t);
     }
-    public double vaporWaterEnthalpy(double t) { return inContext(()->V3WaterProperties.vaporMolarEnthalpy(t)); }
+    /** The saturation pressure of a prepared node temperature, evaluated once for that temperature. */
+    public double saturationPressure(Prepared prepared) { return own(prepared).saturationPressure(); }
+    public double vaporWaterEnthalpy(double t) { return V3WaterProperties.vaporMolarEnthalpy(water,t); }
     public double maximumVelocityMetresPerSecond(){return maximumVelocity;}
     /** A hydraulic rate bound only; temperature and phase allocation still come from the EOS/energy equations. */
     public double velocityLimit(State state){return Math.min(maximumVelocity,isothermalAcousticBound(state));}
@@ -98,34 +102,46 @@ public final class FluidThermodynamics {
         if(t>=900)return 2e6;if(t>=750)return 1.5e6;if(t>=600)return .8e6;
         if(t>=500)return .4e6;if(t>=450)return .25e6;if(t>=400)return .15e6;return .125e6;
     }
-    private GlobalLiquidResponse.State waterLiquidRaw(double t,double p) {
-        var ref=inContext(()->WaterRegion1.evaluate(t,HydrocarbonModel.REFERENCE_PRESSURE));
+    private GlobalLiquidResponse.State waterLiquidRaw(double t,double p,Prepared prepared) {
+        var ref=prepared==null?WaterRegion1.evaluate(water,t,HydrocarbonModel.REFERENCE_PRESSURE):prepared.referenceWater();
         return liquidResponse.evaluate(t,p,HydrocarbonModel.REFERENCE_PRESSURE,
                 ref.specificVolume()*waterMolecularWeight,ref.volumeTemperatureDerivative()*waterMolecularWeight,
                 ref.volumeSecondTemperatureDerivative()*waterMolecularWeight,ref.specificEnthalpy()*waterMolecularWeight,
                 ref.specificHeatCapacity()*waterMolecularWeight);
     }
-    public WaterLiquid waterLiquid(double t,double p) {
-        var value=waterLiquidRaw(t,p);
+    public WaterLiquid waterLiquid(double t,double p) { return waterLiquid(t,p,null); }
+    /** The Region 1 reference state is a function of temperature alone, so a prepared temperature
+     * answers every pressure and composition trial at that temperature without re-evaluating it. */
+    public WaterLiquid waterLiquid(double t,double p,Prepared prepared) {
+        var value=waterLiquidRaw(t,p,match(prepared,t));
         return new WaterLiquid(value.molarVolume(),value.molarEnthalpy()+waterEnthalpyOffset);
     }
 
     /** Direct properties of specified phase amounts, without an inner flash. */
     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure) {
-        return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,null);
+        return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,null,null);
     }
     public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,TranslatedPengRobinson.TemperatureTerms terms) {
+        return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,terms,null);
+    }
+    /** Every temperature-only property comes from the prepared bundle; a standalone caller passes
+     * {@code null} and each one is computed here, exactly as the mixing terms already were. */
+    public State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,Prepared prepared) {
+        return state(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,null,match(prepared,t));
+    }
+    private State state(double t,double p,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure,
+                        TranslatedPengRobinson.TemperatureTerms terms,Prepared prepared) {
         SolverDiagnostics.count(SolverDiagnostics.stateCalls);
         int n=hydrocarbon.componentCount();
         if(liquid.length!=n||vapor.length!=n||!Double.isFinite(t)||!Double.isFinite(p)||t<273.16||t>600||p<100||p>2e6)throw new IllegalArgumentException("Fluid state outside domain");
         double nl=sum(liquid),nv=sum(vapor),volume=0,h=0,mass=0,gasVolume=0,vl=0,vw=0;
-        if(terms==null&&(nl>0||nv>0))terms=hydrocarbon.temperatureTerms(t);
+        if(terms==null&&(nl>0||nv>0))terms=prepared==null?hydrocarbon.temperatureTerms(t):prepared.temperatureTerms();
         HydrocarbonModel.Phase lp=null,vp=null;
         if(nl>0) {lp=hydrocarbon.phase(t,p,liquid,PhaseRoot.LIQUID,terms);vl=nl*lp.molarVolume();volume+=vl;h+=nl*lp.molarEnthalpy();}
         if(nv>0) {vp=hydrocarbon.phase(t,hydrocarbonPressure,vapor,PhaseRoot.VAPOR,terms);gasVolume=nv*vp.molarVolume();h+=nv*vp.molarEnthalpy();}
         if(waterLiquid<0||waterVapor<0||!Double.isFinite(waterLiquid+waterVapor))throw new IllegalArgumentException("Invalid water split");
-        if(waterLiquid>0) {var w=waterLiquid(t,p);vw=waterLiquid*w.molarVolume;volume+=vw;h+=waterLiquid*w.molarEnthalpy;}
-        if(waterVapor>0) {if(nv==0)gasVolume=waterVapor*R*t/p;h+=waterVapor*vaporWaterEnthalpy(t);}
+        if(waterLiquid>0) {var w=waterLiquid(t,p,prepared);vw=waterLiquid*w.molarVolume;volume+=vw;h+=waterLiquid*w.molarEnthalpy;}
+        if(waterVapor>0) {if(nv==0)gasVolume=waterVapor*R*t/p;h+=waterVapor*(prepared==null?vaporWaterEnthalpy(t):prepared.vaporEnthalpy());}
         double pw=waterVapor>0?waterVapor*R*t/gasVolume:0;
         if(pw>waterVaporPressureLimit(t))throw new IllegalArgumentException("Water-vapor approximation outside qualified partial-pressure range");
         volume+=gasVolume;
@@ -202,6 +218,53 @@ public final class FluidThermodynamics {
         throw new IllegalArgumentException("Hydrocarbon TP initialization did not converge");
     }
     private static double sum(double[] values) {double total=0;for(double value:values){if(value<0||!Double.isFinite(value))throw new IllegalArgumentException("Invalid phase amount");total+=value;}return total;}
+
+    /** The temperature-only property bundle for one exact node temperature. */
+    public Prepared prepare(double temperature) { return new Prepared(this,temperature); }
+    private Prepared own(Prepared prepared) {
+        if(prepared.owner!=this)throw new IllegalArgumentException("Prepared temperature belongs to another model");
+        return prepared;
+    }
+    private Prepared match(Prepared prepared,double t) {
+        if(prepared!=null&&own(prepared).temperature!=t)throw new IllegalArgumentException("Prepared temperature belongs to another state");
+        return prepared;
+    }
+    /**
+     * Everything at one exact temperature that neither composition nor pressure can change: the PR
+     * mixing terms, the reference-pressure IF97 Region 1 water state, the water saturation pressure
+     * and the ideal-gas water-vapor enthalpy.
+     *
+     * <p>A colored Jacobian perturbs a node's composition and pressure columns dozens of times at an
+     * unchanged temperature, and every residual at that temperature repeats them, so this is where
+     * those evaluations meet. Each member is computed when it is first asked for, because a trial
+     * point can be outside the domain of a property it does not use - free water at a temperature
+     * whose saturation pressure is above the Region 1 reference pressure, for instance - and must
+     * fail on the property it does use, exactly as it did before.</p>
+     */
+    public static final class Prepared {
+        private final FluidThermodynamics owner;
+        private final double temperature;
+        private TranslatedPengRobinson.TemperatureTerms terms;
+        private WaterRegion1.State referenceWater;
+        private double saturationPressure=Double.NaN,vaporEnthalpy=Double.NaN;
+        private Prepared(FluidThermodynamics owner,double temperature) {
+            if(!Double.isFinite(temperature)||temperature<=0)throw new IllegalArgumentException("Invalid prepared temperature");
+            this.owner=owner;this.temperature=temperature;
+        }
+        public double temperature() { return temperature; }
+        TranslatedPengRobinson.TemperatureTerms temperatureTerms() {
+            return terms==null?terms=owner.hydrocarbon.temperatureTerms(temperature):terms;
+        }
+        WaterRegion1.State referenceWater() {
+            return referenceWater==null?referenceWater=WaterRegion1.evaluate(owner.water,temperature,HydrocarbonModel.REFERENCE_PRESSURE):referenceWater;
+        }
+        double saturationPressure() {
+            return Double.isNaN(saturationPressure)?saturationPressure=owner.saturationPressure(temperature):saturationPressure;
+        }
+        double vaporEnthalpy() {
+            return Double.isNaN(vaporEnthalpy)?vaporEnthalpy=owner.vaporWaterEnthalpy(temperature):vaporEnthalpy;
+        }
+    }
     public record WaterLiquid(double molarVolume,double molarEnthalpy) {}
     public record State(double temperature,double pressure,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,
                         double hydrocarbonPartialPressure,double waterPartialPressure,double volume,double enthalpy,double internalEnergy,
