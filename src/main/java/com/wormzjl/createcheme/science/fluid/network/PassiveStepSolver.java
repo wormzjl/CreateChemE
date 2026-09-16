@@ -71,12 +71,16 @@ public final class PassiveStepSolver {
         long[] nodeIds=nodeIds(graph);byte[] kinds=new byte[nodeIds.length];
         for(int i=0;i<kinds.length;i++)kinds[i]=(byte)graph.reservoirs().get(i).kind().ordinal();
         boolean[] componentMask=componentMask(graph);
+        // Components this solve has reactivated, per node. Reactivation is monotone within one solve
+        // - a later pass's seed may not undo it - which is what keeps the support half of the cycle
+        // key monotone and the pass sequence finite; demotion happens at the next solve's seed.
+        boolean[][] promoted=new boolean[seeds.size()][];
         int maximumPasses=Math.min(512,16+2*graph.reservoirs().size()+2*graph.pipes().size());
         for(int pass=0;pass<maximumPasses;pass++) {
             checkpoint.run();SolverDiagnostics.count(SolverDiagnostics.activeSetPasses);
             int[] phases=new int[seeds.size()];for(int i=0;i<phases.length;i++)phases[i]=phaseCode(seeds.get(i));
             byte[] modeCodes=new byte[modes.size()];for(int i=0;i<modeCodes.length;i++)modeCodes[i]=(byte)modes.get(i).ordinal();
-            var supports=supports(graph,seeds,componentMask);
+            var supports=supports(graph,seeds,componentMask,promoted);
             // The active-set state is exactly what varies between passes, so the structure key is
             // also the cycle key: repeating one means the pass sequence cannot make progress.
             var structure=new WorkspaceKey(0,nodeIds,kinds,graph.pipes(),phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone());
@@ -102,6 +106,10 @@ public final class PassiveStepSolver {
             }
             double[] x=numerical.variables();var states=equations.states(x);double[] flows=new double[graph.pipes().size()],heads=new double[flows.length];
             var changedSeeds=phaseCorrection(graph,states,checkpoint,true);if(changedSeeds!=null){seeds=changedSeeds;continue;}
+            // The same outer stability question the phase correction above answers for a whole phase,
+            // asked per component of the frozen trace support: this converged point's own fugacity
+            // coefficients decide whether an omitted phase is still a trace.
+            if(reactivate(equations,states,promoted)>0){seeds=states;continue;}
             boolean changed=false;double work=0;
             for(int i=0;i<flows.length;i++) {
                 flows[i]=x[equations.edgeOffset+i];heads[i]=equations.controlOffsets[i]<0?0:x[equations.controlOffsets[i]]*1e5;
@@ -253,14 +261,36 @@ public final class PassiveStepSolver {
     }
     /**
      * Every node's frozen per-component phase support for one pass, derived from that pass's seeds
-     * and never from a Newton iterate. A fixed node owns no unknowns and gets none.
+     * and never from a Newton iterate, with the components this solve has already reactivated kept in
+     * both phases. A fixed node owns no unknowns and gets none.
      */
-    private PhaseSupport[][] supports(PassiveNetwork graph,List<FluidThermodynamics.State> seeds,boolean[] componentMask) {
+    private PhaseSupport[][] supports(PassiveNetwork graph,List<FluidThermodynamics.State> seeds,boolean[] componentMask,boolean[][] promoted) {
         var supports=new PhaseSupport[seeds.size()][];
         for(int node=0;node<supports.length;node++)
             if(!graph.reservoirs().get(node).fixed())
-                supports[node]=PhaseLayout.support(seeds.get(node),componentMask,model.traceTruncation(),null);
+                supports[node]=PhaseLayout.support(seeds.get(node),componentMask,model.traceTruncation(),promoted[node]);
         return supports;
+    }
+    /**
+     * Components whose omitted phase the converged point no longer supports omitting, marked for the
+     * next pass; returns how many. The test runs on the Newton solution of the reduced system, where
+     * the fugacity coefficients of both phases are converged and the equation of state has filled
+     * {@code ln phi_i} for the omitted phase at infinite dilution, which is what the inequality needs.
+     * Every node is swept before any pass is repeated, so one reactivation pass restores everything
+     * the state asks for instead of one component at a time.
+     */
+    private int reactivate(Equations equations,List<FluidThermodynamics.State> states,boolean[][] promoted) {
+        if(!model.traceTruncation().enabled())return 0;
+        int components=model.hydrocarbon.componentCount(),restored=0;
+        for(int node=0;node<states.size();node++) {
+            var layout=equations.layout[node];
+            if(layout==null||layout.singlePhaseComponentCount()==0)continue;
+            boolean[] flags=promoted[node]==null?new boolean[components]:promoted[node];
+            int added=layout.reactivate(states.get(node),model.traceTruncation(),flags);
+            if(added>0){promoted[node]=flags;restored+=added;}
+        }
+        if(restored>0)SolverDiagnostics.count(SolverDiagnostics.traceReactivations,restored);
+        return restored;
     }
     /** The support arrays as one flat byte array for the workspace and cycle keys. */
     private byte[] supportCodes(PhaseSupport[][] supports) {

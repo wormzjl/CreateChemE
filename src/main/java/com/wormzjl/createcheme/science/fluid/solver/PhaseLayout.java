@@ -257,6 +257,44 @@ public final class PhaseLayout {
         if(row!=offset+size)throw new IllegalStateException("Phase equation/unknown count mismatch");
     }
     /**
+     * Components whose omitted phase this converged state no longer supports omitting, marked in
+     * {@code promoted} for the next active-set pass; returns how many were newly marked.
+     *
+     * <p>The test is V3's reinsertion inequality, on the equilibrium relation this layout's own
+     * equilibrium rows state. At a converged point the retained components satisfy
+     * {@code ln y_i = ln x_i + ln phi_i^L - ln phi_i^V + ln(P/Pc)}, and the equation of state fills
+     * {@code ln phi_i} for a component that is not in a phase as well - at infinite dilution, which is
+     * exactly the regime an omitted trace is in - so the same expression says what mole fraction the
+     * omitted phase <em>would</em> hold. When that reaches
+     * {@link TraceTruncationPolicy#REINSERTION_FACTOR} times the cutoff, the reference the support was
+     * derived from is no longer describing this state and the component gets both phases back; the
+     * factor is the hysteresis that stops a component on the boundary from alternating.</p>
+     *
+     * <p>The seed for the restored phase needs no extra work: {@link #encode} already seeds a
+     * component with an empty phase at exactly this ratio, because a phase that has just appeared and
+     * a trace that has just been reactivated are the same situation.</p>
+     */
+    public int reactivate(FluidThermodynamics.State state,TraceTruncationPolicy policy,boolean[] promoted) {
+        if(!policy.enabled()||!liquidActive||!vaporActive)return 0;
+        if(promoted.length!=liquidIndex.length)throw new IllegalArgumentException("Reactivation basis mismatch");
+        var lp=state.liquidProperties();var vp=state.vaporProperties();
+        if(lp==null||vp==null)return 0;
+        double[] l=state.liquidView(),v=state.vaporView(),fl=lp.logFugacityView(),fv=vp.logFugacityView();
+        double nl=sum(l),nv=sum(v);
+        if(!(nl>0&&nv>0))return 0;
+        double pressureRatio=Math.log(state.pressure()/state.hydrocarbonPartialPressure());
+        double threshold=Math.log(TraceTruncationPolicy.REINSERTION_FACTOR*policy.cutoffMoleFraction());
+        int restored=0;
+        for(int i:components) {
+            if(!support[i].singlePhase()||promoted[i])continue;
+            double implied=support[i]==PhaseSupport.LIQUID_ONLY
+                    ?Math.log(l[i]/nl)+fl[i]-fv[i]+pressureRatio
+                    :Math.log(v[i]/nv)-fl[i]+fv[i]-pressureRatio;
+            if(implied>=threshold){promoted[i]=true;restored++;}
+        }
+        return restored;
+    }
+    /**
      * The per-component phase support of one node, derived from a full-basis reference state and
      * then frozen: V3's rule, on the seed's own phase compositions.
      *

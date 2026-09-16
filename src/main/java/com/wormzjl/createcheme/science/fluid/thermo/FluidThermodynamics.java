@@ -23,8 +23,10 @@ public final class FluidThermodynamics {
      * controller's own energy gate; above it, it is not.
      */
     public static final double MAX_TRACE_CUTOFF_MOLE_FRACTION=1e-5;
-    /** The gameplay default for a network model built without an explicit cutoff. */
-    public static final double DEFAULT_TRACE_CUTOFF_MOLE_FRACTION=0;
+    /** The gameplay default for a network model built without an explicit cutoff, and the default of
+     * the {@code fluidTraceCutoffMoleFraction} config entry that supplies one: ten times inside the
+     * ceiling. 0 is the exact off switch, the identical numerical path rather than a small cutoff. */
+    public static final double DEFAULT_TRACE_CUTOFF_MOLE_FRACTION=1e-6;
     public final HydrocarbonModel hydrocarbon;
     public final MixtureViscosity viscosity;
     public final double waterMolecularWeight;

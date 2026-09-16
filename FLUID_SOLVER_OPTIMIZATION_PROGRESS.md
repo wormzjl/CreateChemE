@@ -1486,3 +1486,94 @@ untouched by the cutoff across four states.
 - Verified EXACT (bitwise, substep counts included) against `build/probe/reference-wp6b` on all four
   fixtures at `-PfluidRegressionTraceCutoff=0`.
 - Gate: 803 JUnit tests (7 new), 14 GameTests (`-PfluidGameTestRunId=wp7b01`), green.
+
+### WP7-B2 - truncate trace components per phase in the network solver
+
+The support B1 freezes is derived from a seed, and a seed can be wrong: a component the previous
+state left on one side can be genuinely volatile at this one. `PhaseLayout.reactivate` asks the
+converged point itself, with V3's reinsertion inequality on the equilibrium relation the layout's own
+equilibrium rows state,
+
+```
+ln y_i = ln x_i + ln phi_i^L - ln phi_i^V + ln(P/Pc)
+```
+
+evaluated at the converged fugacity coefficients. The equation of state fills `ln phi_i` for a
+component that is not in a phase as well - at infinite dilution, which is exactly the regime an
+omitted trace is in - so the same expression says what mole fraction the omitted phase *would* hold.
+When that reaches `TraceTruncationPolicy.REINSERTION_FACTOR` = 10 times the cutoff, the component gets
+both phases back; the factor is V3's, kept at the same value so the two engines agree about which
+components a state supports, and it is the hysteresis that stops a component sitting on the boundary
+from alternating between the two supports.
+
+**The restored phase needs no seed of its own.** `encode` already seeds a component with an empty
+phase at `ln(n_V/n_L) + ln phi_i^L - ln phi_i^V + ln(P/Pc)`, which is `v_i = y_i^eq n_V` to first
+order - the amount the review specified - because a phase that has just appeared and a trace that has
+just been reactivated are the same situation. Reactivation therefore needs no modified seed state, no
+extra property evaluation and no chance of landing outside the property domain.
+
+**Termination.** The check runs in the active-set loop, on the Newton solution of the reduced system,
+immediately after the phase correction that asks the same outer stability question for a whole phase.
+A reactivation is recorded per node in a `promoted` mask that the support derivation ORs in, and it is
+**monotone within one solve**: a later pass's seed may not undo it, so the support half of the cycle
+key only ever gains `BOTH` components and the existing `seen` guard cannot see a false cycle. Every
+node is swept before any pass is repeated, so one reactivation pass restores everything the state asks
+for rather than one component per pass, which keeps the restoration inside the pass budget. Demotion
+happens only at the next solve's seed, as the design says.
+
+**What did not have to change.** `targetRows`, the companion filter, the block Jacobian sweep and
+`ConservativeTransport` were correct under the reduced layout already, and this is why:
+
+- the balance block - one row per component, then water, then energy - is independent of the support,
+  so `targetRows` writes the same rows into a shorter vector and the companion filter's right-hand
+  side is unchanged;
+- the block sweep iterates `layout.size()` and indexes through `columnRows()`, so it shortened by
+  itself (B1's measured `jacobianBlockColumns` fell 59 655 -> 52 275 on the cold island);
+- `ConservativeTransport.repartition` splits a component's reconstructed total by the candidate's own
+  phase ratio, and a ratio of exactly zero stays exactly zero, so the committed state carries the
+  omitted phase at a hard zero and the conservation audit is exact rather than approximately exact;
+- `InventoryEquilibrium.refresh` runs on the full support at every interval boundary, evaluates the
+  untruncated residual at the committed state and early-returns when it is inside 1e-8 - which it is,
+  because `encode` writes the fugacity-ratio seed for an empty phase and the equilibrium row of a
+  truncated component is then identically zero.
+
+`FluidThermodynamics.DEFAULT_TRACE_CUTOFF_MOLE_FRACTION` is **1e-6** from this commit, so the config
+default, the shipped library default, the replay harness and the whole unit suite all measure what the
+network ships with. `-PfluidRegressionTraceCutoff=<x>` overrides it for the off-switch gate and for the
+cutoff comparison.
+
+Five new tests. `TraceTruncationLayoutTest` adds the reinsertion inequality on a state whose methane
+has been displaced into the liquid - the seed says the vapour side is a trace, the converged
+coefficients say it is not - including that a second call promotes nothing (the monotonicity the loop
+depends on), that the promoted component returns as `BOTH` with one more unknown and a seeded, nonzero
+restored phase, and that a state the support was *derived* from reactivates nothing, which is the
+statement that a converged equilibrium point cannot oscillate the support.
+`TraceTruncationStepTest` runs complete implicit steps on a two-reservoir wet-crude island: every
+component conserved to 1e-12 relative and the truncated step agreeing with the exact unknown set to
+1e-4 K, 1 Pa and 1e-6 on all three phase volume fractions; the omitted-unknown counters positive under
+the cutoff and exactly zero at the off switch; and reactivation firing **inside the active-set loop**
+on the displaced-methane island, with the restored phase carrying a real amount and the component
+total conserved.
+
+Gates:
+
+| gate | result |
+|---|---|
+| EXACT against `build/probe/reference-wp6b` at `-PfluidRegressionTraceCutoff=0` | 0.0 on state/moles, temperature, phase fraction and flow, substep counts included, on all four fixtures |
+| DECLARED against the committed 154007d references at the shipped 1e-6 | pass; deviations below |
+| 808 JUnit tests (5 new), default 1e-6 | green |
+| 14 GameTests (`-PfluidGameTestRunId=wp7b02`), default 1e-6 | green |
+
+| quantity | gate | quiet 11312 | quiet 11324 | cold 11312 | chain |
+|---|---:|---:|---:|---:|---:|
+| state / moles, relative | 1e-6 | 1.15e-8 | 1.20e-8 | 8.98e-9 | 1.21e-8 |
+| temperature, K | 1e-4 | 2.29e-6 | 2.29e-6 | 2.27e-6 | 2.27e-6 |
+| phase volume fraction | 1e-6 | 1.44e-9 | 1.44e-9 | 1.35e-9 | 1.44e-9 |
+| average flow, worst absolute kg/s | - | 1.6e-9 | 1.2e-9 | 3.2e-9 | 4.8e-9 |
+| controller allowance there, kg/s | - | 3.18e-8 | 3.18e-8 | 3.18e-8 | 3.16e-8 |
+
+Every flow deviation is at most 15% of the interval controller's own numerical allowance for that
+pipe, the same character as A1's and A4b's; the state and temperature deviations are two orders below
+the declared gate and one order above the roundoff the previous work packages introduced, which is the
+truncation error itself and is what a 1e-6 cutoff is expected to cost. Substep counts move on the
+quiescent fixtures, as they do for every item since A1.

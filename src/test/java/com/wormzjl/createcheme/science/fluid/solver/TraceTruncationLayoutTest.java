@@ -132,6 +132,52 @@ class TraceTruncationLayoutTest {
         assertArrayEquals(n,PhaseLayout.totalAmounts(actual),1e-10);
     }
 
+    @Test void aTraceThatCrossesTheReinsertionThresholdIsPutBackIntoBothPhases() {
+        var equilibrium=wetCrude(350,101325);
+        double[] l=equilibrium.liquid(),v=equilibrium.vapor();
+        // Methane is genuinely volatile here, so an artificial state that holds all of it in the
+        // liquid is exactly the situation reactivation exists for: the seed says VAPOR is a trace,
+        // the converged fugacity coefficients say it is not.
+        int methane=0;
+        assertTrue(v[methane]/Arrays.stream(v).sum()>1e-4,"fixture must have real methane vapour");
+        l[methane]+=v[methane];v[methane]=0;
+        var seed=model.state(equilibrium.temperature(),equilibrium.pressure(),l,v,
+                equilibrium.waterLiquid(),equilibrium.waterVapor(),equilibrium.hydrocarbonPartialPressure());
+        var policy=TraceTruncationPolicy.of(1e-6);
+        var support=PhaseLayout.support(seed,null,policy,null);
+        assertEquals(PhaseSupport.LIQUID_ONLY,support[methane]);
+        var layout=new PhaseLayout(model,seed,null,null,support);
+        boolean[] promoted=new boolean[support.length];
+        assertTrue(layout.reactivate(seed,policy,promoted)>0);
+        assertTrue(promoted[methane],"methane must be reactivated");
+        // Idempotent: a component already promoted is not counted again, which is what makes the
+        // active-set loop's support sequence monotone and finite.
+        assertEquals(0,layout.reactivate(seed,policy,promoted));
+        // A promoted component comes back as BOTH on the next pass, seeded at the equilibrium ratio
+        // the same expression states, and the unknown count grows back by one per component.
+        var next=PhaseLayout.support(seed,null,policy,promoted);
+        assertEquals(PhaseSupport.BOTH,next[methane]);
+        var restored=new PhaseLayout(model,seed,null,null,next);
+        assertEquals(layout.size()+1,restored.size());
+        var decoded=restored.decode(restored.encode(seed),0);
+        assertTrue(decoded.vapor()[methane]>0,"the restored phase must be seeded, not left at zero");
+        assertEquals(l[methane],decoded.liquid()[methane]+decoded.vapor()[methane],1e-12*l[methane]);
+        // The off switch reactivates nothing, because it omits nothing.
+        assertEquals(0,new PhaseLayout(model,seed).reactivate(seed,TraceTruncationPolicy.OFF,new boolean[support.length]));
+    }
+
+    @Test void anEquilibriumStateReactivatesNothingItJustTruncated() {
+        var seed=wetCrude(350,101325);
+        var policy=TraceTruncationPolicy.of(1e-6);
+        var support=PhaseLayout.support(seed,null,policy,null);
+        var layout=new PhaseLayout(model,seed,null,null,support);
+        assertTrue(layout.singlePhaseComponentCount()>0);
+        // A state the support was derived from satisfies the equilibrium relation the reinsertion
+        // test uses, so every omitted fraction is below the cutoff and none reaches ten times it.
+        assertEquals(0,layout.reactivate(seed,policy,new boolean[support.length]),
+                "a converged equilibrium point must not oscillate the support");
+    }
+
     @Test void theNetworkCutoffIsCappedWellBelowTheColumnsAndZeroIsAccepted() {
         assertEquals(1e-5,FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION);
         assertTrue(FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION<TraceTruncationPolicy.MAX_CUTOFF_MOLE_FRACTION);

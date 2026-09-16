@@ -17,6 +17,14 @@ public record TraceTruncationPolicy(double cutoffMoleFraction) {
     public static final double MAX_CUTOFF_MOLE_FRACTION = 1.0e-2;
     public static final double MAX_CUTOFF = MAX_CUTOFF_MOLE_FRACTION;
     public static final TraceTruncationPolicy OFF = new TraceTruncationPolicy(0.0);
+    /**
+     * Hysteresis for putting an omitted phase back: an omitted amount is restored once the point's
+     * own equilibrium would put it at this multiple of the cutoff, not at the cutoff itself, so a
+     * component sitting on the boundary cannot alternate between the two supports. It is V3's
+     * {@code FLOOR_REINSERTION_FACTOR}, kept at the same value so the two engines agree about which
+     * components a state supports.
+     */
+    public static final double REINSERTION_FACTOR = 10.0;
 
     public TraceTruncationPolicy {
         requireCutoff(cutoffMoleFraction);

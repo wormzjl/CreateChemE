@@ -97,7 +97,8 @@ public final class CreateChemE {
                         "component back into both phases as soon as its equilibrium fraction reaches ten times this value.",
                         "0 is the exact off switch: the identical numerical path, not a very small cutoff.",
                         "Applied on server start.")
-                .defineInRange("fluidTraceCutoffMoleFraction",1e-6,0,FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION);
+                .defineInRange("fluidTraceCutoffMoleFraction",FluidThermodynamics.DEFAULT_TRACE_CUTOFF_MOLE_FRACTION,
+                        0,FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION);
         FLUID_DEBUG_CHAT=builder.comment("Report held fluid intervals in chat, at most once per second; full details remain in the server log.").define("debugChat",false);
         builder.pop();
         builder.push("columnV3");
