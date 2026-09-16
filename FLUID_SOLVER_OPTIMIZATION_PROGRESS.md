@@ -79,3 +79,27 @@ the quiet fixtures reproduce bitwise with them off).
   `WITHIN_NEWTON_TOLERANCE` (1e-8 relative state, 1e-7 K, 1e-9 phase fraction, 1e-6 relative flow or
   5e-8 kg/s absolute) instead of EXACT, and the harness prints the measured maximum every run.
 - Gate: 792 JUnit tests (2 new in `RetainedSolverTest`), 14 GameTests, green.
+- Commit `0901c8e`.
+
+### WP1-B1 - check the sparse backward error only where it can fail
+
+`Factorization.solveMultiple` ran `checkResidual` (a full sparse mat-vec) after every solved vector
+and refined on failure; refinement never triggered in 1990 measured checks. The check is now a
+factorization property: `Verification.UNTIL_VERIFIED` checks until this factorization has passed
+once, `NONE` skips it for the merit probe whose result is only compared, `EACH` keeps the old
+behaviour for the standalone entry points. `ConservativeTransport` checks the first component
+vector of its 23 and leaves the rest to the junction-continuity and conservation gates it already
+runs. A Newton step that fails to contract calls the new `Factorization.verify` on the direction it
+used, so a genuinely bad factorization still raises `SolveFailure` and refreshes exactly as before.
+
+| fixture | backward-error checks | Newton LU solve ms | wall ms | allocated MB |
+|---|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 205 -> 9 | 2.71 -> 2.40 | 44.5 -> 43.6 | 39.1 unchanged |
+| quiet 11324, mean of 5 | 205 -> 9 | 1.44 -> 1.27 | 19.8 -> 20.1 | 23.5 unchanged |
+| cold 11312, one interval | 5238 -> 252 | 158.1 -> 113.5 | 2070 -> 2035 | 2897 unchanged |
+| 100-reservoir chain | 6256 -> 265 | 383.2 -> 189.3 | 4016 -> 3776 | 6991 unchanged |
+
+- Trajectory: bitwise identical to A2 on all four fixtures, verified in EXACT mode against a
+  post-A2 capture (`-PfluidRegressionReferences=build/probe/reference-a2 -PfluidRegressionMode=exact`),
+  including substep counts - as expected, since the check never changed a result.
+- Gate: 792 JUnit tests, 14 GameTests, green.

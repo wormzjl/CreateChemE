@@ -76,7 +76,11 @@ public final class ConservativeTransport {
             var n=in.molesPerSecond();for(int c=0;c<components;c++)rhs[c][index[in.node()]]+=dt*n[c]*molecularWeight[c];
         }
         double[][] solved;
-        try{solved=SparseLuSolver.solveMultiple(matrix(columns),rhs);}catch(SparseLuSolver.SolveFailure failure){throw new SparseNewton.Nonconvergence("Transport reconstruction failed: "+failure.getMessage());}
+        // One backward-error check on the first component vector qualifies this factorization; the
+        // remaining component columns are bounded by the junction continuity and conservation
+        // checks below, which are the quantities this solve exists to produce.
+        try{solved=SparseLuSolver.factor(matrix(columns)).solveMultiple(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);}
+        catch(SparseLuSolver.SolveFailure failure){throw new SparseNewton.Nonconvergence("Transport reconstruction failed: "+failure.getMessage());}
         double[][] moles=new double[nodes][];var states=new ArrayList<FluidThermodynamics.State>();
         for(int node=0;node<nodes;node++) {
             var reservoir=graph.reservoirs().get(node);if(index[node]<0){moles[node]=old[node];states.add(candidate.get(node));continue;}

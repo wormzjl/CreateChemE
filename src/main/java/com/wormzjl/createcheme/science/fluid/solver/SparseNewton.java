@@ -81,7 +81,7 @@ public final class SparseNewton {
             double[] rhs=new double[n];for(int row=0;row<n;row++)rhs[row]=-f[row];
             double[] direction;
             lastNonzeros=workspace.matrix.nonzeroCount();
-            try{direction=workspace.factorization.solve(rhs);}
+            try{direction=workspace.factorization.solve(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);}
             catch(SparseLuSolver.SolveFailure failure){if(!fresh){refresh=true;continue;}workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);}
             double alpha=Math.min(1,equations.maximumStep(x,direction));boolean accepted=false;
             if(!Double.isFinite(alpha)||alpha<=0)throw new Nonconvergence("No feasible Newton direction",x);
@@ -97,7 +97,8 @@ public final class SparseNewton {
                     double reduction=nextNorm/norm;
                     if(!descent) {
                         double merit=norm(direction),nextMerit;
-                        try{nextMerit=norm(workspace.factorization.solve(next));}
+                        // A merit probe is only compared against the current merit, never committed.
+                        try{nextMerit=norm(workspace.factorization.solve(next,SparseLuSolver.Verification.NONE));}
                         catch(SparseLuSolver.SolveFailure failure){continue;}
                         descent=nextMerit<merit*(1-1e-4*alpha);reduction=nextMerit/merit;
                     }
@@ -110,7 +111,16 @@ public final class SparseNewton {
                     }
                 }catch(IllegalArgumentException outsideDomain){ /* A smaller Newton step may stay in the valid domain. */ }
             }
-            if(!accepted){if(!fresh){refresh=true;continue;}workspace.invalidate();throw new Nonconvergence("Newton line search stalled at residual "+norm,x);}
+            if(!accepted) {
+                // A direction that never contracts is the one case where the skipped backward-error
+                // check matters: pay it here, so a genuinely bad factorization still refreshes.
+                try{workspace.factorization.verify(rhs,direction);}
+                catch(SparseLuSolver.SolveFailure failure) {
+                    if(!fresh){refresh=true;continue;}
+                    workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);
+                }
+                if(!fresh){refresh=true;continue;}workspace.invalidate();throw new Nonconvergence("Newton line search stalled at residual "+norm,x);
+            }
         }
         workspace.invalidate();
         throw new Nonconvergence("Newton iteration limit at residual "+norm,x);
