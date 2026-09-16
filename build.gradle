@@ -176,7 +176,7 @@ def prepareMcpControlMod = tasks.register('prepareMcpControlMod', Copy) {
     into layout.projectDirectory.dir('run/mcp-client/mods')
     doFirst {
         def jar = inputs.files.singleFile
-        if (!jar.isFile()) throw new GradleException('Download the pinned Minecraft MCP control mod listed in FLUID_NETWORK_PROGRESS.md first.')
+        if (!jar.isFile()) throw new GradleException('Download the pinned Minecraft MCP control mod listed in documentation/FLUID_NETWORK_PROGRESS.md first.')
         def digest = java.security.MessageDigest.getInstance('SHA-256').digest(jar.bytes).encodeHex().toString()
         if (digest != 'c6cc12c960490e72a83fd5c2f8169294cd1adda4d838ad69d188e8b7d3b73695') {
             throw new GradleException('Minecraft MCP control mod checksum mismatch')
