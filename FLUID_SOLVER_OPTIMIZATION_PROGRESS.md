@@ -1009,12 +1009,20 @@ a completely separate expression - to **1.9e-15**.
 
 ### WP6a summary: 79c6c7e -> 4988efd
 
+Measured at `4988efd` itself, two runs in the same session as the `79c6c7e` baseline above.
+
 | fixture | wall ms | allocated MB | substeps acc/rej | Jacobian builds | residual evaluations | node state() calls | transport orderings | LU storages |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| quiet 11312, mean of 5 | 36.2 -> 28.8-35.6 | 29.0 -> **18.6** | 11/0 | 0.6 | 132 | 1782 | 9.0 -> **1.4** | 9.4 -> **0.6** |
-| quiet 11324, mean of 5 | 17.3 -> 14.0-15.6 | 20.6 -> **14.6** | 11/0 | 0.8 | 172 | 1289 | 9.0 -> **0.4** | 9.4 -> **0.6** |
-| cold 11312, one interval | 1091 -> **936-947** | 1135.4 -> **718.9** | 52/15 | 41 | 8731 | 98070 | 269 -> **25** | 271 -> **3** |
-| 100-reservoir chain | 1825 -> **1407-1600** | 3230.3 -> **1759.7** | 45/22 | 22 | 4149 | 246000 | 269 -> **2** | 271 -> **3** |
+| quiet 11312, mean of 5 | 36.2 -> 28.1-37.4 | 29.0 -> **18.9** | 11/0 | 0.6 | 132 | 1782 | 9.0 -> **1.4** | 9.4 -> **0.6** |
+| quiet 11324, mean of 5 | 17.3 -> **12.7-13.9** | 20.6 -> **14.8** | 11/0 | 0.8 | 172 | 1289 | 9.0 -> **0.4** | 9.4 -> **0.6** |
+| cold 11312, one interval | 1091 -> **809-922** | 1135.4 -> **735.4** | 52/15 | 41 | 8731 | 98070 | 269 -> **25** | 271 -> **3** |
+| 100-reservoir chain | 1825 -> **1410-1434** | 3230.3 -> **1816.8** | 45/22 | 22 | 4149 | 246000 | 269 -> **2** | 271 -> **3** |
+
+The allocation figures are 2-3% above the ones in the C3 row because B4's `Values` buffer is two n-vectors
+per prepared temperature - 368 B against the 10.6 KB of matrices it replaced, 13 MB on the cold island and
+46 MB on the chain, which is the price of `evaluate` and `differentiate` sharing one body. Wall time on the
+quiet fixtures is dominated by their two Jacobian intervals and its spread is wider than the item's effect;
+their warm intervals allocate 3.2 MB where `79c6c7e` allocated 5.5.
 
 Every substep count, implicit solve, Jacobian build, residual evaluation and node decode is unchanged
 across the whole work package: it changes what an evaluation costs, never what the solver decides.
