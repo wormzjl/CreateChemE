@@ -1005,4 +1005,24 @@ a completely separate expression - to **1.9e-15**.
 - Verified EXACT (bitwise, substep counts included) against a capture of `ac4f120` in
   `build/probe/reference-wp6a-step2`, on all four fixtures.
 - Gate: 795 JUnit tests (1 new), 14 GameTests, green.
-- Commit `<step3>`.
+- Commit `4988efd`.
+
+### WP6a summary: 79c6c7e -> 4988efd
+
+| fixture | wall ms | allocated MB | substeps acc/rej | Jacobian builds | residual evaluations | node state() calls | transport orderings | LU storages |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 36.2 -> 28.8-35.6 | 29.0 -> **18.6** | 11/0 | 0.6 | 132 | 1782 | 9.0 -> **1.4** | 9.4 -> **0.6** |
+| quiet 11324, mean of 5 | 17.3 -> 14.0-15.6 | 20.6 -> **14.6** | 11/0 | 0.8 | 172 | 1289 | 9.0 -> **0.4** | 9.4 -> **0.6** |
+| cold 11312, one interval | 1091 -> **936-947** | 1135.4 -> **718.9** | 52/15 | 41 | 8731 | 98070 | 269 -> **25** | 271 -> **3** |
+| 100-reservoir chain | 1825 -> **1407-1600** | 3230.3 -> **1759.7** | 45/22 | 22 | 4149 | 246000 | 269 -> **2** | 271 -> **3** |
+
+Every substep count, implicit solve, Jacobian build, residual evaluation and node decode is unchanged
+across the whole work package: it changes what an evaluation costs, never what the solver decides.
+`state(...)` with a prepared temperature 2200 -> 1800 ns and without it 8300 -> 3900 ns; the standalone TP
+initializer 147.7 -> 77.6 us.
+
+What is left of the WP5 allocation census on these fixtures: `temperatureTerms`, which was 43.55% of the
+production pool's remaining allocation, is gone; the transport storages (1.19%) are gone. The next
+candidates it named - the `PipeTransfer`/`ConservativeTransport` records at 9.39%, `PhaseLayout` at 6.49%,
+`PassiveNetwork$Inventory.moles`' defensive clone at 1.93% - are untouched, and B4's analytic node blocks
+now have the derivative bundle they need.
