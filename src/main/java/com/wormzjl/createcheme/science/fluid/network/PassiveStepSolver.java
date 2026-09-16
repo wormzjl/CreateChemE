@@ -2,6 +2,7 @@ package com.wormzjl.createcheme.science.fluid.network;
 
 import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
+import com.wormzjl.createcheme.science.fluid.linalg.SparseLuSolver;
 import com.wormzjl.createcheme.science.fluid.solver.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
@@ -17,6 +18,9 @@ public final class PassiveStepSolver {
     private List<PassiveNetwork.Pipe> previousPipes=List.of();
     private List<Long> previousNodeIds=List.of();
     private double[] previousFlows=new double[0],previousHeads=new double[0];
+    private Equations lastEquations;
+    private double[] lastVariables;
+    private SparseNewton.Workspace lastWorkspace;
     public PassiveStepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
     public PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership) {
         this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
@@ -35,6 +39,7 @@ public final class PassiveStepSolver {
     public Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance) {
         Objects.requireNonNull(acceptance);SolverDiagnostics.count(SolverDiagnostics.implicitSolves);
         ownership.check("Each executing island job needs its own step workspace");
+        lastEquations=null;lastVariables=null;lastWorkspace=null;
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
         if(graph.pipes().isEmpty()&&graph.scheduledTransfers().isEmpty())return new Result(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),new double[0],dt,
                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
@@ -127,9 +132,50 @@ public final class PassiveStepSolver {
                     acceptedModes.set(edge,switch(pipe.control()){case FlowControl.Passive ignored->FlowControl.Mode.VELOCITY_LIMITED;case FlowControl.Pump ignored->FlowControl.Mode.PUMP_VELOCITY_LIMIT;case FlowControl.PressureValve ignored->FlowControl.Mode.VALVE_VELOCITY_LIMIT;});
                 }
             }
+            lastEquations=equations;lastVariables=x;lastWorkspace=workspace;
             return new Result(projection.states(),flows,dt,numerical,acceptedModes,heads,projection.pumpWork(),projection.externalMoles(),projection.externalEnergy(),projection.inventories(),projection.boundaries(),PipeTransfer.sample(graph,projection.states(),flows,dt));
         }
         throw new SparseNewton.Nonconvergence("Device active-set limit");
+    }
+    /** A linearized companion stage: reconstructed states, edge mass flows and boundary ledger. */
+    record Companion(List<FluidThermodynamics.State> states,double[] massFlows,List<ConservativeTransport.BoundaryTransfer> boundaries) {}
+    /**
+     * Filters a change of reservoir target inventories through the last successful solve instead of
+     * re-solving it. TR-BDF2's embedded companion stage is exactly that: the same equations at the
+     * same step, with the stage-two targets shifted by the order-three defect. The residual
+     * subtracts the target on a reservoir's component and energy rows only, so shifting it by
+     * {@code delta} moves those rows by {@code delta/scale} and leaves the volume, equilibrium,
+     * hydraulic and junction rows alone. The base point is the converged solution, where the
+     * residual is already inside the Newton tolerance, so the step to the perturbed root is
+     * {@code J*dx = delta/scale}; the endpoint is then decoded from {@code x+dx} and reconstructed
+     * on {@code corrected} exactly as an ordinary solve would be.
+     *
+     * <p>The factorization may be the chord an earlier stage built; that is a first-order
+     * linearization either way, and the result is an error estimate that is never committed.
+     * Returns {@code null} - and the caller must then run the full nonlinear stage - when there is
+     * no matching last solve, when its factorization is gone or singular, when the linearized point
+     * leaves the property domain, or when the reconstruction refuses it.
+     */
+    Companion companion(PassiveNetwork solved,PassiveNetwork corrected,double[][] deltaMoles,double[] deltaEnergy,
+                        double[] heads,double dt,Runnable checkpoint) {
+        ownership.check("Each executing island job needs its own step workspace");
+        var equations=lastEquations;
+        if(equations==null||equations.graph!=solved||equations.dt!=dt)return null;
+        double[] rows=new double[equations.size];
+        for(int node=0;node<equations.layout.length;node++) {
+            if(equations.layout[node]==null||solved.reservoirs().get(node).junction())continue;
+            equations.layout[node].targetRows(deltaMoles[node],deltaEnergy[node],rows,equations.offsets[node]);
+        }
+        List<FluidThermodynamics.State> states;double[] flows=new double[solved.pipes().size()];
+        try {
+            double[] x=SparseNewton.applyFactorization(lastWorkspace,lastVariables,rows);
+            if(x==null)return null;
+            states=equations.states(x);
+            for(int edge=0;edge<flows.length;edge++)flows[edge]=equations.boundaryClosed[edge]||equations.modes.get(edge)==FlowControl.Mode.CLOSED
+                    ?0:x[equations.edgeOffset+edge];
+            var projection=ConservativeTransport.reconstruct(corrected,states,flows,heads,dt,model,checkpoint);
+            return new Companion(projection.states(),flows,projection.boundaries());
+        }catch(SparseLuSolver.SolveFailure|SparseNewton.Nonconvergence|IllegalArgumentException outsideTheLinearization){return null;}
     }
     private record WorkspaceKey(long stepBits,List<Long> nodeIds,List<PassiveNetwork.NodeKind> kinds,List<PassiveNetwork.Pipe> pipes,
                                 List<String> phases,String componentMask,List<FlowControl.Mode> modes,String boundaryClosed) {}

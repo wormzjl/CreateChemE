@@ -153,6 +153,19 @@ public final class SparseNewton {
         workspace.invalidate();
         throw new Nonconvergence("Newton iteration limit at residual "+norm,x);
     }
+    /**
+     * One linearized correction on the factorization the workspace already holds:
+     * {@code point + J^-1 * rightHandSide}, with the backward-error check skipped because the
+     * result is an error estimate that is never committed. {@code null} when the workspace has no
+     * usable factorization; a numerically failed solve throws {@link SparseLuSolver.SolveFailure}.
+     */
+    public static double[] applyFactorization(Workspace workspace,double[] point,double[] rightHandSide) {
+        Objects.requireNonNull(workspace).owned();
+        if(!workspace.preconditioned())return null;
+        var correction=workspace.factorization.solve(rightHandSide,SparseLuSolver.Verification.NONE);
+        double[] result=point.clone();for(int i=0;i<result.length;i++)result[i]+=correction[i];
+        return result;
+    }
     public record CorrectionEstimate(double[] probe,double initialResidual,double probeResidual) {
         public CorrectionEstimate{probe=probe.clone();}
         @Override public double[] probe(){return probe.clone();}

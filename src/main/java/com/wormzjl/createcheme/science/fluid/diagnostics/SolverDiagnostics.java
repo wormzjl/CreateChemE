@@ -22,6 +22,9 @@ public final class SolverDiagnostics {
     // ---- interval and step control ----
     public static final LongAdder implicitSolves=new LongAdder();
     public static final LongAdder activeSetPasses=new LongAdder();
+    /** TR-BDF2 companion defects answered by one linear filter, and by a complete nonlinear stage. */
+    public static final LongAdder companionFilters=new LongAdder();
+    public static final LongAdder companionSolves=new LongAdder();
     // ---- Newton ----
     public static final LongAdder newtonSolves=new LongAdder();
     public static final LongAdder newtonIterations=new LongAdder();
@@ -79,6 +82,7 @@ public final class SolverDiagnostics {
     private static Map<String,LongAdder> counters() {
         var map=new LinkedHashMap<String,LongAdder>();
         map.put("implicitSolves",implicitSolves);map.put("activeSetPasses",activeSetPasses);
+        map.put("companionFilters",companionFilters);map.put("companionSolves",companionSolves);
         map.put("newtonSolves",newtonSolves);map.put("newtonIterations",newtonIterations);map.put("newtonBacktracks",newtonBacktracks);
         map.put("residualEvaluations",residualEvaluations);map.put("residualEvaluationsInJacobian",residualEvaluationsInJacobian);
         map.put("jacobianBuilds",jacobianBuilds);map.put("jacobianColors",jacobianColors);map.put("jacobianNonzeros",jacobianNonzeros);

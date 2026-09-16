@@ -115,6 +115,20 @@ public final class PhaseLayout {
         result[row++]=(state.volume()-targetVolume)/targetVolume;
         equilibriumResidual(state,l,v,result,row,offset,variables);
     }
+    /**
+     * The change {@link #residual} would show if this node's target amounts and internal energy
+     * moved by the given amounts, at a fixed state: the component rows carry it divided by their
+     * own component scale and the energy row by the energy scale, in the same row order, while the
+     * volume and equilibrium rows carry no target at all. A Newton step for that perturbation is
+     * therefore {@code J*dx = +delta/scale}, because the residual subtracts the target.
+     */
+    public void targetRows(double[] deltaAmounts,double deltaEnergy,double[] rows,int offset) {
+        if(deltaAmounts.length!=componentScales.length)throw new IllegalArgumentException("Balance basis mismatch");
+        int row=offset,water=componentScales.length-1;
+        for(int i:components)rows[row++]=deltaAmounts[i]/componentScales[i];
+        if(waterLiquidIndex>=0||waterVaporIndex>=0)rows[row++]=deltaAmounts[water]/componentScales[water];
+        rows[row]=deltaEnergy/energyScale;
+    }
     /** Zero-holdup mixing: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization. */
     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                                  double netMassFlow,double[] result,int offset,double[] variables) {

@@ -207,3 +207,57 @@ untouched and still exact, including the stranded-parcel equality in the neighbo
 
 - Gate: 793 JUnit tests (1 new), 14 GameTests, green. The regression harness is unaffected - it does
   not exercise the module path - and reports the same deviations as A1.
+- Commit `3b281cb`.
+
+### WP2-B2 - reuse the sparse factorization workspace across refactorizations
+
+`SparseLuSolver.Factorization` allocated an EJML solver, a `DMatrixSparseCSC`, the scaling and solve
+buffers and a re-cloned `SparseMatrix` per factorization, and EJML regrew L/U through
+`growMaxLength` on every `decompose` (11.9% of all allocation in the profile, 10.3 pp of it from
+`LuUpLooking_DSCC.initialize`). The storage is now a `SparseLuSolver.Storage`, and the question the
+review did not ask is where it may live. Per `SparseNewton.Workspace` buys nothing: a workspace is
+keyed by `(structure, dt)`, the controller almost never repeats a step size exactly, and the cold
+island's 47 Jacobian builds are spread over 66 freshly forked workspaces. The storage therefore
+belongs to a **fork family** - a workspace is forked from the previous timestep's and they run
+strictly in sequence - so the whole family refills one EJML solver in place and the L/U capacity
+survives. Newton factorization storages per interval: 3 -> 2 quiet, **47 -> 2** cold, **23 -> 2** on
+the chain (the 265-277 remaining per cold interval are `ConservativeTransport`'s one-shot
+reconstructions, about 10-15 KB each).
+
+A refill supersedes the `Factorization` handles taken from that storage before it. A holder of one
+rebuilds, which is exactly what a modified-Newton refresh already does, and `SparseNewton` checks
+`superseded()` where it already checks for a missing factorization, so the rebuild costs no
+iteration. The new `luSupersededFactorizations` counter measures how often a sibling timestep
+invalidates a live preconditioner: **0 on all four fixtures**. It is not a hypothetical path -
+`StructuralReuseTest` constructs it deliberately - and both of its tests still assert the same roots.
+Retained state does not grow: at most two stores per island (`implicit` and `algebraic`) replace up
+to eight live factorizations.
+
+| fixture | wall ms | substeps | LU factorizations | LU factor ms | Newton storages | allocated MB |
+|---|---:|---:|---:|---:|---:|---:|
+| quiet 11312, mean of 5 | 65.5 -> 67.4 | 7/0 then 1/0 unchanged | 0.8 unchanged | 41.6 -> 46.0 total | 4 -> 2 | 65.8 -> 63.8 |
+| quiet 11324, mean of 5 | 25.0 -> 27.8 | unchanged | 0.8 unchanged | 20.6 -> 18.6 total | 5 -> 2 | 32.5 -> 31.3 |
+| cold 11312, one interval | 1904 -> 1848 | 50 / 16 unchanged | 47 unchanged | 340 -> 326 | 47 -> 2 | 2608.8 -> **2132.6** |
+| 100-reservoir chain | 3459 -> 3334 | 46 / 23 unchanged | 23 unchanged | 196 -> 228 | 23 -> 2 | 5808.6 -> **5203.2** |
+
+Wall times are the mean of two runs each, measured in the same session against the same source tree
+reverted to `3b281cb` and back, because the quiet fixtures' run-to-run spread is larger than this
+item's effect on them: they build no Jacobian at all on a warm interval, so there is nothing to
+reuse and nothing to gain. The transient fixtures, which do, drop 18% and 10% of their allocation.
+
+`setStructureLocked(true)` was measured to be unavailable rather than unprofitable:
+`LuUpLooking_DSCC.setStructureLocked(true)` **throws** in EJML 0.44 ("Pivots change depending on
+numerical values and not just the matrix's structure") and `isStructureLocked()` is hard-coded
+false. There is no symbolic phase to keep, so `Pattern.numericMatrix` keeps dropping exact zeros and
+the LU is never fed structural zeros. `SparseMatrix` gained an `adopting()` factory - same
+validation, no defensive copy - used by `numericMatrix`, `symbolicMatrix` and
+`ConservativeTransport.matrix`, and the colored difference scratch (`derivatives`, `steps`) is
+family-wide too. `ConservativeTransport.reconstruct` was left structurally alone: its matrices are
+n = 18-100 with ~n + edges nonzeros, so its 265 factorizations per cold interval are about 4 MB of
+the 2133 and its ordering is the identity below n = 128; its cost is in `repartition` and the
+property evaluations, not the linear algebra.
+
+- Verified EXACT (bitwise, substep counts included) against a capture of `3b281cb` in
+  `build/probe/reference-wp1`, on all four fixtures.
+- Gate: 793 JUnit tests, 14 GameTests, green.
+- Commit `cb5a881`.
