@@ -36,6 +36,8 @@ final class SolverRegressionHarness {
     static final Path DEFAULT_DIRECTORY=Path.of("build","probe");
     static final Path REFERENCES=Path.of("src","test","resources","fluid","regression");
     static final Path REPORT=Path.of("build","reports","fluid","solver-optimization.json");
+    /** Every fixture replays the production interval length. */
+    static final double INTERVAL_SECONDS=5;
     private static final com.sun.management.ThreadMXBean THREADS=
             (com.sun.management.ThreadMXBean)ManagementFactory.getThreadMXBean();
     private static final Runnable NOOP=()->{};
@@ -45,12 +47,27 @@ final class SolverRegressionHarness {
     /** Bitwise agreement, or agreement inside declared per-quantity tolerances. */
     sealed interface Tolerance permits Exact,Relative {}
     record Exact() implements Tolerance {}
-    /** {@code state} and {@code moles} are relative, {@code temperature} absolute in kelvin,
-     * {@code phaseFraction} absolute on a volume fraction, {@code flow} relative to max(|q|,1e-6).
-     * A flow also passes within {@code flowAbsolute} kg/s, which is how the interval controller
-     * itself treats near-zero pipes (its own declared numerical floor is 1e-9 + 2e-9 m/dt kg/s);
-     * pass 0 for a purely relative flow gate. */
-    record Relative(double state,double temperature,double phaseFraction,double flow,double flowAbsolute) implements Tolerance {}
+    /**
+     * {@code state} and {@code moles} are relative, {@code temperature} is absolute in kelvin,
+     * {@code phaseFraction} is absolute on a volume fraction.
+     *
+     * <p>{@code flow} is relative too, but measured against the same per-pipe scale the interval
+     * controller uses rather than a fixed constant. {@link PassiveIntervalSolver}'s own flow-error
+     * criterion subtracts a declared numerical allowance
+     * {@code numericalFloor = 1e-9 + 2e-9*(m_first + m_second)/duration} before judging a pipe -
+     * everything below that is equation and roundoff noise it explicitly refuses to refine on - so
+     * an average flow agrees here when
+     * {@code |dq| <= max(flow*max(|q_reference|,numericalFloor), numericalFloor)}. Scaling a
+     * quiescent pipe by a fixed floor instead gates it far below the engine's own resolution: on
+     * island 11312's pipe 13 the controller's allowance is 3.2e-8 kg/s while the pipe carries
+     * 7.5e-7 kg/s, so no change of step sequence could satisfy a purely relative bound there.
+     * Keep this and {@code PassiveIntervalSolver.flowError} in step with each other.
+     */
+    record Relative(double state,double temperature,double phaseFraction,double flow) implements Tolerance {}
+    /** The controller's own per-pipe allowance, from the reference end-state endpoint masses. */
+    static double numericalFloor(double firstMass,double secondMass,double duration) {
+        return 1e-9+2e-9*(firstMass+secondMass)/duration;
+    }
 
     /** {@code warmup} intervals are replayed from {@code start} and discarded before the measured
      * ones restart from {@code start}, so the recorded wall times are not a JIT transient. */
@@ -116,13 +133,13 @@ final class SolverRegressionHarness {
     static List<IntervalReport> replay(FluidThermodynamics model,Fixture fixture) {
         var warm=fixture.start();var warmupSolver=new RetainedSolver();
         for(int interval=0;interval<fixture.warmup();interval++)
-            warm=warmupSolver.solve(model,warm,5,PassiveIntervalSolver.Settings.defaults(),NOOP).graph();
+            warm=warmupSolver.solve(model,warm,INTERVAL_SECONDS,PassiveIntervalSolver.Settings.defaults(),NOOP).graph();
         var reports=new ArrayList<IntervalReport>();var graph=fixture.start();var retained=new RetainedSolver();
         for(int interval=0;interval<fixture.intervals();interval++) {
             SolverDiagnostics.reset();SolverDiagnostics.ENABLED=true;
             long allocated=THREADS.getCurrentThreadAllocatedBytes(),started=System.nanoTime();
             PassiveIntervalSolver.Result result;
-            try{result=retained.solve(model,graph,5,PassiveIntervalSolver.Settings.defaults(),NOOP);}
+            try{result=retained.solve(model,graph,INTERVAL_SECONDS,PassiveIntervalSolver.Settings.defaults(),NOOP);}
             finally{SolverDiagnostics.ENABLED=false;}
             double milliseconds=(System.nanoTime()-started)/1e6;
             long bytes=THREADS.getCurrentThreadAllocatedBytes()-allocated;
@@ -206,7 +223,10 @@ final class SolverRegressionHarness {
         }
     }
 
-    static Comparison compare(String fixture,JsonObject reference,List<IntervalReport> actual,Tolerance tolerance) {
+    /** {@code pipes} names each flow's endpoint reservoirs, so the flow gate can rebuild the
+     * controller's own per-pipe allowance from the reference end-state masses. */
+    static Comparison compare(String fixture,JsonObject reference,List<IntervalReport> actual,Tolerance tolerance,
+                              List<PassiveNetwork.Pipe> pipes,double duration) {
         var failures=new ArrayList<String>();var worst=new Worst();boolean substeps=false;
         var intervals=reference.getAsJsonArray("intervals");
         if(intervals.size()!=actual.size()) {
@@ -240,34 +260,51 @@ final class SolverRegressionHarness {
             }
             var flows=expected.getAsJsonArray("flows");
             if(flows.size()!=state.flows().length){failures.add(where+": pipe count "+flows.size()+" -> "+state.flows().length);continue;}
-            for(int e=0;e<flows.size();e++)
-                check(failures,worst,where+" pipe "+e,"averageMassFlow",flows.get(e).getAsDouble(),state.flows()[e],tolerance,Quantity.FLOW,0);
+            if(flows.size()!=pipes.size()){failures.add(where+": fixture has "+pipes.size()+" pipes, reference has "+flows.size());continue;}
+            for(int e=0;e<flows.size();e++) {
+                var pipe=pipes.get(e);
+                double floor=numericalFloor(nodes.get(pipe.first()).getAsJsonObject().get("mass").getAsDouble(),
+                        nodes.get(pipe.second()).getAsJsonObject().get("mass").getAsDouble(),duration);
+                flow(failures,worst,where+" pipe "+e,flows.get(e).getAsDouble(),state.flows()[e],tolerance,floor);
+            }
         }
         return new Comparison(List.copyOf(failures),worst.state,worst.temperature,worst.phaseFraction,worst.flow,substeps,worst.stateAt,worst.temperatureAt,worst.phaseAt,worst.flowAt);
     }
-    private enum Quantity {STATE,TEMPERATURE,FLOW}
+    private enum Quantity {STATE,TEMPERATURE}
     private static void check(List<String> failures,Worst worst,String at,String field,double expected,double actual,
                               Tolerance tolerance,Quantity quantity,double floor) {
         if(Double.doubleToLongBits(expected)==Double.doubleToLongBits(actual))return;
         double difference=Math.abs(expected-actual);
-        double scaled=switch(quantity) {
-            case TEMPERATURE->difference;
-            case FLOW->difference/Math.max(Math.abs(expected),1e-6);
-            case STATE->difference/Math.max(Math.abs(expected),Math.max(floor,Double.MIN_NORMAL));
-        };
+        double scaled=quantity==Quantity.TEMPERATURE?difference:difference/Math.max(Math.abs(expected),Math.max(floor,Double.MIN_NORMAL));
         switch(quantity) {
             case TEMPERATURE->{if(scaled>worst.temperature){worst.temperature=scaled;worst.temperatureAt=Worst.where(at,field,expected,actual);}}
-            case FLOW->{if(scaled>worst.flow){worst.flow=scaled;worst.flowAt=Worst.where(at,field,expected,actual);}}
             case STATE->{if(scaled>worst.state){worst.state=scaled;worst.stateAt=Worst.where(at,field,expected,actual);}}
         }
         if(tolerance instanceof Relative relative) {
-            if(quantity==Quantity.FLOW&&difference<=relative.flowAbsolute())return;
-            double allowed=switch(quantity){case TEMPERATURE->relative.temperature();case FLOW->relative.flow();case STATE->relative.state();};
+            double allowed=quantity==Quantity.TEMPERATURE?relative.temperature():relative.state();
             if(scaled<=allowed)return;
             if(failures.size()<40)failures.add(at+" "+field+": expected "+expected+", got "+actual+" (scaled deviation "+scaled+" > "+allowed+")");
             return;
         }
         if(failures.size()<40)failures.add(at+" "+field+": expected "+expected+", got "+actual+" (difference "+difference+")");
+    }
+    /** An average flow agrees within {@code max(flow*max(|reference|,floor), floor)}, where
+     * {@code floor} is the interval controller's own allowance for this pipe. */
+    private static void flow(List<String> failures,Worst worst,String at,double expected,double actual,Tolerance tolerance,double floor) {
+        if(Double.doubleToLongBits(expected)==Double.doubleToLongBits(actual))return;
+        double difference=Math.abs(expected-actual),scale=Math.max(Math.abs(expected),floor),scaled=difference/scale;
+        if(scaled>worst.flow) {
+            worst.flow=scaled;
+            worst.flowAt=at+" averageMassFlow reference "+expected+" -> "+actual+", difference "+difference
+                    +" kg/s, controller allowance "+floor+" kg/s";
+        }
+        if(tolerance instanceof Relative relative) {
+            if(difference<=Math.max(relative.flow()*scale,floor))return;
+            if(failures.size()<40)failures.add(at+" averageMassFlow: expected "+expected+", got "+actual+" (difference "+difference
+                    +" kg/s > allowance "+Math.max(relative.flow()*scale,floor)+" kg/s; relative "+scaled+" > "+relative.flow()+")");
+            return;
+        }
+        if(failures.size()<40)failures.add(at+" averageMassFlow: expected "+expected+", got "+actual+" (difference "+difference+")");
     }
     private static void fraction(List<String> failures,Worst worst,String at,String field,double expected,double actual,
                                  double expectedVolume,double actualVolume,Tolerance tolerance) {

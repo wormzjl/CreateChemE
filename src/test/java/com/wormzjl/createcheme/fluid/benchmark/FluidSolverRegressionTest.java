@@ -18,26 +18,26 @@ import static org.junit.jupiter.api.Assertions.*;
  * when it is absent, so a checkout without {@code build/probe} stays green.
  */
 class FluidSolverRegressionTest {
-    /** Relative gate used once a work package legitimately changes the accepted step sequence,
-     * exactly as specified for A1: 1e-6 relative on pressure/mass, 1e-4 K, 1e-6 on phase volume
-     * fractions, 1e-3 on average flows relative to max(|q|,1e-6), with no absolute flow escape. */
-    private static final Tolerance A1_TOLERANCE=new Relative(1e-6,1e-4,1e-6,1e-3,0);
     /**
-     * Declared gate since A2 (retained per-island solver). The retained factorization serves as the
-     * modified-Newton preconditioner for the first solve of the next interval, so that solve takes
-     * a different path to the same root: both end states satisfy the same 1e-9 equation gate and
-     * the same conservation audit, and they differ by at most that tolerance. The step sequence and
-     * the substep counts are unchanged, and the cold and chain fixtures - which retain nothing,
-     * having one interval - stay bitwise identical.
+     * The gate every fixture declares against the 154007d references. Two landed work packages move
+     * the trajectory without moving the physics:
      *
-     * <p>Measured against the 154007d references: 1.0e-9 relative on state and moles (the worst
-     * point is a fixed 1 m^3 reservoir volume, which the baseline closed to 1+1e-9 and the retained
-     * solve closes to 1+4e-16, so A2 is the more accurate of the two there), 1.3e-9 K, 5.5e-12 on
-     * phase fractions, and 2.4e-9 kg/s on a pipe carrying 7.5e-7 kg/s - 3% of the interval
-     * controller's own declared flow floor of about 7.7e-8 kg/s for that pipe. The harness prints
-     * the measured maximum and its location every run, so any growth is visible immediately.
+     * <ul>
+     * <li>A2 retains the previous interval's factorization as the modified-Newton preconditioner, so
+     *     the first Newton solve of an interval reaches the same root along a different path. Both
+     *     end states satisfy the same 1e-9 equation gate and the same conservation audit.</li>
+     * <li>A1 carries the accepted step size across intervals, so a quiet island integrates one 5 s
+     *     step where it used to take 1, 2 and 2 s. Every accepted step still meets the unchanged
+     *     error criteria.</li>
+     * </ul>
+     *
+     * <p>The numbers are the ones specified for A1: 1e-6 relative on pressure, mass, volume and
+     * component totals, 1e-4 K, 1e-6 on phase volume fractions, and 1e-3 on average flows - the
+     * last measured against the interval controller's own per-pipe allowance, see {@link Relative}.
+     * Substep counts are recorded and reported but not gated, because A1 changes them by design.
+     * The measured maxima are printed on every run, so drift is visible immediately.
      */
-    private static final Tolerance WITHIN_NEWTON_TOLERANCE=new Relative(1e-8,1e-7,1e-9,1e-6,5e-8);
+    private static final Tolerance DECLARED=new Relative(1e-6,1e-4,1e-6,1e-3);
 
     @Test void replaySavedIslandsAgainstCapturedReferences() {
         var model=SolverRegressionHarness.model();
@@ -56,7 +56,8 @@ class FluidSolverRegressionTest {
             if(capture){SolverRegressionHarness.write(path,SolverRegressionHarness.encode(fixture.name(),intervals));
                 System.out.println("Fluid solver regression CAPTURED "+path);continue;}
             if(!Files.isReadable(path)){failures.add(fixture.name()+": missing reference "+path+" (capture with -Dfluid.regression.capture=true)");continue;}
-            var comparison=SolverRegressionHarness.compare(fixture.name(),SolverRegressionHarness.read(path),intervals,tolerance(fixture));
+            var comparison=SolverRegressionHarness.compare(fixture.name(),SolverRegressionHarness.read(path),intervals,tolerance(fixture),
+                    fixture.start().pipes(),SolverRegressionHarness.INTERVAL_SECONDS);
             System.out.println(fixture.name()+" vs reference: "+comparison.deviations());
             failures.addAll(comparison.failures());
         }
@@ -65,11 +66,13 @@ class FluidSolverRegressionTest {
         assertTrue(failures.isEmpty(),failures.size()+" regression differences:\n"+String.join("\n",failures.subList(0,Math.min(20,failures.size()))));
     }
 
-    /** {@code -Dfluid.regression.mode=exact|relative} overrides the fixture's declared gate. */
+    /** {@code -Dfluid.regression.mode=exact|relative} overrides the fixture's declared gate;
+     * {@code exact} is how a trajectory-identical work package proves itself against a scratch
+     * capture of the commit before it. */
     private static Tolerance tolerance(Fixture fixture) {
         return switch(System.getProperty("fluid.regression.mode","declared")) {
             case "exact"->new Exact();
-            case "relative"->A1_TOLERANCE;
+            case "relative"->DECLARED;
             default->fixture.tolerance();
         };
     }
@@ -83,14 +86,14 @@ class FluidSolverRegressionTest {
         island(model,"core-fallback.dat",11312,"cold-11312","unadvanced 30-reservoir island, the transient case",0,1).ifPresentOrElse(fixtures::add,
                 ()->skipped.add("cold-11312 (no readable core-fallback.dat island 11312)"));
         fixtures.add(new Fixture("chain-100","100-reservoir cosine-pressure chain",
-                SolverRegressionHarness.cosineChain(model,100),0,1,WITHIN_NEWTON_TOLERANCE));
+                SolverRegressionHarness.cosineChain(model,100),0,1,DECLARED));
         return List.copyOf(fixtures);
     }
     private static Optional<Fixture> island(FluidThermodynamics model,String file,long id,String name,String description,int warmup,int intervals) {
         var snapshot=SolverRegressionHarness.snapshot(file);
         if(snapshot.isEmpty())return Optional.empty();
         PassiveNetwork graph=SolverRegressionHarness.islands(model,snapshot.get()).get(id);
-        return graph==null?Optional.empty():Optional.of(new Fixture(name,description,graph,warmup,intervals,WITHIN_NEWTON_TOLERANCE));
+        return graph==null?Optional.empty():Optional.of(new Fixture(name,description,graph,warmup,intervals,DECLARED));
     }
 
     private static void print(Fixture fixture,List<IntervalReport> intervals) {

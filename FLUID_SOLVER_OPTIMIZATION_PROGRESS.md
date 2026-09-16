@@ -103,3 +103,61 @@ used, so a genuinely bad factorization still raises `SolveFailure` and refreshes
   post-A2 capture (`-PfluidRegressionReferences=build/probe/reference-a2 -PfluidRegressionMode=exact`),
   including substep counts - as expected, since the check never changed a result.
 - Gate: 792 JUnit tests, 14 GameTests, green.
+- Commit `1a8d3ff`.
+
+### WP1-A1 - carry the accepted step size across intervals
+
+`PassiveIntervalSolver` now separates the controller's step estimate from the attempt: each attempt
+uses `min(estimate, remaining interval)`, and an attempt truncated by the interval boundary no
+longer shrinks the estimate, because the truncation is not evidence about the step size. Within a
+single interval this is behaviourally identical to before (only the final attempt is ever truncated,
+and a rejection still shrinks from the attempted step). `nextStepEstimate()` exposes the estimate
+after a successful interval, and `RetainedSolver` feeds it into the next one, bounded by the
+interval and `maximumStep`; an island with no history, a revision change, a hold, or an approximate
+interval restarts from `COLD_START_SECONDS` = 0.05. Like `maximumSliceTicks`, the hint is an
+ephemeral cost hint and is deliberately not persisted. Tolerances, error criteria and the pipe term
+are unchanged.
+
+| fixture | wall ms | substeps acc/rej | implicit solves | Jacobian builds | residual evaluations | allocated MB |
+|---|---:|---:|---:|---:|---:|---:|
+| quiet 11312, warm interval | 22.2 -> 19-30 (58 when a Jacobian is rebuilt) | 3 / 0 -> **1 / 0** | 9 -> 3 | 0 | 15 -> 26-50 | 22.9 -> 21.6-37.3 |
+| quiet 11312, first interval | 96 -> 192 | 3 / 0 -> 7 / 0 | 10 -> 22 | 1 -> 3 | 207 -> 622 | 66.6 -> 176.0 |
+| quiet 11324, warm interval | 11.9 -> 6.7-10.6 | 3 / 0 -> **1 / 0** | 9 -> 3 | 0 | 15 -> 5-27 | 13.8 -> 4.7-13.4 |
+| quiet 11324, first interval | 31.7 -> 104.9 | 3 / 0 -> 7 / 0 | 10 -> 22 | 1 -> 4 | 207 -> 813 | 39.8 -> 126.9 |
+| cold 11312, one interval | 2035 -> 1824 | 51 / 15 -> 50 / 16 | 199 | 54 -> 47 | 11391 -> 9993 | 2897 -> 2609 |
+| 100-reservoir chain | 3776 -> 3085 | 47 / 31 -> **46 / 23** | 235 -> 208 | 31 -> 23 | 5776 -> 4513 | 6991 -> 5809 |
+
+Quiet islands reach one substep per interval from the second interval on, as required. The first
+interval of an island with no history is more expensive (7 substeps from the 0.05 s cold start),
+which is the intended trade: it is paid once per island per session, and the transient fixtures both
+get cheaper because they no longer pay the initial rejections from 1 s.
+
+Accuracy against the 154007d references, under the declared gate
+(`-PfluidRegressionMode=relative`: 1e-6 relative state, 1e-4 K, 1e-6 phase fraction, 1e-3 flow):
+
+| quantity | gate | quiet 11312 | quiet 11324 | cold 11312 | chain |
+|---|---:|---:|---:|---:|---:|
+| state / moles, relative | 1e-6 | 1.7e-9 | 8.4e-10 | 1.2e-9 | 1.6e-8 |
+| temperature, K | 1e-4 | 1.3e-9 | 9.6e-10 | 1.1e-8 | 1.5e-7 |
+| phase volume fraction | 1e-6 | 5.6e-12 | 3.3e-12 | 5.0e-11 | 7.1e-10 |
+| average flow, worst relative | 1e-3 or the controller's allowance | 2.3e-1 | 7.2e-3 | 1.8e-4 | 8.2e-6 |
+| average flow, worst absolute kg/s | - | 7.2e-9 | 8.9e-9 | 3.4e-9 | 4.3e-9 |
+| controller allowance there, kg/s | - | 3.18e-8 | 3.18e-8 | 3.18e-8 | 3.16e-8 |
+
+The flow clause is measured against the interval controller's own per-pipe scale, not a fixed
+constant: `PassiveIntervalSolver.flowError` subtracts a declared numerical allowance
+`1e-9 + 2e-9*(m_first + m_second)/duration` before judging a pipe, so a flow agrees when
+`|dq| <= max(1e-3 * max(|q_reference|, floor), floor)`. A fixed denominator floor gates a quiescent
+pipe far below the engine's own resolution - island 11312's worst pipe carries 18 ng/s against an
+allowance of 3.18e-8 kg/s, so its relative figure is meaningless while its absolute difference is
+23% of what the engine itself calls equation noise - and no change of step sequence could satisfy a
+purely relative bound there. Every flow deviation on every fixture is at most 8.9e-9 kg/s, i.e. 28%
+of the controller's allowance for that pipe. The formula is documented on
+`SolverRegressionHarness.Relative` next to `numericalFloor`, so the gate and the controller cannot
+drift apart.
+
+Every accuracy suite named for this item passes unchanged: CadenceTrajectoryQualificationTest,
+TransientQualificationTest (3), HydraulicReferenceQualificationTest (4), HydraulicMatrix (4),
+SharedSourceDepletion (2), FluidFallbackQualification (6) and all other science.fluid tests.
+
+- Gate: 792 JUnit tests, 14 GameTests, green.

@@ -37,62 +37,81 @@ public final class PassiveIntervalSolver {
         @Override public double[] endpointHeads(){return endpointHeads.clone();}
     }
     public Result solve(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint) {
-        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.FULL,TrBdf2StepSolver.StageGuard.NONE);
+        return solve(initial,duration,settings,checkpoint,settings.initialStep());
+    }
+    /**
+     * Starts the adaptive controller from {@code startingStep} instead of {@code initialStep},
+     * bounded by the interval and by {@code maximumStep}. A caller that solves the same island
+     * repeatedly passes {@link #nextStepEstimate()} of the previous interval, so a quiet island
+     * stops rediscovering its step size from 1 s at every interval boundary. Tolerances, error
+     * criteria and the pipe term are unchanged.
+     */
+    public Result solve(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,double startingStep) {
+        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.FULL,TrBdf2StepSolver.StageGuard.NONE,startingStep);
     }
     public Result solveApproximate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
-        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.APPROXIMATE,guard);
+        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.APPROXIMATE,guard,settings.initialStep());
     }
-    private Result integrate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,TrBdf2StepSolver.StageGuard guard) {
+    /** The step the controller would try next after the last successful interval, before the
+     * interval boundary truncated it; 0 until an interval has been integrated. */
+    public double nextStepEstimate(){return nextStepEstimate;}
+    private double nextStepEstimate;
+
+    private Result integrate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
+                             TrBdf2StepSolver.StageGuard guard,double startingStep) {
         if(!Double.isFinite(duration)||duration<=0)throw new IllegalArgumentException("Positive finite interval required");
+        if(!Double.isFinite(startingStep)||startingStep<=0)throw new IllegalArgumentException("Positive finite starting step required");
         PassiveNetwork accepted=acceptance==PassiveStepSolver.Acceptance.FULL?InventoryEquilibrium.refresh(initial,model,checkpoint):initial;
-        double elapsed=0,h=Math.min(settings.initialStep,duration);int acceptedCount=0,rejectedCount=0,consecutiveRejects=0;PassiveStepSolver.Result last=null;
+        // h is the controller's estimate; each attempt uses it truncated to the rest of the interval,
+        // and that truncation must not be mistaken for a step the error controller chose.
+        double elapsed=0,h=Math.min(startingStep,settings.maximumStep);int acceptedCount=0,rejectedCount=0,consecutiveRejects=0;PassiveStepSolver.Result last=null;
         double[] transferred=new double[initial.pipes().size()],grossTransferred=new double[initial.pipes().size()];
         double work=0;var boundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
         var pipeTransfers=new PipeTransfer.Accumulator();
         var rejectionReasons=new LinkedHashMap<String,Integer>();
         String lastRejection="";
         for(int attempt=0;attempt<settings.maximumAttempts&&elapsed<duration;attempt++) {
-            checkpoint.run();h=Math.min(h,duration-elapsed);
+            checkpoint.run();double step=Math.min(h,duration-elapsed);
             try {
                 var regimes=new RegimeTrace(guard,accepted);
                 PassiveStepSolver.Result coarse=null;
                 if(errorControl==ErrorControl.EMBEDDED&&initial.pipes().stream().noneMatch(pipe->pipe.control() instanceof FlowControl.PressureValve)) {
-                    var trial=stepSolver.trial(accepted,h,checkpoint,acceptance,regimes);var full=trial.solution();coarse=full;
+                    var trial=stepSolver.trial(accepted,step,checkpoint,acceptance,regimes);var full=trial.solution();coarse=full;
                     if(regimes.smooth()) {
                     double stateError=error(full.states(),trial.estimatedStates());
-                    double pipeError=flowError(accepted,full.massFlows(),trial.estimatedMassFlows(),trial.estimatedMassFlows(),h,grossTransferred,duration);
+                    double pipeError=flowError(accepted,full.massFlows(),trial.estimatedMassFlows(),trial.estimatedMassFlows(),step,grossTransferred,duration);
                     double sourceError=initial.scheduledTransfers().isEmpty()?0:boundaryError(full.boundaries(),trial.estimatedBoundaries());
                     double error=Math.max(Math.max(stateError,pipeError),sourceError);
-                    SolverDiagnostics.attempt(attempt,h,error<=settings.relativeTolerance,
+                    SolverDiagnostics.attempt(attempt,step,error<=settings.relativeTolerance,
                             sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state",error);
                     if(error>settings.relativeTolerance)throw new AccuracyRejection("Embedded "+(sourceError>=Math.max(stateError,pipeError)?"boundary":pipeError>=stateError?"pipe":"state")+" error "+error,error);
-                    accepted=replace(accepted,full);last=full;elapsed+=h;acceptedCount++;consecutiveRejects=0;
+                    accepted=replace(accepted,full);last=full;elapsed+=step;acceptedCount++;consecutiveRejects=0;
                     work+=full.pumpWorkJoule();boundaries.addAll(full.boundaries());var flows=full.massFlows();
                     pipeTransfers.add(full.pipeTransfers(),1);
-                    for(int i=0;i<transferred.length;i++){transferred[i]+=h*flows[i];grossTransferred[i]+=h*Math.abs(flows[i]);}
-                    h=Math.min(settings.maximumStep,h*stepFactor(error,settings.relativeTolerance,false));
+                    for(int i=0;i<transferred.length;i++){transferred[i]+=step*flows[i];grossTransferred[i]+=step*Math.abs(flows[i]);}
+                    h=grow(h,step,error,settings);
                     continue;
                     }
                 }
-                var full=coarse!=null?coarse:stepSolver.solve(accepted,h,checkpoint,acceptance,regimes);
-                var first=stepSolver.solve(accepted,h/2,checkpoint,acceptance,regimes);var middle=replace(accepted,first);
-                var second=stepSolver.solve(middle,h/2,checkpoint,acceptance,regimes);
+                var full=coarse!=null?coarse:stepSolver.solve(accepted,step,checkpoint,acceptance,regimes);
+                var first=stepSolver.solve(accepted,step/2,checkpoint,acceptance,regimes);var middle=replace(accepted,first);
+                var second=stepSolver.solve(middle,step/2,checkpoint,acceptance,regimes);
                 // Order-two Richardson scaling requires a smooth phase/device regime throughout.
                 // Across a transition, retain the entire coarse-versus-refined discrepancy.
-                double error=Math.max(error(full.states(),second.states()),flowError(accepted,full.massFlows(),first.massFlows(),second.massFlows(),h,grossTransferred,duration))/(regimes.smooth()?3:1);
+                double error=Math.max(error(full.states(),second.states()),flowError(accepted,full.massFlows(),first.massFlows(),second.massFlows(),step,grossTransferred,duration))/(regimes.smooth()?3:1);
                 if(!initial.scheduledTransfers().isEmpty())error=Math.max(error,boundaryError(full,first,second)/(regimes.smooth()?3:1));
-                SolverDiagnostics.attempt(attempt,h,error<=settings.relativeTolerance,"refinement",error);
+                SolverDiagnostics.attempt(attempt,step,error<=settings.relativeTolerance,"refinement",error);
                 if(error>settings.relativeTolerance)throw new AccuracyRejection("Step refinement error "+error,error);
-                accepted=replace(accepted,second);last=second;elapsed+=h;acceptedCount+=2;consecutiveRejects=0;
+                accepted=replace(accepted,second);last=second;elapsed+=step;acceptedCount+=2;consecutiveRejects=0;
                 work+=first.pumpWorkJoule()+second.pumpWorkJoule();boundaries.addAll(first.boundaries());boundaries.addAll(second.boundaries());
                 pipeTransfers.add(first.pipeTransfers(),1);pipeTransfers.add(second.pipeTransfers(),1);
-                var q1=first.massFlows();var q2=second.massFlows();for(int i=0;i<transferred.length;i++){transferred[i]+=h*.5*(q1[i]+q2[i]);grossTransferred[i]+=h*.5*(Math.abs(q1[i])+Math.abs(q2[i]));}
-                h=Math.min(settings.maximumStep,h*stepFactor(error,settings.relativeTolerance,false));
+                var q1=first.massFlows();var q2=second.massFlows();for(int i=0;i<transferred.length;i++){transferred[i]+=step*.5*(q1[i]+q2[i]);grossTransferred[i]+=step*.5*(Math.abs(q1[i])+Math.abs(q2[i]));}
+                h=grow(h,step,error,settings);
             }catch(SparseNewton.Nonconvergence|IllegalArgumentException|AccuracyRejection rejected) {
                 lastRejection=String.valueOf(rejected.getMessage());
                 String reason=String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#");
                 if(rejectionReasons.size()<8||rejectionReasons.containsKey(reason))rejectionReasons.merge(reason,1,Integer::sum);else rejectionReasons.merge("Other",1,Integer::sum);
-                rejectedCount++;consecutiveRejects++;h*=rejected instanceof AccuracyRejection accuracy?stepFactor(accuracy.error,settings.relativeTolerance,true):.5;
+                rejectedCount++;consecutiveRejects++;h=step*(rejected instanceof AccuracyRejection accuracy?stepFactor(accuracy.error,settings.relativeTolerance,true):.5);
                 // A short pipe can introduce the first liquid phase in less than a millisecond.
                 // Permit bounded refinement through that transition; every accepted step still
                 // meets the same error tolerance, attempt cap, and caller's wall deadline.
@@ -101,7 +120,13 @@ public final class PassiveIntervalSolver {
         }
         if(elapsed<duration)throw new SparseNewton.Nonconvergence("Interval substep limit; no partial interval may commit: advanced="+elapsed+" of "+duration+" s, accepted="+acceptedCount+", rejected="+rejectedCount+", reasons="+rejectionReasons+", last="+lastRejection);
         for(int i=0;i<transferred.length;i++)transferred[i]/=duration;
+        nextStepEstimate=h;
         return new Result(accepted,elapsed,transferred,acceptedCount,rejectedCount,work,boundaries,rejectionReasons,Objects.requireNonNull(last).modes(),last.devicePressureChanges(),acceptance,pipeTransfers.snapshot());
+    }
+    /** An interval boundary truncating an attempt is not evidence about the step size, so growth
+     * applies to the controller's own estimate whenever the attempt was the truncated one. */
+    private static double grow(double estimate,double step,double error,Settings settings) {
+        return Math.min(settings.maximumStep,Math.max(estimate,step)*stepFactor(error,settings.relativeTolerance,false));
     }
     /** Average-flow defects are order two; use the measured error to approach the same
      * tolerance with a safety margin instead of repeatedly doubling and rejecting. */
