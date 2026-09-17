@@ -72,6 +72,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     private V3ColumnInput currentInput = freshInput();
     private V3ColumnDisplayResult displayResult;
     private V3Operation activeOperation;
+    /** Unsupported development state is retained verbatim until the player explicitly loads a preset. */
+    private CompoundTag incompatibleState;
 
     public ColumnCalculatorV3BlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.COLUMN_CALCULATOR_V3.get(), pos, state);
@@ -84,7 +86,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
      * rejected without changing the block state.</p>
      */
     public Optional<V3Operation> tryBegin(long expectedInputRevision, long operationId, V3ColumnInput input) {
-        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null) {
+        if (!(level instanceof ServerLevel) || expectedInputRevision != inputRevision || activeOperation != null || incompatibleState != null) {
             return Optional.empty();
         }
         input = Objects.requireNonNull(input, "input");
@@ -166,6 +168,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             setChanged();
             return false;
         }
+        incompatibleState = null;
         currentInput = preset;
         displayResult = null;
         status = V3Status.DIRTY;
@@ -220,6 +223,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+        if (incompatibleState != null) {
+            for (String key : List.of(TAG_DATA_VERSION, TAG_INPUT_REVISION, TAG_RESULT_REVISION,
+                    TAG_STATE_REVISION, TAG_INPUT, TAG_RESULT)) {
+                if (incompatibleState.contains(key)) tag.put(key, incompatibleState.get(key).copy());
+                else tag.remove(key);
+            }
+            return;
+        }
         tag.putInt(TAG_DATA_VERSION, DATA_VERSION);
         tag.putLong(TAG_INPUT_REVISION, inputRevision);
         tag.putLong(TAG_RESULT_REVISION, resultRevision);
@@ -233,6 +244,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         activeOperation = null;
+        incompatibleState = null;
         displayResult = null;
         inputRevision = 0L;
         resultRevision = -1L;
@@ -245,8 +257,9 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         }
         int dataVersion = tag.getInt(TAG_DATA_VERSION);
         if (dataVersion != DATA_VERSION) {
+            incompatibleState = tag.copy();
             status = V3Status.INCOMPATIBLE;
-            detail = "Incompatible material basis; recreate the column input for this development version";
+            detail = "Incompatible material basis; explicitly load a current preset to replace this unsupported input";
             return;
         }
         if (dataVersion < 1 || !tag.contains(TAG_INPUT, Tag.TAG_COMPOUND)) {

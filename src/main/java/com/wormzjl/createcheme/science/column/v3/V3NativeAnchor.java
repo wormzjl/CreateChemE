@@ -13,14 +13,11 @@ import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
  * Ordinary construction failures return a zero anchor and a separate availability
  * flag; cancellation always propagates. An anchor is never a certified label.
  *
- * <p>This is the anchor half of the bundled Transformer's input: the model was trained with these
- * eighty-five material-closed coordinates per node beside its own node features, so the production
- * arithmetic here must stay identical to the arithmetic the offline study measured. The offline copy
- * that trained and qualified the weights is {@code tools/hybrid-learning/java/V3HybridBaseline.java};
- * its revision string is recorded in the bundled model document as {@code baselineRevision}.</p>
+ * <p>The anchor encoding has four coordinates per component and five scalar coordinates.
+ * Its revision is part of the trained payload contract; changing its arithmetic requires requalification.</p>
  */
 final class V3NativeAnchor {
-    static final String REVISION = "native-material-closed-anchor-v1";
+    static final String REVISION = "native-material-closed-anchor-v2-basis-width";
     private V3NativeAnchor() {}
     record Anchor(double[][] values, boolean available, String reason) {}
 
@@ -40,7 +37,7 @@ final class V3NativeAnchor {
             return new Anchor(values, true, "AVAILABLE");
         } catch (V3ThermoException | IllegalArgumentException declined) {
             control.checkpoint();
-            return new Anchor(new double[input.stageCount() + 2][85], false,
+            return new Anchor(new double[input.stageCount() + 2][V3FactorizedNeuralFeatures.outputWidth(input.componentBasis().componentCount())], false,
                     declined.getClass().getSimpleName() + ": " + declined.getMessage());
         }
     }

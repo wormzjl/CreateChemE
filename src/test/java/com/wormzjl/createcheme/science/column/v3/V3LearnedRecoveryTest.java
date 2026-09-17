@@ -2,18 +2,8 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
@@ -30,8 +20,6 @@ import org.junit.jupiter.api.Test;
  * and still leaves the terminal iterate the recovery is supposed to pick up.</p>
  */
 class V3LearnedRecoveryTest {
-    private static final String INPUTS = "/science/column/v3/neural/validation-inputs.jsonl";
-    private static final Gson JSON = new GsonBuilder().serializeNulls().create();
 
     /** A column the classical route solves, with one small authored side draw, so a ramp exists. */
     private static V3ColumnInput drawInput() {
@@ -300,42 +288,4 @@ class V3LearnedRecoveryTest {
         };
     }
 
-    /** The first {@code limit} frozen validation requests this model actually covers. */
-    private static Map<String, V3ColumnInput> supportedRequests(V3NeuralInitializer model, int limit) throws Exception {
-        var result = new LinkedHashMap<String, V3ColumnInput>();
-        try (var stream = java.util.Objects.requireNonNull(
-                V3LearnedRecoveryTest.class.getResourceAsStream(INPUTS), INPUTS);
-             var reader = new java.io.BufferedReader(new java.io.InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            for (String line = reader.readLine(); line != null && result.size() < limit; line = reader.readLine()) {
-                if (line.isBlank()) continue;
-                JsonObject row = JsonParser.parseString(line).getAsJsonObject();
-                V3ColumnInput request = V3MaterialInputs.migrate(input(row.getAsJsonObject("input")), com.wormzjl.createcheme.science.material.MaterialCatalog.bundled());
-                if (model.predict(request, V3SolveControl.UNBOUNDED).isPresent())
-                    result.put(row.get("id").getAsString(), request);
-            }
-        }
-        assertEquals(limit, result.size(), "the frozen population must cover this model");
-        return result;
-    }
-
-    /** The frozen population's input schema, as every offline probe in this line reads it. */
-    private static V3ColumnInput input(JsonObject json) {
-        var specs = new ArrayList<V3ColumnSpecification>();
-        for (JsonElement e : json.getAsJsonArray("specifications")) {
-            JsonObject s = e.getAsJsonObject();
-            if (s.has("kelvin")) specs.add(new V3ColumnSpecification.CondenserOutletTemperature(s.get("kelvin").getAsDouble()));
-            else if (s.has("ratio")) specs.add(new V3ColumnSpecification.OrganicRefluxRatio(s.get("ratio").getAsDouble()));
-            else specs.add(new V3ColumnSpecification.ReboilerDuty(s.get("watts").getAsDouble()));
-        }
-        return new V3ColumnInput(json.get("schemaVersion").getAsInt(), json.get("packageId").getAsString(),
-                json.get("assayId").getAsString(),
-                new V3ComponentBasis(Arrays.asList(JSON.fromJson(json.getAsJsonObject("componentBasis").get("componentIds"), String[].class))),
-                JSON.fromJson(json.get("feedComponentMolarFlowsMolPerSecond"), double[].class),
-                json.get("feedTemperatureKelvin").getAsDouble(),
-                json.get("stageCount").getAsInt(), json.get("feedStageNumber").getAsInt(),
-                json.get("topPressurePascal").getAsDouble(), json.get("stagePressureDropPascal").getAsDouble(), specs,
-                Arrays.asList(JSON.fromJson(json.get("sideDraws"), V3SideDrawSpec[].class)),
-                Arrays.asList(JSON.fromJson(json.get("steamFeeds"), V3SteamFeedSpec[].class)),
-                Arrays.asList(JSON.fromJson(json.get("pumparounds"), V3PumparoundSpec[].class)));
-    }
 }
