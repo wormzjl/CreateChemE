@@ -11,19 +11,22 @@ import net.minecraft.nbt.CompoundTag;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
-@GameTestHolder("createcheme_fluid_test")
+@GameTestHolder("createcheme_column_test")
 @PrefixGameTestTemplate(false)
 public final class ColumnRegroupingGameTests {
     private ColumnRegroupingGameTests() {}
-    @GameTest(template="empty",timeoutTicks=12000,batch="column-native-service")
+    @GameTest(template="empty",timeoutTicks=10000000,batch="column-native-service")
     public static void allCrudePresetsCalculateThroughTheMinecraftAdmissionAndCompletionPath(GameTestHelper helper) {
         var level=helper.getLevel();var server=level.getServer();var pos=helper.absolutePos(new BlockPos(0,1,0));
         level.setBlock(pos,ModBlocks.COLUMN_CALCULATOR_V3.get().defaultBlockState(),3);
         var block=(ColumnCalculatorV3BlockEntity)level.getBlockEntity(pos);
         var presets=java.util.Arrays.stream(ColumnInputPreset.values()).filter(p->p!=ColumnInputPreset.HOLLAND).toList();
-        int[] next={0};boolean[] waiting={false},done={false};
+        int[] next={0};boolean[] waiting={false},done={false};long deadline=System.nanoTime()+180_000_000_000L;
         helper.onEachTick(()->{
             if(done[0])return;
+            helper.assertTrue(System.nanoTime()<deadline,"Column service qualification exceeded its wall deadline");
+            // The GameTest server ticks unpaced; yield only this isolated harness while real workers run.
+            if(waiting[0])java.util.concurrent.locks.LockSupport.parkNanos(1_000_000L);
             var state=block.state(0);
             if(waiting[0]) {
                 if(state.status()==ColumnCalculatorV3BlockEntity.V3Status.CALCULATING)return;

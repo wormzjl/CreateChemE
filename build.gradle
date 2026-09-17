@@ -95,6 +95,14 @@ neoForge {
             systemProperty 'neoforge.enabledGameTestNamespaces', 'createcheme_fluid_test'
             systemProperty 'createcheme.fluid.testFailure', providers.gradleProperty('fluidGameTestDeliberateFailure').getOrElse('false')
         }
+        columnGameTestServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.fluidGameTest
+            def fixtureRun = providers.gradleProperty('columnGameTestRunId').getOrElse('manual')
+            if (!(fixtureRun ==~ /[A-Za-z0-9_-]+/)) throw new GradleException('Invalid columnGameTestRunId')
+            gameDirectory = layout.projectDirectory.dir("run/column-gametest-${fixtureRun}")
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'createcheme_column_test'
+        }
         fluidBenchmarkServer {
             type = 'gameTestServer'
             sourceSet = sourceSets.fluidGameTest
@@ -157,7 +165,7 @@ neoForge {
         }
     }
     runs.configureEach {
-        loadedMods = name in ['fluidGameTestServer', 'fluidBenchmarkServer'] ? [mods.createcheme, mods.createcheme_fluid_test]
+        loadedMods = name in ['fluidGameTestServer', 'fluidBenchmarkServer', 'columnGameTestServer'] ? [mods.createcheme, mods.createcheme_fluid_test]
                 : name == 'mcpClient' ? [mods.createcheme, mods.createcheme_mcp_compat] : [mods.createcheme]
     }
 }
