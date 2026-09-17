@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
  * <p>Every case is a fresh cold solve with no warm state; the elapsed time of each is printed so the extra
  * continuation rungs stay visible.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3PumparoundCalculatorTest {
     private static final long BUDGET_NANOS = 180_000_000_000L;
 
@@ -147,7 +148,7 @@ class V3PumparoundCalculatorTest {
      */
     @Test
     void aCoolerCancelledByAnEqualHeaterReachesTheHeatFreePresetState() {
-        V3ColumnInput preset = ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        V3ColumnInput preset = com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput();
         V3ColumnInput cancelling = withPumparounds(preset, List.of(
                 new V3PumparoundSpec(8, 10, -1.0e9, V3PumparoundSpec.Split.RETURN_TRAY),
                 new V3PumparoundSpec(8, 11, 1.0e9, V3PumparoundSpec.Split.RETURN_TRAY)));
@@ -232,7 +233,7 @@ class V3PumparoundCalculatorTest {
 
     @Test
     void threeDefaultSideDrawsAndOnePumparoundExerciseTheWholeRungOrder() {
-        V3ColumnInput preset = ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        V3ColumnInput preset = com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput();
         V3ColumnInput heated = new V3ColumnInput(preset.schemaVersion(), preset.packageId(), preset.assayId(),
                 preset.componentBasis(), preset.feedComponentMolarFlowsMolPerSecond(), preset.feedTemperatureKelvin(),
                 preset.stageCount(), preset.feedStageNumber(), preset.topPressurePascal(), preset.stagePressureDropPascal(),
@@ -293,7 +294,7 @@ class V3PumparoundCalculatorTest {
      * preset's, moved onto the stages the thesis pairs each cooler with.
      */
     private static V3ColumnInput thesisArrangedInput() {
-        List<V3SideDrawSpec> presetRates = ColumnCalculatorV3BlockEntity.pilotPresetInput().sideDraws();
+        List<V3SideDrawSpec> presetRates = com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput().sideDraws();
         int[] thesisStages = {8, 15, 22};
         List<V3SideDrawSpec> draws = new java.util.ArrayList<>();
         for (int index = 0; index < thesisStages.length; index++) {

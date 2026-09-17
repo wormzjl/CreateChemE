@@ -10,10 +10,9 @@ class FluidAppearanceTest {
 
     @AfterEach void reset() { MaterialRuntime.reset(); }
 
-    @Test void bundledComponentsAliasesWaterAndAssaysHaveIndependentAppearances() {
+    @Test void bundledComponentsWaterAndAssaysHaveIndependentAppearances() {
         var catalog = MaterialCatalog.bundled();
-        assertEquals(catalog.componentAppearance(PACKAGE, "tjl19_pc07"),
-                catalog.componentAppearance(PACKAGE, "TJL_PC07"));
+        assertThrows(IllegalArgumentException.class,()->catalog.componentAppearance(PACKAGE,"TJL_PC07"));
         assertEquals(.75, catalog.componentAppearance(PACKAGE, "Water").transparency());
         for (var p : catalog.packages().values()) {
             for (String component : p.components()) assertTrue(catalog.componentAppearance(p.id(), component).estimated());
@@ -26,12 +25,12 @@ class FluidAppearanceTest {
 
     @Test void appearanceEditsPreserveScientificAndTransportFingerprints() {
         var original = MaterialCatalog.bundled();
-        for (String path : new String[]{"components/tjl19_pc07.json", "assays/tjl20.json"}) {
+        for (String path : new String[]{"components/crude_pc07.json", "assays/tjl20.json"}) {
             var changed = MaterialCatalog.parse(MaterialCatalogTest.changed(path, o -> o.add("appearance", appearance("#123456", .4))));
             assertEquals(original.requirePackage(PACKAGE).fingerprint(), changed.requirePackage(PACKAGE).fingerprint());
             assertEquals(original.viscosityFingerprint(PACKAGE), changed.viscosityFingerprint(PACKAGE));
             assertTrue(MaterialRuntime.with(changed, PACKAGE, () -> MaterialRuntime.isBundledScience(PACKAGE)));
-            var result = path.startsWith("components") ? changed.componentAppearance(PACKAGE, "tjl19_pc07")
+            var result = path.startsWith("components") ? changed.componentAppearance(PACKAGE, "crude_pc07")
                     : changed.assayAppearance(PACKAGE, "createcheme:tia_juana_light_methane");
             assertEquals(new FluidAppearance(0x123456, .4, true), result);
         }

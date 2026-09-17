@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
  * The frozen-flow energy/temperature predictor: its tridiagonal system on a hand-built column, and its effect
  * on the first heat rung of the source three-cooler arrangement.
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3EnergyShiftPredictorTest {
     private static final long BUDGET_NANOS = 180_000_000_000L;
     private static final Pattern FIRST_RUNG =

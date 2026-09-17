@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
  * Newton iteration count and recomputed boundary duties are printed so the extra continuation cost of the wet
  * lane stays visible.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3PumparoundSteamCalculatorTest {
     private static final long BUDGET_NANOS = 300_000_000_000L;
     /** 1200 kmol/h of superheated sump steam; 271.75 kPa(a) at the sump saturates water near 403 K. */
@@ -86,7 +87,7 @@ class V3PumparoundSteamCalculatorTest {
 
     @Test
     void sumpSteamWithThreePumparoundsAndThreeSideDrawsExercisesTheWholeRungOrder() {
-        List<V3SideDrawSpec> draws = ColumnCalculatorV3BlockEntity.pilotPresetInput().sideDraws();
+        List<V3SideDrawSpec> draws = com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput().sideDraws();
         Run cooled = run("wet-three-pumparounds-three-draws",
                 wetInput(CDU17, DEFAULT_REBOILER_DUTY_WATTS, threePumparounds(), draws));
 
@@ -123,7 +124,7 @@ class V3PumparoundSteamCalculatorTest {
         // banded LU gave it full weight and turned singular. Local-throughput scaling plus the relative flow
         // floor removes both halves of that mismatch; see V3TraceFloorSupportTest for the pinned state.
         Run probe = run("tjl19-wet-three-pumparounds-three-draws", wetInput(TJL19, DEFAULT_REBOILER_DUTY_WATTS,
-                threePumparounds(), ColumnCalculatorV3BlockEntity.pilotPresetInput().sideDraws()));
+                threePumparounds(), com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput().sideDraws()));
 
         V3ColumnOutcome.Success success = probe.success();
         assertTrue(success.diagnostics().solvePath().contains("/draws-3"), success.diagnostics()::solvePath);

@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 /** Manufactured allocation checks isolate conservation/error policy from any particular crude data fit. */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3TruncatedFlashNumericsTest {
     private static final double TRACE = 1.0e-8;
     private static final double[] OVERALL = {0.4, 0.2, 0.4};

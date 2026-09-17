@@ -6,18 +6,18 @@ import org.junit.jupiter.api.Test;
 
 class V3Tjl20MethanePropertyPackageTest {
     @Test void extendsTheFrozenDatasetWithoutChangingItsPropertiesOrInteractions() {
-        var base = V3Tjl19PropertyPackage.INSTANCE;
-        var extended = V3Tjl20MethanePropertyPackage.INSTANCE;
+        var base = V3PropertyPackageRegistry.require(V3Tjl19PropertyPackage.PACKAGE_ID);
+        var extended = V3PropertyPackageRegistry.require(V3Tjl20MethanePropertyPackage.PACKAGE_ID);
         assertEquals(extended.componentBasis(), V3PropertyPackageRegistry.require(extended.packageId()).componentBasis());
-        assertEquals(20, extended.componentBasis().componentCount());
-        assertNotEquals(base.datasetRevision(), extended.datasetRevision());
+        assertEquals(base.componentBasis().componentCount()+1, extended.componentBasis().componentCount());
+        assertNotEquals(base.packageId(), extended.packageId());
         double[][] original = base.binaryInteractions();
         double[][] interactions = extended.binaryInteractions();
-        for (int component = 0; component < 19; component++) {
+        for (int component = 0; component < base.componentBasis().componentCount(); component++) {
             assertEquals(base.component(component), extended.component(component + 1));
             assertEquals(0, interactions[0][component + 1]);
             assertEquals(0, interactions[component + 1][0]);
-            for (int other = 0; other < 19; other++) {
+            for (int other = 0; other < base.componentBasis().componentCount(); other++) {
                 assertEquals(original[component][other], interactions[component + 1][other + 1]);
             }
         }
@@ -26,11 +26,11 @@ class V3Tjl20MethanePropertyPackageTest {
         double[] feed = extended.crudeFeed(V3Tjl20MethanePropertyPackage.ASSAY_ID).moleFractions();
         double[] oldFeed = base.crudeFeed(V3Tjl19PropertyPackage.ASSAY_ID).moleFractions();
         assertEquals(0.005, feed[0], 1e-15);
-        for (int component = 0; component < 19; component++) assertEquals(oldFeed[component] * 0.995, feed[component + 1], 1e-15);
+        for (int component = 0; component < base.componentBasis().componentCount(); component++) assertEquals(oldFeed[component] * 0.995, feed[component + 1], 1e-15);
     }
 
     @Test void methaneThermalFitMatchesIndependentNistShomateAndDifferentiatesConsistently() {
-        var methane = V3Tjl20MethanePropertyPackage.INSTANCE.component(0);
+        var methane = V3PropertyPackageRegistry.require(V3Tjl20MethanePropertyPackage.PACKAGE_ID).component(0);
         assertEquals(190.564, methane.criticalTemperatureKelvin());
         assertEquals(4_599_200, methane.criticalPressurePascal());
         assertEquals(0.01142, methane.acentricFactor());
@@ -53,8 +53,8 @@ class V3Tjl20MethanePropertyPackageTest {
         var base = V3PengRobinsonThermo.fromRegisteredPackage(V3Tjl19PropertyPackage.PACKAGE_ID);
         var extended = V3PengRobinsonThermo.fromRegisteredPackage(V3Tjl20MethanePropertyPackage.PACKAGE_ID);
         double[] oldFeed = base.crudeFeed(V3Tjl19PropertyPackage.ASSAY_ID).moleFractions();
-        double[] zeroMethane = new double[20];
-        System.arraycopy(oldFeed, 0, zeroMethane, 1, 19);
+        double[] zeroMethane = new double[extended.componentBasis().componentCount()];
+        System.arraycopy(oldFeed, 0, zeroMethane, 1, oldFeed.length);
         var expected = base.flashTP(638.15, 250_000, oldFeed, base.newWorkspace());
         var actual = extended.flashTP(638.15, 250_000, zeroMethane, extended.newWorkspace());
         assertEquals(expected.phase(), actual.phase());
@@ -66,7 +66,7 @@ class V3Tjl20MethanePropertyPackageTest {
         double[] x = flash.liquidComposition();
         double[] y = flash.vaporComposition();
         assertTrue(y[0] > x[0]);
-        for (int component = 0; component < 20; component++) {
+        for (int component = 0; component < feed.length; component++) {
             assertEquals(feed[component], (1 - flash.vaporFraction()) * x[component] + flash.vaporFraction() * y[component], 1e-10);
         }
     }

@@ -48,8 +48,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 8;
-    public static final String PILOT_PACKAGE = "createcheme:cdu17_tjl_acs2018";
+    public static final int DATA_VERSION = 9;
     public static final String LITERATURE_PACKAGE = "createcheme:tjl19_dwsim";
     /** Reduced hydrocarbon feed of the Ledezma-Martinez (2019) no-preflash contract: 100,000 bbl/day of Tia Juana Light. */
     private static final double LITERATURE_FEED_MOL_PER_SECOND = 737.6996333000835;
@@ -245,9 +244,9 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             return;
         }
         int dataVersion = tag.getInt(TAG_DATA_VERSION);
-        if (dataVersion > DATA_VERSION) {
+        if (dataVersion != DATA_VERSION) {
             status = V3Status.INCOMPATIBLE;
-            detail = "Persisted V3 state requires a newer data version";
+            detail = "Incompatible material basis; recreate the column input for this development version";
             return;
         }
         if (dataVersion < 1 || !tag.contains(TAG_INPUT, Tag.TAG_COMPOUND)) {
@@ -262,26 +261,6 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                     ? tag.getLong(TAG_RESULT_REVISION) : -1L;
             if (resultRevision < -1L) throw new IllegalArgumentException("Invalid V3 result revision");
             stateRevision = nonNegative(tag.getLong(TAG_STATE_REVISION));
-            // Version 6 adds optional SteamFeeds; version 5 inputs migrate unchanged with an empty list.
-            // Version 7 adds optional Pumparounds and an optional result DutyLedger; version 6 states migrate
-            // unchanged with an empty pumparound list and an absent ledger, and keep their persisted result.
-            // Version 8 adds the result's ClosureTolerance; a version 7 result has no key and reads as the
-            // frozen default closure, which is exactly the closure every version 7 result was accepted at.
-            if (dataVersion < 4 && currentInput.equals(priorUnqualifiedDefaultInput())) {
-                currentInput = defaultInput();
-                displayResult = null;
-                resultRevision = -1L;
-                status = V3Status.DIRTY;
-                detail = "Updated untouched V3 draft to the literature-qualified side-draw default";
-                return;
-            }
-            if (dataVersion < 4 && tag.contains(TAG_RESULT, Tag.TAG_COMPOUND)) {
-                displayResult = null;
-                resultRevision = -1L;
-                status = V3Status.DIRTY;
-                detail = "Persisted V3 result predates phase composition reporting; recalculate";
-                return;
-            }
             if (tag.contains(TAG_RESULT, Tag.TAG_COMPOUND)) {
                 displayResult = readDisplayResult(tag.getCompound(TAG_RESULT));
                 if (resultRevision < 0L) throw new IllegalArgumentException("V3 result lacks revision");
@@ -393,15 +372,6 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         }
     }
 
-    private static V3ColumnInput defaultInput() {
-        return defaultInput(400.0, 2.0, DEFAULT_STAGE_COUNT, DEFAULT_TOP_PRESSURE_PASCAL, defaultSideDraws());
-    }
-
-    /** Fresh server-owned production preset used when leaving the fixed Holland benchmark. */
-    public static V3ColumnInput pilotPresetInput() {
-        return defaultInput();
-    }
-
     /**
      * Original methane-free reference: the Ledezma-Martinez (2019) no-preflash atmospheric column. Forty
      * trays plus the steam-stripped bottom stage, three direct side products at stages 10/18/28 (491/515/165 kmol/h),
@@ -422,7 +392,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
         double[] feedFlows = crude.moleFractions();
         for (int component = 0; component < feedFlows.length; component++) {
-            feedFlows[component] *= LITERATURE_FEED_MOL_PER_SECOND;
+            feedFlows[component] *= feedMolarRate(LITERATURE_PACKAGE, crude.moleFractions());
         }
         return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
                 crude.componentBasis(), feedFlows, 365.0 + 273.15, 40, 37, 250_000.0, 0.0, List.of(
@@ -449,7 +419,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         V3CrudeFeed crude = thermo.crudeFeed(assayId);
         double[] flows = crude.moleFractions();
         for (int component = 0; component < flows.length; component++) {
-            flows[component] *= LITERATURE_FEED_MOL_PER_SECOND;
+            flows[component] *= feedMolarRate(packageId, crude.moleFractions());
         }
         return new V3ColumnInput(original.schemaVersion(), crude.packageId(), crude.assayId(),
                 crude.componentBasis(), flows, original.feedTemperatureKelvin(), original.stageCount(),
@@ -457,46 +427,17 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 original.specifications(), original.sideDraws(), original.steamFeeds(), original.pumparounds());
     }
 
+    private static double feedMolarRate(String packageId,double[] fractions) {
+        var p=com.wormzjl.createcheme.science.material.MaterialRuntime.current().requirePackage(packageId);
+        double volumePerMole=0;
+        for(int i=0;i<fractions.length;i++)volumePerMole+=fractions[i]*p.properties().get(i).molecularWeight()/p.properties().get(i).density();
+        return com.wormzjl.createcheme.science.material.MaterialRuntime.current().columnFeedStandardVolume(packageId)/volumePerMole;
+    }
+
     private static V3ColumnInput freshInput() {
         return methaneCduInput();
     }
 
-
-    private static V3ColumnInput priorUnqualifiedDefaultInput() {
-        return defaultInput(332.15, 4.17, 30, 250_000.0, List.of());
-    }
-
-    private static V3ColumnInput defaultInput(
-            double condenserTemperatureKelvin, double refluxRatio, int stageCount, double topPressurePascal,
-            List<V3SideDrawSpec> sideDraws) {
-        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(PILOT_PACKAGE);
-        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
-        double[] feedFlows = crude.moleFractions();
-        double totalFlowMolPerSecond = DEFAULT_FEED_KMOL_PER_HOUR * 1_000.0 / 3_600.0;
-        for (int component = 0; component < feedFlows.length; component++) {
-            feedFlows[component] *= totalFlowMolPerSecond;
-        }
-        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
-                crude.componentBasis(), feedFlows, 365.0 + 273.15, stageCount, DEFAULT_FEED_STAGE,
-                topPressurePascal, 750.0, List.of(
-                        new V3ColumnSpecification.CondenserOutletTemperature(condenserTemperatureKelvin),
-                        new V3ColumnSpecification.OrganicRefluxRatio(refluxRatio),
-                        new V3ColumnSpecification.ReboilerDuty(8_000_000.0)), sideDraws);
-    }
-
-    private static List<V3SideDrawSpec> defaultSideDraws() {
-        // 25% dry-model qualification of Sotelo et al. (2019), doi:10.2507/IJSIMM18(2)465.
-        return List.of(
-                defaultSideDraw(13, 14_000.0),
-                defaultSideDraw(17, 20_000.0),
-                defaultSideDraw(22, 5_000.0));
-    }
-
-    private static V3SideDrawSpec defaultSideDraw(int trayNumber, double sourceBarrelsPerDay) {
-        double kmolPerHour = DEFAULT_FEED_KMOL_PER_HOUR * sourceBarrelsPerDay / 99_000.0 * 0.25;
-        kmolPerHour = Math.round(kmolPerHour * 100.0) / 100.0;
-        return new V3SideDrawSpec(trayNumber, kmolPerHour / 3.6);
-    }
 
     private static CompoundTag writeInput(V3ColumnInput input) {
         CompoundTag tag = new CompoundTag();

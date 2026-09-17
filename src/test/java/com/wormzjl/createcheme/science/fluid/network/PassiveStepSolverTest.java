@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class PassiveStepSolverTest {
     private final FluidThermodynamics model=new FluidThermodynamics(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
     private FluidThermodynamics.State fill(double pressure,int component) {
-        double[] n=new double[21];n[component]=1;var unit=model.flashTP(350,pressure,n,()->{});n[component]/=unit.volume();
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1];n[component]=1;var unit=model.flashTP(350,pressure,n,()->{});n[component]/=unit.volume();
         return model.flashTP(350,pressure,n,()->{});
     }
     private PassiveNetwork graph(int component,boolean reverse) {
@@ -19,7 +19,7 @@ class PassiveStepSolverTest {
         return new PassiveNetwork(reverse?List.of(b,a):List.of(a,b),List.of(new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(10,.05,.000045,0))));
     }
     @Test void gasAndLiquidFullReservoirsEqualizeWithConservedInventoriesAndEnergy() {
-        for(int component:new int[]{0,20}) {
+        for(int component:new int[]{0,model.componentCount()-1}) {
             var graph=graph(component,false);var result=new PassiveStepSolver(model).solve(graph,.1,()->{});
             assertTrue(result.massFlows()[0]>0);assertTrue(result.states().get(0).pressure()<200000);
             assertTrue(result.states().get(1).pressure()>101325);assertTrue(result.states().get(0).pressure()>=result.states().get(1).pressure());
@@ -44,7 +44,7 @@ class PassiveStepSolverTest {
         assertEquals(result.states().get(1).pressure(),result.states().get(2).pressure(),1e-4);
     }
     @Test void bulkThreePhaseCrudeTransfersAllComponentsAndIncludesElevationEnergy() {
-        String id="createcheme:tjl20_methane";double[] composition=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),21);composition[20]=.2;
+        String id="createcheme:tjl20_methane";double[] composition=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1);composition[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE]=.2;
         var reservoirs=new ArrayList<PassiveNetwork.Reservoir>();
         for(double pressure:new double[]{200000,150000}) {
             double[] n=composition.clone();var unit=model.flashTP(350,pressure,n,()->{});for(int i=0;i<n.length;i++)n[i]/=unit.volume();

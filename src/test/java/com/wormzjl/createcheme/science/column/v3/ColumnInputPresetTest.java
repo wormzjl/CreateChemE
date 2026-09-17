@@ -31,7 +31,6 @@ class ColumnInputPresetTest {
                 assertEquals(expected[i],input.feedComponentMolarFlowsMolPerSecond()[i]/total,1e-14);
         }
         assertEquals(ColumnCalculatorV3BlockEntity.methaneCduInput(),ColumnInputPreset.TIA_JUANA.input(catalog));
-        assertEquals(ColumnCalculatorV3BlockEntity.pilotPresetInput(),ColumnInputPreset.PILOT.input(catalog));
         assertThrows(IllegalArgumentException.class,()->ColumnInputPreset.fromId("arbitrary:package"));
     }
 
@@ -50,8 +49,10 @@ class ColumnInputPresetTest {
             assertEquals(base.sideDraws(),input.sideDraws());
             assertEquals(base.steamFeeds(),input.steamFeeds());
             assertEquals(base.pumparounds(),input.pumparounds());
-            assertEquals(Arrays.stream(base.feedComponentMolarFlowsMolPerSecond()).sum(),
-                    Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum(),1e-10);
+            double volume=0;var properties=catalog.requirePackage(input.packageId()).properties();
+            var amounts=input.feedComponentMolarFlowsMolPerSecond();
+            for(int i=0;i<amounts.length;i++)volume+=amounts[i]*properties.get(i).molecularWeight()/properties.get(i).density();
+            assertEquals(catalog.columnFeedStandardVolume(input.packageId()),volume,1e-14);
             assertFalse(Arrays.equals(base.feedComponentMolarFlowsMolPerSecond(),input.feedComponentMolarFlowsMolPerSecond()));
         }
     }

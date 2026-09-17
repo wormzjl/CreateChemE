@@ -8,9 +8,9 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class VelocityClampTest {
-    private FluidThermodynamics model(double limit){return FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9,limit);}
+    private FluidThermodynamics model(double limit){return FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9,limit);}
     private FluidThermodynamics.State state(FluidThermodynamics model,double pressure,boolean wet) {
-        double[] n=new double[22];if(wet){n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);n[21]=.2;}else n[20]=1;
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];if(wet){n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane_nitrogen").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;}else n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
         var unit=model.flashTP(350,pressure,n,()->{});for(int c=0;c<n.length;c++)n[c]/=unit.volume();return model.flashTP(350,pressure,n,()->{});
     }
     private PassiveNetwork graph(FluidThermodynamics model,boolean reverse,boolean wet,FlowControl control,boolean finite) {
@@ -29,7 +29,7 @@ class VelocityClampTest {
             var result=new PassiveStepSolver(model).solve(graph,1,()->{});bounded(model,graph,result);
             var donor=result.states().get(reverse?1:0);double expected=donor.mass()/donor.volume()*graph.pipes().getFirst().minimumArea()*model.velocityLimit(donor);
             assertEquals(reverse?-expected:expected,result.massFlows()[0],expected*1e-8+1e-10);assertEquals(FlowControl.Mode.VELOCITY_LIMITED,result.modes().getFirst());
-            assertArrayEquals(new double[22],result.externalMoles(),1e-9);assertEquals(0,result.externalEnergyJoule(),1e-6);
+            assertArrayEquals(new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],result.externalMoles(),1e-9);assertEquals(0,result.externalEnergyJoule(),1e-6);
             assertEquals(350,result.states().getFirst().temperature()); // fixed boundary, not a clamp-imposed temperature
         }
     }
@@ -40,7 +40,7 @@ class VelocityClampTest {
             var stream=result.pipeTransfers().getFirst().forward();for(double volume:stream.phaseVolumes())assertTrue(volume>0);
             double[] moved=stream.componentMoles();var donor=graph.reservoirs().getFirst();var n=donor.inventory().moles();
             for(int c=0;c<n.length;c++)assertEquals(stream.massKg()*n[c]/donor.state().mass(),moved[c],1e-10+1e-8*Math.abs(moved[c]));
-            assertArrayEquals(new double[22],result.externalMoles(),1e-9);assertEquals(-result.pumpWorkJoule(),result.externalEnergyJoule(),1e-4);
+            assertArrayEquals(new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],result.externalMoles(),1e-9);assertEquals(-result.pumpWorkJoule(),result.externalEnergyJoule(),1e-4);
         }
     }
     @Test void finiteReservoirTemperatureComesFromConservedEnergyAndEosAtTheClampedRate() {
@@ -49,7 +49,7 @@ class VelocityClampTest {
         double beforeU=0,afterU=0,beforeN=0,afterN=0;
         for(int i=0;i<2;i++) {
             var old=graph.reservoirs().get(i);var next=result.inventories().get(i);var state=result.states().get(i);
-            beforeU+=old.inventory().internalEnergy();afterU+=next.internalEnergy();beforeN+=old.inventory().moles()[20];afterN+=next.moles()[20];
+            beforeU+=old.inventory().internalEnergy();afterU+=next.internalEnergy();beforeN+=old.inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];afterN+=next.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];
             var eos=model.flashTP(state.temperature(),state.pressure(),next.moles(),()->{});
             assertEquals(next.volume(),eos.volume(),1e-8);assertEquals(next.internalEnergy(),eos.internalEnergy(),1e-4+1e-6*Math.abs(next.internalEnergy()));
         }

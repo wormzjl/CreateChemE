@@ -19,11 +19,11 @@ public final class WorldTopologyLedger {
     /** Cumulative explicit construction/destruction, in the common network basis; these are not live stock. */
     public record MaterialTotal(double[] moles,double totalEnergy) {
         public MaterialTotal {
-            moles=moles.clone();if(moles.length!=22||!Double.isFinite(totalEnergy))throw new IllegalArgumentException("Invalid external material total");
+            moles=moles.clone();if(moles.length!=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()||!Double.isFinite(totalEnergy))throw new IllegalArgumentException("Invalid external material total");
             for(double n:moles)if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Invalid external component total");
         }
         @Override public double[] moles(){return moles.clone();}
-        public static MaterialTotal empty(){return new MaterialTotal(new double[22],0);}
+        public static MaterialTotal empty(){return new MaterialTotal(new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()],0);}
         public MaterialTotal plus(Collection<PassiveNetwork.Reservoir> reservoirs,double[] weights) {
             var total=moles.clone();double energy=totalEnergy;
             for(var node:reservoirs) {

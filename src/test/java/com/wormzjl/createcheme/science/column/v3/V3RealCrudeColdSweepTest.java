@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
  * makes the current high-dimensional finite-difference cost explicit while ensuring the test remains a safe cold
  * diagnostic rather than an unbounded background calculation.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3RealCrudeColdSweepTest {
     private static final long CASE_BUDGET_NANOS = 5_000_000_000L;
 

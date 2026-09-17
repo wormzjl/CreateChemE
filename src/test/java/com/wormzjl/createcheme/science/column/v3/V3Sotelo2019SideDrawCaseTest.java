@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3Sotelo2019SideDrawCaseTest {
     @Test
     void sourceAnalogPreservesPublishedGeometryAndFlowFractions() {

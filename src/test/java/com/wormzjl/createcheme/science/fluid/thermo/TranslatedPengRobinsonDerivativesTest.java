@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
  * plus the kernel's {@code dH^R/dT}, which is a completely different expression.</p>
  */
 class TranslatedPengRobinsonDerivativesTest {
-    private static final String PACKAGE_ID="createcheme:tjl20_methane";
+    private static final String PACKAGE_ID="createcheme:tjl20_methane_nitrogen";
     private static final double TEMPERATURE_STEP=1.0e-3;
     private static final double MOLE_STEP=1.0e-6;
     private static final double PRESSURE_FRACTION=1.0e-4;

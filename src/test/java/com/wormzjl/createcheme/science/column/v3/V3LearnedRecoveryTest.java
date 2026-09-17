@@ -259,55 +259,12 @@ class V3LearnedRecoveryTest {
                 "the correction took no iterations at all: " + events);
     }
 
-    /** The bundled production model offers exactly the one seed it predicts. */
-    @Test void theBundledModelOffersASingleCandidate() throws Exception {
-        var model = V3NeuralModels.bundled();
-        assertNotSame(V3NeuralInitializer.UNAVAILABLE, model);
-        for (var entry : supportedRequests(model, 8).entrySet()) {
-            var candidates = model.candidates(entry.getValue(), V3SolveControl.UNBOUNDED);
-            assertEquals(1, candidates.size(), entry.getKey());
-            assertEquals(V3BundledTransformerPromotionTest.seedDigest(model.predict(entry.getValue(), V3SolveControl.UNBOUNDED).orElseThrow()),
-                    V3BundledTransformerPromotionTest.seedDigest(candidates.getFirst()), entry.getKey());
-        }
-    }
-
-    /**
-     * The second candidate is the same forward pass decoded by the unchanged prune rule.
-     *
-     * <p>The first offered seed must stay the production seed — a candidate list that reorders itself is a
-     * different pipeline, not an additional option — and the second must actually be a different seed on at
-     * least one request, or the rule is buying nothing.</p>
-     */
-    @Test void theDecodeVariantRuleOffersThePruneDecodeSecond() throws Exception {
-        var single = V3NeuralModels.bundled();
-        var variants = V3NeuralModels.load(
-                V3FactorizedNeuralFeatures.DecodeOptions.zeroPhaseFloor(V3NeuralModels.QUALIFIED_ZERO_PHASE_FLOOR_FACTOR),
-                V3AnchorTransformerInitializer.CandidateRule.DECODE_VARIANTS);
-        assertNotSame(V3NeuralInitializer.UNAVAILABLE, variants);
-        assertEquals(single.modelId(), variants.modelId(), "the candidate rule never changes the weights");
-
-        int differing = 0;
-        for (var entry : supportedRequests(variants, 24).entrySet()) {
-            var offered = variants.candidates(entry.getValue(), V3SolveControl.UNBOUNDED);
-            assertEquals(2, offered.size(), entry.getKey());
-            String production = V3BundledTransformerPromotionTest.seedDigest(
-                    single.predict(entry.getValue(), V3SolveControl.UNBOUNDED).orElseThrow());
-            assertEquals(production, V3BundledTransformerPromotionTest.seedDigest(offered.getFirst()),
-                    "the production seed must still be tried first for " + entry.getKey());
-            assertEquals(offered.getFirst().branch(), offered.getLast().branch(),
-                    "both decodes belong to the same predicted branch");
-            if (!production.equals(V3BundledTransformerPromotionTest.seedDigest(offered.getLast()))) differing++;
-        }
-        assertTrue(differing > 0, "the prune decode never differed from the phase-floor decode");
-    }
-
-    /** With the prune rule already loaded the two decodes are the same rule, so only one seed is offered. */
-    @Test void theDecodeVariantRuleDoesNotOfferTheSameDecodeTwice() throws Exception {
-        var model = V3NeuralModels.load(V3FactorizedNeuralFeatures.DecodeOptions.NONE,
-                V3AnchorTransformerInitializer.CandidateRule.DECODE_VARIANTS);
-        assertNotSame(V3NeuralInitializer.UNAVAILABLE, model);
-        for (var entry : supportedRequests(model, 4).entrySet())
-            assertEquals(1, model.candidates(entry.getValue(), V3SolveControl.UNBOUNDED).size(), entry.getKey());
+    @Test void anUnavailableRegroupedModelKeepsClassicalFallbackAvailable() {
+        var input=plainInput();
+        var classical=assertInstanceOf(V3ColumnOutcome.Success.class,V3ColumnCalculator.calculate(input));
+        var fallback=assertInstanceOf(V3ColumnOutcome.Success.class,V3ColumnCalculator.calculate(input,()->{},0,0,
+                V3InitializationOptions.DEFAULT,V3NeuralInitializer.UNAVAILABLE));
+        assertEquals(classical.result().streams(),fallback.result().streams());
     }
 
     /** The accepted solution of one request, exported through the unchanged classical route. */

@@ -18,8 +18,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private Button phaseButton,mixButton,presetButton,applyButton,pathButton;
     private long draftRevision=Long.MIN_VALUE;
     private long lastMessageRevision;
-    private double[] composition=new double[22];
-    private String[] lastMixtureText=new String[22];
+    private double[] composition=new double[0];
+    private String[] lastMixtureText=new String[0];
     private int phase=2,page,rows,preset=-1,path;
     private boolean editMixture,reverse;
     private String localMessage="";
@@ -34,7 +34,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         int bottom=topPos+imageHeight-24;
         phaseButton=addRenderableWidget(Button.builder(Component.literal("Vapor"),button->{phase=(phase+1)%3;phaseButton.setMessage(Component.literal(phaseName()));}).bounds(leftPos+8,bottom,64,18).build());
         addRenderableWidget(Button.builder(Component.literal("<"),button->{if(collectMixture()){page=Math.max(0,page-1);showMixture();}}).bounds(leftPos+75,bottom,20,18).build());
-        addRenderableWidget(Button.builder(Component.literal(">"),button->{if(collectMixture()){page=Math.min((21)/rows,page+1);showMixture();}}).bounds(leftPos+97,bottom,20,18).build());
+        addRenderableWidget(Button.builder(Component.literal(">"),button->{if(collectMixture()){page=Math.min(Math.max(0,composition.length-1)/rows,page+1);showMixture();}}).bounds(leftPos+97,bottom,20,18).build());
         mixButton=addRenderableWidget(Button.builder(Component.literal("Edit mix"),button->{if(collectMixture()){editMixture=!editMixture;showMixture();}}).bounds(leftPos+120,bottom,52,18).build());mixButton.visible=false;
         applyButton=addRenderableWidget(Button.builder(Component.literal("Apply"),button->apply()).bounds(leftPos+imageWidth-111,bottom,52,18).build());
         addRenderableWidget(Button.builder(Component.literal("Close"),button->onClose()).bounds(leftPos+imageWidth-56,bottom,48,18).build());
@@ -43,7 +43,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     }
     private void refreshDraft() {
         if(menu.messageRevision()!=lastMessageRevision){lastMessageRevision=menu.messageRevision();localMessage=menu.message();}
-        var data=menu.clientData();if(data==null||data.view().inputRevision()==draftRevision)return;draftRevision=data.view().inputRevision();var c=data.controls();composition=c.composition();
+        var data=menu.clientData();if(data==null||data.view().inputRevision()==draftRevision)return;draftRevision=data.view().inputRevision();var c=data.controls();composition=c.composition();lastMixtureText=new String[composition.length];page=Math.min(page,Math.max(0,composition.length-1)/rows);
         fields.get("temperature").setValue(Double.toString(c.temperature()));fields.get("pressure").setValue(Double.toString(c.pressure()));fields.get("diameter").setValue(Double.toString(c.diameter()));fields.get("roughness").setValue(Double.toString(c.roughness()));fields.get("volumeFlow").setValue(Double.toString(c.volumeFlow()));fields.get("maximumAddedPressure").setValue(Double.toString(c.maximumAddedPressure()));
         labels.clear();
         switch(data.kind()) {
@@ -67,12 +67,12 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private boolean collectMixture() {
         if(!editMixture)return true;
         try {
-            for(int i=0;i<mixtureFields.size();i++){int c=page*rows+i;if(c>=22)break;String text=mixtureFields.get(i).getValue();if(!text.equals(lastMixtureText[c])){double value=Double.parseDouble(text)/100;if(!Double.isFinite(value)||value<0)throw new IllegalArgumentException();composition[c]=value;lastMixtureText[c]=text;}}
+            for(int i=0;i<mixtureFields.size();i++){int c=page*rows+i;if(c>=composition.length)break;String text=mixtureFields.get(i).getValue();if(!text.equals(lastMixtureText[c])){double value=Double.parseDouble(text)/100;if(!Double.isFinite(value)||value<0)throw new IllegalArgumentException();composition[c]=value;lastMixtureText[c]=text;}}
             return true;
         }catch(RuntimeException invalid){localMessage="Composition must use nonnegative percentages.";return false;}
     }
     private void showMixture() {
-        for(int i=0;i<mixtureFields.size();i++){int c=page*rows+i;var field=mixtureFields.get(i);field.setVisible(editMixture&&c<22);if(c<22){lastMixtureText[c]=Double.toString(100*composition[c]);field.setValue(lastMixtureText[c]);}}
+        for(int i=0;i<mixtureFields.size();i++){int c=page*rows+i;var field=mixtureFields.get(i);field.setVisible(editMixture&&c<composition.length);if(c<composition.length){lastMixtureText[c]=Double.toString(100*composition[c]);field.setValue(lastMixtureText[c]);}}
         if(mixButton!=null)mixButton.setMessage(Component.literal(editMixture?"Phases":"Edit mix"));
     }
     private void apply() {
@@ -124,7 +124,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
                 line(g,"To   "+(reverse?route.first():route.second()),right,y+71);
             }
         }
-        double[][] amounts=view.state()==null?new double[3][22]:view.state().phaseMoles();double[] volumes=view.state()==null?new double[3]:view.state().phaseVolumes();
+        double[][] amounts=view.state()==null?new double[3][data.components().size()]:view.state().phaseMoles();double[] volumes=view.state()==null?new double[3]:view.state().phaseVolumes();
         if(data.kind()==TopologyCompiler.Kind.PIPE&&!view.pipeHistory().isEmpty()) {
             path=Math.min(path,view.pipeHistory().size()-1);var transfer=view.pipeHistory().get(path);var stream=reverse?transfer.reverse():transfer.forward();amounts=stream.phaseMoles();volumes=stream.phaseVolumes();
         }
@@ -133,9 +133,9 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         String fraction=totalVolume>0?String.format(Locale.ROOT,"L %.1f%%  W %.1f%%  V %.1f%%",100*volumes[0]/totalVolume,100*volumes[1]/totalVolume,100*volumes[2]/totalVolume):"No committed phase sample";
         g.drawString(font,font.plainSubstrByWidth(fraction,imageWidth/2-18),x+10,y+133,0xffb6ced6,false);
         String heading=editMixture?"Generator composition (mole %)":phaseName()+" composition (mole %)";
-        line(g,heading+"   "+(page+1)+"/"+((21)/rows+1),x+10,y+149);
+        line(g,heading+"   "+(page+1)+"/"+(Math.max(0,composition.length-1)/rows+1),x+10,y+149);
         double sum=Arrays.stream(amounts[phase]).sum();for(int i=0;i<rows;i++) {
-            int c=page*rows+i;if(c>=22)break;int rowY=y+163+i*12;String name=data.components().get(c);if(name.startsWith("tjl19_pc"))name="Crude cut "+Integer.parseInt(name.substring(8));
+            int c=page*rows+i;if(c>=composition.length)break;int rowY=y+163+i*12;String name=data.components().get(c);if(name.startsWith("crude_pc"))name="Crude cut "+Integer.parseInt(name.substring(8));
             g.drawString(font,name,x+12,rowY,0xffedf5f8,false);
             if(!editMixture)g.drawString(font,sum>0?format(100*amounts[phase][c]/sum)+" %":"Absent",x+imageWidth-94,rowY,0xffb6ced6,false);
         }

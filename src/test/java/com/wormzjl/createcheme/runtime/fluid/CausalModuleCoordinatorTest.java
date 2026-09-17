@@ -9,15 +9,15 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CausalModuleCoordinatorTest {
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     private FluidThermodynamics.State state(boolean wet) {
         var nitrogen=model.initialNitrogenCharge(1,298.15,101325,()->{});if(!wet)return nitrogen;
-        var n=new double[22];System.arraycopy(nitrogen.vapor(),0,n,0,21);n[21]=100/model.waterMolecularWeight;
+        var n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];System.arraycopy(nitrogen.vapor(),0,n,0,model.hydrocarbon.componentCount());n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=100/model.waterMolecularWeight;
         return model.flashTP(298.15,101325,n,()->{});
     }
     private static UUID id(int i){return new UUID(0,i);}
     private FixedSplitModule.Snapshot module(int id,int firstFeed,int secondFeed,int firstProduct,int secondProduct,int cadence,boolean split) {
-        double[] fractions=new double[22];Arrays.fill(fractions,split?.5:1);
+        double[] fractions=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];Arrays.fill(fractions,split?.5:1);
         var feeds=new ArrayList<FixedSplitModule.Feed>();feeds.add(new FixedSplitModule.Feed(id(firstFeed),.2));if(secondFeed>0)feeds.add(new FixedSplitModule.Feed(id(secondFeed),.1));
         return new FixedSplitModule.Snapshot(new FixedSplitModule.Definition(id(id),feeds,id(firstProduct),id(secondProduct),cadence,fractions),0,0,false,null);
     }
@@ -44,7 +44,7 @@ class CausalModuleCoordinatorTest {
         }
         FluidCheckpointCodec.Checkpoint checkpoint() {
             assertTrue(work.isEmpty());assertEquals(0,active);
-            return new FluidCheckpointCodec.Checkpoint(islands.snapshots().stream().map(s->new FluidCheckpointCodec.IslandEntry("minecraft:overworld","createcheme:tjl20_methane",1e-9,s)).toList(),modules.transfers(),modules.snapshots(),modules.bindings());
+            return new FluidCheckpointCodec.Checkpoint(islands.snapshots().stream().map(s->new FluidCheckpointCodec.IslandEntry("minecraft:overworld","createcheme:tjl20_methane_nitrogen",1e-9,s)).toList(),modules.transfers(),modules.snapshots(),modules.bindings());
         }
         private void published() {
             var owners=new HashMap<Long,Long>();for(var island:islands.snapshots())for(var node:island.graph().reservoirs())owners.put(node.id(),island.id());
@@ -52,7 +52,7 @@ class CausalModuleCoordinatorTest {
         }
         void remove(int islandId) {
             assertEquals(0,active);var snapshot=islands.snapshot(islandId);var removed=snapshot.graph().reservoirs().getFirst().inventory();
-            var n=removed.moles();for(int c=0;c<22;c++)initial[c]-=n[c];initial[22]-=removed.internalEnergy();
+            var n=removed.moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)initial[c]-=n[c];initial[22]-=removed.internalEnergy();
             var event=UUID.randomUUID();long tick=snapshot.clock().committedTick();islands.fence(event,tick,Set.of((long)islandId));
             islands.topology(event,Set.of((long)islandId),List.of(),model,tick,snapshot.clock().onlineTick(),Map.of(),Set.of((long)islandId),()->{});
         }
@@ -60,7 +60,7 @@ class CausalModuleCoordinatorTest {
             var bindings=new ArrayList<CausalModuleCoordinator.Binding>();var buffers=new HashMap<UUID,BufferedTransfers.Buffer>();
             for(int i=0;i<graphs.size();i++){var node=graphs.get(i).reservoirs().getFirst();bindings.add(new CausalModuleCoordinator.Binding(id(i+1),i+1,node.id()));buffers.put(id(i+1),new BufferedTransfers.Buffer(id(i+1),1000,node.state().mass(),Map.of()));}
             var entries=new ArrayList<FluidCheckpointCodec.IslandEntry>();
-            for(int i=0;i<graphs.size();i++)entries.add(new FluidCheckpointCodec.IslandEntry("minecraft:overworld","createcheme:tjl20_methane",1e-9,new IslandCoordinator.Snapshot(i+1,0,graphs.get(i),new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY")));
+            for(int i=0;i<graphs.size();i++)entries.add(new FluidCheckpointCodec.IslandEntry("minecraft:overworld","createcheme:tjl20_methane_nitrogen",1e-9,new IslandCoordinator.Snapshot(i+1,0,graphs.get(i),new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY")));
             return new FluidCheckpointCodec.Checkpoint(entries,new BufferedTransfers.Snapshot(0,buffers,Map.of()),definitions,bindings);
         }
         void run(int ticks) {
@@ -74,18 +74,18 @@ class CausalModuleCoordinatorTest {
             }
         }
         double[] totals() {
-            double[] sum=new double[23];for(var island:islands.snapshots())for(var node:island.graph().reservoirs()) {var n=node.inventory().moles();for(int c=0;c<22;c++)sum[c]+=n[c];sum[22]+=node.inventory().internalEnergy();}
+            double[] sum=new double[23];for(var island:islands.snapshots())for(var node:island.graph().reservoirs()) {var n=node.inventory().moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)sum[c]+=n[c];sum[22]+=node.inventory().internalEnergy();}
             for(var pending:modules.transfers().pending().values())add(sum,pending.remaining());
             for(var module:modules.snapshots())if(module.cycle()!=null)for(var input:module.cycle().inputs().values())add(sum,input.owned());return sum;
         }
-        void assertConserved(){var actual=totals();for(int c=0;c<22;c++)assertEquals(initial[c],actual[c],1e-9*Math.max(1,initial[c]),"Component "+c);assertEquals(initial[22],actual[22],1e-6*Math.max(1,Math.abs(initial[22])));}
+        void assertConserved(){var actual=totals();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)assertEquals(initial[c],actual[c],1e-9*Math.max(1,initial[c]),"Component "+c);assertEquals(initial[22],actual[22],1e-6*Math.max(1,Math.abs(initial[22])));}
     }
-    private static void add(double[] sum,MaterialParcel parcel){var n=parcel.moles();for(int c=0;c<22;c++)sum[c]+=n[c];sum[22]+=parcel.energyJoule();}
+    private static void add(double[] sum,MaterialParcel parcel){var n=parcel.moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)sum[c]+=n[c];sum[22]+=parcel.energyJoule();}
     private List<PassiveNetwork> graphs(boolean... wet){var graphs=new ArrayList<PassiveNetwork>();for(int i=0;i<wet.length;i++)graphs.add(new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(i+1,0,state(wet[i]))),List.of()));return graphs;}
     @Test void coupledHydraulicsAndFifteenSecondModulePreserveAllOwnersAtEveryCommit() {
         var harness=new Harness(graphs(true,true,false,false),List.of(module(100,1,2,3,4,300,true)));harness.run(900);
         assertEquals(900,harness.modules.snapshots().getFirst().committedTick());for(var island:harness.islands.snapshots())assertEquals(900,island.clock().committedTick(),island.status());
-        assertTrue(harness.islands.snapshot(3).graph().reservoirs().getFirst().inventory().moles()[21]>0);assertTrue(harness.islands.snapshot(4).graph().reservoirs().getFirst().inventory().moles()[21]>0);
+        assertTrue(harness.islands.snapshot(3).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);assertTrue(harness.islands.snapshot(4).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);
         assertTrue(harness.modules.transfers().pending().size()<=2);assertTrue(harness.modules.transfers().planned().size()<=2);assertEquals(0,harness.active);
     }
     @Test void emptyCycleWithDifferentCadencesBootstrapsWithoutCircularProductionWait() {
@@ -141,6 +141,6 @@ class CausalModuleCoordinatorTest {
     @Test void removingAnUnusedZeroFractionOutletDoesNotStrandTheActiveProduct() {
         var harness=new Harness(graphs(true,false,false),List.of(module(100,1,0,2,3,300,false)));harness.run(200);harness.remove(3);harness.run(700);
         assertEquals(900,harness.modules.snapshots().getFirst().committedTick());assertFalse(harness.modules.waitingReason(1).startsWith("STRANDED"));
-        assertTrue(harness.islands.snapshot(2).graph().reservoirs().getFirst().inventory().moles()[21]>0);harness.assertConserved();
+        assertTrue(harness.islands.snapshot(2).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);harness.assertConserved();
     }
 }

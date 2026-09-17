@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class IslandCoordinatorTest {
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     private final AtomicLong time=new AtomicLong();
     private final FakeDispatch dispatch=new FakeDispatch();
     private final List<List<IslandCoordinator.Snapshot>> publications=new ArrayList<>();

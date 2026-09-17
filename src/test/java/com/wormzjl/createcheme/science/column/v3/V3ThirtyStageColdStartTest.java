@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /** Cold-start QA probe for the 30-stage default topology used by newly placed V3 blocks. */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3ThirtyStageColdStartTest {
     @Test
     void thirtyStageDefaultReturnsOnlyAnAuditedSuccessOrBoundedTypedFailure() {

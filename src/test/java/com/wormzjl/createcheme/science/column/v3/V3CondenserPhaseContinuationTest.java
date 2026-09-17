@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /** Exact client operating point: the smaller grids are liquid-only, but the 30-stage condenser needs vapor. */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3CondenserPhaseContinuationTest {
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 1.0e-6})

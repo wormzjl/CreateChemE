@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Independent P03-P05 references. No production resistance call supplies an oracle. */
 class HydraulicReferenceQualificationTest {
     private final FluidThermodynamics model = FluidThermodynamics.forNetwork(
-            MaterialCatalog.bundled(), "createcheme:tjl20_methane", 1e-9);
+            MaterialCatalog.bundled(), "createcheme:tjl20_methane_nitrogen", 1e-9);
 
     @Test void boundaryFlowsAcrossAllRegimesMatchOfflineDecimalFrictionInBothDirections() throws Exception {
         var rows = new ArrayList<Map<String, Object>>();
@@ -142,8 +142,8 @@ class HydraulicReferenceQualificationTest {
             assertEquals(sign * remainingDifference, difference, 1 + 1e-4 * remainingDifference);
             double beforeMoles = 0, afterMoles = 0, beforeEnergy = 0, afterEnergy = 0;
             for (int i = 0; i < 2; i++) {
-                beforeMoles += graph.reservoirs().get(i).inventory().moles()[20];
-                afterMoles += actual.graph().reservoirs().get(i).inventory().moles()[20];
+                beforeMoles += graph.reservoirs().get(i).inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];
+                afterMoles += actual.graph().reservoirs().get(i).inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];
                 beforeEnergy += graph.reservoirs().get(i).inventory().internalEnergy();
                 afterEnergy += actual.graph().reservoirs().get(i).inventory().internalEnergy();
             }
@@ -159,9 +159,9 @@ class HydraulicReferenceQualificationTest {
     }
 
     private FluidThermodynamics.State state(boolean water, double pressure) {
-        double[] n = new double[22]; n[water ? 21 : 20] = 1;
+        double[] n = new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1]; n[water ? com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK : com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN] = 1;
         var unit = model.flashTP(350, pressure, n, () -> {});
-        n[water ? 21 : 20] /= unit.volume();
+        n[water ? com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK : com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN] /= unit.volume();
         return model.flashTP(350, pressure, n, () -> {});
     }
 

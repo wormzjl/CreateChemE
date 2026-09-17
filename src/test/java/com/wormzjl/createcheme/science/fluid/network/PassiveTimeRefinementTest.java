@@ -13,7 +13,7 @@ class PassiveTimeRefinementTest {
         var model=new FluidThermodynamics(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
         var reservoirs=new ArrayList<PassiveNetwork.Reservoir>();
         for(double p:new double[]{200000,101325}) {
-            double[] n=new double[21];n[0]=1;var unit=model.flashTP(350,p,n,()->{});n[0]/=unit.volume();
+            double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1];n[0]=1;var unit=model.flashTP(350,p,n,()->{});n[0]/=unit.volume();
             reservoirs.add(new PassiveNetwork.Reservoir(reservoirs.size(),0,model.flashTP(350,p,n,()->{})));
         }
         var graph=new PassiveNetwork(reservoirs,List.of(new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(10,.05,.000045,0))));

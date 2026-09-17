@@ -12,7 +12,7 @@ class HydrocarbonModelTest {
         double[] liquid=new double[model.componentCount()];liquid[6]=1;
         var pure=model.phase(300,1e6,liquid,PhaseRoot.LIQUID);
         assertEquals(1e-9,-pure.volumePressureDerivative()/pure.molarVolume(),1e-22);
-        liquid[6]=.05;liquid[12]=.45;liquid[19]=.5;
+        liquid[6]=.05;liquid[12]=.45;liquid[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE-1]=.5;
         var crude=model.phase(350,1e6,liquid,PhaseRoot.LIQUID);
         assertEquals(1e-9,-crude.volumePressureDerivative()/crude.molarVolume(),1e-22);
         assertTrue(crude.molarVolume()>0);

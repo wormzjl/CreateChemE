@@ -19,7 +19,7 @@ public final class Cdu17FixtureExtension implements InvocationInterceptor {
 
     private static void invoke(Invocation<Void> invocation) throws Throwable {
         Throwable[] failure = new Throwable[1];
-        Cdu17TestCatalog.with(() -> {
+        MaterialRuntime.with(Cdu17TestCatalog.withProduction(),Cdu17TestCatalog.PACKAGE_ID,() -> {
             try { invocation.proceed(); }
             catch (Throwable thrown) { failure[0] = thrown; }
             return null;

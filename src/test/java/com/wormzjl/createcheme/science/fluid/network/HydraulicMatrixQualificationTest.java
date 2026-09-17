@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** P02/P07/P09 and seeded graph-order coverage. Fixed steps isolate ordering from adaptation. */
 class HydraulicMatrixQualificationTest {
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     private FluidThermodynamics.State state(boolean water,double pressure) {
-        double[] n=new double[22];n[water?21:20]=1;var unit=model.flashTP(350,pressure,n,()->{});n[water?21:20]/=unit.volume();
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[water?com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK:com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;var unit=model.flashTP(350,pressure,n,()->{});n[water?com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK:com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]/=unit.volume();
         return model.flashTP(350,pressure,n,()->{});
     }
     @Test void equalStateGasAndLiquidNetworksRemainAtRest() {
@@ -65,7 +65,7 @@ class HydraulicMatrixQualificationTest {
             var index=new HashMap<Long,Integer>();for(int i=0;i<6;i++)index.put(shuffled.get(i).id(),i);
             var permutedPipes=new ArrayList<PassiveNetwork.Pipe>();for(var p:pipes)permutedPipes.add(new PassiveNetwork.Pipe(p.id(),index.get(nodes.get(p.first()).id()),index.get(nodes.get(p.second()).id()),p.sections(),p.control()));Collections.shuffle(permutedPipes,random);
             var a=new TrBdf2StepSolver(model).solve(original,.05,()->{});var b=new TrBdf2StepSolver(model).solve(new PassiveNetwork(shuffled,permutedPipes),.05,()->{});
-            double before=0,after=0,beforeU=0,afterU=0,maximumPressureDifference=0;int component=water?21:20;
+            double before=0,after=0,beforeU=0,afterU=0,maximumPressureDifference=0;int component=water?com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK:com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN;
             for(int i=0;i<6;i++) {
                 int j=index.get(nodes.get(i).id());var ia=a.inventories().get(i);var ib=b.inventories().get(j);
                 assertArrayEquals(ia.moles(),ib.moles(),1e-8*Math.max(1,ia.moles()[component]));assertEquals(ia.internalEnergy(),ib.internalEnergy(),1e-4+1e-6*Math.abs(ia.internalEnergy()));

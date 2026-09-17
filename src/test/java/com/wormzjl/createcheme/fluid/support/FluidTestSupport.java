@@ -13,10 +13,10 @@ import java.util.function.LongSupplier;
 
 /** Shared, independent fixture-basis and finite-ledger calculations for fluid tests. */
 public final class FluidTestSupport {
-    private static final String NETWORK_PACKAGE = "createcheme:tjl20_methane";
+    private static final String NETWORK_PACKAGE = "createcheme:tjl20_methane_nitrogen";
     private static final double DEFAULT_COMPRESSIBILITY = 1e-9;
-    private static final int NITROGEN = 20;
-    private static final int WATER = 21;
+    private static final int NITROGEN = com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN;
+    private static final int WATER = com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK;
 
     /** Exact gameplay-basis compositions shared by the physical qualification fixtures. */
     public enum Mixture { NITROGEN, WATER, WET_CRUDE }
@@ -32,13 +32,13 @@ public final class FluidTestSupport {
     /** Returns a fresh gameplay-basis composition for the named qualification fixture. */
     private static double[] composition(Mixture mixture) {
         Objects.requireNonNull(mixture, "mixture");
-        double[] amounts = new double[22];
+        double[] amounts = new double[WATER+1];
         switch (mixture) {
             case NITROGEN -> amounts[NITROGEN] = 1;
             case WATER -> amounts[WATER] = 1;
             case WET_CRUDE -> {
                 amounts = Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(NETWORK_PACKAGE)
-                        .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(), 22);
+                        .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(), WATER+1);
                 amounts[NITROGEN] = .1;
                 amounts[WATER] = .2;
             }

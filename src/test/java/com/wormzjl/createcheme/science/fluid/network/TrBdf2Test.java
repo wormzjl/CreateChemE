@@ -20,7 +20,7 @@ class TrBdf2Test {
         for(int i=0;i<steps;i++){var result=solver.solve(graph,.2/steps,()->{});graph=PassiveIntervalSolver.replace(graph,result);mass+=result.massFlows()[0]*.2/steps;}
         return mass;
     }
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     private PassiveNetwork.Reservoir gas(long id,double pressure,double elevation) {
         return new PassiveNetwork.Reservoir(id,elevation,model.initialNitrogenCharge(1,298.15,pressure,()->{}));
     }
@@ -28,32 +28,32 @@ class TrBdf2Test {
         return new PassiveNetwork(List.of(a,b),List.of(new PassiveNetwork.Pipe(10,0,1,new PipeResistance.Geometry(10,.05,.000045,0),control)));
     }
     @Test void waterAppearanceConservesNitrogenAndTheIntegratedBoundaryLedger() {
-        var n=new double[22];n[21]=1;
+        var n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=1;
         var source=new PassiveNetwork.Reservoir(1,0,model.flashTP(298.15,200000,n,()->{}),PassiveNetwork.NodeKind.GENERATOR);
         var graph=graph(source,gas(2,101325,2),new FlowControl.Passive());
         var result=new PassiveIntervalSolver(model).solve(graph,.05,PassiveIntervalSolver.Settings.defaults(),()->{});
         var old=graph.reservoirs().get(1).inventory();var next=result.graph().reservoirs().get(1).inventory();
-        double[] incoming=new double[22];double energy=0;
-        for(var entry:result.boundaries()){assertEquals(1,entry.nodeId());var amounts=entry.moles();for(int c=0;c<22;c++)incoming[c]+=amounts[c];energy+=entry.totalEnergyJoule();}
+        double[] incoming=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];double energy=0;
+        for(var entry:result.boundaries()){assertEquals(1,entry.nodeId());var amounts=entry.moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)incoming[c]+=amounts[c];energy+=entry.totalEnergyJoule();}
         var before=old.moles();var after=next.moles();double movedMass=0;
-        for(int c=0;c<22;c++){assertEquals(before[c]+incoming[c],after[c],1e-8);movedMass+=incoming[c]*(c==21?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(c));}
-        assertTrue(after[21]>0);assertEquals(before[20],after[20],1e-9);
+        for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++){assertEquals(before[c]+incoming[c],after[c],1e-8);movedMass+=incoming[c]*(c==com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(c));}
+        assertTrue(after[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);assertEquals(before[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],after[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],1e-9);
         assertEquals(energy,next.internalEnergy()-old.internalEnergy()+movedMass*2*PassiveStepSolver.GRAVITY,1e-3);
     }
     @Test void pumpWorkIncludesAllStagesAndElevationEnergy() {
         var graph=graph(gas(1,101325,0),gas(2,200000,10),new FlowControl.Pump(.001,500000,.8));
         var result=new TrBdf2StepSolver(model).solve(graph,.2,()->{});
         assertTrue(result.pumpWorkJoule()>0);double change=0;
-        for(int i=0;i<2;i++){var old=graph.reservoirs().get(i).inventory();var next=result.inventories().get(i);double dm=(next.moles()[20]-old.moles()[20])*model.hydrocarbon.molecularWeight(20);change+=next.internalEnergy()-old.internalEnergy()+dm*graph.reservoirs().get(i).elevation()*PassiveStepSolver.GRAVITY;}
+        for(int i=0;i<2;i++){var old=graph.reservoirs().get(i).inventory();var next=result.inventories().get(i);double dm=(next.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]-old.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN])*model.hydrocarbon.molecularWeight(com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN);change+=next.internalEnergy()-old.internalEnergy()+dm*graph.reservoirs().get(i).elevation()*PassiveStepSolver.GRAVITY;}
         assertEquals(result.pumpWorkJoule(),change,1e-5);assertTrue(result.boundaries().isEmpty());
     }
     @Test void sourceAndVoidKeepSeparateNonzeroLedgersDespiteZeroNetTransfer() {
         var source=new PassiveNetwork.Reservoir(1,0,gas(1,200000,0).state(),PassiveNetwork.NodeKind.GENERATOR);
         var sink=new PassiveNetwork.Reservoir(2,0,gas(2,101325,0).state(),PassiveNetwork.NodeKind.VOID);
         var result=new TrBdf2StepSolver(model).solve(graph(source,sink,new FlowControl.Passive()),2,()->{});
-        double sourceMoles=0,sinkMoles=0;for(var entry:result.boundaries()){if(entry.nodeId()==1)sourceMoles+=entry.moles()[20];else sinkMoles+=entry.moles()[20];}
+        double sourceMoles=0,sinkMoles=0;for(var entry:result.boundaries()){if(entry.nodeId()==1)sourceMoles+=entry.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];else sinkMoles+=entry.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];}
         assertTrue(sourceMoles>0);assertEquals(sourceMoles,-sinkMoles,1e-9);
-        assertEquals(result.massFlows()[0]*2,sourceMoles*model.hydrocarbon.molecularWeight(20),1e-9);
+        assertEquals(result.massFlows()[0]*2,sourceMoles*model.hydrocarbon.molecularWeight(com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN),1e-9);
     }
     @Test void valveTransitionMatchesRefinedBackwardEulerWithoutFlowAfterClosure() {
         var graph=graph(gas(1,180000,0),gas(2,101325,0),new FlowControl.PressureValve(175000));

@@ -17,9 +17,9 @@ class FluidPropertyReloadGuardTest {
     }
     @Test void metadataOnlyReloadKeepsQualifiedScienceAndNumericalChangeWithoutRevisionBumpHolds() {
         var guard=guard();assertTrue(guard.inspect(original).isEmpty());
-        var names=changed("components/tjl19_pc07.json",j->j.addProperty("fallback","Renamed petroleum"));
+        var names=changed("components/crude_pc07.json",j->j.addProperty("fallback","Renamed petroleum"));
         assertTrue(guard.inspect(names).isEmpty());
-        var science=changed("properties/tjl19_tjl19_pc07.json",j->j.addProperty("molecular_weight_kg_per_mol",.31));
+        var science=changed("properties/crude_pc07.json",j->j.addProperty("molecular_weight_kg_per_mol",.31));
         assertEquals(original.requirePackage(packageId).revision(),science.requirePackage(packageId).revision());
         assertTrue(guard.inspect(science).isPresent());assertTrue(guard.inspect(science).isPresent());
         assertTrue(guard.inspect(MaterialCatalog.parse(original.resources())).isEmpty());

@@ -13,6 +13,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Qualifies deterministic internal stage continuation without using a persisted or cross-request warm state. */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3StageContinuationTest {
     private static final long TARGET_BUDGET_NANOS = 15_000_000_000L;
     private static final long FIFTEEN_STAGE_BUDGET_NANOS = 30_000_000_000L;

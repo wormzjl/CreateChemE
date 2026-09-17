@@ -31,8 +31,8 @@ class V3MethaneColumnTest {
     @Test void methaneFeedConvergesWithCurrentInitializer() throws Exception {
         var input = ColumnCalculatorV3BlockEntity.methaneCduInput();
         assertEquals("Methane", input.componentBasis().componentId(0));
-        assertEquals(20, input.componentBasis().componentCount());
-        assertEquals(737.6996333000835 * 0.005, input.feedComponentMolarFlowsMolPerSecond()[0], 1e-12);
+        assertEquals(com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE, input.componentBasis().componentCount());
+        assertEquals(java.util.Arrays.stream(input.feedComponentMolarFlowsMolPerSecond()).sum() * 0.005, input.feedComponentMolarFlowsMolPerSecond()[0], 1e-12);
         long start = System.nanoTime();
         var outcome = V3ColumnCalculator.calculate(input, () -> {
             if (System.nanoTime() - start > 60_000_000_000L) throw new java.util.concurrent.CancellationException("methane qualification deadline");

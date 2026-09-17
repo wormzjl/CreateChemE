@@ -9,7 +9,7 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 
 class BoundaryAndPhaseTest {
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     private PassiveNetwork.Pipe pipe(){return new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(10,.05,.000045,0));}
     private PassiveNetwork.Reservoir source(double pressure) {
         double[] n=new double[model.hydrocarbon.componentCount()+1];n[n.length-1]=1;
@@ -30,13 +30,13 @@ class BoundaryAndPhaseTest {
         var sink=new PassiveNetwork.Reservoir(2,0,model.initialNitrogenCharge(1,298.15,101325,()->{}),PassiveNetwork.NodeKind.VOID);
         var graph=new PassiveNetwork(List.of(source(200000),sink),List.of(pipe()));
         var result=new PassiveStepSolver(model).solve(graph,1,()->{});assertTrue(result.massFlows()[0]>0);
-        assertArrayEquals(new double[22],result.externalMoles(),1e-10);assertEquals(0,result.externalEnergyJoule(),1e-10);
+        assertArrayEquals(new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],result.externalMoles(),1e-10);assertEquals(0,result.externalEnergyJoule(),1e-10);
         var highSink=new PassiveNetwork.Reservoir(2,0,model.initialNitrogenCharge(1,298.15,300000,()->{}),PassiveNetwork.NodeKind.VOID);
         var blocked=new PassiveStepSolver(model).solve(new PassiveNetwork(List.of(source(200000),highSink),List.of(pipe())),1,()->{});
         assertEquals(0,blocked.massFlows()[0],1e-10);
     }
     @Test void aThreePhaseWetCrudeFeedCanEnterNitrogenWithoutLosingAnyComponent() {
-        String id="createcheme:tjl20_methane";var n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);n[21]=.2;
+        String id="createcheme:tjl20_methane_nitrogen";var n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;
         var source=new PassiveNetwork.Reservoir(1,0,model.flashTP(350,200000,n,()->{}),PassiveNetwork.NodeKind.GENERATOR);
         var initial=model.initialNitrogenCharge(1,298.15,101325,()->{});
         var graph=new PassiveNetwork(List.of(source,new PassiveNetwork.Reservoir(2,0,initial)),List.of(pipe()));

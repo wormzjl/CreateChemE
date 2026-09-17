@@ -22,8 +22,8 @@ class TraceTruncationStepTest {
 
     private double[] wetCrude() {
         double[] n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE)
-                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);
-        n[20]=.1;n[21]=.2;return n;
+                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);
+        n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.1;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;return n;
     }
     private FluidThermodynamics.State fill(FluidThermodynamics model,double pressure) {
         double[] n=wetCrude();var unit=model.flashTP(350,pressure,n,()->{});

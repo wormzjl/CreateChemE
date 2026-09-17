@@ -24,9 +24,8 @@ class ViscosityTest {
     @Test void validityLimitsAndMissingDataAreExplicit() {
         var catalog = MaterialCatalog.bundled();
         assertTrue(catalog.viscosity(PACKAGE, "Water", ViscosityCorrelation.Phase.VAPOR).isEmpty());
-        assertTrue(catalog.viscosity("createcheme:cdu17_tjl_acs2018", "cdu17_pc01", ViscosityCorrelation.Phase.LIQUID).isEmpty());
-        assertEquals(catalog.viscosity(PACKAGE,"tjl19_pc07",ViscosityCorrelation.Phase.LIQUID),
-                catalog.viscosity(PACKAGE,"TJL_PC07",ViscosityCorrelation.Phase.LIQUID));
+        assertTrue(Cdu17TestCatalog.catalog().viscosity("createcheme:cdu17_tjl_acs2018", "cdu17_pc01", ViscosityCorrelation.Phase.LIQUID).isEmpty());
+        assertThrows(IllegalArgumentException.class,()->catalog.viscosity(PACKAGE,"TJL_PC07",ViscosityCorrelation.Phase.LIQUID));
         assertThrows(IllegalArgumentException.class, () -> catalog.viscosity(PACKAGE, "NotAComponent", ViscosityCorrelation.Phase.LIQUID));
         var v = catalog.viscosity(PACKAGE, "Water", ViscosityCorrelation.Phase.LIQUID).orElseThrow();
         for (double t : new double[] {253.14, 383.16, Double.NaN, Double.POSITIVE_INFINITY})
@@ -108,7 +107,7 @@ class ViscosityTest {
         resources.put(WATER, water.toString()); return resources;
     }
 
-    @Test void allCurrentCrudeComponentsMatchIndependentDwsimApiCheckPoints() throws Exception {
+    @Test void unchangedChemicalCurvesMatchIndependentDwsimApiCheckPoints() throws Exception {
         JsonObject report;
         try (var in = getClass().getResourceAsStream("/materials/dwsim-viscosity-api.json")) {
             assertNotNull(in);

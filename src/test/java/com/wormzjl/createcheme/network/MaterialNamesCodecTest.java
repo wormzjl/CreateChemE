@@ -25,15 +25,15 @@ class MaterialNamesCodecTest {
             assertEquals(state,decoded);assertEquals(0,buffer.readableBytes());
         }finally{buffer.release();}
     }
-    @Test void persistedLegacyAxesMigrateThroughTheActualNbtReader() throws Exception {
+    @Test void retiredAxesAreRejectedByTheActualNbtReader() throws Exception {
         var input=ColumnCalculatorV3BlockEntity.methaneCduInput();
         var tag=(CompoundTag)invoke(ColumnCalculatorV3BlockEntity.class,"writeInput",new Class<?>[]{V3ColumnInput.class},input);
         var axis=tag.getList("Axis",Tag.TAG_STRING);
         for(int i=0;i<axis.size();i++) {
-            String id=axis.getString(i);if(id.startsWith("tjl19_pc"))axis.set(i,StringTag.valueOf("TJL_PC"+id.substring(8)));
+            String id=axis.getString(i);if(id.startsWith("crude_pc"))axis.set(i,StringTag.valueOf("tjl19_pc"+id.substring(8)));
         }
-        var decoded=(V3ColumnInput)invoke(ColumnCalculatorV3BlockEntity.class,"readInput",new Class<?>[]{CompoundTag.class},tag);
-        assertEquals(input,decoded);
+        var error=assertThrows(java.lang.reflect.InvocationTargetException.class,()->invoke(ColumnCalculatorV3BlockEntity.class,"readInput",new Class<?>[]{CompoundTag.class},tag));
+        assertInstanceOf(IllegalArgumentException.class,error.getCause());
     }
     @Test void descriptorsRejectInvalidBoundsAndOversizeLabels() {
         assertThrows(IllegalArgumentException.class,()->new MaterialName("id","key","x".repeat(129),"lump",null,null,false));

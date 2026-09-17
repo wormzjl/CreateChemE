@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FluidFallbackQualificationTest {
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     private final BoundedCpuSolveService.CancellationToken token=new BoundedCpuSolveService.CancellationToken(){
         public long deadlineNanos(){return Long.MAX_VALUE;}public boolean isDeadlineExceeded(){return false;}public boolean isCancellationRequested(){return false;}public void throwIfCancellationRequested(){}
     };
@@ -22,9 +22,9 @@ class FluidFallbackQualificationTest {
         var state=model.flashTP(350,pressure,n,()->{});return new PassiveNetwork.Reservoir(id,0,state,kind,new PassiveNetwork.Inventory(1,n,state.internalEnergy()));
     }
     private PassiveIntervalSolver.Result warm(String name) {
-        double[] n=new double[22];
-        if(name.equals("nitrogen"))n[20]=1;
-        else{n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);n[20]=.1;n[21]=.2;}
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];
+        if(name.equals("nitrogen"))n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
+        else{n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane_nitrogen").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.1;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;}
         boolean pump=name.equals("wet crude pump");
         var graph=new PassiveNetwork(List.of(node(1,pump?149000:150000,n,PassiveNetwork.NodeKind.GENERATOR),node(2,pump?150000:149000,n,PassiveNetwork.NodeKind.RESERVOIR)),List.of(
                 new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(100,name.equals("nitrogen")?.01:.03,.000045,0),pump?new FlowControl.Pump(.0001,500000,1):new FlowControl.Passive())));
@@ -41,7 +41,7 @@ class FluidFallbackQualificationTest {
             var row=new LinkedHashMap<String,Object>();rows.add(row);row.put("case",name);
             try {
                 var warm=warm(name);var anchor=ApproximationAnchor.fromFull(model,warm);var fullGraph=warm.graph();var approximateGraph=fullGraph;var allowance=FallbackAllowance.NONE;
-                double[] fullThroughput=new double[22],approximateThroughput=new double[22];double maxP=0,maxT=0,maxPhase=0,maxComponent=0,actualMillis=0;
+                double[] fullThroughput=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],approximateThroughput=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];double maxP=0,maxT=0,maxPhase=0,maxComponent=0,actualMillis=0;
                 for(int interval=0;interval<3;interval++) {
                     var reference=new PassiveIntervalSolver(model).solve(fullGraph,5,PassiveIntervalSolver.Settings.defaults(),()->{});fullGraph=reference.graph();
                     var before=approximateGraph.reservoirs().get(1).inventory();long started=System.nanoTime();
@@ -49,11 +49,11 @@ class FluidFallbackQualificationTest {
                     if(outcome.candidate().isEmpty())throw new IllegalStateException(outcome.detail());
                     var result=outcome.candidate().orElseThrow();assertEquals(PassiveStepSolver.Acceptance.APPROXIMATE,result.acceptance());approximateGraph=result.graph();allowance=outcome.proposedAllowance();
                     assertSame(anchor,outcome.proposedAnchor().orElseThrow());assertEquals(interval+1,allowance.acceptedIntervals());assertEquals(100,allowance.capturedCadenceTicks());assertEquals(100L*(interval+1),allowance.advancedTicks());
-                    double[] incoming=new double[22];double energy=0;
-                    for(var transfer:reference.boundaries()){var amounts=transfer.moles();for(int c=0;c<22;c++)fullThroughput[c]+=amounts[c];}
-                    for(var transfer:result.boundaries()){var amounts=transfer.moles();for(int c=0;c<22;c++){approximateThroughput[c]+=amounts[c];incoming[c]+=amounts[c];}energy+=transfer.totalEnergyJoule();}
+                    double[] incoming=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];double energy=0;
+                    for(var transfer:reference.boundaries()){var amounts=transfer.moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)fullThroughput[c]+=amounts[c];}
+                    for(var transfer:result.boundaries()){var amounts=transfer.moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++){approximateThroughput[c]+=amounts[c];incoming[c]+=amounts[c];}energy+=transfer.totalEnergyJoule();}
                     var next=approximateGraph.reservoirs().get(1).inventory();var oldN=before.moles();var newN=next.moles();
-                    for(int c=0;c<22;c++) {
+                    for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++) {
                         assertEquals(oldN[c]+incoming[c],newN[c],1e-10+1e-8*Math.max(oldN[c],newN[c]));
                         double error=Math.abs(approximateThroughput[c]-fullThroughput[c]);assertTrue(error<=1e-10+.02*Math.abs(fullThroughput[c]),"component "+c);
                         maxComponent=Math.max(maxComponent,Math.max(0,error-1e-10)/Math.max(1e-10,Math.abs(fullThroughput[c])));
@@ -79,11 +79,11 @@ class FluidFallbackQualificationTest {
     @Test void topologyPropertyPhaseAndTrustChangesRefuseTheOldAnchor() {
         var full=warm("nitrogen");var anchor=ApproximationAnchor.fromFull(model,full);var graph=full.graph();
         assertThrows(ApproximationRejected.class,()->anchor.guard(model,new PassiveNetwork(graph.reservoirs(),List.of())));
-        assertThrows(ApproximationRejected.class,()->anchor.guard(FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1.1e-9),graph));
+        assertThrows(ApproximationRejected.class,()->anchor.guard(FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1.1e-9),graph));
         var changed=new ArrayList<>(graph.reservoirs());var high=model.initialNitrogenCharge(1,350,160000,()->{});
         changed.set(1,new PassiveNetwork.Reservoir(2,0,high,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(high),high.internalEnergy())));
         assertTrue(assertThrows(ApproximationRejected.class,()->anchor.guard(model,new PassiveNetwork(changed,graph.pipes()))).getMessage().contains("trust region"));
-        double[] wet=new double[22];wet[20]=1;wet[21]=10;var unit=model.flashTP(350,149000,wet,()->{});for(int c=0;c<wet.length;c++)wet[c]/=unit.volume();var phase=model.flashTP(350,149000,wet,()->{});
+        double[] wet=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];wet[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;wet[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=10;var unit=model.flashTP(350,149000,wet,()->{});for(int c=0;c<wet.length;c++)wet[c]/=unit.volume();var phase=model.flashTP(350,149000,wet,()->{});
         changed.set(1,new PassiveNetwork.Reservoir(2,0,phase,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,wet,phase.internalEnergy())));
         assertTrue(assertThrows(ApproximationRejected.class,()->anchor.guard(model,new PassiveNetwork(changed,graph.pipes()))).getMessage().contains("Phase"));
     }
@@ -129,7 +129,7 @@ class FluidFallbackQualificationTest {
         var full=warm("nitrogen");var anchor=ApproximationAnchor.fromFull(model,full);
         var old=full.graph().reservoirs().get(1).state();
         for(double methane:new double[]{.009999,.010001}) {
-            double[] n=new double[22];n[0]=methane;n[20]=1-methane;
+            double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[0]=methane;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1-methane;
             var unit=model.flashTP(old.temperature(),old.pressure(),n,()->{});
             for(int i=0;i<n.length;i++)n[i]/=unit.volume();
             var state=model.flashTP(old.temperature(),old.pressure(),n,()->{});

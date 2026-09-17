@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * covering practical setup edits exposed by the current V3 screen. It deliberately records numerical failure as a
  * typed outcome rather than pretending every in-range combination is feasible.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3ColdStartSweepTest {
     @Test
     void reasonableSetupMatrixHasBoundedTypedColdOutcomes() {

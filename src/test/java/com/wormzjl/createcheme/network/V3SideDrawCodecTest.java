@@ -16,11 +16,11 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3SideDrawCodecTest {
     @Test
     void roundedServerDefaultPublishesAndSolvesTheQualifiedLiteratureSideDraws() throws Exception {
-        V3ColumnInput input = (V3ColumnInput) invoke(
-                ColumnCalculatorV3BlockEntity.class, "defaultInput", new Class<?>[0]);
+        V3ColumnInput input = com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput();
 
         assertEquals(29, input.stageCount());
         assertEquals(150_000.0, input.topPressurePascal());

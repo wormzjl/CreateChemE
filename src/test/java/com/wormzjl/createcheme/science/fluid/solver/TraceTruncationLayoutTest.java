@@ -22,8 +22,8 @@ class TraceTruncationLayoutTest {
     /** A wet crude at conditions that carry all three phases, which is the gameplay regime. */
     private FluidThermodynamics.State wetCrude(double temperature,double pressure) {
         double[] n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE)
-                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);
-        n[20]=.1;n[21]=.2;
+                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);
+        n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.1;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;
         return model.flashTP(temperature,pressure,n,()->{});
     }
     private static PhaseSupport[] support(FluidThermodynamics.State seed,double cutoff) {
@@ -119,8 +119,8 @@ class TraceTruncationLayoutTest {
 
     @Test void aTruncatedInventorySolveReachesTheSameTemperaturePressureAndTotals() {
         double[] n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE)
-                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);
-        n[20]=.1;n[21]=.2;
+                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);
+        n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.1;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;
         var seed=model.flashTP(350,101325,n,()->{});var target=model.flashTP(351,105000,n,()->{});
         var layout=new PhaseLayout(model,seed,null,null,support(seed,1e-5));
         assertTrue(layout.singlePhaseComponentCount()>0);
@@ -197,9 +197,9 @@ class TraceTruncationLayoutTest {
         // the water equilibrium row and the partial-pressure closure belong to the regime state, not
         // to the hydrocarbon trace support, so the cutoff may not move any of them.
         double[] wet=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(PACKAGE)
-                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);
-        wet[20]=.001;wet[21]=.2;
-        double[] dry=Arrays.copyOf(wet,22);dry[21]=0;
+                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);
+        wet[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.001;wet[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;
+        double[] dry=Arrays.copyOf(wet,com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);dry[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=0;
         for(double[] n:new double[][]{wet,dry})for(double pressure:new double[]{101325,1_500_000}) {
             var seed=model.flashTP(320,pressure,n,()->{});
             var full=new PhaseLayout(model,seed);

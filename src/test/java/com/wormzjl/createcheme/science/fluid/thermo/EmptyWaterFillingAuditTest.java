@@ -19,7 +19,7 @@ class EmptyWaterFillingAuditTest {
             double ps=model.saturationPressure(t),vl=model.waterLiquid(t,ps).molarVolume(),vg=FluidThermodynamics.R*t/ps;
             double nv=(volume-moles*vl)/(vg-vl),nl=moles-nv,p=ps;
             if(nl<0){nv=moles;nl=0;p=moles*FluidThermodynamics.R*t/volume;}
-            var state=model.state(t,p,new double[20],new double[20],nl,nv,0);
+            var state=model.state(t,p,new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE],new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE],nl,nv,0);
             if(state.internalEnergy()<minimumEnergy){minimumEnergy=state.internalEnergy();minimumT=t;}
             rows.add(Map.of("temperatureKelvin",t,"pressurePascal",p,"internalEnergyJoule",state.internalEnergy()));
         }

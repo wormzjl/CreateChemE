@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PipeTransferTest {
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     @Test void integratedThreePhaseHistoryMatchesTheConservativeTankInventoryChange() {
-        var n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);n[20]=.1;n[21]=.2;
+        var n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane_nitrogen").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.1;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;
         var nodes=new ArrayList<PassiveNetwork.Reservoir>();
         for(int i=0;i<2;i++) {
             var amounts=n.clone();double pressure=150000-1000*i;
@@ -28,14 +28,14 @@ class PipeTransferTest {
         var copy=transfer.forward().phaseMoles();copy[0][0]=-100;assertTrue(transfer.forward().phaseMoles()[0][0]>=0);
     }
     @Test void reversalKeepsBothDonorCompositionsAndBoundsTheHistorySize() {
-        var a=model.initialNitrogenCharge(1,350,150000,()->{});double[] water=new double[22];water[21]=1;
+        var a=model.initialNitrogenCharge(1,350,150000,()->{});double[] water=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];water[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=1;
         var b=model.flashTP(350,150000,water,()->{});
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,a),new PassiveNetwork.Reservoir(2,0,b)),List.of(new PassiveNetwork.Pipe(9,0,1,new PipeResistance.Geometry(1,.05,0,0))));
         var accumulator=new PipeTransfer.Accumulator();
         for(int i=0;i<100;i++)accumulator.add(PipeTransfer.sample(graph,List.of(a,b),new double[]{i%2==0?.1:-.2},1),1);
         assertEquals(1,accumulator.snapshot().size());var transfer=accumulator.snapshot().getFirst();
         assertEquals(5,transfer.forward().massKg(),1e-12);assertEquals(10,transfer.reverse().massKg(),1e-12);
-        assertTrue(transfer.forward().componentMoles()[20]>0);assertEquals(0,transfer.forward().componentMoles()[21]);
-        assertTrue(transfer.reverse().componentMoles()[21]>0);assertEquals(0,transfer.reverse().componentMoles()[20]);
+        assertTrue(transfer.forward().componentMoles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]>0);assertEquals(0,transfer.forward().componentMoles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]);
+        assertTrue(transfer.reverse().componentMoles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);assertEquals(0,transfer.reverse().componentMoles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]);
     }
 }

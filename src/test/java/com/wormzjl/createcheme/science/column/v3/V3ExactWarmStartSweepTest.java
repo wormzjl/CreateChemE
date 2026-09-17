@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * coverage: neither a cold nor hot certificate may override its independent phase rejection. A separate
  * physically valid liquid-only case verifies accepted-state reuse.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3ExactWarmStartSweepTest {
     @Test
     void numericalTwoPhaseMatrixRemainsRejectedAfterFreshExactInputHotStarts() {

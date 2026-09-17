@@ -11,9 +11,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BufferedCommitTest {
     @Test void hydraulicAndPendingMaterialPublishTogetherAndAbortedStagingConsumesNeither() {
-        var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+        var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,model.initialNitrogenCharge(1,298.15,101325,()->{}))),List.of());
-        double[] n=new double[22],w=new double[22];n[21]=100/model.waterMolecularWeight;for(int c=0;c<22;c++)w[c]=c==21?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(c);
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],w=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=100/model.waterMolecularWeight;for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)w[c]=c==com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(c);
         var basis=new ArrayList<>(model.hydrocarbon.components());basis.add("Water");
         var material=new MaterialParcel(n,w,model.flashTP(298.15,101325,n,()->{}).enthalpy(),EnergyReference.sensible(basis));
         var receiver=UUID.randomUUID();var transfer=UUID.randomUUID();
@@ -28,7 +28,7 @@ class BufferedCommitTest {
             public void cancel(long request){}
         };
         var coordinator=new IslandCoordinator(dispatch,changed->{
-            double water=changed.getFirst().graph().reservoirs().getFirst().inventory().moles()[21]*model.waterMolecularWeight;
+            double water=changed.getFirst().graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]*model.waterMolecularWeight;
             assertEquals(water,ledger.snapshot().buffers().get(receiver).occupiedKg()-initialKg,1e-8);
         },()->0,new IslandCoordinator.Settings(2_000_000_000L,1_500_000_000L,64,false),(attempt,result)->{
             var delivered=result.materialTransfers().orElseThrow().delivered().get(transfer);
@@ -47,6 +47,6 @@ class BufferedCommitTest {
             active[0]--;coordinator.completed(attempt,Optional.of(result));coordinator.pump();
         }
         assertEquals(100,coordinator.snapshot(1).clock().committedTick());assertEquals(80,ledger.snapshot().pending().get(transfer).remaining().massKg(),1e-9);
-        assertEquals(20,coordinator.snapshot(1).graph().reservoirs().getFirst().inventory().moles()[21]*model.waterMolecularWeight,1e-8);
+        assertEquals(20,coordinator.snapshot(1).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]*model.waterMolecularWeight,1e-8);
     }
 }

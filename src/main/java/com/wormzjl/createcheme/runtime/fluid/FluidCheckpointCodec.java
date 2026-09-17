@@ -135,8 +135,7 @@ public final class FluidCheckpointCodec {
         var islands=new ArrayList<IslandEntry>();
         for(var saved:envelope.islands) {
             var model=Objects.requireNonNull(models.apply(new PackageKey(saved.packageId,saved.compressibility)));
-            boolean ambientMigration=compatibleAmbientExtension(saved.propertyRevision,saved.compressibility,model);
-            if(!saved.propertyRevision.equals(ApproximationAnchor.thermodynamicRevision(model))&&!ambientMigration)throw new IllegalArgumentException("Saved properties require explicit migration: "+saved.packageId);
+            if(!saved.propertyRevision.equals(ApproximationAnchor.thermodynamicRevision(model)))throw new IllegalArgumentException("Incompatible fluid property basis; use a fresh development world or explicitly reset its fluid data: "+saved.packageId);
             var basis=model.components();var reference=reference(saved.reference);
             if(!reference.revision().equals(EnergyReference.sensible(basis).revision())||!basis.equals(reference.components())||reference.formationDataQualified())throw new IllegalArgumentException("Saved energy reference requires explicit migration");
             for(int c=0;c<basis.size();c++)if(reference.offsetJoulesPerMole(c)!=0)throw new IllegalArgumentException("Saved energy offsets require explicit migration");
@@ -166,18 +165,6 @@ public final class FluidCheckpointCodec {
         }
         return new Checkpoint(islands,new BufferedTransfers.Snapshot(envelope.transfers.revision,buffers,pending,planned),modules,envelope.modules==null?List.of():envelope.modules.bindings);
     }
-    /** The ambient extension preserves the old domain's thermodynamics and every viscosity knot.
-     * Pin BOTH complete dataset identities: a future bundled update or any pack override must not
-     * inherit this exception. Compressibility must match. Anchors retain their old revision so their
-     * guards reject reuse while preserving the degraded episode's history and fallback allowance. */
-    private static boolean compatibleAmbientExtension(String previous,double compressibility,FluidThermodynamics model) {
-        String base="fluid-trbdf2-r1:fluid-nitrogen-r1:7781afaaad17de4926015ebf321c0b106766dd5c131668f54962a8825ed25bd5:fluid-shared-k-v1:";
-        String calibration="nist-liquid-calibration-20260915:k="+Double.toHexString(compressibility)+":";
-        String oldRevision=base+calibration+"cb6773ed32b52aefb268f9c5610e288c8cecdbc6c682522b54d0be703c92b533:log-liquid-wilke-v1:dwsim-conditional-solute-v1";
-        String newRevision=base+"ambient-293.15-v1:"+calibration+"150df78e9e98dd561882ad6751666ad1b95a13b0135edb5d28e5884f8b1b5147:log-liquid-wilke-v1:dwsim-conditional-solute-ambient-v2";
-        return previous.equals(oldRevision)&&ApproximationAnchor.thermodynamicRevision(model).equals(newRevision);
-    }
-
     /** Explicit gauge migration to the model's supported sensible datum. Normal load still rejects
      * changed references. This operation changes no component amount, physical phase guess, clock,
      * reservation, or fallback allowance, and refuses a simultaneous property-model change. */

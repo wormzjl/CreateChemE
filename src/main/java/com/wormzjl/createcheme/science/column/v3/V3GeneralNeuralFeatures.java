@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 /** Stage-conditioned encoding: one shared predictor serves every supported stage count. */
 public final class V3GeneralNeuralFeatures {
-    public static final String REVISION = "v3-stage-conditioned-1";
+    public static final String REVISION = "v3-stage-conditioned-regrouped-2";
     public static final int LOCAL_WIDTH = 22;
     public static final int BRANCH_COUNT = 3;
     private static final double FLOW_FLOOR = 1e-8;

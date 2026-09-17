@@ -7,6 +7,7 @@ import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3StageTraceCalculatorTest {
     @Test
     void zeroCutoffPreservesLegacyDigestStreamsAuditAndDiagnosticsExactly() {

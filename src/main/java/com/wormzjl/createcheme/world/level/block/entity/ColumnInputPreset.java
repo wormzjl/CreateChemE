@@ -14,7 +14,6 @@ public enum ColumnInputPreset {
     BONGA("bonga", "Bonga", "createcheme:bonga_tjl20", "createcheme:bonga"),
     DALIA("dalia", "Dalia", "createcheme:dalia_tjl20", "createcheme:dalia"),
     COLD_LAKE("cold_lake_blend", "Cold Lake Blend", "createcheme:cold_lake_blend_tjl20", "createcheme:cold_lake_blend"),
-    PILOT("tia_juana_pilot", "Tia Juana pilot (legacy)", "createcheme:cdu17_tjl_acs2018", "createcheme:tia_juana_light"),
     HOLLAND("holland_3_2", "Holland Example 3-2", "", "");
 
     private final String id, label, packageId, assayId;
@@ -37,7 +36,6 @@ public enum ColumnInputPreset {
     public V3ColumnInput input(MaterialCatalog catalog) {
         return MaterialRuntime.with(catalog, packageId, () -> switch (this) {
             case HOLLAND -> V3HollandExample32.input();
-            case PILOT -> ColumnCalculatorV3BlockEntity.pilotPresetInput();
             default -> ColumnCalculatorV3BlockEntity.assayCduInput(packageId, assayId);
         });
     }

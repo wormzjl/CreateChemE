@@ -23,8 +23,8 @@ class FluidPropertyCoverageTest {
         for (String packageId : List.of("createcheme:tjl20_methane", "createcheme:wti_light_export_tjl20", "createcheme:cold_lake_blend_tjl20")) {
             var propertyPackage = catalog.requirePackage(packageId);
             var n = Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(packageId)
-                    .crudeFeed(propertyPackage.assays().keySet().iterator().next()).moleFractions(), 22);
-            n[20] = .1; n[21] = .2;
+                    .crudeFeed(propertyPackage.assays().keySet().iterator().next()).moleFractions(), model.componentCount());
+            n[model.components().indexOf("Nitrogen")] = .1; n[model.componentCount()-1] = .2;
             double[] temperatures = {298.15, 300, 325, 350, 375};
             double[] pressures = {50000, 101325, 500000, 1e6, 2e6};
             for (boolean interior : new boolean[]{false, true}) {
@@ -37,9 +37,9 @@ class FluidPropertyCoverageTest {
                     row.put("pressurePa", p); row.put("interiorSample", interior);
                     try {
                         var state = model.flashTP(t, p, n, () -> {});
-                        double[] reconstructed = Arrays.copyOf(state.liquid(), 22);
-                        for (int c = 0; c < 21; c++) reconstructed[c] += state.vapor()[c];
-                        reconstructed[21] = state.waterLiquid() + state.waterVapor();
+                        double[] reconstructed = Arrays.copyOf(state.liquid(), model.componentCount());
+                        for (int c = 0; c < model.hydrocarbon.componentCount(); c++) reconstructed[c] += state.vapor()[c];
+                        reconstructed[model.componentCount()-1] = state.waterLiquid() + state.waterVapor();
                         assertArrayEquals(n, reconstructed, 1e-8);
                         assertTrue(Double.isFinite(state.internalEnergy()));
                         assertTrue(state.mass() > 0 && Double.isFinite(state.mass()));
@@ -68,15 +68,15 @@ class FluidPropertyCoverageTest {
         Files.writeString(Path.of("build/reports/fluid/M1-network-property-grid.json"),
                 new GsonBuilder().setPrettyPrinting().create().toJson(Map.of(
                         "scope", "Sampled operability and component closure, not independent property accuracy or continuous-domain qualification",
-                        "basisComponents", 22, "nitrogenMolesPerMoleCrude", .1, "waterMolesPerMoleCrude", .2, "rows", rows)));
+                        "basisComponents", com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1, "nitrogenMolesPerMoleCrude", .1, "waterMolesPerMoleCrude", .2, "rows", rows)));
         assertTrue(failures.isEmpty(), String.join("\n", failures));
     }
     @Test void requiredCrudeMixturesHaveFinitePropertiesAcrossTheInitialWetOperatingGrid() throws Exception {
         var catalog=MaterialCatalog.bundled();var rows=new ArrayList<Map<String,Object>>();var failures=new ArrayList<String>();
         for(String packageId:List.of("createcheme:tjl20_methane","createcheme:wti_light_export_tjl20","createcheme:cold_lake_blend_tjl20")) {
             var model=new FluidThermodynamics(catalog,packageId,1e-9);var p=catalog.requirePackage(packageId);
-            var n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(packageId).crudeFeed(p.assays().keySet().iterator().next()).moleFractions(),21);
-            n[20]=.2;
+            var n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(packageId).crudeFeed(p.assays().keySet().iterator().next()).moleFractions(),model.componentCount());
+            n[model.componentCount()-1]=.2;
             for(double t:new double[]{298.15,300,325,350,375})for(double pressure:new double[]{50000,101325,500000,1e6,2e6}) {
                 var row=new LinkedHashMap<String,Object>();rows.add(row);row.put("package",packageId);row.put("temperature",t);row.put("pressure",pressure);
                 try {

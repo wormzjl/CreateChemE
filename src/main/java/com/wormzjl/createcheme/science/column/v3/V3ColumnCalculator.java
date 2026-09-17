@@ -1721,6 +1721,12 @@ public final class V3ColumnCalculator {
     private static V3SolvePass recoverWithDrawRamp(
             V3ColumnProblem requested, V3PengRobinsonThermo thermo, V3SolvePass seedBase,
             V3SolveControl control, SolvePolicy policy, CondenserAttempts condenserAttempts) {
+        return recoverWithDrawRamp(requested,thermo,seedBase,control,policy,condenserAttempts,false);
+    }
+
+    private static V3SolvePass recoverWithDrawRamp(
+            V3ColumnProblem requested, V3PengRobinsonThermo thermo, V3SolvePass seedBase,
+            V3SolveControl control, SolvePolicy policy, CondenserAttempts condenserAttempts, boolean coupled) {
         V3ColumnInput input = requested.input();
         seedBase = Objects.requireNonNull(seedBase, "seedBase");
         if (!publishesSuccess(seedBase.attempt(), seedBase.audit())
@@ -1747,6 +1753,17 @@ public final class V3ColumnCalculator {
         // this increment and whose later rungs double the water already placed.
         int steamRampSteps = Math.max(4, Math.min(24, (int) Math.ceil(totalSteamMolPerSecond / 4.0)));
         List<RampStep> rampSteps = new ArrayList<>(rampSteps(input, steamRampSteps));
+        if (coupled) {
+            // A different bounded homotopy from the same freshly accepted dry state. This
+            // avoids an intermediate steam-only or heat-only state becoming a path barrier.
+            rampSteps.clear();
+            for(int step=1;step<=16;step++) {
+                double fraction=step/16.0;
+                rampSteps.add(new RampStep(input.steamFeeds().isEmpty()?0:fraction,
+                        input.pumparounds().isEmpty()?0:fraction,input.sideDraws().isEmpty()?0:fraction,
+                        fraction,"coupled-ramp","coupled feature ramp"));
+            }
+        }
         HeatSubdivisions subdivisions = new HeatSubdivisions();
         EnergyShiftLog energyShift = new EnergyShiftLog();
         // The heat and steam fractions the seed profile currently belongs to. The dry surrogate seed carries
@@ -1775,7 +1792,7 @@ public final class V3ColumnCalculator {
             // includes the water-vapor slip and the decanted free water. The dry surrogate seed carries a
             // replacement boilup and no condenser water at all, so the bound is taken from the last
             // accepted heat-free rung: for a steam-free input that is still the seed itself.
-            if (!condenserBoundChecked && rampStep.heatFraction() > 0.0
+            if (!coupled && !condenserBoundChecked && rampStep.heatFraction() > 0.0
                     && publishesSuccess(previous.attempt(), previous.audit())) {
                 condenserBoundChecked = true;
                 requireCoolingBelowBaseCondenserDuty(input, thermo, previous);
@@ -1881,6 +1898,24 @@ public final class V3ColumnCalculator {
                         intermediateFailed = false;
                         index = resumeIndex - 1;
                         continue;
+                    }
+                    // Preserve the ordinary ramp and its successful basins exactly. Only a request
+                    // that exhausted both schedules gets a bounded fresh correction of its terminal
+                    // state; no acceptance limit, physical specification or previous label is changed.
+                    V3SolvePass retry = solveSingleProblem(problem, thermo, pass.recoverySeed(), control,
+                            rampPath + "/request-retry", ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                            MAXIMUM_NEWTON_ITERATIONS - DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS,
+                            rampPolicy, V3SimultaneousColumnSolver.RungBudget.DEFAULT);
+                    retry = correctCondenserPhase(retry, thermo, control, rampPolicy, rampAttempts).pass();
+                    rampEvents.add(boundedEvent("requested-state correction retry: " + rampEvidence(retry)));
+                    if (publishesSuccess(retry.attempt(), retry.audit()))
+                        return withPriorSupportNotes(seedBase, withRampEvents(retry, energyShift.merged(rampEvents)));
+                    if (!coupled) {
+                        V3SolvePass alternative=recoverWithDrawRamp(requested,thermo,seedBase,control,
+                                policy,condenserAttempts,true);
+                        if(publishesSuccess(alternative.attempt(),alternative.audit()))
+                            return withPriorSupportNotes(seedBase,withRampEvents(alternative,
+                                    List.of("sequential feature path failed; accepted bounded coupled continuation")));
                     }
                     condenserAttempts.recordRequestedDrawRampFailure();
                     rampEvents.add(boundedEvent(

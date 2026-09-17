@@ -13,7 +13,7 @@ class ConservativeTransportTest {
         var model=new FluidThermodynamics(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
         var nodes=new ArrayList<PassiveNetwork.Reservoir>();
         for(int component:new int[]{0,1,1}) {
-            double[] n=new double[21];n[component]=1/model.hydrocarbon.molecularWeight(component);
+            double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK];n[component]=1/model.hydrocarbon.molecularWeight(component);
             nodes.add(new PassiveNetwork.Reservoir(nodes.size()+1,0,model.flashTP(350,101325,n,()->{})));
         }
         var geometry=new PipeResistance.Geometry(10,.05,.000045,0);
@@ -27,7 +27,7 @@ class ConservativeTransportTest {
         assertThrows(SparseNewton.Nonconvergence.class,()->ConservativeTransport.reconstruct(graph,states,new double[]{.6,.6},new double[]{0,0},1,model,()->{}));
     }
     @Test void repeatedStepsKeepTheDeclaredVolumeBitForBitWhileCheckingTheDerivedVolume() {
-        var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+        var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
         var a=model.initialNitrogenCharge(1,320,110000,()->{});var b=model.initialNitrogenCharge(1,320,101325,()->{});
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,a,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,PhaseLayout.totalAmounts(a),a.internalEnergy())),
                 new PassiveNetwork.Reservoir(2,0,b,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,PhaseLayout.totalAmounts(b),b.internalEnergy()))),

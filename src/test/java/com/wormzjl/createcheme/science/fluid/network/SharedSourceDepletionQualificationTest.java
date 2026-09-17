@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
  * depletion.
  */
 class SharedSourceDepletionQualificationTest {
-    private static final int NITROGEN = 20;
+    private static final int NITROGEN = com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN;
     private final FluidThermodynamics model = FluidTestSupport.networkModel();
     private final double[] molecularWeights = FluidTestSupport.molecularWeights(model);
 
@@ -395,3 +395,4 @@ class SharedSourceDepletionQualificationTest {
         }
     }
 }
+

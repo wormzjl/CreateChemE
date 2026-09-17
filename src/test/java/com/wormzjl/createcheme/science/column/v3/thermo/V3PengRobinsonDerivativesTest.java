@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
  * sum of the partial molar enthalpies 1.8e-15 of the molar enthalpy. The three identities are two to three
  * orders tighter than the finite-difference comparisons because nothing is differenced in them.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3PengRobinsonDerivativesTest {
     private static final double TEMPERATURE_STEP_KELVIN = 1.0e-3;
     private static final double MOLE_STEP = 1.0e-6;

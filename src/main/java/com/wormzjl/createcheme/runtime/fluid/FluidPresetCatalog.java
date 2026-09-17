@@ -27,7 +27,7 @@ public final class FluidPresetCatalog {
             if(!source.components().equals(target.components())||!source.properties().equals(target.properties())||!source.interactions().equals(target.interactions())||!source.water().equals(target.water())||!catalog.viscosityFingerprint(id).equals(catalog.viscosityFingerprint(CRUDE_BASIS_PACKAGE)))throw new IllegalArgumentException("Preset no longer shares the qualified network property basis: "+id);
             String assay=new TreeSet<>(source.assays().keySet()).first();
             double[] n=MaterialRuntime.with(catalog,id,()->V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed(assay).moleFractions());
-            result.add(new Preset(assay,names.get(i),Arrays.copyOf(n,22)));
+            result.add(new Preset(assay,names.get(i),Arrays.copyOf(n,catalog.requirePackage(NETWORK_PACKAGE).components().size()+1)));
         }
         return List.copyOf(result);
     }

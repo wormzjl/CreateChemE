@@ -12,6 +12,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3ColumnCommandTest {
     @Test
     void admittedCommandKeepsItsInitializerPolicyAndModel() {

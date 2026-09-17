@@ -11,6 +11,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Cold qualification for the client-reported low-top-pressure condenser operating region. */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3LowPressureColdProbeTest {
     private static final long CASE_BUDGET_NANOS = 45_000_000_000L;
 

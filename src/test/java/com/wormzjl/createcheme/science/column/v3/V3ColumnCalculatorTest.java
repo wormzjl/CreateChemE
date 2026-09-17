@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3ColumnCalculatorTest {
     @Test
     void registeredPrBinaryPilotPublishesOnlyAFreshlyAuditedSuccess() {
@@ -101,7 +102,7 @@ class V3ColumnCalculatorTest {
     @Test
     void registeredPilotWithSumpSteamAndColdCondenserPublishesFreeWater() {
         long started = System.nanoTime();
-        V3ColumnInput preset = ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        V3ColumnInput preset = com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput();
         V3ColumnInput cold = new V3ColumnInput(preset.schemaVersion(), preset.packageId(), preset.assayId(),
                 preset.componentBasis(), preset.feedComponentMolarFlowsMolPerSecond(), preset.feedTemperatureKelvin(),
                 preset.stageCount(), preset.feedStageNumber(), preset.topPressurePascal(), preset.stagePressureDropPascal(),
@@ -286,7 +287,7 @@ class V3ColumnCalculatorTest {
     }
 
     private static V3ColumnInput registeredSteamStrippingPilot() {
-        V3ColumnInput dryPilot = ColumnCalculatorV3BlockEntity.pilotPresetInput();
+        V3ColumnInput dryPilot = com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput();
         return new V3ColumnInput(dryPilot.schemaVersion(), dryPilot.packageId(), dryPilot.assayId(),
                 dryPilot.componentBasis(), dryPilot.feedComponentMolarFlowsMolPerSecond(), dryPilot.feedTemperatureKelvin(),
                 dryPilot.stageCount(), dryPilot.feedStageNumber(), dryPilot.topPressurePascal(), dryPilot.stagePressureDropPascal(),

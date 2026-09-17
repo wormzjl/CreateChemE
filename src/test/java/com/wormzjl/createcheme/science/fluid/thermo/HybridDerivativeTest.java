@@ -19,7 +19,7 @@ class HybridDerivativeTest {
     }
     @Test void liquidMixtureChemicalPotentialPressureDerivativesSumToPhysicalVolume() {
         var model=new HydrocarbonModel(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
-        double[] n=new double[20];n[0]=.01;n[6]=.09;n[12]=.4;n[19]=.5;
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE];n[0]=.01;n[6]=.09;n[12]=.4;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE-1]=.5;
         double t=350,p=1e6,dp=10;
         var mid=model.phase(t,p,n,PhaseRoot.LIQUID);
         var a=model.phase(t,p-dp,n,PhaseRoot.LIQUID).logFugacity();var b=model.phase(t,p+dp,n,PhaseRoot.LIQUID).logFugacity();

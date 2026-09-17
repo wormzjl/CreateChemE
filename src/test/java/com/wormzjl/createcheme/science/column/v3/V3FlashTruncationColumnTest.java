@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3FlashTruncationColumnTest {
     @Test
     void positiveCutoffFeedFlashIsObservableWithoutRelaxingTheColumnAudit() {

@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
  * neural-seeded pipeline on the identical input. This pins the split: state-dependent gates publish a hinted
  * {@code NONCONVERGENCE}, request-only gates keep the typed infeasibility.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3PathDependentInfeasibilityTest {
     private static final long BUDGET_NANOS = 180_000_000_000L;
 

@@ -21,7 +21,7 @@ class MixtureViscosityTest {
                 for(var check:curve.getAsJsonArray("checks")) {
                     var row=check.getAsJsonObject();double t=row.get("temperature_kelvin").getAsDouble();
                     if(t<=pure.maximumTemperatureKelvin()||t<carrier.minimumTemperatureKelvin()||t>carrier.maximumTemperatureKelvin())continue;
-                    double[] n=new double[p.components().size()];n[solute]=.05;n[19]=.95;
+                    double[] n=new double[p.components().size()];n[solute]=.05;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE-1]=.95;
                     double expected=Math.exp(.05*Math.log(row.get("viscosity_pascal_seconds").getAsDouble())
                             +.95*Math.log(carrier.dynamicViscosityPascalSeconds(t,carrier.minimumPressurePascal())));
                     var actual=model.liquid(t,n);
@@ -33,14 +33,14 @@ class MixtureViscosityTest {
     }
     @Test void pureUnsupportedSoluteDoesNotBecomeAnInventedLiquid() {
         var model=new MixtureViscosity(MaterialCatalog.bundled(),"createcheme:tjl20_methane");
-        double[] n=new double[20];n[0]=1;
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE];n[0]=1;
         assertThrows(IllegalArgumentException.class,()->model.liquid(300,n));
         assertTrue(model.vapor(300,n,0)>0);
         assertTrue(model.vapor(300,n,.1)>0);
     }
     @Test void crudeCompositionsHaveDifferentMaterialDependentViscosities() {
         var catalog=MaterialCatalog.bundled();var model=new MixtureViscosity(catalog,"createcheme:tjl20_methane");
-        double[] light=new double[20],heavy=new double[20];light[6]=.99;light[1]=.01;heavy[19]=.99;heavy[1]=.01;
+        double[] light=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE],heavy=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE];light[6]=.99;light[1]=.01;heavy[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE-1]=.99;heavy[1]=.01;
         assertTrue(model.liquid(300,heavy).pascalSeconds()>model.liquid(300,light).pascalSeconds());
         assertThrows(IllegalArgumentException.class,()->model.liquid(1000,heavy));
     }

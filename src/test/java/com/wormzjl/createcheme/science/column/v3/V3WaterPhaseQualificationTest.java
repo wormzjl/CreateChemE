@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.TjlReferenceExtension.class)
 class V3WaterPhaseQualificationTest {
     static V3NeuralSeed boundarySeed() throws Exception {
         try (var stream = V3WaterPhaseQualificationTest.class.getResourceAsStream("/science/column/v3/neural/tjl20-wet-boundary.json")) {
@@ -24,7 +25,7 @@ class V3WaterPhaseQualificationTest {
                             ? (V3ColumnSpecification)new V3ColumnSpecification.CondenserOutletTemperature(tc) : s).toList(),
                     base.sideDraws(), base.steamFeeds(), base.pumparounds());
             var gson = new Gson();
-            return new V3NeuralSeed(input, com.wormzjl.createcheme.science.material.MaterialCatalog.bundled().requirePackage(input.packageId()).scientificRevision(),
+            return new V3NeuralSeed(input, com.wormzjl.createcheme.science.material.MaterialRuntime.current().requirePackage(input.packageId()).scientificRevision(),
                     V3CondenserPhaseBranch.valueOf(seed.get("branch").getAsString()),
                     gson.fromJson(seed.get("liquid"), double[][].class), gson.fromJson(seed.get("vapor"), double[][].class),
                     gson.fromJson(seed.get("temperatures"), double[].class), gson.fromJson(seed.get("freeWater"), double[].class),

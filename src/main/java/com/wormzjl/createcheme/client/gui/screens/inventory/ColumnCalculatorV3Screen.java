@@ -529,7 +529,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             }
             stashedCoolerDrafts = authored ? drafts : null;
             stashedCoolerSplits = authored ? coolerSplits.clone() : null;
-        } else if (choice != ColumnInputPreset.PILOT) {
+        } else {
             stashedCoolerDrafts = null;
             stashedCoolerSplits = null;
         }

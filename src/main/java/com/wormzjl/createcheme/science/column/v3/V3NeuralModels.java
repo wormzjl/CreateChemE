@@ -2,16 +2,7 @@ package com.wormzjl.createcheme.science.column.v3;
 
 import java.io.IOException;
 
-/**
- * The single bundled learned initializer. Safely published and immutable; no file reload or mutable
- * workspace crosses admission.
- *
- * <p>One model ships: the anchor-augmented Transformer {@code F-20260911-s4160}, qualified over the
- * frozen 405-input validation population with the phase-level decoder floor this holder states. The
- * earlier dense, generalized, factorized and nearest-profile families are no longer bundled; their
- * readers and artifacts live in the offline tools source set under {@code tools/neural/retired/} so the
- * archived studies still build. See {@code v3-column-transformer-f0.md} beside the artifact.</p>
- */
+/** Immutable bundled initializer holder. Missing or incompatible regrouped weights retain classical fallback. */
 public final class V3NeuralModels {
     /**
      * The qualified decoder rule: a phase whose total decodes zero, whose branch admits it and whose
@@ -21,7 +12,7 @@ public final class V3NeuralModels {
     static final double QUALIFIED_ZERO_PHASE_FLOOR_FACTOR = 10.0;
 
     /** The bundled artifact, relative to the classpath root. */
-    public static final String ARTIFACT = "/data/createcheme/neural/v3-column-transformer-f0.json";
+    public static final String ARTIFACT = "/data/createcheme/neural/v3-column-transformer-regrouped.json";
 
     private V3NeuralModels() {}
 

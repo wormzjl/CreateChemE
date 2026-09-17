@@ -1,7 +1,7 @@
 # Material data packs
 
 Production material values are JSON resources. Java implements equations and validation, not component tables.
-The existing CDU17, TJL19, methane-extended TJL20, and water data are preserved. PR78 is the available equilibrium
+The active crude family has 12 pseudocomponents (`crude_pc01`–`crude_pc12`): 19 hydrocarbons with methane, 18 without, and 20 non-water species in the nitrogen network extension. CDU17 is a test-only reference. Exact chemicals and water retain their data. PR78 is the available equilibrium
 solver. NRTL parameter records can be loaded and validated; selecting an NRTL package for calculation reports
 `Thermodynamic solver unavailable: nrtl`.
 
@@ -30,7 +30,7 @@ implementation and corresponding validation; arbitrary equation-type strings fai
 ### `components`
 
 Required: `id`, `kind`, `translation_key`, `fallback`. Kinds are `chemical`, `petroleum_fraction`, and `lump`.
-For a chemical, the English fallback must exactly equal its internal ID. Lumps such as `cdu17_c4` have independent
+For a chemical, the English fallback must exactly equal its internal ID. Ordinary lumps have independent
 descriptive labels. Component identity does not imply that every source dataset has identical property estimates.
 
 Petroleum fractions additionally require `cut`:
@@ -46,8 +46,7 @@ Petroleum fractions additionally require `cut`:
 ```
 
 At least one bound is required. Omit the lower bound for the first open-ended cut, or the upper bound for the last.
-For the migrated data, internal boundaries are midpoints of adjacent representative NBPs **within the same
-characterization series**. Exact light-end chemicals are not used as neighboring cuts. These are estimated
+For PC01–PC07, internal boundaries retain the original adjacent-NBP midpoints. PC08–PC12 use the estimated 377.8749814474507/450/550/650/750°C grid with an open upper tail, derived by constrained mass-CDF reconstruction. Exact light-end chemicals are not used as neighboring cuts. These are estimated
 labels, not recovered assay boundaries. Sourced boundaries should use `estimated: false` and identify their source
 in `derivation`. Bounds affect presentation only; they never replace the model's representative NBP.
 
@@ -77,9 +76,7 @@ with zero enthalpy at that datum. Existing cubic fits retain their original eval
 `acentric_factor`. A PR78 package requires those fields for each selected property dataset. NRTL is a mixture
 activity model: its binary parameters belong in an interaction set, not in this pure-component record.
 
-Separate datasets may reference the same component. For example, CDU17 and TJL19 preserve their slightly different
-Ethane properties rather than silently replacing one reconstruction with the other. TJL20 references TJL19's
-existing property records and adds its own Methane record.
+Separate datasets may reference the same component. The bundled crude packages share their selected property records; the methane-free package omits Methane and the network package adds Nitrogen.
 
 ### `interactions`
 
@@ -127,8 +124,7 @@ sum. Assay order must exactly match its package. `basis` is `mole`, `mass`, or `
 
 Volume assays also require `standard_temperature_kelvin` and `standard_pressure_pascal`, matching the selected
 density reference conditions. Optional positive `volume_scale` and `amount_total` default to 1; volume is evaluated
-as `volume_scale * amount / amount_total`. CDU17 retains its historical scale and arithmetic exactly. TJL19 retains
-its original molar amounts, and TJL20 retains the synthetic 0.5 mol% methane blend.
+as `volume_scale * amount / amount_total`. The regrouped Tia Juana assay conserves the original mass, standard liquid volume and ideal caloric moments; its pseudomole total changes. The methane assay retains the synthetic 0.5 mol% convention.
 
 ### `water`
 
@@ -173,12 +169,7 @@ The bundled water model includes the [IAPWS SR6-08(2011) liquid-water correlatio
 equation 7/table 5, with coefficients converted from μPa·s to Pa·s. It is restricted to its 0.1 MPa reference isobar
 and 253.15–383.15 K. This interval includes metastable liquid below freezing and above boiling; it is not a vapor
 correlation. The verification tests use independent table 8 values at 260, 298.15, and 375 K.
-The current methane/TJL feed's 20 components have both liquid and vapor curves exported through the installed
-DWSIM 10.2.5.0 API. They use the original `tjl-ledezma2019-dwsim1023-13pc-r1` characterization and native chemical
-data (including ChemSep correlations). The 13 petroleum fractions retain their native viscosity reference values
-and are flagged `estimated: true`. There are 46 curves across 23 property records, including the older CDU package's
-three matching exact chemicals. Its C4 lump and 12 differently characterized fractions have no matching source
-and remain unavailable. No new viscosity estimates were fabricated for those unmatched materials.
+Exact-chemical transport retains the installed DWSIM API curves and independent check points. The 12 active petroleum cuts use the shared Dalia liquid family described below. The five regrouped heavy vapor curves were re-evaluated through `AUX_VAPVISCi` with their reconstructed properties; all are estimated. The retired CDU17 data is available only to independent tests.
 
 Liquid curves sample `AUX_LIQVISCi(name,T,100000 Pa)`; vapor curves sample the dilute-gas auxiliary
 `AUX_VAPVISCi(component,T)`. Both are restricted to the 0.1 MPa isobar in the catalog. These are conditional phase
@@ -196,15 +187,11 @@ ambient extension. Run `Export-DwsimViscosity.ps1 -Ambient -Characterization <so
 (`--dissolved-report` selects the second). Independent ambient checkpoints are included in tests.
 
 Fluid generators preserve temperature/pressure when selecting a composition. The fluid-specific model supports
-293.15 K (20°C) for unchanged bundled crude properties through a five-kelvin continuation of their existing
+293.15 K (20°C) for the bundled crude properties through a five-kelvin continuation of their existing
 caloric fits; this is a near-ambient approximation, not a new laboratory qualification or a wax/gel model.
-Changed property records retain their declared limits. The column property domains and PR/Cp values remain
-unchanged, while fluid-model and transport revisions invalidate incompatible fluid caches. Ambient generation
+Changed property records retain their declared limits. The column property domains remain unchanged; the regrouped PR/Cp values are versioned, while fluid-model and transport revisions invalidate incompatible fluid caches. Ambient generation
 is tested at 293.15, 298, 298.15 and 300 K; colder crude operation remains outside this extension.
-Existing fluid checkpoints have a narrowly pinned migration from the previous bundled network dataset to this
-ambient extension: amounts, energy, clocks and fallback allowances are preserved, and old anchors retain their
-obsolete revision so they cannot be reused. Both scientific fingerprints and compressibility must match this
-specific transition; unrelated data-pack edits still require explicit migration.
+Old fluid property fingerprints are refused; the previous ambient-extension compatibility exception has been removed.
 
 Adaptive subdivision checks quarter, midpoint, and three-quarter temperatures until log interpolation agrees with
 the API within 0.05% at those check points. This measures interpolation error only, not physical model accuracy.
@@ -270,8 +257,7 @@ plain IDs. Petroleum labels compose the component's translated base name with th
 The first argument is the base name; remaining arguments are Celsius bounds displayed to one decimal place.
 The server sends bounded naming descriptors, so clients do not need the server's scientific data pack.
 Composition cells show localized labels; hovering shows the full label and internal ID. Missing translations use
-English fallbacks. Package and assay IDs remain stable. Saved legacy axes are migrated by identity and amounts
-are reordered with their components. Legacy saved results remain presentation-only and require recalculation.
+English fallbacks. Package and assay IDs remain stable. Retired saved axes are rejected. Current-format saved results remain presentation-only and require recalculation.
 The network protocol is now version 7 with wire schema 10; client and server must run compatible mod versions.
 
 ## Reloads, scientific identity, and verification
@@ -317,3 +303,25 @@ composition, rejects stale/busy changes, and persists the selected package, assa
 rendering or appearance synchronization is introduced by this selector.
 
 Additional transport properties, fitted NRTL datasets/calculations, and an in-game editor are outside this release.
+
+
+## Regrouped crude transport and development saves
+
+PC01–PC12 use one Dalia source-cut liquid-viscosity family over 293.15–900 K. The three 550°C+ cuts share the same unresolved pure-liquid curve. This is an estimated transport surrogate for every crude, not a claim that their measured viscosity profiles agree. The first three unmeasured source intervals retain light-cut estimates. Liquid tables outside measured temperatures are continuations, not phase-stability predictions. No freezing, wax, gel, elemental or reaction state is introduced.
+
+A property may carry `liquid_mixture_descriptor` with `participation` and `residue_retention` in [0,1], and a finite nonnegative `activation_slope`. Absent descriptors mean zero participation, retention and slope. `activation_slope` is dimensionless: Δln(μ)/(1000 K × Δ(1/T)) between 313.15 and 323.15 K. Retention describes an ideal 370°C+ split. Nonparticipating gases and exact chemicals still dilute participating mole fractions.
+
+Packages may select `liquid_mixture` with `type: symmetric_pair_groups_v1`, four finite `coefficients`, positive `reference_kelvin` and `slope_cap_kelvin >= reference_kelvin`. For normalized amounts x, p=participation and h=retention, let a=xp and b=ah. The correction to Σx ln(μ) is:
+
+```
+F(a) = (Σa)² − Σa²
+E(a) = (Σa)(Σa activation_slope) − Σ(a² activation_slope)
+q = 1000 K × (1/min(T, slope_cap_kelvin) − 1/reference_kelvin)
+Δln(μ) = c0(F(a)−F(b)) + c1 F(b) + q[c2(E(a)−E(b)) + c3 E(b)]
+```
+
+All pair terms vanish for a pure component. The implementation evaluates factored sums in O(component count). These coefficients and descriptors participate in the transport fingerprint, while scientific PR/caloric fingerprints remain independent. This release fits Dalia whole crude at 20/50°C and 370°C+ residue at 50/100°C, reserving whole 40°C and residue 60°C for verification. Other crudes' discrepancies are accepted and reported as a global approximation.
+
+`column_feed_standard_volume_m3_per_second` optionally supplies the positive preset feed volume at the selected property density reference; molar throughput is derived from the current assay and molecular weights. Captured pre-regrouping physical throughputs are retained.
+
+This development change breaks the old component basis. Production packages have no old pseudocomponent aliases, saved column data uses version 9, and old fluid fingerprints are refused. Recreate inputs in a fresh development world or explicitly reset obsolete data; no automatic material deletion or migration is provided. Independent old numerical oracles exist only in test scope. Obsolete learned weights are retired; an unavailable qualified model leaves the classical initializer usable.

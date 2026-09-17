@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class RetainedSolverTest {
     private static FluidThermodynamics model() {
-        return FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+        return FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     }
     private static PassiveNetwork graph(FluidThermodynamics model) {
         return new PassiveNetwork(List.of(

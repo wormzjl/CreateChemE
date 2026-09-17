@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** A nearby cold input must pass the acceptance gates regardless of which numerical path succeeds. */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3NearbyInputRecoveryTest {
     @Test
     void nearby551KelvinColdInputPassesTheSameFreshAcceptanceGate() {

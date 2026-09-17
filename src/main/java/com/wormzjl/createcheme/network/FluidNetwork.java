@@ -28,7 +28,7 @@ public final class FluidNetwork {
         public Controls {
             composition=composition.clone();
             for(double value:new double[]{temperature,pressure,diameter,roughness,volumeFlow,maximumAddedPressure})if(!Double.isFinite(value))throw new IllegalArgumentException("All controls must be finite numbers");
-            if(temperature<273.16||temperature>600||pressure<100||pressure>2e6||diameter<.001||diameter>1||roughness<0||roughness>=diameter||volumeFlow<0||volumeFlow>10||maximumAddedPressure<=0||maximumAddedPressure>2e6||composition.length!=22)throw new IllegalArgumentException("Controls are outside the supported range");
+            if(temperature<273.16||temperature>600||pressure<100||pressure>2e6||diameter<.001||diameter>1||roughness<0||roughness>=diameter||volumeFlow<0||volumeFlow>10||maximumAddedPressure<=0||maximumAddedPressure>2e6||composition.length!=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount())throw new IllegalArgumentException("Controls are outside the supported range");
             double sum=0;for(double n:composition){if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Composition entries must be nonnegative");sum+=n;}if(!Double.isFinite(sum)||sum<=0)throw new IllegalArgumentException("Composition cannot be empty");
         }
         @Override public double[] composition(){return composition.clone();}

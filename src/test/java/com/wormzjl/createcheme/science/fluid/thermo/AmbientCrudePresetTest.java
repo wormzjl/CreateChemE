@@ -47,7 +47,7 @@ class AmbientCrudePresetTest {
         double[] n=new double[original.componentCount()];n[10]=1;
         assertThrows(IllegalArgumentException.class,()->original.phase(293,101325,n,com.wormzjl.createcheme.science.thermo.PhaseRoot.LIQUID));
         var resources=new java.util.HashMap<>(catalog.resources());
-        String path="data/createcheme/materials/properties/tjl19_tjl19_pc04.json";
+        String path="data/createcheme/materials/properties/crude_pc04.json";
         var p=com.google.gson.JsonParser.parseString(resources.get(path)).getAsJsonObject();
         var cp=p.getAsJsonObject("ideal_gas_cp").getAsJsonArray("coefficients");
         cp.set(0,new com.google.gson.JsonPrimitive(cp.get(0).getAsDouble()*1.001));resources.put(path,p.toString());

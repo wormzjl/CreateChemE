@@ -18,21 +18,21 @@ class MaterialCatalogTest {
         resources.put(ROOT+path,json.toString()); return resources;
     }
     @Test void immutableCatalogRetainsSeparateDatasetsForSharedChemicalIdentity() {
-        var c=MaterialCatalog.bundled(); var pilot=c.requirePackage("createcheme:cdu17_tjl_acs2018"); var literature=c.requirePackage(ID);
+        var c=MaterialCatalog.bundled(); var pilot=Cdu17TestCatalog.catalog().requirePackage("createcheme:cdu17_tjl_acs2018"); var literature=c.requirePackage(ID);
         assertEquals("Ethane",pilot.properties().get(1).component()); assertEquals("Ethane",literature.properties().get(1).component());
         assertNotEquals(pilot.properties().get(1).molecularWeight(),literature.properties().get(1).molecularWeight());
         assertThrows(UnsupportedOperationException.class,()->literature.properties().clear());
         assertThrows(UnsupportedOperationException.class,()->literature.interactions().get(0).set(0,9.0));
         assertEquals("Ethane",c.name("Ethane").english());
-        assertTrue(c.name("tjl19_pc01").english().contains("below"));
-        assertTrue(c.name("tjl19_pc13").english().contains("above"));
-        assertTrue(c.name("tjl19_pc07").english().endsWith("(estimated)"));
+        assertTrue(c.name("crude_pc01").english().contains("below"));
+        assertTrue(c.name("crude_pc12").english().contains("above"));
+        assertTrue(c.name("crude_pc07").english().endsWith("(estimated)"));
     }
     @Test void numericalEditsInvalidateFingerprintEvenWithoutRevisionBumpButNamesDoNot() {
         var before=MaterialCatalog.bundled().requirePackage(ID);
-        var names=MaterialCatalog.parse(changed("components/tjl19_pc07.json",o->o.addProperty("fallback","Petroleum")));
+        var names=MaterialCatalog.parse(changed("components/crude_pc07.json",o->o.addProperty("fallback","Petroleum")));
         assertEquals(before.fingerprint(),names.requirePackage(ID).fingerprint());
-        var science=MaterialCatalog.parse(changed("properties/tjl19_tjl19_pc07.json",o->o.addProperty("molecular_weight_kg_per_mol",.31)));
+        var science=MaterialCatalog.parse(changed("properties/crude_pc07.json",o->o.addProperty("molecular_weight_kg_per_mol",.31)));
         assertEquals(before.revision(),science.requirePackage(ID).revision());
         assertNotEquals(before.fingerprint(),science.requirePackage(ID).fingerprint());
         assertFalse(MaterialRuntime.with(science,ID,()->MaterialRuntime.isBundledScience(ID)));
@@ -43,9 +43,9 @@ class MaterialCatalogTest {
     }
     @Test void invalidReloadCannotPublishPartialCatalog() {
         MaterialRuntime.publish(MaterialCatalog.bundled());
-        var bad=changed("properties/tjl19_tjl19_pc07.json",o->o.addProperty("molecular_weight_kg_per_mol",-1));
+        var bad=changed("properties/crude_pc07.json",o->o.addProperty("molecular_weight_kg_per_mol",-1));
         var error=assertThrows(IllegalArgumentException.class,()->MaterialRuntime.publish(MaterialCatalog.parse(bad)));
-        assertTrue(error.getMessage().contains("properties/tjl19_tjl19_pc07.json"));
+        assertTrue(error.getMessage().contains("properties/crude_pc07.json"));
         assertTrue(error.getMessage().contains("molecular_weight_kg_per_mol"));
         assertSame(MaterialCatalog.bundled(),MaterialRuntime.active());
     }
@@ -53,7 +53,7 @@ class MaterialCatalogTest {
         var duplicate=new HashMap<>(MaterialCatalog.bundled().resources());
         duplicate.put(ROOT+"components/duplicate.json",duplicate.get(ROOT+"components/ethane.json"));
         assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(duplicate));
-        assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(changed("properties/tjl19_tjl19_pc07.json",o->o.addProperty("component","Missing"))));
+        assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(changed("properties/crude_pc07.json",o->o.addProperty("component","Missing"))));
         assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(changed("packages/tjl20.json",o->o.getAsJsonObject("aliases").addProperty("Ethane","Methane"))));
         assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(changed("packages/tjl20.json",o->o.addProperty("missing_interactions","error"))));
     }
@@ -68,7 +68,7 @@ class MaterialCatalogTest {
         double[] expected=V3PengRobinsonThermo.fromRegisteredPackage(ID).crudeFeed(assay.id()).moleFractions();
         double[] actual=MaterialRuntime.with(changed,ID,()->V3PengRobinsonThermo.fromRegisteredPackage(ID).crudeFeed(assay.id()).moleFractions());
         assertArrayEquals(expected,actual,1e-16);
-        assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(changed("assays/cdu17.json",o->o.addProperty("standard_temperature_kelvin",300))));
+        assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(changed("assays/tjl19.json",o->{o.addProperty("basis","standard_liquid_volume");o.addProperty("standard_temperature_kelvin",300);o.addProperty("standard_pressure_pascal",101325);})));
     }
     @Test void nrtlPairsAreDirectedCompleteAndNotAnImplementedSolver() {
         var r=new HashMap<>(MaterialCatalog.bundled().resources());
@@ -112,13 +112,11 @@ class MaterialCatalogTest {
     }
     @Test void legacyInputMigrationUsesIdentitiesAndPreservesAmounts() {
         var c=MaterialCatalog.bundled();var p=c.requirePackage(ID);var ids=new ArrayList<>(p.components());
-        int index=ids.indexOf("tjl19_pc07");ids.set(index,"TJL_PC07");Collections.reverse(ids);
+        int index=ids.indexOf("crude_pc07");ids.set(index,"TJL_PC07");Collections.reverse(ids);
         double[] values=new double[ids.size()];for(int i=0;i<values.length;i++)values[i]=i+1;
         var input=new V3ColumnInput(1,ID,"createcheme:tia_juana_light_methane",new V3ComponentBasis(ids),values,638.15,4,2,250000,0,
                 List.of(new V3ColumnSpecification.CondenserOutletTemperature(332.15),new V3ColumnSpecification.OrganicRefluxRatio(4.17),new V3ColumnSpecification.ReboilerDuty(0)));
-        var migrated=V3MaterialInputs.migrate(input,c);
-        assertEquals(p.components(),migrated.componentBasis().componentIds());
-        assertEquals(values[ids.indexOf("TJL_PC07")],migrated.feedComponentMolarFlowsMolPerSecond()[index]);
-        assertEquals(Arrays.stream(values).sum(),Arrays.stream(migrated.feedComponentMolarFlowsMolPerSecond()).sum());
+        assertThrows(IllegalArgumentException.class,()->V3MaterialInputs.migrate(input,c));
+        assertArrayEquals(values,input.feedComponentMolarFlowsMolPerSecond());
     }
 }

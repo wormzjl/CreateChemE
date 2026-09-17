@@ -8,18 +8,18 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ScheduledTransferEstimatorTest {
-    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
     @Test void changingGasCompositionAndWithdrawnEnergyMatchTighterStepDoubling() {
-        var gas=model.initialNitrogenCharge(1,320,300000,()->{});double[] methane=new double[22];methane[0]=1;
+        var gas=model.initialNitrogenCharge(1,320,300000,()->{});double[] methane=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];methane[0]=1;
         var injected=model.flashTP(320,300000,methane,()->{});
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,gas)),List.of(),List.of(new ScheduledTransfer.Injection(-1,0,methane,injected.enthalpy()),new ScheduledTransfer.Withdrawal(-2,0,.03)));
         compare(graph);
     }
     @Test void wetCrudePipeAndSimultaneousModuleBoundariesMatchTighterStepDoubling() {
-        var composition=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);composition[20]=.1;composition[21]=.2;
+        var composition=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane_nitrogen").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);composition[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.1;composition[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;
         var nodes=new ArrayList<PassiveNetwork.Reservoir>();
-        for(int i=0;i<2;i++){var n=composition.clone();var unit=model.flashTP(350,150100-i*100,n,()->{});for(int c=0;c<22;c++)n[c]/=unit.volume();nodes.add(new PassiveNetwork.Reservoir(i+1,0,model.flashTP(350,150100-i*100,n,()->{})));}
-        double[] water=new double[22];water[21]=.01/model.waterMolecularWeight;var feed=model.flashTP(350,150100,water,()->{});
+        for(int i=0;i<2;i++){var n=composition.clone();var unit=model.flashTP(350,150100-i*100,n,()->{});for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)n[c]/=unit.volume();nodes.add(new PassiveNetwork.Reservoir(i+1,0,model.flashTP(350,150100-i*100,n,()->{})));}
+        double[] water=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];water[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.01/model.waterMolecularWeight;var feed=model.flashTP(350,150100,water,()->{});
         var graph=new PassiveNetwork(nodes,List.of(new PassiveNetwork.Pipe(9,0,1,new PipeResistance.Geometry(20,.05,.000045,0))),List.of(new ScheduledTransfer.Injection(-1,0,water,feed.enthalpy()),new ScheduledTransfer.Withdrawal(-2,1,.012)));
         compare(graph);
     }
@@ -36,6 +36,6 @@ class ScheduledTransferEstimatorTest {
         assertTrue(actual.acceptedSubsteps()<reference.acceptedSubsteps(),"Embedded estimator did not reduce accepted work in this smooth fixture");
     }
     private static Map<Long,double[]> totals(List<ConservativeTransport.BoundaryTransfer> transfers) {
-        var result=new HashMap<Long,double[]>();for(var transfer:transfers){var sum=result.computeIfAbsent(transfer.nodeId(),id->new double[23]);var n=transfer.moles();for(int c=0;c<22;c++)sum[c]+=n[c];sum[22]+=transfer.totalEnergyJoule();}return result;
+        var result=new HashMap<Long,double[]>();for(var transfer:transfers){var sum=result.computeIfAbsent(transfer.nodeId(),id->new double[23]);var n=transfer.moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)sum[c]+=n[c];sum[22]+=transfer.totalEnergyJoule();}return result;
     }
 }

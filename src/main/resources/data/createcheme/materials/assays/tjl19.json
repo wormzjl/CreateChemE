@@ -9,19 +9,18 @@
     "N-butane",
     "Isopentane",
     "N-pentane",
-    "tjl19_pc01",
-    "tjl19_pc02",
-    "tjl19_pc03",
-    "tjl19_pc04",
-    "tjl19_pc05",
-    "tjl19_pc06",
-    "tjl19_pc07",
-    "tjl19_pc08",
-    "tjl19_pc09",
-    "tjl19_pc10",
-    "tjl19_pc11",
-    "tjl19_pc12",
-    "tjl19_pc13"
+    "crude_pc01",
+    "crude_pc02",
+    "crude_pc03",
+    "crude_pc04",
+    "crude_pc05",
+    "crude_pc06",
+    "crude_pc07",
+    "crude_pc08",
+    "crude_pc09",
+    "crude_pc10",
+    "crude_pc11",
+    "crude_pc12"
   ],
   "basis": "mole",
   "amounts": [
@@ -38,16 +37,16 @@
     64.43108251755497,
     54.322485584984385,
     45.56840631825704,
-    36.547476370088944,
-    45.75999584822728,
-    27.1471218182001,
-    17.262927586863615,
-    6.098471295882541,
-    1.0164141750884463
+    44.84882851610924,
+    48.92471035846549,
+    21.973705288358836,
+    11.107683073713645,
+    6.021556674794564
   ],
   "appearance": {
     "color": "#45301E",
     "transparency": 0.05,
     "estimated": true
-  }
+  },
+  "revision": "crude-regrouped-r1"
 }

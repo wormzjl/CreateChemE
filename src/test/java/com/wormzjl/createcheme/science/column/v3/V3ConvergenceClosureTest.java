@@ -19,6 +19,7 @@ import org.junit.jupiter.params.provider.ValueSource;
  * from the phase-mask work package until the heat-rung energy-shift predictor recovered it) and E dry CDU17
  * with three draws.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3ConvergenceClosureTest {
     private static final String CDU = "createcheme:cdu17_tjl_acs2018";
     private static final String TJL = "createcheme:tjl19_dwsim";

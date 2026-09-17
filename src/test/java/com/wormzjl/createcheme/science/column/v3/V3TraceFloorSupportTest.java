@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Test;
  * <p>The two assertions are the two remedies: the spike is visible in the local-throughput scaling, and the
  * points that carry it are below the support floor and are therefore not unknowns at all.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.TjlReferenceExtension.class)
 class V3TraceFloorSupportTest {
     private static final String STATE_RESOURCE =
             "/science/column/v3/tjl19-wet-three-pumparound-three-draw-stalled-state-java21.txt";
@@ -169,7 +171,7 @@ class V3TraceFloorSupportTest {
                         new V3ColumnSpecification.CondenserOutletTemperature(332.15),
                         new V3ColumnSpecification.OrganicRefluxRatio(4.17),
                         new V3ColumnSpecification.ReboilerDuty(8_000_000.0)),
-                ColumnCalculatorV3BlockEntity.pilotPresetInput().sideDraws(),
+                com.wormzjl.createcheme.science.material.Cdu17TestCatalog.pilotInput().sideDraws(),
                 List.of(new V3SteamFeedSpec(STAGE_COUNT + 1, SUMP_STEAM_MOL_PER_SECOND, SUMP_STEAM_TEMPERATURE_KELVIN)),
                 List.of(new V3PumparoundSpec(6, 9, -5.0e6, V3PumparoundSpec.Split.UNIFORM),
                         new V3PumparoundSpec(13, 16, -6.0e6, V3PumparoundSpec.Split.UNIFORM),

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class PhaseLayoutTest {
     @Test void sparseTwoPhaseEncodingKeepsPhasePropertySnapshotsIsolated() {
         var model=new FluidThermodynamics(MaterialCatalog.bundled(),"createcheme:tjl20_methane",1e-9);
-        double[] liquid=new double[20],vapor=new double[20];liquid[6]=1;vapor[0]=1;
+        double[] liquid=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE],vapor=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE];liquid[6]=1;vapor[0]=1;
         var state=model.state(350,101325,liquid,vapor,0,0,101325);var layout=new PhaseLayout(model,state);
         var expected=layout.encode(state);
         state.liquidProperties().logFugacity()[0]=Double.NaN;state.vaporProperties().logFugacity()[0]=Double.NaN;
@@ -19,8 +19,8 @@ class PhaseLayoutTest {
     }
     @Test void coupledVolumeEnergyAndPhaseEquationsRecoverIndependentTpTargets() {
         String id="createcheme:tjl20_methane";var model=new FluidThermodynamics(MaterialCatalog.bundled(),id,1e-9);
-        double[] crude=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),21);crude[20]=.2;
-        double[] water=new double[21];water[20]=1;double[] methane=new double[21];methane[0]=1;
+        double[] crude=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1);crude[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE]=.2;
+        double[] water=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1];water[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE]=1;double[] methane=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1];methane[0]=1;
         for(double[] n:new double[][]{crude,water,methane}) {
             var seed=model.flashTP(350,101325,n,()->{});var target=model.flashTP(351,105000,n,()->{});
             var layout=new PhaseLayout(model,seed);

@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3BlockJacobianAssemblerTest {
     @ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(ints = {0, 1, 2, 4})
