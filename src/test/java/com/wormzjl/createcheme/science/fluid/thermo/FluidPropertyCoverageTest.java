@@ -20,16 +20,16 @@ class FluidPropertyCoverageTest {
         // does: {@code FluidPresetCatalog} computes each crude composition on its own package and
         // pads it onto this one basis.
         var model = FluidThermodynamics.forNetwork(catalog, FluidMaterialCatalog.NETWORK_PACKAGE, 1e-9);
-        for (String packageId : List.of("createcheme:tjl20_methane", "createcheme:wti_light_export_tjl20", "createcheme:cold_lake_blend_tjl20")) {
+        for (String packageId : List.of("createcheme:tjl20_methane", "createcheme:wti_light_export_tjl20", "createcheme:cold_lake_blend_tjl20", "createcheme:upper_zakum_tjl20", "createcheme:bonga_tjl20", "createcheme:dalia_tjl20")) {
             var propertyPackage = catalog.requirePackage(packageId);
             var n = Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(packageId)
                     .crudeFeed(propertyPackage.assays().keySet().iterator().next()).moleFractions(), model.componentCount());
             n[model.components().indexOf("Nitrogen")] = .1; n[model.componentCount()-1] = .2;
-            double[] temperatures = {298.15, 300, 325, 350, 375};
+            double[] temperatures = {293.15, 298.15, 300, 325, 350, 375};
             double[] pressures = {50000, 101325, 500000, 1e6, 2e6};
             for (boolean interior : new boolean[]{false, true}) {
-                int count = interior ? 4 : 5;
-                for (int ti = 0; ti < count; ti++) for (int pi = 0; pi < count; pi++) {
+                int temperatureCount = temperatures.length-(interior?1:0), pressureCount=pressures.length-(interior?1:0);
+                for (int ti = 0; ti < temperatureCount; ti++) for (int pi = 0; pi < pressureCount; pi++) {
                     double t = interior ? (temperatures[ti] + temperatures[ti + 1]) / 2 : temperatures[ti];
                     double p = interior ? Math.sqrt(pressures[pi] * pressures[pi + 1]) : pressures[pi];
                     var row = new LinkedHashMap<String,Object>(); rows.add(row);
@@ -73,11 +73,11 @@ class FluidPropertyCoverageTest {
     }
     @Test void requiredCrudeMixturesHaveFinitePropertiesAcrossTheInitialWetOperatingGrid() throws Exception {
         var catalog=MaterialCatalog.bundled();var rows=new ArrayList<Map<String,Object>>();var failures=new ArrayList<String>();
-        for(String packageId:List.of("createcheme:tjl20_methane","createcheme:wti_light_export_tjl20","createcheme:cold_lake_blend_tjl20")) {
+        for(String packageId:List.of("createcheme:tjl20_methane","createcheme:wti_light_export_tjl20","createcheme:cold_lake_blend_tjl20", "createcheme:upper_zakum_tjl20", "createcheme:bonga_tjl20", "createcheme:dalia_tjl20")) {
             var model=new FluidThermodynamics(catalog,packageId,1e-9);var p=catalog.requirePackage(packageId);
             var n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(packageId).crudeFeed(p.assays().keySet().iterator().next()).moleFractions(),model.componentCount());
             n[model.componentCount()-1]=.2;
-            for(double t:new double[]{298.15,300,325,350,375})for(double pressure:new double[]{50000,101325,500000,1e6,2e6}) {
+            for(double t:new double[]{293.15,298.15,300,325,350,375})for(double pressure:new double[]{50000,101325,500000,1e6,2e6}) {
                 var row=new LinkedHashMap<String,Object>();rows.add(row);row.put("package",packageId);row.put("temperature",t);row.put("pressure",pressure);
                 try {
                     var state=model.flashTP(t,pressure,n,()->{});

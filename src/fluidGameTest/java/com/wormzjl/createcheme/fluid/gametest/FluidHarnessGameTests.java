@@ -25,28 +25,28 @@ public final class FluidHarnessGameTests {
         long tankId=((com.wormzjl.createcheme.world.level.block.entity.FluidDeviceBlockEntity)level.getBlockEntity(reservoir)).fluidIdentity();
         var registration=world.registrations().get(sourceId);var spec=registration.spec();
         world.edit(sourceId,registration.revision(),registration.device(),new com.wormzjl.createcheme.runtime.fluid.FluidDeviceSpec(spec.volume(),spec.temperature(),200000,spec.composition()));
-        double initialNitrogen=world.view(tankId).state().phaseMoles()[2][20];int[] phase={0};double[] before={0};long[] changedAt={0};
+        double initialNitrogen=world.view(tankId).state().phaseMoles()[2][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()];int[] phase={0};double[] before={0};long[] changedAt={0};
         helper.succeedWhen(()->{
             if(phase[0]==0) {
                 helper.assertTrue(!level.hasChunkAt(middle),"Waiting for intermediate pipe chunks to unload");
-                var view=world.view(tankId);helper.assertTrue(view.state().phaseMoles()[1][21]>0,"No transfer across unloaded middle chunks");
+                var view=world.view(tankId);helper.assertTrue(view.state().phaseMoles()[1][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]>0,"No transfer across unloaded middle chunks");
                 helper.assertTrue(level.hasChunkAt(source)&&level.hasChunkAt(reservoir),"Test endpoint tickets were not retained");
                 level.setChunkForced(a.x,a.z,false);level.setChunkForced(b.x,b.z,false);phase[0]=1;
                 helper.assertTrue(false,"Waiting for endpoint chunks to unload");
             }
             if(phase[0]==1) {
                 helper.assertTrue(!level.hasChunkAt(source)&&!level.hasChunkAt(reservoir),"Waiting for all endpoint chunks to unload");
-                before[0]=world.view(tankId).state().phaseMoles()[1][21];changedAt[0]=world.onlineTick();var current=world.registrations().get(sourceId);var s=current.spec();
+                before[0]=world.view(tankId).state().phaseMoles()[1][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()];changedAt[0]=world.onlineTick();var current=world.registrations().get(sourceId);var s=current.spec();
                 world.edit(sourceId,current.revision(),current.device(),new com.wormzjl.createcheme.runtime.fluid.FluidDeviceSpec(s.volume(),s.temperature(),250000,s.composition()));phase[0]=2;
                 helper.assertTrue(false,"Waiting for the unloaded configuration event and new flow");
             }
             if(phase[0]==2) {
-                var view=world.view(tankId);helper.assertTrue(view.committedTick()>changedAt[0]&&view.state().phaseMoles()[1][21]>before[0]+1e-6,"Waiting for changed flow with every endpoint unloaded");
+                var view=world.view(tankId);helper.assertTrue(view.committedTick()>changedAt[0]&&view.state().phaseMoles()[1][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]>before[0]+1e-6,"Waiting for changed flow with every endpoint unloaded");
                 helper.assertTrue(!level.hasChunkAt(source)&&!level.hasChunkAt(reservoir)&&!level.hasChunkAt(middle),"Simulation loaded a chunk");
                 level.getChunk(reservoir);world.refreshLoaded(tankId);
                 var entity=(com.wormzjl.createcheme.world.level.block.entity.FluidDeviceBlockEntity)level.getBlockEntity(reservoir);
                 helper.assertTrue(entity.fluidIdentity()==tankId,"Reload changed the tank identity");
-                helper.assertTrue(Math.abs(world.view(tankId).state().phaseMoles()[2][20]-initialNitrogen)<1e-8,"Reload recreated nitrogen");
+                helper.assertTrue(Math.abs(world.view(tankId).state().phaseMoles()[2][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]-initialNitrogen)<1e-8,"Reload recreated nitrogen");
                 for(int x=0;x<=128;x++)level.removeBlock(source.east(x),false);phase[0]=3;
                 helper.assertTrue(false,"Waiting for test topology cleanup");
             }
@@ -58,7 +58,7 @@ public final class FluidHarnessGameTests {
     public static void gameplayPlacementTransfersFluidAndRemovalClosesThePersistentOwnershipLedger(GameTestHelper helper) {
         var level=helper.getLevel();var world=com.wormzjl.createcheme.runtime.fluid.FluidWorldAuthority.find(level.getServer()).orElseThrow();
         var reservoir=helper.absolutePos(new net.minecraft.core.BlockPos(0,1,0));var pipe=reservoir.east();var source=pipe.east();
-        double oldConstructed=world.capture().world().constructed().moles()[20],oldDestroyed=world.capture().world().destroyed().moles()[20];
+        double oldConstructed=world.capture().world().constructed().moles()[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()],oldDestroyed=world.capture().world().destroyed().moles()[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()];
         level.setBlock(reservoir,com.wormzjl.createcheme.registry.ModBlocks.FLUID_RESERVOIR.get().defaultBlockState(),3);
         level.setBlock(pipe,com.wormzjl.createcheme.registry.ModBlocks.FLUID_PIPE.get().defaultBlockState(),3);
         level.setBlock(source,com.wormzjl.createcheme.registry.ModBlocks.FLUID_GENERATOR.get().defaultBlockState(),3);
@@ -66,14 +66,14 @@ public final class FluidHarnessGameTests {
         var p=(com.wormzjl.createcheme.world.level.block.entity.FluidDeviceBlockEntity)level.getBlockEntity(pipe);
         var g=(com.wormzjl.createcheme.world.level.block.entity.FluidDeviceBlockEntity)level.getBlockEntity(source);
         helper.assertTrue(r.fluidIdentity()>0&&p.fluidIdentity()>0&&g.fluidIdentity()>0,"Placement did not bind stable identities");
-        long tankId=r.fluidIdentity(),pipeId=p.fluidIdentity();var initial=world.view(tankId).state();double nitrogen=initial.phaseMoles()[2][20];
+        long tankId=r.fluidIdentity(),pipeId=p.fluidIdentity();var initial=world.view(tankId).state();double nitrogen=initial.phaseMoles()[2][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()];
         var registration=world.registrations().get(g.fluidIdentity());var spec=registration.spec();
         world.edit(g.fluidIdentity(),registration.revision(),registration.device(),new com.wormzjl.createcheme.runtime.fluid.FluidDeviceSpec(spec.volume(),spec.temperature(),200000,spec.composition()));
         int[] phase={0};
         helper.succeedWhen(()->{
             if(phase[0]==0) {
-                var view=world.view(tankId);helper.assertTrue(view.state()!=null&&view.state().phaseMoles()[1][21]>0,"Waiting for pressure-driven water filling");
-                helper.assertTrue(Math.abs(view.state().phaseMoles()[2][20]-nitrogen)<1e-8,"Initial nitrogen was lost or recreated");
+                var view=world.view(tankId);helper.assertTrue(view.state()!=null&&view.state().phaseMoles()[1][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]>0,"Waiting for pressure-driven water filling");
+                helper.assertTrue(Math.abs(view.state().phaseMoles()[2][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]-nitrogen)<1e-8,"Initial nitrogen was lost or recreated");
                 helper.assertTrue(!world.view(pipeId).pipeHistory().isEmpty(),"Pipe has no committed phase/flow history");
                 var capture=world.capture();var data=new com.wormzjl.createcheme.runtime.fluid.FluidSavedData(capture.checkpoint(),capture.world(),key->com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.forNetwork(com.wormzjl.createcheme.science.material.MaterialRuntime.active(),key.packageId(),key.compressibility()));
                 var tag=data.save(new net.minecraft.nbt.CompoundTag(),level.registryAccess());
@@ -83,8 +83,8 @@ public final class FluidHarnessGameTests {
                 helper.assertTrue(false,"Waiting for removal event alignment");
             }
             var finalState=world.capture();helper.assertTrue(finalState.world().active().isEmpty()&&finalState.world().events().isEmpty()&&finalState.checkpoint().islands().isEmpty(),"Waiting for authoritative removal transactions");
-            helper.assertTrue(Math.abs(finalState.world().constructed().moles()[20]-oldConstructed-nitrogen)<1e-8,"Construction charged nitrogen more than once");
-            helper.assertTrue(Math.abs(finalState.world().destroyed().moles()[20]-oldDestroyed-nitrogen)<1e-8,"Removal did not account for the retained nitrogen");
+            helper.assertTrue(Math.abs(finalState.world().constructed().moles()[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]-oldConstructed-nitrogen)<1e-8,"Construction charged nitrogen more than once");
+            helper.assertTrue(Math.abs(finalState.world().destroyed().moles()[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]-oldDestroyed-nitrogen)<1e-8,"Removal did not account for the retained nitrogen");
         });
     }
     @GameTest(template="empty",timeoutTicks=10000,batch="fluid-persistence")

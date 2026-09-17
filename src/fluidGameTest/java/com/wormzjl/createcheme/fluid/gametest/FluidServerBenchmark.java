@@ -58,7 +58,7 @@ public final class FluidServerBenchmark {
         long measuredStartEpochMillis,lastMemoryTick=Long.MIN_VALUE;
         final List<Sample> samples=new ArrayList<>();final List<Double> engineMillis=new ArrayList<>(),tickMillis=new ArrayList<>(),tickSpacingMillis=new ArrayList<>();
         final List<Sample> warmupSamples=new ArrayList<>();
-        final Map<Long,Long> seen=new HashMap<>();final double[] external=new double[22];
+        final Map<Long,Long> seen=new HashMap<>();final double[] external=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()];
         final LinkedHashMap<Long,Long> eligibleTickStarts=new LinkedHashMap<>();
         long tickStarted,previousTickStarted,nextTick,lastMeter,measuredStarted;double externalEnergy,pumpWork;boolean finished;
         FluidContentionProbe competing;long contentionStartTick,contentionFinishedTick,maximumDebtTicks;int maximumOutstanding,maximumReady;boolean bounded=true;
@@ -122,7 +122,7 @@ public final class FluidServerBenchmark {
             for(var island:changed) {
                 var timing=timings.get(island.id());if(timing==null||seen.getOrDefault(island.id(),0L)>=timing.sequence())continue;seen.put(island.id(),timing.sequence());
                 var result=timing.accepted()?island.lastResult().orElseThrow():null;
-                if(result!=null){for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<22;c++)external[c]+=n[c];externalEnergy+=boundary.totalEnergyJoule();}pumpWork+=result.pumpWorkJoule();}
+                if(result!=null){for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];externalEnergy+=boundary.totalEnergyJoule();}pumpWork+=result.pumpWorkJoule();}
                 var ready=eligibleTickStarts.get(timing.endTick());Double totalLatency=ready==null?null:(System.nanoTime()-ready)/1e6;
                 var sample=new Sample(island.id(),timing,island.status(),result==null?null:result.acceptance(),result==null?0:result.acceptedSubsteps(),result==null?0:result.rejectedSubsteps(),totalLatency);
                 if(measuring())samples.add(sample);else if(warmupSamples.size()<10000)warmupSamples.add(sample);
@@ -135,7 +135,7 @@ public final class FluidServerBenchmark {
         if(!Set.of("one","many","module","contention","stress100").contains(profile))throw new IllegalArgumentException("Unknown benchmark profile "+profile);
         if(Files.exists(server.getWorldPath(LevelResource.ROOT).resolve("data/"+FluidSavedData.DATA_NAME+".dat")))throw new IllegalStateException("Benchmark requires a fresh disposable world");
         var model=FluidThermodynamics.forNetwork(MaterialRuntime.active(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
-        var composition=Arrays.copyOf(MaterialRuntime.with(MaterialRuntime.active(),FluidPresetCatalog.NETWORK_PACKAGE,()->V3PengRobinsonThermo.fromRegisteredPackage(FluidPresetCatalog.NETWORK_PACKAGE).crudeFeed("createcheme:tia_juana_light_methane").moleFractions()),22);composition[20]=.1;composition[21]=.2;
+        var composition=Arrays.copyOf(MaterialRuntime.with(MaterialRuntime.active(),FluidPresetCatalog.NETWORK_PACKAGE,()->V3PengRobinsonThermo.fromRegisteredPackage(FluidPresetCatalog.NETWORK_PACKAGE).crudeFeed("createcheme:tia_juana_light_methane").moleFractions()),com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount());composition[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]=.1;composition[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]=.2;
         var devices=new ArrayList<PhysicalFluidTopology.Device>();var registrations=new LinkedHashMap<Long,WorldTopologyLedger.Registration>();var stocks=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();var reservoirs=new ArrayList<Long>();
         class Builder {
             long next=1;int pipes;
@@ -144,7 +144,7 @@ public final class FluidServerBenchmark {
                 var spec=new FluidDeviceSpec(1,350,pressure,composition);registrations.put(id,new WorldTopologyLedger.Registration(device,spec,0));
                 if(kind==Kind.PIPE){pipes++;return;}
                 if(kind==Kind.RESERVOIR) {
-                    var amounts=composition.clone();var unit=model.flashTP(350,pressure,amounts,()->{});for(int c=0;c<22;c++)amounts[c]/=unit.volume();var state=model.flashTP(350,pressure,amounts,()->{});
+                    var amounts=composition.clone();var unit=model.flashTP(350,pressure,amounts,()->{});for(int c=0;c<model.componentCount();c++)amounts[c]/=unit.volume();var state=model.flashTP(350,pressure,amounts,()->{});
                     stocks.put(id,new PassiveNetwork.Reservoir(id,80,state,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,amounts,state.internalEnergy())));reservoirs.add(id);
                 }else stocks.put(id,spec.initialize(device,model,()->{}));
             }
@@ -190,7 +190,7 @@ public final class FluidServerBenchmark {
         var buffers=new LinkedHashMap<UUID,BufferedTransfers.Buffer>();var bindings=new ArrayList<CausalModuleCoordinator.Binding>();var modules=new ArrayList<FixedSplitModule.Snapshot>();
         if(profile.equals("module")) {
             for(int index:new int[]{49,50,51}){long node=reservoirs.get(index);var id=new UUID(9,node);buffers.put(id,new BufferedTransfers.Buffer(id,10000,stocks.get(node).state().mass(),Map.of()));bindings.add(new CausalModuleCoordinator.Binding(id,ownerByNode.get(node),node));}
-            double[] fractions=new double[22];Arrays.fill(fractions,1);
+            double[] fractions=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()];Arrays.fill(fractions,1);
             var definition=new FixedSplitModule.Definition(new UUID(9,999999),List.of(new FixedSplitModule.Feed(bindings.getFirst().buffer(),.02)),bindings.get(1).buffer(),bindings.get(2).buffer(),300,fractions);
             modules.add(new FixedSplitModule.Snapshot(definition,0,0,false,null));
         }
@@ -251,8 +251,8 @@ public final class FluidServerBenchmark {
         var latency=r.samples.stream().map(s->s.timing().dispatchToPublicationNanos()/1e6).toList();long held=r.samples.stream().filter(s->!s.timing().accepted()).count();
         var endToEnd=r.samples.stream().map(Sample::readyToPublicationMillis).filter(Objects::nonNull).toList();
         var finalState=r.world.capture().checkpoint();var initial=totals(fixture.checkpoint,fixture.model);var actual=totals(finalState,fixture.model);double maximumBalance=0;
-        for(int c=0;c<22;c++)maximumBalance=Math.max(maximumBalance,Math.abs(actual[c]-initial[c]-r.external[c])/(1e-10+1e-8*Math.max(Math.abs(initial[c]),Math.abs(actual[c]))));
-        double energyError=Math.abs(actual[22]-initial[22]-r.externalEnergy-r.pumpWork)/(1e-4+1e-6*(Math.abs(initial[22])+Math.abs(r.externalEnergy)+Math.abs(r.pumpWork)));
+        for(int c=0;c<r.external.length;c++)maximumBalance=Math.max(maximumBalance,Math.abs(actual[c]-initial[c]-r.external[c])/(1e-10+1e-8*Math.max(Math.abs(initial[c]),Math.abs(actual[c]))));
+        double energyError=Math.abs(actual[actual.length-1]-initial[initial.length-1]-r.externalEnergy-r.pumpWork)/(1e-4+1e-6*(Math.abs(initial[initial.length-1])+Math.abs(r.externalEnergy)+Math.abs(r.pumpWork)));
         Double workerP95=percentile(worker,.95),serverP95=percentile(r.engineMillis,.95);
         long approximate=r.samples.stream().filter(s->s.acceptance()==PassiveStepSolver.Acceptance.APPROXIMATE).count();
         long finalDebt=finalState.islands().stream().mapToLong(i->i.snapshot().clock().onlineTick()-i.snapshot().clock().committedTick()).max().orElse(0);
@@ -266,7 +266,7 @@ public final class FluidServerBenchmark {
         catch(java.io.IOException failure){throw new IllegalStateException("Missing benchmark revision manifest",failure);}
         report.put("measuredIntervalsPerIsland",r.samples.stream().collect(java.util.stream.Collectors.groupingBy(Sample::island,java.util.stream.Collectors.counting())));
         report.put("workers",ProcessSolveServices.diagnostics(r.server).workerCount());report.put("cadenceSeconds",5);report.put("adaptiveCadence",false);report.put("warmupTicks",r.warmupTicks);report.put("elapsedSeconds",(now-r.startNanos)/1e9);report.put("measuredSeconds",(now-r.measuredStarted)/1e9);
-        report.put("reservoirs",100);report.put("physicalPipes",fixture.physicalPipes);report.put("compiledPipes",fixture.compressedPipes);report.put("components",22);report.put("islands",fixture.checkpoint.islands().size());report.put("loadedFixtureChunks",fixture.chunks.size());report.put("chunkTickets","Explicit test-harness tickets only; simulation engine creates none");
+        report.put("reservoirs",100);report.put("physicalPipes",fixture.physicalPipes);report.put("compiledPipes",fixture.compressedPipes);report.put("components",r.external.length);report.put("islands",fixture.checkpoint.islands().size());report.put("loadedFixtureChunks",fixture.chunks.size());report.put("chunkTickets","Explicit test-harness tickets only; simulation engine creates none");
         report.put("propertyRevision",ApproximationAnchor.revision(fixture.model));report.put("compressibility",1e-9);report.put("heldIntervals",held);report.put("componentBalanceToleranceUnits",maximumBalance);report.put("energyBalanceToleranceUnits",energyError);
         report.put("workerMilliseconds",statistics(worker));report.put("dispatchToPublicationMilliseconds",statistics(latency));report.put("engineServerMillisecondsPerTick",statistics(r.engineMillis));report.put("wholeTickMilliseconds",statistics(r.tickMillis));report.put("tickSpacingMilliseconds",statistics(r.tickSpacingMillis));
         report.put("readyToPublicationMilliseconds",statistics(endToEnd));report.put("latencyDefinition","Start of the eligible server tick to atomic publication; includes readiness queue/debt and the cohort barrier. Missing bounded timing history fails qualification.");
@@ -282,7 +282,7 @@ public final class FluidServerBenchmark {
             boolean allAdvanced=finalState.islands().stream().allMatch(i->i.snapshot().clock().committedTick()>0);
             boolean unloaded=fixture.topology.active().values().stream().noneMatch(record->{var p=record.device().position();return r.server.overworld().hasChunkAt(new BlockPos(p.x(),p.y(),p.z()));});
             report.put("status","STRESS_COMPLETED");report.put("qualificationNote","Fixed-duration stress characterization, not an M9 qualification replicate. All failures, lag, warmup and quality are retained; ordinary latency gates are reported separately.");
-            report.put("reservoirs",reservoirCount);report.put("fixtureSeed",2026091603L);report.put("topology","100 isolated ladder networks, 10-30 finite reservoirs each, series rails and parallel rungs; 22-component wet TJL + nitrogen");
+            report.put("reservoirs",reservoirCount);report.put("fixtureSeed",2026091603L);report.put("topology","100 isolated ladder networks, 10-30 finite reservoirs each, series rails and parallel rungs; current-basis wet TJL + nitrogen");
             report.put("reservoirsPerIsland",fixture.checkpoint.islands().stream().collect(java.util.stream.Collectors.toMap(i->i.snapshot().id(),i->i.snapshot().graph().reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).count())));
             report.put("stressSamples",r.stressSamples);report.put("allFixtureChunksUnloaded",unloaded);report.put("everyIslandAdvanced",allAdvanced);
             double seconds=(now-r.measuredStarted)/1e9;
@@ -331,12 +331,12 @@ public final class FluidServerBenchmark {
     }
     private static Double percentile(List<Double> values,double fraction){if(values.isEmpty())return null;var sorted=new ArrayList<>(values);Collections.sort(sorted);return sorted.get(Math.min(sorted.size()-1,(int)Math.ceil(fraction*sorted.size())-1));}
     private static Map<String,Object> statistics(List<Double> values){var result=new LinkedHashMap<String,Object>();result.put("count",values.size());result.put("median",percentile(values,.5));result.put("p95",percentile(values,.95));result.put("max",percentile(values,1));return result;}
-    private static double[] weights(FluidThermodynamics model){double[] weights=new double[22];for(int c=0;c<22;c++)weights[c]=c==21?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(c);return weights;}
+    private static double[] weights(FluidThermodynamics model){double[] weights=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()];for(int c=0;c<model.componentCount();c++)weights[c]=c==model.componentCount()-1?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(c);return weights;}
     private static double[] totals(FluidCheckpointCodec.Checkpoint checkpoint,FluidThermodynamics model) {
-        double[] sum=new double[23],weights=weights(model);for(var island:checkpoint.islands())for(var node:island.snapshot().graph().reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR) {
-            var n=node.inventory().moles();double mass=0;for(int c=0;c<22;c++){sum[c]+=n[c];mass+=n[c]*weights[c];}sum[22]+=node.inventory().internalEnergy()+mass*PassiveStepSolver.GRAVITY*node.elevation();
+        double[] sum=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()+1],weights=weights(model);for(var island:checkpoint.islands())for(var node:island.snapshot().graph().reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR) {
+            var n=node.inventory().moles();double mass=0;for(int c=0;c<model.componentCount();c++){sum[c]+=n[c];mass+=n[c]*weights[c];}sum[sum.length-1]+=node.inventory().internalEnergy()+mass*PassiveStepSolver.GRAVITY*node.elevation();
         }
         for(var p:checkpoint.transfers().pending().values())add(sum,p.remaining());for(var module:checkpoint.modules())if(module.cycle()!=null)for(var input:module.cycle().inputs().values())add(sum,input.owned());return sum;
     }
-    private static void add(double[] sum,MaterialParcel parcel){var n=parcel.moles();for(int c=0;c<22;c++)sum[c]+=n[c];sum[22]+=parcel.energyJoule();}
+    private static void add(double[] sum,MaterialParcel parcel){var n=parcel.moles();for(int c=0;c<n.length;c++)sum[c]+=n[c];sum[sum.length-1]+=parcel.energyJoule();}
 }

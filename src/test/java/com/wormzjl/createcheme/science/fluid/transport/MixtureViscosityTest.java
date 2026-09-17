@@ -17,17 +17,21 @@ class MixtureViscosityTest {
             for(var value:json.getAsJsonArray("curves")) {
                 var curve=value.getAsJsonObject();int solute=p.components().indexOf(curve.get("component").getAsString());
                 var pure=catalog.viscosity(id,p.components().get(solute),ViscosityCorrelation.Phase.LIQUID).orElseThrow();
-                var carrier=catalog.viscosity(id,p.components().get(19),ViscosityCorrelation.Phase.LIQUID).orElseThrow();
+                int carrierIndex=p.components().indexOf("crude_pc12");
+                var carrier=catalog.viscosity(id,p.components().get(carrierIndex),ViscosityCorrelation.Phase.LIQUID).orElseThrow();
+                int checked=0;
                 for(var check:curve.getAsJsonArray("checks")) {
                     var row=check.getAsJsonObject();double t=row.get("temperature_kelvin").getAsDouble();
                     if(t<=pure.maximumTemperatureKelvin()||t<carrier.minimumTemperatureKelvin()||t>carrier.maximumTemperatureKelvin())continue;
-                    double[] n=new double[p.components().size()];n[solute]=.05;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE-1]=.95;
+                    double[] n=new double[p.components().size()];n[solute]=.05;n[carrierIndex]=.95;
+                    checked++;
                     double expected=Math.exp(.05*Math.log(row.get("viscosity_pascal_seconds").getAsDouble())
                             +.95*Math.log(carrier.dynamicViscosityPascalSeconds(t,carrier.minimumPressurePascal())));
                     var actual=model.liquid(t,n);
                     assertTrue(actual.conditionalSoluteApproximation());
                     assertEquals(expected,actual.pascalSeconds(),expected*.0005);
                 }
+                assertTrue(checked>0,"Conditional viscosity checks must not be skipped: "+curve.get("component"));
             }
         }
     }

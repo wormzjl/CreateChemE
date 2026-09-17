@@ -11,10 +11,10 @@ import java.nio.file.*;
 import java.util.*;
 
 /** Runs only in the dedicated, disposable material GameTest server; exercises the actual /reload path. */
-@GameTestHolder("createcheme")
+@GameTestHolder("createcheme_fluid_test")
 @PrefixGameTestTemplate(false)
 public class MaterialReloadGameTests {
-    @GameTest(template="material_empty",timeoutTicks=100)
+    @GameTest(template="empty",timeoutTicks=100,batch="column-presets")
     public static void columnPresetsLoadWithRevisionChecks(GameTestHelper helper) {
         var pos=helper.absolutePos(net.minecraft.core.BlockPos.ZERO);
         helper.getLevel().setBlockAndUpdate(pos,com.wormzjl.createcheme.registry.ModBlocks.COLUMN_CALCULATOR_V3.get().defaultBlockState());
@@ -34,15 +34,15 @@ public class MaterialReloadGameTests {
         }
         helper.succeed();
     }
-    @GameTest(template="material_empty",timeoutTicks=2400)
+    @GameTest(template="empty",timeoutTicks=2400,batch="material-resource-reload")
     public static void materialReloadIsAtomic(GameTestHelper helper) throws Exception {
         var server=helper.getLevel().getServer();
         var original=MaterialRuntime.active();
         for (String crude : List.of("wti_light_export", "upper_zakum", "bonga", "dalia", "cold_lake_blend")) {
             var feedPackage=original.requirePackage("createcheme:"+crude+"_tjl20");
             var assay=feedPackage.assays().get("createcheme:"+crude);
-            if (feedPackage.components().size()!=20 || assay==null || !assay.basis().equals("mass")) {
-                helper.fail("Bundled 20-component crude assay was not loaded: "+crude);return;
+            if (!feedPackage.components().equals(original.requirePackage("createcheme:tjl20_methane").components()) || assay==null || !assay.basis().equals("mass")) {
+                helper.fail("Bundled regrouped crude assay was not loaded: "+crude);return;
             }
         }
         String packageId="createcheme:tjl20_methane";
