@@ -55,10 +55,10 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 10;
+    public static final int WIRE_SCHEMA_VERSION = 11;
 
     // Version 5 removes the legacy calculator packet family; both peers must use the V3-only protocol.
-    private static final String PROTOCOL_VERSION = "7";
+    private static final String PROTOCOL_VERSION = "8";
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -108,8 +108,11 @@ public final class ColumnV3Network {
 
     /** Requests one allowlisted input; the server resolves the catalog feed. */
     public static long sendPreset(BlockPos blockPos, long expectedInputRevision, ColumnInputPreset preset) {
+        return sendPreset(blockPos,expectedInputRevision,preset.id());
+    }
+    public static long sendPreset(BlockPos blockPos,long expectedInputRevision,String presetId) {
         long nonce = CLIENT_NONCE_SEQUENCE.incrementAndGet();
-        PacketDistributor.sendToServer(new PresetPayload(blockPos, nonce, expectedInputRevision, preset.id()));
+        PacketDistributor.sendToServer(new PresetPayload(blockPos, nonce, expectedInputRevision, presetId));
         return nonce;
     }
 
@@ -439,13 +442,13 @@ public final class ColumnV3Network {
                 buffer.writeBlockPos(payload.blockPos());
                 buffer.writeVarLong(payload.clientNonce());
                 buffer.writeVarLong(payload.expectedInputRevision());
-                buffer.writeUtf(payload.presetId(), 64);
+                buffer.writeUtf(payload.presetId(), 128);
             }
         };
 
         private PresetPayload {
             blockPos = Objects.requireNonNull(blockPos, "blockPos");
-            ColumnInputPreset.fromId(presetId);
+            if(presetId==null||!presetId.matches("[a-z][a-z0-9_.:-]{0,127}"))throw new IllegalArgumentException("Invalid preset ID");
             if (clientNonce < 0L || expectedInputRevision < 0L) {
                 throw new IllegalArgumentException("Invalid V3 preset request revision");
             }
@@ -458,9 +461,9 @@ public final class ColumnV3Network {
     }
 
     private static String readPresetId(RegistryFriendlyByteBuf buffer) {
-        String id = buffer.readUtf(64);
-        try { return ColumnInputPreset.fromId(id).id(); }
-        catch (IllegalArgumentException invalid) { throw new DecoderException("Unknown column input preset", invalid); }
+        String id=buffer.readUtf(128);
+        if(!id.matches("[a-z][a-z0-9_.:-]{0,127}"))throw new DecoderException("Invalid preset ID");
+        return id;
     }
 
     private record StateRequestPayload(BlockPos blockPos, long clientNonce) implements CustomPacketPayload {
@@ -576,6 +579,11 @@ public final class ColumnV3Network {
             buffer.writeBoolean(n.upperKelvin()!=null); if(n.upperKelvin()!=null)buffer.writeDouble(n.upperKelvin());
             buffer.writeBoolean(n.estimated());
         }
+        buffer.writeVarInt(state.presets().size());
+        for(var p:state.presets()) {
+            buffer.writeUtf(p.id(),128);buffer.writeUtf(p.label(),128);buffer.writeUtf(p.translationKey(),128);
+            buffer.writeUtf(p.packageId(),128);buffer.writeUtf(p.assayId(),128);
+        }
     }
 
     private static V3State readState(RegistryFriendlyByteBuf buffer) {
@@ -606,8 +614,12 @@ public final class ColumnV3Network {
                 var name=new com.wormzjl.createcheme.science.material.MaterialName(id,translation,fallback,kind,lower,upper,buffer.readBoolean());
                 if(names.putIfAbsent(key,name)!=null)throw new DecoderException("Duplicate material name key");
             }
+            var presets=new ArrayList<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor>();
+            int presetCount=readCount(buffer,com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS,"preset");
+            for(int i=0;i<presetCount;i++)presets.add(new com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor(
+                    buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128)));
             return new V3State(clientNonce, stateRevision, operationId, inputRevision, resultRevision, status, input,
-                    result, diagnostics,names);
+                    result, diagnostics,names,presets);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 state", invalid);
         }

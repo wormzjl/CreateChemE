@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "cold_lake_blend",
+  "kind": "column",
+  "label": "Cold Lake Blend",
+  "translation_key": "gui.createcheme.column_preset.cold_lake_blend",
+  "order": 5,
+  "visible": true,
+  "package": "createcheme:cold_lake_blend_tjl20",
+  "assay": "createcheme:cold_lake_blend",
+  "operating": {
+    "feedTemperatureKelvin": 638.15,
+    "stageCount": 40,
+    "feedStageNumber": 37,
+    "topPressurePascal": 250000.0,
+    "stagePressureDropPascal": 0.0,
+    "sideDraws": [
+      {
+        "trayNumber": 10,
+        "molarFlowMolPerSecond": 136.38888888888889
+      },
+      {
+        "trayNumber": 18,
+        "molarFlowMolPerSecond": 143.05555555555554
+      },
+      {
+        "trayNumber": 28,
+        "molarFlowMolPerSecond": 45.833333333333336
+      }
+    ],
+    "steamFeeds": [
+      {
+        "stageNumber": 41,
+        "molarFlowMolPerSecond": 333.3333333333333,
+        "temperatureKelvin": 533.15
+      }
+    ],
+    "pumparounds": [
+      {
+        "returnTray": 8,
+        "drawTray": 10,
+        "dutyWatts": -12840000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 16,
+        "drawTray": 18,
+        "dutyWatts": -17890000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 26,
+        "drawTray": 28,
+        "dutyWatts": -11200000.0,
+        "split": "UNIFORM"
+      }
+    ],
+    "feedStandardVolumeCubicMetresPerSecond": 0.22834654657544562,
+    "condenserTemperatureKelvin": 332.15,
+    "organicRefluxRatio": 4.17,
+    "reboilerDutyWatts": 0
+  }
+}

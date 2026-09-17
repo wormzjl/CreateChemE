@@ -24,20 +24,13 @@ class NitrogenInitializationTest {
         assertTrue(model.viscosity.vapor(298.15,state.vapor(),0)>1.7e-5);
         assertEquals(original,catalog.requirePackage(COLUMN).fingerprint());assertEquals(model.hydrocarbon.componentCount()-1,catalog.requirePackage(COLUMN).components().size());
     }
-    /**
-     * A world saved before nitrogen was registered names the column's package in its island entries,
-     * and the codec refuses a saved island whose property revision moved. Both still hold: the id
-     * migrates to the registered package, and that package reproduces the private extension's
-     * scientific revision exactly, because it is the same components, properties, interactions,
-     * water, assay and revision string the extension built in memory.
-     */
-    @Test void theRegisteredPackageIsTheOldPrivateExtensionAndOldSavedIdsMigrateToIt() {
+    @Test void onlyTheConfiguredNetworkPackageIsAcceptedWithoutSaveMigration() {
         var catalog=MaterialCatalog.bundled();
         assertThrows(IllegalArgumentException.class,()->FluidMaterialCatalog.resolveNetworkPackage(catalog,COLUMN));
         assertEquals(NETWORK,FluidMaterialCatalog.resolveNetworkPackage(catalog,NETWORK));
         var refused=assertThrows(IllegalArgumentException.class,
                 ()->FluidMaterialCatalog.resolveNetworkPackage(catalog,"createcheme:wti_light_export_tjl20"));
-        assertTrue(refused.getMessage().contains("Nitrogen"),refused.getMessage());
+        assertTrue(refused.getMessage().contains("configured basis"),refused.getMessage());
     }
     @Test void nitrogenCaloricFitMatchesIndependentShomateCheckpoints() throws Exception {
         var cp=MaterialCatalog.bundled().requirePackage(NETWORK).properties().getLast().cp();

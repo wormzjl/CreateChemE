@@ -45,17 +45,15 @@ public final class MaterialCatalog {
     private final Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities;
     private final Map<String, String> waterModels;
     private final Map<String, LiquidMixtureCorrection> liquidMixtures;
-    private final Map<String, Double> columnFeedVolumes;
-    private final Map<String, List<Double>> columnDrawRates;
+    private final MaterialPresets presets;
     private final Map<String, FluidAppearance> assayAppearances;
     private final Map<String, FluidAppearance> componentAppearances;
     private MaterialCatalog(Map<String, MaterialName> names, Map<String, Package> packages, Map<String, String> resources,
             Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities, Map<String, String> waterModels,
-            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, Map<String, Double> columnFeedVolumes, Map<String,List<Double>> columnDrawRates, MaterialFluidData fluidData) {
+            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, MaterialPresets presets, MaterialFluidData fluidData) {
         this.fluidData=Objects.requireNonNull(fluidData);
         this.liquidMixtures = Map.copyOf(liquidMixtures);
-        this.columnFeedVolumes = Map.copyOf(columnFeedVolumes);
-        this.columnDrawRates = Map.copyOf(columnDrawRates);
+        this.presets=Objects.requireNonNull(presets);
         this.names = Map.copyOf(names); this.packages = Map.copyOf(packages); this.resources = Map.copyOf(resources);
         this.viscosities = Map.copyOf(viscosities); this.waterModels = Map.copyOf(waterModels);
         this.assayAppearances = Map.copyOf(assayAppearances);
@@ -74,12 +72,16 @@ public final class MaterialCatalog {
         for(String id:p.components())if(fluidData.volumeReferences().containsKey(id))points.put(id,fluidData.volumeReferences().get(id));
         return hash(new Gson().toJson(List.of(physicsFingerprint(packageId,p.components()),points)));
     }
-    public List<Double> columnSideDrawRates(String packageId) { requirePackage(packageId); return columnDrawRates.getOrDefault(packageId,List.of()); }
-    public double columnFeedStandardVolume(String packageId) {
-        requirePackage(packageId);Double value=columnFeedVolumes.get(packageId);
-        if(value==null)throw new IllegalArgumentException("No column feed volume for "+packageId);
-        return value;
+    public MaterialPresets presets(){return presets;}
+    /** Convenience for the unique authored preset of a package; multiple choices require an explicit preset ID. */
+    private MaterialPresets.Column packagePreset(String packageId) {
+        requirePackage(packageId);
+        var choices=presets.columns().values().stream().filter(c->c.descriptor().packageId().equals(packageId)).toList();
+        if(choices.size()!=1)throw new IllegalArgumentException("Select an explicit column preset for "+packageId);
+        return choices.getFirst();
     }
+    public List<Double> columnSideDrawRates(String packageId) {return packagePreset(packageId).draws().stream().map(com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec::molarFlowMolPerSecond).toList();}
+    public double columnFeedStandardVolume(String packageId) {return packagePreset(packageId).feedVolume();}
     public LiquidMixtureCorrection liquidMixture(String packageId) { requirePackage(packageId); return liquidMixtures.get(packageId); }
     /** Immutable source strings for tooling and isolated override tests. */
     public Map<String, String> resources() { return resources; }
@@ -176,7 +178,25 @@ public final class MaterialCatalog {
                 source.maximumTemperature(),source.minimumPressure(),source.maximumPressure(),source.evidence());
         var projected=new HashMap<>(packages);projected.put(packageId,view);
         return new MaterialCatalog(names,projected,resources,viscosities,waterModels,assayAppearances,
-                componentAppearances,liquidMixtures,columnFeedVolumes,columnDrawRates,fluidData);
+                componentAppearances,liquidMixtures,presets,fluidData);
+    }
+
+    /** Presets may share a network only when the selected sub-basis has the same physics and transport. */
+    public void requireSharedFluidPhysics(String sourceId,String targetId) {
+        var source=requirePackage(sourceId);var target=requirePackage(targetId);var axis=source.components();
+        if(!target.components().containsAll(axis)||!physicsFingerprint(sourceId,axis).equals(physicsFingerprint(targetId,axis)))
+            throw new IllegalArgumentException("Fluid preset physics differ from network: "+sourceId);
+        var a=liquidMixture(sourceId);var b=liquidMixture(targetId);
+        if(!a.coefficients().equals(b.coefficients())||a.referenceKelvin()!=b.referenceKelvin()||a.slopeCapKelvin()!=b.slopeCapKelvin())
+            throw new IllegalArgumentException("Fluid preset mixture correction differs from network: "+sourceId);
+        for(int i=0;i<axis.size();i++) {
+            int j=target.components().indexOf(axis.get(i));
+            if(!a.descriptors().get(i).equals(b.descriptors().get(j))
+                    ||!viscosityScience("properties/"+source.properties().get(i).id()).equals(viscosityScience("properties/"+target.properties().get(j).id())))
+                throw new IllegalArgumentException("Fluid preset transport differs from network: "+sourceId+"/"+axis.get(i));
+        }
+        if(!viscosityScience("water/"+waterModels.get(sourceId)).equals(viscosityScience("water/"+waterModels.get(targetId))))
+            throw new IllegalArgumentException("Fluid preset water transport differs from network: "+sourceId);
     }
 
     /** Transport cache key; viscosity changes do not invalidate PR/enthalpy seeds which never consume viscosity. */
@@ -217,7 +237,7 @@ public final class MaterialCatalog {
                 String path = entry.getKey(); int start = path.indexOf("materials/");
                 if (start < 0) throw new IllegalArgumentException("Expected materials resource path");
                 String kind = path.substring(start + 10).split("/")[0];
-                if (!Set.of("components","properties","interactions","packages","assays","water","bases","transport").contains(kind))
+                if (!Set.of("components","properties","interactions","packages","assays","water","bases","transport","presets","networks").contains(kind))
                     throw new IllegalArgumentException("Unknown record kind: " + kind);
                 String id = string(o, "id");
                 if (!kind.equals("components") && !id.matches("[a-z][a-z0-9_.:-]{0,127}"))
@@ -237,8 +257,6 @@ public final class MaterialCatalog {
         var viscosities = new HashMap<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>>();
         var waterModels = new HashMap<String, String>();
         var liquidMixtures = new HashMap<String, LiquidMixtureCorrection>();
-        var columnFeedVolumes = new HashMap<String, Double>();
-        var columnDrawRates = new HashMap<String, List<Double>>();
         var descriptors = new HashMap<String, LiquidMixtureCorrection.Descriptor>();
         var assayAppearances = new HashMap<String, FluidAppearance>();
         var componentAppearances = new HashMap<String, FluidAppearance>();
@@ -288,12 +306,6 @@ public final class MaterialCatalog {
         for (var o : group(groups,"interactions").values()) checked(origins,o,() -> validateInteractions(o,names));
         for (var o : group(groups,"packages").values()) checked(origins,o,() -> {
             String id=string(o,"id"), model=string(o,"model"), policy=string(o,"missing_interactions");
-            if(o.has("column_feed_standard_volume_m3_per_second"))columnFeedVolumes.put(id,positive(o,"column_feed_standard_volume_m3_per_second"));
-            if(o.has("column_side_draw_mol_per_second")) {
-                var rates=numbers(o,"column_side_draw_mol_per_second",3);
-                if(rates.stream().anyMatch(rate->rate<=0))throw new IllegalArgumentException("column_side_draw_mol_per_second: positive rates required");
-                columnDrawRates.put(id,List.copyOf(rates));
-            }
             if(string(o,"revision").length()>63)throw new IllegalArgumentException("revision: maximum 63 characters with fingerprint");
             var evidence=strings(o,"advisory_evidence");
             if(evidence.size()>32 || evidence.stream().anyMatch(e->e.length()>256))throw new IllegalArgumentException("advisory_evidence: exceeds reporting bounds");
@@ -363,7 +375,20 @@ public final class MaterialCatalog {
         });
         for(var a:group(groups,"assays").values()) checked(origins,a,() -> require(packages,string(a,"package"),"assay package"));
         if(packages.isEmpty()) throw new IllegalArgumentException("Material catalog has no packages");
-        return new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,columnFeedVolumes,columnDrawRates,MaterialFluidData.read(group(groups,"transport"),origins,names.keySet()));
+        var result=new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,MaterialPresets.read(group(groups,"presets"),group(groups,"networks"),origins,packages,names.keySet()),MaterialFluidData.read(group(groups,"transport"),origins,names.keySet()));
+        for(var row:group(groups,"presets").values())if(string(row,"kind").equals("column"))checked(origins,row,()->
+                MaterialRuntime.with(result,string(row,"package"),()->{com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver.validateInput(result.presets().column(string(row,"id")).input(result));return null;}));
+        for(var row:group(groups,"networks").values())checked(origins,row,()->{
+            var config=result.presets().network();var network=result.requirePackage(config.packageId());
+            for(String id:config.fluidPresets()) {
+                var preset=result.presets().fluid(id);
+                if(!preset.component().isEmpty()) {
+                    if(!preset.component().equals("Water")&&!network.components().contains(preset.component()))throw new IllegalArgumentException("fluid_presets: component outside network "+preset.component());
+                } else result.requireSharedFluidPhysics(preset.packageId(),network.id());
+            }
+            for(var phase:ViscosityCorrelation.Phase.values())if(result.viscosity(network.id(),"Nitrogen",phase).isEmpty())throw new IllegalArgumentException("package: nitrogen transport is required");
+        });
+        return result;
     }
 
     private static FluidAppearance readAppearance(JsonObject record) {

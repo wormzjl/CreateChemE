@@ -5,7 +5,7 @@
       "dimension": "minecraft:overworld",
       "packageId": "createcheme:tjl20_methane_nitrogen",
       "compressibility": 1e-09,
-      "propertyRevision": "fluid-trbdf2-r1:crude-regrouped-r1:6782714f93867efcca3e0944778bb289b14e42435a0fef58454db1352d717d4a:fluid-shared-k-v1:ambient-293.15-v1:nist-liquid-calibration-20260915:k=0x1.12e0be826d695p-30:c244246cdf9ca9306d7f30f94612e35b62cc7826a79f17089c370d27a240a943:log-liquid-pair-groups-wilke-v2:dwsim-conditional-solute-ambient-v2",
+      "propertyRevision": "fluid-trbdf2-r1:b661160bfc2a10505c26c4e968808580d5746a1c539599aab1df8b801b090ef3:fluid-shared-k-v1:ambient-293.15-v1:catalog-volume-reference-v1:k=0x1.12e0be826d695p-30:afecafc46ffc1549552ed9f6315f57d731c040f66b201916e2bbb98a8bb5eb9d:log-liquid-pair-groups-wilke-v2:catalog-conditional-solute-v1",
       "reference": {
         "revision": "createcheme:sensible-298.15K-v1",
         "components": [

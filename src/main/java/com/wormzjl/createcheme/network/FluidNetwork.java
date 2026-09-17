@@ -21,14 +21,14 @@ import java.util.*;
 /** Position/identity/revision-bound controls; clients never send inventory or solver results. */
 public final class FluidNetwork {
     private static final Gson JSON=new Gson();
-    public static final int MAX_JSON=65536;
+    public static final int MAX_JSON=262144;
     public static final int MAX_EDIT_JSON=4096;
     private FluidNetwork() {}
     public record Controls(double temperature,double pressure,double diameter,double roughness,double volumeFlow,double maximumAddedPressure,double[] composition) {
         public Controls {
             composition=composition.clone();
             for(double value:new double[]{temperature,pressure,diameter,roughness,volumeFlow,maximumAddedPressure})if(!Double.isFinite(value))throw new IllegalArgumentException("All controls must be finite numbers");
-            if(temperature<273.16||temperature>600||pressure<100||pressure>2e6||diameter<.001||diameter>1||roughness<0||roughness>=diameter||volumeFlow<0||volumeFlow>10||maximumAddedPressure<=0||maximumAddedPressure>2e6||composition.length!=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount())throw new IllegalArgumentException("Controls are outside the supported range");
+            if(temperature<273.16||temperature>600||pressure<100||pressure>2e6||diameter<.001||diameter>1||roughness<0||roughness>=diameter||volumeFlow<0||volumeFlow>10||maximumAddedPressure<=0||maximumAddedPressure>2e6||(composition.length<1||composition.length>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS))throw new IllegalArgumentException("Controls are outside the supported range");
             double sum=0;for(double n:composition){if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Composition entries must be nonnegative");sum+=n;}if(!Double.isFinite(sum)||sum<=0)throw new IllegalArgumentException("Composition cannot be empty");
         }
         @Override public double[] composition(){return composition.clone();}
@@ -39,8 +39,27 @@ public final class FluidNetwork {
             return new Controls(record.spec().temperature(),pressure,d.geometry().diameter(),d.geometry().roughness(),flow,head,record.spec().composition());
         }
     }
-    public record MenuData(TopologyCompiler.Kind kind,FluidView view,Controls controls,List<String> components,List<FluidPresetCatalog.Preset> presets,String message) {
-        public MenuData {components=List.copyOf(components);presets=List.copyOf(presets);Objects.requireNonNull(message);}
+    public record MenuData(TopologyCompiler.Kind kind,FluidView view,Controls controls,List<String> components,List<FluidPresetCatalog.Preset> presets,String message,
+            Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
+        public MenuData(TopologyCompiler.Kind kind,FluidView view,Controls controls,List<String> components,List<FluidPresetCatalog.Preset> presets,String message) {
+            this(kind,view,controls,components,presets,message,Map.of());
+        }
+        public MenuData {
+            Objects.requireNonNull(kind);Objects.requireNonNull(view);Objects.requireNonNull(controls);Objects.requireNonNull(message);
+            components=new com.wormzjl.createcheme.science.material.MaterialAxis(components).ids();presets=List.copyOf(presets);materialNames=Map.copyOf(materialNames);
+            if(message.length()>1024||controls.composition().length!=components.size()||presets.size()>com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS
+                    ||presets.stream().map(FluidPresetCatalog.Preset::id).distinct().count()!=presets.size()||materialNames.size()>components.size()
+                    ||!components.containsAll(materialNames.keySet()))throw new IllegalArgumentException("Invalid bounded fluid menu state");
+            if(view.pipeHistory().size()>12||view.pipeRoutes().size()>12||view.status().length()>2048)throw new IllegalArgumentException("Fluid view exceeds display bounds");
+            if(view.state()!=null)requirePhaseAxis(view.state().phaseMoles(),components.size());
+            for(var transfer:view.pipeHistory()){requirePhaseAxis(transfer.forward().phaseMoles(),components.size());requirePhaseAxis(transfer.reverse().phaseMoles(),components.size());}
+            for(var p:presets)if(p.moleFractions().length!=components.size())throw new IllegalArgumentException("Fluid preset axis mismatch");
+            for(var e:materialNames.entrySet())if(!e.getKey().equals(e.getValue().id()))throw new IllegalArgumentException("Fluid name identity mismatch");
+        }
+    }
+    private static void requirePhaseAxis(double[][] phases,int components) {
+        if(phases.length!=3)throw new IllegalArgumentException("Fluid phase count mismatch");
+        for(var phase:phases)if(phase.length!=components)throw new IllegalArgumentException("Fluid phase axis mismatch");
     }
     public record EditPayload(int menuId,BlockPos position,long identity,long revision,String json) implements CustomPacketPayload {
         public static final Type<EditPayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(CreateChemE.MOD_ID,"fluid_edit"));
@@ -59,7 +78,7 @@ public final class FluidNetwork {
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar=event.registrar("fluid-1").executesOn(HandlerThread.MAIN);
+        var registrar=event.registrar("fluid-2").executesOn(HandlerThread.MAIN);
         registrar.playToServer(EditPayload.TYPE,EditPayload.STREAM_CODEC,FluidNetwork::edit);
         registrar.playToClient(StatePayload.TYPE,StatePayload.STREAM_CODEC,(payload,context)->{
             if(context.player().containerMenu instanceof FluidDeviceMenu menu&&menu.containerId==payload.menuId&&menu.identity()==payload.identity)menu.acceptData(JSON.fromJson(payload.json,MenuData.class));
@@ -68,7 +87,7 @@ public final class FluidNetwork {
     public static void sendState(ServerPlayer player,FluidDeviceMenu menu,String message) {
         FluidWorldAuthority.find(player.server).ifPresent(world->{
             var record=world.registrations().get(menu.identity());if(record==null)return;
-            var data=new MenuData(record.device().kind(),world.view(menu.identity()),Controls.from(record),world.components(),world.presets(),message);
+            var data=new MenuData(record.device().kind(),world.view(menu.identity()),Controls.from(record),world.components(),world.presets(),message,world.materialNames());
             PacketDistributor.sendToPlayer(player,new StatePayload(menu.containerId,menu.identity(),JSON.toJson(data)));
         });
     }
@@ -78,7 +97,9 @@ public final class FluidNetwork {
         if(menu.containerId!=payload.menuId||menu.identity()!=payload.identity||!menu.position().equals(payload.position)||!menu.stillValid(player)||menu.debug()||!player.mayBuild()||player.isSpectator()||!player.level().mayInteract(player,payload.position)||!menu.admitEdit(player.server.getTickCount()))return;
         FluidWorldAuthority.find(player.server).ifPresent(world->{
             try {
-                var controls=Objects.requireNonNull(JSON.fromJson(payload.json,Controls.class));var old=Objects.requireNonNull(world.registrations().get(payload.identity));var d=old.device();
+                var controls=Objects.requireNonNull(JSON.fromJson(payload.json,Controls.class));
+                if(controls.composition().length!=world.components().size())throw new IllegalArgumentException("Composition differs from the server network axis");
+                var old=Objects.requireNonNull(world.registrations().get(payload.identity));var d=old.device();
                 var geometry=d.geometry();var control=d.control();var spec=old.spec();
                 switch(d.kind()) {
                     case PIPE->geometry=new PipeResistance.Geometry(geometry.length(),controls.diameter,controls.roughness,geometry.minorLoss());

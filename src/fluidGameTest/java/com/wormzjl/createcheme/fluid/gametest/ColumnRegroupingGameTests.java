@@ -67,4 +67,24 @@ public final class ColumnRegroupingGameTests {
         helper.assertTrue(block.state(0).input().componentBasis().componentIds().equals(preset.componentBasis().componentIds()),"Current basis was changed");
         level.removeBlock(pos,false);helper.succeed();
     }
+    @GameTest(template="empty",timeoutTicks=100,batch="column-regrouping")
+    public static void currentVersionUnsupportedAxisAndCorruptInputAreRetained(GameTestHelper helper) {
+        var level=helper.getLevel();var pos=helper.absolutePos(new BlockPos(0,1,0));
+        level.setBlock(pos,ModBlocks.COLUMN_CALCULATOR_V3.get().defaultBlockState(),3);
+        var block=(ColumnCalculatorV3BlockEntity)level.getBlockEntity(pos);
+        var original=block.saveWithFullMetadata(level.registryAccess());
+        for(String failure:java.util.List.of("axis","package","missing")) {
+            var bad=original.copy();var input=bad.getCompound("Input");
+            if(failure.equals("axis"))input.getList("Axis",net.minecraft.nbt.Tag.TAG_STRING).set(0,net.minecraft.nbt.StringTag.valueOf("Retired"));
+            else if(failure.equals("package"))input.putString("Package","retired:package");
+            else bad.remove("Input");
+            block.loadWithComponents(bad,level.registryAccess());
+            helper.assertTrue(block.state(0).status()==ColumnCalculatorV3BlockEntity.V3Status.INCOMPATIBLE,"Unsupported "+failure+" was silently reset");
+            var saved=block.saveWithFullMetadata(level.registryAccess());
+            helper.assertTrue(saved.contains("Input")==bad.contains("Input")&&saved.getCompound("Input").equals(bad.getCompound("Input")),"Saving erased unsupported "+failure);
+            helper.assertTrue(block.tryLoadPreset(0,ColumnInputPreset.TIA_JUANA.input(MaterialRuntime.current()),"Explicit reset"),"Explicit reset failed");
+        }
+        level.removeBlock(pos,false);helper.succeed();
+    }
+
 }

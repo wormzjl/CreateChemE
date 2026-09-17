@@ -50,8 +50,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
         this.server=server;owned();catalog=MaterialRuntime.active();
         options=CreateChemE.fluidOptions();data=FluidSavedData.open(server,this::model);
         compressibility=data.checkpoint().islands().isEmpty()?options.compressibility():data.checkpoint().islands().getFirst().compressibility();
-        model=model(new FluidCheckpointCodec.PackageKey(FluidPresetCatalog.NETWORK_PACKAGE,compressibility));
-        propertyReload=new FluidPropertyReloadGuard(catalog,FluidPresetCatalog.NETWORK_PACKAGE,compressibility,model);
+        model=model(new FluidCheckpointCodec.PackageKey(com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog),compressibility));
+        propertyReload=new FluidPropertyReloadGuard(catalog,com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog),compressibility,model);
         presetCache=FluidPresetCatalog.resolve(catalog);componentNames=model.components();
         legacyUnbound=data.world().isEmpty()&&!data.checkpoint().islands().isEmpty();
         topology=new WorldTopologyLedger(data.world().orElseGet(WorldTopologyLedger.Snapshot::empty));transfers=new BufferedTransfers(data.checkpoint().transfers());
@@ -92,6 +92,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private static ResourceKey<Level> dimension(String name){return ResourceKey.create(Registries.DIMENSION,ResourceLocation.parse(name));}
     public List<FluidPresetCatalog.Preset> presets(){owned();return presetCache;}
     public List<String> components(){owned();return componentNames;}
+    public Map<String,MaterialName> materialNames(){owned();var result=new LinkedHashMap<String,MaterialName>();for(String id:componentNames)result.put(id,catalog.name(id));return Map.copyOf(result);}
     public long onlineTick(){owned();return topology.onlineTick();}
     /** Optional read-only diagnostics; all values are immutable and callbacks run on the server thread. */
     public void observe(java.util.function.BiConsumer<List<IslandCoordinator.Snapshot>,Map<Long,IslandCoordinator.Metrics>> observer){owned();this.observer=observer;}
@@ -101,13 +102,13 @@ public final class FluidWorldAuthority implements AutoCloseable {
         owned();if(at(position).isPresent())throw new IllegalStateException("A fluid identity already occupies this position");
         long id=topology.nextIdentity();var control=switch(kind){case PUMP->new FlowControl.Pump(.01,500000,1);case VALVE->new FlowControl.PressureValve(200000);default->new FlowControl.Passive();};
         var device=new PhysicalFluidTopology.Device(id,position,kind,facing,new PipeResistance.Geometry(1,.05,.000045,0),control);
-        var spec=kind==TopologyCompiler.Kind.GENERATOR?FluidDeviceSpec.water():FluidDeviceSpec.nitrogen();
+        var spec=kind==TopologyCompiler.Kind.GENERATOR?FluidDeviceSpec.water(catalog):FluidDeviceSpec.nitrogen(catalog);
         if(kind==TopologyCompiler.Kind.RESERVOIR)spec=new FluidDeviceSpec(options.volume(),options.temperature(),options.pressure(),spec.composition());
         var record=new WorldTopologyLedger.Registration(device,spec,0);
         submit(List.of(new WorldTopologyLedger.Edit(id,record)),Math.addExact(id,1));return record;
     }
     public void edit(long id,long expectedRevision,PhysicalFluidTopology.Device device,FluidDeviceSpec spec) {
-        owned();var old=registrations().get(id);if(old==null||old.revision()!=expectedRevision||device.id()!=id)throw new IllegalStateException("Stale fluid controls");
+        owned();if(spec.composition().length!=componentNames.size())throw new IllegalArgumentException("Composition differs from captured network axis");var old=registrations().get(id);if(old==null||old.revision()!=expectedRevision||device.id()!=id)throw new IllegalStateException("Stale fluid controls");
         if(old.device().equals(device)&&old.spec().equals(spec))return;
         submit(List.of(new WorldTopologyLedger.Edit(id,new WorldTopologyLedger.Registration(device,spec,Math.addExact(expectedRevision,1)))),topology.nextIdentity());
     }
@@ -228,7 +229,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         owned();var islands=new ArrayList<FluidCheckpointCodec.IslandEntry>();var world=topology.snapshot();
         for(var snapshot:runtime.coordinator().snapshots()) {
             String dimension=world.active().get(members.get(snapshot.id()).getFirst()).device().position().dimension();
-            islands.add(new FluidCheckpointCodec.IslandEntry(dimension,FluidPresetCatalog.NETWORK_PACKAGE,compressibility,snapshot));
+            islands.add(new FluidCheckpointCodec.IslandEntry(dimension,com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog),compressibility,snapshot));
         }
         return new FluidSavedData.Capture(new FluidCheckpointCodec.Checkpoint(islands,moduleHost==null?transfers.snapshot():moduleHost.transfers(),moduleHost==null?data.checkpoint().modules():moduleHost.snapshots(),moduleHost==null?data.checkpoint().moduleBindings():moduleHost.bindings()),world);
     }

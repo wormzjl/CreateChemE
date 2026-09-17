@@ -9,16 +9,24 @@ import java.util.*;
 public record FluidDeviceSpec(double volume,double temperature,double pressure,double[] composition) {
     public FluidDeviceSpec {
         composition=composition.clone();
-        if(!Double.isFinite(volume)||volume<=0||volume>1000||!Double.isFinite(temperature)||temperature<273.16||temperature>600||!Double.isFinite(pressure)||pressure<100||pressure>2e6||composition.length!=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount())throw new IllegalArgumentException("Device settings outside the fluid model's bounds");
+        if(!Double.isFinite(volume)||volume<=0||volume>1000||!Double.isFinite(temperature)||temperature<273.16||temperature>600||!Double.isFinite(pressure)||pressure<100||pressure>2e6||(composition.length<1||composition.length>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS))throw new IllegalArgumentException("Device settings outside the fluid model's bounds");
         double sum=0;for(double amount:composition){if(!Double.isFinite(amount)||amount<0)throw new IllegalArgumentException("Invalid composition");sum+=amount;}
         if(!Double.isFinite(sum)||sum<=0)throw new IllegalArgumentException("Empty composition");
         if(Math.abs(sum-1)>1e-12)for(int i=0;i<composition.length;i++)composition[i]/=sum;
     }
     @Override public double[] composition(){return composition.clone();}
-    public static FluidDeviceSpec nitrogen(){double[] n=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()];n[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]=1;return new FluidDeviceSpec(1,298.15,101325,n);}
-    public static FluidDeviceSpec water(){double[] n=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()];n[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]=1;return new FluidDeviceSpec(1,298.15,101325,n);}
+    public static FluidDeviceSpec nitrogen(){return nitrogen(com.wormzjl.createcheme.science.material.MaterialRuntime.current());}
+    public static FluidDeviceSpec water(){return water(com.wormzjl.createcheme.science.material.MaterialRuntime.current());}
+    public static FluidDeviceSpec nitrogen(com.wormzjl.createcheme.science.material.MaterialCatalog catalog){return pure(catalog,"Nitrogen");}
+    public static FluidDeviceSpec water(com.wormzjl.createcheme.science.material.MaterialCatalog catalog){return pure(catalog,"Water");}
+    private static FluidDeviceSpec pure(com.wormzjl.createcheme.science.material.MaterialCatalog catalog,String id) {
+        var ids=new ArrayList<>(catalog.requirePackage(com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog)).components());ids.add("Water");
+        var axis=new com.wormzjl.createcheme.science.material.MaterialAxis(ids);double[] n=new double[axis.size()];n[axis.requireIndex(id)]=1;
+        return new FluidDeviceSpec(1,298.15,101325,n);
+    }
     /** Called for first activation, never to reconcile an already owned finite reservoir. */
     public PassiveNetwork.Reservoir initialize(PhysicalFluidTopology.Device device,FluidThermodynamics model,Runnable checkpoint) {
+        if(composition.length!=model.components().size())throw new IllegalArgumentException("Device composition differs from captured fluid axis");
         var kind=switch(device.kind()) {case RESERVOIR->PassiveNetwork.NodeKind.RESERVOIR;case GENERATOR->PassiveNetwork.NodeKind.GENERATOR;case VOID->PassiveNetwork.NodeKind.VOID;default->throw new IllegalArgumentException("Pipes and actuators have no owned reservoir");};
         FluidThermodynamics.State state;
         if(kind==PassiveNetwork.NodeKind.RESERVOIR||kind==PassiveNetwork.NodeKind.VOID)state=model.initialNitrogenCharge(volume,temperature,pressure,checkpoint);

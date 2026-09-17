@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "dalia",
+  "kind": "column",
+  "label": "Dalia",
+  "translation_key": "gui.createcheme.column_preset.dalia",
+  "order": 4,
+  "visible": true,
+  "package": "createcheme:dalia_tjl20",
+  "assay": "createcheme:dalia",
+  "operating": {
+    "feedTemperatureKelvin": 638.15,
+    "stageCount": 40,
+    "feedStageNumber": 37,
+    "topPressurePascal": 250000.0,
+    "stagePressureDropPascal": 0.0,
+    "sideDraws": [
+      {
+        "trayNumber": 10,
+        "molarFlowMolPerSecond": 136.6704791423884
+      },
+      {
+        "trayNumber": 18,
+        "molarFlowMolPerSecond": 143.18396490198703
+      },
+      {
+        "trayNumber": 28,
+        "molarFlowMolPerSecond": 45.91545810247339
+      }
+    ],
+    "steamFeeds": [
+      {
+        "stageNumber": 41,
+        "molarFlowMolPerSecond": 333.3333333333333,
+        "temperatureKelvin": 533.15
+      }
+    ],
+    "pumparounds": [
+      {
+        "returnTray": 8,
+        "drawTray": 10,
+        "dutyWatts": -12840000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 16,
+        "drawTray": 18,
+        "dutyWatts": -17890000.0,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 26,
+        "drawTray": 28,
+        "dutyWatts": -11200000.0,
+        "split": "UNIFORM"
+      }
+    ],
+    "feedStandardVolumeCubicMetresPerSecond": 0.24671959222332984,
+    "condenserTemperatureKelvin": 332.15,
+    "organicRefluxRatio": 4.17,
+    "reboilerDutyWatts": 0
+  }
+}

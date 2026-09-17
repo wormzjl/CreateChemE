@@ -32,9 +32,9 @@ class ColumnPresetCodecTest {
             } finally {buffer.release();}
         }
     }
-    @Test void unlistedAndOversizedIdsAreRejected() throws Exception {
+    @Test void malformedAndOversizedIdsAreRejectedBeforeServerLookup() throws Exception {
         var codec=codec();
-        for (String id:new String[]{"unknown_preset","x".repeat(65)}) {
+        for (String id:new String[]{"bad preset id","x".repeat(129)}) {
             var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
             try {
                 buffer.writeVarInt(ColumnV3Network.WIRE_SCHEMA_VERSION);

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:wti_light_export",
+  "kind": "fluid",
+  "label": "WTI Light Export",
+  "package": "createcheme:wti_light_export_tjl20",
+  "assay": "createcheme:wti_light_export"
+}

@@ -194,7 +194,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 status,
                 currentInput,
                 Optional.ofNullable(displayResult),
-                List.of(detail), names);
+                List.of(detail), names,ColumnInputPreset.descriptors(com.wormzjl.createcheme.science.material.MaterialRuntime.current()));
     }
 
     private void refreshMaterialFreshness() {
@@ -263,12 +263,13 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             return;
         }
         if (dataVersion < 1 || !tag.contains(TAG_INPUT, Tag.TAG_COMPOUND)) {
-            status = V3Status.DIRTY;
-            detail = "CORRUPT_PERSISTED_STATE";
+            incompatibleState = tag.copy();
+            status = V3Status.INCOMPATIBLE;
+            detail = "Unsupported or corrupt input retained; explicitly load a current preset to replace it";
             return;
         }
         try {
-            currentInput = readInput(tag.getCompound(TAG_INPUT));
+            currentInput = com.wormzjl.createcheme.science.column.v3.V3MaterialInputs.requireCurrent(readInput(tag.getCompound(TAG_INPUT)),com.wormzjl.createcheme.science.material.MaterialRuntime.current());
             inputRevision = nonNegative(tag.getLong(TAG_INPUT_REVISION));
             resultRevision = tag.contains(TAG_RESULT_REVISION, Tag.TAG_LONG)
                     ? tag.getLong(TAG_RESULT_REVISION) : -1L;
@@ -289,8 +290,9 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             inputRevision = 0L;
             resultRevision = -1L;
             stateRevision = 0L;
-            status = V3Status.DIRTY;
-            detail = "CORRUPT_PERSISTED_STATE";
+            incompatibleState = tag.copy();
+            status = V3Status.INCOMPATIBLE;
+            detail = "Unsupported or corrupt input retained; explicitly load a current preset to replace it";
         }
     }
 
@@ -327,12 +329,21 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             V3ColumnInput input,
             Optional<V3ColumnDisplayResult> displayResult,
             List<String> diagnostics,
-            java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
+            java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> materialNames,
+            List<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor> presets) {
         public V3State(long clientNonce, long stateRevision, long operationId, long inputRevision, long resultRevision,
                 V3Status status, V3ColumnInput input, Optional<V3ColumnDisplayResult> displayResult, List<String> diagnostics) {
-            this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,java.util.Map.of());
+            this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,java.util.Map.of(),List.of());
+        }
+        public V3State(long clientNonce,long stateRevision,long operationId,long inputRevision,long resultRevision,
+                V3Status status,V3ColumnInput input,Optional<V3ColumnDisplayResult> displayResult,List<String> diagnostics,
+                java.util.Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
+            this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,materialNames,List.of());
         }
         public V3State {
+            presets=List.copyOf(presets);
+            if(presets.size()>com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS||presets.stream().map(p->p.id()).distinct().count()!=presets.size())
+                throw new IllegalArgumentException("Invalid column preset descriptor list");
             materialNames = java.util.Map.copyOf(materialNames);
             if (materialNames.size() > 2 * V3ColumnStreamProperties.MAX_COMPONENTS
                     || materialNames.keySet().stream().anyMatch(id -> !id.matches("[A-Za-z][A-Za-z0-9_.:-]{0,63}")))
@@ -401,59 +412,19 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
      * (V3_LITERATURE_TOP_TEMPERATURE_CHECK).</p>
      */
     public static V3ColumnInput literatureCduInput() {
-        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(LITERATURE_PACKAGE);
-        V3CrudeFeed crude = thermo.crudeFeed("createcheme:tia_juana_light");
-        double[] feedFlows = crude.moleFractions();
-        for (int component = 0; component < feedFlows.length; component++) {
-            feedFlows[component] *= feedMolarRate(LITERATURE_PACKAGE, crude.moleFractions());
-        }
-        return new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, crude.packageId(), crude.assayId(),
-                crude.componentBasis(), feedFlows, 365.0 + 273.15, 40, 37, 250_000.0, 0.0, List.of(
-                        new V3ColumnSpecification.CondenserOutletTemperature(332.15),
-                        new V3ColumnSpecification.OrganicRefluxRatio(4.17),
-                        new V3ColumnSpecification.ReboilerDuty(0.0)),
-                List.of(new V3SideDrawSpec(10, 491.0 / 3.6), new V3SideDrawSpec(18, 515.0 / 3.6),
-                        new V3SideDrawSpec(28, 165.0 / 3.6)),
-                List.of(new V3SteamFeedSpec(41, 1_200.0 / 3.6, 533.15)),
-                List.of(new V3PumparoundSpec(8, 10, -12.84e6, V3PumparoundSpec.Split.UNIFORM),
-                        new V3PumparoundSpec(16, 18, -17.89e6, V3PumparoundSpec.Split.UNIFORM),
-                        new V3PumparoundSpec(26, 28, -11.20e6, V3PumparoundSpec.Split.UNIFORM)));
+        var catalog=com.wormzjl.createcheme.science.material.MaterialRuntime.current();
+        return catalog.presets().column("literature_tia_juana").input(catalog);
     }
 
-    /** Current column preset: the literature operating conditions with a synthetic 0.5 mol% methane feed. */
     public static V3ColumnInput methaneCduInput() {
-        return assayCduInput("createcheme:tjl20_methane", "createcheme:tia_juana_light_methane");
-    }
-
-    /** Catalog feed at the current column's total molar rate and editable operating conditions. */
-    static V3ColumnInput assayCduInput(String packageId, String assayId) {
-        V3ColumnInput original = literatureCduInput();
-        V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(packageId);
-        V3CrudeFeed crude = thermo.crudeFeed(assayId);
-        double[] flows = crude.moleFractions();
-        for (int component = 0; component < flows.length; component++) {
-            flows[component] *= feedMolarRate(packageId, crude.moleFractions());
-        }
-        var rates=com.wormzjl.createcheme.science.material.MaterialRuntime.current().columnSideDrawRates(packageId);
-        var draws=rates.isEmpty()?original.sideDraws():java.util.stream.IntStream.range(0,rates.size())
-                .mapToObj(i->new V3SideDrawSpec(original.sideDraws().get(i).trayNumber(),rates.get(i))).toList();
-        return new V3ColumnInput(original.schemaVersion(), crude.packageId(), crude.assayId(),
-                crude.componentBasis(), flows, original.feedTemperatureKelvin(), original.stageCount(),
-                original.feedStageNumber(), original.topPressurePascal(), original.stagePressureDropPascal(),
-                original.specifications(), draws, original.steamFeeds(), original.pumparounds());
-    }
-
-    private static double feedMolarRate(String packageId,double[] fractions) {
-        var p=com.wormzjl.createcheme.science.material.MaterialRuntime.current().requirePackage(packageId);
-        double volumePerMole=0;
-        for(int i=0;i<fractions.length;i++)volumePerMole+=fractions[i]*p.properties().get(i).molecularWeight()/p.properties().get(i).density();
-        return com.wormzjl.createcheme.science.material.MaterialRuntime.current().columnFeedStandardVolume(packageId)/volumePerMole;
+        var catalog=com.wormzjl.createcheme.science.material.MaterialRuntime.current();
+        return catalog.presets().column("tia_juana").input(catalog);
     }
 
     private static V3ColumnInput freshInput() {
-        return methaneCduInput();
+        var catalog=com.wormzjl.createcheme.science.material.MaterialRuntime.current();
+        return catalog.presets().column(catalog.presets().network().defaultColumnPreset()).input(catalog);
     }
-
 
     private static CompoundTag writeInput(V3ColumnInput input) {
         CompoundTag tag = new CompoundTag();
@@ -582,9 +553,10 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
                 tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws,
                 steamFeeds, pumparounds);
-        if (com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().containsKey(input.packageId()))
-            input = com.wormzjl.createcheme.science.column.v3.V3MaterialInputs.migrate(input,
-                    com.wormzjl.createcheme.science.material.MaterialRuntime.current());
+        if(com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().containsKey(input.packageId())) {
+            var current=com.wormzjl.createcheme.science.material.MaterialRuntime.current().requirePackage(input.packageId());
+            if(!current.components().equals(input.componentBasis().componentIds()))throw new IllegalArgumentException("Unsupported persisted component axis");
+        }
         V3ColumnProblemResolver.validateInput(input);
         return input;
     }

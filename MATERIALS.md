@@ -258,7 +258,7 @@ The first argument is the base name; remaining arguments are Celsius bounds disp
 The server sends bounded naming descriptors, so clients do not need the server's scientific data pack.
 Composition cells show localized labels; hovering shows the full label and internal ID. Missing translations use
 English fallbacks. Package and assay IDs remain stable. Retired saved axes are rejected. Current-format saved results remain presentation-only and require recalculation.
-The network protocol is now version 7 with wire schema 10; client and server must run compatible mod versions.
+The column protocol is version 8 (wire schema 11), and the fluid protocol is `fluid-2`; client and server must run compatible mod versions.
 
 ## Reloads, scientific identity, and verification
 
@@ -271,16 +271,16 @@ Results and neural seeds carry a scientific revision with a SHA-256 fingerprint 
 data invalidates reuse even if an author forgets to update `revision`. Names, cut-label metadata, and translations do
 not change the scientific fingerprint. Completed results preserve their original identity and become stale when it
 differs from the live package. Open calculators refresh after publication; closed ones check when reopened.
-The bundled neural manifest pins its verified property fingerprint. Changed data disables that model; the normal
+The bundled neural registry pins its verified ordered physics fingerprint. Changed physical data disables that model; the normal
 LNN_FIRST mode uses numerical fallback (explicit LNN_ONLY retains its existing failure semantics).
 
 `MaterialCatalog.bundled()` uses the same parser with `materials-index.json` for standalone tools/tests. Add new bundled
 files to that index; Minecraft itself discovers data-pack resources dynamically and does not use the index. Keep
 catalog snapshots immutable and keep all numeric arrays and model workspaces local to their owner.
 
-Run `gradlew.bat test` for numerical parity, migration, codec, concurrency, neural, and solver regressions.
-Run `gradlew.bat -I examples/material-gametest.gradle runGameTestServer` for an actual Minecraft reload test in
-`build/material-gametest-server`. It applies a higher-priority override, rejects an invalid replacement without
+Run `gradlew.bat test fluidScienceTest fluidRuntimeTest` for numerical parity, codec, concurrency, neural, and solver regressions.
+Run `gradlew.bat runFluidGameTestServer -PfluidGameTestRunId=<fresh-id>` for actual Minecraft fluid and reload tests, and
+`gradlew.bat runColumnGameTestServer -PcolumnGameTestRunId=<fresh-id>` separately for calculator service tests. It applies a higher-priority override, rejects an invalid replacement without
 publishing it, and restores the original selection. The three former hardcoded package classes are test-only
 fixtures. Their independent numeric tables and the archived neural seed oracle remain regression references.
 
@@ -291,13 +291,13 @@ on the existing TJL20 component/property basis. See the local research report `r
 for mole/mass tables, source links, the reproducible converter, and limitations. These are approximate feed mappings;
 they do not fit new crude-specific physical or viscosity properties. Each unmeasured tail above 590°C is marked
 estimated and constrained by that crude's published residue mean boiling point. Whole-crude nitrogen, sulfur,
-and metals remain provenance metadata, without contaminant speciation. The original TJL feeds are unchanged.
+and metals remain provenance metadata, without contaminant speciation. The regrouped TJL feeds preserve physical feed volume; their pseudomole amounts change with characterization.
 
 In the column calculator, open **Inputs → Input presets** and choose a crude. Loading replaces the entire draft
 and clears its previous result; it does not start a solve. The five new crude inputs use the current Tia Juana
-column's flow rate, 40 trays, feed tray, temperature, pressure, steam, product draws, and pumparound duties as
-editable starting conditions. These conditions are not separately fitted or qualified for each crude, so users
-may need to adjust them. The original default Tia Juana input, legacy pilot, and Holland benchmark remain selectable.
+column's 40 trays, feed tray, temperature, pressure, steam, and pumparound duties as editable starting conditions.
+Each crude retains its captured physical feed volume and the qualified draw settings. These are starting points, not
+optimized refinery operations. The default Tia Juana input and independent Holland benchmark remain selectable; the old pilot is retired.
 Preset requests contain only an allowlisted ID and expected input revision; the server resolves its own catalog
 composition, rejects stale/busy changes, and persists the selected package, assay, and full input. No new fluid
 rendering or appearance synchronization is introduced by this selector.
@@ -322,6 +322,43 @@ q = 1000 K × (1/min(T, slope_cap_kelvin) − 1/reference_kelvin)
 
 All pair terms vanish for a pure component. The implementation evaluates factored sums in O(component count). These coefficients and descriptors participate in the transport fingerprint, while scientific PR/caloric fingerprints remain independent. This release fits Dalia whole crude at 20/50°C and 370°C+ residue at 50/100°C, reserving whole 40°C and residue 60°C for verification. Other crudes' discrepancies are accepted and reported as a global approximation.
 
-`column_feed_standard_volume_m3_per_second` optionally supplies the positive preset feed volume at the selected property density reference; molar throughput is derived from the current assay and molecular weights. Captured pre-regrouping physical throughputs are retained. Optional `column_side_draw_mol_per_second` contains three positive rates for stages 10/18/28; gameplay rates are recalibrated against accepted pre-regrouping volume targets. The literature comparison retains its published molar rates. Cold Lake has no accepted old yield targets and retains its authored rates.
+Column operating values reside in `presets` records. `operating.feedStandardVolumeCubicMetresPerSecond` is the positive feed volume at the selected property density reference; molar throughput is derived from the current assay and molecular weights. `operating.sideDraws` contains explicit tray numbers and mol/s rates. Captured pre-regrouping physical throughputs are retained, and gameplay draws are recalibrated against accepted pre-regrouping volume targets. The hidden literature preset retains its published molar rates. Cold Lake has no accepted old yield targets and retains its authored rates.
 
 This development change breaks the old component basis. Production packages have no old pseudocomponent aliases, saved column data uses version 9, and old fluid fingerprints are refused. Recreate inputs in a fresh development world or explicitly reset obsolete data; no automatic material deletion or migration is provided. Independent old numerical oracles exist only in test scope. Obsolete learned weights are retired; an unavailable qualified model leaves the classical initializer usable.
+
+
+## Shared bases, sparse assays, and catalog presets
+
+`bases` records contain ordered `components` and selected `properties`. Optional `extends` names one base whose entries precede the new entries. Missing references, cycles, duplicates, invalid unused bases and more than 64 non-water components fail validation. A package selects `basis` or supplies both inline lists; mixing these forms is rejected. Expansion happens before validation and publication. A higher-priority pack still replaces the whole record; extension is explicit composition, not field merging.
+
+An assay can use `amounts_by_component` instead of positional `components`/`amounts`. Missing IDs become zero on the selected package axis. Unknown IDs, including unknown zero entries, fail. Sparse and positional forms cannot coexist. Amounts keep the assay's declared mole, mass or standard-liquid-volume basis and reference conditions. `verifyMaterialIndex` checks bundled index completeness and uniqueness during resource processing; datapacks remain dynamically discovered.
+
+`presets` have `schema_version`, stable `id`, `kind`, and `label`. Column presets additionally declare `translation_key`, integer `order`, boolean `visible`, `package`, `assay`, and an `operating` object. See the bundled `column_tia_juana.json` for the complete SI fields: standard-volume feed rate, feed temperature, stage/feed-stage numbers, top pressure/drop, condenser temperature, reflux ratio, reboiler watts, side draws (mol/s), steam feeds (mol/s, K), and pumparounds (watts and explicit split rule). Numerical definitions and stage geometry are validated before publication. The independent Holland example remains a Java numerical reference. At most 31 catalog column presets plus Holland are displayed, with pagination. Server descriptors include ID, label, translation key and package/assay identity; clients need no local copy of the scientific pack.
+
+Fluid presets select either a pure `component` or a `package` and `assay`. Exactly one optional `networks` record selects the global `package`, `default_column_preset` and ordered `fluid_presets`. Pure column-only standalone catalogs need no network configuration. Gameplay requires PR78, Nitrogen, separate Water, and nitrogen transport. Crude presets are projected by exact ID; their selected physical properties, interactions, water model and viscosity/correction data must agree with the corresponding network sub-basis. Reordering or extending a network is a breaking development-world change, not a save migration. The bundled fluid menu still exposes Water, Nitrogen, Tia Juana, WTI and Cold Lake.
+
+## Reloadable fluid reference records
+
+`transport` records have identity, revision and source. `type: liquid_volume_reference_points` contains `points` with `component`, `temperatureKelvin`, `pressurePascal`, `molarVolumeCubicMetres` (m³/mol), and source. These are EOS volume-calibration references. `type: conditional_solute_log_tables` contains `reference_pressure_pascal` and component `curves` with increasing `temperatures_kelvin` and positive `viscosities_pascal_seconds`. Tables use the registered log-viscosity interpolation implementation. They describe the existing conditional dissolved-gas contribution, not a stable pure liquid above its critical temperature.
+
+A fluid model captures these immutable records with its catalog. Volume references contribute to the fluid thermodynamic identity; conditional curves, molecular weights, pure curves and mixture corrections contribute to transport identity. Editing transport does not invalidate column PR/caloric seeds. No hardcoded classpath-only calibration or dissolved-viscosity loader remains.
+
+## Bundled neural registry
+
+`data/createcheme/neural/registry.json` is a bounded classpath registry, not a datapack weight loader. Schema 1 permits up to 16 entries with `priority`, `modelId`, `payload`, `sidecar` and `pipelineSha256`. Highest priority wins; equal priorities are resolved by model ID. Duplicate IDs, unsafe resource paths, wrong hashes, malformed shapes or unsupported policies reject the registry. An empty or unavailable registry preserves classical fallback.
+
+The trained payload uses schema 1 and contains immutable weights, normalization, component axis and encoding/anchor revisions. Sidecar schema 2 contains `physicsFingerprint`, reference package, model ID, formulation/branch coverage, composition blend segments, numerical bounds, decoder/candidate/correction policy, and explicit `allowExtraZeroComponents` / `allowMissingZeroComponents` flags. The pipeline hash is SHA-256 of the ASCII string `payloadSha256:sidecarSha256`. Altering metadata does not rewrite weights, but requires whole-pipeline requalification.
+
+Physics eligibility includes ordered component properties, EOS/interactions, water/caloric data and admitted domains. It excludes assay identity/composition, labels, provenance text, transport and declared revisions. Actual feed composition must still belong to the model's qualified composition domain. Every nonzero feed species must be represented. Reordering is by exact ID; discarding extra zero species and filling missing zero species require the respective explicit qualification flag. A missing species draws properties and cross-interactions only from the named reference package, and the complete projected fingerprint must match. No missing interaction is inferred as zero. The deployed regrouped model keeps both padding flags disabled; methane-free and nitrogen-extended requests use classical initialization.
+
+Selection binds one model and one immutable catalog when a job is admitted. Native anchors run against that captured view, predictions scatter back to the request axis, and returned seeds retain the original request identity. Reloads cannot change running jobs. This projection is only an inference operation, never an old-save conversion. Result freshness remains tied to the original full scientific dataset.
+
+## Adding a compound
+
+1. Add a component ID and localized descriptor, sourced or explicitly estimated physical/PR/caloric data, supported transport curves and reference conditions. New correlations require tested Java implementations; no executable expressions are accepted.
+2. Add it to a shared basis and qualify all selected interaction and water treatment. Explicitly update sparse assays, operating presets, network selection and conditional/calibration records where scientifically applicable. Unknown sparse IDs and incompatible preset/network physics must fail validation.
+3. Update the bundled index and run catalog/property/flash/derivative, current-format serialization, packet, column and fluid tests. Axes are bounded at 64 non-water species plus water, and packet validation uses the server-provided axis rather than the client's local catalog. A structural fixture adds a synthetic nitrogen-like component and moves nitrogen without array-width edits; it does not establish experimental properties for a new real substance.
+4. Qualify native column/pipeline behavior and fresh-world reload behavior. Old worlds are intentionally unsupported after an axis/property change; explicit reset or a fresh world is required.
+5. Existing models remain eligible only for their exact qualified physics and composition domain. Train additional specialists from qualified labels, generate independent parity fixtures, run native selection/holdout gates, then add a registry entry with explicit priority and hashes. Never expand a sidecar's eligibility merely to bypass missing scientific qualification.
+
+Elemental/SARA/reactivity/wax append data, reaction models, crude-specific rheology, and NRTL calculations remain deferred.

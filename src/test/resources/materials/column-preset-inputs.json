@@ -1,0 +1,656 @@
+[
+  {
+    "id": "tia_juana",
+    "input": {
+      "schemaVersion": 1,
+      "packageId": "createcheme:tjl20_methane",
+      "assayId": "createcheme:tia_juana_light_methane",
+      "componentBasis": {
+        "componentIds": [
+          "Methane",
+          "Ethane",
+          "Propane",
+          "Isobutane",
+          "N-butane",
+          "Isopentane",
+          "N-pentane",
+          "crude_pc01",
+          "crude_pc02",
+          "crude_pc03",
+          "crude_pc04",
+          "crude_pc05",
+          "crude_pc06",
+          "crude_pc07",
+          "crude_pc08",
+          "crude_pc09",
+          "crude_pc10",
+          "crude_pc11",
+          "crude_pc12"
+        ]
+      },
+      "feedComponentMolarFlowsMolPerSecond": [
+        3.68372287921612,
+        0.8773887845022663,
+        7.803538211854392,
+        4.796929727080481,
+        16.39938344475047,
+        12.253362124923694,
+        18.090995102788362,
+        122.51592820504965,
+        90.72897097612251,
+        86.75099282286442,
+        77.13055004039906,
+        64.10900243749795,
+        54.05093667066433,
+        45.34061756504067,
+        44.6246368105765,
+        48.6801440092236,
+        21.86386245347405,
+        11.052157645397973,
+        5.991455931797466
+      ],
+      "feedTemperatureKelvin": 638.15,
+      "stageCount": 40,
+      "feedStageNumber": 37,
+      "topPressurePascal": 250000.0,
+      "stagePressureDropPascal": 0.0,
+      "specifications": [
+        {
+          "kelvin": 332.15
+        },
+        {
+          "ratio": 4.17
+        },
+        {
+          "watts": 0.0
+        }
+      ],
+      "sideDraws": [
+        {
+          "trayNumber": 10,
+          "molarFlowMolPerSecond": 136.46221820029854
+        },
+        {
+          "trayNumber": 18,
+          "molarFlowMolPerSecond": 143.16163238752443
+        },
+        {
+          "trayNumber": 28,
+          "molarFlowMolPerSecond": 45.87851513484432
+        }
+      ],
+      "steamFeeds": [
+        {
+          "stageNumber": 41,
+          "molarFlowMolPerSecond": 333.3333333333333,
+          "temperatureKelvin": 533.15
+        }
+      ],
+      "pumparounds": [
+        {
+          "returnTray": 8,
+          "drawTray": 10,
+          "dutyWatts": -12840000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 16,
+          "drawTray": 18,
+          "dutyWatts": -17890000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 26,
+          "drawTray": 28,
+          "dutyWatts": -11200000.0,
+          "split": "UNIFORM"
+        }
+      ]
+    }
+  },
+  {
+    "id": "wti_light_export",
+    "input": {
+      "schemaVersion": 1,
+      "packageId": "createcheme:wti_light_export_tjl20",
+      "assayId": "createcheme:wti_light_export",
+      "componentBasis": {
+        "componentIds": [
+          "Methane",
+          "Ethane",
+          "Propane",
+          "Isobutane",
+          "N-butane",
+          "Isopentane",
+          "N-pentane",
+          "crude_pc01",
+          "crude_pc02",
+          "crude_pc03",
+          "crude_pc04",
+          "crude_pc05",
+          "crude_pc06",
+          "crude_pc07",
+          "crude_pc08",
+          "crude_pc09",
+          "crude_pc10",
+          "crude_pc11",
+          "crude_pc12"
+        ]
+      },
+      "feedComponentMolarFlowsMolPerSecond": [
+        0.0,
+        0.7439556430714305,
+        11.160761630617564,
+        6.15806889339786,
+        26.749111755696948,
+        20.773631145427792,
+        31.315473816241898,
+        107.88118655501881,
+        173.90385641896088,
+        109.7958764305318,
+        71.16510991179764,
+        54.818899436338114,
+        40.86668262067002,
+        28.75961787927768,
+        27.437192557149945,
+        18.375754436747822,
+        5.974460625637673,
+        1.03706886009108,
+        0.16179909969351167
+      ],
+      "feedTemperatureKelvin": 638.15,
+      "stageCount": 40,
+      "feedStageNumber": 37,
+      "topPressurePascal": 250000.0,
+      "stagePressureDropPascal": 0.0,
+      "specifications": [
+        {
+          "kelvin": 332.15
+        },
+        {
+          "ratio": 4.17
+        },
+        {
+          "watts": 0.0
+        }
+      ],
+      "sideDraws": [
+        {
+          "trayNumber": 10,
+          "molarFlowMolPerSecond": 136.4002912777165
+        },
+        {
+          "trayNumber": 18,
+          "molarFlowMolPerSecond": 143.07131370545804
+        },
+        {
+          "trayNumber": 28,
+          "molarFlowMolPerSecond": 45.834768588831516
+        }
+      ],
+      "steamFeeds": [
+        {
+          "stageNumber": 41,
+          "molarFlowMolPerSecond": 333.3333333333333,
+          "temperatureKelvin": 533.15
+        }
+      ],
+      "pumparounds": [
+        {
+          "returnTray": 8,
+          "drawTray": 10,
+          "dutyWatts": -12840000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 16,
+          "drawTray": 18,
+          "dutyWatts": -17890000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 26,
+          "drawTray": 28,
+          "dutyWatts": -11200000.0,
+          "split": "UNIFORM"
+        }
+      ]
+    }
+  },
+  {
+    "id": "upper_zakum",
+    "input": {
+      "schemaVersion": 1,
+      "packageId": "createcheme:upper_zakum_tjl20",
+      "assayId": "createcheme:upper_zakum",
+      "componentBasis": {
+        "componentIds": [
+          "Methane",
+          "Ethane",
+          "Propane",
+          "Isobutane",
+          "N-butane",
+          "Isopentane",
+          "N-pentane",
+          "crude_pc01",
+          "crude_pc02",
+          "crude_pc03",
+          "crude_pc04",
+          "crude_pc05",
+          "crude_pc06",
+          "crude_pc07",
+          "crude_pc08",
+          "crude_pc09",
+          "crude_pc10",
+          "crude_pc11",
+          "crude_pc12"
+        ]
+      },
+      "feedComponentMolarFlowsMolPerSecond": [
+        0.0,
+        0.0,
+        13.305136124522543,
+        9.828581842730575,
+        33.47030573470412,
+        20.757446217654326,
+        29.31721785380044,
+        74.07694064181011,
+        92.466466232959,
+        91.71989216324704,
+        77.52926539829954,
+        65.08471875625885,
+        53.56944323108983,
+        44.2963403185903,
+        49.326305114742325,
+        43.466306405150156,
+        27.139158394541287,
+        8.634960170261323,
+        2.8345686652601936
+      ],
+      "feedTemperatureKelvin": 638.15,
+      "stageCount": 40,
+      "feedStageNumber": 37,
+      "topPressurePascal": 250000.0,
+      "stagePressureDropPascal": 0.0,
+      "specifications": [
+        {
+          "kelvin": 332.15
+        },
+        {
+          "ratio": 4.17
+        },
+        {
+          "watts": 0.0
+        }
+      ],
+      "sideDraws": [
+        {
+          "trayNumber": 10,
+          "molarFlowMolPerSecond": 136.4735087251832
+        },
+        {
+          "trayNumber": 18,
+          "molarFlowMolPerSecond": 143.18094716871644
+        },
+        {
+          "trayNumber": 28,
+          "molarFlowMolPerSecond": 45.88701039842216
+        }
+      ],
+      "steamFeeds": [
+        {
+          "stageNumber": 41,
+          "molarFlowMolPerSecond": 333.3333333333333,
+          "temperatureKelvin": 533.15
+        }
+      ],
+      "pumparounds": [
+        {
+          "returnTray": 8,
+          "drawTray": 10,
+          "dutyWatts": -12840000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 16,
+          "drawTray": 18,
+          "dutyWatts": -17890000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 26,
+          "drawTray": 28,
+          "dutyWatts": -11200000.0,
+          "split": "UNIFORM"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bonga",
+    "input": {
+      "schemaVersion": 1,
+      "packageId": "createcheme:bonga_tjl20",
+      "assayId": "createcheme:bonga",
+      "componentBasis": {
+        "componentIds": [
+          "Methane",
+          "Ethane",
+          "Propane",
+          "Isobutane",
+          "N-butane",
+          "Isopentane",
+          "N-pentane",
+          "crude_pc01",
+          "crude_pc02",
+          "crude_pc03",
+          "crude_pc04",
+          "crude_pc05",
+          "crude_pc06",
+          "crude_pc07",
+          "crude_pc08",
+          "crude_pc09",
+          "crude_pc10",
+          "crude_pc11",
+          "crude_pc12"
+        ]
+      },
+      "feedComponentMolarFlowsMolPerSecond": [
+        0.0,
+        0.5349054494766118,
+        6.200833258745739,
+        4.704391558836619,
+        11.622614439478706,
+        8.917181056439329,
+        9.363040109261295,
+        49.418285357343805,
+        87.03718158368186,
+        76.32923628100725,
+        89.6720834568552,
+        103.24735037828093,
+        91.57035664837706,
+        69.8628008532533,
+        66.09856805487068,
+        42.891046929634975,
+        14.374766499725903,
+        3.477248667961113,
+        0.866224132243491
+      ],
+      "feedTemperatureKelvin": 638.15,
+      "stageCount": 40,
+      "feedStageNumber": 37,
+      "topPressurePascal": 250000.0,
+      "stagePressureDropPascal": 0.0,
+      "specifications": [
+        {
+          "kelvin": 332.15
+        },
+        {
+          "ratio": 4.17
+        },
+        {
+          "watts": 0.0
+        }
+      ],
+      "sideDraws": [
+        {
+          "trayNumber": 10,
+          "molarFlowMolPerSecond": 136.60488517405355
+        },
+        {
+          "trayNumber": 18,
+          "molarFlowMolPerSecond": 143.19343041729184
+        },
+        {
+          "trayNumber": 28,
+          "molarFlowMolPerSecond": 45.87578141029965
+        }
+      ],
+      "steamFeeds": [
+        {
+          "stageNumber": 41,
+          "molarFlowMolPerSecond": 333.3333333333333,
+          "temperatureKelvin": 533.15
+        }
+      ],
+      "pumparounds": [
+        {
+          "returnTray": 8,
+          "drawTray": 10,
+          "dutyWatts": -12840000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 16,
+          "drawTray": 18,
+          "dutyWatts": -17890000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 26,
+          "drawTray": 28,
+          "dutyWatts": -11200000.0,
+          "split": "UNIFORM"
+        }
+      ]
+    }
+  },
+  {
+    "id": "dalia",
+    "input": {
+      "schemaVersion": 1,
+      "packageId": "createcheme:dalia_tjl20",
+      "assayId": "createcheme:dalia",
+      "componentBasis": {
+        "componentIds": [
+          "Methane",
+          "Ethane",
+          "Propane",
+          "Isobutane",
+          "N-butane",
+          "Isopentane",
+          "N-pentane",
+          "crude_pc01",
+          "crude_pc02",
+          "crude_pc03",
+          "crude_pc04",
+          "crude_pc05",
+          "crude_pc06",
+          "crude_pc07",
+          "crude_pc08",
+          "crude_pc09",
+          "crude_pc10",
+          "crude_pc11",
+          "crude_pc12"
+        ]
+      },
+      "feedComponentMolarFlowsMolPerSecond": [
+        0.0,
+        0.0,
+        0.0,
+        1.5351073317050639,
+        5.372875660967724,
+        4.019158742575983,
+        4.637490856818442,
+        12.108572259872446,
+        50.776043053090696,
+        62.60190709343531,
+        77.03091709149398,
+        89.3915000929473,
+        91.50568186611318,
+        82.72139430034036,
+        96.94188289765741,
+        85.96302493395069,
+        50.745428722806324,
+        15.691213649875376,
+        4.840344419203189
+      ],
+      "feedTemperatureKelvin": 638.15,
+      "stageCount": 40,
+      "feedStageNumber": 37,
+      "topPressurePascal": 250000.0,
+      "stagePressureDropPascal": 0.0,
+      "specifications": [
+        {
+          "kelvin": 332.15
+        },
+        {
+          "ratio": 4.17
+        },
+        {
+          "watts": 0.0
+        }
+      ],
+      "sideDraws": [
+        {
+          "trayNumber": 10,
+          "molarFlowMolPerSecond": 136.6704791423884
+        },
+        {
+          "trayNumber": 18,
+          "molarFlowMolPerSecond": 143.18396490198703
+        },
+        {
+          "trayNumber": 28,
+          "molarFlowMolPerSecond": 45.91545810247339
+        }
+      ],
+      "steamFeeds": [
+        {
+          "stageNumber": 41,
+          "molarFlowMolPerSecond": 333.3333333333333,
+          "temperatureKelvin": 533.15
+        }
+      ],
+      "pumparounds": [
+        {
+          "returnTray": 8,
+          "drawTray": 10,
+          "dutyWatts": -12840000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 16,
+          "drawTray": 18,
+          "dutyWatts": -17890000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 26,
+          "drawTray": 28,
+          "dutyWatts": -11200000.0,
+          "split": "UNIFORM"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cold_lake_blend",
+    "input": {
+      "schemaVersion": 1,
+      "packageId": "createcheme:cold_lake_blend_tjl20",
+      "assayId": "createcheme:cold_lake_blend",
+      "componentBasis": {
+        "componentIds": [
+          "Methane",
+          "Ethane",
+          "Propane",
+          "Isobutane",
+          "N-butane",
+          "Isopentane",
+          "N-pentane",
+          "crude_pc01",
+          "crude_pc02",
+          "crude_pc03",
+          "crude_pc04",
+          "crude_pc05",
+          "crude_pc06",
+          "crude_pc07",
+          "crude_pc08",
+          "crude_pc09",
+          "crude_pc10",
+          "crude_pc11",
+          "crude_pc12"
+        ]
+      },
+      "feedComponentMolarFlowsMolPerSecond": [
+        0.0,
+        0.0,
+        0.46399175688522826,
+        14.43269821143177,
+        36.961788102447215,
+        39.9848838949019,
+        52.178855579162764,
+        65.10390775103984,
+        57.42852125708882,
+        39.79659023859768,
+        37.422136224126355,
+        47.938974096512844,
+        56.9901853387382,
+        55.0734143671777,
+        71.6088464706922,
+        71.0300875040596,
+        59.15047727863516,
+        22.466527292466886,
+        8.741866447340906
+      ],
+      "feedTemperatureKelvin": 638.15,
+      "stageCount": 40,
+      "feedStageNumber": 37,
+      "topPressurePascal": 250000.0,
+      "stagePressureDropPascal": 0.0,
+      "specifications": [
+        {
+          "kelvin": 332.15
+        },
+        {
+          "ratio": 4.17
+        },
+        {
+          "watts": 0.0
+        }
+      ],
+      "sideDraws": [
+        {
+          "trayNumber": 10,
+          "molarFlowMolPerSecond": 136.38888888888889
+        },
+        {
+          "trayNumber": 18,
+          "molarFlowMolPerSecond": 143.05555555555554
+        },
+        {
+          "trayNumber": 28,
+          "molarFlowMolPerSecond": 45.833333333333336
+        }
+      ],
+      "steamFeeds": [
+        {
+          "stageNumber": 41,
+          "molarFlowMolPerSecond": 333.3333333333333,
+          "temperatureKelvin": 533.15
+        }
+      ],
+      "pumparounds": [
+        {
+          "returnTray": 8,
+          "drawTray": 10,
+          "dutyWatts": -12840000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 16,
+          "drawTray": 18,
+          "dutyWatts": -17890000.0,
+          "split": "UNIFORM"
+        },
+        {
+          "returnTray": 26,
+          "drawTray": 28,
+          "dutyWatts": -11200000.0,
+          "split": "UNIFORM"
+        }
+      ]
+    }
+  }
+]

@@ -9,6 +9,7 @@ public final class V3TjlReferenceCatalog {
     private V3TjlReferenceCatalog() {}
     public static MaterialCatalog catalog() {
         var resources=new LinkedHashMap<>(MaterialRuntime.current().resources());
+        resources.keySet().removeIf(key->key.contains("/networks/")); // Independent column-only numerical oracle.
         var json=new Gson();String root="data/createcheme/materials/";
         for(var old:List.of(V3Tjl19PropertyPackage.INSTANCE,V3Tjl20MethanePropertyPackage.INSTANCE)) {
             var ids=old.componentBasis().componentIds();var refs=new ArrayList<String>();
@@ -30,7 +31,12 @@ public final class V3TjlReferenceCatalog {
             packageRecord.put("schema_version",1);packageRecord.put("id",old.packageId());packageRecord.put("revision",old.datasetRevision());packageRecord.put("model","pr78");packageRecord.put("components",ids);packageRecord.put("properties",refs);
             packageRecord.put("interactions","createcheme:"+suffix);packageRecord.put("missing_interactions","zero");packageRecord.put("water_model","createcheme:water");packageRecord.put("aliases",Map.of());packageRecord.put("advisory_evidence",old.advisoryEvidence());
             packageRecord.put("temperature_min_kelvin",old.minimumTemperatureKelvin());packageRecord.put("temperature_max_kelvin",old.maximumTemperatureKelvin());packageRecord.put("pressure_min_pascal",old.minimumPressurePascal());packageRecord.put("pressure_max_pascal",old.maximumPressurePascal());
-            packageRecord.put("column_feed_standard_volume_m3_per_second",suffix.equals("tjl19")?.18401666666666672:.1832627693034672);
+            // Keep the old operating conditions with the independent old thermodynamic tables.
+            String presetPath=root+"presets/"+(suffix.equals("tjl19")?"column_literature.json":"column_tia_juana.json");
+            var preset=com.google.gson.JsonParser.parseString(resources.get(presetPath)).getAsJsonObject();
+            preset.getAsJsonObject("operating").add("sideDraws",json.toJsonTree(List.of(
+                    Map.of("trayNumber",10,"molarFlowMolPerSecond",491./3.6),Map.of("trayNumber",18,"molarFlowMolPerSecond",515./3.6),Map.of("trayNumber",28,"molarFlowMolPerSecond",165./3.6))));
+            resources.put(presetPath,preset.toString());
             resources.put(root+"packages/"+suffix+".json",json.toJson(packageRecord));
             String assay=suffix.equals("tjl19")?"createcheme:tia_juana_light":"createcheme:tia_juana_light_methane";
             resources.put(root+"assays/"+suffix+".json",json.toJson(Map.of("schema_version",1,"id",assay,"package",old.packageId(),"components",ids,"basis","mole","amounts",old.crudeFeed(assay).moleFractions())));

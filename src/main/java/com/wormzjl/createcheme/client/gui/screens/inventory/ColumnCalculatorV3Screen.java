@@ -41,19 +41,10 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         materialMouseX=mouseX-leftPos; materialMouseY=mouseY-topPos;
         super.render(graphics,mouseX,mouseY,partialTick);
         if(hoveredMaterial!=null) graphics.renderTooltip(font,java.util.List.of(
-                net.minecraft.network.chat.Component.literal(localizedMaterial(hoveredMaterial)),
+                net.minecraft.network.chat.Component.literal(com.wormzjl.createcheme.client.MaterialNames.localized(hoveredMaterial)),
                 net.minecraft.network.chat.Component.literal(hoveredMaterial.id())),java.util.Optional.empty(),mouseX,mouseY);
     }
 
-    private static String localizedMaterial(com.wormzjl.createcheme.science.material.MaterialName n) {
-        String base=net.minecraft.network.chat.Component.translatableWithFallback(n.translationKey(),n.fallback()).getString();
-        if(!n.kind().equals("petroleum_fraction"))return base;
-        String range;
-        if(n.lowerKelvin()==null)range=net.minecraft.network.chat.Component.translatableWithFallback(n.rangeKey(),"%s, NBP below %s°C",base,n.upperCelsius()).getString();
-        else if(n.upperKelvin()==null)range=net.minecraft.network.chat.Component.translatableWithFallback(n.rangeKey(),"%s, NBP above %s°C",base,n.lowerCelsius()).getString();
-        else range=net.minecraft.network.chat.Component.translatableWithFallback(n.rangeKey(),"%s, NBP %s–%s°C",base,n.lowerCelsius(),n.upperCelsius()).getString();
-        return range+(n.estimated()?net.minecraft.network.chat.Component.translatableWithFallback("material.createcheme.estimated"," (estimated)").getString():"");
-    }
     private static final int CORE_EDITOR_COUNT = 9;
     private static final int SIDE_DRAW_COUNT = 3;
     private static final int COOLER_COUNT = V3ColumnInput.MAX_PUMPAROUNDS;
@@ -112,6 +103,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private Button heatTab;
     private Button convergenceTab;
     private Button preset;
+    private int presetPage;
+    private Button previousPresetPage,nextPresetPage;
     private final List<Button> presetChoices = new ArrayList<>();
     private Button run;
     private Button previousStreamPage;
@@ -163,14 +156,18 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 .bounds(leftPos + 238, tabY, 96, 20).build());
         preset = addRenderableWidget(Button.builder(Component.translatableWithFallback("gui.createcheme.column_presets", "Input presets"), button -> selectPage(Page.PRESETS))
                 .bounds(leftPos + 340, tabY, 128, 20).build());
-        ColumnInputPreset[] choices = ColumnInputPreset.values();
         int presetWidth = Math.max(1, (imageWidth - 30) / 2);
-        for (int index=0; index<choices.length; index++) {
-            ColumnInputPreset choice=choices[index];
-            presetChoices.add(addRenderableWidget(Button.builder(
-                    Component.translatableWithFallback(choice.translationKey(), choice.label()), button -> requestPreset(choice))
-                    .bounds(leftPos+10+(index%2)*(presetWidth+10), topPos+CONTENT_TOP+44+(index/2)*30, presetWidth, 20).build()));
+        for (int index=0; index<8; index++) {
+            final int slot=index;
+            presetChoices.add(addRenderableWidget(Button.builder(Component.empty(),button->{
+                int selected=presetPage*8+slot;
+                if(serverState!=null&&selected<serverState.presets().size())requestPreset(serverState.presets().get(selected));
+            }).bounds(leftPos+10+(index%2)*(presetWidth+10),topPos+CONTENT_TOP+44+(index/2)*30,presetWidth,20).build()));
         }
+        previousPresetPage=addRenderableWidget(Button.builder(Component.literal("Previous presets"),button->{presetPage--;refreshControls();})
+                .bounds(leftPos+10,topPos+CONTENT_TOP+170,125,20).build());
+        nextPresetPage=addRenderableWidget(Button.builder(Component.literal("Next presets"),button->{presetPage++;refreshControls();})
+                .bounds(leftPos+145,topPos+CONTENT_TOP+170,125,20).build());
         run = addRenderableWidget(Button.builder(Component.literal("Run V3"), button -> requestCalculation())
                 .bounds(leftPos + 10, topPos + imageHeight - 29, 82, 20).build());
         previousStreamPage = addRenderableWidget(Button.builder(Component.literal("Previous streams"), button -> {
@@ -494,11 +491,16 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         convergenceTab.active = page != Page.CONVERGENCE;
         preset.visible = showInputs || page == Page.PRESETS;
         preset.active = showInputs && !calculating && serverState != null;
-        for (Button choice : presetChoices) {
-            choice.visible = page == Page.PRESETS;
-            choice.active = choice.visible && !calculating && serverState != null;
+        int presetCount=serverState==null?0:serverState.presets().size();
+        presetPage=Math.clamp(presetPage,0,Math.max(0,(presetCount-1)/8));
+        for(int i=0;i<presetChoices.size();i++) {
+            var button=presetChoices.get(i);int index=presetPage*8+i;
+            button.visible=page==Page.PRESETS&&index<presetCount;
+            button.active=button.visible&&!calculating;
+            if(index<presetCount){var choice=serverState.presets().get(index);button.setMessage(Component.translatableWithFallback(choice.translationKey(),choice.label()));}
         }
-        run.visible = showInputs || showHeat;
+        previousPresetPage.visible=nextPresetPage.visible=page==Page.PRESETS&&presetCount>8;
+        previousPresetPage.active=presetPage>0;nextPresetPage.active=(presetPage+1)*8<presetCount;
         run.setMessage(Component.literal(holland ? "Run Holland" : "Run V3"));
         run.active = (showInputs || showHeat) && !calculating && draftInput() != null;
         int count = serverState == null || serverState.displayResult().isEmpty() ? 0
@@ -519,9 +521,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         refreshControls();
     }
 
-    private void requestPreset(ColumnInputPreset choice) {
+    private void requestPreset(com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor choice) {
         if (serverState == null || calculationRequested || serverState.status() == V3Status.CALCULATING) return;
-        if (choice == ColumnInputPreset.HOLLAND && !isHolland()) {
+        if (choice.id().equals("holland_3_2") && !isHolland()) {
             String[][] drafts = coolerDrafts();
             boolean authored = false;
             for (String[] row : drafts) {
@@ -533,7 +535,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             stashedCoolerDrafts = null;
             stashedCoolerSplits = null;
         }
-        ColumnV3Network.sendPreset(menu.blockPos(), serverState.inputRevision(), choice);
+        ColumnV3Network.sendPreset(menu.blockPos(), serverState.inputRevision(), choice.id());
         page = Page.INPUTS;
         calculationRequested = true;
         validation = "Loading server-owned V3 preset...";
@@ -611,7 +613,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private String currentPresetLabel() {
         if (serverState == null) return "Waiting for input";
-        for (ColumnInputPreset choice : ColumnInputPreset.values()) {
+        for (var choice : serverState.presets()) {
             if (choice.matches(serverState.input()))
                 return Component.translatableWithFallback(choice.translationKey(),choice.label()).getString();
         }
@@ -625,7 +627,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 "Loading replaces the draft and clears its previous result."), 10, CONTENT_TOP+16, NOTICE, false);
         graphics.drawWordWrap(font, Component.translatableWithFallback("gui.createcheme.preset_conditions",
                 "The five crude assays use the current Tia Juana column settings as editable starting points. Adjust operating conditions for each crude before running."),
-                10, CONTENT_TOP+174, imageWidth-20, MUTED);
+                10, CONTENT_TOP+198, imageWidth-20, MUTED);
     }
 
     private void renderInputs(GuiGraphics graphics) {
@@ -726,7 +728,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             if(materialMouseX>=x && materialMouseX<x+widths[0] && materialMouseY>=rowY && materialMouseY<rowY+12)
                 hoveredMaterial=material;
             drawTableRow(graphics, x, tableY + 12 * (index + 1), 12, widths, new String[] {
-                    localizedMaterial(material), formatPercentage(fraction.moleFraction()), formatPercentage(fraction.massFraction())
+                    com.wormzjl.createcheme.client.MaterialNames.localized(material), formatPercentage(fraction.moleFraction()), formatPercentage(fraction.massFraction())
             }, false);
         }
     }

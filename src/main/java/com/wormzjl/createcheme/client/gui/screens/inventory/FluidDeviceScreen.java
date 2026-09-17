@@ -23,6 +23,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private int phase=2,page,rows,preset=-1,path;
     private boolean editMixture,reverse;
     private String localMessage="";
+    private com.wormzjl.createcheme.science.material.MaterialName hoveredMaterial;
     public FluidDeviceScreen(FluidDeviceMenu menu,Inventory inventory,Component title){super(menu,inventory,title);}
     @Override protected void init() {
         imageWidth=Math.min(454,width-12);imageHeight=Math.min(284,height-12);super.init();rows=Math.max(2,(imageHeight-200)/12);fields.clear();mixtureFields.clear();draftRevision=Long.MIN_VALUE;
@@ -61,7 +62,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         showMixture();
     }
     private void preset() {
-        var data=menu.clientData();if(data==null)return;preset=(preset+1)%data.presets().size();composition=data.presets().get(preset).moleFractions();
+        var data=menu.clientData();if(data==null||data.presets().isEmpty())return;preset=(preset+1)%data.presets().size();composition=data.presets().get(preset).moleFractions();
         localMessage="Composition selected; temperature and pressure unchanged.";showMixture();
     }
     private boolean collectMixture() {
@@ -85,7 +86,10 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private double number(String key){return Double.parseDouble(fields.get(key).getValue());}
     private String phaseName(){return switch(phase){case 0->"Liquid";case 1->"Water";default->"Vapor";};}
     @Override public void render(GuiGraphics graphics,int mouseX,int mouseY,float partialTick) {
-        refreshDraft();super.render(graphics,mouseX,mouseY,partialTick);renderTooltip(graphics,mouseX,mouseY);
+        hoveredMaterial=null;refreshDraft();super.render(graphics,mouseX,mouseY,partialTick);renderTooltip(graphics,mouseX,mouseY);
+        if(hoveredMaterial!=null)graphics.renderTooltip(font,List.of(
+                Component.literal(com.wormzjl.createcheme.client.MaterialNames.localized(hoveredMaterial)),
+                Component.literal(hoveredMaterial.id())),Optional.empty(),mouseX,mouseY);
     }
     @Override protected void renderLabels(GuiGraphics graphics,int mouseX,int mouseY) {}
     @Override protected void renderBg(GuiGraphics g,float partialTick,int mouseX,int mouseY) {
@@ -135,8 +139,11 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         String heading=editMixture?"Generator composition (mole %)":phaseName()+" composition (mole %)";
         line(g,heading+"   "+(page+1)+"/"+(Math.max(0,composition.length-1)/rows+1),x+10,y+149);
         double sum=Arrays.stream(amounts[phase]).sum();for(int i=0;i<rows;i++) {
-            int c=page*rows+i;if(c>=composition.length)break;int rowY=y+163+i*12;String name=data.components().get(c);if(name.startsWith("crude_pc"))name="Crude cut "+Integer.parseInt(name.substring(8));
-            g.drawString(font,name,x+12,rowY,0xffedf5f8,false);
+            int c=page*rows+i;if(c>=composition.length)break;int rowY=y+163+i*12;String id=data.components().get(c);
+            var descriptor=data.materialNames().getOrDefault(id,com.wormzjl.createcheme.science.material.MaterialName.chemical(id));
+            String name=com.wormzjl.createcheme.client.MaterialNames.localized(descriptor);
+            g.drawString(font,font.plainSubstrByWidth(name,imageWidth-122),x+12,rowY,0xffedf5f8,false);
+            if(mouseX>=x+12&&mouseX<x+imageWidth-110&&mouseY>=rowY&&mouseY<rowY+12)hoveredMaterial=descriptor;
             if(!editMixture)g.drawString(font,sum>0?format(100*amounts[phase][c]/sum)+" %":"Absent",x+imageWidth-94,rowY,0xffb6ced6,false);
         }
         if(!localMessage.isEmpty())g.drawString(font,font.plainSubstrByWidth(localMessage,imageWidth-18),x+9,y+imageHeight-36,0xffefca83,false);

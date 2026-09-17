@@ -17,7 +17,7 @@ class MaterialNamesCodecTest {
     @Test void serverNamingDescriptorsRoundTripWithoutClientCatalogLookup() throws Exception {
         var input=ColumnCalculatorV3BlockEntity.methaneCduInput();
         var descriptor=new MaterialName("custom_cut","custom.translation","Crude oil","petroleum_fraction",600.,650.,true);
-        var state=new V3State(1,2,0,1,-1,V3Status.DIRTY,input,Optional.empty(),List.of(),Map.of("custom_cut",descriptor));
+        var state=new V3State(1,2,0,1,-1,V3Status.DIRTY,input,Optional.empty(),List.of(),Map.of("custom_cut",descriptor),List.of(new MaterialPresets.Descriptor("server_preset","Server-only crude","server.preset","custom:package","custom:assay")));
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
             invoke(ColumnV3Network.class,"writeState",new Class<?>[]{RegistryFriendlyByteBuf.class,V3State.class},buffer,state);

@@ -56,7 +56,7 @@ class V3ClosureCodecTest {
     @Test
     void aVersionSevenResultWithoutTheKeyReadsAsTheDefaultClosure() throws Exception {
         assertEquals(9, ColumnCalculatorV3BlockEntity.DATA_VERSION);
-        assertEquals(10, ColumnV3Network.WIRE_SCHEMA_VERSION);
+        assertEquals(11, ColumnV3Network.WIRE_SCHEMA_VERSION);
 
         CompoundTag tag = writeNbt(result(Optional.of(ledger()), 1.0e-3));
         tag.remove("ClosureTolerance");
