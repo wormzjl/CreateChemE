@@ -209,8 +209,10 @@ specific transition; unrelated data-pack edits still require explicit migration.
 Adaptive subdivision checks quarter, midpoint, and three-quarter temperatures until log interpolation agrees with
 the API within 0.05% at those check points. This measures interpolation error only, not physical model accuracy.
 The independent API values and characterization metadata are committed in `src/test/resources/materials/dwsim-viscosity-api.json`.
-Reproduce with `examples/Export-DwsimViscosity.ps1 -Characterization <original-source-feed.dwxml>`, then
-`python examples/import_dwsim_viscosity.py build/dwsim-viscosity-export.json`. The original characterization file
+The following regeneration tools and source reports are local research under the Git-ignored `research/` directory;
+they are not required to build or test a clean checkout.
+Reproduce with `research/viscosity-tools/Export-DwsimViscosity.ps1 -Characterization <original-source-feed.dwxml>`, then
+`python research/viscosity-tools/import_dwsim_viscosity.py research/viscosity-tools/raw/dwsim-viscosity-export.json`. The original characterization file
 is an offline input; neither it nor the DWSIM runtime is required by Minecraft. The exporter uses isolated in-memory
 flowsheets and never saves the supplied source simulation.
 
@@ -252,7 +254,7 @@ Use `catalog.componentAppearance(packageId, componentId)` (supports package alia
 `catalog.assayAppearance(packageId, assayId)` for immutable values. Use the calling calculation's captured
 catalog when snapshot consistency matters. `FluidAppearance.argb()` supplies a packed AARRGGBB value for future
 consumers. Put an appearance object in a whole-record override using the usual data-pack replacement rules.
-The five crude conversion presets retain their visual settings in `examples/crude-assays/appearances.json`,
+The five crude conversion presets retain their visual settings in `research/crude-assays/appearances.json`,
 separate from scientific source transcriptions, so rerunning the converter preserves them.
 
 ## Localization and saved data
@@ -299,7 +301,7 @@ fixtures. Their independent numeric tables and the archived neural seed oracle r
 ## Five additional crude feeds
 
 WTI Light - Export, Upper Zakum, Bonga, Dalia, and Cold Lake Blend have separate packages and mass-basis assays
-on the existing TJL20 component/property basis. See [CRUDE_ASSAY_CONVERSION.md](CRUDE_ASSAY_CONVERSION.md)
+on the existing TJL20 component/property basis. See the local research report `research/crude-regrouping/notes/CRUDE_ASSAY_CONVERSION.md`
 for mole/mass tables, source links, the reproducible converter, and limitations. These are approximate feed mappings;
 they do not fit new crude-specific physical or viscosity properties. Each unmeasured tail above 590°C is marked
 estimated and constrained by that crude's published residue mean boiling point. Whole-crude nitrogen, sulfur,

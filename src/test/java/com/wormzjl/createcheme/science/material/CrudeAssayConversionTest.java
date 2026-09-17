@@ -1,12 +1,13 @@
 package com.wormzjl.createcheme.science.material;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3FeedPhase;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,8 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class CrudeAssayConversionTest {
     @Test
     void allFivePublishedConversionsLoadWithTheSameOrderAndMassBasis() throws IOException {
-        var report = JsonParser.parseString(Files.readString(
-                Path.of("examples/crude-assays/converted-compositions.json"))).getAsJsonObject();
+        JsonObject report;
+        try (var stream = getClass().getResourceAsStream("/materials/crude-assay-conversion-fixture.json")) {
+            assertNotNull(stream, "Missing independent assay conversion fixture");
+            report = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+        }
         var catalog = MaterialCatalog.bundled();
         var original = catalog.requirePackage("createcheme:tjl20_methane");
         assertEquals(5, report.getAsJsonArray("crudes").size());
