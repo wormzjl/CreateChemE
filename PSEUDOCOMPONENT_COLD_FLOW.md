@@ -75,6 +75,35 @@ Store distinct concepts: wax onset, solid fraction, pour/gel behavior and viscos
 
 For VDU/residue processing, preserve both wax-forming and non-wax residue information when merging heavy cuts. A single heavy lump with a single solidification temperature would remove precisely the distinction needed here.
 
+## Follow-up: consolidation and a practical no-flow criterion
+
+Consolidation reduces the number of curves to characterize, but cannot repair missing or invalid data by averaging them. The first candidate remains PC12+PC13 (roughly 731°C+ in the current estimated cut scheme), keeping PC10 and PC11 separate for VDU assessment. This does not fix PC11's viscosity anomaly. A merged tail needs a newly qualified transport fit, with its changing composition across crudes and processing states accounted for; inheriting or averaging the two fallback curves is not qualification.
+
+An easier first experiment is a grouped transport/rheology characterization over the existing component inventory. This preserves the separation basis and allows separate wax-forming fraction, non-wax residue, and reaction-quality information. A single merged heavy component with one melting point would suppress distinctions needed for wax precipitation and residue conversion. Any eventual thermodynamic basis reduction still needs VDU flash, enthalpy, mass and yield validation.
+
+There is **no universal viscosity at which a mixture becomes non-flowable**. For an ideal Newtonian liquid in a horizontal circular pipe, steady fully developed laminar flow obeys
+
+`Q = pi D^4 DeltaP / (128 mu L)`.
+
+Here Q is m³/s, D and L are metres, DeltaP is the net pressure drop available for pipe friction in Pa, and mu is Pa s. Every finite viscosity gives a nonzero flow for a positive pressure difference in this idealization. Practical unusability requires a declared minimum useful rate, Qmin, and the actual available pressure. Its corresponding viscosity limit is `mu_limit = pi D^4 DeltaP_available / (128 L Qmin)` under these assumptions. The current `PipeResistance` laminar branch implements this dependence; it has no material yield-stress term.
+
+For a hypothetical straight, horizontal 10 m pipe of 50 mm internal diameter with 1 bar available pressure drop, ignoring fittings:
+
+| Viscosity, Pa s | Predicted laminar flow, L/s |
+|---:|---:|
+| 1 | 1.534 |
+| 10 | 0.1534 |
+| 100 | 0.01534 |
+| 1,000 | 0.001534 |
+
+For a density of 1,000 kg/m³ all four examples are laminar (maximum Reynolds number about 39). If the selected useful-flow threshold were 0.01 L/s, this particular installation would fall below it above about 153.4 Pa s. That value changes with the pump and pipe and is not a universal property of the material. Doubling diameter multiplies ideal laminar flow by 16 at the same pressure difference, length and viscosity.
+
+A wax gel adds another mechanism: yield stress. In an ideal no-slip Bingham pipe model, bulk steady flow requires wall shear stress `tau_wall = DeltaP D/(4L)` to exceed `tau_y`; equivalently `DeltaP > 4L tau_y/D`. In the example, the available wall stress is 125 Pa. A gel with yield stress at least that large would remain unyielded in that ideal model. This is distinct from a viscosity threshold. [SLB rheology explanation](https://www.slb.com/resource-library/oilfield-review/defining-series/defining-rheology).
+
+Real waxy-crude restart is more complicated: cooling/shear history, gel fracture, creep and time-dependent structural breakdown matter. Treat the yield-stress condition as a simplified future model, not a guaranteed real-pipeline restart pressure. [Experimental pipeline/rheometer study](https://www.sciencedirect.com/science/article/pii/S0009250919307043).
+
+For future gameplay, distinguish **low flow under available head**, **unyielded gel**, and **solid blockage**. A chosen display/activity cutoff should not silently erase material or turn a numerical convergence failure into a physical freeze. This follow-up is a design recommendation only; no production flow law or component basis was changed.
+
 ## Reproduction and artifacts
 
 - `examples/Probe-DwsimColdFlow.cs`: compile using .NET Framework csc with `Microsoft.CSharp.dll` and `System.Web.Extensions.dll`, platform x64. Copy `DWSIM.exe.config` beside the resulting executable as `<executable>.config`. Invoke with `<DWSIM installation> <original source-feed.dwxml> <output.json>`. Use absolute Windows-native paths for compilation. The original simulation is loaded but never saved.
