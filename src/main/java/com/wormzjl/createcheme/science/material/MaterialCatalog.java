@@ -38,6 +38,7 @@ public final class MaterialCatalog {
         public String canonicalId(String id) { return aliases.getOrDefault(id, id); }
         public String scientificRevision() { return revision + ":" + fingerprint; }
     }
+    private final MaterialFluidData fluidData;
     private final Map<String, MaterialName> names;
     private final Map<String, Package> packages;
     private final Map<String, String> resources;
@@ -50,7 +51,8 @@ public final class MaterialCatalog {
     private final Map<String, FluidAppearance> componentAppearances;
     private MaterialCatalog(Map<String, MaterialName> names, Map<String, Package> packages, Map<String, String> resources,
             Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities, Map<String, String> waterModels,
-            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, Map<String, Double> columnFeedVolumes, Map<String,List<Double>> columnDrawRates) {
+            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, Map<String, Double> columnFeedVolumes, Map<String,List<Double>> columnDrawRates, MaterialFluidData fluidData) {
+        this.fluidData=Objects.requireNonNull(fluidData);
         this.liquidMixtures = Map.copyOf(liquidMixtures);
         this.columnFeedVolumes = Map.copyOf(columnFeedVolumes);
         this.columnDrawRates = Map.copyOf(columnDrawRates);
@@ -66,6 +68,12 @@ public final class MaterialCatalog {
     }
     public MaterialName name(String id) { MaterialName n=names.get(id); return n==null?MaterialName.chemical(id):n; }
     public Map<String, Package> packages() { return packages; }
+    public MaterialFluidData fluidData(){return fluidData;}
+    public String fluidThermoFingerprint(String packageId) {
+        var p=requirePackage(packageId);var points=new TreeMap<String,MaterialFluidData.VolumeReference>();
+        for(String id:p.components())if(fluidData.volumeReferences().containsKey(id))points.put(id,fluidData.volumeReferences().get(id));
+        return hash(new Gson().toJson(List.of(physicsFingerprint(packageId,p.components()),points)));
+    }
     public List<Double> columnSideDrawRates(String packageId) { requirePackage(packageId); return columnDrawRates.getOrDefault(packageId,List.of()); }
     public double columnFeedStandardVolume(String packageId) {
         requirePackage(packageId);Double value=columnFeedVolumes.get(packageId);
@@ -135,6 +143,15 @@ public final class MaterialCatalog {
         Map<String, Object> selected = new TreeMap<>();
         for (Property property : p.properties()) selected.put(property.id(), viscosityScience("properties/" + property.id()));
         selected.put("liquid_mixture", liquidMixture(packageId));
+        selected.put("molecular_weights",p.properties().stream().map(property->List.of(property.component(),property.molecularWeight())).toList());
+        selected.put("water_molecular_weight",p.water().molarMass());
+        var conditional=new TreeMap<String,Object>();
+        for(String id:p.components()) {
+            var curve=fluidData.conditionalLiquidViscosities().get(id);
+            if(curve!=null)conditional.put(id,List.of(curve.minimumTemperatureKelvin(),curve.maximumTemperatureKelvin(),
+                    curve.minimumPressurePascal(),curve.temperaturesKelvin(),curve.coefficients()));
+        }
+        selected.put("conditional_solutes",conditional);
         selected.put("water/" + waterModels.get(packageId), viscosityScience("water/" + waterModels.get(packageId)));
         return hash(new Gson().toJson(selected));
     }
@@ -158,7 +175,7 @@ public final class MaterialCatalog {
                 String path = entry.getKey(); int start = path.indexOf("materials/");
                 if (start < 0) throw new IllegalArgumentException("Expected materials resource path");
                 String kind = path.substring(start + 10).split("/")[0];
-                if (!Set.of("components","properties","interactions","packages","assays","water","bases").contains(kind))
+                if (!Set.of("components","properties","interactions","packages","assays","water","bases","transport").contains(kind))
                     throw new IllegalArgumentException("Unknown record kind: " + kind);
                 String id = string(o, "id");
                 if (!kind.equals("components") && !id.matches("[a-z][a-z0-9_.:-]{0,127}"))
@@ -304,7 +321,7 @@ public final class MaterialCatalog {
         });
         for(var a:group(groups,"assays").values()) checked(origins,a,() -> require(packages,string(a,"package"),"assay package"));
         if(packages.isEmpty()) throw new IllegalArgumentException("Material catalog has no packages");
-        return new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,columnFeedVolumes,columnDrawRates);
+        return new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,columnFeedVolumes,columnDrawRates,MaterialFluidData.read(group(groups,"transport"),origins,names.keySet()));
     }
 
     private static FluidAppearance readAppearance(JsonObject record) {

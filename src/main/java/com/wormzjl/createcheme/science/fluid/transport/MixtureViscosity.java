@@ -1,18 +1,14 @@
 package com.wormzjl.createcheme.science.fluid.transport;
 
-import com.google.gson.JsonParser;
 import com.wormzjl.createcheme.science.fluid.thermo.WaterRegion1;
 import com.wormzjl.createcheme.science.material.MaterialCatalog;
 import com.wormzjl.createcheme.science.material.ViscosityCorrelation;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /** Reference-pressure transport approximation: logarithmic liquid mixing and Wilke vapor mixing. */
 public final class MixtureViscosity {
-    private static final Map<String,Curve> CONDITIONAL = loadConditional();
+    private final Map<String,ViscosityCorrelation> conditional;
     private final String revision;
     private final com.wormzjl.createcheme.science.material.LiquidMixtureCorrection liquidMixture;
     private final MaterialCatalog.Package propertyPackage;
@@ -22,10 +18,11 @@ public final class MixtureViscosity {
 
     public MixtureViscosity(MaterialCatalog catalog,String packageId) {
         propertyPackage=catalog.requirePackage(packageId);
+        conditional=catalog.fluidData().conditionalLiquidViscosities();
         liquidMixture=catalog.liquidMixture(packageId);
         // The catalog is an immutable property snapshot. Compute its transport hash once,
         // not on every server-thread admission, anchor check and worker publication.
-        revision=catalog.viscosityFingerprint(packageId)+":log-liquid-pair-groups-wilke-v2:dwsim-conditional-solute-ambient-v2";
+        revision=catalog.viscosityFingerprint(packageId)+":log-liquid-pair-groups-wilke-v2:catalog-conditional-solute-v1";
         int count=propertyPackage.components().size();liquidCorrelations=new ViscosityCorrelation[count];vaporCorrelations=new ViscosityCorrelation[count];
         double[] mw=new double[count+1];
         for(int i=0;i<count;i++) {
@@ -97,11 +94,11 @@ public final class MixtureViscosity {
             mu=correlation.dynamicViscosityPascalSeconds(temperature,correlation.minimumPressurePascal());
             prepared.liquidKind[component]=Prepared.CARRIER;
         } else {
-            Curve curve=CONDITIONAL.get(name);
+            var curve=conditional.get(name);
             if(curve==null || correlation==null || temperature<correlation.minimumTemperatureKelvin()) {
                 throw new IllegalArgumentException("PROPERTY_UNAVAILABLE: liquid viscosity for "+name);
             }
-            mu=curve.evaluate(temperature);prepared.liquidKind[component]=Prepared.CONDITIONAL_SOLUTE;
+            mu=curve.dynamicViscosityPascalSeconds(temperature,curve.minimumPressurePascal());prepared.liquidKind[component]=Prepared.CONDITIONAL_SOLUTE;
         }
         prepared.liquidLog[component]=Math.log(mu);
     }
@@ -184,34 +181,6 @@ public final class MixtureViscosity {
     }
     private static double positive(double value) {
         if(!(value>0)||!Double.isFinite(value))throw new IllegalArgumentException("Invalid viscosity result");return value;
-    }
-    private static Map<String,Curve> loadConditional() {
-        try(var input=MixtureViscosity.class.getResourceAsStream("/data/createcheme/fluid/dissolved_viscosity.json")) {
-            if(input==null)throw new IllegalStateException("Missing conditional-solute reference data");
-            var json=JsonParser.parseReader(new InputStreamReader(input,StandardCharsets.UTF_8)).getAsJsonObject();
-            var result=new HashMap<String,Curve>();
-            for(var value:json.getAsJsonArray("curves")) {
-                var curve=value.getAsJsonObject();
-                double[] t=new double[curve.getAsJsonArray("temperatures_kelvin").size()],mu=new double[t.length];
-                for(int i=0;i<t.length;i++) {
-                    t[i]=curve.getAsJsonArray("temperatures_kelvin").get(i).getAsDouble();
-                    mu[i]=curve.getAsJsonArray("viscosities_pascal_seconds").get(i).getAsDouble();
-                    positive(t[i]);positive(mu[i]);if(i>0&&t[i]<=t[i-1])throw new IllegalArgumentException("Unsorted reference temperatures");
-                }
-                result.put(curve.get("component").getAsString(),new Curve(t,mu));
-            }
-            return Map.copyOf(result);
-        } catch(java.io.IOException e){throw new IllegalStateException("Cannot read conditional references",e);}
-    }
-    private record Curve(double[] t,double[] mu) {
-        double evaluate(double temperature) {
-            if(!Double.isFinite(temperature)||temperature<t[0]||temperature>t[t.length-1]) {
-                throw new IllegalArgumentException("Conditional-solute reference outside sampled domain");
-            }
-            int at=Arrays.binarySearch(t,temperature);if(at>=0)return mu[at];
-            int hi=-at-1,lo=hi-1;double f=(temperature-t[lo])/(t[hi]-t[lo]);
-            return Math.exp(Math.log(mu[lo])+f*(Math.log(mu[hi])-Math.log(mu[lo])));
-        }
     }
     public record Result(double pascalSeconds,boolean conditionalSoluteApproximation) {}
 }

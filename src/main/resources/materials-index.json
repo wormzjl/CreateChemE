@@ -61,5 +61,7 @@
   "data/createcheme/materials/properties/tjl19_n_pentane.json",
   "data/createcheme/materials/properties/tjl19_propane.json",
   "data/createcheme/materials/properties/tjl20_methane.json",
+  "data/createcheme/materials/transport/dissolved_viscosity.json",
+  "data/createcheme/materials/transport/liquid_calibration.json",
   "data/createcheme/materials/water/water.json"
 ]

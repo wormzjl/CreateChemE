@@ -1,15 +1,10 @@
 package com.wormzjl.createcheme.science.fluid.thermo;
 
-import com.google.gson.JsonParser;
 import com.wormzjl.createcheme.science.material.MaterialCatalog;
 import com.wormzjl.createcheme.science.thermo.PengRobinson78;
 import com.wormzjl.createcheme.science.thermo.PhaseRoot;
 import com.wormzjl.createcheme.science.thermo.ThermoComponent;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /** Fluid-specific property snapshot. Does not replace or modify the column's property model. */
 public final class HydrocarbonModel {
@@ -44,21 +39,21 @@ public final class HydrocarbonModel {
             for(int j=0;j<6;j++) cp[i][j]=propertyPackage.properties().get(i).cp().get(j);
         }
         var raw=new PengRobinson78(components,interactions);
-        var calibrations=loadCalibration();
+        var calibrations=catalog.fluidData().volumeReferences();
         double[] shifts=new double[count];
         for(int i=0;i<count;i++) {
             var property=propertyPackage.properties().get(i);
             var point=calibrations.get(property.component());
-            double t=point==null?property.standardTemperature():point.temperature;
-            double targetVolume=point==null?property.molecularWeight()/property.density():point.volume;
-            double referenceP=point==null?property.standardPressure():point.pressure;
+            double t=point==null?property.standardTemperature():point.temperatureKelvin();
+            double targetVolume=point==null?property.molecularWeight()/property.density():point.molarVolumeCubicMetres();
+            double referenceP=point==null?property.standardPressure():point.pressurePascal();
             double[] pure=new double[count];pure[i]=1;
             double rawVolume=raw.evaluate(t,REFERENCE_PRESSURE,pure,PhaseRoot.LIQUID).compressibilityFactor()
                     *PengRobinson78.GAS_CONSTANT*t/REFERENCE_PRESSURE;
             shifts[i]=targetVolume*Math.exp(compressibility*(referenceP-REFERENCE_PRESSURE))-rawVolume;
         }
         translated=new TranslatedPengRobinson(components,interactions,cp,shifts);
-        revision=propertyPackage.scientificRevision()+":fluid-shared-k-v1:ambient-293.15-v1:nist-liquid-calibration-20260915:k="+Double.toHexString(compressibility);
+        revision=catalog.fluidThermoFingerprint(packageId)+":fluid-shared-k-v1:ambient-293.15-v1:catalog-volume-reference-v1:k="+Double.toHexString(compressibility);
     }
 
     public String revision() { return revision; }
@@ -112,21 +107,6 @@ public final class HydrocarbonModel {
                 liquid.volumePressureDerivative(),phi,false);
     }
 
-    private static Map<String,Calibration> loadCalibration() {
-        String path="/data/createcheme/fluid/liquid_calibration.json";
-        try(var input=HydrocarbonModel.class.getResourceAsStream(path)) {
-            if(input==null) throw new IllegalStateException("Missing fluid calibration data");
-            var json=JsonParser.parseReader(new InputStreamReader(input,StandardCharsets.UTF_8)).getAsJsonObject();
-            var result=new HashMap<String,Calibration>();
-            for(var value:json.getAsJsonArray("points")) {
-                var point=value.getAsJsonObject();
-                result.put(point.get("component").getAsString(),new Calibration(point.get("temperatureKelvin").getAsDouble(),
-                        point.get("pressurePascal").getAsDouble(),point.get("molarVolumeCubicMetres").getAsDouble()));
-            }
-            return Map.copyOf(result);
-        } catch(java.io.IOException error) { throw new IllegalStateException("Cannot read fluid calibration",error); }
-    }
-    private record Calibration(double temperature,double pressure,double volume) {}
     /** The coefficients belong to the record from construction on. {@link #phase} is the only place
      * one is built, from an array allocated for it: the liquid response's result, or the vapor
      * evaluation's own, whose enclosing record it discards on the same line. */

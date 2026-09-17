@@ -12,7 +12,7 @@ class MixtureViscosityTest {
     @Test void dissolvedReferencesMatchIndependentApiCheckpointsWithoutExtrapolatingPureLiquidTables() throws Exception {
         String id=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.NETWORK_PACKAGE;var catalog=MaterialCatalog.bundled();
         var model=new MixtureViscosity(catalog,id);var p=catalog.requirePackage(id);
-        try(var input=getClass().getResourceAsStream("/data/createcheme/fluid/dissolved_viscosity.json")) {
+        try(var input=getClass().getResourceAsStream("/data/createcheme/materials/transport/dissolved_viscosity.json")) {
             var json=JsonParser.parseReader(new InputStreamReader(input,StandardCharsets.UTF_8)).getAsJsonObject();
             for(var value:json.getAsJsonArray("curves")) {
                 var curve=value.getAsJsonObject();int solute=p.components().indexOf(curve.get("component").getAsString());
