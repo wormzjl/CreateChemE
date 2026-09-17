@@ -137,6 +137,48 @@ public final class MaterialCatalog {
                 p.minimumTemperature(),p.maximumTemperature(),p.minimumPressure(),p.maximumPressure())));
     }
 
+    /**
+     * Immutable PR view for a qualified inference axis. Missing zero species can use an explicitly
+     * selected reference package; the caller must verify the complete projected physics fingerprint.
+     * This does not convert saved inventories or publish a replacement runtime catalog.
+     */
+    public MaterialCatalog inferenceView(String packageId,List<String> axis,String referencePackage,boolean allowMissing) {
+        var source=requirePackage(packageId);new MaterialAxis(axis);
+        if(source.components().equals(axis))return this;
+        if(!source.model().equals("pr78"))throw new IllegalArgumentException("Inference projection requires PR78");
+        var reference=requirePackage(referencePackage);
+        var properties=new ArrayList<Property>();
+        for(String id:axis) {
+            int i=source.components().indexOf(id);
+            if(i>=0)properties.add(source.properties().get(i));
+            else {
+                int j=reference.components().indexOf(id);
+                if(!allowMissing||j<0)throw new IllegalArgumentException("Unqualified missing inference species: "+id);
+                properties.add(reference.properties().get(j));
+            }
+        }
+        var interactions=new ArrayList<List<Double>>();
+        for(String a:axis) {
+            var row=new ArrayList<Double>();
+            for(String b:axis) {
+                int i=source.components().indexOf(a),j=source.components().indexOf(b);
+                if(i>=0&&j>=0)row.add(source.interactions().get(i).get(j));
+                else {
+                    int ri=reference.components().indexOf(a),rj=reference.components().indexOf(b);
+                    if(ri<0||rj<0)throw new IllegalArgumentException("Missing qualified inference interaction: "+a+"/"+b);
+                    row.add(reference.interactions().get(ri).get(rj));
+                }
+            }
+            interactions.add(row);
+        }
+        var view=new Package(source.id(),source.revision(),source.fingerprint(),source.model(),axis,properties,
+                interactions,List.of(),Map.of(),Map.of(),source.water(),source.minimumTemperature(),
+                source.maximumTemperature(),source.minimumPressure(),source.maximumPressure(),source.evidence());
+        var projected=new HashMap<>(packages);projected.put(packageId,view);
+        return new MaterialCatalog(names,projected,resources,viscosities,waterModels,assayAppearances,
+                componentAppearances,liquidMixtures,columnFeedVolumes,columnDrawRates,fluidData);
+    }
+
     /** Transport cache key; viscosity changes do not invalidate PR/enthalpy seeds which never consume viscosity. */
     public String viscosityFingerprint(String packageId) {
         Package p = requirePackage(packageId);

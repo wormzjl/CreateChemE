@@ -103,11 +103,12 @@ public final class ProcessSolveServices {
         double convergenceClosureFraction = CreateChemE.columnV3ConvergenceClosurePercent() / 100.0;
         double liquidSupplyScreenRatio = CreateChemE.columnV3LiquidSupplyScreenRatio();
         V3InitializationOptions initialization = CreateChemE.columnV3InitializationOptions();
+        var catalog=com.wormzjl.createcheme.science.material.MaterialRuntime.current();
         V3NeuralInitializer model = initialization.mode() == V3InitializationOptions.Mode.CURRENT_ONLY
-                ? V3NeuralInitializer.UNAVAILABLE : CreateChemE.columnV3NeuralModel();
+                ? V3NeuralInitializer.UNAVAILABLE : CreateChemE.columnV3NeuralModel().bind(catalog,request.operation().input());
         return submit(server, request, new V3ColumnCommand(request.operation().input(),
                         stageTraceCutoffMoleFraction, convergenceClosureFraction, initialization, model,
-                        liquidSupplyScreenRatio),
+                        liquidSupplyScreenRatio,catalog),
                 request.operation().input().packageId());
     }
 

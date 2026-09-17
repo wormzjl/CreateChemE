@@ -75,6 +75,6 @@ class V3MethaneColumnTest {
         // One model ships, so the initialization event names it whichever route won. Which route wins on
         // this preset is a coverage question the 405-input campaign answers, not an invariant of this test.
         String event = success.diagnostics().events().getFirst();
-        assertTrue(event.contains("model=" + V3NeuralModels.bundled().modelId()), event);
+        assertTrue(event.contains("model=" + V3NeuralModels.bundled().bind(com.wormzjl.createcheme.science.material.MaterialRuntime.current(), input).modelId()), event);
     }
 }

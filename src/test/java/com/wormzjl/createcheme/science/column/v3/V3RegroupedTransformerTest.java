@@ -28,8 +28,7 @@ class V3RegroupedTransformerTest {
         d.addProperty("baselineRevision",V3NativeAnchor.REVISION); d.addProperty("modelId","test:synthetic");
         d.addProperty("packageId",input.packageId());
         var p=MaterialCatalog.bundled().requirePackage(input.packageId());
-        d.addProperty("propertyRevision",p.scientificRevision()); d.addProperty("propertyFingerprint",p.fingerprint());
-        d.add("packageFingerprints",JSON.toJsonTree(Map.of(input.packageId(),p.fingerprint())));
+        d.addProperty("propertyRevision",p.scientificRevision()); d.addProperty("physicsFingerprint",MaterialCatalog.bundled().physicsFingerprint(input.packageId(),p.components()));
         d.add("components",JSON.toJsonTree(input.componentBasis().componentIds()));
         double[] z=input.feedComponentMolarFlowsMolPerSecond(); double total=Arrays.stream(z).sum();
         for(int i=0;i<z.length;i++)z[i]/=total;
@@ -109,7 +108,8 @@ class V3RegroupedTransformerTest {
     @Test void sidecarPinsPayloadAndRejectsOverlappingFields() throws Exception {
         var d=document(input("createcheme:tjl20_methane")); var payload=new JsonObject();
         for(String key:List.of("featureRevision","modelType","anchorLayout","baselineRevision","components","normalization","weights"))payload.add(key,d.remove(key));
-        payload.addProperty("schemaVersion",1); d.addProperty("schemaVersion",1);
+        payload.addProperty("schemaVersion",1); d.addProperty("schemaVersion",2);
+        d.addProperty("allowExtraZeroComponents",false);d.addProperty("allowMissingZeroComponents",false);
         d.addProperty("payloadSha256",V3TransformerArtifact.sha256(payload.toString().getBytes(StandardCharsets.UTF_8)));
         d.addProperty("decoder","ZERO_PHASE_FLOOR_10"); d.addProperty("candidateRule","SINGLE"); d.addProperty("correctionRule","PROGRESS");
         assertEquals(88852,V3TransformerArtifact.read(stream(payload),stream(d)).initializer().parameterCount());

@@ -285,6 +285,7 @@ public final class V3ColumnCalculator {
         V3NeuralSeed selectedProfile = null;
         V3ColumnOutcome.Failure lastFailure = null;
         int candidatesTried = 0;
+        model=model.bind(com.wormzjl.createcheme.science.material.MaterialRuntime.current(),input);
         String modelId = model.modelId();
         if (modelId == null || !modelId.matches("[A-Za-z0-9._:/-]{1,96}")) modelId = "invalid-id";
         try {

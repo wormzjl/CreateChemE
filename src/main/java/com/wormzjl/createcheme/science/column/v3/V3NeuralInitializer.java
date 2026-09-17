@@ -10,6 +10,11 @@ import java.util.Optional;
 public interface V3NeuralInitializer {
     String modelId();
 
+    /** Select once against the admission snapshot; ordinary single models need no dispatch. */
+    default V3NeuralInitializer bind(com.wormzjl.createcheme.science.material.MaterialCatalog catalog,V3ColumnInput input) {
+        return this;
+    }
+
     /** Empty means unsupported coverage or no compatible model, not physical infeasibility. */
     Optional<V3NeuralSeed> predict(V3ColumnInput input, V3SolveControl control);
 

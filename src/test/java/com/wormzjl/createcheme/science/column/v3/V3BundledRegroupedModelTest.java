@@ -18,7 +18,7 @@ class V3BundledRegroupedModelTest {
             assertNotNull(stream);fixture=JsonParser.parseReader(new InputStreamReader(stream,StandardCharsets.UTF_8)).getAsJsonObject();
         }
         byte[] payload,sidecar;
-        try(var p=getClass().getResourceAsStream(V3NeuralModels.ARTIFACT);var s=getClass().getResourceAsStream(V3NeuralModels.SIDECAR)) {
+        try(var p=getClass().getResourceAsStream("/data/createcheme/neural/v3-column-transformer-regrouped.payload.json");var s=getClass().getResourceAsStream("/data/createcheme/neural/v3-column-transformer-regrouped.sidecar.json")) {
             assertNotNull(p);assertNotNull(s);payload=p.readAllBytes();sidecar=s.readAllBytes();
         }
         assertEquals(fixture.get("payloadSha256").getAsString(),V3TransformerArtifact.sha256(payload));
