@@ -44,6 +44,22 @@ research/
 docs/
 /tools/
 
+# Local petroleum research (keep reports, source extracts and screening results off Git)
+/CUT_ELEMENTAL_PROFILES.md
+/HEAVY_FRACTION_LUMPING_STUDY.md
+/HEAVY_FRACTION_VISCOSITY_LITERATURE.md
+/MISSING_PARAMETER_ESTIMATION_RESEARCH.md
+/PSEUDOCOMPONENT_COLD_FLOW.md
+/examples/cold-flow/
+/examples/audit_residue_viscosity_units.py
+/examples/crude-assays/build_quality.py
+/examples/crude-assays/cut-quality-profiles.json
+/examples/crude-assays/estimation-screening.json
+/examples/crude-assays/extract_quality.py
+/examples/crude-assays/screen_estimation_methods.py
+/examples/crude-assays/source-quality.json
+/examples/crude-assays/test_quality.py
+
 # Claude × Codex collaboration runtime files
 .collab/
 CLAUDE.md
