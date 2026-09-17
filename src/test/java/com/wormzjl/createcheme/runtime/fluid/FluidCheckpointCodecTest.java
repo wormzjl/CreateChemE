@@ -42,6 +42,35 @@ class FluidCheckpointCodecTest {
         var changed=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),PACKAGE,2e-9);
         assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(text,key->changed));
     }
+    @Test void ambientExtensionPreservesLegacyStockButInvalidatesAnchorsAndRejectsOtherPropertyChanges() {
+        var before=fixture();
+        var tree=JsonParser.parseString(FluidCheckpointCodec.encode(before,key->model)).getAsJsonObject();
+        var island=tree.getAsJsonArray("islands").get(0).getAsJsonObject();
+        island.addProperty("propertyRevision","fluid-trbdf2-r1:fluid-nitrogen-r1:7781afaaad17de4926015ebf321c0b106766dd5c131668f54962a8825ed25bd5:fluid-shared-k-v1:nist-liquid-calibration-20260915:k=0x1.12e0be826d695p-30:cb6773ed32b52aefb268f9c5610e288c8cecdbc6c682522b54d0be703c92b533:log-liquid-wilke-v1:dwsim-conditional-solute-v1");
+        island.getAsJsonObject("anchor").addProperty("revision",island.get("propertyRevision").getAsString());
+        String legacy=tree.toString();
+        var loaded=FluidCheckpointCodec.decode(legacy,key->model);
+        var a=before.islands().getFirst().snapshot();var b=loaded.islands().getFirst().snapshot();
+        assertEquals(a.graph().reservoirs().getFirst().inventory(),b.graph().reservoirs().getFirst().inventory());
+        assertEquals(a.clock(),b.clock());assertEquals(a.allowance(),b.allowance());assertEquals(a.fences(),b.fences());
+        assertThrows(ApproximationRejected.class,()->b.anchor().orElseThrow().guard(model,b.graph()));
+        String resaved=FluidCheckpointCodec.encode(loaded,key->model);
+        assertEquals(resaved,FluidCheckpointCodec.encode(FluidCheckpointCodec.decode(resaved,key->model),key->model));
+        var changed=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),PACKAGE,2e-9);
+        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(legacy,key->changed));
+        for(String field:List.of("ideal_gas_cp","viscosity")) {
+            var resources=new HashMap<>(MaterialCatalog.bundled().resources());
+            String path="data/createcheme/materials/properties/tjl19_tjl19_pc04.json";
+            var property=JsonParser.parseString(resources.get(path)).getAsJsonObject();
+            var correlation=property.getAsJsonObject(field);
+            if(field.equals("viscosity"))correlation=correlation.getAsJsonObject("liquid");
+            var coefficients=correlation.getAsJsonArray("coefficients");
+            coefficients.set(0,new com.google.gson.JsonPrimitive(coefficients.get(0).getAsDouble()*1.001));
+            resources.put(path,property.toString());
+            var overridden=FluidThermodynamics.forNetwork(MaterialCatalog.parse(resources),PACKAGE,1e-9);
+            assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(legacy,key->overridden),field);
+        }
+    }
     @Test void anEnergyDatumChangeRequiresExplicitMigration() {
         var tree=JsonParser.parseString(FluidCheckpointCodec.encode(fixture(),key->model)).getAsJsonObject();
         tree.getAsJsonArray("islands").get(0).getAsJsonObject().getAsJsonObject("reference").getAsJsonArray("offsets").set(20,new com.google.gson.JsonPrimitive(1000));

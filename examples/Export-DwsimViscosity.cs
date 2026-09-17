@@ -76,6 +76,7 @@ class ExportDwsimViscosity {
      double low,high;
      if(phase=="liquid") {low=pseudo?298.15:Math.Max(Num(cp,"TemperatureOfFusion")+1,0.5*(double)cp.Critical_Temperature);high=Math.Min(900,0.95*(double)cp.Critical_Temperature);}
      else {low=Math.Max(298.15,Num(cp,"Vapor_Viscosity_Tmin"));double max=Num(cp,"Vapor_Viscosity_Tmax");high=max>0?Math.Min(900,max):900;}
+     if(args.Length>4 && args[4]=="--ambient") {if(low!=298.15)continue;high=298.15;low=293.15;}
      Func<double,double> f=phase=="liquid"?(Func<double,double>)(t=>(double)pp.AUX_LIQVISCi(native,t,100000.0)):(t=>(double)pp.AUX_VAPVISCi(cp,t));
      string method=phase=="liquid"?"AUX_LIQVISCi(name,T,100000 Pa)":"AUX_VAPVISCi(component,T), dilute-gas auxiliary";
      string source="DWSIM "+version+" API "+method+"; "+(string)cp.OriginalDB+"; "+native+". Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm";

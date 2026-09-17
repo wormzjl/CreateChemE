@@ -185,9 +185,26 @@ Liquid curves sample `AUX_LIQVISCi(name,T,100000 Pa)`; vapor curves sample the d
 properties, not phase-stability predictions; a specified liquid or vapor can be metastable at the query state.
 Exact-chemical liquid sampling starts at max(fusion temperature + 1 K, 0.5 Tc); petroleum liquids start at 298.15 K.
 Liquid upper bounds are min(900 K, 0.95 Tc), avoiding unphysical API extrapolation beyond the critical point.
-Gas sampling intersects the available API correlation interval with 298.15–900 K (the latter interval is also used
-for petroleum gas estimates without database bounds). These are sampling limits, not independently qualified
-physical validity ranges. Heavy-residue estimates retain the source characterization's limitations.
+The original gas sampling intersects the available API correlation interval with 298.15–900 K (the latter interval
+is also used for petroleum gas estimates without database bounds). These are sampling limits, not independently
+qualified physical validity ranges. Heavy-residue estimates retain the source characterization's limitations.
+
+An additional DWSIM API export now prepends 293.15–298.15 K to the applicable liquid and vapor tables,
+preserving every original knot at/above 298.15 K. The fluid dissolved-solute reference factors have the same
+ambient extension. Run `Export-DwsimViscosity.ps1 -Ambient -Characterization <source-feed.dwxml>` and the
+`Export-DissolvedViscosity.cs` tool with `--ambient`, then `extend_ambient_viscosity.py` with the two reports
+(`--dissolved-report` selects the second). Independent ambient checkpoints are included in tests.
+
+Fluid generators preserve temperature/pressure when selecting a composition. The fluid-specific model supports
+293.15 K (20°C) for unchanged bundled crude properties through a five-kelvin continuation of their existing
+caloric fits; this is a near-ambient approximation, not a new laboratory qualification or a wax/gel model.
+Changed property records retain their declared limits. The column property domains and PR/Cp values remain
+unchanged, while fluid-model and transport revisions invalidate incompatible fluid caches. Ambient generation
+is tested at 293.15, 298, 298.15 and 300 K; colder crude operation remains outside this extension.
+Existing fluid checkpoints have a narrowly pinned migration from the previous bundled network dataset to this
+ambient extension: amounts, energy, clocks and fallback allowances are preserved, and old anchors retain their
+obsolete revision so they cannot be reused. Both scientific fingerprints and compressibility must match this
+specific transition; unrelated data-pack edits still require explicit migration.
 
 Adaptive subdivision checks quarter, midpoint, and three-quarter temperatures until log interpolation agrees with
 the API within 0.05% at those check points. This measures interpolation error only, not physical model accuracy.

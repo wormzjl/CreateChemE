@@ -42,8 +42,10 @@ class ExportDissolvedViscosity {
    foreach(string name in names) {
     Func<double,double> f=t=>(double)package.AUX_LIQVISCi(name,t,100000.0);
     double lower=name=="Nitrogen"?273.16:298.15;
-    var knots=new SortedDictionary<double,double>();knots[lower]=Value(f,lower);knots[600]=Value(f,600);
-    var checks=new List<object>();Refine(f,lower,600,knots,checks,0);
+    double upper=600;
+    if(args.Length>2 && args[2]=="--ambient") {if(name=="Nitrogen")continue;lower=293.15;upper=298.15;}
+    var knots=new SortedDictionary<double,double>();knots[lower]=Value(f,lower);knots[upper]=Value(f,upper);
+    var checks=new List<object>();Refine(f,lower,upper,knots,checks,0);
     curves.Add(new{component=name,temperatures_kelvin=knots.Keys.ToArray(),viscosities_pascal_seconds=knots.Values.ToArray(),checks=checks});
     Console.WriteLine(name+": "+knots.Count+" knots");
    }

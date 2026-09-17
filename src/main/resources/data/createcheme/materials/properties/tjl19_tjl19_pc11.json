@@ -34,12 +34,28 @@
   "viscosity": {
     "liquid": {
       "type": "log_table",
-      "temperature_min_kelvin": 298.15,
+      "temperature_min_kelvin": 293.15,
       "temperature_max_kelvin": 900,
       "pressure_min_pascal": 100000,
       "pressure_max_pascal": 100000,
       "reference_temperature_kelvin": 300,
       "coefficients": [
+        219832729.4606065,
+        186352476.50488678,
+        158163595.66847318,
+        134400839.73854738,
+        114344983.37738594,
+        97397444.27766669,
+        83059438.46911491,
+        70914838.4267908,
+        60616058.84127908,
+        51872421.08079496,
+        44440549.40904063,
+        38116434.642591365,
+        32728867.91352501,
+        28134001.574620944,
+        24210838.47381636,
+        20857486.781897552,
         17988046.85166826,
         13656849.477495747,
         10407341.504153868,
@@ -274,6 +290,22 @@
         0.00010566087440278296
       ],
       "temperatures_kelvin": [
+        293.15,
+        293.4625,
+        293.775,
+        294.0875,
+        294.4,
+        294.7125,
+        295.025,
+        295.3375,
+        295.65,
+        295.9625,
+        296.275,
+        296.5875,
+        296.9,
+        297.2125,
+        297.525,
+        297.8375,
         298.15,
         298.73774414062495,
         299.32548828125,
@@ -507,18 +539,19 @@
         881.1921875,
         900
       ],
-      "revision": "dwsim-viscosity-api-r1",
-      "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC11. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+      "revision": "dwsim-viscosity-api-ambient-r2",
+      "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC11. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm Ambient extension to 293.15 K sampled with the same API; original nodes at and above 298.15 K retained.",
       "estimated": true
     },
     "vapor": {
       "type": "log_table",
-      "temperature_min_kelvin": 298.15,
+      "temperature_min_kelvin": 293.15,
       "temperature_max_kelvin": 900,
       "pressure_min_pascal": 100000,
       "pressure_max_pascal": 100000,
       "reference_temperature_kelvin": 300,
       "coefficients": [
+        3.3064767285944095e-06,
         3.3506047562138217e-06,
         3.5188626616623068e-06,
         3.6905587088151595e-06,
@@ -544,6 +577,7 @@
         9.51875718076982e-06
       ],
       "temperatures_kelvin": [
+        293.15,
         298.15,
         316.9578125,
         335.765625,
@@ -568,8 +602,8 @@
         862.384375,
         900
       ],
-      "revision": "dwsim-viscosity-api-r1",
-      "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC11. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+      "revision": "dwsim-viscosity-api-ambient-r2",
+      "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC11. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm Ambient extension to 293.15 K sampled with the same API; original nodes at and above 298.15 K retained.",
       "estimated": true
     }
   }

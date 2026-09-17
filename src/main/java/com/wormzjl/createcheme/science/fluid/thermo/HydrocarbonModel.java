@@ -15,10 +15,13 @@ import java.util.Map;
 public final class HydrocarbonModel {
     public static final double REFERENCE_PRESSURE = 2e6;
     public static final double MINIMUM_PRESSURE = 100;
+    /** Fluid-only continuation of the bundled 25 C caloric fits down to 20 C. */
+    public static final double AMBIENT_MINIMUM_TEMPERATURE = 293.15;
     private final MaterialCatalog.Package propertyPackage;
     private final TranslatedPengRobinson translated;
     private final GlobalLiquidResponse liquidResponse;
     private final String revision;
+    private final double[] minimumTemperatures;
 
     public HydrocarbonModel(MaterialCatalog catalog,String packageId,double compressibility) {
         propertyPackage=catalog.requirePackage(packageId);
@@ -26,6 +29,15 @@ public final class HydrocarbonModel {
         List<ThermoComponent> components=propertyPackage.properties().stream().map(p->new ThermoComponent(
                 p.component(),p.pr().criticalTemperature(),p.pr().criticalPressure(),p.pr().acentricFactor(),p.molecularWeight())).toList();
         int count=components.size();
+        minimumTemperatures=new double[count];
+        var bundled=MaterialCatalog.bundled().packages().get(packageId);
+        for(int i=0;i<count;i++) {
+            var property=propertyPackage.properties().get(i);
+            minimumTemperatures[i]=property.minimumTemperature();
+            // Qualify only the exact bundled property record. Author-specified overrides keep their domain.
+            if(property.minimumTemperature()==298.15 && bundled!=null
+                    && bundled.properties().contains(property)) minimumTemperatures[i]=AMBIENT_MINIMUM_TEMPERATURE;
+        }
         double[][] interactions=new double[count][count], cp=new double[count][6];
         for(int i=0;i<count;i++) {
             for(int j=0;j<count;j++) interactions[i][j]=propertyPackage.interactions().get(i).get(j);
@@ -46,7 +58,7 @@ public final class HydrocarbonModel {
             shifts[i]=targetVolume*Math.exp(compressibility*(referenceP-REFERENCE_PRESSURE))-rawVolume;
         }
         translated=new TranslatedPengRobinson(components,interactions,cp,shifts);
-        revision=propertyPackage.scientificRevision()+":fluid-shared-k-v1:nist-liquid-calibration-20260915:k="+Double.toHexString(compressibility);
+        revision=propertyPackage.scientificRevision()+":fluid-shared-k-v1:ambient-293.15-v1:nist-liquid-calibration-20260915:k="+Double.toHexString(compressibility);
     }
 
     public String revision() { return revision; }
@@ -79,7 +91,7 @@ public final class HydrocarbonModel {
     public Phase phase(double t,double p,double[] amounts,PhaseRoot root,TranslatedPengRobinson.Workspace terms) {
         if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
         double minimumTemperature=0;
-        for(int i=0;i<amounts.length;i++)if(amounts[i]>0)minimumTemperature=Math.max(minimumTemperature,propertyPackage.properties().get(i).minimumTemperature());
+        for(int i=0;i<amounts.length;i++)if(amounts[i]>0)minimumTemperature=Math.max(minimumTemperature,minimumTemperatures[i]);
         if(!Double.isFinite(t) || t<minimumTemperature || t>propertyPackage.maximumTemperature()
                 || !Double.isFinite(p) || p<(root==PhaseRoot.VAPOR?1e-6:MINIMUM_PRESSURE)
                 || p>Math.min(REFERENCE_PRESSURE,propertyPackage.maximumPressure())) {

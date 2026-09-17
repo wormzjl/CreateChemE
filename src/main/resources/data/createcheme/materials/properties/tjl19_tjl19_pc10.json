@@ -34,12 +34,16 @@
   "viscosity": {
     "liquid": {
       "type": "log_table",
-      "temperature_min_kelvin": 298.15,
+      "temperature_min_kelvin": 293.15,
       "temperature_max_kelvin": 900,
       "pressure_min_pascal": 100000,
       "pressure_max_pascal": 100000,
       "reference_temperature_kelvin": 300,
       "coefficients": [
+        24.83291231490281,
+        20.78864135319581,
+        17.469538132568637,
+        14.735030646047482,
         12.47365319085473,
         10.699136986599498,
         9.205068782968894,
@@ -179,6 +183,10 @@
         0.00014590552398875567
       ],
       "temperatures_kelvin": [
+        293.15,
+        294.4,
+        295.65,
+        296.9,
         298.15,
         299.32548828125,
         300.5009765625,
@@ -317,18 +325,19 @@
         881.1921875,
         900
       ],
-      "revision": "dwsim-viscosity-api-r1",
-      "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC10. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+      "revision": "dwsim-viscosity-api-ambient-r2",
+      "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC10. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm Ambient extension to 293.15 K sampled with the same API; original nodes at and above 298.15 K retained.",
       "estimated": true
     },
     "vapor": {
       "type": "log_table",
-      "temperature_min_kelvin": 298.15,
+      "temperature_min_kelvin": 293.15,
       "temperature_max_kelvin": 900,
       "pressure_min_pascal": 100000,
       "pressure_max_pascal": 100000,
       "reference_temperature_kelvin": 300,
       "coefficients": [
+        3.47001191088779e-06,
         3.518440916095124e-06,
         3.7030375748169528e-06,
         3.8912661733938054e-06,
@@ -355,6 +364,7 @@
         1.0140554717664179e-05
       ],
       "temperatures_kelvin": [
+        293.15,
         298.15,
         316.9578125,
         335.765625,
@@ -380,8 +390,8 @@
         862.384375,
         900
       ],
-      "revision": "dwsim-viscosity-api-r1",
-      "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC10. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+      "revision": "dwsim-viscosity-api-ambient-r2",
+      "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC10. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm Ambient extension to 293.15 K sampled with the same API; original nodes at and above 298.15 K retained.",
       "estimated": true
     }
   }

@@ -23,7 +23,7 @@ public final class MixtureViscosity {
         propertyPackage=catalog.requirePackage(packageId);
         // The catalog is an immutable property snapshot. Compute its transport hash once,
         // not on every server-thread admission, anchor check and worker publication.
-        revision=catalog.viscosityFingerprint(packageId)+":log-liquid-wilke-v1:dwsim-conditional-solute-v1";
+        revision=catalog.viscosityFingerprint(packageId)+":log-liquid-wilke-v1:dwsim-conditional-solute-ambient-v2";
         int count=propertyPackage.components().size();liquidCorrelations=new ViscosityCorrelation[count];vaporCorrelations=new ViscosityCorrelation[count];
         double[] mw=new double[count+1];
         for(int i=0;i<count;i++) {

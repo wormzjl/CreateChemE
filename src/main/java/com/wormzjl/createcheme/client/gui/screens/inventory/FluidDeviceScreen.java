@@ -62,7 +62,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     }
     private void preset() {
         var data=menu.clientData();if(data==null)return;preset=(preset+1)%data.presets().size();composition=data.presets().get(preset).moleFractions();
-        if(preset>=2){fields.get("temperature").setValue("350.0");localMessage="Crude preset starts at 350 K; review before applying.";}showMixture();
+        localMessage="Composition selected; temperature and pressure unchanged.";showMixture();
     }
     private boolean collectMixture() {
         if(!editMixture)return true;

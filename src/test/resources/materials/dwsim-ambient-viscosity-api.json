@@ -1,0 +1,2574 @@
+{
+  "source_characterization": "source-feed.dwxml",
+  "records": [
+    {
+      "property_id": "createcheme:cdu17_cdu17_c4",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc01",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc02",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc03",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc04",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc05",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc06",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc07",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc08",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc09",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc10",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc11",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_cdu17_pc12",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:cdu17_ethane",
+      "api_component": "Ethane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -33.92204,
+        "Liquid_Viscosity_Const_B": 743.404,
+        "Liquid_Viscosity_Const_C": 4.302492,
+        "Liquid_Viscosity_Const_D": -3.64469e-05,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 5.2452e-07,
+        "Vapor_Viscosity_Const_B": 0.58906,
+        "Vapor_Viscosity_Const_C": 188.8,
+        "Vapor_Viscosity_Const_D": -2953.8,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 90.35,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            9.25315725053889e-06,
+            9.402211047724882e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Ethane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 9.290480546683022e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 9.32776391190984e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 9.36500739550309e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:cdu17_methane",
+      "api_component": "Methane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -45.328,
+        "Liquid_Viscosity_Const_B": 724.39,
+        "Liquid_Viscosity_Const_C": 6.5917,
+        "Liquid_Viscosity_Const_D": -0.00010373,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 5.3432e-07,
+        "Vapor_Viscosity_Const_B": 0.58831,
+        "Vapor_Viscosity_Const_C": 114.58,
+        "Vapor_Viscosity_Const_D": -1338.5,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 90,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            1.0985584212431802e-05,
+            1.1144350013489289e-05
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Methane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 1.1025364409788242e-05
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 1.1065085292706483e-05
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 1.1104747085972988e-05
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:cdu17_propane",
+      "api_component": "Propane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -35.23159,
+        "Liquid_Viscosity_Const_B": 966.1472,
+        "Liquid_Viscosity_Const_C": 4.395026,
+        "Liquid_Viscosity_Const_D": -2.55079e-05,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 4.7422e-08,
+        "Vapor_Viscosity_Const_B": 0.90416,
+        "Vapor_Viscosity_Const_C": -4.7484,
+        "Vapor_Viscosity_Const_D": 478.57,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 85.47,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            8.152009779752543e-06,
+            8.276900509915081e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Propane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 8.18325379760271e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 8.214483538000902e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 8.245699082044188e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:fluid_nitrogen",
+      "unavailable": "No matching component in the supplied DWSIM characterization"
+    },
+    {
+      "property_id": "createcheme:tjl19_ethane",
+      "api_component": "Ethane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -33.92204,
+        "Liquid_Viscosity_Const_B": 743.404,
+        "Liquid_Viscosity_Const_C": 4.302492,
+        "Liquid_Viscosity_Const_D": -3.64469e-05,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 5.2452e-07,
+        "Vapor_Viscosity_Const_B": 0.58906,
+        "Vapor_Viscosity_Const_C": 188.8,
+        "Vapor_Viscosity_Const_D": -2953.8,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 90.35,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            9.25315725053889e-06,
+            9.402211047724882e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Ethane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 9.290480546683022e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 9.32776391190984e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 9.36500739550309e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_isobutane",
+      "api_component": "Isobutane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -39.10125,
+        "Liquid_Viscosity_Const_B": 1315.145,
+        "Liquid_Viscosity_Const_C": 4.876982,
+        "Liquid_Viscosity_Const_D": -2.03993e-05,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 3.951e-08,
+        "Vapor_Viscosity_Const_B": 0.90975,
+        "Vapor_Viscosity_Const_C": -52.076,
+        "Vapor_Viscosity_Const_D": 8625.4,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 150,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            7.517427530641884e-06,
+            7.636956650065106e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Isobutane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 7.547370807836943e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 7.577273127732182e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 7.607134930511929e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_isopentane",
+      "api_component": "Isopentane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -12.596,
+        "Liquid_Viscosity_Const_B": 889.14,
+        "Liquid_Viscosity_Const_C": 0.20472,
+        "Liquid_Viscosity_Const_D": 4.0592e-09,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 6.6346e-08,
+        "Vapor_Viscosity_Const_B": 0.82828,
+        "Vapor_Viscosity_Const_C": -68.082,
+        "Vapor_Viscosity_Const_D": 25303,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 150,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            6.903226419724209e-06,
+            7.039696590869391e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Isopentane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 6.937453519646271e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 6.971607350468234e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 7.005688257875713e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_n_butane",
+      "api_component": "N-butane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -46.56549,
+        "Liquid_Viscosity_Const_B": 1439.945,
+        "Liquid_Viscosity_Const_C": 6.168131,
+        "Liquid_Viscosity_Const_D": -2.3917e-05,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 2.7078e-08,
+        "Vapor_Viscosity_Const_B": 0.97147,
+        "Vapor_Viscosity_Const_C": -51.16,
+        "Vapor_Viscosity_Const_D": 6431,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 134.86,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            7.497656494854473e-06,
+            7.618154493809616e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; N-butane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 7.527819219163031e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 7.557956248913797e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 7.588067902670698e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_n_pentane",
+      "api_component": "N-pentane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -28.93847,
+        "Liquid_Viscosity_Const_B": 1176.355,
+        "Liquid_Viscosity_Const_C": 3.050544,
+        "Liquid_Viscosity_Const_D": -9.721368e-06,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 5.9173e-08,
+        "Vapor_Viscosity_Const_B": 0.85109,
+        "Vapor_Viscosity_Const_C": 8.4138,
+        "Vapor_Viscosity_Const_D": 3723.2,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 143.42,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            6.9443843785445116e-06,
+            7.057719143229398e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; N-pentane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 6.97275859248165e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 7.001105666320851e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 7.029425787963923e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_propane",
+      "api_component": "Propane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -35.23159,
+        "Liquid_Viscosity_Const_B": 966.1472,
+        "Liquid_Viscosity_Const_C": 4.395026,
+        "Liquid_Viscosity_Const_D": -2.55079e-05,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 4.7422e-08,
+        "Vapor_Viscosity_Const_B": 0.90416,
+        "Vapor_Viscosity_Const_C": -4.7484,
+        "Vapor_Viscosity_Const_D": 478.57,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 85.47,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            8.152009779752543e-06,
+            8.276900509915081e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Propane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 8.18325379760271e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 8.214483538000902e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 8.245699082044188e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc01",
+      "api_component": "TJL_PC01",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 81.0555537836978,
+        "PF_SG": 0.711627532688267,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 3.27652164284815e-07,
+        "PF_v2": 2.8942356747602e-07,
+        "PF_vA": -0.732278891665741,
+        "PF_vB": 0.00160140582372839,
+        "PF_Watson_K": 11.8296712659309,
+        "PF_xP": 0.742473779246712,
+        "PF_xN": 0.139458398591979,
+        "PF_xA": 0.118067822161309,
+        "PF_n20": 1.39923103731326,
+        "PF_Ri": 1.04565469692165,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.0002418896342488619,
+            0.00023729294720400856
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC01. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            6.938463016409335e-06,
+            7.056917883546842e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC01. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.00024072812582554145
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 0.00023957492434888345
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.00023842990556334763
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 6.968063771738224e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 6.997673397544568e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 7.02729154870334e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc02",
+      "api_component": "TJL_PC02",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 105.519384600055,
+        "PF_SG": 0.756541174652913,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 4.63929801891361e-07,
+        "PF_v2": 3.47388659455652e-07,
+        "PF_vA": -0.0948997730982117,
+        "PF_vB": 0.00293795869082365,
+        "PF_Watson_K": 11.6817526805002,
+        "PF_xP": 0.570274761378393,
+        "PF_xN": 0.215773834617471,
+        "PF_xA": 0.213951404004136,
+        "PF_n20": 1.42396925269669,
+        "PF_Ri": 1.04778499286063,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.00038726626061245923,
+            0.0003737231414846813
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC02. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            6.208875240838591e-06,
+            6.313610111837618e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC02. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.00038380752914435334
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 0.00038039808850151596
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.0003770369477909825
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 6.2350367692684225e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 6.261213298967155e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 6.287404516724245e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc03",
+      "api_component": "TJL_PC03",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 131.597829840612,
+        "PF_SG": 0.791096285962312,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 6.99322138628635e-07,
+        "PF_v2": 4.78285280660435e-07,
+        "PF_vA": 0.214649861105385,
+        "PF_vB": 0.00324167624222039,
+        "PF_Watson_K": 11.6224757956466,
+        "PF_xP": 0.446567430193239,
+        "PF_xN": 0.260299737764196,
+        "PF_xA": 0.293132832042565,
+        "PF_n20": 1.4430212332759,
+        "PF_Ri": 1.04946595971743,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.0006314693620225913,
+            0.0006038626558146881
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC03. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            5.637210182385825e-06,
+            5.730807367539518e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC03. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.000624382509471051
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 0.0006174211847267965
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.0006105822463442645
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 5.660582560890752e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 5.6839730686914434e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 5.707381429179521e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc04",
+      "api_component": "TJL_PC04",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 161.72219921031,
+        "PF_SG": 0.820635606220883,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 1.13542517321774e-06,
+        "PF_v2": 7.0890523639504e-07,
+        "PF_vA": 0.515198092489345,
+        "PF_vB": 0.00349914404826446,
+        "PF_Watson_K": 11.607745130877,
+        "PF_xP": 0.350660208229421,
+        "PF_xN": 0.282449713118177,
+        "PF_xA": 0.366890078652402,
+        "PF_n20": 1.45931674452185,
+        "PF_Ri": 1.05092763295972,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.001106262610700704,
+            0.0010459487155538264
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC04. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            5.162360530958274e-06,
+            5.246492824893885e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC04. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.0010906629338554455
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 0.0010754182606683533
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.001060517171921243
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 5.183364278932203e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 5.204387737266412e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 5.225430665623008e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc05",
+      "api_component": "TJL_PC05",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 197.098646236148,
+        "PF_SG": 0.84659838097565,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 2.00167335243499e-06,
+        "PF_v2": 1.10337311103265e-06,
+        "PF_vA": 0.754362882771017,
+        "PF_vB": 0.00359944815499963,
+        "PF_Watson_K": 11.6213132968006,
+        "PF_xP": 0.278174039841962,
+        "PF_xN": 0.282827967882333,
+        "PF_xA": 0.438997992275704,
+        "PF_n20": 1.47364352581733,
+        "PF_Ri": 1.0522285797003,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.002139765076593839,
+            0.001986079518864712
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC05. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            4.766322889760456e-06,
+            4.842424294208555e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC05. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.0020995887164048763
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 0.002060613715779529
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.0020227924435407547
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 4.785317946178538e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 4.804333336738466e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 4.823368854724502e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc06",
+      "api_component": "TJL_PC06",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 238.334427989687,
+        "PF_SG": 0.869508569206618,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 3.85208420254946e-06,
+        "PF_v2": 1.77370051712996e-06,
+        "PF_vA": 0.953455148121671,
+        "PF_vB": 0.00365039550643542,
+        "PF_Watson_K": 11.652945775104,
+        "PF_xP": 1,
+        "PF_xN": 0,
+        "PF_xA": 0,
+        "PF_n20": 1.48628912625628,
+        "PF_Ri": 1.05338915816277,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.004607598559612825,
+            0.004379410466166599,
+            0.004167890930247289
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            295.65,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC06. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            4.440295005764752e-06,
+            4.509687203368712e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC06. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 293.775,
+            "viscosity_pascal_seconds": 0.004548897565177811
+          },
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.0044913173887824506
+          },
+          {
+            "temperature_kelvin": 295.025,
+            "viscosity_pascal_seconds": 0.004434830572348067
+          },
+          {
+            "temperature_kelvin": 296.275,
+            "viscosity_pascal_seconds": 0.004325031201368401
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.00427166766344817
+          },
+          {
+            "temperature_kelvin": 297.525,
+            "viscosity_pascal_seconds": 0.004219295466804162
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 4.457612684551746e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 4.474950728328865e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 4.492308960113729e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc07",
+      "api_component": "TJL_PC07",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 286.514518188552,
+        "PF_SG": 0.890037130606002,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 8.2658721252275e-06,
+        "PF_v2": 2.93938592761961e-06,
+        "PF_vA": 1.14902858314759,
+        "PF_vB": 0.00376305324587716,
+        "PF_Watson_K": 11.6959200539959,
+        "PF_xP": 1,
+        "PF_xN": 0,
+        "PF_xA": 0,
+        "PF_n20": 1.49762440231106,
+        "PF_Ri": 1.05444073820616,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.011448362407515695,
+            0.010675100961696464,
+            0.009973917779038178
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            295.65,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC07. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            4.171157890396642e-06,
+            4.234932605574781e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC07. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 293.775,
+            "viscosity_pascal_seconds": 0.011247793439973225
+          },
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.011052159953311259
+          },
+          {
+            "temperature_kelvin": 295.025,
+            "viscosity_pascal_seconds": 0.010861310973822121
+          },
+          {
+            "temperature_kelvin": 296.275,
+            "viscosity_pascal_seconds": 0.010493389588176232
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.01031604152290248
+          },
+          {
+            "temperature_kelvin": 297.525,
+            "viscosity_pascal_seconds": 0.010142926230946469
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 4.187071650768803e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 4.203005457439696e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 4.218959159339422e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc08",
+      "api_component": "TJL_PC08",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 342.740239358241,
+        "PF_SG": 0.908650029223336,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 2.04515644737281e-05,
+        "PF_v2": 5.04019454587481e-06,
+        "PF_vA": 1.35456720440306,
+        "PF_vB": 0.00396282064994339,
+        "PF_Watson_K": 11.7455111770621,
+        "PF_xP": 1,
+        "PF_xN": 0,
+        "PF_xA": 0,
+        "PF_n20": 1.50790892643583,
+        "PF_Ri": 1.05540725633729,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.0347631059227059,
+            0.03148989165622207,
+            0.0286145588497693
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            295.65,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC08. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            3.949159144045743e-06,
+            4.008227319895233e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC08. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 293.775,
+            "viscosity_pascal_seconds": 0.03390396528936595
+          },
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 0.03307276959969819
+          },
+          {
+            "temperature_kelvin": 295.025,
+            "viscosity_pascal_seconds": 0.032268426208533964
+          },
+          {
+            "temperature_kelvin": 296.275,
+            "viscosity_pascal_seconds": 0.03073616918486836
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 0.030006306392832534
+          },
+          {
+            "temperature_kelvin": 297.525,
+            "viscosity_pascal_seconds": 0.029299393019110966
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 3.963897019444341e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 3.9786544263284076e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 3.993431236042206e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc09",
+      "api_component": "TJL_PC09",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 435.558684375165,
+        "PF_SG": 0.931928296484772,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 0.00010169339470176,
+        "PF_v2": 1.14954533156264e-05,
+        "PF_vA": 1.66383069929433,
+        "PF_vB": 0.00437554554835747,
+        "PF_Watson_K": 11.8197702523768,
+        "PF_xP": 1,
+        "PF_xN": 0,
+        "PF_xA": 0,
+        "PF_n20": 1.52078689081,
+        "PF_Ri": 1.05663972746052,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            0.268006136053786,
+            0.24664109655784874,
+            0.22732370952841116,
+            0.209829840888714,
+            0.19396261788362082
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            294.4,
+            295.65,
+            296.9,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC09. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            3.701089080979726e-06,
+            3.75480223165862e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC09. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 293.4625,
+            "viscosity_pascal_seconds": 0.2624595111216778
+          },
+          {
+            "temperature_kelvin": 293.775,
+            "viscosity_pascal_seconds": 0.25705247537536613
+          },
+          {
+            "temperature_kelvin": 294.0875,
+            "viscosity_pascal_seconds": 0.2517809771321991
+          },
+          {
+            "temperature_kelvin": 294.7125,
+            "viscosity_pascal_seconds": 0.2416290409428752
+          },
+          {
+            "temperature_kelvin": 295.025,
+            "viscosity_pascal_seconds": 0.23674114016315662
+          },
+          {
+            "temperature_kelvin": 295.3375,
+            "viscosity_pascal_seconds": 0.2319738423165584
+          },
+          {
+            "temperature_kelvin": 295.9625,
+            "viscosity_pascal_seconds": 0.22278741391883475
+          },
+          {
+            "temperature_kelvin": 296.275,
+            "viscosity_pascal_seconds": 0.21836173372509368
+          },
+          {
+            "temperature_kelvin": 296.5875,
+            "viscosity_pascal_seconds": 0.21404354957264346
+          },
+          {
+            "temperature_kelvin": 297.2125,
+            "viscosity_pascal_seconds": 0.20571768245251915
+          },
+          {
+            "temperature_kelvin": 297.525,
+            "viscosity_pascal_seconds": 0.20170424107652427
+          },
+          {
+            "temperature_kelvin": 297.8375,
+            "viscosity_pascal_seconds": 0.19778677241342074
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 3.7144894998721533e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 3.7279085662733395e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 3.7413461777623616e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc10",
+      "api_component": "TJL_PC10",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 594.184427121151,
+        "PF_SG": 0.959909417351231,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 0.00288192520520461,
+        "PF_v2": 4.38463654575235e-05,
+        "PF_vA": 2.17715191466589,
+        "PF_vB": 0.00526805725705279,
+        "PF_Watson_K": 11.9139329575811,
+        "PF_xP": 0.967893717328999,
+        "PF_xN": 0.0321062826710013,
+        "PF_xA": 0,
+        "PF_n20": 1.53633707277517,
+        "PF_Ri": 1.05805246133458,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            24.83291231490281,
+            20.78864135319581,
+            17.469538132568637,
+            14.735030646047482,
+            12.47365319085473
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            294.4,
+            295.65,
+            296.9,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC10. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            3.47001191088779e-06,
+            3.518440916095124e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC10. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 293.4625,
+            "viscosity_pascal_seconds": 23.74485713461256
+          },
+          {
+            "temperature_kelvin": 293.775,
+            "viscosity_pascal_seconds": 22.709996251870493
+          },
+          {
+            "temperature_kelvin": 294.0875,
+            "viscosity_pascal_seconds": 21.72548458244616
+          },
+          {
+            "temperature_kelvin": 294.7125,
+            "viscosity_pascal_seconds": 19.896939951911584
+          },
+          {
+            "temperature_kelvin": 295.025,
+            "viscosity_pascal_seconds": 19.047998443007025
+          },
+          {
+            "temperature_kelvin": 295.3375,
+            "viscosity_pascal_seconds": 18.239570702935904
+          },
+          {
+            "temperature_kelvin": 295.9625,
+            "viscosity_pascal_seconds": 16.735901906880702
+          },
+          {
+            "temperature_kelvin": 296.275,
+            "viscosity_pascal_seconds": 16.03677572514022
+          },
+          {
+            "temperature_kelvin": 296.5875,
+            "viscosity_pascal_seconds": 15.370379027464999
+          },
+          {
+            "temperature_kelvin": 297.2125,
+            "viscosity_pascal_seconds": 14.129142861611387
+          },
+          {
+            "temperature_kelvin": 297.525,
+            "viscosity_pascal_seconds": 13.55121583776949
+          },
+          {
+            "temperature_kelvin": 297.8375,
+            "viscosity_pascal_seconds": 12.999832407889068
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 3.482093053658728e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 3.494191652032705e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 3.506307631255473e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc11",
+      "api_component": "TJL_PC11",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 844.251329052846,
+        "PF_SG": 0.991049610988529,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 97.8511209672067,
+        "PF_v2": 0.000559590107918383,
+        "PF_vA": 3.26139815311714,
+        "PF_vB": 0.00758585181064193,
+        "PF_Watson_K": 11.9991897834691,
+        "PF_xP": 0.862112643433033,
+        "PF_xN": 0.137887356566967,
+        "PF_xA": 0,
+        "PF_n20": 1.55383563485015,
+        "PF_Ri": 1.06003166348688,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            219832729.4606065,
+            186352476.50488678,
+            158163595.66847318,
+            134400839.73854738,
+            114344983.37738594,
+            97397444.27766669,
+            83059438.46911491,
+            70914838.4267908,
+            60616058.84127908,
+            51872421.08079496,
+            44440549.40904063,
+            38116434.642591365,
+            32728867.91352501,
+            28134001.574620944,
+            24210838.47381636,
+            20857486.781897552,
+            17988046.85166826
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            293.4625,
+            293.775,
+            294.0875,
+            294.4,
+            294.7125,
+            295.025,
+            295.3375,
+            295.65,
+            295.9625,
+            296.275,
+            296.5875,
+            296.9,
+            297.2125,
+            297.525,
+            297.8375,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC11. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            3.3064767285944095e-06,
+            3.3506047562138217e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC11. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 293.228125,
+            "viscosity_pascal_seconds": 210912956.79515705
+          },
+          {
+            "temperature_kelvin": 293.30625,
+            "viscosity_pascal_seconds": 202370596.76423967
+          },
+          {
+            "temperature_kelvin": 293.384375,
+            "viscosity_pascal_seconds": 194189050.65815592
+          },
+          {
+            "temperature_kelvin": 293.540625,
+            "viscosity_pascal_seconds": 178845753.39054933
+          },
+          {
+            "temperature_kelvin": 293.61875,
+            "viscosity_pascal_seconds": 171654447.51615384
+          },
+          {
+            "temperature_kelvin": 293.696875,
+            "viscosity_pascal_seconds": 164764779.90360084
+          },
+          {
+            "temperature_kelvin": 293.853125,
+            "viscosity_pascal_seconds": 151838334.78088072
+          },
+          {
+            "temperature_kelvin": 293.93125,
+            "viscosity_pascal_seconds": 145777004.2406129
+          },
+          {
+            "temperature_kelvin": 294.009375,
+            "viscosity_pascal_seconds": 139968151.59585586
+          },
+          {
+            "temperature_kelvin": 294.165625,
+            "viscosity_pascal_seconds": 129064622.9131368
+          },
+          {
+            "temperature_kelvin": 294.24375,
+            "viscosity_pascal_seconds": 123949523.87847586
+          },
+          {
+            "temperature_kelvin": 294.321875,
+            "viscosity_pascal_seconds": 119046012.16559148
+          },
+          {
+            "temperature_kelvin": 294.478125,
+            "viscosity_pascal_seconds": 109837739.4786365
+          },
+          {
+            "temperature_kelvin": 294.55625,
+            "viscosity_pascal_seconds": 105515970.02741203
+          },
+          {
+            "temperature_kelvin": 294.634375,
+            "viscosity_pascal_seconds": 101371734.30179028
+          },
+          {
+            "temperature_kelvin": 294.790625,
+            "viscosity_pascal_seconds": 93585848.41585608
+          },
+          {
+            "temperature_kelvin": 294.86875,
+            "viscosity_pascal_seconds": 89930016.21897767
+          },
+          {
+            "temperature_kelvin": 294.946875,
+            "viscosity_pascal_seconds": 86423323.52035256
+          },
+          {
+            "temperature_kelvin": 295.103125,
+            "viscosity_pascal_seconds": 79832308.17765345
+          },
+          {
+            "temperature_kelvin": 295.18125,
+            "viscosity_pascal_seconds": 76736145.99900351
+          },
+          {
+            "temperature_kelvin": 295.259375,
+            "viscosity_pascal_seconds": 73765419.40369476
+          },
+          {
+            "temperature_kelvin": 295.415625,
+            "viscosity_pascal_seconds": 68179344.65750271
+          },
+          {
+            "temperature_kelvin": 295.49375,
+            "viscosity_pascal_seconds": 65554100.745205805
+          },
+          {
+            "temperature_kelvin": 295.571875,
+            "viscosity_pascal_seconds": 63034480.39671589
+          },
+          {
+            "temperature_kelvin": 295.728125,
+            "viscosity_pascal_seconds": 58294603.74055346
+          },
+          {
+            "temperature_kelvin": 295.80625,
+            "viscosity_pascal_seconds": 56066066.52231343
+          },
+          {
+            "temperature_kelvin": 295.884375,
+            "viscosity_pascal_seconds": 53926574.11742961
+          },
+          {
+            "temperature_kelvin": 296.040625,
+            "viscosity_pascal_seconds": 49900062.0777556
+          },
+          {
+            "temperature_kelvin": 296.11875,
+            "viscosity_pascal_seconds": 48006104.71859808
+          },
+          {
+            "temperature_kelvin": 296.196875,
+            "viscosity_pascal_seconds": 46187302.72450621
+          },
+          {
+            "temperature_kelvin": 296.353125,
+            "viscosity_pascal_seconds": 42762871.460228026
+          },
+          {
+            "temperature_kelvin": 296.43125,
+            "viscosity_pascal_seconds": 41151423.008948945
+          },
+          {
+            "temperature_kelvin": 296.509375,
+            "viscosity_pascal_seconds": 39603479.96993494
+          },
+          {
+            "temperature_kelvin": 296.665625,
+            "viscosity_pascal_seconds": 36687790.5591927
+          },
+          {
+            "temperature_kelvin": 296.74375,
+            "viscosity_pascal_seconds": 35315157.56884501
+          },
+          {
+            "temperature_kelvin": 296.821875,
+            "viscosity_pascal_seconds": 33996247.146093406
+          },
+          {
+            "temperature_kelvin": 296.978125,
+            "viscosity_pascal_seconds": 31510921.36830639
+          },
+          {
+            "temperature_kelvin": 297.05625,
+            "viscosity_pascal_seconds": 30340397.80311161
+          },
+          {
+            "temperature_kelvin": 297.134375,
+            "viscosity_pascal_seconds": 29215372.41230124
+          },
+          {
+            "temperature_kelvin": 297.290625,
+            "viscosity_pascal_seconds": 27094519.30423725
+          },
+          {
+            "temperature_kelvin": 297.36875,
+            "viscosity_pascal_seconds": 26095233.86218232
+          },
+          {
+            "temperature_kelvin": 297.446875,
+            "viscosity_pascal_seconds": 25134524.520771984
+          },
+          {
+            "temperature_kelvin": 297.603125,
+            "viscosity_pascal_seconds": 23322687.885902923
+          },
+          {
+            "temperature_kelvin": 297.68125,
+            "viscosity_pascal_seconds": 22468647.074238807
+          },
+          {
+            "temperature_kelvin": 297.759375,
+            "viscosity_pascal_seconds": 21647349.816940833
+          },
+          {
+            "temperature_kelvin": 297.915625,
+            "viscosity_pascal_seconds": 20097803.070640154
+          },
+          {
+            "temperature_kelvin": 297.99375,
+            "viscosity_pascal_seconds": 19367095.87187858
+          },
+          {
+            "temperature_kelvin": 298.071875,
+            "viscosity_pascal_seconds": 18664212.219723456
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 3.31748452811309e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 3.328508498837704e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 3.3395485915124348e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc12",
+      "api_component": "TJL_PC12",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 1329.86827510994,
+        "PF_SG": 1.04417461718887,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 1.17652110126335e-18,
+        "PF_v2": 1.61502900306805e-24,
+        "PF_vA": NaN,
+        "PF_vB": NaN,
+        "PF_Watson_K": 11.926818546796,
+        "PF_xP": 0.347625589284988,
+        "PF_xN": 0.370221503810432,
+        "PF_xA": 0.28215290690458,
+        "PF_n20": 1.58489071575946,
+        "PF_Ri": 1.06467018317316,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            2.4529313042573104,
+            2.425532420010044
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC12. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            3.3514145236844607e-06,
+            3.393384052184462e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC12. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 2.446064477183886
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 2.4392090585861075
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 2.4323650417625617
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 3.3618842031099783e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 3.372369031567064e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 3.382868988438445e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl19_tjl19_pc13",
+      "api_component": "TJL_PC13",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": 0,
+        "Liquid_Viscosity_Const_B": 0,
+        "Liquid_Viscosity_Const_C": 0,
+        "Liquid_Viscosity_Const_D": 0,
+        "Liquid_Viscosity_Const_E": 0,
+        "LiquidViscosityEquation": "",
+        "OriginalDB": "DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1",
+        "PF_MM": 2218.91148389245,
+        "PF_SG": 1.07488453032845,
+        "PF_Tv1": 310.95,
+        "PF_Tv2": 372.05,
+        "PF_v1": 1.22614508093598e-10,
+        "PF_v2": 1.83029352992016e-07,
+        "PF_vA": NaN,
+        "PF_vB": NaN,
+        "PF_Watson_K": 12.102225928665,
+        "PF_xP": 0.110352427281126,
+        "PF_xN": 0.471794222637486,
+        "PF_xA": 0.417853350081388,
+        "PF_n20": 1.60217217913728,
+        "PF_Ri": 1.06653176994946,
+        "Vapor_Viscosity_Const_A": 0,
+        "Vapor_Viscosity_Const_B": 0,
+        "Vapor_Viscosity_Const_C": 0,
+        "Vapor_Viscosity_Const_D": 0,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 0,
+        "Vapor_Viscosity_Tmin": 0,
+        "VaporViscosityEquation": "",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "liquid": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            4.545268233087507,
+            4.499795532549244
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_LIQVISCi(name,T,100000 Pa); DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC13. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        },
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            3.379517980012609e-06,
+            3.4195106561053338e-06
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; DWSIM characterization: tjl-ledezma2019-dwsim1023-13pc-r1; TJL_PC13. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": true
+        }
+      },
+      "checks": {
+        "liquid": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 4.533874894783413
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 4.5224983375324195
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 4.511138552924956
+          }
+        ],
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 3.389495524218778e-06
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 3.399486816387376e-06
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 3.4094918596677355e-06
+          }
+        ]
+      },
+      "errors": {}
+    },
+    {
+      "property_id": "createcheme:tjl20_methane",
+      "api_component": "Methane",
+      "engine_version": "10.2.5.0",
+      "metadata": {
+        "Liquid_Viscosity_Const_A": -45.328,
+        "Liquid_Viscosity_Const_B": 724.39,
+        "Liquid_Viscosity_Const_C": 6.5917,
+        "Liquid_Viscosity_Const_D": -0.00010373,
+        "Liquid_Viscosity_Const_E": 2,
+        "LiquidViscosityEquation": "101",
+        "OriginalDB": "ChemSep",
+        "PF_MM": null,
+        "PF_SG": null,
+        "PF_Tv1": null,
+        "PF_Tv2": null,
+        "PF_v1": null,
+        "PF_v2": null,
+        "PF_vA": null,
+        "PF_vB": null,
+        "PF_Watson_K": null,
+        "PF_xP": null,
+        "PF_xN": null,
+        "PF_xA": null,
+        "PF_n20": null,
+        "PF_Ri": null,
+        "Vapor_Viscosity_Const_A": 5.3432e-07,
+        "Vapor_Viscosity_Const_B": 0.58831,
+        "Vapor_Viscosity_Const_C": 114.58,
+        "Vapor_Viscosity_Const_D": -1338.5,
+        "Vapor_Viscosity_Const_E": 0,
+        "Vapor_Viscosity_Tmax": 1000,
+        "Vapor_Viscosity_Tmin": 90,
+        "VaporViscosityEquation": "102",
+        "Liquid_Viscosity_Regression_Fit": 0,
+        "Vapor_Viscosity_Regression_Fit": 0
+      },
+      "viscosity": {
+        "vapor": {
+          "type": "log_table",
+          "temperature_min_kelvin": 293.15,
+          "temperature_max_kelvin": 298.15,
+          "pressure_min_pascal": 100000,
+          "pressure_max_pascal": 100000,
+          "reference_temperature_kelvin": 300,
+          "coefficients": [
+            1.0985584212431802e-05,
+            1.1144350013489289e-05
+          ],
+          "temperatures_kelvin": [
+            293.15,
+            298.15
+          ],
+          "revision": "dwsim-viscosity-api-r1",
+          "source": "DWSIM 10.2.5.0 API AUX_VAPVISCi(component,T), dilute-gas auxiliary; ChemSep; Methane. Adaptive log interpolation checked to 0.05% against API quarter/midpoints. Sampled interval, not independent physical qualification; phase may be metastable. https://dwsim.org/api_help/html/T_DWSIM_Thermodynamics_PropertyPackages_PropertyPackage.htm",
+          "estimated": false
+        }
+      },
+      "checks": {
+        "vapor": [
+          {
+            "temperature_kelvin": 294.4,
+            "viscosity_pascal_seconds": 1.1025364409788242e-05
+          },
+          {
+            "temperature_kelvin": 295.65,
+            "viscosity_pascal_seconds": 1.1065085292706483e-05
+          },
+          {
+            "temperature_kelvin": 296.9,
+            "viscosity_pascal_seconds": 1.1104747085972988e-05
+          }
+        ]
+      },
+      "errors": {}
+    }
+  ]
+}

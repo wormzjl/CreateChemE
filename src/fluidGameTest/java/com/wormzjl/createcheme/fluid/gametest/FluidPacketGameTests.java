@@ -23,6 +23,29 @@ import java.util.UUID;
 @PrefixGameTestTemplate(false)
 public final class FluidPacketGameTests {
     private FluidPacketGameTests() {}
+    @GameTest(template="empty",timeoutTicks=100,batch="fluid-ambient-generator")
+    public static void generatorMenuAcceptsAmbientCrudeWithoutChangingTemperature(GameTestHelper helper) {
+        var level=helper.getLevel();var world=FluidWorldAuthority.find(level.getServer()).orElseThrow();
+        var pos=helper.absolutePos(new BlockPos(0,1,0));
+        var player=FakePlayerFactory.get(level,new GameProfile(UUID.randomUUID(),"AmbientCrude"));
+        player.setGameMode(GameType.CREATIVE);player.setPos(pos.getX()+1,pos.getY(),pos.getZ());
+        try {
+            for(var preset:com.wormzjl.createcheme.runtime.fluid.FluidPresetCatalog.resolve(
+                    com.wormzjl.createcheme.science.material.MaterialRuntime.active()).subList(2,5)) {
+                level.setBlock(pos,ModBlocks.FLUID_GENERATOR.get().defaultBlockState(),3);
+                long identity=((FluidDeviceBlockEntity)level.getBlockEntity(pos)).fluidIdentity();
+                player.containerMenu=new FluidDeviceMenu(43,player.getInventory(),pos,identity,false);
+                var controls=new FluidNetwork.Controls(298,101325,.05,.000045,.01,500000,preset.moleFractions());
+                var before=world.registrations().get(identity);
+                send(player,new FluidNetwork.EditPayload(43,pos,identity,before.revision(),new Gson().toJson(controls)));
+                var after=world.registrations().get(identity);
+                helper.assertTrue(after.revision()==before.revision()+1,"Ambient generator edit rejected: "+preset.name());
+                helper.assertTrue(after.spec().temperature()==298,"Generator temperature was clamped or reset");
+                level.removeBlock(pos,false);
+            }
+            helper.succeed();
+        } finally {level.removeBlock(pos,false);player.containerMenu=player.inventoryMenu;}
+    }
     @GameTest(template="empty",timeoutTicks=100,batch="fluid-movement")
     public static void createAndVanillaMovementRejectEveryFluidBlock(GameTestHelper helper) {
         var level=helper.getLevel();var pos=helper.absolutePos(new BlockPos(0,1,0));
