@@ -12,6 +12,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3FlashTruncationTest {
     private static final String PACKAGE_ID = "createcheme:cdu17_tjl_acs2018";
     private static final String ASSAY_ID = "createcheme:tia_juana_light";

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:cdu17_cdu17_pc06",
+  "component": "cdu17_pc06",
+  "revision": "cdu17-tjl-kl1976-r2",
+  "source": "Frozen production reconstruction; see MATERIALS.md",
+  "molecular_weight_kg_per_mol": 0.205,
+  "normal_boiling_point_kelvin": 504.5,
+  "standard_liquid_density_kg_per_m3": 828.2465191470974,
+  "standard_temperature_kelvin": 288.7055555556,
+  "standard_pressure_pascal": 101325,
+  "temperature_min_kelvin": 298.15,
+  "temperature_max_kelvin": 900.0,
+  "estimated_heavy_residue": false,
+  "ideal_gas_cp": {
+    "type": "shifted_polynomial_5",
+    "reference_kelvin": 298.15,
+    "coefficients": [
+      215.0,
+      0.37,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "models": {
+    "pr78": {
+      "critical_temperature_kelvin": 689.6851072684117,
+      "critical_pressure_pascal": 2132757.407375936,
+      "acentric_factor": 0.557980993981746
+    }
+  }
+}

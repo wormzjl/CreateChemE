@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "Ethane",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.ethane",
+  "fallback": "Ethane",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

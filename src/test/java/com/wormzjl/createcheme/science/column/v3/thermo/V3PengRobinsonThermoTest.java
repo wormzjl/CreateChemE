@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3PengRobinsonThermoTest {
     private static final String PACKAGE_ID = "createcheme:cdu17_tjl_acs2018";
     private static final String ASSAY_ID = "createcheme:tia_juana_light";
@@ -20,7 +21,7 @@ class V3PengRobinsonThermoTest {
         copy[0] = 1.0;
 
         assertEquals(PACKAGE_ID, thermo.packageId());
-        assertEquals(com.wormzjl.createcheme.science.material.MaterialCatalog.bundled().requirePackage(PACKAGE_ID).scientificRevision(), thermo.datasetRevision());
+        assertEquals(com.wormzjl.createcheme.science.material.Cdu17TestCatalog.catalog().requirePackage(PACKAGE_ID).scientificRevision(), thermo.datasetRevision());
         assertEquals(16, thermo.componentBasis().componentCount());
         assertEquals("Methane", thermo.componentBasis().componentId(0));
         assertEquals("cdu17_pc12", thermo.componentBasis().componentId(15));

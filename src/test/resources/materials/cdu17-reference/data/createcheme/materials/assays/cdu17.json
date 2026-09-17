@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:tia_juana_light",
+  "package": "createcheme:cdu17_tjl_acs2018",
+  "components": [
+    "Methane",
+    "Ethane",
+    "Propane",
+    "cdu17_c4",
+    "cdu17_pc01",
+    "cdu17_pc02",
+    "cdu17_pc03",
+    "cdu17_pc04",
+    "cdu17_pc05",
+    "cdu17_pc06",
+    "cdu17_pc07",
+    "cdu17_pc08",
+    "cdu17_pc09",
+    "cdu17_pc10",
+    "cdu17_pc11",
+    "cdu17_pc12"
+  ],
+  "basis": "standard_liquid_volume",
+  "amounts": [
+    0.0,
+    0.04,
+    0.37,
+    1.16,
+    6.15,
+    3.37,
+    6.91,
+    3.85,
+    8.18,
+    8.23,
+    8.13,
+    8.05,
+    7.77,
+    9.82,
+    17.81,
+    10.14
+  ],
+  "standard_temperature_kelvin": 288.7055555556,
+  "standard_pressure_pascal": 101325.0,
+  "volume_scale": 662.464,
+  "amount_total": 99.98,
+  "appearance": {
+    "color": "#45301E",
+    "transparency": 0.05,
+    "estimated": true
+  }
+}

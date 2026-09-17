@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
  * {@code science.thermo.PengRobinsonKernelRootPrecisionTest} with the kernel. This case stayed here because
  * it drives {@code V3FeedFlash}, which is the column's own flash, not the kernel's.</p>
  */
+@org.junit.jupiter.api.extension.ExtendWith(com.wormzjl.createcheme.science.material.Cdu17FixtureExtension.class)
 class V3PengRobinsonRootPrecisionTest {
     private static final double[] CAPTURED_FEED = {
             0.0, 0.0012538307614088564, 0.01125827896184405, 0.030567148542406393,
