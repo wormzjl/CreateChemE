@@ -1,0 +1,51 @@
+{
+  "source_commit": "c5c8af3d5444ccb6d1eb6fa07f7ce10df6027a42",
+  "reference": "additive standard-liquid volume from selected component densities; accepted old-basis classical results",
+  "targets": [
+    {
+      "preset": "tia_juana",
+      "package": "createcheme:tjl20_methane",
+      "targets_m3_per_second": {
+        "side_liquid_tray_10": 0.020703082978408043,
+        "side_liquid_tray_18": 0.02892411541114882,
+        "side_liquid_tray_28": 0.011436544637646266
+      }
+    },
+    {
+      "preset": "wti_light_export",
+      "package": "createcheme:wti_light_export_tjl20",
+      "targets_m3_per_second": {
+        "side_liquid_tray_10": 0.01900335750367469,
+        "side_liquid_tray_18": 0.02422687348003732,
+        "side_liquid_tray_28": 0.008833529741841073
+      }
+    },
+    {
+      "preset": "upper_zakum",
+      "package": "createcheme:upper_zakum_tjl20",
+      "targets_m3_per_second": {
+        "side_liquid_tray_10": 0.020752298299421237,
+        "side_liquid_tray_18": 0.02865295627955716,
+        "side_liquid_tray_28": 0.011202803578717613
+      }
+    },
+    {
+      "preset": "bonga",
+      "package": "createcheme:bonga_tjl20",
+      "targets_m3_per_second": {
+        "side_liquid_tray_10": 0.023678557823011013,
+        "side_liquid_tray_18": 0.03133848075030262,
+        "side_liquid_tray_28": 0.012031350757212657
+      }
+    },
+    {
+      "preset": "dalia",
+      "package": "createcheme:dalia_tjl20",
+      "targets_m3_per_second": {
+        "side_liquid_tray_10": 0.0242423764935738,
+        "side_liquid_tray_18": 0.03405368981896664,
+        "side_liquid_tray_28": 0.01217991021805438
+      }
+    }
+  ]
+}

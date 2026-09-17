@@ -45,13 +45,15 @@ public final class MaterialCatalog {
     private final Map<String, String> waterModels;
     private final Map<String, LiquidMixtureCorrection> liquidMixtures;
     private final Map<String, Double> columnFeedVolumes;
+    private final Map<String, List<Double>> columnDrawRates;
     private final Map<String, FluidAppearance> assayAppearances;
     private final Map<String, FluidAppearance> componentAppearances;
     private MaterialCatalog(Map<String, MaterialName> names, Map<String, Package> packages, Map<String, String> resources,
             Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities, Map<String, String> waterModels,
-            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, Map<String, Double> columnFeedVolumes) {
+            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, Map<String, Double> columnFeedVolumes, Map<String,List<Double>> columnDrawRates) {
         this.liquidMixtures = Map.copyOf(liquidMixtures);
         this.columnFeedVolumes = Map.copyOf(columnFeedVolumes);
+        this.columnDrawRates = Map.copyOf(columnDrawRates);
         this.names = Map.copyOf(names); this.packages = Map.copyOf(packages); this.resources = Map.copyOf(resources);
         this.viscosities = Map.copyOf(viscosities); this.waterModels = Map.copyOf(waterModels);
         this.assayAppearances = Map.copyOf(assayAppearances);
@@ -64,6 +66,7 @@ public final class MaterialCatalog {
     }
     public MaterialName name(String id) { MaterialName n=names.get(id); return n==null?MaterialName.chemical(id):n; }
     public Map<String, Package> packages() { return packages; }
+    public List<Double> columnSideDrawRates(String packageId) { requirePackage(packageId); return columnDrawRates.getOrDefault(packageId,List.of()); }
     public double columnFeedStandardVolume(String packageId) {
         requirePackage(packageId);Double value=columnFeedVolumes.get(packageId);
         if(value==null)throw new IllegalArgumentException("No column feed volume for "+packageId);
@@ -153,6 +156,7 @@ public final class MaterialCatalog {
         var waterModels = new HashMap<String, String>();
         var liquidMixtures = new HashMap<String, LiquidMixtureCorrection>();
         var columnFeedVolumes = new HashMap<String, Double>();
+        var columnDrawRates = new HashMap<String, List<Double>>();
         var descriptors = new HashMap<String, LiquidMixtureCorrection.Descriptor>();
         var assayAppearances = new HashMap<String, FluidAppearance>();
         var componentAppearances = new HashMap<String, FluidAppearance>();
@@ -203,6 +207,11 @@ public final class MaterialCatalog {
         for (var o : group(groups,"packages").values()) checked(origins,o,() -> {
             String id=string(o,"id"), model=string(o,"model"), policy=string(o,"missing_interactions");
             if(o.has("column_feed_standard_volume_m3_per_second"))columnFeedVolumes.put(id,positive(o,"column_feed_standard_volume_m3_per_second"));
+            if(o.has("column_side_draw_mol_per_second")) {
+                var rates=numbers(o,"column_side_draw_mol_per_second",3);
+                if(rates.stream().anyMatch(rate->rate<=0))throw new IllegalArgumentException("column_side_draw_mol_per_second: positive rates required");
+                columnDrawRates.put(id,List.copyOf(rates));
+            }
             if(string(o,"revision").length()>63)throw new IllegalArgumentException("revision: maximum 63 characters with fingerprint");
             var evidence=strings(o,"advisory_evidence");
             if(evidence.size()>32 || evidence.stream().anyMatch(e->e.length()>256))throw new IllegalArgumentException("advisory_evidence: exceeds reporting bounds");
@@ -264,7 +273,7 @@ public final class MaterialCatalog {
         });
         for(var a:group(groups,"assays").values()) checked(origins,a,() -> require(packages,string(a,"package"),"assay package"));
         if(packages.isEmpty()) throw new IllegalArgumentException("Material catalog has no packages");
-        return new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,columnFeedVolumes);
+        return new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,columnFeedVolumes,columnDrawRates);
     }
 
     private static FluidAppearance readAppearance(JsonObject record) {

@@ -23,7 +23,7 @@ class V3MethaneColumnTest {
         var original = ColumnCalculatorV3BlockEntity.literatureCduInput();
         assertEquals(original, read.invoke(null, write.invoke(null, original)), "old saved feeds retain their 19-component axis");
         assertEquals(original.specifications(), input.specifications());
-        assertEquals(original.sideDraws(), input.sideDraws());
+        assertEquals(com.wormzjl.createcheme.science.material.MaterialCatalog.bundled().columnSideDrawRates(input.packageId()),input.sideDraws().stream().map(V3SideDrawSpec::molarFlowMolPerSecond).toList());
         assertEquals(original.steamFeeds(), input.steamFeeds());
         assertEquals(original.pumparounds(), input.pumparounds());
     }

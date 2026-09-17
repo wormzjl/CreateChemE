@@ -46,7 +46,8 @@ class ColumnInputPresetTest {
             assertEquals(base.feedTemperatureKelvin(),input.feedTemperatureKelvin());
             assertEquals(base.topPressurePascal(),input.topPressurePascal());
             assertEquals(base.specifications(),input.specifications());
-            assertEquals(base.sideDraws(),input.sideDraws());
+            var rates=catalog.columnSideDrawRates(input.packageId());
+            if(!rates.isEmpty())assertEquals(rates,input.sideDraws().stream().map(V3SideDrawSpec::molarFlowMolPerSecond).toList());
             assertEquals(base.steamFeeds(),input.steamFeeds());
             assertEquals(base.pumparounds(),input.pumparounds());
             double volume=0;var properties=catalog.requirePackage(input.packageId()).properties();

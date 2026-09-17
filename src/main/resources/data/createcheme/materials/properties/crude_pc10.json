@@ -3,7 +3,7 @@
   "id": "createcheme:crude_pc10",
   "component": "crude_pc10",
   "revision": "crude-regrouped-r1",
-  "source": "Tia Juana constrained mass-CDF reconstruction; DWSIM 10.2.3 Riazi-Daubert Tc/Pc; PR78 saturation-fitted omega; mass-conserved caloric interpolation. Estimated heavy extrapolation.",
+  "source": "Tia Juana constrained mass-CDF reconstruction; DWSIM 10.2.5.0 Riazi-Daubert Tc/Pc; PR78 saturation-fitted omega; mass-conserved caloric interpolation. Estimated heavy extrapolation.",
   "molecular_weight_kg_per_mol": 0.6783954100855394,
   "normal_boiling_point_kelvin": 868.2392767667543,
   "standard_liquid_density_kg_per_m3": 971.1402046434567,
@@ -2492,7 +2492,7 @@
       ],
       "revision": "crude-regrouped-r1-vapor",
       "estimated": true,
-      "source": "DWSIM 10.2.3 AUX_VAPVISCi with reconstructed MW, SG, NBP, Tc, Pc and PR78 omega; estimated vapor continuation"
+      "source": "DWSIM 10.2.5.0 AUX_VAPVISCi with reconstructed MW, SG, NBP, Tc, Pc and PR78 omega; estimated vapor continuation"
     }
   },
   "liquid_mixture_descriptor": {

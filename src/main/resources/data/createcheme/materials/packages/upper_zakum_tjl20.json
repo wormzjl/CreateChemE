@@ -75,5 +75,10 @@
     "source": "Global Dalia whole/residue fit; whole 40C and residue 60C held out; non-donor mismatch accepted",
     "revision": "dalia-global-r1"
   },
-  "column_feed_standard_volume_m3_per_second": 0.17956655884461317
+  "column_feed_standard_volume_m3_per_second": 0.17956655884461317,
+  "column_side_draw_mol_per_second": [
+    136.4735087251832,
+    143.18094716871644,
+    45.88701039842216
+  ]
 }

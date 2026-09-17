@@ -72,6 +72,29 @@ class RegroupedCrudeTest {
             assertEquals(last,catalog.viscosity(id,"crude_pc10",ViscosityCorrelation.Phase.LIQUID).orElseThrow().dynamicViscosityPascalSeconds(t,100000),last*1e-12);
         }
     }
+    @Test void gameplayDrawsRetainTheCapturedPhysicalVolumeTargets() throws Exception {
+        var catalog=MaterialCatalog.bundled();
+        try(var stream=getClass().getResourceAsStream("/materials/column-draw-volume-targets.json")) {
+            assertNotNull(stream);
+            var targets=com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(stream,java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            for(var element:targets.getAsJsonArray("targets")) {
+                var row=element.getAsJsonObject();var preset=ColumnInputPreset.fromId(row.get("preset").getAsString());
+                var input=preset.input(catalog);var success=assertInstanceOf(V3ColumnOutcome.Success.class,V3ColumnCalculator.calculate(input));
+                var properties=catalog.requirePackage(input.packageId());
+                for(var target:row.getAsJsonObject("targets_m3_per_second").entrySet()) {
+                    var product=success.result().streams().stream().filter(v->v.streamId().equals(target.getKey())).findFirst().orElseThrow();
+                    double volume=0;
+                    for(var fraction:product.moleFractions()) {
+                        int index=properties.components().indexOf(fraction.componentId());
+                        if(index>=0)volume+=product.molarFlowMolPerSecond()*fraction.moleFraction()*properties.properties().get(index).molecularWeight()/properties.properties().get(index).density();
+                    }
+                    double expected=target.getValue().getAsDouble();
+                    assertEquals(expected,volume,expected*1e-5,preset.id()+" "+target.getKey());
+                }
+            }
+        }
+    }
+
     @Test void previouslyDifficultCrudesPublishAuditedClassicalSolutionsWithoutLearnedSeeds() {
         for(var preset:List.of(ColumnInputPreset.BONGA,ColumnInputPreset.COLD_LAKE)) {
             var input=preset.input(MaterialCatalog.bundled());long start=System.nanoTime();

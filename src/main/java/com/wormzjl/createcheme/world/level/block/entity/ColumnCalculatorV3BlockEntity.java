@@ -421,10 +421,13 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         for (int component = 0; component < flows.length; component++) {
             flows[component] *= feedMolarRate(packageId, crude.moleFractions());
         }
+        var rates=com.wormzjl.createcheme.science.material.MaterialRuntime.current().columnSideDrawRates(packageId);
+        var draws=rates.isEmpty()?original.sideDraws():java.util.stream.IntStream.range(0,rates.size())
+                .mapToObj(i->new V3SideDrawSpec(original.sideDraws().get(i).trayNumber(),rates.get(i))).toList();
         return new V3ColumnInput(original.schemaVersion(), crude.packageId(), crude.assayId(),
                 crude.componentBasis(), flows, original.feedTemperatureKelvin(), original.stageCount(),
                 original.feedStageNumber(), original.topPressurePascal(), original.stagePressureDropPascal(),
-                original.specifications(), original.sideDraws(), original.steamFeeds(), original.pumparounds());
+                original.specifications(), draws, original.steamFeeds(), original.pumparounds());
     }
 
     private static double feedMolarRate(String packageId,double[] fractions) {
