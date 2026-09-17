@@ -36,7 +36,7 @@ public final class FluidModuleGameTests {
             var data=new FluidSavedData(checkpoint,key->model);var tag=data.save(new net.minecraft.nbt.CompoundTag(),helper.getLevel().registryAccess());
             var loaded=FluidSavedData.load(tag,key->model).checkpoint();var after=totals(loaded.islands().stream().map(FluidCheckpointCodec.IslandEntry::snapshot).toList(),loaded.transfers(),loaded.modules());
             for(int c=0;c<model.componentCount();c++)helper.assertTrue(Math.abs(before[c]-after[c])<=1e-9*Math.max(1,before[c]),"Module global component balance "+c);
-            helper.assertTrue(Math.abs(before[22]-after[22])<=1e-6*Math.max(1,Math.abs(before[22])),"Module global energy balance");
+            helper.assertTrue(Math.abs(before[before.length-1]-after[after.length-1])<=1e-6*Math.max(1,Math.abs(before[before.length-1])),"Module global energy balance");
             helper.assertTrue(new HashSet<>(loaded.moduleBindings()).equals(new HashSet<>(bindings))&&loaded.modules().getFirst().committedTick()==900,"Module bindings/clock were not saved");
             helper.assertTrue(loaded.transfers().pending().size()<=2&&loaded.transfers().planned().size()<=2,"Unbounded module ledgers");
         } finally {runtime.close();}}).thenSucceed();

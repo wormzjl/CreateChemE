@@ -1,0 +1,99 @@
+{
+  "source": "Frozen regrouping holdout exposed a coarse recovery publishing an unrequested dry surrogate. No expected solution is inferred from that invalid result.",
+  "input": {
+    "schemaVersion": 1,
+    "packageId": "createcheme:dalia_tjl20",
+    "assayId": "createcheme:dalia",
+    "componentBasis": {
+      "componentIds": [
+        "Methane",
+        "Ethane",
+        "Propane",
+        "Isobutane",
+        "N-butane",
+        "Isopentane",
+        "N-pentane",
+        "crude_pc01",
+        "crude_pc02",
+        "crude_pc03",
+        "crude_pc04",
+        "crude_pc05",
+        "crude_pc06",
+        "crude_pc07",
+        "crude_pc08",
+        "crude_pc09",
+        "crude_pc10",
+        "crude_pc11",
+        "crude_pc12"
+      ]
+    },
+    "feedComponentMolarFlowsMolPerSecond": [
+      0.0,
+      0.0,
+      0.0801295614921347,
+      3.467016658128859,
+      9.79406768658746,
+      9.456752097597152,
+      11.955144702792058,
+      18.930185124484222,
+      42.152297607737765,
+      46.61485277430107,
+      55.3648933324806,
+      65.02809127652765,
+      67.93336527249562,
+      62.02573735837648,
+      73.90906374749618,
+      66.8393062134907,
+      42.43023750378971,
+      13.841277072551732,
+      4.582525954781015
+    ],
+    "feedTemperatureKelvin": 523.6605410358633,
+    "stageCount": 38,
+    "feedStageNumber": 38,
+    "topPressurePascal": 286964.25126287143,
+    "stagePressureDropPascal": 12.292435722658698,
+    "specifications": [
+      {
+        "kelvin": 334.5550119587756
+      },
+      {
+        "ratio": 3.3359394583948907
+      },
+      {
+        "watts": 11279094.138677586
+      }
+    ],
+    "sideDraws": [
+      {
+        "trayNumber": 19,
+        "molarFlowMolPerSecond": 146.26626222950864
+      },
+      {
+        "trayNumber": 21,
+        "molarFlowMolPerSecond": 136.49514741190353
+      }
+    ],
+    "steamFeeds": [],
+    "pumparounds": [
+      {
+        "returnTray": 7,
+        "drawTray": 9,
+        "dutyWatts": -12148712.310112577,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 14,
+        "drawTray": 25,
+        "dutyWatts": -13866080.584617652,
+        "split": "UNIFORM"
+      },
+      {
+        "returnTray": 26,
+        "drawTray": 36,
+        "dutyWatts": -17762287.160433933,
+        "split": "UNIFORM"
+      }
+    ]
+  }
+}

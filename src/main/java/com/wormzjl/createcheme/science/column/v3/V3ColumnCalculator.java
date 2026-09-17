@@ -1039,7 +1039,11 @@ public final class V3ColumnCalculator {
                     && !hasCondenserPhaseMismatch(pass) && condenserAttempts.allowsColdRecovery()) {
                 try {
                     control.checkpoint();
-                    PreparedAttempt coarsePrepared = prepareAttempt(originalProblem(pass), thermo, pass.recoverySeed(), policy);
+                    // A failed material-closed fallback may still describe the feature-free surrogate.
+                    // Its state can seed a recovery, but only the authored input can be recovered/published.
+                    V3ColumnProblem coarseRequested = V3ColumnProblemResolver.resolve(input,
+                            pass.prepared().problem().topology().condenserPhaseBranch());
+                    PreparedAttempt coarsePrepared = prepareAttempt(coarseRequested, thermo, pass.recoverySeed(), policy);
                     V3MeshResidualEvaluator evaluator = new V3MeshResidualEvaluator(
                             coarsePrepared.problem(), thermo, pass.feedMolarEnthalpyJoulesPerMol());
                     V3SimultaneousColumnSolver.Attempt coarseAttempt = V3SimultaneousColumnSolver.solve(
@@ -1082,7 +1086,7 @@ public final class V3ColumnCalculator {
                     ? mergedEvents(List.of(stageTraceEvent(selected.support(), attempt.state(), selected.problem())), pass.solverEvents())
                     : pass.solverEvents();
             V3SolverDiagnostics diagnostics = diagnostics(attempt, audit, solvePath, solverEvents, policy);
-            if (pass.reachedRequestedProblem()
+            if (pass.reachedRequestedProblem() && publishesRequestedGeometry(pass, input)
                     && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()
                     && converged.evidence().convergenceEvidence().satisfiesGates(policy.closureTolerance())) {
                 String revision = formulationRevision(input, policy.requestedCutoff(), policy.closureTolerance());
