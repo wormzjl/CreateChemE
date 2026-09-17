@@ -57,7 +57,8 @@ public final class PassiveStepSolver {
                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
                 graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList(),List.of(),List.of());
         if(graph.reservoirs().stream().anyMatch(PassiveNetwork.Reservoir::empty))throw new IllegalArgumentException("Evacuated reservoir has no fluid temperature; connected filling requires a supported initialization state");
-        var seeds=initialPhaseSeeds(graph,dt,checkpoint);
+        var reachable=reachableComponents(graph);
+        var seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);
         var modes=new ArrayList<FlowControl.Mode>();
         for(var pipe:graph.pipes())modes.add(switch(pipe.control()) {
             case FlowControl.Passive ignored->FlowControl.Mode.PASSIVE;
@@ -80,12 +81,12 @@ public final class PassiveStepSolver {
             checkpoint.run();SolverDiagnostics.count(SolverDiagnostics.activeSetPasses);
             int[] phases=new int[seeds.size()];for(int i=0;i<phases.length;i++)phases[i]=phaseCode(seeds.get(i));
             byte[] modeCodes=new byte[modes.size()];for(int i=0;i<modeCodes.length;i++)modeCodes[i]=(byte)modes.get(i).ordinal();
-            var supports=supports(graph,seeds,componentMask,promoted);
+            var supports=supports(graph,seeds,reachable,promoted);
             // The active-set state is exactly what varies between passes, so the structure key is
             // also the cycle key: repeating one means the pass sequence cannot make progress.
             var structure=new WorkspaceKey(0,nodeIds,kinds,graph.pipes(),phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone());
             if(!seen.add(structure))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
-            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,componentMask,supports);
+            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,reachable,supports);
             var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,graph.pipes(),phases,componentMask,structure.supports,modeCodes,structure.boundaryClosed);
             var workspace=workspaces.get(key);
             if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
@@ -264,11 +265,11 @@ public final class PassiveStepSolver {
      * and never from a Newton iterate, with the components this solve has already reactivated kept in
      * both phases. A fixed node owns no unknowns and gets none.
      */
-    private PhaseSupport[][] supports(PassiveNetwork graph,List<FluidThermodynamics.State> seeds,boolean[] componentMask,boolean[][] promoted) {
+    private PhaseSupport[][] supports(PassiveNetwork graph,List<FluidThermodynamics.State> seeds,boolean[][] reachable,boolean[][] promoted) {
         var supports=new PhaseSupport[seeds.size()][];
         for(int node=0;node<supports.length;node++)
             if(!graph.reservoirs().get(node).fixed())
-                supports[node]=PhaseLayout.support(seeds.get(node),componentMask,model.traceTruncation(),promoted[node]);
+                supports[node]=PhaseLayout.support(seeds.get(node),Arrays.copyOf(reachable[node],model.hydrocarbon.componentCount()),model.traceTruncation(),promoted[node]);
         return supports;
     }
     /**
@@ -352,15 +353,55 @@ public final class PassiveStepSolver {
             if(Math.abs(q)>massFlowLimit(pipe,donor)*(1+2e-8)+floor)throw new ApproximationRejected("Error probe violates velocity constraint");
         }
     }
-    private List<FluidThermodynamics.State> initialPhaseSeeds(PassiveNetwork graph,double dt,Runnable checkpoint) {
-        int count=model.hydrocarbon.componentCount()+1;boolean[] available=new boolean[count];
-        for(var node:graph.reservoirs())if(node.kind()!=PassiveNetwork.NodeKind.VOID){var n=node.inventory().moles();for(int i=0;i<count;i++)available[i]|=n[i]>0;}
-        for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection input){var n=input.molesPerSecond();for(int i=0;i<count;i++)available[i]|=n[i]>0;}
+    /** Physical species can traverse passive pipes in either direction, actuators only downstream.
+     * Junction property guesses own no inventory and therefore cannot introduce a species. */
+    private boolean[][] reachableComponents(PassiveNetwork graph) {
+        int count=model.hydrocarbon.componentCount()+1,nodes=graph.reservoirs().size();
+        var possible=new BitSet[nodes];var outgoing=new ArrayList<List<Integer>>(nodes);
+        for(int i=0;i<nodes;i++) {
+            possible[i]=new BitSet(count);outgoing.add(new ArrayList<>());
+            var node=graph.reservoirs().get(i);
+            if(!node.junction()&&node.kind()!=PassiveNetwork.NodeKind.VOID) {
+                var amounts=node.inventory().moles();for(int c=0;c<count;c++)if(amounts[c]>0)possible[i].set(c);
+            }
+        }
+        for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection injection) {
+            var amounts=injection.molesPerSecond();for(int c=0;c<count;c++)if(amounts[c]>0)possible[injection.node()].set(c);
+        }
+        for(var pipe:graph.pipes()) {
+            if(!(pipe.control() instanceof FlowControl.Pump pump)||pump.targetVolumeFlow()>0) {
+                if(boundaryAllowed(graph,pipe,1))outgoing.get(pipe.first()).add(pipe.second());
+                if(pipe.control() instanceof FlowControl.Passive&&boundaryAllowed(graph,pipe,-1))outgoing.get(pipe.second()).add(pipe.first());
+            }
+        }
+        var queue=new ArrayDeque<Integer>();var queued=new boolean[nodes];
+        for(int i=0;i<nodes;i++){queue.add(i);queued[i]=true;}
+        while(!queue.isEmpty()) {
+            int from=queue.remove();queued[from]=false;
+            for(int to:outgoing.get(from)) {
+                int before=possible[to].cardinality();possible[to].or(possible[from]);
+                if(before!=possible[to].cardinality()&&!queued[to]){queued[to]=true;queue.add(to);}
+            }
+        }
+        var result=new boolean[nodes][count];
+        for(int i=0;i<nodes;i++) {
+            // A hydraulically isolated junction retains only its arbitrary property guess.
+            if(possible[i].isEmpty()&&graph.reservoirs().get(i).junction()) {
+                var amounts=PhaseLayout.totalAmounts(graph.reservoirs().get(i).state());for(int c=0;c<count;c++)if(amounts[c]>0)possible[i].set(c);
+            }
+            for(int c=possible[i].nextSetBit(0);c>=0;c=possible[i].nextSetBit(c+1))result[i][c]=true;
+        }
+        return result;
+    }
+    private List<FluidThermodynamics.State> initialPhaseSeeds(PassiveNetwork graph,double dt,Runnable checkpoint,boolean[][] reachable) {
+        int count=model.hydrocarbon.componentCount()+1;
         var seeds=new ArrayList<FluidThermodynamics.State>();
         for(int nodeIndex=0;nodeIndex<graph.reservoirs().size();nodeIndex++) {
-            var node=graph.reservoirs().get(nodeIndex);
+            var node=graph.reservoirs().get(nodeIndex);var available=reachable[nodeIndex];
             var state=node.state();if(node.fixed()){seeds.add(state);continue;}
             var n=PhaseLayout.totalAmounts(state);double total=Arrays.stream(n).sum();boolean changed=false;
+            // Only a zero-storage guess can discard an unreachable species; real inventories are untouched.
+            if(node.junction())for(int c=0;c<count;c++)if(!available[c]&&n[c]>0){n[c]=0;changed=true;}
             // This is only a trial guess. The accumulation equations still start from the exact original inventory.
             for(int i=0;i<count;i++)if(available[i]&&n[i]==0)changed=true;
             double weightedTemperature=state.mass()*state.temperature(),seedMass=state.mass();
@@ -382,6 +423,8 @@ public final class PassiveStepSolver {
     }
     private double initialMassFlow(PassiveNetwork graph,PassiveNetwork.Pipe pipe) {
         var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
+        if(pipe.control() instanceof FlowControl.Pump pump)
+            return Math.min(pump.targetVolumeFlow()*a.state().mass()/a.state().volume(),massFlowLimit(pipe,a.state()));
         var upstream=a.state().pressure()>=b.state().pressure()?a.state():b.state();double rho=upstream.mass()/upstream.volume(),mu=viscosity(upstream);
         double driving=a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation());
         double lo=0,hi=1;while(pipe.pressureDrop(hi,rho,mu)<Math.abs(driving)&&hi<1e6)hi*=2;
@@ -470,7 +513,7 @@ public final class PassiveStepSolver {
          * candidate residual at the same time. */
         final double[][] targets,incoming;
         final double[] energy,incomingMass,incomingEnergy,netMass,fractions;
-        Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[] mask,
+        Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[][] reachable,
                   PhaseSupport[][] supports) {
             this.modes=List.copyOf(modes);
             this.seeds=List.copyOf(seeds);
@@ -483,7 +526,7 @@ public final class PassiveStepSolver {
             for(int i=0;i<count;i++) {
                 var state=graph.reservoirs().get(i).state();offsets[i]=cursor;oldAmounts[i]=graph.reservoirs().get(i).inventory().moles();
                 if(!graph.reservoirs().get(i).fixed()) {
-                    layout[i]=new PhaseLayout(model,seeds.get(i),mask,oldAmounts[i],supports[i]);cursor+=layout[i].size();
+                    layout[i]=new PhaseLayout(model,seeds.get(i),Arrays.copyOf(reachable[i],model.hydrocarbon.componentCount()),oldAmounts[i],supports[i]);cursor+=layout[i].size();
                     if(SolverDiagnostics.ENABLED) {
                         int omitted=layout[i].singlePhaseComponentCount();
                         if(omitted>0){SolverDiagnostics.traceOmittedUnknowns.add(omitted);SolverDiagnostics.truncatedNodePasses.increment();}

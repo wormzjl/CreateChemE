@@ -357,7 +357,7 @@ public final class ColumnV3Network {
                 detail);
         job.completion().result().ifPresent(outcome -> {
             for (String event : outcome.diagnostics().events()) {
-                if (event.startsWith("stage-trace ")) {
+                if (event.startsWith("stage-trace ") || event.startsWith("initializer=")) {
                     CreateChemE.LOGGER.info("column_v3 request={} event={}", job.request().requestId(), event);
                 }
             }

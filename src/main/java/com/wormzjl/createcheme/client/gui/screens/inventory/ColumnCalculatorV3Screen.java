@@ -508,7 +508,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         previousPresetPage.visible=nextPresetPage.visible=page==Page.PRESETS&&presetCount>presetSlots;
         previousPresetPage.active=presetPage>0;nextPresetPage.active=(presetPage+1)*presetSlots<presetCount;
         run.setMessage(Component.literal(holland ? "Run Holland" : "Run V3"));
-        run.active = (showInputs || showHeat) && !calculating && draftInput() != null;
+        run.visible = showInputs || showHeat;
+        run.active = run.visible && !calculating && draftInput() != null;
         int count = serverState == null || serverState.displayResult().isEmpty() ? 0
                 : serverState.displayResult().orElseThrow().streams().size();
         int perPage = streamsPerPage();

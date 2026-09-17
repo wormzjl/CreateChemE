@@ -320,6 +320,8 @@ q = 1000 K × (1/min(T, slope_cap_kelvin) − 1/reference_kelvin)
 Δln(μ) = c0(F(a)−F(b)) + c1 F(b) + q[c2(E(a)−E(b)) + c3 E(b)]
 ```
 
+The current crude fluid-property envelope starts at 293.15 K (20°C). A 298.15 K generator is supported, but adiabatic filling of a cold nitrogen-filled tank can cool the receiving mixture to that lower bound through light-end flashing. Reaching the domain boundary is not a viscosity or solidification criterion. A heated startup followed by ambient feed stays within the qualified envelope in the regression case; no silent clamping or lower-temperature extrapolation is applied in production.
+
 All pair terms vanish for a pure component. The implementation evaluates factored sums in O(component count). These coefficients and descriptors participate in the transport fingerprint, while scientific PR/caloric fingerprints remain independent. This release fits Dalia whole crude at 20/50°C and 370°C+ residue at 50/100°C, reserving whole 40°C and residue 60°C for verification. Other crudes' discrepancies are accepted and reported as a global approximation.
 
 Column operating values reside in `presets` records. `operating.feedStandardVolumeCubicMetresPerSecond` is the positive feed volume at the selected property density reference; molar throughput is derived from the current assay and molecular weights. `operating.sideDraws` contains explicit tray numbers and mol/s rates. Captured pre-regrouping physical throughputs are retained, and gameplay draws are recalibrated against accepted pre-regrouping volume targets. The hidden literature preset retains its published molar rates. Cold Lake has no accepted old yield targets and retains its authored rates.
