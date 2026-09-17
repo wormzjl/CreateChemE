@@ -24,6 +24,8 @@ class FluidSaveCompatibilityTest {
         var data=new FluidSavedData(empty,WorldTopologyLedger.Snapshot.empty(),key->{throw new AssertionError("No model needed");});
         var tag=data.save(new CompoundTag(),null);assertEquals(1,tag.getInt("FluidFormat"));
         assertTrue(FluidSavedData.load(tag,key->{throw new AssertionError();}).world().isPresent());
+        var previous=tag.copy();previous.putInt("TopologyFormat",1);var retained=previous.copy();
+        assertThrows(IllegalArgumentException.class,()->FluidSavedData.load(previous,key->{throw new AssertionError();}));assertEquals(retained,previous);
         tag.remove("TopologySHA256");assertThrows(IllegalArgumentException.class,()->FluidSavedData.load(tag,key->{throw new AssertionError();}));
     }
 }

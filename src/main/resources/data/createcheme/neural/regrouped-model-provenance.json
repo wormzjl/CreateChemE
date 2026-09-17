@@ -2,7 +2,7 @@
   "schema_version": 1,
   "model_id": "regrouped-seed-17041-epoch-160",
   "payload_sha256": "68fe3cca51ad31c43f4dca45beebedb52aaf7f91df057207f14c1ca0f4de8060",
-  "sidecar_sha256": "ee932a663a2adc5f2f93fbf423bf61e7d8458b796bc77936fbbf00f1c32eb67e",
+  "sidecar_sha256": "c3c30fb0e3c61583ad0d06d8046c5079b783adaafd3a4963522063573b4103e1",
   "feature_revision": "v3-anchor-augmented-regrouped-2",
   "anchor_revision": "native-material-closed-anchor-v2-basis-width",
   "parameters": 88852,
@@ -12,7 +12,8 @@
     "training-registration.json": "33c865716d14f51f9b0e0f24a68da11f419e9738e1d7ec21e1f3b10a2581a67c",
     "classical/cases.jsonl": "51c95d5d6a5395cb7c4008b71968de04e95a7c38543627a9b3d4eb2b48670b8e",
     "features.jsonl": "e67d7a3851c161ecb6a630cda4d3dbfbc3de6316642cd269bd31329579378031",
-    "repair-requalification-registration.json": "c2df4a6a534470cf7ea1765a7c87a35037a4e6e62be62e4f35e0afad62a87ca1"
+    "repair-requalification-registration.json": "c2df4a6a534470cf7ea1765a7c87a35037a4e6e62be62e4f35e0afad62a87ca1",
+    "framework-requalification-registration.json": "851030935eeee81f2d12475c66aeade80450f7aec683f73348fd6582898a5f6c"
   },
   "qualification_solver_commit": "fe014b5",
   "scope": "Six crudes and adjacent convex blends; bounded stage/topology/features; native correction and acceptance audits required.",
@@ -23,14 +24,14 @@
       "requests": 168,
       "strict_classical": 44,
       "strict_neural_first": 65,
-      "mean_latency_ratio": 1.0022141122686303,
+      "mean_latency_ratio": 1.0086203135895977,
       "classical_union_losses": 0
     },
     {
       "requests": 168,
       "strict_classical": 44,
       "strict_neural_first": 65,
-      "mean_latency_ratio": 1.0039673479318505,
+      "mean_latency_ratio": 1.012184460337291,
       "classical_union_losses": 0
     }
   ],
@@ -39,14 +40,14 @@
       "requests": 252,
       "strict_classical": 63,
       "strict_neural_first": 76,
-      "mean_latency_ratio": 1.0510311249991326,
+      "mean_latency_ratio": 1.060760328329236,
       "classical_union_losses": 0
     },
     {
       "requests": 252,
       "strict_classical": 63,
       "strict_neural_first": 76,
-      "mean_latency_ratio": 1.0447964109846792,
+      "mean_latency_ratio": 1.056481500934633,
       "classical_union_losses": 0
     }
   ],
@@ -55,5 +56,21 @@
     "strict_train_labels": 222,
     "strict_validation_labels": 44,
     "strict_original_test_labels": 40
+  },
+  "pipeline_sha256": "609be438951126053b6c7b37e88016c462fcbe76014a640c3558aab472a8e86a",
+  "registry_sha256": "d09920e822f338fd162515190b5ed357c916b88b3158aa0b8259c0a7ac2ef18f",
+  "physics_fingerprint": "b1b9f1eb4d77f7868982c4eec28fabd5b4b9fd36b91ca8a5869b7fbcbea6ceb8",
+  "qualification_registry_commit": "80ae32d",
+  "qualification_material_framework_commit": "8f8491d",
+  "qualification_route": "Final packaged registry; immutable stage-five weights; repeated frozen validation and holdout in reversed-order blocks; no reselection or refitting.",
+  "parity": {
+    "model": "regrouped-seed-17041-epoch-160",
+    "cases": 18,
+    "decoded": 18,
+    "maxRawAbsoluteError": 1.3795764743917971e-05,
+    "maxFlowErrorOverFeed": 5.262504576880548e-07,
+    "exactBranchAndZeroMask": true,
+    "tenWorkerJavaBitParity": true,
+    "cancellationPropagated": true
   }
 }

@@ -47,7 +47,7 @@ class EnergyReferenceMigrationTest {
         var tag=new CompoundTag();byte[] core=FluidCheckpointCodec.encode(checkpoint,key->model).getBytes(StandardCharsets.UTF_8);tag.putInt("FluidFormat",1);tag.putByteArray("Checkpoint",core);tag.putByteArray("SHA256",MessageDigest.getInstance("SHA-256").digest(core));
         var n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=10;var oldTotal=new WorldTopologyLedger.MaterialTotal(n,10050);
         var world=new WorldTopologyLedger.Snapshot(500,1,Map.of(),List.of(),oldTotal,oldTotal);byte[] topology=FluidCheckpointCodec.encodeWorld(world).getBytes(StandardCharsets.UTF_8);
-        tag.putInt("TopologyFormat",1);tag.putByteArray("Topology",topology);tag.putByteArray("TopologySHA256",MessageDigest.getInstance("SHA-256").digest(topology));var before=tag.copy();
+        tag.putInt("TopologyFormat",FluidSavedData.TOPOLOGY_VERSION);tag.putByteArray("Topology",topology);tag.putByteArray("TopologySHA256",MessageDigest.getInstance("SHA-256").digest(topology));var before=tag.copy();
         var migrated=FluidSavedData.migrateToSensibleReference(tag,oldReference(),key->model);assertEquals(before,tag);var restored=migrated.world().orElseThrow();assertEquals(50,restored.constructed().totalEnergy());assertEquals(50,restored.destroyed().totalEnergy());assertEquals(500,restored.onlineTick());assertArrayEquals(n,restored.constructed().moles());
         var corrupt=tag.copy();corrupt.putByteArray("SHA256",new byte[32]);assertThrows(IllegalArgumentException.class,()->FluidSavedData.migrateToSensibleReference(corrupt,oldReference(),key->model));
     }

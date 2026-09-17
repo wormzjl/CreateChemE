@@ -50,13 +50,6 @@ import org.jetbrains.annotations.Nullable;
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
     public static final int DATA_VERSION = 9;
     public static final String LITERATURE_PACKAGE = "createcheme:tjl19_dwsim";
-    /** Reduced hydrocarbon feed of the Ledezma-Martinez (2019) no-preflash contract: 100,000 bbl/day of Tia Juana Light. */
-    private static final double LITERATURE_FEED_MOL_PER_SECOND = 737.6996333000835;
-    private static final int DEFAULT_STAGE_COUNT = 29;
-    private static final int DEFAULT_FEED_STAGE = 24;
-    private static final double DEFAULT_FEED_KMOL_PER_HOUR = 2_610.7;
-    private static final double DEFAULT_TOP_PRESSURE_PASCAL = 150_000.0;
-
     private static final String TAG_DATA_VERSION = "V3DataVersion";
     private static final String TAG_INPUT_REVISION = "InputRevision";
     private static final String TAG_RESULT_REVISION = "ResultRevision";

@@ -54,7 +54,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
         propertyReload=new FluidPropertyReloadGuard(catalog,com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog),compressibility,model);
         presetCache=FluidPresetCatalog.resolve(catalog);componentNames=model.components();
         legacyUnbound=data.world().isEmpty()&&!data.checkpoint().islands().isEmpty();
-        topology=new WorldTopologyLedger(data.world().orElseGet(WorldTopologyLedger.Snapshot::empty));transfers=new BufferedTransfers(data.checkpoint().transfers());
+        var savedTopology=data.world().orElseGet(()->WorldTopologyLedger.Snapshot.empty(catalog));savedTopology.basis().requireCurrent(catalog);
+        topology=new WorldTopologyLedger(savedTopology);transfers=new BufferedTransfers(data.checkpoint().transfers());
         weights=model.molecularWeights();
         moduleHost=data.checkpoint().modules().isEmpty()||legacyUnbound?null:new CausalModuleCoordinator(model,data.checkpoint().moduleBindings(),data.checkpoint().transfers(),data.checkpoint().modules());
         var settings=new IslandCoordinator.Settings(options.wallBudgetNanos(),options.wallBudgetNanos()*3/4,64,options.adaptiveCadence(),options.initialCadenceTicks());

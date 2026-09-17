@@ -22,6 +22,14 @@ class MaterialPresetsTest {
             }
         }
     }
+    @Test void exampleWholeRecordOverridePreservesAllExistingTransportData() throws Exception {
+        var original=MaterialCatalog.bundled();var resources=new HashMap<>(original.resources());String path=ROOT+"properties/tjl20_methane.json";
+        resources.put(path,java.nio.file.Files.readString(java.nio.file.Path.of("examples/material-override/"+path)));
+        var replaced=MaterialCatalog.parse(resources);String id="createcheme:tjl20_methane";
+        assertEquals(357,replaced.requirePackage(id).properties().getFirst().density());
+        assertEquals(original.viscosityFingerprint(id),replaced.viscosityFingerprint(id));
+        assertNotEquals(original.physicsFingerprint(id,original.requirePackage(id).components()),replaced.physicsFingerprint(id,replaced.requirePackage(id).components()));
+    }
     @Test void customPresetIsServerDefinedAndInvalidOverridesFailBeforePublication() {
         var original=MaterialCatalog.bundled();var resources=new HashMap<>(original.resources());String path=ROOT+"presets/column_custom.json";
         var preset=JsonParser.parseString(resources.get(ROOT+"presets/column_dalia.json")).getAsJsonObject();

@@ -103,7 +103,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private Button heatTab;
     private Button convergenceTab;
     private Button preset;
-    private int presetPage;
+    private int presetPage,presetSlots,componentScroll;
+    private Button previousComponents,nextComponents;
     private Button previousPresetPage,nextPresetPage;
     private final List<Button> presetChoices = new ArrayList<>();
     private Button run;
@@ -157,17 +158,22 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         preset = addRenderableWidget(Button.builder(Component.translatableWithFallback("gui.createcheme.column_presets", "Input presets"), button -> selectPage(Page.PRESETS))
                 .bounds(leftPos + 340, tabY, 128, 20).build());
         int presetWidth = Math.max(1, (imageWidth - 30) / 2);
-        for (int index=0; index<8; index++) {
+        presetSlots=2*Math.clamp((imageHeight-CONTENT_TOP-84)/30,1,4);
+        for (int index=0; index<presetSlots; index++) {
             final int slot=index;
             presetChoices.add(addRenderableWidget(Button.builder(Component.empty(),button->{
-                int selected=presetPage*8+slot;
+                int selected=presetPage*presetSlots+slot;
                 if(serverState!=null&&selected<serverState.presets().size())requestPreset(serverState.presets().get(selected));
             }).bounds(leftPos+10+(index%2)*(presetWidth+10),topPos+CONTENT_TOP+44+(index/2)*30,presetWidth,20).build()));
         }
         previousPresetPage=addRenderableWidget(Button.builder(Component.literal("Previous presets"),button->{presetPage--;refreshControls();})
-                .bounds(leftPos+10,topPos+CONTENT_TOP+170,125,20).build());
+                .bounds(leftPos+10,topPos+imageHeight-29,125,20).build());
         nextPresetPage=addRenderableWidget(Button.builder(Component.literal("Next presets"),button->{presetPage++;refreshControls();})
-                .bounds(leftPos+145,topPos+CONTENT_TOP+170,125,20).build());
+                .bounds(leftPos+145,topPos+imageHeight-29,125,20).build());
+        previousComponents=addRenderableWidget(Button.builder(Component.literal("↑"),button->{componentScroll--;refreshControls();})
+                .bounds(leftPos+246,topPos+imageHeight-29,22,20).build());
+        nextComponents=addRenderableWidget(Button.builder(Component.literal("↓"),button->{componentScroll++;refreshControls();})
+                .bounds(leftPos+270,topPos+imageHeight-29,22,20).build());
         run = addRenderableWidget(Button.builder(Component.literal("Run V3"), button -> requestCalculation())
                 .bounds(leftPos + 10, topPos + imageHeight - 29, 82, 20).build());
         previousStreamPage = addRenderableWidget(Button.builder(Component.literal("Previous streams"), button -> {
@@ -492,15 +498,15 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         preset.visible = showInputs || page == Page.PRESETS;
         preset.active = showInputs && !calculating && serverState != null;
         int presetCount=serverState==null?0:serverState.presets().size();
-        presetPage=Math.clamp(presetPage,0,Math.max(0,(presetCount-1)/8));
+        presetPage=Math.clamp(presetPage,0,Math.max(0,(presetCount-1)/presetSlots));
         for(int i=0;i<presetChoices.size();i++) {
-            var button=presetChoices.get(i);int index=presetPage*8+i;
+            var button=presetChoices.get(i);int index=presetPage*presetSlots+i;
             button.visible=page==Page.PRESETS&&index<presetCount;
             button.active=button.visible&&!calculating;
             if(index<presetCount){var choice=serverState.presets().get(index);button.setMessage(Component.translatableWithFallback(choice.translationKey(),choice.label()));}
         }
-        previousPresetPage.visible=nextPresetPage.visible=page==Page.PRESETS&&presetCount>8;
-        previousPresetPage.active=presetPage>0;nextPresetPage.active=(presetPage+1)*8<presetCount;
+        previousPresetPage.visible=nextPresetPage.visible=page==Page.PRESETS&&presetCount>presetSlots;
+        previousPresetPage.active=presetPage>0;nextPresetPage.active=(presetPage+1)*presetSlots<presetCount;
         run.setMessage(Component.literal(holland ? "Run Holland" : "Run V3"));
         run.active = (showInputs || showHeat) && !calculating && draftInput() != null;
         int count = serverState == null || serverState.displayResult().isEmpty() ? 0
@@ -510,6 +516,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         previousStreamPage.visible = nextStreamPage.visible = page == Page.STREAMS && count > perPage;
         previousStreamPage.active = streamPage > 0;
         nextStreamPage.active = (streamPage + 1) * perPage < count;
+        componentScroll=Math.clamp(componentScroll,0,maximumComponentScroll());
+        previousComponents.visible=nextComponents.visible=page==Page.STREAMS&&maximumComponentScroll()>0;
+        previousComponents.active=componentScroll>0;nextComponents.active=componentScroll<maximumComponentScroll();
     }
 
     private void requestCalculation() {
@@ -625,9 +634,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 "Choose an input preset"), 10, CONTENT_TOP, TEXT, false);
         graphics.drawString(font, Component.translatableWithFallback("gui.createcheme.preset_replaces",
                 "Loading replaces the draft and clears its previous result."), 10, CONTENT_TOP+16, NOTICE, false);
-        graphics.drawWordWrap(font, Component.translatableWithFallback("gui.createcheme.preset_conditions",
-                "The five crude assays use the current Tia Juana column settings as editable starting points. Adjust operating conditions for each crude before running."),
-                10, CONTENT_TOP+198, imageWidth-20, MUTED);
+        if(imageHeight>=320)graphics.drawWordWrap(font,Component.literal(
+                "Presets provide editable starting conditions. Loading does not run the column."),
+                10,CONTENT_TOP+174,imageWidth-20,MUTED);
     }
 
     private void renderInputs(GuiGraphics graphics) {
@@ -706,6 +715,20 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         return Math.clamp((imageWidth - 20) / 200, 1, 3);
     }
 
+    private int visibleComponentRows(){return Math.max(1,(imageHeight-CONTENT_TOP-110)/12);}
+    private int maximumComponentScroll() {
+        if(serverState==null||serverState.displayResult().isEmpty())return 0;
+        return Math.max(0,serverState.displayResult().orElseThrow().streams().stream()
+                .mapToInt(stream->stream.moleFractions().size()).max().orElse(0)-visibleComponentRows());
+    }
+    @Override public boolean mouseScrolled(double mouseX,double mouseY,double horizontal,double vertical) {
+        if(page==Page.STREAMS&&mouseX>=leftPos&&mouseX<leftPos+imageWidth
+                &&mouseY>=topPos+CONTENT_TOP+64&&mouseY<topPos+imageHeight-32&&vertical!=0) {
+            componentScroll+=vertical>0?-3:3;refreshControls();return true;
+        }
+        return super.mouseScrolled(mouseX,mouseY,horizontal,vertical);
+    }
+
     private void renderStreamReport(
             GuiGraphics graphics, int x, int width, int y, V3ColumnStreamProperties stream) {
         graphics.drawString(font, abbreviateToWidth(stream.displayName() + " • " + stream.phase(), width - 2), x, y, TEXT, false);
@@ -720,14 +743,16 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         int tableY = y + 35;
         drawTableRow(graphics, x, tableY, 12, widths, new String[] {"Component", "mol %", "wt %"}, true);
         List<V3ColumnStreamProperties.ComponentFraction> fractions = stream.moleFractions();
-        for (int index = 0; index < fractions.size(); index++) {
+        int start=Math.min(componentScroll,Math.max(0,fractions.size()-visibleComponentRows()));
+        int end=Math.min(fractions.size(),start+visibleComponentRows());
+        for (int index = start; index < end; index++) {
             V3ColumnStreamProperties.ComponentFraction fraction = fractions.get(index);
             var material=serverState.materialNames().getOrDefault(fraction.componentId(),
                     com.wormzjl.createcheme.science.material.MaterialName.chemical(fraction.componentId()));
-            int rowY=tableY+12*(index+1);
+            int rowY=tableY+12*(index-start+1);
             if(materialMouseX>=x && materialMouseX<x+widths[0] && materialMouseY>=rowY && materialMouseY<rowY+12)
                 hoveredMaterial=material;
-            drawTableRow(graphics, x, tableY + 12 * (index + 1), 12, widths, new String[] {
+            drawTableRow(graphics, x, tableY + 12 * (index - start + 1), 12, widths, new String[] {
                     com.wormzjl.createcheme.client.MaterialNames.localized(material), formatPercentage(fraction.moleFraction()), formatPercentage(fraction.massFraction())
             }, false);
         }

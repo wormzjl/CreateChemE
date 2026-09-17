@@ -19,11 +19,12 @@ public final class WorldTopologyLedger {
     /** Cumulative explicit construction/destruction, in the common network basis; these are not live stock. */
     public record MaterialTotal(double[] moles,double totalEnergy) {
         public MaterialTotal {
-            moles=moles.clone();if(moles.length!=com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()||!Double.isFinite(totalEnergy))throw new IllegalArgumentException("Invalid external material total");
+            moles=moles.clone();if((moles.length<1||moles.length>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS)||!Double.isFinite(totalEnergy))throw new IllegalArgumentException("Invalid external material total");
             for(double n:moles)if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Invalid external component total");
         }
         @Override public double[] moles(){return moles.clone();}
-        public static MaterialTotal empty(){return new MaterialTotal(new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()],0);}
+        public static MaterialTotal empty(){return empty(com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount());}
+        public static MaterialTotal empty(int count){if(count<1||count>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS)throw new IllegalArgumentException("Invalid external material axis size");return new MaterialTotal(new double[count],0);}
         public MaterialTotal plus(Collection<PassiveNetwork.Reservoir> reservoirs,double[] weights) {
             var total=moles.clone();double energy=totalEnergy;
             for(var node:reservoirs) {
@@ -35,16 +36,27 @@ public final class WorldTopologyLedger {
         }
     }
     public record Snapshot(long onlineTick,long nextIdentity,Map<Long,Registration> active,List<Event> events,
-                           MaterialTotal constructed,MaterialTotal destroyed) {
+                           MaterialTotal constructed,MaterialTotal destroyed,FluidBasis basis) {
+        public Snapshot(long onlineTick,long nextIdentity,Map<Long,Registration> active,List<Event> events,MaterialTotal constructed,MaterialTotal destroyed) {
+            this(onlineTick,nextIdentity,active,events,constructed,destroyed,FluidBasis.capture(com.wormzjl.createcheme.science.material.MaterialRuntime.current()));
+        }
         public Snapshot {
             if(onlineTick<0||nextIdentity<1||events.size()>MAXIMUM_EVENTS)throw new IllegalArgumentException("Invalid world topology snapshot");
             active=Map.copyOf(active);events=List.copyOf(events);Objects.requireNonNull(constructed);Objects.requireNonNull(destroyed);
+            Objects.requireNonNull(basis);int count=basis.components().size();
+            if(constructed.moles().length!=count||destroyed.moles().length!=count)throw new IllegalArgumentException("Topology accounting axis mismatch");
+            for(var registration:active.values())if(registration.spec().composition().length!=count)throw new IllegalArgumentException("Topology device axis mismatch");
+            for(var event:events)for(var edit:event.edits())if(edit.replacement()!=null&&edit.replacement().spec().composition().length!=count)throw new IllegalArgumentException("Topology event axis mismatch");
             var positions=new HashSet<PhysicalFluidTopology.Position>();
             for(var entry:active.entrySet())if(entry.getKey()!=entry.getValue().device.id()||entry.getKey()>=nextIdentity||!positions.add(entry.getValue().device.position()))throw new IllegalArgumentException("Invalid active physical identity/position");
             long last=-1;var ids=new HashSet<UUID>();
             for(var event:events){if(event.tick<last||event.tick>onlineTick||!ids.add(event.id))throw new IllegalArgumentException("Invalid topology event ordering");last=event.tick;}
         }
-        public static Snapshot empty(){return new Snapshot(0,1,Map.of(),List.of(),MaterialTotal.empty(),MaterialTotal.empty());}
+        public static Snapshot empty(){return empty(com.wormzjl.createcheme.science.material.MaterialRuntime.current());}
+        public static Snapshot empty(com.wormzjl.createcheme.science.material.MaterialCatalog catalog) {
+            var basis=FluidBasis.capture(catalog);int count=basis.components().size();
+            return new Snapshot(0,1,Map.of(),List.of(),MaterialTotal.empty(count),MaterialTotal.empty(count),basis);
+        }
     }
     public static final class Prepared {
         private final Snapshot before,after;
@@ -59,7 +71,7 @@ public final class WorldTopologyLedger {
     private long onlineTick;
     public WorldTopologyLedger(Snapshot restored){state=Objects.requireNonNull(restored);onlineTick=restored.onlineTick;latest();}
     private void owned(){if(Thread.currentThread()!=owner)throw new IllegalStateException("World topology belongs to the server thread");}
-    public Snapshot snapshot(){owned();return onlineTick==state.onlineTick?state:new Snapshot(onlineTick,state.nextIdentity,state.active,state.events,state.constructed,state.destroyed);}
+    public Snapshot snapshot(){owned();return onlineTick==state.onlineTick?state:new Snapshot(onlineTick,state.nextIdentity,state.active,state.events,state.constructed,state.destroyed,state.basis);}
     public long onlineTick(){owned();return onlineTick;}
     public long nextIdentity(){owned();return state.nextIdentity;}
     public boolean hasPendingEvents(){owned();return !state.events.isEmpty();}
@@ -79,7 +91,7 @@ public final class WorldTopologyLedger {
         apply(checked,edits);
         for(long id:checked.keySet())if(id>=nextIdentity)throw new IllegalArgumentException("New identity was not reserved");
         var event=new Event(UUID.randomUUID(),onlineTick,edits,touched);var events=new ArrayList<>(state.events);events.add(event);
-        return new Prepared(state,new Snapshot(onlineTick,nextIdentity,state.active,events,state.constructed,state.destroyed),event);
+        return new Prepared(state,new Snapshot(onlineTick,nextIdentity,state.active,events,state.constructed,state.destroyed,state.basis),event);
     }
     /** Returns an application with accounting staged; nothing is removed from the history until commit. */
     public Prepared applyFirst(Collection<PassiveNetwork.Reservoir> additions,Collection<PassiveNetwork.Reservoir> removals,double[] weights,long nextIdentity) {
@@ -107,7 +119,7 @@ public final class WorldTopologyLedger {
         var event=readyEvents().stream().filter(e->e.id.equals(eventId)).findFirst().orElseThrow(()->new IllegalStateException("Topology event has unresolved earlier dependencies"));
         var records=new LinkedHashMap<>(state.active);apply(records,event.edits);
         var remaining=state.events.stream().filter(e->!e.id.equals(eventId)).toList();
-        var next=new Snapshot(onlineTick,nextIdentity,records,remaining,state.constructed.plus(additions,weights),state.destroyed.plus(removals,weights));
+        var next=new Snapshot(onlineTick,nextIdentity,records,remaining,state.constructed.plus(additions,weights),state.destroyed.plus(removals,weights),state.basis);
         return new Prepared(state,next,event);
     }
     public void validate(Prepared prepared){owned();if(prepared.before!=state||prepared.preparedTick!=onlineTick)throw new IllegalStateException("Stale topology preparation");}
