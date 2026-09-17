@@ -428,3 +428,19 @@ publishing {
 if (file('tools/development.gradle').isFile()) {
     apply from: 'tools/development.gradle'
 }
+
+// A missing, duplicate or stale standalone material index is a build failure.
+def bundledMaterialFiles = fileTree('src/main/resources/data') { include '**/materials/**/*.json' }
+def bundledMaterialRoot = layout.projectDirectory.dir('src/main/resources').asFile
+def bundledMaterialIndex = layout.projectDirectory.file('src/main/resources/materials-index.json').asFile
+tasks.register('verifyMaterialIndex') {
+    inputs.files(bundledMaterialFiles)
+    inputs.file(bundledMaterialIndex)
+    doLast {
+        def indexed = new groovy.json.JsonSlurper().parse(bundledMaterialIndex)
+        def actual = bundledMaterialFiles.files.collect { bundledMaterialRoot.toPath().relativize(it.toPath()).toString().replace('\\', '/') }.sort()
+        if (!(indexed instanceof List) || indexed.size() != indexed.toSet().size() || indexed.sort() != actual)
+            throw new GradleException('materials-index.json must list each bundled material JSON exactly once')
+    }
+}
+tasks.named('processResources').configure { dependsOn tasks.named('verifyMaterialIndex') }

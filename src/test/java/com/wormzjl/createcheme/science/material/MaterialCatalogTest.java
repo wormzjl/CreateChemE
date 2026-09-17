@@ -62,7 +62,7 @@ class MaterialCatalogTest {
         var resources=changed("assays/tjl20.json",o->{
             o.addProperty("basis","mass");var mass=new JsonArray();
             for(int i=0;i<p.components().size();i++)mass.add(assay.amounts().get(i)*p.properties().get(i).molecularWeight());
-            o.add("amounts",mass);
+            o.remove("amounts_by_component");o.add("components",new Gson().toJsonTree(p.components()));o.add("amounts",mass);
         });
         var changed=MaterialCatalog.parse(resources);
         double[] expected=V3PengRobinsonThermo.fromRegisteredPackage(ID).crudeFeed(assay.id()).moleFractions();
@@ -78,7 +78,7 @@ class MaterialCatalogTest {
                  "alpha":0.3,"temperature_min_kelvin":298.15,"temperature_max_kelvin":900}]}
                 """);
         var p=JsonParser.parseString(r.get(ROOT+"packages/tjl19.json")).getAsJsonObject();
-        p.addProperty("id","example:nrtl");p.addProperty("model","nrtl");p.addProperty("interactions","example:nrtl");p.addProperty("missing_interactions","error");
+        p.remove("basis");p.addProperty("id","example:nrtl");p.addProperty("model","nrtl");p.addProperty("interactions","example:nrtl");p.addProperty("missing_interactions","error");
         p.add("components",JsonParser.parseString("[\"Ethane\",\"Propane\"]"));
         p.add("properties",JsonParser.parseString("[\"createcheme:tjl19_ethane\",\"createcheme:tjl19_propane\"]"));p.add("aliases",new JsonObject());
         r.put(ROOT+"packages/nrtl.json",p.toString());

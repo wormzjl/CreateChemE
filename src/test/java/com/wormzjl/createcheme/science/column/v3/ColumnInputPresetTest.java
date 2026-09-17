@@ -63,7 +63,7 @@ class ColumnInputPresetTest {
         var resources=new HashMap<>(original.resources());
         String path="data/createcheme/materials/assays/bonga_tjl20.json";
         var assay=JsonParser.parseString(resources.get(path)).getAsJsonObject();
-        assay.getAsJsonArray("amounts").set(7,new com.google.gson.JsonPrimitive(.8));
+        assay.getAsJsonObject("amounts_by_component").addProperty("crude_pc01",.8);
         resources.put(path,assay.toString());
         var edited=MaterialCatalog.parse(resources);
         var before=ColumnInputPreset.BONGA.input(original);

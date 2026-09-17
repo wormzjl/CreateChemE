@@ -107,6 +107,28 @@ public final class MaterialCatalog {
         return Optional.ofNullable(viscosities.getOrDefault(key, Map.of()).get(phase));
     }
 
+    /** Numeric property identity; authoring record IDs and provenance text do not alter physics. */
+    public String propertyPhysicsFingerprint(String packageId,String componentId) {
+        var p=requirePackage(packageId);int i=p.components().indexOf(componentId);
+        if(i<0)throw new IllegalArgumentException("Component outside package: "+componentId);
+        return hash(propertyScience(p.properties().get(i)).toString());
+    }
+    private static JsonObject propertyScience(Property property) {
+        var json=new Gson().toJsonTree(property).getAsJsonObject();json.remove("id");return json;
+    }
+    /** Ordered numerical sub-basis, excluding assays, names, transport, record IDs and declared revisions. */
+    public String physicsFingerprint(String packageId,List<String> axis) {
+        var p=requirePackage(packageId);new MaterialAxis(axis);
+        var indices=axis.stream().map(id->{int i=p.components().indexOf(id);if(i<0)throw new IllegalArgumentException("Component outside package: "+id);return i;}).toList();
+        var properties=indices.stream().map(i->propertyScience(p.properties().get(i))).toList();
+        var matrix=indices.stream().map(i->indices.stream().map(j->p.interactions().get(i).get(j)).toList()).toList();
+        var nrtl=p.nrtlPairs().stream().filter(pair->axis.contains(pair.first())&&axis.contains(pair.second()))
+                .sorted(Comparator.comparing(NrtlPair::first).thenComparing(NrtlPair::second)).toList();
+        var water=new Gson().toJsonTree(p.water()).getAsJsonObject();water.remove("revision");
+        return hash(new Gson().toJson(List.of(p.model(),axis,properties,matrix,nrtl,water,
+                p.minimumTemperature(),p.maximumTemperature(),p.minimumPressure(),p.maximumPressure())));
+    }
+
     /** Transport cache key; viscosity changes do not invalidate PR/enthalpy seeds which never consume viscosity. */
     public String viscosityFingerprint(String packageId) {
         Package p = requirePackage(packageId);
@@ -136,7 +158,7 @@ public final class MaterialCatalog {
                 String path = entry.getKey(); int start = path.indexOf("materials/");
                 if (start < 0) throw new IllegalArgumentException("Expected materials resource path");
                 String kind = path.substring(start + 10).split("/")[0];
-                if (!Set.of("components","properties","interactions","packages","assays","water").contains(kind))
+                if (!Set.of("components","properties","interactions","packages","assays","water","bases").contains(kind))
                     throw new IllegalArgumentException("Unknown record kind: " + kind);
                 String id = string(o, "id");
                 if (!kind.equals("components") && !id.matches("[a-z][a-z0-9_.:-]{0,127}"))
@@ -148,6 +170,7 @@ public final class MaterialCatalog {
                 origins.put(o,path);
             } catch (RuntimeException e) { throw error(entry.getKey(), e); }
         }
+        MaterialAuthoring.expand(groups,origins);
         var names = new HashMap<String, MaterialName>();
         var properties = new HashMap<String, Property>();
         var waters = new HashMap<String, Water>();
@@ -257,7 +280,15 @@ public final class MaterialCatalog {
             var assays=new HashMap<String,Assay>();
             for(var a:group(groups,"assays").values()) if(string(a,"package").equals(id)) checked(origins,a,() -> {
                 assayAppearances.put(id + "/" + string(a,"id"), readAppearance(a));
-                List<String> axis=strings(a,"components"); List<Double> amounts=numbers(a,"amounts",ids.size());
+                List<String> axis; List<Double> amounts;
+                if(a.has("amounts_by_component")) {
+                    if(a.has("components")||a.has("amounts"))throw new IllegalArgumentException("amounts_by_component: cannot combine sparse and positional forms");
+                    var sparse=object(a,"amounts_by_component");
+                    for(String key:sparse.keySet())if(!ids.contains(key))throw new IllegalArgumentException("amounts_by_component: unknown component "+key);
+                    axis=ids;var ordered=new ArrayList<Double>();
+                    for(String component:ids)ordered.add(sparse.has(component)?number(sparse,component):0.0);
+                    amounts=List.copyOf(ordered);
+                } else {axis=strings(a,"components");amounts=numbers(a,"amounts",ids.size());}
                 double total=amounts.stream().mapToDouble(Double::doubleValue).sum();
                 if(!axis.equals(ids) || amounts.stream().anyMatch(v->v<0) || total<=0 || !Double.isFinite(total)) throw new IllegalArgumentException("Invalid assay components/amounts");
                 String basis=string(a,"basis"); if(!Set.of("mole","mass","standard_liquid_volume").contains(basis)) throw new IllegalArgumentException("Unknown assay basis");
@@ -394,7 +425,11 @@ public final class MaterialCatalog {
         static final MaterialCatalog INSTANCE=load();
         static MaterialCatalog load() {
             var resources=new LinkedHashMap<String,String>();
-            for(var path:JsonParser.parseString(read("materials-index.json")).getAsJsonArray()) resources.put(path.getAsString(),read(path.getAsString()));
+            for(var path:JsonParser.parseString(read("materials-index.json")).getAsJsonArray()) {
+                String key=path.getAsString();
+                if(!key.matches("data/[a-z0-9_.-]+/materials/[a-z0-9_./-]+\\.json")||key.contains("..")||resources.putIfAbsent(key,read(key))!=null)
+                    throw new IllegalArgumentException("Invalid or duplicate material index entry: "+key);
+            }
             return parse(resources);
         }
         static String read(String path) {
