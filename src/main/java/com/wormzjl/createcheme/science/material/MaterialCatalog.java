@@ -43,11 +43,13 @@ public final class MaterialCatalog {
     private final Map<String, String> resources;
     private final Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities;
     private final Map<String, String> waterModels;
+    private final Map<String, LiquidMixtureCorrection> liquidMixtures;
     private final Map<String, FluidAppearance> assayAppearances;
     private final Map<String, FluidAppearance> componentAppearances;
     private MaterialCatalog(Map<String, MaterialName> names, Map<String, Package> packages, Map<String, String> resources,
             Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities, Map<String, String> waterModels,
-            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances) {
+            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures) {
+        this.liquidMixtures = Map.copyOf(liquidMixtures);
         this.names = Map.copyOf(names); this.packages = Map.copyOf(packages); this.resources = Map.copyOf(resources);
         this.viscosities = Map.copyOf(viscosities); this.waterModels = Map.copyOf(waterModels);
         this.assayAppearances = Map.copyOf(assayAppearances);
@@ -60,6 +62,7 @@ public final class MaterialCatalog {
     }
     public MaterialName name(String id) { MaterialName n=names.get(id); return n==null?MaterialName.chemical(id):n; }
     public Map<String, Package> packages() { return packages; }
+    public LiquidMixtureCorrection liquidMixture(String packageId) { requirePackage(packageId); return liquidMixtures.get(packageId); }
     /** Immutable source strings for tooling and isolated override tests. */
     public Map<String, String> resources() { return resources; }
 
@@ -99,6 +102,7 @@ public final class MaterialCatalog {
         Package p = requirePackage(packageId);
         Map<String, Object> selected = new TreeMap<>();
         for (Property property : p.properties()) selected.put(property.id(), viscosityScience("properties/" + property.id()));
+        selected.put("liquid_mixture", liquidMixture(packageId));
         selected.put("water/" + waterModels.get(packageId), viscosityScience("water/" + waterModels.get(packageId)));
         return hash(new Gson().toJson(selected));
     }
@@ -140,6 +144,8 @@ public final class MaterialCatalog {
         var packages = new HashMap<String, Package>();
         var viscosities = new HashMap<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>>();
         var waterModels = new HashMap<String, String>();
+        var liquidMixtures = new HashMap<String, LiquidMixtureCorrection>();
+        var descriptors = new HashMap<String, LiquidMixtureCorrection.Descriptor>();
         var assayAppearances = new HashMap<String, FluidAppearance>();
         var componentAppearances = new HashMap<String, FluidAppearance>();
         for (var o : group(groups,"components").values()) checked(origins,o,() -> {
@@ -158,6 +164,7 @@ public final class MaterialCatalog {
         for (var o : group(groups,"properties").values()) checked(origins,o,() -> {
             String id=string(o,"id"), component=string(o,"component"); require(names,component,"component");
             viscosities.put("properties/" + id, readViscosities(o));
+            descriptors.put(id,LiquidMixtureCorrection.Descriptor.read(o));
             string(o,"revision"); string(o,"source");
             JsonObject cp=object(o,"ideal_gas_cp");
             if (!string(cp,"type").equals("shifted_polynomial_5")) throw new IllegalArgumentException("Unsupported ideal_gas_cp.type");
@@ -205,6 +212,7 @@ public final class MaterialCatalog {
                 if(tmin<p.minimumTemperature() || tmax>p.maximumTemperature()) throw new IllegalArgumentException("Package temperature outside property validity: " + p.id());
                 ps.add(p);
             }
+            liquidMixtures.put(id,LiquidMixtureCorrection.read(o,refs.stream().map(descriptors::get).toList()));
             JsonObject interaction=require(group(groups,"interactions"),string(o,"interactions"),"interactions");
             if(!model.equals(string(interaction,"model"))) throw new IllegalArgumentException("Interaction model mismatch");
             double[][] matrix=new double[ids.size()][ids.size()]; var nrtl=new ArrayList<NrtlPair>(); var seen=new HashSet<String>();
@@ -247,7 +255,7 @@ public final class MaterialCatalog {
         });
         for(var a:group(groups,"assays").values()) checked(origins,a,() -> require(packages,string(a,"package"),"assay package"));
         if(packages.isEmpty()) throw new IllegalArgumentException("Material catalog has no packages");
-        return new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances);
+        return new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures);
     }
 
     private static FluidAppearance readAppearance(JsonObject record) {

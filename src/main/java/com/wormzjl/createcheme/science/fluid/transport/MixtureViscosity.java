@@ -14,6 +14,7 @@ import java.util.Map;
 public final class MixtureViscosity {
     private static final Map<String,Curve> CONDITIONAL = loadConditional();
     private final String revision;
+    private final com.wormzjl.createcheme.science.material.LiquidMixtureCorrection liquidMixture;
     private final MaterialCatalog.Package propertyPackage;
     private final ViscosityCorrelation[] liquidCorrelations,vaporCorrelations;
     private final ViscosityCorrelation waterLiquidCorrelation;
@@ -21,9 +22,10 @@ public final class MixtureViscosity {
 
     public MixtureViscosity(MaterialCatalog catalog,String packageId) {
         propertyPackage=catalog.requirePackage(packageId);
+        liquidMixture=catalog.liquidMixture(packageId);
         // The catalog is an immutable property snapshot. Compute its transport hash once,
         // not on every server-thread admission, anchor check and worker publication.
-        revision=catalog.viscosityFingerprint(packageId)+":log-liquid-wilke-v1:dwsim-conditional-solute-ambient-v2";
+        revision=catalog.viscosityFingerprint(packageId)+":log-liquid-pair-groups-wilke-v2:dwsim-conditional-solute-ambient-v2";
         int count=propertyPackage.components().size();liquidCorrelations=new ViscosityCorrelation[count];vaporCorrelations=new ViscosityCorrelation[count];
         double[] mw=new double[count+1];
         for(int i=0;i<count;i++) {
@@ -125,7 +127,7 @@ public final class MixtureViscosity {
         if(!(sum>0) || !Double.isFinite(sum) || !(carrier>0)) {
             throw new IllegalArgumentException("Liquid mixture needs a supported carrier; no pure-liquid claim for conditional solutes");
         }
-        return new Result(positive(Math.exp(logSum/sum)),conditional>0);
+        return new Result(positive(Math.exp(logSum/sum+liquidMixture.logCorrection(temperature,amounts))),conditional>0);
     }
 
     public double waterLiquid(double temperature) {
