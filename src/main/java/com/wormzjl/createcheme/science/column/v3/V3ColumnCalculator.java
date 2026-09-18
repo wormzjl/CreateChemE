@@ -3117,7 +3117,39 @@ public final class V3ColumnCalculator {
         List<String> events = new ArrayList<>(solverEvents);
         if (events.size() < V3SolverDiagnostics.MAX_EVENTS) events.add(evidence.termination());
         return new V3SolverDiagnostics(0, evidence.iterations(), 0, 0, evidence.maximumScaledResidual(), finalStepNorm,
-                solvePath, events, audit, evidence.convergenceEvidence(), policy.closureTolerance());
+                boundedSolvePath(solvePath), events, audit, evidence.convergenceEvidence(), policy.closureTolerance());
+    }
+
+    /**
+     * Fits a solve path into the diagnostics contract without losing where the solve started or ended.
+     *
+     * <p>A low-pressure request that also ramps draws, steam and stage heat writes a path longer than the
+     * diagnostics record accepts. The record's rejection is an {@link IllegalArgumentException}, which the branch
+     * boundary reports as {@code INVALID_INPUT}: a completed solve was discarded and its real outcome replaced by
+     * a claim about the request. The pressure ladder is the long part and carries the least, so it is reduced to
+     * its two ends first; anything still too long keeps its head and its tail.</p>
+     */
+    static String boundedSolvePath(String solvePath) {
+        int limit = V3SolverDiagnostics.MAX_SOLVE_PATH_LENGTH;
+        if (solvePath == null || solvePath.isBlank() || solvePath.length() <= limit) return solvePath;
+        String ladderPrefix = "cold/pressure-continuation/";
+        int ladderStart = solvePath.indexOf(ladderPrefix);
+        if (ladderStart >= 0) {
+            ladderStart += ladderPrefix.length();
+            int ladderEnd = solvePath.indexOf('/', ladderStart);
+            if (ladderEnd < 0) ladderEnd = solvePath.length();
+            String ladder = solvePath.substring(ladderStart, ladderEnd);
+            int first = ladder.indexOf('-'), last = ladder.lastIndexOf('-');
+            if (first > 0 && last > first) {
+                solvePath = solvePath.substring(0, ladderStart) + ladder.substring(0, first) + ".."
+                        + ladder.substring(last + 1) + solvePath.substring(ladderEnd);
+            }
+        }
+        if (solvePath.length() <= limit) return solvePath;
+        String elision = "/.../";
+        int headLength = 80;
+        return solvePath.substring(0, headLength) + elision
+                + solvePath.substring(solvePath.length() - (limit - headLength - elision.length()));
     }
 
     private static V3ColumnOutcome.Failure terminalFailure(
@@ -3127,7 +3159,7 @@ public final class V3ColumnCalculator {
         // The summary and the audit detail are bounded at 512, a diagnostic event at 256. Passing the summary
         // straight through threw IllegalArgumentException out of the public calculate() for any detail between
         // the two bounds — reachable as soon as a typed detail grew past 256 characters.
-        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, solvePath,
+        V3SolverDiagnostics diagnostics = new V3SolverDiagnostics(0, 0, 0, 0, 0.0, 0.0, boundedSolvePath(solvePath),
                 List.of(boundedEvent(summary)), audit, V3ConvergenceEvidence.unavailable());
         return new V3ColumnOutcome.Failure(code, summary, diagnostics);
     }
