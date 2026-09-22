@@ -13,12 +13,16 @@ public final class WorldTopologyLedger {
     public record Edit(long id,Registration replacement) {
         public Edit {if(id<=0||replacement!=null&&replacement.device.id()!=id)throw new IllegalArgumentException("Invalid physical edit");}
     }
-    public record Event(UUID id,long tick,List<Edit> edits,Set<Long> touched) {
+    public record Recovery(long filterId,UUID player) {public Recovery{if(filterId<=0)throw new IllegalArgumentException("Invalid recovery identity");}}
+    public record Event(UUID id,long tick,List<Edit> edits,Set<Long> touched,Recovery recovery) {
+        public Event(UUID id,long tick,List<Edit> edits,Set<Long> touched){this(id,tick,edits,touched,null);}
         public Event {Objects.requireNonNull(id);edits=List.copyOf(edits);touched=Set.copyOf(touched);if(tick<0||edits.isEmpty())throw new IllegalArgumentException("Invalid topology event");}
     }
     /** Cumulative explicit construction/destruction, in the common network basis; these are not live stock. */
-    public record MaterialTotal(double[] moles,double totalEnergy) {
+    public record MaterialTotal(double[] moles,double totalEnergy,Map<String,Double> solidMasses) {
+        public MaterialTotal(double[] moles,double totalEnergy){this(moles,totalEnergy,Map.of());}
         public MaterialTotal {
+            solidMasses=Map.copyOf(solidMasses);for(var entry:solidMasses.entrySet())if(entry.getKey().isBlank()||entry.getKey().length()>256||!Double.isFinite(entry.getValue())||entry.getValue()<0)throw new IllegalArgumentException("Invalid external solid total");
             moles=moles.clone();if((moles.length<1||moles.length>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS)||!Double.isFinite(totalEnergy))throw new IllegalArgumentException("Invalid external material total");
             for(double n:moles)if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Invalid external component total");
         }
@@ -26,21 +30,24 @@ public final class WorldTopologyLedger {
         public static MaterialTotal empty(){return empty(com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount());}
         public static MaterialTotal empty(int count){if(count<1||count>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS)throw new IllegalArgumentException("Invalid external material axis size");return new MaterialTotal(new double[count],0);}
         public MaterialTotal plus(Collection<PassiveNetwork.Reservoir> reservoirs,double[] weights) {
-            var total=moles.clone();double energy=totalEnergy;
+            var total=moles.clone();double energy=totalEnergy;var solids=new TreeMap<>(solidMasses);
             for(var node:reservoirs) {
-                var n=node.inventory().moles();if(n.length!=total.length||weights.length!=total.length)throw new IllegalArgumentException("External ledger basis mismatch");double mass=0;
+                var n=node.inventory().moles();if(n.length!=total.length||weights.length!=total.length)throw new IllegalArgumentException("External ledger basis mismatch");double mass=node.inventory().solids().massKg();
+                for(var p:node.inventory().solids().populations())solids.merge(p.material().id()+"@"+p.size().metres(),p.massKg(),Double::sum);
                 for(int c=0;c<n.length;c++){total[c]+=n[c];mass+=n[c]*weights[c];}
                 energy+=node.inventory().internalEnergy()+mass*com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.GRAVITY*node.elevation();
             }
-            return new MaterialTotal(total,energy);
+            return new MaterialTotal(total,energy,solids);
         }
     }
     public record Snapshot(long onlineTick,long nextIdentity,Map<Long,Registration> active,List<Event> events,
-                           MaterialTotal constructed,MaterialTotal destroyed,FluidBasis basis) {
+                           MaterialTotal constructed,MaterialTotal destroyed,FluidBasis basis,Map<UUID,RecoveredSolid> recoveries) {
+        public Snapshot(long onlineTick,long nextIdentity,Map<Long,Registration> active,List<Event> events,MaterialTotal constructed,MaterialTotal destroyed,FluidBasis basis){this(onlineTick,nextIdentity,active,events,constructed,destroyed,basis,Map.of());}
         public Snapshot(long onlineTick,long nextIdentity,Map<Long,Registration> active,List<Event> events,MaterialTotal constructed,MaterialTotal destroyed) {
             this(onlineTick,nextIdentity,active,events,constructed,destroyed,FluidBasis.capture(com.wormzjl.createcheme.science.material.MaterialRuntime.current()));
         }
         public Snapshot {
+            recoveries=Map.copyOf(recoveries);if(recoveries.size()>MAXIMUM_EVENTS)throw new IllegalArgumentException("Recovery queue is full");
             if(onlineTick<0||nextIdentity<1||events.size()>MAXIMUM_EVENTS)throw new IllegalArgumentException("Invalid world topology snapshot");
             active=Map.copyOf(active);events=List.copyOf(events);Objects.requireNonNull(constructed);Objects.requireNonNull(destroyed);
             Objects.requireNonNull(basis);int count=basis.components().size();
@@ -71,7 +78,7 @@ public final class WorldTopologyLedger {
     private long onlineTick;
     public WorldTopologyLedger(Snapshot restored){state=Objects.requireNonNull(restored);onlineTick=restored.onlineTick;latest();}
     private void owned(){if(Thread.currentThread()!=owner)throw new IllegalStateException("World topology belongs to the server thread");}
-    public Snapshot snapshot(){owned();return onlineTick==state.onlineTick?state:new Snapshot(onlineTick,state.nextIdentity,state.active,state.events,state.constructed,state.destroyed,state.basis);}
+    public Snapshot snapshot(){owned();return onlineTick==state.onlineTick?state:new Snapshot(onlineTick,state.nextIdentity,state.active,state.events,state.constructed,state.destroyed,state.basis,state.recoveries);}
     public long onlineTick(){owned();return onlineTick;}
     public long nextIdentity(){owned();return state.nextIdentity;}
     public boolean hasPendingEvents(){owned();return !state.events.isEmpty();}
@@ -83,15 +90,16 @@ public final class WorldTopologyLedger {
     }
     public void tick(){owned();onlineTick=Math.addExact(onlineTick,1);}
     /** The caller allocates from nextIdentity, then installs event fences before publishing this preparation. */
-    public Prepared queue(List<Edit> edits,Set<Long> touched,long nextIdentity) {
+    public Prepared queue(List<Edit> edits,Set<Long> touched,long nextIdentity){return queue(edits,touched,nextIdentity,null);}
+    public Prepared queue(List<Edit> edits,Set<Long> touched,long nextIdentity,Recovery recovery) {
         owned();if(state.events.size()>=MAXIMUM_EVENTS)throw new IllegalStateException("Topology history capacity exhausted");
         if(nextIdentity<state.nextIdentity)throw new IllegalArgumentException("Identity sequence moved backwards");
         var checked=new LinkedHashMap<>(latest());
         for(var edit:edits)if(edit.replacement!=null&&!checked.containsKey(edit.id)&&edit.id<state.nextIdentity)throw new IllegalStateException("Retired physical identity cannot be reused");
         apply(checked,edits);
         for(long id:checked.keySet())if(id>=nextIdentity)throw new IllegalArgumentException("New identity was not reserved");
-        var event=new Event(UUID.randomUUID(),onlineTick,edits,touched);var events=new ArrayList<>(state.events);events.add(event);
-        return new Prepared(state,new Snapshot(onlineTick,nextIdentity,state.active,events,state.constructed,state.destroyed,state.basis),event);
+        var event=new Event(UUID.randomUUID(),onlineTick,edits,touched,recovery);var events=new ArrayList<>(state.events);events.add(event);
+        return new Prepared(state,new Snapshot(onlineTick,nextIdentity,state.active,events,state.constructed,state.destroyed,state.basis,state.recoveries),event);
     }
     /** Returns an application with accounting staged; nothing is removed from the history until commit. */
     public Prepared applyFirst(Collection<PassiveNetwork.Reservoir> additions,Collection<PassiveNetwork.Reservoir> removals,double[] weights,long nextIdentity) {
@@ -119,9 +127,14 @@ public final class WorldTopologyLedger {
         var event=readyEvents().stream().filter(e->e.id.equals(eventId)).findFirst().orElseThrow(()->new IllegalStateException("Topology event has unresolved earlier dependencies"));
         var records=new LinkedHashMap<>(state.active);apply(records,event.edits);
         var remaining=state.events.stream().filter(e->!e.id.equals(eventId)).toList();
-        var next=new Snapshot(onlineTick,nextIdentity,records,remaining,state.constructed.plus(additions,weights),state.destroyed.plus(removals,weights),state.basis);
+        var next=new Snapshot(onlineTick,nextIdentity,records,remaining,state.constructed.plus(additions,weights),state.destroyed.plus(removals,weights),state.basis,state.recoveries);
         return new Prepared(state,next,event);
     }
+    public Prepared withRecovery(Prepared prepared,RecoveredSolid recovery){
+        validate(prepared);var after=prepared.after;var pending=new LinkedHashMap<>(after.recoveries);if(pending.putIfAbsent(prepared.event.id,recovery)!=null)throw new IllegalStateException("Duplicate recovery");
+        return new Prepared(state,new Snapshot(after.onlineTick,after.nextIdentity,after.active,after.events,after.constructed,after.destroyed,after.basis,pending),prepared.event);
+    }
+    public void deliveredRecovery(UUID identity){owned();var pending=new LinkedHashMap<>(state.recoveries);if(pending.remove(identity)==null)throw new IllegalStateException("Recovery is no longer owned");state=new Snapshot(onlineTick,state.nextIdentity,state.active,state.events,state.constructed,state.destroyed,state.basis,pending);}
     public void validate(Prepared prepared){owned();if(prepared.before!=state||prepared.preparedTick!=onlineTick)throw new IllegalStateException("Stale topology preparation");}
     public void commit(Prepared prepared){validate(prepared);state=prepared.after;}
     private static void apply(Map<Long,Registration> records,List<Edit> edits) {

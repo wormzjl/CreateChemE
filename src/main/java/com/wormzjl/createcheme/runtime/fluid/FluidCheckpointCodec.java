@@ -5,6 +5,7 @@ import com.wormzjl.createcheme.science.fluid.network.*;
 import com.wormzjl.createcheme.science.fluid.state.EnergyReference;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.lang.reflect.*;
+import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 import java.util.*;
 import java.util.function.Function;
 
@@ -14,7 +15,7 @@ import java.util.function.Function;
  * are supplied by the encompassing world-authority format, not inferred from loaded chunks here.
  */
 public final class FluidCheckpointCodec {
-    public static final int VERSION=1;
+    public static final int VERSION=2;
     private static final int MAXIMUM_JSON_CHARS=64*1024*1024;
     private static final Gson GSON=new GsonBuilder().serializeNulls().disableHtmlEscaping().registerTypeAdapter(FlowControl.class,new ControlAdapter()).create();
     private FluidCheckpointCodec() {}
@@ -49,7 +50,7 @@ public final class FluidCheckpointCodec {
     private record Phase(double temperature,double pressure,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure) {}
     private record Node(long id,double elevation,String kind,PassiveNetwork.Inventory inventory,Phase phase) {}
     private record Control(String kind,double target,double limit,double efficiency) {}
-    private record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,Control control) {}
+    private record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,Control control,int blockedDirections,InlineFilter filter) {}
     private record Graph(List<Node> nodes,List<Pipe> pipes) {}
     private record Anchor(String revision,Graph graph,List<FlowControl.Mode> modes) {}
     private record History(double seconds,double[] flows,int accepted,int rejected,double pumpWork,
@@ -59,7 +60,7 @@ public final class FluidCheckpointCodec {
                           long id,long revision,Graph graph,IslandClock.Snapshot clock,FallbackAllowance allowance,
                           Anchor anchor,History history,String status,Map<UUID,Long> fences) {}
     private record Energy(String revision,List<String> components,double[] offsets,boolean formationQualified) {}
-    private record Parcel(double[] moles,double[] weights,double energy,Energy reference) {}
+    private record Parcel(double[] moles,double[] weights,double energy,Energy reference,SolidInventory solids) {}
     private record Pending(UUID id,UUID producer,UUID receiver,long dueTick,long revision,Parcel remaining) {}
     private record ProductionCapacity(int version,List<BufferedTransfers.CapacityReservation> reservations) {}
     private record Ledger(long revision,List<BufferedTransfers.Buffer> buffers,List<Pending> pending,ProductionCapacity productionCapacity) {}
@@ -72,9 +73,10 @@ public final class FluidCheckpointCodec {
     public static String encodeWorld(WorldTopologyLedger.Snapshot world) {
         String json=GSON.toJson(world);if(json.length()>MAXIMUM_JSON_CHARS)throw new IllegalStateException("World topology exceeds format bound");return json;
     }
-    public static WorldTopologyLedger.Snapshot decodeWorld(String json) {
+    public static WorldTopologyLedger.Snapshot decodeWorld(String json){return decodeWorld(json,false);}
+    public static WorldTopologyLedger.Snapshot decodeWorld(String json,boolean legacy) {
         if(json.length()>MAXIMUM_JSON_CHARS)throw new IllegalArgumentException("World topology exceeds format bound");
-        var tree=JsonParser.parseString(json);strictShape(tree,WorldTopologyLedger.Snapshot.class,0,new int[]{0});
+        var tree=JsonParser.parseString(json);if(legacy)upgradeLegacySolids(tree,0);strictShape(tree,WorldTopologyLedger.Snapshot.class,0,new int[]{0});
         var snapshot=GSON.fromJson(tree,WorldTopologyLedger.Snapshot.class);new WorldTopologyLedger(snapshot);return snapshot;
     }
     private static final class ControlAdapter implements JsonSerializer<FlowControl>,JsonDeserializer<FlowControl> {
@@ -125,6 +127,7 @@ public final class FluidCheckpointCodec {
             // partially missing or unknown newer identities still fail strict validation.
             if(!object.has("type")&&!object.has("scientificRevision")){object.addProperty("type",FixedSplitModule.TYPE);object.addProperty("scientificRevision",FixedSplitModule.SCIENTIFIC_REVISION);}
         }
+        if(tree.getAsJsonObject().get("version").getAsInt()==1){upgradeLegacySolids(tree,0);tree.getAsJsonObject().addProperty("version",VERSION);}
         strictShape(tree,Envelope.class,0,new int[]{0});
         var envelope=GSON.fromJson(tree,Envelope.class);
         if(envelope.version!=VERSION)throw new IllegalArgumentException("Unsupported fluid checkpoint version "+envelope.version);
@@ -178,7 +181,7 @@ public final class FluidCheckpointCodec {
             var anchor=island.anchor==null?null:new Anchor(island.anchor.revision,rebase(island.anchor.graph,source,target),island.anchor.modes);
             History history=null;
             if(island.history!=null) {
-                var h=island.history;var boundaries=h.boundaries.stream().map(b->new ConservativeTransport.BoundaryTransfer(b.nodeId(),b.moles(),rebaseSigned(b.totalEnergyJoule(),b.moles(),source,target))).toList();
+                var h=island.history;var boundaries=h.boundaries.stream().map(b->new ConservativeTransport.BoundaryTransfer(b.nodeId(),b.moles(),rebaseSigned(b.totalEnergyJoule(),b.moles(),source,target),b.solids(),b.solidDirection())).toList();
                 history=new History(h.seconds,h.flows,h.accepted,h.rejected,h.pumpWork,boundaries,h.rejectionReasons,h.modes,h.heads,h.acceptance,h.pipes);
             }
             migrated.add(new Island(island.dimension,island.packageId,island.compressibility,island.propertyRevision,energy(target),island.id,island.revision,graph,island.clock,island.allowance,anchor,history,island.status,island.fences));
@@ -198,7 +201,7 @@ public final class FluidCheckpointCodec {
         return decodeEnvelope(new Envelope(envelope.version,migrated,ledger,modules),models);
     }
     private static Graph rebase(Graph graph,EnergyReference source,EnergyReference target) {
-        return new Graph(graph.nodes.stream().map(n->new Node(n.id,n.elevation,n.kind,new PassiveNetwork.Inventory(n.inventory.volume(),n.inventory.moles(),source.rebase(n.inventory.internalEnergy(),n.inventory.moles(),target)),n.phase)).toList(),graph.pipes);
+        return new Graph(graph.nodes.stream().map(n->new Node(n.id,n.elevation,n.kind,new PassiveNetwork.Inventory(n.inventory.volume(),n.inventory.moles(),source.rebase(n.inventory.internalEnergy(),n.inventory.moles(),target),n.inventory.solids()),n.phase)).toList(),graph.pipes);
     }
     private static Parcel sensible(Parcel saved){var p=parcel(saved);return parcel(p.rebase(EnergyReference.sensible(p.reference().components())));}
     private static void requireSameReference(EnergyReference a,EnergyReference b) {
@@ -236,24 +239,48 @@ public final class FluidCheckpointCodec {
                     case FlowControl.Passive ignored->new Control("passive",0,0,0);
                     case FlowControl.Pump pump->new Control("pump",pump.targetVolumeFlow(),pump.maximumAddedPressure(),pump.efficiency());
                     case FlowControl.PressureValve valve->new Control("valve",valve.targetPressure(),0,0);
-                })).toList());
+                },p.blockedDirections(),p.filter())).toList());
     }
     private static PassiveNetwork graph(Graph saved,FluidThermodynamics model) {
         if(saved.nodes.isEmpty()||saved.nodes.size()>10000||saved.pipes.size()>100000)throw new IllegalArgumentException("Invalid saved graph size");
         var nodes=new ArrayList<PassiveNetwork.Reservoir>();
         for(var n:saved.nodes) {
             var kind=PassiveNetwork.NodeKind.valueOf(n.kind);if(kind==PassiveNetwork.NodeKind.PORT)throw new IllegalArgumentException("Internal port cannot be persisted");
-            var p=n.phase;var state=model.state(p.temperature,p.pressure,p.liquid,p.vapor,p.waterLiquid,p.waterVapor,p.hydrocarbonPressure);
+            var p=n.phase;var state=Arrays.stream(n.inventory.moles()).sum()==0&&!n.inventory.solids().empty()?model.solidState(p.temperature,p.pressure,n.inventory.solids()):model.state(p.temperature,p.pressure,p.liquid,p.vapor,p.waterLiquid,p.waterVapor,p.hydrocarbonPressure).withSolids(n.inventory.solids());
+            model.solids.validate(n.inventory.solids());
             nodes.add(new PassiveNetwork.Reservoir(n.id,n.elevation,state,kind,n.inventory));
         }
+        for(var pipe:saved.pipes)if(pipe.filter!=null)model.solids.validate(pipe.filter.captured());
         return new PassiveNetwork(nodes,saved.pipes.stream().map(p->new PassiveNetwork.Pipe(p.id,p.first,p.second,p.sections,switch(p.control.kind) {
             case "passive"->new FlowControl.Passive();case "pump"->new FlowControl.Pump(p.control.target,p.control.limit,p.control.efficiency);case "valve"->new FlowControl.PressureValve(p.control.target);default->throw new IllegalArgumentException("Unknown saved control");
-        })).toList());
+        },p.blockedDirections,currentFilter(p.filter,model))).toList());
+    }
+    private static InlineFilter currentFilter(InlineFilter saved,FluidThermodynamics model){
+        if(saved==null)return null;var settings=model.solidSettings;
+        return new InlineFilter(settings.filterCapacity(),settings.filterResistance(),saved.captured(),saved.energyJoule(),saved.stoppedAtCapacity()&&saved.capacity()==settings.filterCapacity());
     }
     private static Energy energy(EnergyReference ref){double[] offsets=new double[ref.components().size()];for(int c=0;c<offsets.length;c++)offsets[c]=ref.offsetJoulesPerMole(c);return new Energy(ref.revision(),ref.components(),offsets,ref.formationDataQualified());}
     private static EnergyReference reference(Energy ref){return new EnergyReference(ref.revision,ref.components,ref.offsets,ref.formationQualified);}
-    private static Parcel parcel(MaterialParcel p){return new Parcel(p.moles(),p.molecularWeights(),p.internalEnergy(),energy(p.reference()));}
-    private static MaterialParcel parcel(Parcel p){return new MaterialParcel(p.moles,p.weights,p.energy,reference(p.reference));}
+    private static Parcel parcel(MaterialParcel p){return new Parcel(p.moles(),p.molecularWeights(),p.internalEnergy(),energy(p.reference()),p.solids());}
+    private static MaterialParcel parcel(Parcel p){return new MaterialParcel(p.moles,p.weights,p.energy,reference(p.reference),p.solids);}
+
+    /** Additive v1 migration: never synthesize or change any owned fluid amount or energy. */
+    private static void upgradeLegacySolids(JsonElement element,int depth) {
+        if(depth>48)throw new IllegalArgumentException("Checkpoint structure exceeds bound");
+        if(element==null||element.isJsonNull())return;
+        if(element.isJsonArray()){for(var child:element.getAsJsonArray())upgradeLegacySolids(child,depth+1);return;}
+        if(!element.isJsonObject())return;
+        var o=element.getAsJsonObject();
+        if((o.has("volume")&&o.has("moles")&&o.has("internalEnergy")||o.has("weights")&&o.has("moles")&&o.has("reference")
+                ||o.has("massKg")&&o.has("phaseMoles")||o.has("nodeId")&&o.has("totalEnergyJoule"))&&!o.has("solids"))o.add("solids",GSON.toJsonTree(SolidInventory.EMPTY));
+        if(o.has("first")&&o.has("second")&&o.has("sections")&&o.has("control")){if(!o.has("blockedDirections"))o.addProperty("blockedDirections",0);if(!o.has("filter"))o.add("filter",JsonNull.INSTANCE);}
+        if(o.has("moles")&&o.has("totalEnergy")&&!o.has("solidMasses"))o.add("solidMasses",new JsonObject());
+        if(o.has("nextIdentity")&&o.has("active")&&o.has("events")&&!o.has("recoveries"))o.add("recoveries",new JsonObject());
+        if(o.has("id")&&o.has("tick")&&o.has("edits")&&o.has("touched")&&!o.has("recovery"))o.add("recovery",JsonNull.INSTANCE);
+        if(o.has("volume")&&o.has("temperature")&&o.has("pressure")&&o.has("composition")&&!o.has("solids"))o.add("solids",GSON.toJsonTree(SlurryFeed.NONE));
+        if(o.has("nodeId")&&o.has("totalEnergyJoule")&&!o.has("solidDirection"))o.addProperty("solidDirection",0);
+        for(var child:new ArrayList<>(o.entrySet()))upgradeLegacySolids(child.getValue(),depth+1);
+    }
 
     /** Reject missing fields and fractional integer stamps instead of allowing Gson's zero/coercion defaults. */
     private static void strictShape(JsonElement value,Type type,int depth,int[] count) {

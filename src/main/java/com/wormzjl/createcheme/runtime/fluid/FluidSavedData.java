@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 /** One committed core checkpoint in overworld SavedData, independent of chunk residency. */
 public final class FluidSavedData extends SavedData {
-    public static final int TOPOLOGY_VERSION=2;
+    public static final int TOPOLOGY_VERSION=3;
     public static final String DATA_NAME="createcheme_fluid_core";
     private final Thread owner=Thread.currentThread();
     private final Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models;
@@ -56,32 +56,32 @@ public final class FluidSavedData extends SavedData {
         return tag;
     }
     public static FluidSavedData load(CompoundTag tag,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models) {
-        if(!tag.contains("FluidFormat",Tag.TAG_INT)||tag.getInt("FluidFormat")!=FluidCheckpointCodec.VERSION
+        if(!tag.contains("FluidFormat",Tag.TAG_INT)||(tag.getInt("FluidFormat")!=1&&tag.getInt("FluidFormat")!=FluidCheckpointCodec.VERSION)
                 ||!tag.contains("Checkpoint",Tag.TAG_BYTE_ARRAY)||!tag.contains("SHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid save");
         byte[] bytes=tag.getByteArray("Checkpoint");
         if(!MessageDigest.isEqual(digest(bytes),tag.getByteArray("SHA256")))throw new IllegalArgumentException("Fluid checkpoint checksum mismatch");
-        var data=new FluidSavedData(FluidCheckpointCodec.decode(new String(bytes,StandardCharsets.UTF_8),models),models);data.encoded=bytes.clone();
+        var data=new FluidSavedData(FluidCheckpointCodec.decode(new String(bytes,StandardCharsets.UTF_8),models),models);data.encoded=null;
         if(tag.contains("Topology")||tag.contains("TopologyFormat")||tag.contains("TopologySHA256")) {
-            if(!tag.contains("TopologyFormat",Tag.TAG_INT)||tag.getInt("TopologyFormat")!=TOPOLOGY_VERSION||!tag.contains("Topology",Tag.TAG_BYTE_ARRAY)||!tag.contains("TopologySHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid topology basis; use a fresh development world or explicitly reset its fluid data");
+            if(!tag.contains("TopologyFormat",Tag.TAG_INT)||(tag.getInt("TopologyFormat")!=2&&tag.getInt("TopologyFormat")!=TOPOLOGY_VERSION)||!tag.contains("Topology",Tag.TAG_BYTE_ARRAY)||!tag.contains("TopologySHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid topology basis; use a fresh development world or explicitly reset its fluid data");
             byte[] worldBytes=tag.getByteArray("Topology");if(!MessageDigest.isEqual(digest(worldBytes),tag.getByteArray("TopologySHA256")))throw new IllegalArgumentException("Topology checkpoint checksum mismatch");
-            data.world=Optional.of(FluidCheckpointCodec.decodeWorld(new String(worldBytes,StandardCharsets.UTF_8)));data.encodedWorld=worldBytes.clone();
+            data.world=Optional.of(FluidCheckpointCodec.decodeWorld(new String(worldBytes,StandardCharsets.UTF_8),tag.getInt("TopologyFormat")==2));data.encodedWorld=tag.getInt("TopologyFormat")==TOPOLOGY_VERSION?worldBytes.clone():null;
         }
         return data;
     }
     /** Prepare an explicit reference migration without mutating the input tag or writing a file.
      * The caller can review the result and publish it through the normal atomic SavedData writer. */
     public static FluidSavedData migrateToSensibleReference(CompoundTag tag,com.wormzjl.createcheme.science.fluid.state.EnergyReference previous,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models) {
-        if(!tag.contains("FluidFormat",Tag.TAG_INT)||tag.getInt("FluidFormat")!=FluidCheckpointCodec.VERSION||!tag.contains("Checkpoint",Tag.TAG_BYTE_ARRAY)||!tag.contains("SHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid save");
+        if(!tag.contains("FluidFormat",Tag.TAG_INT)||(tag.getInt("FluidFormat")!=1&&tag.getInt("FluidFormat")!=FluidCheckpointCodec.VERSION)||!tag.contains("Checkpoint",Tag.TAG_BYTE_ARRAY)||!tag.contains("SHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid save");
         var bytes=tag.getByteArray("Checkpoint");if(!MessageDigest.isEqual(digest(bytes),tag.getByteArray("SHA256")))throw new IllegalArgumentException("Fluid checkpoint checksum mismatch");
         var checkpoint=FluidCheckpointCodec.migrateToSensibleReference(new String(bytes,StandardCharsets.UTF_8),previous,models);
-        var copy=tag.copy();var next=FluidCheckpointCodec.encode(checkpoint,models).getBytes(StandardCharsets.UTF_8);copy.putByteArray("Checkpoint",next);copy.putByteArray("SHA256",digest(next));
+        var copy=tag.copy();copy.putInt("FluidFormat",FluidCheckpointCodec.VERSION);var next=FluidCheckpointCodec.encode(checkpoint,models).getBytes(StandardCharsets.UTF_8);copy.putByteArray("Checkpoint",next);copy.putByteArray("SHA256",digest(next));
         // Validate every existing extension before changing its historical accounting datum.
         var result=load(copy,models);
         if(result.world.isPresent()) {
             var old=result.world.orElseThrow();var target=com.wormzjl.createcheme.science.fluid.state.EnergyReference.sensible(previous.components());
-            var constructed=new WorldTopologyLedger.MaterialTotal(old.constructed().moles(),previous.rebase(old.constructed().totalEnergy(),old.constructed().moles(),target));
-            var destroyed=new WorldTopologyLedger.MaterialTotal(old.destroyed().moles(),previous.rebase(old.destroyed().totalEnergy(),old.destroyed().moles(),target));
-            result.replace(checkpoint,new WorldTopologyLedger.Snapshot(old.onlineTick(),old.nextIdentity(),old.active(),old.events(),constructed,destroyed,old.basis()));
+            var constructed=new WorldTopologyLedger.MaterialTotal(old.constructed().moles(),previous.rebase(old.constructed().totalEnergy(),old.constructed().moles(),target),old.constructed().solidMasses());
+            var destroyed=new WorldTopologyLedger.MaterialTotal(old.destroyed().moles(),previous.rebase(old.destroyed().totalEnergy(),old.destroyed().moles(),target),old.destroyed().solidMasses());
+            result.replace(checkpoint,new WorldTopologyLedger.Snapshot(old.onlineTick(),old.nextIdentity(),old.active(),old.events(),constructed,destroyed,old.basis(),old.recoveries()));
         }
         return result;
     }

@@ -4,6 +4,7 @@ import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
+import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 
 /** Second-order, L-stable TR-BDF2, using two simultaneous implicit stages with equal diagonal coefficient.
  * Inventories are stage right-hand sides, not new physical initializations. No stage may commit independently.
@@ -35,6 +36,9 @@ public final class TrBdf2StepSolver {
     @FunctionalInterface public interface StageGuard {
         StageGuard NONE=(states,modes)->{};
         void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes);
+        default boolean requiresStepDoubling(){return false;}
+        default void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){check(states,modes);}
+        default void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
     }
     public Trial trial(PassiveNetwork initial,double dt,Runnable checkpoint){return trial(initial,dt,checkpoint,PassiveStepSolver.Acceptance.FULL,StageGuard.NONE);}
     public Trial trial(PassiveNetwork initial,double dt,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,StageGuard guard){return integrate(initial,dt,checkpoint,true,acceptance,guard);}
@@ -46,6 +50,7 @@ public final class TrBdf2StepSolver {
     public PassiveStepSolver.Result solve(PassiveNetwork initial,double dt,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,StageGuard guard){return integrate(initial,dt,checkpoint,false,acceptance,guard).solution();}
     private Trial integrate(PassiveNetwork initial,double dt,Runnable checkpoint,boolean estimate,PassiveStepSolver.Acceptance acceptance,StageGuard guard) {
         Objects.requireNonNull(acceptance);Objects.requireNonNull(guard);
+        if(estimate&&(PassiveStepSolver.hasSolids(initial)||initial.pipes().stream().anyMatch(p->p.filter()!=null)))throw new IllegalArgumentException("Particle and filter error estimates require interval step doubling");
         ownership.check("TR-BDF2 workspace belongs to the worker holding its solver latch");
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
         if(initial.reservoirs().stream().anyMatch(n->n.kind()==PassiveNetwork.NodeKind.PORT))throw new IllegalArgumentException("Internal ports cannot be integrated");
@@ -60,19 +65,22 @@ public final class TrBdf2StepSolver {
         if(cached==null&&acceptance==PassiveStepSolver.Acceptance.APPROXIMATE)cached=endpointRates.get(new RateKey(initial,acceptance));
         double[] initialFlows;ConservativeTransport.Projection rate;List<FlowControl.Mode> initialModes;
         if(cached==null) {
-            var solved=algebraic.solve(portGraph,1,checkpoint,acceptance);initialFlows=solved.massFlows();initialModes=solved.modes();
-            rate=new ConservativeTransport.Projection(solved.inventories(),solved.states(),solved.boundaries(),solved.externalMoles(),solved.externalEnergyJoule(),solved.pumpWorkJoule());
+            var solved=algebraic.solveRate(portGraph,checkpoint,acceptance);initialFlows=solved.massFlows();initialModes=solved.modes();
+            rate=new ConservativeTransport.Projection(solved.inventories(),solved.states(),solved.boundaries(),solved.externalMoles(),solved.externalEnergyJoule(),solved.pumpWorkJoule(),solved.filters());
             cache(initial,rate,initialFlows,initialModes,acceptance);
         }else {initialFlows=cached.flows.clone();rate=cached.properties;initialModes=cached.modes;}
-        guard.check(rate.states(),initialModes);
+        guard.checkFlow(rate.states(),initialModes,initialFlows);
         var byId=new HashMap<Long,Integer>();for(int i=0;i<ports.size();i++)byId.put(ports.get(i).id(),i);
         double[][] dn=new double[ports.size()][model.hydrocarbon.componentCount()+1];double[] du=new double[ports.size()];
+        var firstSolids=new SolidInventory.Accumulator[ports.size()];for(int i=0;i<ports.size();i++){firstSolids[i]=new SolidInventory.Accumulator();firstSolids[i].add(initial.reservoirs().get(i).inventory().solids(),1);}
         var physicalBoundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
         for(var boundary:rate.boundaries()) {
             int i=byId.get(boundary.nodeId());var node=initial.reservoirs().get(i);
             if(node.kind()!=PassiveNetwork.NodeKind.RESERVOIR){physicalBoundaries.add(boundary);continue;}
             var n=boundary.moles();double mass=0;
             for(int c=0;c<n.length;c++){dn[i][c]-=n[c];mass+=n[c]*model.molecularWeight(c);}
+            mass+=boundary.solidDirection()*boundary.solids().massKg();
+            firstSolids[i].add(boundary.solids(),-ALPHA*dt*boundary.solidDirection());
             du[i]-=boundary.totalEnergyJoule()-mass*PassiveStepSolver.GRAVITY*node.elevation();
         }
         for(var transfer:initial.scheduledTransfers()) {
@@ -86,48 +94,52 @@ public final class TrBdf2StepSolver {
                 for(int c=0;c<n.length;c++)mass+=n[c]*model.molecularWeight(c);
             }
             for(int c=0;c<n.length;c++)dn[i][c]+=n[c];du[i]+=energy-mass*PassiveStepSolver.GRAVITY*node.elevation();
-            physicalBoundaries.add(new ConservativeTransport.BoundaryTransfer(transfer.id(),n,energy));
+            SolidInventory moved;int direction;
+            if(transfer instanceof ScheduledTransfer.Withdrawal out){moved=state.solids().scale(out.massKgPerSecond()/state.mass());direction=-1;}
+            else{moved=((ScheduledTransfer.Injection)transfer).solidsPerSecond();direction=1;du[i]-=moved.massKg()*PassiveStepSolver.GRAVITY*node.elevation();}
+            firstSolids[i].add(moved,ALPHA*dt*direction);
+            physicalBoundaries.add(new ConservativeTransport.BoundaryTransfer(transfer.id(),n,energy,moved,direction));
         }
         var firstBase=new ArrayList<PassiveNetwork.Reservoir>();
         for(int i=0;i<ports.size();i++) {
             var node=initial.reservoirs().get(i);var inventory=node.inventory();
             if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR) {
                 var n=inventory.moles();for(int c=0;c<n.length;c++)n[c]+=ALPHA*dt*dn[i][c];
-                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+ALPHA*dt*du[i]);
+                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+ALPHA*dt*du[i],firstSolids[i].finish());
             }
             firstBase.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),rate.states().get(i),node.kind(),inventory));
         }
-        var first=implicit.solve(new PassiveNetwork(firstBase,initial.pipes(),initial.scheduledTransfers()),ALPHA*dt,checkpoint,acceptance);guard.check(first.states(),first.modes());
+        var first=implicit.solve(new PassiveNetwork(firstBase,filterStage(initial,rate.filters(),ALPHA*dt),initial.scheduledTransfers()),ALPHA*dt,checkpoint,acceptance);guard.checkFilters(first.filters(),first.states(),first.modes(),first.massFlows());
         var secondBase=new ArrayList<PassiveNetwork.Reservoir>();
         for(int i=0;i<ports.size();i++) {
             var node=initial.reservoirs().get(i);var inventory=node.inventory();
             if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR) {
                 var n=inventory.moles();var stage=first.inventories().get(i);var ns=stage.moles();
                 for(int c=0;c<n.length;c++)n[c]+=A*(ns[c]-n[c]);
-                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+A*(stage.internalEnergy()-inventory.internalEnergy()));
+                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+A*(stage.internalEnergy()-inventory.internalEnergy()),SolidInventory.combine(inventory.solids(),1-A,stage.solids(),A));
             }
             secondBase.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),first.states().get(i),node.kind(),inventory));
         }
-        var secondGraph=new PassiveNetwork(secondBase,initial.pipes(),initial.scheduledTransfers());
-        var second=implicit.solve(secondGraph,ALPHA*dt,checkpoint,acceptance);guard.check(second.states(),second.modes());
+        var secondGraph=new PassiveNetwork(secondBase,filterStage(initial,first.filters(),A),initial.scheduledTransfers());
+        var second=implicit.solve(secondGraph,ALPHA*dt,checkpoint,acceptance);guard.checkFilters(second.filters(),second.states(),second.modes(),second.massFlows());
         var boundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
         append(boundaries,physicalBoundaries,A*ALPHA*dt);append(boundaries,first.boundaries(),A);append(boundaries,second.boundaries(),1);
         double[] external=new double[dn[0].length];double energy=0;
         for(var boundary:boundaries){var n=boundary.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];energy+=boundary.totalEnergyJoule();}
         double work=A*ALPHA*dt*rate.pumpWork()+A*first.pumpWorkJoule()+second.pumpWorkJoule();
-        var projection=new ConservativeTransport.Projection(second.inventories(),second.states(),boundaries,external,energy,work);
+        var projection=new ConservativeTransport.Projection(second.inventories(),second.states(),boundaries,external,energy,work,second.filters());
         implicit.checkConservation(initial,projection);
         var endpoint=PassiveIntervalSolver.replace(initial,second);var endpointPorts=new ArrayList<PassiveNetwork.Reservoir>();
         for(var node:endpoint.reservoirs())endpointPorts.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),node.state(),
                 node.kind()==PassiveNetwork.NodeKind.RESERVOIR?PassiveNetwork.NodeKind.PORT:node.kind(),node.inventory()));
-        var endpointRate=ConservativeTransport.reconstruct(new PassiveNetwork(endpointPorts,initial.pipes()),second.states(),second.massFlows(),second.devicePressureChanges(),1,model,checkpoint,transport);
+        var endpointRate=ConservativeTransport.reconstruct(new PassiveNetwork(endpointPorts,endpoint.pipes()),second.states(),second.massFlows(),second.devicePressureChanges(),1,model,checkpoint,transport);
         cache(endpoint,endpointRate,second.massFlows(),second.modes(),acceptance);
         var q=initialFlows.clone();var q1=first.massFlows();var q2=second.massFlows();
         for(int i=0;i<q.length;i++)q[i]=A*ALPHA*(q[i]+q1[i])+ALPHA*q2[i];
         var pipeTransfers=new PipeTransfer.Accumulator();
         pipeTransfers.add(PipeTransfer.sample(initial,rate.states(),initialFlows,1),A*ALPHA*dt);
         pipeTransfers.add(first.pipeTransfers(),A);pipeTransfers.add(second.pipeTransfers(),1);
-        var solution=new PassiveStepSolver.Result(second.states(),q,dt,second.numerical(),second.modes(),second.devicePressureChanges(),work,external,energy,second.inventories(),boundaries,pipeTransfers.snapshot());
+        var solution=new PassiveStepSolver.Result(second.states(),q,dt,second.numerical(),second.modes(),second.devicePressureChanges(),work,external,energy,second.inventories(),boundaries,pipeTransfers.snapshot(),second.filters());
         if(!estimate)return new Trial(solution,second.states(),q);
         // Embedded order-three companion. Its defect is smoothed through the same implicit operator,
         // which extends the usual (I-alpha*h*J)^-1 filter to our constrained states. The correction
@@ -172,6 +184,9 @@ public final class TrBdf2StepSolver {
         append(estimatedBoundaries,correctedBoundaries,1);append(estimatedBoundaries,second.boundaries(),-1);
         return new Trial(solution,correctedStates,estimated,estimatedBoundaries);
     }
+    private static List<PassiveNetwork.Pipe> filterStage(PassiveNetwork graph,Map<Long,InlineFilter> result,double weight) {
+        return graph.pipes().stream().map(p->p.filter()==null?p:p.withFilter(InlineFilter.combine(p.filter(),1-weight,result.getOrDefault(p.id(),p.filter()),weight))).toList();
+    }
     private void cache(PassiveNetwork graph,ConservativeTransport.Projection rate,double[] flows,List<FlowControl.Mode> modes,PassiveStepSolver.Acceptance acceptance) {
         // A valve reaching its setpoint has a nonsmooth endpoint rate; reevaluate its algebraic regime.
         if(graph.pipes().stream().anyMatch(pipe->pipe.control() instanceof FlowControl.PressureValve))return;
@@ -179,6 +194,6 @@ public final class TrBdf2StepSolver {
         endpointRates.put(new RateKey(graph,acceptance),new Rate(rate,flows,modes));
     }
     private static void append(List<ConservativeTransport.BoundaryTransfer> target,List<ConservativeTransport.BoundaryTransfer> source,double scale) {
-        for(var transfer:source){var n=transfer.moles();for(int c=0;c<n.length;c++)n[c]*=scale;target.add(new ConservativeTransport.BoundaryTransfer(transfer.nodeId(),n,transfer.totalEnergyJoule()*scale));}
+        for(var transfer:source){var n=transfer.moles();for(int c=0;c<n.length;c++)n[c]*=scale;target.add(new ConservativeTransport.BoundaryTransfer(transfer.nodeId(),n,transfer.totalEnergyJoule()*scale,transfer.solids().scale(Math.abs(scale)),scale<0?-transfer.solidDirection():transfer.solidDirection()));}
     }
 }

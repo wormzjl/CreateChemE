@@ -6,9 +6,10 @@ import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler;
 import java.util.*;
 
 /** Validated persisted initialization/boundary settings. Finite reservoir contents live only in the world ledger. */
-public record FluidDeviceSpec(double volume,double temperature,double pressure,double[] composition) {
+public record FluidDeviceSpec(double volume,double temperature,double pressure,double[] composition,SlurryFeed solids) {
+    public FluidDeviceSpec(double volume,double temperature,double pressure,double[] composition){this(volume,temperature,pressure,composition,SlurryFeed.NONE);}
     public FluidDeviceSpec {
-        composition=composition.clone();
+        Objects.requireNonNull(solids);composition=composition.clone();
         if(!Double.isFinite(volume)||volume<=0||volume>1000||!Double.isFinite(temperature)||temperature<273.16||temperature>600||!Double.isFinite(pressure)||pressure<100||pressure>2e6||(composition.length<1||composition.length>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS))throw new IllegalArgumentException("Device settings outside the fluid model's bounds");
         double sum=0;for(double amount:composition){if(!Double.isFinite(amount)||amount<0)throw new IllegalArgumentException("Invalid composition");sum+=amount;}
         if(!Double.isFinite(sum)||sum<=0)throw new IllegalArgumentException("Empty composition");
@@ -31,10 +32,15 @@ public record FluidDeviceSpec(double volume,double temperature,double pressure,d
         FluidThermodynamics.State state;
         if(kind==PassiveNetwork.NodeKind.RESERVOIR||kind==PassiveNetwork.NodeKind.VOID)state=model.initialNitrogenCharge(volume,temperature,pressure,checkpoint);
         else {
-            var n=composition.clone();var unit=model.flashTP(temperature,pressure,n,checkpoint);for(int c=0;c<n.length;c++)n[c]*=volume/unit.volume();state=model.flashTP(temperature,pressure,n,checkpoint);
+            var n=composition.clone();var unit=model.flashTP(temperature,pressure,n,checkpoint);
+            var stock=solids.unitMass(model.solids);double liquidVolume=unit.liquidVolume()+unit.waterVolume();
+            if(solids.volumeFraction()>0&&liquidVolume==0)throw new IllegalArgumentException("A slurry generator needs a liquid carrier");
+            double solidVolume=solids.volumeFraction()/(1-solids.volumeFraction())*liquidVolume;
+            double factor=volume/(unit.volume()+solidVolume);for(int c=0;c<n.length;c++)n[c]*=factor;
+            state=model.flashTP(temperature,pressure,n,checkpoint).withSolids(solidVolume==0?com.wormzjl.createcheme.science.fluid.state.SolidInventory.EMPTY:stock.scale(solidVolume*factor/stock.volume()));
         }
-        return new PassiveNetwork.Reservoir(device.id(),device.position().y(),state,kind,new PassiveNetwork.Inventory(volume,com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(state),state.internalEnergy()));
+        return new PassiveNetwork.Reservoir(device.id(),device.position().y(),state,kind,new PassiveNetwork.Inventory(volume,com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(state),state.internalEnergy(),state.solids()));
     }
-    @Override public boolean equals(Object value){return value instanceof FluidDeviceSpec other&&volume==other.volume&&temperature==other.temperature&&pressure==other.pressure&&Arrays.equals(composition,other.composition);}
-    @Override public int hashCode(){return 31*Objects.hash(volume,temperature,pressure)+Arrays.hashCode(composition);}
+    @Override public boolean equals(Object value){return value instanceof FluidDeviceSpec other&&volume==other.volume&&temperature==other.temperature&&pressure==other.pressure&&Arrays.equals(composition,other.composition)&&solids.equals(other.solids);}
+    @Override public int hashCode(){return 31*Objects.hash(volume,temperature,pressure,solids)+Arrays.hashCode(composition);}
 }

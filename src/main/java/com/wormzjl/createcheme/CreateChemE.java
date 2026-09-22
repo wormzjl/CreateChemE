@@ -44,6 +44,7 @@ public final class CreateChemE {
     private static final ModConfigSpec.IntValue SOLVER_GRACEFUL_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue SOLVER_FORCED_SHUTDOWN_MILLISECONDS;
     private static final ModConfigSpec.IntValue FLUID_INITIAL_INTERVAL_SECONDS,FLUID_WALL_BUDGET_MILLISECONDS;
+    private static final ModConfigSpec.DoubleValue SOLID_IMMOBILE_VISCOSITY,SOLID_TRACE_FRACTION,SOLID_SUSPENSION_MULTIPLIER,FILTER_CAPACITY,FILTER_RESISTANCE;
     private static final ModConfigSpec.DoubleValue FLUID_LIQUID_COMPRESSIBILITY,FLUID_INITIAL_VOLUME,FLUID_INITIAL_TEMPERATURE,FLUID_INITIAL_PRESSURE,FLUID_MAXIMUM_VELOCITY,FLUID_TRACE_CUTOFF;
     private static final ModConfigSpec.BooleanValue FLUID_DEBUG_CHAT,FLUID_ADAPTIVE_CADENCE;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
@@ -80,6 +81,11 @@ public final class CreateChemE {
                 .defineInRange("forcedShutdownMilliseconds", 1_000, 0, 10_000);
         builder.pop();
         builder.push("fluid");
+        SOLID_IMMOBILE_VISCOSITY=builder.comment("Liquid phases above this dynamic viscosity (Pa.s) cannot be transported. Applied at server start.").defineInRange("solidViscosityPascalSeconds",100.0,1e-6,1e12);
+        SOLID_TRACE_FRACTION=builder.comment("Ignore smaller particle volume fractions for blockage only; all mass and size records remain conserved. 0 disables masking.").defineInRange("solidTraceVolumeFraction",1e-8,0,0.01);
+        SOLID_SUSPENSION_MULTIPLIER=builder.comment("Gameplay multiplier applied to particle settling speed for minimum liquid transport velocity.").defineInRange("solidSuspensionMultiplier",10.0,.01,10000.0);
+        FILTER_CAPACITY=builder.comment("Retained solid volume capacity of an in-line filter (m3). Existing captured material is preserved when this changes.").defineInRange("filterSolidCapacityCubicMetres",.01,1e-9,1000.0);
+        FILTER_RESISTANCE=builder.comment("Clean in-line filter resistance at 1 mPa.s, in Pa.s/m3.").defineInRange("filterCleanResistance",1e6,1.0,1e15);
         FLUID_INITIAL_INTERVAL_SECONDS=builder.comment("Starting hydraulic cadence for newly created islands. Existing saved clocks retain their cadence; adaptation uses 1-20 s.").defineInRange("initialIntervalSeconds",5,1,20);
         FLUID_ADAPTIVE_CADENCE=builder.comment("Adapt island cadence to measured CPU load. Disable for reproducible fixed-cadence qualification; saved simulation debt is retained.").define("adaptiveCadence",true);
         FLUID_WALL_BUDGET_MILLISECONDS=builder.comment("Hard worker budget per island interval; 75% is reserved for the full solve. Applied on server start.").defineInRange("wallBudgetMilliseconds",2000,100,60000);
@@ -184,9 +190,11 @@ public final class CreateChemE {
     public static boolean calculationLoggingEnabled() {
         return CALCULATION_LOGGING.getAsBoolean();
     }
-    public record FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction) {}
+    public record FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings solids) {
+        public FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction){this(initialCadenceTicks,wallBudgetNanos,compressibility,volume,temperature,pressure,debugChat,adaptiveCadence,maximumVelocity,traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings.defaults());}
+    }
     public static FluidOptions fluidOptions() {
-        return new FluidOptions(20*FLUID_INITIAL_INTERVAL_SECONDS.getAsInt(),1_000_000L*FLUID_WALL_BUDGET_MILLISECONDS.getAsInt(),FLUID_LIQUID_COMPRESSIBILITY.get(),FLUID_INITIAL_VOLUME.get(),FLUID_INITIAL_TEMPERATURE.get(),FLUID_INITIAL_PRESSURE.get(),FLUID_DEBUG_CHAT.getAsBoolean(),FLUID_ADAPTIVE_CADENCE.getAsBoolean(),FLUID_MAXIMUM_VELOCITY.get(),FLUID_TRACE_CUTOFF.get());
+        return new FluidOptions(20*FLUID_INITIAL_INTERVAL_SECONDS.getAsInt(),1_000_000L*FLUID_WALL_BUDGET_MILLISECONDS.getAsInt(),FLUID_LIQUID_COMPRESSIBILITY.get(),FLUID_INITIAL_VOLUME.get(),FLUID_INITIAL_TEMPERATURE.get(),FLUID_INITIAL_PRESSURE.get(),FLUID_DEBUG_CHAT.getAsBoolean(),FLUID_ADAPTIVE_CADENCE.getAsBoolean(),FLUID_MAXIMUM_VELOCITY.get(),FLUID_TRACE_CUTOFF.get(),new com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings(SOLID_IMMOBILE_VISCOSITY.get(),SOLID_TRACE_FRACTION.get(),SOLID_SUSPENSION_MULTIPLIER.get(),FILTER_CAPACITY.get(),FILTER_RESISTANCE.get()));
     }
 
     /**
@@ -224,7 +232,7 @@ public final class CreateChemE {
     private static void addCreativeTabItem(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModItems.COLUMN_CALCULATOR_V3.get());
-            event.accept(ModItems.FLUID_RESERVOIR.get());event.accept(ModItems.FLUID_PIPE.get());event.accept(ModItems.FLUID_PUMP.get());event.accept(ModItems.PRESSURE_CONTROL_VALVE.get());event.accept(ModItems.FLUID_GENERATOR.get());event.accept(ModItems.FLUID_VOID.get());event.accept(ModItems.FLUID_DEBUGGER.get());
+            event.accept(ModItems.FLUID_RESERVOIR.get());event.accept(ModItems.FLUID_PIPE.get());event.accept(ModItems.FLUID_PUMP.get());event.accept(ModItems.PRESSURE_CONTROL_VALVE.get());event.accept(ModItems.FLUID_GENERATOR.get());event.accept(ModItems.FLUID_VOID.get());event.accept(ModItems.INLINE_FILTER.get());event.accept(ModItems.FLUID_DEBUGGER.get());
         }
     }
 

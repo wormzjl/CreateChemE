@@ -72,7 +72,7 @@ public final class CausalModuleCoordinator {
     }
     private Binding binding(UUID id){return Objects.requireNonNull(bindings.get(id),"Missing buffer binding "+id);}
     private static PassiveNetwork.Reservoir node(PassiveNetwork graph,long id){return graph.reservoirs().stream().filter(n->n.id()==id&&n.kind()==PassiveNetwork.NodeKind.RESERVOIR).findFirst().orElseThrow(()->new IllegalStateException("Missing finite buffer reservoir "+id));}
-    private MaterialParcel parcel(PassiveNetwork.Reservoir node){var inventory=node.inventory();double mass=0;var n=inventory.moles();for(int c=0;c<n.length;c++)mass+=n[c]*weights[c];return new MaterialParcel(n,weights,inventory.internalEnergy()+mass*PassiveStepSolver.GRAVITY*node.elevation(),reference);}
+    private MaterialParcel parcel(PassiveNetwork.Reservoir node){var inventory=node.inventory();double mass=inventory.solids().massKg();var n=inventory.moles();for(int c=0;c<n.length;c++)mass+=n[c]*weights[c];return new MaterialParcel(n,weights,inventory.internalEnergy()+mass*PassiveStepSolver.GRAVITY*node.elevation(),reference,inventory.solids());}
     private static UUID horizon(UUID module,long start,String role){return UUID.nameUUIDFromBytes((module+":"+start+":"+role).getBytes(StandardCharsets.UTF_8));}
     private Set<Long> feeds(FixedSplitModule.Definition d){var ids=new HashSet<Long>();for(var feed:d.feeds())ids.add(binding(feed.buffer()).island());return ids;}
     private Set<Long> products(FixedSplitModule.Definition d){var ids=new HashSet<Long>();if(Arrays.stream(d.firstFractions()).anyMatch(f->f>0))ids.add(binding(d.firstProduct()).island());if(Arrays.stream(d.firstFractions()).anyMatch(f->f<1))ids.add(binding(d.secondProduct()).island());return ids;}

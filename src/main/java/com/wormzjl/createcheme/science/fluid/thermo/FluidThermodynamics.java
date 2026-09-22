@@ -6,6 +6,7 @@ import com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity;
 import com.wormzjl.createcheme.science.material.MaterialCatalog;
 import com.wormzjl.createcheme.science.thermo.PhaseRoot;
 import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
+import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -28,7 +29,9 @@ public final class FluidThermodynamics {
      * ceiling. 0 is the exact off switch, the identical numerical path rather than a small cutoff. */
     public static final double DEFAULT_TRACE_CUTOFF_MOLE_FRACTION=1e-6;
     public final HydrocarbonModel hydrocarbon;
+    public final com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings solidSettings;
     public final MixtureViscosity viscosity;
+    public final com.wormzjl.createcheme.science.material.SolidMaterialCatalog solids;
     public final double waterMolecularWeight;
     private final GlobalLiquidResponse liquidResponse;
     /** Resolved once from the catalog and package this model was built for, instead of through the
@@ -61,9 +64,12 @@ public final class FluidThermodynamics {
      * and the ceiling is {@link #MAX_TRACE_CUTOFF_MOLE_FRACTION}. */
     public static FluidThermodynamics forNetwork(MaterialCatalog catalog,String packageId,double liquidCompressibility,
                                                  double maximumVelocity,double traceCutoffMoleFraction) {
+        return forNetwork(catalog,packageId,liquidCompressibility,maximumVelocity,traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings.defaults());
+    }
+    public static FluidThermodynamics forNetwork(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity,double traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings solidSettings) {
         TraceTruncationPolicy.requireCutoff(traceCutoffMoleFraction,MAX_TRACE_CUTOFF_MOLE_FRACTION);
         return new FluidThermodynamics(catalog,FluidMaterialCatalog.resolveNetworkPackage(catalog,packageId),liquidCompressibility,
-                maximumVelocity,TraceTruncationPolicy.of(traceCutoffMoleFraction));
+                maximumVelocity,TraceTruncationPolicy.of(traceCutoffMoleFraction),solidSettings);
     }
 
     /** Placement initializer only. Persistence must restore inventory instead of calling this again. */
@@ -83,12 +89,16 @@ public final class FluidThermodynamics {
     }
     public FluidThermodynamics(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity,
                                TraceTruncationPolicy tracePolicy) {
+        this(catalog,packageId,liquidCompressibility,maximumVelocity,tracePolicy,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings.defaults());
+    }
+    public FluidThermodynamics(MaterialCatalog catalog,String packageId,double liquidCompressibility,double maximumVelocity,TraceTruncationPolicy tracePolicy,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings solidSettings) {
+        this.solidSettings=Objects.requireNonNull(solidSettings);
         if(!Double.isFinite(maximumVelocity)||maximumVelocity<=0)throw new IllegalArgumentException("Positive finite maximum velocity required");
         TraceTruncationPolicy.requireCutoff(Objects.requireNonNull(tracePolicy,"tracePolicy").cutoffMoleFraction(),MAX_TRACE_CUTOFF_MOLE_FRACTION);
         this.tracePolicy=tracePolicy;
         this.maximumVelocity=maximumVelocity;
         hydrocarbon=new HydrocarbonModel(catalog,packageId,liquidCompressibility);
-        viscosity=new MixtureViscosity(catalog,packageId);
+        viscosity=new MixtureViscosity(catalog,packageId);solids=catalog.solids();
         waterMolecularWeight=catalog.requirePackage(packageId).water().molarMass();
         liquidResponse=new GlobalLiquidResponse(liquidCompressibility);
         // The same resolution the context form performs, including its fallback package.
@@ -201,6 +211,15 @@ public final class FluidThermodynamics {
         if(!(volume>0)||!(mass>0)||!Double.isFinite(h))throw new IllegalArgumentException("Empty/nonfinite fluid properties");
         return new State(t,p,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPressure,pw,volume,h,h-p*volume,mass,
                 vl,vw,gasVolume,lp,vp);
+    }
+
+    /** Stationary dry inventory. Pressure is retained as an initialization hint, not a gas pressure. */
+    public State solidState(double temperature,double pressure,com.wormzjl.createcheme.science.fluid.state.SolidInventory solids) {
+        if(solids.empty()||!Double.isFinite(temperature)||temperature<273.16||temperature>600
+                ||!Double.isFinite(pressure)||pressure<100||pressure>2e6)throw new IllegalArgumentException("Dry solid state outside domain");
+        var moments=solids.moments();var empty=new double[hydrocarbon.componentCount()];
+        return new State(temperature,pressure,empty,empty,0,0,0,0,moments.volume(),
+                moments.enthalpy(temperature,pressure),moments.internalEnergy(temperature),moments.mass(),0,0,0,null,null,solids,moments);
     }
 
     /** Initializer/boundary flash only. The time-step solver must not call this in residual evaluation. */
@@ -351,7 +370,25 @@ public final class FluidThermodynamics {
     public record State(double temperature,double pressure,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,
                         double hydrocarbonPartialPressure,double waterPartialPressure,double volume,double enthalpy,double internalEnergy,
                         double mass,double liquidVolume,double waterVolume,double vaporVolume,HydrocarbonModel.Phase liquidProperties,
-                        HydrocarbonModel.Phase vaporProperties) {
+                        HydrocarbonModel.Phase vaporProperties, SolidInventory solids, SolidInventory.Moments solidMoments) {
+        public State(double temperature,double pressure,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,
+                     double hydrocarbonPartialPressure,double waterPartialPressure,double volume,double enthalpy,double internalEnergy,
+                     double mass,double liquidVolume,double waterVolume,double vaporVolume,HydrocarbonModel.Phase liquidProperties,
+                     HydrocarbonModel.Phase vaporProperties) {
+            this(temperature,pressure,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPartialPressure,waterPartialPressure,
+                    volume,enthalpy,internalEnergy,mass,liquidVolume,waterVolume,vaporVolume,liquidProperties,vaporProperties,
+                    SolidInventory.EMPTY,SolidInventory.Moments.ZERO);
+        }
+        public State { Objects.requireNonNull(solids); Objects.requireNonNull(solidMoments); }
+        public State withSolids(SolidInventory inventory) { return withSolidState(inventory,inventory.moments()); }
+        /** Moment-only trial states never become owned inventories before population reconstruction. */
+        public State withSolidState(SolidInventory inventory,SolidInventory.Moments moments) {
+            return new State(temperature,pressure,liquid,vapor,waterLiquid,waterVapor,hydrocarbonPartialPressure,waterPartialPressure,
+                    volume-solidMoments.volume()+moments.volume(),
+                    enthalpy-solidMoments.enthalpy(temperature,pressure)+moments.enthalpy(temperature,pressure),
+                    internalEnergy-solidMoments.internalEnergy(temperature)+moments.internalEnergy(temperature),
+                    mass-solidMoments.mass()+moments.mass(),liquidVolume,waterVolume,vaporVolume,liquidProperties,vaporProperties,inventory,moments);
+        }
         /** Conserved component basis length, with water in the final position. */
         public int componentCount(){return liquid.length+1;}
         @Override public double[] liquid(){return liquid.clone();}

@@ -44,6 +44,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private Map<Long,WorldTopologyLedger.Registration> latest;
     private boolean closed;
     private long lastDebugChat=Long.MIN_VALUE;
+    private MaterialCatalog observedSolidData;
+    private String solidPropertyHold;
     private java.util.function.BiConsumer<List<IslandCoordinator.Snapshot>,Map<Long,IslandCoordinator.Metrics>> observer;
 
     private FluidWorldAuthority(MinecraftServer server) {
@@ -55,6 +57,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         presetCache=FluidPresetCatalog.resolve(catalog);componentNames=model.components();
         legacyUnbound=data.world().isEmpty()&&!data.checkpoint().islands().isEmpty();
         var savedTopology=data.world().orElseGet(()->WorldTopologyLedger.Snapshot.empty(catalog));savedTopology.basis().requireCurrent(catalog);
+        SolidCompatibility.validate(catalog.solids(),data.checkpoint(),savedTopology);observedSolidData=catalog;
         topology=new WorldTopologyLedger(savedTopology);transfers=new BufferedTransfers(data.checkpoint().transfers());
         weights=model.molecularWeights();
         moduleHost=data.checkpoint().modules().isEmpty()||legacyUnbound?null:new CausalModuleCoordinator(model,data.checkpoint().moduleBindings(),data.checkpoint().transfers(),data.checkpoint().modules());
@@ -64,7 +67,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
             CreateChemE.LOGGER.error("fluid_world status=LEGACY_UNBOUND detail=Core inventories preserved; physical bindings are unavailable in this older checkpoint");return;
         }
         for(var entry:data.checkpoint().islands())runtime.register(dimension(entry.dimension()),entry.snapshot(),model(new FluidCheckpointCodec.PackageKey(entry.packageId(),entry.compressibility())));
-        var stock=boundaries();compiled=PhysicalFluidTopology.compile(topology.snapshot().active().values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock);
+        var stock=boundaries();compiled=PhysicalFluidTopology.compile(topology.snapshot().active().values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock,filterStock(),model.initialNitrogenCharge(1,298.15,101325,()->{}));
         rebuildOwners();validateOwnership();chunkMembers=chunkIndex(topology.active());for(long id:topology.active().keySet())queueView(id);data.bindCapture(this::capture);
         if(moduleHost!=null){moduleHost.attach(runtime.coordinator());moduleHost.advance();}
     }
@@ -75,7 +78,9 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public static void refreshProperties(MinecraftServer server){find(server).ifPresent(FluidWorldAuthority::refreshProperties);}
     private void refreshProperties() {
         owned();if(closed||legacyUnbound)return;
-        String next=propertyReload.inspect(MaterialRuntime.active()).orElse(null);
+        var current=MaterialRuntime.active();String next=propertyReload.inspect(current).orElse(null);
+        if(current!=observedSolidData){observedSolidData=current;try{var saved=capture();SolidCompatibility.validate(current.solids(),saved.checkpoint(),saved.world());solidPropertyHold=null;}catch(IllegalArgumentException incompatible){solidPropertyHold="HELD: solid property data changed; restore qualified definitions or explicitly migrate saved solids";}}
+        if(next==null)next=solidPropertyHold;
         if(Objects.equals(next,propertyHold))return;
         propertyHold=next;
         if(next!=null)runtime.coordinator().suspendForPropertyChange(next);
@@ -89,7 +94,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
     /** Every island of this world solves on a model built from the same captured options, so the
      * configured trace cutoff is one value for every worker and every retained solver: a retained
      * solver is replaced whenever its model identity changes, and the model is the cutoff's home. */
-    private FluidThermodynamics model(FluidCheckpointCodec.PackageKey key){return models.computeIfAbsent(key,k->FluidThermodynamics.forNetwork(catalog,k.packageId(),k.compressibility(),options.maximumVelocity(),options.traceCutoffMoleFraction()));}
+    private FluidThermodynamics model(FluidCheckpointCodec.PackageKey key){return models.computeIfAbsent(key,k->FluidThermodynamics.forNetwork(catalog,k.packageId(),k.compressibility(),options.maximumVelocity(),options.traceCutoffMoleFraction(),options.solids()));}
     private static ResourceKey<Level> dimension(String name){return ResourceKey.create(Registries.DIMENSION,ResourceLocation.parse(name));}
     public List<FluidPresetCatalog.Preset> presets(){owned();return presetCache;}
     public List<String> components(){owned();return componentNames;}
@@ -113,8 +118,15 @@ public final class FluidWorldAuthority implements AutoCloseable {
         if(old.device().equals(device)&&old.spec().equals(spec))return;
         submit(List.of(new WorldTopologyLedger.Edit(id,new WorldTopologyLedger.Registration(device,spec,Math.addExact(expectedRevision,1)))),topology.nextIdentity());
     }
-    public void remove(long id){owned();if(registrations().containsKey(id))submit(List.of(new WorldTopologyLedger.Edit(id,null)),topology.nextIdentity());}
-    private void submit(List<WorldTopologyLedger.Edit> edits,long nextId) {
+    public void remove(long id){owned();var old=registrations().get(id);if(old!=null)submit(List.of(new WorldTopologyLedger.Edit(id,null)),topology.nextIdentity(),old.device().kind()==TopologyCompiler.Kind.FILTER?new WorldTopologyLedger.Recovery(id,null):null);}
+    public void recoverFilter(long id,long expectedRevision,net.minecraft.server.level.ServerPlayer player){
+        owned();var old=registrations().get(id);if(old==null||old.revision()!=expectedRevision||old.device().kind()!=TopologyCompiler.Kind.FILTER)throw new IllegalStateException("Stale filter controls");
+        if(player.getInventory().getFreeSlot()<0)throw new IllegalStateException("Inventory full; filter unchanged");
+        var cake=filterStock().get(id);if(cake==null||cake.captured().empty())throw new IllegalStateException("Filter has no captured solids");
+        submit(List.of(new WorldTopologyLedger.Edit(id,new WorldTopologyLedger.Registration(old.device(),old.spec(),Math.addExact(old.revision(),1)))),topology.nextIdentity(),new WorldTopologyLedger.Recovery(id,player.getUUID()));deliverRecoveries();
+    }
+    private void submit(List<WorldTopologyLedger.Edit> edits,long nextId){submit(edits,nextId,null);}
+    private void submit(List<WorldTopologyLedger.Edit> edits,long nextId,WorldTopologyLedger.Recovery recovery) {
         if(closed||legacyUnbound)throw new IllegalStateException("Fluid world is closed or has unbound legacy inventories");
         var prospective=new HashMap<>(registrations());var starts=new HashSet<PhysicalFluidTopology.Position>();var touched=new HashSet<Long>();
         for(var edit:edits) {
@@ -122,7 +134,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
             if(edit.replacement()==null)prospective.remove(edit.id());
             else {
                 var record=edit.replacement();starts.add(record.device().position());prospective.put(edit.id(),record);
-                if(record.device().boundary()&&(old==null||!record.spec().equals(old.spec())))record.spec().initialize(record.device(),model,()->{});
+                if(record.device().boundary()&&(old==null||!record.spec().equals(old.spec()))){var initialized=record.spec().initialize(record.device(),model,()->{});MaterialRuntime.active().solids().validate(initialized.inventory().solids());}
             }
         }
         var positions=new HashMap<PhysicalFluidTopology.Position,WorldTopologyLedger.Registration>();for(var r:prospective.values())positions.put(r.device().position(),r);
@@ -135,19 +147,32 @@ public final class FluidWorldAuthority implements AutoCloseable {
                 var neighbor=positions.get(position.offset(d));if(neighbor!=null&&record.device().connects(d)&&neighbor.device().connects(d)&&!(record.device().boundary()&&neighbor.device().boundary()))queue.add(neighbor.device().position());
             }
         }
-        var prepared=topology.queue(edits,touched,nextId);var affected=new HashSet<Long>();for(long id:touched)if(owners.containsKey(id))affected.add(owners.get(id));
+        var prepared=topology.queue(edits,touched,nextId,recovery);var affected=new HashSet<Long>();for(long id:touched)if(owners.containsKey(id))affected.add(owners.get(id));
         runtime.coordinator().fence(prepared.event().id(),prepared.event().tick(),affected);topology.commit(prepared);latest=null;data.setDirty();applyPending();
     }
     private void tick() {
         owned();if(closed||legacyUnbound)return;refreshProperties();topology.tick();
-        if(moduleHost!=null&&propertyHold==null)moduleHost.advance();runtime.tick();applyPending();
+        if(moduleHost!=null&&propertyHold==null)moduleHost.advance();runtime.tick();applyPending();deliverRecoveries();
         if(moduleHost!=null&&propertyHold==null)moduleHost.advance();runtime.coordinator().pump();
         for(int i=0;i<64&&!pendingViews.isEmpty();i++){long id=pendingViews.removeFirst();queuedViews.remove(id);refreshLoaded(id);}
         data.setDirty();
     }
+    private void deliverRecoveries(){
+        int delivered=0;for(var entry:topology.snapshot().recoveries().entrySet()){
+            if(delivered++>=64)break;var pending=entry.getValue();var stack=com.wormzjl.createcheme.world.item.RecoveredSolidsItem.create(entry.getKey(),pending);boolean accepted=false;
+            if(pending.player()!=null){var player=server.getPlayerList().getPlayer(pending.player());if(player!=null){for(int slot=0;slot<player.getInventory().getContainerSize();slot++)if(com.wormzjl.createcheme.world.item.RecoveredSolidsItem.carriesTransfer(player.getInventory().getItem(slot),entry.getKey())){accepted=true;break;}if(!accepted&&player.getInventory().getFreeSlot()>=0)accepted=player.getInventory().add(stack);}}
+            else {var position=pending.position();var level=server.getLevel(dimension(position.dimension()));var pos=new net.minecraft.core.BlockPos(position.x(),position.y(),position.z());
+                if(level!=null&&level.hasChunkAt(pos))accepted=level.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(level,pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5,stack));}
+            if(accepted){topology.deliveredRecovery(entry.getKey());data.setDirty();}
+        }
+    }
+    private Map<Long,InlineFilter> filterStock(){
+        var result=new HashMap<Long,InlineFilter>();for(var island:runtime.coordinator().snapshots())for(var pipe:island.graph().pipes())if(pipe.filter()!=null)result.put(pipe.id()-Long.MIN_VALUE,pipe.filter());
+        for(var r:registrations().values())if(r.device().kind()==TopologyCompiler.Kind.FILTER)result.putIfAbsent(r.device().id(),new InlineFilter(options.solids().filterCapacity(),options.solids().filterResistance(),com.wormzjl.createcheme.science.fluid.state.SolidInventory.EMPTY,0));return result;
+    }
     private Map<Long,PassiveNetwork.Reservoir> boundaries() {
         var result=new HashMap<Long,PassiveNetwork.Reservoir>();
-        for(var island:runtime.coordinator().snapshots())for(var node:island.graph().reservoirs())if(!node.junction())result.put(node.id(),node);
+        for(var island:runtime.coordinator().snapshots())for(var node:island.graph().reservoirs())if(!node.junction()&&node.id()>0)result.put(node.id(),node);
         return result;
     }
     private void applyPending() {
@@ -158,6 +183,13 @@ public final class FluidWorldAuthority implements AutoCloseable {
             if(!topology.hasPendingEvents())return;
             var saved=topology.snapshot();var selectedEvent=nextReadyEvent();if(selectedEvent==null)return;
             var event=selectedEvent.event();var affected=selectedEvent.affected();
+            var cakes=filterStock();RecoveredSolid recovered=null;
+            if(event.recovery()!=null){var request=event.recovery();var cake=cakes.get(request.filterId());var record=saved.active().get(request.filterId());
+                var player=request.player()==null?null:server.getPlayerList().getPlayer(request.player());
+                if(record!=null&&cake!=null&&!cake.captured().empty()&&(request.player()==null||player!=null&&player.getInventory().getFreeSlot()>=0)){
+                    recovered=new RecoveredSolid(record.device().position(),request.player(),cake.captured(),cake.energyJoule());cakes.put(request.filterId(),cake.cleared());
+                }else if(player!=null)player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Filter unchanged: inventory full or no captured solids."));
+            }
             var active=new HashMap<>(saved.active());var stock=boundaries();var additions=new HashMap<Long,PassiveNetwork.Reservoir>();var removed=new HashMap<Long,PassiveNetwork.Reservoir>();
             var selected=new HashSet<Long>(event.touched());for(var entry:owners.entrySet())if(affected.contains(entry.getValue()))selected.add(entry.getKey());
             for(var edit:event.edits()) {
@@ -171,7 +203,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
                     }
                 }
             }
-            var nextCompiled=PhysicalFluidTopology.compile(active.values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock);
+            var nextCompiled=PhysicalFluidTopology.compile(active.values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock,cakes,model.initialNitrogenCharge(1,298.15,101325,()->{}));
             var replacements=new ArrayList<IslandCoordinator.Replacement>();var nextOwners=new HashMap<>(owners);nextOwners.entrySet().removeIf(e->affected.contains(e.getValue())||!active.containsKey(e.getKey()));
             long nextId=topology.nextIdentity();String dimension=null;
             for(var island:nextCompiled.islands())if(island.physicalIds().stream().anyMatch(selected::contains)) {
@@ -179,10 +211,11 @@ public final class FluidWorldAuthority implements AutoCloseable {
                 for(long physical:island.physicalIds()){nextOwners.put(physical,id);dimension=active.get(physical).device().position().dimension();}
             }
             if(dimension==null){var edit=event.edits().getFirst();var record=edit.replacement()!=null?edit.replacement():saved.active().get(edit.id());dimension=record.device().position().dimension();}
-            var prepared=topology.applyReady(event.id(),additions.values(),removed.values(),weights,nextId);
+            var preparation=topology.applyReady(event.id(),additions.values(),removed.values(),weights,nextId);
+            var prepared=recovered==null?preparation:topology.withRecovery(preparation,recovered);
             var nextMembers=inverse(nextOwners);
             var nextChunks=chunkIndex(active);
-            runtime.topology(dimension(dimension),event.id(),affected,replacements,model,event.tick(),topology.onlineTick(),additions,removed.keySet(),()->{
+            runtime.topology(dimension(dimension),event.id(),affected,replacements,model,event.tick(),topology.onlineTick(),additions,removed.keySet(),recovered==null?Map.of():Map.of(PhysicalFluidTopology.filterIdentity(event.recovery().filterId()),filterStock().get(event.recovery().filterId())),()->{
                 topology.commit(prepared);compiled=nextCompiled;owners=nextOwners;members=nextMembers;chunkMembers=nextChunks;unboundBindings.retainAll(active.keySet());latest=null;
             });
             for(var future:topology.snapshot().events())for(var replacement:replacements) {
@@ -203,9 +236,10 @@ public final class FluidWorldAuthority implements AutoCloseable {
         return null;
     }
     private void rebuildOwners() {
-        var byBoundary=new HashMap<Long,Long>();for(var island:runtime.coordinator().snapshots())for(var node:island.graph().reservoirs())if(!node.junction())byBoundary.put(node.id(),island.id());
+        var byBoundary=new HashMap<Long,Long>();for(var island:runtime.coordinator().snapshots())for(var node:island.graph().reservoirs())if(!node.junction()&&node.id()>0)byBoundary.put(node.id(),island.id());
+        var byFilter=new HashMap<Long,Long>();for(var island:runtime.coordinator().snapshots())for(var pipe:island.graph().pipes())if(pipe.filter()!=null)byFilter.put(pipe.id(),island.id());
         for(var island:compiled.islands()) {
-            var ids=island.graph().reservoirs().stream().filter(n->!n.junction()).map(n->byBoundary.get(n.id())).filter(Objects::nonNull).distinct().toList();
+            var ids=java.util.stream.Stream.concat(island.graph().reservoirs().stream().filter(n->!n.junction()).map(n->byBoundary.get(n.id())),island.graph().pipes().stream().filter(p->p.filter()!=null).map(p->byFilter.get(p.id()))).filter(Objects::nonNull).distinct().toList();
             if(ids.size()!=1)throw new IllegalStateException("Saved topology and hydraulic ownership disagree");for(long id:island.physicalIds())owners.put(id,ids.getFirst());
         }
         members=inverse(owners);
@@ -239,6 +273,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         Long owner=owners.get(id);if(owner==null)return new FluidView(id,registration.revision(),0,topology.onlineTick(),legacyUnbound?"LEGACY UNBOUND":!topology.active().containsKey(id)?"WAITING: topology event":compiled.diagnostics().getOrDefault(id,"NO FLOW: no hydraulic boundary"),null,0,List.of(),null,false,0,"",List.of());
         var snapshot=runtime.coordinator().snapshot(owner);FluidView.State state=null;int nodeIndex=-1;boolean empty=false;
         for(int i=0;i<snapshot.graph().reservoirs().size();i++)if(snapshot.graph().reservoirs().get(i).id()==id){nodeIndex=i;var node=snapshot.graph().reservoirs().get(i);empty=node.empty();if(!empty)state=FluidView.State.from(node.state());break;}
+        InlineFilter filter=null;if(registration.device().kind()==TopologyCompiler.Kind.FILTER){state=null;for(var p:snapshot.graph().pipes())if(p.id()==PhysicalFluidTopology.filterIdentity(id))filter=p.filter();}
         var history=new ArrayList<PipeTransfer>();double flow=0;Double devicePressureChange=null;String status=snapshot.status();
         if(empty)status="EMPTY: no fluid temperature / "+status;
         if(snapshot.lastResult().isPresent()) {
@@ -251,6 +286,9 @@ public final class FluidWorldAuthority implements AutoCloseable {
             if(!history.isEmpty())flow=(history.getFirst().forward().massKg()-history.getFirst().reverse().massKg())/result.advancedSeconds();
             if(registration.device().actuator())for(int i=0;i<snapshot.graph().pipes().size();i++){var pipe=snapshot.graph().pipes().get(i);if(pipe.first()==nodeIndex&&!(pipe.control() instanceof FlowControl.Passive)){flow=q[i];devicePressureChange=result.endpointHeads()[i];status+=" / "+result.endpointModes().get(i);}}
         }
+        if(filter!=null)for(var pipe:snapshot.graph().pipes())if(pipe.id()==PhysicalFluidTopology.filterIdentity(id))devicePressureChange=snapshot.graph().reservoirs().get(pipe.first()).state().pressure()-snapshot.graph().reservoirs().get(pipe.second()).state().pressure();
+        if(filter!=null&&filter.clogged())status="filter clogged / "+status;
+        for(var mapping:compiled.pipeViews().getOrDefault(id,List.of()))for(var pipe:snapshot.graph().pipes())if(pipe.id()==mapping.pipeId()&&pipe.blockedDirections()!=0&&pipe.filter()==null)status="blocked with solid / "+status;
         if(compiled.diagnostics().containsKey(id))status=compiled.diagnostics().get(id)+" / "+status;
         var active=topology.active().get(id);if(active==null||active.revision()!=registration.revision())status="WAITING: configuration event / "+status;
         if(unboundBindings.contains(id))status="UNBOUND: saved inventory retained / "+status;
@@ -260,7 +298,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
             routes.add(new FluidView.PipeRoute(pipe.id(),nodeLabel(snapshot.graph().reservoirs().get(pipe.first()).id()),nodeLabel(snapshot.graph().reservoirs().get(pipe.second()).id())));
         }
         return new FluidView(id,registration.revision(),snapshot.clock().committedTick(),topology.onlineTick(),status,state,flow,history,devicePressureChange,true,
-                snapshot.lastResult().map(PassiveIntervalSolver.Result::advancedSeconds).orElse(0.0),snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes);
+                snapshot.lastResult().map(PassiveIntervalSolver.Result::advancedSeconds).orElse(0.0),snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes,filter);
     }
     private String nodeLabel(long id) {
         var registration=topology.active().get(id);if(registration==null)return "Junction "+id;

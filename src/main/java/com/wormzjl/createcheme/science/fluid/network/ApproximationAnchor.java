@@ -31,7 +31,7 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
         // data, so a saved island's inventory and energy stay readable across a change of it.
         var built=new Revisions(new WeakReference<>(model),thermodynamic,
                 thermodynamic+":velocity-clamp-v1:trace-relative-v1:max="+Double.toHexString(model.maximumVelocityMetresPerSecond())
-                        +":trace="+Double.toHexString(model.traceTruncation().cutoffMoleFraction()));
+                        +":trace="+Double.toHexString(model.traceTruncation().cutoffMoleFraction())+":solids-v1:"+model.solidSettings);
         cached=built;return built;
     }
     public static ApproximationAnchor fromFull(FluidThermodynamics model,PassiveIntervalSolver.Result full) {
@@ -64,6 +64,7 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
             if(states.size()!=references.size()||!actualModes.equals(expectedModes))throw new ApproximationRejected("Device regime changed");
             for(int i=0;i<states.size();i++) {
                 var old=references.get(i).state();var state=states.get(i);
+                if(state.solidMoments().mass()>0||com.wormzjl.createcheme.science.fluid.transport.SolidMobility.immobileLiquid(model,state))throw new ApproximationRejected("Solid transition requires a full solve");
                 if(!InventoryEquilibrium.regime(old).equals(InventoryEquilibrium.regime(state)))throw new ApproximationRejected("Phase regime changed");
                 if(Math.abs(state.pressure()-old.pressure())>.01*old.pressure()+1||Math.abs(state.temperature()-old.temperature())>1
                         ||Math.abs(state.vaporVolume()/state.volume()-old.vaporVolume()/old.volume())>.01

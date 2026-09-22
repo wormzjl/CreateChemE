@@ -364,7 +364,7 @@ public final class ProcessSolveServices {
         }
         ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken,java.util.function.LongSupplier nanoClock) {
             Objects.requireNonNull(cancellationToken);Objects.requireNonNull(nanoClock);long start=nanoClock.getAsLong();
-            long ticks=Math.round(durationSeconds*20);boolean eligible=fallback.enabled()&&fallback.anchor().orElseThrow().propertyRevision().equals(ApproximationAnchor.revision(model))&&fallback.allowance().permits(ticks,fallback.cadenceTicks());
+            long ticks=Math.round(durationSeconds*20);boolean eligible=fallback.enabled()&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(model,snapshot)&&fallback.anchor().orElseThrow().propertyRevision().equals(ApproximationAnchor.revision(model))&&fallback.allowance().permits(ticks,fallback.cadenceTicks());
             long[] elapsed={0};
             Runnable hard=()->{cancellationToken.throwIfCancellationRequested();elapsed[0]=nanoClock.getAsLong()-start;if(elapsed[0]>=wallBudgetNanos)throw new FluidWallDeadline();};
             Runnable checkpoint=()->{hard.run();if(eligible&&elapsed[0]>=fallback.softBudgetNanos())throw new FluidSoftDeadline();};

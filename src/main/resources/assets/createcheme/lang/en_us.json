@@ -57,5 +57,7 @@
   "material.createcheme.crude_pc09": "Crude oil",
   "material.createcheme.crude_pc10": "Crude oil",
   "material.createcheme.crude_pc11": "Crude oil",
-  "material.createcheme.crude_pc12": "Crude oil"
+  "material.createcheme.crude_pc12": "Crude oil",
+  "block.createcheme.inline_filter": "In-line Filter",
+  "item.createcheme.recovered_solids": "Recovered Solids"
 }

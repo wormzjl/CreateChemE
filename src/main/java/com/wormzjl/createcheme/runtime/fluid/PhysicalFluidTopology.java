@@ -26,7 +26,7 @@ public final class PhysicalFluidTopology {
         }
         boolean boundary(){return kind==TopologyCompiler.Kind.RESERVOIR||kind==TopologyCompiler.Kind.GENERATOR||kind==TopologyCompiler.Kind.VOID;}
         boolean actuator(){return kind==TopologyCompiler.Kind.PUMP||kind==TopologyCompiler.Kind.VALVE;}
-        boolean connects(Direction direction){return !actuator()||direction.x*facing.x+direction.y*facing.y+direction.z*facing.z!=0;}
+        boolean connects(Direction direction){return !actuator()&&kind!=TopologyCompiler.Kind.FILTER||direction.x*facing.x+direction.y*facing.y+direction.z*facing.z!=0;}
     }
     public record View(int islandIndex,long pipeId,boolean forward) {}
     public record Island(Set<Long> physicalIds,PassiveNetwork graph,Optional<String> error) {
@@ -36,7 +36,11 @@ public final class PhysicalFluidTopology {
         public Compiled {islands=List.copyOf(islands);var copied=new HashMap<Long,List<View>>();pipeViews.forEach((id,views)->copied.put(id,List.copyOf(views)));pipeViews=Map.copyOf(copied);diagnostics=Map.copyOf(diagnostics);}
     }
     private record Point(double x,double y,double z) {}
+    public static long filterIdentity(long physicalId){return Long.MIN_VALUE+physicalId;}
     public static Compiled compile(Collection<Device> devices,Map<Long,PassiveNetwork.Reservoir> boundaryStates) {
+        return compile(devices,boundaryStates,Map.of(),boundaryStates.values().stream().findFirst().map(PassiveNetwork.Reservoir::state).orElse(null));
+    }
+    public static Compiled compile(Collection<Device> devices,Map<Long,PassiveNetwork.Reservoir> boundaryStates,Map<Long,InlineFilter> filterStock,com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.State idleSeed) {
         var physical=new TreeMap<Long,Device>();var positions=new HashMap<Position,Device>();var points=new HashMap<Long,Point>();
         var nodes=new ArrayList<TopologyCompiler.Node>();var links=new ArrayList<TopologyCompiler.Link>();var linkOwner=new HashMap<Long,Long>();
         for(var d:devices) {
@@ -79,7 +83,7 @@ public final class PhysicalFluidTopology {
                 indices.put(id,reservoirs.size());var node=retained.get(id);var boundary=boundaryStates.get(id);
                 reservoirs.add(boundary!=null?boundary:new PassiveNetwork.Reservoir(id,node.elevation(),seed,PassiveNetwork.NodeKind.JUNCTION));
             }
-            var pipes=new ArrayList<PassiveNetwork.Pipe>();int islandIndex=islands.size();
+            var pipes=new ArrayList<PassiveNetwork.Pipe>();int islandIndex=islands.size();var positiveFilterEdges=new HashMap<Long,Set<Long>>();
             for(var run:compiled.runs())if(members.contains(run.first())) {
                 // A passive return to the same zero-holdup node has no driving pressure or owned stock.
                 if(run.first()==run.second()){for(var segment:run.segments())diagnostics.put(linkOwner.get(segment.linkId()),"NO FLOW: passive return loop");continue;}
@@ -98,13 +102,32 @@ public final class PhysicalFluidTopology {
                 } else {
                     pipes.add(new PassiveNetwork.Pipe(pipeId,fromEnd?b:a,fromEnd?a:b,sections,fromStart?control(start,compiled.invalidPumpCycles()):fromEnd?control(end,compiled.invalidPumpCycles()):new FlowControl.Passive()));
                     mapViews(views,run,linkOwner,physical,islandIndex,pipeId,!fromEnd);
+                    if(start!=null&&start.kind==TopologyCompiler.Kind.FILTER&&positiveSide(start,points.get(other(startLink,run.first()))))positiveFilterEdges.computeIfAbsent(start.id,k->new HashSet<>()).add(pipeId);
+                    if(end!=null&&end.kind==TopologyCompiler.Kind.FILTER&&positiveSide(end,points.get(other(endLink,run.second()))))positiveFilterEdges.computeIfAbsent(end.id,k->new HashSet<>()).add(pipeId);
                 }
+            }
+            for(long id:new TreeSet<>(members))if(physical.containsKey(id)&&physical.get(id).kind==TopologyCompiler.Kind.FILTER){
+                int negative=indices.get(id),positive=reservoirs.size();var device=physical.get(id);
+                reservoirs.add(new PassiveNetwork.Reservoir(virtual--,device.position.y,seed,PassiveNetwork.NodeKind.JUNCTION));
+                var positiveEdges=positiveFilterEdges.getOrDefault(id,Set.of());
+                for(int i=0;i<pipes.size();i++){var p=pipes.get(i);if(positiveEdges.contains(p.id()))pipes.set(i,new PassiveNetwork.Pipe(p.id(),p.first()==negative?positive:p.first(),p.second()==negative?positive:p.second(),p.sections(),p.control(),p.blockedDirections(),p.filter()));}
+                long identity=filterIdentity(id);pipes.add(new PassiveNetwork.Pipe(identity,negative,positive,device.geometry).withFilter(filterStock.getOrDefault(id,InlineFilter.empty())));
+                views.put(id,List.of(new View(islandIndex,identity,true)));
             }
             var ids=new TreeSet<Long>();for(long id:members)if(physical.containsKey(id))ids.add(id);
             Optional<String> error=ids.stream().filter(compiled.invalidPumpCycles()::contains).findFirst().map(id->diagnostics.get(id));
             islands.add(new Island(ids,new PassiveNetwork(reservoirs,pipes),error));
         }
         for(var d:physical.values())if(d.kind==TopologyCompiler.Kind.PIPE&&!views.containsKey(d.id))diagnostics.putIfAbsent(d.id,"NO FLOW: unconnected pipe");
+        // An unconnected filter still owns its cake. Equal fixed property ports have exactly zero flow
+        // and no finite fluid ownership; they keep the filter's simulation clock available for later edits.
+        for(var device:physical.values())if(device.kind==TopologyCompiler.Kind.FILTER&&!views.containsKey(device.id)){
+            if(idleSeed==null)throw new IllegalArgumentException("Disconnected filter needs a zero-flow property seed");
+            long identity=filterIdentity(device.id);int island=islands.size();double y=device.position.y;
+            var dormant=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(virtual--,y,idleSeed,PassiveNetwork.NodeKind.GENERATOR),new PassiveNetwork.Reservoir(virtual--,y,idleSeed,PassiveNetwork.NodeKind.VOID)),
+                    List.of(new PassiveNetwork.Pipe(identity,0,1,device.geometry).withFilter(filterStock.getOrDefault(device.id,InlineFilter.empty())).withBlockedDirections(3)));
+            islands.add(new Island(Set.of(device.id),dormant,Optional.empty()));views.put(device.id,List.of(new View(island,identity,true)));diagnostics.put(device.id,"NO FLOW: disconnected filter");
+        }
         return new Compiled(islands,views,diagnostics);
     }
     private static long other(TopologyCompiler.Link link,long id){return link.first()==id?link.second():link.first();}
@@ -118,6 +141,7 @@ public final class PhysicalFluidTopology {
         if(device.control instanceof FlowControl.Pump pump&&invalidPumps.contains(device.id))return new FlowControl.Pump(0,pump.maximumAddedPressure(),pump.efficiency());
         return device.control;
     }
+    private static boolean positiveSide(Device device,Point neighbor){var p=device.position;var d=device.facing;return (neighbor.x-p.x)*d.x+(neighbor.y-p.y)*d.y+(neighbor.z-p.z)*d.z>0;}
     private static boolean outlet(Device device,Point neighbor) {
         if(device==null||!device.actuator())return false;var p=device.position;var d=device.facing;
         return (neighbor.x-p.x)*d.x+(neighbor.y-p.y)*d.y+(neighbor.z-p.z)*d.z>0;

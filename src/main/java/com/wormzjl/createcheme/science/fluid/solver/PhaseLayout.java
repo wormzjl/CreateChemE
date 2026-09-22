@@ -4,6 +4,7 @@ import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import com.wormzjl.createcheme.science.thermo.PhaseSupport;
 import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
 import java.util.*;
+import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 
 /** Fixed phase active set for one Newton pass. Evaluates properties directly; never runs a nested flash. */
 public final class PhaseLayout {
@@ -22,6 +23,9 @@ public final class PhaseLayout {
     private final double amountScale,energyScale;
     private final double[] componentScales,differenceScales;
     private final boolean liquidActive,vaporActive;
+    private final int solidIndex;
+    private final SolidInventory solidBasis;
+    private final double[] solidScale,solidReference;
 
     public PhaseLayout(FluidThermodynamics model,FluidThermodynamics.State seed) {
         this(model,seed,null);
@@ -42,6 +46,10 @@ public final class PhaseLayout {
      */
     public PhaseLayout(FluidThermodynamics model,FluidThermodynamics.State seed,boolean[] componentMask,double[] conservedReference,
                        PhaseSupport[] support) {
+        this(model,seed,componentMask,conservedReference,support,seed.solidMoments().mass()>0);
+    }
+    public PhaseLayout(FluidThermodynamics model,FluidThermodynamics.State seed,boolean[] componentMask,double[] conservedReference,
+                       PhaseSupport[] support,boolean solidSupport) {
         this.model=Objects.requireNonNull(model);
         double[] l=seed.liquidView(),v=seed.vaporView();var present=new ArrayList<Integer>();
         if(componentMask!=null&&componentMask.length!=l.length)throw new IllegalArgumentException("Component mask mismatch");
@@ -67,7 +75,10 @@ public final class PhaseLayout {
         }
         waterLiquidIndex=seed.waterLiquid()>0?offset++:-1;waterVaporIndex=seed.waterVapor()>0?offset++:-1;
         temperatureIndex=offset++;pressureIndex=offset++;
-        partialPressureIndex=vaporActive&&waterVaporIndex>=0?offset++:-1;size=offset;
+        partialPressureIndex=vaporActive&&waterVaporIndex>=0?offset++:-1;
+        solidIndex=solidSupport?offset:-1;if(solidSupport)offset+=3;size=offset;
+        solidBasis=seed.solids();solidReference=seed.solidMoments().values();
+        solidScale=new double[]{Math.max(1e-12,seed.mass()),Math.max(1e-12,seed.volume()),Math.max(1e-9,seed.mass()*1000)};
         amountScale=Math.max(1e-12,sum(l)+sum(v)+seed.waterLiquid()+seed.waterVapor());
         energyScale=Math.max(1,Math.max(Math.abs(seed.internalEnergy()),amountScale*FluidThermodynamics.R*seed.temperature()));
         if(conservedReference!=null&&conservedReference.length!=l.length+1)throw new IllegalArgumentException("Balance reference basis mismatch");
@@ -75,6 +86,7 @@ public final class PhaseLayout {
         componentScales=new double[l.length+1];for(int c=0;c<l.length;c++)componentScales[c]=!resolveTraces||conservedReference!=null&&conservedReference[c]==0?amountScale:Math.max(1e-30,l[c]+v[c]);
         componentScales[l.length]=!resolveTraces||conservedReference!=null&&conservedReference[l.length]==0?amountScale:Math.max(1e-30,seed.waterLiquid()+seed.waterVapor());
         differenceScales=encode(seed,l,v);
+        if(solidIndex>=0)for(int i=0;i<3;i++)differenceScales[solidIndex+i]=Math.max(1e-6,differenceScales[solidIndex+i]);
         if(!resolveTraces)for(int local=0;local<size;local++)if(totalAmountVariable(local))differenceScales[local]=Math.max(1e-4,differenceScales[local]);
         if(conservedReference!=null) {
             for(int c:components)if(conservedReference[c]==0){int at=amountIndex[c];differenceScales[at]=Math.max(1e-4,differenceScales[at]);}
@@ -93,6 +105,7 @@ public final class PhaseLayout {
     }
     /** Bulk component transport is independent of phase split, T and P at fixed total amounts and edge mass flow. */
     public boolean totalAmountVariable(int local) {
+        if(solidIndex>=0&&local>=solidIndex&&local<solidIndex+3)return true;
         if(local==waterLiquidIndex||local==waterVaporIndex)return true;
         for(int component:components)if(local==amountIndex[component])return true;
         return false;
@@ -146,6 +159,7 @@ public final class PhaseLayout {
         if(waterVaporIndex>=0)x[waterVaporIndex]=state.waterVapor()/amountScale;
         x[temperatureIndex]=Math.log(state.temperature()/350);x[pressureIndex]=Math.log(state.pressure()/1e5);
         if(partialPressureIndex>=0)x[partialPressureIndex]=Math.log(state.hydrocarbonPartialPressure()/1e5);
+        if(solidIndex>=0){var moments=state.solidMoments().values();for(int i=0;i<3;i++)x[solidIndex+i]=moments[i]/solidScale[i];}
         return x;
     }
     public FluidThermodynamics.State decode(double[] variables,int offset) {
@@ -170,7 +184,9 @@ public final class PhaseLayout {
         double wv=waterVaporIndex<0?0:amountScale*variables[offset+waterVaporIndex];
         double t=350*Math.exp(variables[offset+temperatureIndex]),p=1e5*Math.exp(variables[offset+pressureIndex]);
         double pc=partialPressureIndex>=0?1e5*Math.exp(variables[offset+partialPressureIndex]):vaporActive?p:0;
-        return model.adoptingState(t,p,l,v,wl,wv,pc,prepared);
+        var state=model.adoptingState(t,p,l,v,wl,wv,pc,prepared);
+        return solidIndex<0?state:state.withSolidState(solidBasis,new SolidInventory.Moments(
+                variables[offset+solidIndex]*solidScale[0],variables[offset+solidIndex+1]*solidScale[1],variables[offset+solidIndex+2]*solidScale[2]));
     }
     /** Target amounts/U may include backward-Euler edge contributions computed in the same residual evaluation. */
     public void residual(FluidThermodynamics.State state,double[] targetAmounts,double targetEnergy,double targetVolume,double[] result,int offset,double[] variables) {
@@ -196,6 +212,7 @@ public final class PhaseLayout {
         if(waterLiquidIndex>=0||waterVaporIndex>=0)result[row++]=(state.waterLiquid()+state.waterVapor()-targetAmounts[l.length])/componentScales[l.length];
         result[row++]=(state.internalEnergy()-targetEnergy)/energyScale;
         result[row++]=(state.volume()-targetVolume)/targetVolume;
+        if(solidIndex>=0){solidRows(state,solidReference,false,result,offset);row+=3;}
         return row;
     }
     /**
@@ -236,7 +253,14 @@ public final class PhaseLayout {
         result[row++]=netMassFlow; // 1 kg/s reference scale
         result[row++]=(state.enthalpy()/state.mass()-incomingSpecificEnthalpy)/Math.max(1,energyScale/state.mass());
         result[row++]=sum(n)/amountScale-1;
+        if(solidIndex>=0){var target=solidReference.clone();for(int i=0;i<3;i++)target[i]/=state.mass();solidRows(state,target,true,result,offset);row+=3;}
         return row;
+    }
+    /** Three aggregate balances; population identities are reconstructed outside Newton. */
+    public void solidRows(FluidThermodynamics.State state,double[] target,boolean junction,double[] result,int offset) {
+        if(solidIndex<0)return;
+        var moments=state.solidMoments().values();int row=offset+componentBalanceCount()+2;
+        for(int i=0;i<3;i++)result[row+i]=junction?(moments[i]/state.mass()-target[i])/(solidScale[i]/solidScale[0]):(moments[i]-target[i])/solidScale[i];
     }
     private void equilibriumResidual(FluidThermodynamics.State state,double[] l,double[] v,double[] result,int row,int offset,double[] variables,
                                      FluidThermodynamics.Prepared prepared) {

@@ -56,7 +56,7 @@ public final class ModuleTransferPlanner {
             }
             try {
                 var full=solver.solveTrial(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
-                return completed(full,trial,mapped,Map.of());
+                if(full.boundaries().stream().noneMatch(b->mapped.containsKey(b.nodeId())&&!b.solids().empty()))return completed(full,trial,mapped,Map.of());
             }catch(SparseNewton.Nonconvergence|IllegalArgumentException infeasible) {
                 checkpoint.run();
             }
@@ -68,7 +68,7 @@ public final class ModuleTransferPlanner {
             double kg=Math.min(input.maximumKg,input.remaining.massKg());
             for(int attempt=0;attempt<12&&kg>0;attempt++,kg*=.5) {
                 checkpoint.run();var material=input.remaining.takeMass(kg).delivered();var rates=material.moles();for(int c=0;c<rates.length;c++)rates[c]/=seconds;
-                var transfer=new ScheduledTransfer.Injection(boundary,index.get(input.reservoirId),rates,material.energyJoule()/seconds);
+                var transfer=new ScheduledTransfer.Injection(boundary,index.get(input.reservoirId),rates,material.energyJoule()/seconds,material.solids().scale(1/seconds));
                 var trial=new ArrayList<>(accepted);trial.add(transfer);
                 try {
                     var result=solver.solveTrial(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
@@ -84,6 +84,7 @@ public final class ModuleTransferPlanner {
                 checkpoint.run();var transfer=new ScheduledTransfer.Withdrawal(boundary,index.get(withdrawal.reservoirId),kg/seconds);var trial=new ArrayList<>(accepted);trial.add(transfer);
                 try {
                     var result=solver.solveTrial(new PassiveNetwork(original.reservoirs(),original.pipes(),trial),seconds,settings,checkpoint);
+                    if(result.boundaries().stream().anyMatch(b->b.nodeId()==boundary&&!b.solids().empty()))break;
                     accepted.add(transfer);candidate=result;withdrawalIds.put(boundary,withdrawal.id);break;
                 }catch(SparseNewton.Nonconvergence|IllegalArgumentException infeasible) {}
             }
@@ -105,6 +106,7 @@ public final class ModuleTransferPlanner {
         return new Proposal(result,delivered,withdrawn);
     }
     private void validateBasis(MaterialParcel parcel) {
+        model.solids.validate(parcel.solids());
         if(!parcel.reference().components().equals(reference.components())||!parcel.reference().revision().equals(reference.revision())||!Arrays.equals(parcel.molecularWeights(),weights))throw new IllegalArgumentException("Module material needs explicit basis/reference migration");
         for(int c=0;c<weights.length;c++)if(parcel.reference().offsetJoulesPerMole(c)!=0)throw new IllegalArgumentException("Module material needs explicit energy migration");
     }

@@ -14,6 +14,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> PRESSURE_CONTROL_VALVE=ITEMS.registerSimpleBlockItem("pressure_control_valve",ModBlocks.PRESSURE_CONTROL_VALVE);
     public static final DeferredItem<BlockItem> FLUID_GENERATOR=ITEMS.registerSimpleBlockItem("fluid_generator",ModBlocks.FLUID_GENERATOR);
     public static final DeferredItem<BlockItem> FLUID_VOID=ITEMS.registerSimpleBlockItem("fluid_void",ModBlocks.FLUID_VOID);
+    public static final DeferredItem<BlockItem> INLINE_FILTER=ITEMS.registerSimpleBlockItem("inline_filter",ModBlocks.INLINE_FILTER);
+    public static final DeferredItem<com.wormzjl.createcheme.world.item.RecoveredSolidsItem> RECOVERED_SOLIDS=ITEMS.registerItem("recovered_solids",com.wormzjl.createcheme.world.item.RecoveredSolidsItem::new);
     public static final DeferredItem<net.minecraft.world.item.Item> FLUID_DEBUGGER=ITEMS.registerSimpleItem("fluid_debugger",new net.minecraft.world.item.Item.Properties().stacksTo(1));
 
     public static final DeferredItem<BlockItem> COLUMN_CALCULATOR_V3 = ITEMS.registerSimpleBlockItem(

@@ -6,6 +6,7 @@ import com.wormzjl.createcheme.science.fluid.linalg.*;
 import com.wormzjl.createcheme.science.fluid.solver.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
+import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 
 /** Conservative reconstruction for a candidate's already-solved flows; it does not solve hydraulics or flash. */
 public final class ConservativeTransport {
@@ -66,13 +67,15 @@ public final class ConservativeTransport {
             return 31*(31*(31*size+Arrays.hashCode(offsets))+Arrays.hashCode(rows))+Arrays.hashCode(zeros);
         }
     }
-    public record BoundaryTransfer(long nodeId,double[] moles,double totalEnergyJoule) {
-        public BoundaryTransfer{moles=moles.clone();}
+    public record BoundaryTransfer(long nodeId,double[] moles,double totalEnergyJoule,SolidInventory solids,int solidDirection) {
+        public BoundaryTransfer(long nodeId,double[] moles,double totalEnergyJoule){this(nodeId,moles,totalEnergyJoule,SolidInventory.EMPTY,0);}
+        public BoundaryTransfer{moles=moles.clone();Objects.requireNonNull(solids);if(solidDirection < -1||solidDirection > 1||!solids.empty()&&solidDirection==0)throw new IllegalArgumentException("Invalid solid boundary direction");}
         @Override public double[] moles(){return moles.clone();}
     }
     public record Projection(List<PassiveNetwork.Inventory> inventories,List<FluidThermodynamics.State> states,
-                             List<BoundaryTransfer> boundaries,double[] externalMoles,double externalEnergy,double pumpWork) {
-        public Projection{inventories=List.copyOf(inventories);states=List.copyOf(states);boundaries=List.copyOf(boundaries);externalMoles=externalMoles.clone();}
+                             List<BoundaryTransfer> boundaries,double[] externalMoles,double externalEnergy,double pumpWork,Map<Long,InlineFilter> filters) {
+        public Projection(List<PassiveNetwork.Inventory> inventories,List<FluidThermodynamics.State> states,List<BoundaryTransfer> boundaries,double[] externalMoles,double externalEnergy,double pumpWork){this(inventories,states,boundaries,externalMoles,externalEnergy,pumpWork,Map.of());}
+        public Projection{filters=Map.copyOf(filters);inventories=List.copyOf(inventories);states=List.copyOf(states);boundaries=List.copyOf(boundaries);externalMoles=externalMoles.clone();}
         @Override public double[] externalMoles(){return externalMoles.clone();}
     }
     /** One-shot: a caller with no retained island workspace builds fresh linear algebra, as before. */
@@ -94,66 +97,85 @@ public final class ConservativeTransport {
                                          double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace) {
         int nodes=graph.reservoirs().size(),components=model.hydrocarbon.componentCount()+1;
         if(candidate.size()!=nodes||flows.length!=graph.pipes().size()||heads.length!=flows.length||!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Invalid transport reconstruction");
+        var populationBasis=new TreeMap<SolidInventory.Key,SolidInventory.Population>();
+        for(var node:graph.reservoirs())for(var population:node.inventory().solids().populations())populationBasis.merge(population.key(),population,(a,b)->{if(!a.material().equals(b.material()))throw new IllegalArgumentException("Conflicting solid material definitions");return a;});
+        for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection in)for(var population:in.solidsPerSecond().populations())populationBasis.merge(population.key(),population,(a,b)->{if(!a.material().equals(b.material()))throw new IllegalArgumentException("Conflicting solid material definitions");return a;});
+        var populationKeys=List.copyOf(populationBasis.keySet());int conserved=components+populationKeys.size();
         int[] index=new int[nodes];Arrays.fill(index,-1);int count=0;
         double[] molecularWeight=model.molecularWeights();
-        double[][] old=new double[nodes][],fractions=new double[nodes][components];
+        double[][] old=new double[nodes][],fractions=new double[nodes][conserved];
         double[] endMass=new double[nodes],incoming=new double[nodes],outgoing=new double[nodes];
         for(int node=0;node<nodes;node++) {
             var reservoir=graph.reservoirs().get(node);old[node]=reservoir.inventory().moles();
             for(int c=0;c<components;c++)endMass[node]+=old[node][c]*molecularWeight[c];
+            endMass[node]+=reservoir.inventory().solids().massKg();
             if(!reservoir.fixed())index[node]=count++;
-            else{var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)fractions[node][c]=n[c]*molecularWeight[c]/candidate.get(node).mass();}
+            else{var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)fractions[node][c]=n[c]*molecularWeight[c]/candidate.get(node).mass();
+                for(int c=0;c<populationKeys.size();c++)fractions[node][components+c]=reservoir.inventory().solids().mass(populationKeys.get(c))/candidate.get(node).mass();}
         }
         for(int edge=0;edge<flows.length;edge++) {
             if(!Double.isFinite(flows[edge])||!Double.isFinite(heads[edge]))throw new IllegalArgumentException("Nonfinite candidate flow/head");
             var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();double massRate=Math.abs(flows[edge]);
-            outgoing[donor]+=massRate;incoming[receiver]+=massRate;endMass[donor]-=dt*massRate;endMass[receiver]+=dt*massRate;
+            double deliveredRate=pipe.filter()==null?massRate:massRate*(1-candidate.get(donor).solidMoments().mass()/candidate.get(donor).mass());
+            outgoing[donor]+=massRate;incoming[receiver]+=deliveredRate;endMass[donor]-=dt*massRate;endMass[receiver]+=dt*deliveredRate;
         }
         for(var transfer:graph.scheduledTransfers()) {
             int node=transfer.node();
             if(transfer instanceof ScheduledTransfer.Withdrawal out){outgoing[node]+=out.massKgPerSecond();endMass[node]-=dt*out.massKgPerSecond();}
-            else if(transfer instanceof ScheduledTransfer.Injection in){var n=in.molesPerSecond();for(int c=0;c<components;c++)endMass[node]+=dt*n[c]*molecularWeight[c];}
+            else if(transfer instanceof ScheduledTransfer.Injection in){var n=in.molesPerSecond();for(int c=0;c<components;c++)endMass[node]+=dt*n[c]*molecularWeight[c];endMass[node]+=dt*in.solidsPerSecond().massKg();}
         }
         var columns=new ArrayList<TreeMap<Integer,Double>>();for(int c=0;c<count;c++)columns.add(new TreeMap<>());
-        double[][] rhs=new double[components][count];
+        double[][] rhs=new double[conserved][count];
         for(int node=0;node<nodes;node++)if(index[node]>=0) {
             checkpoint.run();int row=index[node];var reservoir=graph.reservoirs().get(node);
             if(reservoir.junction()) {
                 add(columns,row,row,1);
-                if(incoming[node]==0){var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)rhs[c][row]=n[c]*molecularWeight[c]/candidate.get(node).mass();}
+                if(incoming[node]==0){var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)rhs[c][row]=n[c]*molecularWeight[c]/candidate.get(node).mass();
+                    for(int c=0;c<populationKeys.size();c++)rhs[components+c][row]=reservoir.inventory().solids().mass(populationKeys.get(c))/candidate.get(node).mass();}
             }else {
                 if(!(endMass[node]>0)||!Double.isFinite(endMass[node]))throw new SparseNewton.Nonconvergence("Candidate overdraws a reservoir");
                 add(columns,row,row,endMass[node]+dt*outgoing[node]);
                 for(int c=0;c<components;c++)rhs[c][row]=old[node][c]*molecularWeight[c];
+                for(int c=0;c<populationKeys.size();c++)rhs[components+c][row]=reservoir.inventory().solids().mass(populationKeys.get(c));
             }
         }
+        var solidColumns=new ArrayList<TreeMap<Integer,Double>>();for(var column:columns)solidColumns.add(new TreeMap<>(column));
         for(int edge=0;edge<flows.length;edge++) {
             var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
             if(index[receiver]<0||flows[edge]==0)continue;
             double weight=graph.reservoirs().get(receiver).junction()?Math.abs(flows[edge])/incoming[receiver]:dt*Math.abs(flows[edge]);
-            if(index[donor]>=0)add(columns,index[donor],index[receiver],-weight);
-            else for(int c=0;c<components;c++)rhs[c][index[receiver]]+=weight*fractions[donor][c];
+            if(index[donor]>=0){add(columns,index[donor],index[receiver],-weight);if(pipe.filter()==null)add(solidColumns,index[donor],index[receiver],-weight);}
+            else for(int c=0;c<conserved;c++)if(c<components||pipe.filter()==null)rhs[c][index[receiver]]+=weight*fractions[donor][c];
         }
         for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection in&&index[in.node()]>=0) {
             var n=in.molesPerSecond();for(int c=0;c<components;c++)rhs[c][index[in.node()]]+=dt*n[c]*molecularWeight[c];
+            for(int c=0;c<populationKeys.size();c++)rhs[components+c][index[in.node()]]+=dt*in.solidsPerSecond().mass(populationKeys.get(c));
         }
         double[][] solved;
         // One backward-error check on the first component vector qualifies this factorization; the
         // remaining component columns are bounded by the junction continuity and conservation
         // checks below, which are the quantities this solve exists to produce.
         try{var system=matrix(columns);
-            solved=(workspace==null?SparseLuSolver.factor(system):workspace.factor(system))
-                    .solveMultiple(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);}
+            if(populationKeys.isEmpty()||graph.pipes().stream().noneMatch(p->p.filter()!=null))solved=(workspace==null?SparseLuSolver.factor(system):workspace.factor(system)).solveMultiple(rhs,SparseLuSolver.Verification.UNTIL_VERIFIED);
+            else {
+                solved=new double[conserved][];
+                var fluid=(workspace==null?SparseLuSolver.factor(system):workspace.factor(system)).solveMultiple(Arrays.copyOf(rhs,components),SparseLuSolver.Verification.UNTIL_VERIFIED);
+                var solidSystem=matrix(solidColumns);var solids=(workspace==null?SparseLuSolver.factor(solidSystem):workspace.factor(solidSystem)).solveMultiple(Arrays.copyOfRange(rhs,components,conserved),SparseLuSolver.Verification.UNTIL_VERIFIED);
+                System.arraycopy(fluid,0,solved,0,components);System.arraycopy(solids,0,solved,components,solids.length);
+            }}
         catch(SparseLuSolver.SolveFailure failure){throw new SparseNewton.Nonconvergence("Transport reconstruction failed: "+failure.getMessage());}
         double[][] moles=new double[nodes][];var states=new ArrayList<FluidThermodynamics.State>();
         for(int node=0;node<nodes;node++) {
             var reservoir=graph.reservoirs().get(node);if(index[node]<0){moles[node]=old[node];states.add(candidate.get(node));continue;}
             double total=0,molesPerKg=0;
             for(int c=0;c<components;c++){double w=solved[c][index[node]];if(w<0||!Double.isFinite(w))throw new SparseNewton.Nonconvergence("Negative transport reconstruction");fractions[node][c]=w;total+=w;molesPerKg+=w/molecularWeight[c];}
+            for(int c=components;c<conserved;c++){double w=solved[c][index[node]];if(w<0||!Double.isFinite(w))throw new SparseNewton.Nonconvergence("Negative solid reconstruction");fractions[node][c]=w;total+=w;}
             if(Math.abs(total-1)>1e-8)throw new SparseNewton.Nonconvergence("Junction mass continuity does not close");
             double mass=reservoir.junction()?PhaseLayout.sum(PhaseLayout.totalAmounts(candidate.get(node)))/molesPerKg:endMass[node];
             moles[node]=new double[components];for(int c=0;c<components;c++)moles[node][c]=mass*fractions[node][c]/molecularWeight[c];
-            states.add(repartition(model,candidate.get(node),moles[node]));
+            var populations=new ArrayList<SolidInventory.Population>();
+            for(int c=0;c<populationKeys.size();c++){var source=populationBasis.get(populationKeys.get(c));populations.add(new SolidInventory.Population(source.material(),source.size(),mass*fractions[node][components+c]));}
+            states.add(repartition(model,candidate.get(node),moles[node]).withSolids(new SolidInventory(populations)));
         }
         double[] energy=new double[nodes];for(int node=0;node<nodes;node++)energy[node]=graph.reservoirs().get(node).inventory().internalEnergy();
         double[] external=new double[components];double externalEnergy=0,pumpWork=0;var boundaries=new ArrayList<BoundaryTransfer>();
@@ -168,30 +190,37 @@ public final class ConservativeTransport {
                 for(int c=0;c<components;c++){moved[c]=dt*n[c];mass+=moved[c]*molecularWeight[c];}
                 movedEnergy=dt*in.totalEnergyPerSecond();
             }
+            SolidInventory movedSolids;int solidDirection;
+            if(transfer instanceof ScheduledTransfer.Withdrawal out){movedSolids=state.solids().scale(dt*out.massKgPerSecond()/state.mass());solidDirection=-1;}
+            else{movedSolids=((ScheduledTransfer.Injection)transfer).solidsPerSecond().scale(dt);solidDirection=1;mass+=movedSolids.massKg();}
             energy[node]+=movedEnergy-mass*PassiveStepSolver.GRAVITY*graph.reservoirs().get(node).elevation();
             for(int c=0;c<components;c++)external[c]+=moved[c];externalEnergy+=movedEnergy;
-            boundaries.add(new BoundaryTransfer(transfer.id(),moved,movedEnergy));
+            boundaries.add(new BoundaryTransfer(transfer.id(),moved,movedEnergy,movedSolids,solidDirection));
         }
+        var filters=new HashMap<Long,InlineFilter>();
         for(int edge=0;edge<flows.length;edge++) {
             checkpoint.run();var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
             var upstream=states.get(donor);double moved=dt*Math.abs(flows[edge]),upstreamZ=graph.reservoirs().get(donor).elevation();
             double movedEnergy=moved*(upstream.enthalpy()/upstream.mass()+PassiveStepSolver.GRAVITY*upstreamZ);
             energy[donor]-=movedEnergy-moved*PassiveStepSolver.GRAVITY*upstreamZ;
-            energy[receiver]+=movedEnergy-moved*PassiveStepSolver.GRAVITY*graph.reservoirs().get(receiver).elevation();
+            double deliveredEnergy=movedEnergy,deliveredMass=moved;SolidInventory movedSolids=upstream.solids().scale(moved/upstream.mass());
+            if(pipe.filter()!=null){double capturedEnergy=moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+upstream.solidMoments().mass()/upstream.mass()*PassiveStepSolver.GRAVITY*upstreamZ);
+                filters.put(pipe.id(),pipe.filter().add(movedSolids,capturedEnergy));deliveredEnergy-=capturedEnergy;deliveredMass-=movedSolids.massKg();}
+            energy[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*graph.reservoirs().get(receiver).elevation();
             double work=0;
             if(pipe.control() instanceof FlowControl.Pump pump&&flows[edge]>0){var suction=states.get(pipe.first());work=dt*flows[edge]*suction.volume()/suction.mass()*Math.max(0,heads[edge])/pump.efficiency();energy[receiver]+=work;pumpWork+=work;}
             if(graph.reservoirs().get(donor).fixed()||graph.reservoirs().get(receiver).fixed()) {
                 var transferred=new double[components];for(int c=0;c<components;c++)transferred[c]=moved*fractions[donor][c]/molecularWeight[c];
-                if(graph.reservoirs().get(donor).fixed()){boundaries.add(new BoundaryTransfer(graph.reservoirs().get(donor).id(),transferred,movedEnergy));for(int c=0;c<components;c++)external[c]+=transferred[c];externalEnergy+=movedEnergy;}
-                if(graph.reservoirs().get(receiver).fixed()){var removed=transferred.clone();for(int c=0;c<components;c++){removed[c]=-removed[c];external[c]+=removed[c];}boundaries.add(new BoundaryTransfer(graph.reservoirs().get(receiver).id(),removed,-movedEnergy-work));externalEnergy-=movedEnergy+work;}
+                if(graph.reservoirs().get(donor).fixed()){boundaries.add(new BoundaryTransfer(graph.reservoirs().get(donor).id(),transferred,movedEnergy,upstream.solids().scale(moved/upstream.mass()),1));for(int c=0;c<components;c++)external[c]+=transferred[c];externalEnergy+=movedEnergy;}
+                if(graph.reservoirs().get(receiver).fixed()){var removed=transferred.clone();for(int c=0;c<components;c++){removed[c]=-removed[c];external[c]+=removed[c];}boundaries.add(new BoundaryTransfer(graph.reservoirs().get(receiver).id(),removed,-deliveredEnergy-work,pipe.filter()==null?movedSolids:SolidInventory.EMPTY,-1));externalEnergy-=deliveredEnergy+work;}
             }
         }
         var inventories=new ArrayList<PassiveNetwork.Inventory>();
         for(int node=0;node<nodes;node++) {
             var oldNode=graph.reservoirs().get(node);var state=states.get(node);
-            inventories.add(oldNode.fixed()?oldNode.inventory():oldNode.junction()?new PassiveNetwork.Inventory(state.volume(),moles[node],state.internalEnergy()):new PassiveNetwork.Inventory(oldNode.inventory().volume(),moles[node],energy[node]));
+            inventories.add(oldNode.fixed()?oldNode.inventory():oldNode.junction()?new PassiveNetwork.Inventory(state.volume(),moles[node],state.internalEnergy(),state.solids()):new PassiveNetwork.Inventory(oldNode.inventory().volume(),moles[node],energy[node],state.solids()));
         }
-        return new Projection(inventories,states,boundaries,external,externalEnergy,pumpWork);
+        return new Projection(inventories,states,boundaries,external,externalEnergy,pumpWork,filters);
     }
     static FluidThermodynamics.State repartition(FluidThermodynamics model,FluidThermodynamics.State state,double[] moles) {
         double[] oldL=state.liquidView(),oldV=state.vaporView(),l=new double[oldL.length],v=new double[l.length];
@@ -205,7 +234,7 @@ public final class ConservativeTransport {
         if(water==0){wl=state.vaporVolume()>0?0:moles[l.length];wv=moles[l.length]-wl;}
         else if(state.waterLiquid()<state.waterVapor()){wl=moles[l.length]*(state.waterLiquid()/water);wv=moles[l.length]-wl;}
         else{wv=moles[l.length]*(state.waterVapor()/water);wl=moles[l.length]-wv;}
-        return model.adoptingState(state.temperature(),state.pressure(),l,v,wl,wv,state.hydrocarbonPartialPressure(),null);
+        return model.adoptingState(state.temperature(),state.pressure(),l,v,wl,wv,state.hydrocarbonPartialPressure(),null).withSolidState(state.solids(),state.solidMoments());
     }
     private static void add(List<TreeMap<Integer,Double>> columns,int column,int row,double value){columns.get(column).merge(row,value,Double::sum);}
     private static SparseMatrix matrix(List<TreeMap<Integer,Double>> columns) {

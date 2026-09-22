@@ -6,6 +6,7 @@
     "createcheme:fluid_pump",
     "createcheme:pressure_control_valve",
     "createcheme:fluid_generator",
-    "createcheme:fluid_void"
+    "createcheme:fluid_void",
+    "createcheme:inline_filter"
   ]
 }

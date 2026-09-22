@@ -47,17 +47,23 @@ public final class PassiveIntervalSolver {
      * criteria and the pipe term are unchanged.
      */
     public Result solve(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,double startingStep) {
+        if(com.wormzjl.createcheme.science.fluid.transport.SolidMobility.monitored(initial)||model.solidSettings.immobileViscosity()<.002&&initial.reservoirs().stream().anyMatch(n->n.state().waterVolume()>0))return new SolidEventIntegrator(model,this).solve(initial,duration,settings,checkpoint,startingStep);
         return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.FULL,TrBdf2StepSolver.StageGuard.NONE,startingStep);
     }
     public Result solveApproximate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
-        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.APPROXIMATE,guard,settings.initialStep());
+        if(com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(model,initial))throw new ApproximationRejected("Solid/filter intervals require a full solve");
+        TrBdf2StepSolver.StageGuard checked=(states,modes)->{
+            for(var state:states)if(state.solidMoments().mass()>0||com.wormzjl.createcheme.science.fluid.transport.SolidMobility.immobileLiquid(model,state))throw new ApproximationRejected("Solid transition requires a full solve");
+            guard.check(states,modes);
+        };
+        return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.APPROXIMATE,checked,settings.initialStep());
     }
     /** The step the controller would try next after the last successful interval, before the
      * interval boundary truncated it; 0 until an interval has been integrated. */
     public double nextStepEstimate(){return nextStepEstimate;}
     private double nextStepEstimate;
 
-    private Result integrate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
+    Result integrate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
                              TrBdf2StepSolver.StageGuard guard,double startingStep) {
         if(!Double.isFinite(duration)||duration<=0)throw new IllegalArgumentException("Positive finite interval required");
         if(!Double.isFinite(startingStep)||startingStep<=0)throw new IllegalArgumentException("Positive finite starting step required");
@@ -75,7 +81,7 @@ public final class PassiveIntervalSolver {
             try {
                 var regimes=new RegimeTrace(guard,accepted);
                 PassiveStepSolver.Result coarse=null;
-                if(errorControl==ErrorControl.EMBEDDED&&initial.pipes().stream().noneMatch(pipe->pipe.control() instanceof FlowControl.PressureValve)) {
+                if(errorControl==ErrorControl.EMBEDDED&&!guard.requiresStepDoubling()&&!PassiveStepSolver.hasSolids(initial)&&initial.pipes().stream().noneMatch(pipe->pipe.control() instanceof FlowControl.PressureValve)) {
                     var trial=stepSolver.trial(accepted,step,checkpoint,acceptance,regimes);var full=trial.solution();coarse=full;
                     if(regimes.smooth()) {
                     double stateError=error(full.states(),trial.estimatedStates());
@@ -139,7 +145,7 @@ public final class PassiveIntervalSolver {
         if(states.size()!=graph.reservoirs().size())throw new IllegalArgumentException("State count mismatch");
         var reservoirs=new ArrayList<PassiveNetwork.Reservoir>();
         for(int i=0;i<states.size();i++){var old=graph.reservoirs().get(i);reservoirs.add(new PassiveNetwork.Reservoir(old.id(),old.elevation(),states.get(i),old.kind(),result.inventories().get(i)));}
-        return new PassiveNetwork(reservoirs,graph.pipes(),graph.scheduledTransfers());
+        return new PassiveNetwork(reservoirs,graph.pipes().stream().map(p->result.filters().containsKey(p.id())?p.withFilter(result.filters().get(p.id())):p).toList(),graph.scheduledTransfers());
     }
     private static double error(List<FluidThermodynamics.State> first,List<FluidThermodynamics.State> refined) {
         double error=0;
@@ -151,6 +157,9 @@ public final class PassiveIntervalSolver {
             error=Math.max(error,Math.abs(a.vaporVolume()/a.volume()-b.vaporVolume()/b.volume()));
             error=Math.max(error,Math.abs(a.waterVolume()/a.volume()-b.waterVolume()/b.volume()));
             error=Math.max(error,Math.abs(a.liquidVolume()/a.volume()-b.liquidVolume()/b.volume()));
+            error=Math.max(error,Math.abs(a.solidMoments().volume()/a.volume()-b.solidMoments().volume()/b.volume()));
+            var populations=new java.util.HashSet<com.wormzjl.createcheme.science.fluid.state.SolidInventory.Key>();for(var p:a.solids().populations())populations.add(p.key());for(var p:b.solids().populations())populations.add(p.key());
+            for(var key:populations){double firstMass=a.solids().mass(key),secondMass=b.solids().mass(key);error=Math.max(error,Math.max(0,Math.abs(firstMass-secondMass)-1e-10)/Math.max(1e-12,Math.max(firstMass,secondMass)));}
         }
         return error;
     }
@@ -183,6 +192,8 @@ public final class PassiveIntervalSolver {
             if(modes==null)modes=List.copyOf(actualModes);else if(!modes.equals(actualModes))smooth=false;
             for(int i=0;i<states.size();i++)if(!phases.get(i).equals(InventoryEquilibrium.regime(states.get(i))))smooth=false;
         }
+        @Override public void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkFlow(states,actualModes,flows);}
+        @Override public void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkFilters(filters,states,actualModes,flows);}
         private boolean smooth(){return smooth;}
     }
     private static double boundaryError(PassiveStepSolver.Result full,PassiveStepSolver.Result first,PassiveStepSolver.Result second) {

@@ -9,9 +9,10 @@ public final class FluidPresetCatalog {
     public static final String NETWORK_PACKAGE=FluidMaterialCatalog.NETWORK_PACKAGE;
     public static final String CRUDE_BASIS_PACKAGE=FluidMaterialCatalog.CRUDE_BASIS_PACKAGE;
     private FluidPresetCatalog() {}
-    public record Preset(String id,String name,double[] moleFractions) {
+    public record Preset(String id,String name,double[] moleFractions,SlurryFeed solids) {
+        public Preset(String id,String name,double[] moleFractions){this(id,name,moleFractions,SlurryFeed.NONE);}
         public Preset {
-            Objects.requireNonNull(id);Objects.requireNonNull(name);moleFractions=moleFractions.clone();
+            Objects.requireNonNull(id);Objects.requireNonNull(name);Objects.requireNonNull(solids);moleFractions=moleFractions.clone();
             if(id.length()>128||name.isBlank()||name.length()>128||moleFractions.length<1||moleFractions.length>MaterialAxis.MAX_CONSERVED_COMPONENTS)
                 throw new IllegalArgumentException("Invalid fluid preset descriptor");
             double sum=0;for(double v:moleFractions){if(!Double.isFinite(v)||v<0)throw new IllegalArgumentException("Invalid fluid preset composition");sum+=v;}
@@ -31,6 +32,7 @@ public final class FluidPresetCatalog {
             }
             result.add(new Preset(id,preset.label(),amounts));
         }
+        if(catalog.solids().materials().containsKey("createcheme:demo_particle")){double[] water=new double[axis.size()];water[axis.requireIndex("Water")]=1;result.add(new Preset("createcheme:demo_slurry","Water slurry (10% solids, 100 µm)",water,SlurryFeed.demo()));}
         return List.copyOf(result);
     }
 }

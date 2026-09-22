@@ -170,7 +170,7 @@ public final class IslandCoordinator {
                 var island=require(next.getAsLong());long request=dispatcher.nextRequestId();
                 var slice=island.clock.nextSlice(request,island.fence(),island.maximumSliceTicks).orElseThrow();
                 var attempt=new Attempt(island.id,island.revision,slice);
-                var policy=island.anchor.isPresent()?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
+                var policy=island.anchor.isPresent()&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
                 var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
                 if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";break;}
                 island.clock.admitted(slice);island.status="SOLVING";
@@ -231,8 +231,16 @@ public final class IslandCoordinator {
         }
         publisher.published(List.copyOf(changed));
     }
+    private static boolean sameConnections(List<PassiveNetwork.Pipe> before,List<PassiveNetwork.Pipe> after){
+        if(before.size()!=after.size())return false;
+        for(int i=0;i<before.size();i++){var a=before.get(i);var b=after.get(i);
+            if(a.id()!=b.id()||a.first()!=b.first()||a.second()!=b.second()||!a.sections().equals(b.sections())||!a.control().equals(b.control())||(a.filter()==null)!=(b.filter()==null))return false;
+            if(a.filter()!=null){if(a.filter().capacity()!=b.filter().capacity()||a.filter().cleanResistance()!=b.filter().cleanResistance()||a.filter().stoppedAtCapacity()&&!b.filter().stoppedAtCapacity())return false;
+                for(var p:a.filter().captured().populations())if(b.filter().captured().mass(p.key())+1e-12<p.massKg())return false;}
+        }return true;
+    }
     private static boolean validCandidate(Island island,Attempt attempt,PassiveIntervalSolver.Result result) {
-        if(result.advancedSeconds()!=attempt.slice.seconds()||!island.graph.pipes().equals(result.graph().pipes())||!result.graph().scheduledTransfers().isEmpty())return false;
+        if(result.advancedSeconds()!=attempt.slice.seconds()||!sameConnections(island.graph.pipes(),result.graph().pipes())||!result.graph().scheduledTransfers().isEmpty())return false;
         var old=island.graph.reservoirs();var next=result.graph().reservoirs();if(old.size()!=next.size())return false;
         for(int i=0;i<old.size();i++) {
             var a=old.get(i);var b=next.get(i);
@@ -281,6 +289,9 @@ public final class IslandCoordinator {
      * metadataCommit publishes the already-prepared construction/destruction ledger and registry atomically. */
     public void topology(UUID event,Set<Long> affected,List<Replacement> replacements,FluidThermodynamics model,
             long committed,long online,Map<Long,PassiveNetwork.Reservoir> additions,Set<Long> removals,Runnable metadataCommit) {
+        topology(event,affected,replacements,model,committed,online,additions,removals,Map.of(),metadataCommit);
+    }
+    public void topology(UUID event,Set<Long> affected,List<Replacement> replacements,FluidThermodynamics model,long committed,long online,Map<Long,PassiveNetwork.Reservoir> additions,Set<Long> removals,Map<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter> releasedFilters,Runnable metadataCommit) {
         owned();Objects.requireNonNull(model);Objects.requireNonNull(metadataCommit);
         if(stopped||committed<0||online<committed||!aligned(event,affected))throw new IllegalStateException("Topology event is not ready");
         var originals=affected.stream().map(this::require).toList();
@@ -317,6 +328,14 @@ public final class IslandCoordinator {
             staged.add(new Island(new Snapshot(replacement.id,revision,replacement.graph,new IslandClock.Snapshot(online,committed,0,cadence),allowance,anchor,Optional.empty(),"WAITING: full solve after topology change",fences),model));
         }
         if(!seen.equals(stock.keySet()))throw new IllegalStateException("Topology event lost reservoir ownership");
+        var oldFilters=new HashMap<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter>();for(var original:originals)for(var pipe:original.graph.pipes())if(pipe.filter()!=null)oldFilters.put(pipe.id(),pipe.filter());
+        for(var release:releasedFilters.entrySet())if(!release.getValue().equals(oldFilters.get(release.getKey())))throw new IllegalStateException("Stale filter recovery");
+        var seenFilters=new HashSet<Long>();for(var replacement:replacements)for(var pipe:replacement.graph().pipes())if(pipe.filter()!=null){
+            if(!seenFilters.add(pipe.id()))throw new IllegalStateException("Duplicate filter ownership");var old=oldFilters.remove(pipe.id());
+            if(old==null||releasedFilters.containsKey(pipe.id())){if(!pipe.filter().captured().empty()||pipe.filter().energyJoule()!=0)throw new IllegalStateException("Undeclared filter inventory creation");}
+            else if(!old.captured().equals(pipe.filter().captured())||old.energyJoule()!=pipe.filter().energyJoule())throw new IllegalStateException("Topology changed filter inventory");
+        }
+        for(var removed:oldFilters.entrySet())if(!removed.getValue().captured().empty()&&!releasedFilters.containsKey(removed.getKey()))throw new IllegalStateException("Topology lost captured solids");
         metadataCommit.run();
         for(long id:affected){islands.remove(id);ready.remove(id);}
         for(var island:staged){islands.put(island.id,island);ready.register(island.id);}

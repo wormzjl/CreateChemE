@@ -16,11 +16,16 @@ public final class InventoryEquilibrium {
         return changed?new PassiveNetwork(nodes,graph.pipes(),graph.scheduledTransfers()):graph;
     }
     public static FluidThermodynamics.State solve(FluidThermodynamics model,FluidThermodynamics.State previous,PassiveNetwork.Inventory inventory,boolean forceProperties,Runnable checkpoint) {
-        var n=inventory.moles();if(Arrays.stream(n).sum()==0)throw new IllegalArgumentException("Empty inventory has no initialized thermodynamic state");
+        var n=inventory.moles();if(Arrays.stream(n).sum()==0) {
+            if(inventory.solids().empty())throw new IllegalArgumentException("Empty inventory has no initialized thermodynamic state");
+            if(inventory.solids().volume()>inventory.volume())throw new IllegalArgumentException("Dry solids exceed vessel capacity");
+            double temperature=com.wormzjl.createcheme.science.material.SolidMaterial.REFERENCE_TEMPERATURE+inventory.internalEnergy()/inventory.solids().moments().heatCapacity();
+            return model.solidState(temperature,previous.pressure(),inventory.solids());
+        }
         var old=PhaseLayout.totalAmounts(previous);boolean changedBasis=false;
         if(n.length!=old.length||n.length!=model.hydrocarbon.componentCount()+1)throw new IllegalArgumentException("Inventory equilibrium basis mismatch");
         for(int c=0;c<n.length;c++)changedBasis|=(n[c]==0)!=(old[c]==0)||Math.abs(n[c]-old[c])>1e-12+1e-10*Math.max(n[c],old[c]);
-        var state=forceProperties||changedBasis?model.flashTP(previous.temperature(),previous.pressure(),n,checkpoint):previous;
+        var state=(forceProperties||changedBasis?model.flashTP(previous.temperature(),previous.pressure(),n,checkpoint):previous).withSolids(inventory.solids());
         var seen=new HashSet<String>();
         for(int pass=0;pass<16;pass++) {
             checkpoint.run();if(!seen.add(regime(state)))throw new SparseNewton.Nonconvergence("Inventory equilibrium phase cycle");
@@ -33,10 +38,10 @@ public final class InventoryEquilibrium {
                 var solved=SparseNewton.solve(equations,x,new SparseNewton.Settings(24,tolerance,1e-6,24),checkpoint);candidate=layout.decode(solved.variables(),0);
             }catch(SparseNewton.Nonconvergence failure) {
                 if(failure.lastVariables()==null)throw failure;
-                var trial=layout.decode(failure.lastVariables(),0);var phase=model.flashTP(trial.temperature(),trial.pressure(),n,checkpoint);
+                var trial=layout.decode(failure.lastVariables(),0);var phase=model.flashTP(trial.temperature(),trial.pressure(),n,checkpoint).withSolids(inventory.solids());
                 if(regime(phase).equals(regime(state)))throw failure;state=phase;continue;
             }
-            var stable=model.flashTP(candidate.temperature(),candidate.pressure(),n,checkpoint);
+            var stable=model.flashTP(candidate.temperature(),candidate.pressure(),n,checkpoint).withSolids(inventory.solids());
             if(!regime(stable).equals(regime(candidate))){state=stable;continue;}
             candidate=ConservativeTransport.repartition(model,candidate,n);x=layout.encode(candidate);
             layout.residual(candidate,n,inventory.internalEnergy(),inventory.volume(),residual,0,x);

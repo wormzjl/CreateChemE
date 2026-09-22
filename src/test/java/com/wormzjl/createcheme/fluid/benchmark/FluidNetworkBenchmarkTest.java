@@ -13,9 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Unpaced numerical scaling screening. M9 requires separate paced server replicates and soak. */
 class FluidNetworkBenchmarkTest {
-    @Test void screenWetCrudeChainsWithAllTwentyTwoComponents() throws Exception {
-        String id="createcheme:tjl20_methane";var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),id,1e-9);
-        var composition=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id).crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);composition[20]=.1;composition[21]=.2;
+    @Test void screenWetCrudeChainsWithTheConfiguredComponents() throws Exception {
+        var model=com.wormzjl.createcheme.fluid.support.FluidTestSupport.networkModel();
+        var composition=new double[model.componentCount()];
+        var crude=V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane");
+        var feed=crude.crudeFeed("createcheme:tia_juana_light_methane").moleFractions();
+        for(int c=0;c<feed.length;c++)composition[model.components().indexOf(crude.componentBasis().componentId(c))]=feed[c];
+        composition[model.components().indexOf("Nitrogen")]=.1;composition[model.components().indexOf("Water")]=.2;
         var rows=new ArrayList<Map<String,Object>>();var failures=new ArrayList<String>();
         Files.createDirectories(Path.of("build/reports/fluid"));
         for(int count:new int[]{2,10,100}) {
@@ -27,7 +31,7 @@ class FluidNetworkBenchmarkTest {
                 if(i>0)pipes.add(new PassiveNetwork.Pipe(i,i-1,i,new PipeResistance.Geometry(100,.05,.000045,0)));
             }
             var graph=new PassiveNetwork(nodes,pipes);var row=new LinkedHashMap<String,Object>();rows.add(row);
-            row.put("reservoirs",count);row.put("compiledEdges",pipes.size());row.put("components",22);row.put("equations",nodes.stream().mapToInt(node->new PhaseLayout(model,node.state()).size()).sum()+pipes.size());
+            row.put("reservoirs",count);row.put("compiledEdges",pipes.size());row.put("components",model.componentCount());row.put("equations",nodes.stream().mapToInt(node->new PhaseLayout(model,node.state()).size()).sum()+pipes.size());
             row.put("profile","Unpaced 5 simulated seconds; wet TJL20 + nitrogen; 350 K; P=150000+1000*cos(0.7*i) Pa; 100 m pipe runs");
             long start=System.nanoTime();
             try {

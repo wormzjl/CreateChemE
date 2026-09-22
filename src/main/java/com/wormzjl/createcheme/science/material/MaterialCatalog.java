@@ -38,6 +38,8 @@ public final class MaterialCatalog {
         public String canonicalId(String id) { return aliases.getOrDefault(id, id); }
         public String scientificRevision() { return revision + ":" + fingerprint; }
     }
+    private final SolidMaterialCatalog solids;
+    public SolidMaterialCatalog solids(){return solids;}
     private final MaterialFluidData fluidData;
     private final Map<String, MaterialName> names;
     private final Map<String, Package> packages;
@@ -51,6 +53,7 @@ public final class MaterialCatalog {
     private MaterialCatalog(Map<String, MaterialName> names, Map<String, Package> packages, Map<String, String> resources,
             Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities, Map<String, String> waterModels,
             Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, MaterialPresets presets, MaterialFluidData fluidData) {
+        this.solids=SolidMaterialCatalog.parse(resources);
         this.fluidData=Objects.requireNonNull(fluidData);
         this.liquidMixtures = Map.copyOf(liquidMixtures);
         this.presets=Objects.requireNonNull(presets);
@@ -237,7 +240,7 @@ public final class MaterialCatalog {
                 String path = entry.getKey(); int start = path.indexOf("materials/");
                 if (start < 0) throw new IllegalArgumentException("Expected materials resource path");
                 String kind = path.substring(start + 10).split("/")[0];
-                if (!Set.of("components","properties","interactions","packages","assays","water","bases","transport","presets","networks").contains(kind))
+                if (!Set.of("components","properties","interactions","packages","assays","water","bases","transport","presets","networks","solids").contains(kind))
                     throw new IllegalArgumentException("Unknown record kind: " + kind);
                 String id = string(o, "id");
                 if (!kind.equals("components") && !id.matches("[a-z][a-z0-9_.:-]{0,127}"))

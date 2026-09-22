@@ -6,7 +6,7 @@ import java.util.*;
 /** Deterministic compilation of persistent block identities; no Minecraft reads or loaded-chunk dependency. */
 public final class TopologyCompiler {
     private TopologyCompiler() {}
-    public enum Kind { RESERVOIR, PIPE, PUMP, VALVE, GENERATOR, VOID }
+    public enum Kind { RESERVOIR, PIPE, PUMP, VALVE, GENERATOR, VOID, FILTER }
     public record Node(long id,Kind kind,double elevation) {
         public Node{Objects.requireNonNull(kind);if(!Double.isFinite(elevation))throw new IllegalArgumentException("Invalid elevation");}
     }
