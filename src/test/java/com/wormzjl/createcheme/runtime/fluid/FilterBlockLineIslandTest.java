@@ -138,8 +138,11 @@ class FilterBlockLineIslandTest {
     private String intervals(PassiveNetwork graph,int count) {
         return run(graph,count).detail();
     }
-    /** How far a line got, and why it stopped if it did. */
-    private record Run(int survived,String detail) {}
+    /** How far a line got, why it stopped if it did, and the graph it finished on. */
+    private record Run(int survived,String detail,PassiveNetwork finished) {
+        /** The terminating vessel: every line here ends on its tank or its void. */
+        FluidThermodynamics.State last(){return finished.reservoirs().getLast().state();}
+    }
     private Run run(PassiveNetwork graph,int count) {
         var solver=new PassiveIntervalSolver(model);double step=RetainedSolver.COLD_START_SECONDS;
         for(int i=0;i<count;i++) {
@@ -147,9 +150,9 @@ class FilterBlockLineIslandTest {
                 var result=solver.solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{},Math.min(step,5));
                 graph=result.graph();step=solver.nextStepEstimate();
                 if(i==count-1)return new Run(count,"OK intervals="+count+" advanced="+result.advancedSeconds()+" accepted="+result.acceptedSubsteps()
-                        +" rejected="+result.rejectedSubsteps()+" reasons="+result.rejectionReasons());
+                        +" rejected="+result.rejectedSubsteps()+" reasons="+result.rejectionReasons(),graph);
             }catch(RuntimeException held) {
-                return new Run(i,"HELD at interval "+(i+1)+"/"+count+" (t="+(5*i)+" s): "+held.getMessage()+shape(graph));
+                return new Run(i,"HELD at interval "+(i+1)+"/"+count+" (t="+(5*i)+" s): "+held.getMessage()+shape(graph),graph);
             }
         }
         throw new AssertionError("unreachable");
@@ -246,24 +249,54 @@ class FilterBlockLineIslandTest {
     }
 
     /**
-     * The recorded pumped shape, against the same line with the filter block taken out of it.
+     * The recorded pumped shape, against the same line with the filter block taken out of it, and
+     * against the passive line held at the pump's own shutoff pressure.
      *
-     * <p>Both of these stop, and they stop for a reason that has nothing to do with filtration: a
-     * pump driving a tank up to its own shutoff head leaves the device active set chattering
-     * between its head limit and closed, and the step solver runs out of Newton iterations on the
-     * pump's hydraulic row. The filter-free control reproduces it byte for byte, and so does the
-     * tree at 3c27271, before any solid-phase code existed; a passive generator held at the same
-     * 601325 Pa fills the same tank over the same intervals and never stops. So the assertion this
-     * fixture can make is the one that is actually about the filter: a filter block must not cost
-     * the island an interval. Raise both to OK when the pump active set is fixed.
+     * <p>Both pumped lines used to stop, for a reason that had nothing to do with filtration: a
+     * pump driving a tank up to its own shutoff head was left holding its head limit at a flow the
+     * solve could not resolve the sign of, and the step solver ran out of Newton iterations on the
+     * pump's hydraulic row. The filter-free control reproduced it byte for byte, and so did the
+     * tree at 3c27271, before any solid-phase code existed, while a passive generator held at the
+     * same 601325 Pa filled the same tank over the same intervals and never stopped. That is fixed;
+     * see {@code documentation/PUMP_SHUTOFF_ACTIVE_SET.md}.
+     *
+     * <p>The endpoint check is the part that says the fix converged to the physical answer rather
+     * than merely stopped failing. A pump at shutoff is a 601325 Pa boundary, so after the same
+     * forty intervals the pumped tank must sit at the pump's own shutoff pressure, and where the
+     * passive line held at that pressure sits, to the declared regression tolerance of 1e-6
+     * relative. It does: 601324.99 Pa against 601325.00, a relative 1.5e-8.
+     *
+     * <p>The inventory is held to 1e-4 rather than 1e-6, and the reason is physical rather than
+     * numerical: the two lines do not reach that pressure by the same energy path. The reference is
+     * fed 298.15 K water already at 601325 Pa; the pumped line is fed 298.15 K water at 101325 Pa
+     * and the pump raises it, so the tank ends 0.077 K colder - 298.215 K against 298.292 K - and
+     * at water's thermal expansion that is a few times 1e-5 of density on its own. The measured gap
+     * is 0.065 kg in 829, i.e. 7.9e-5. A 1e-6 inventory match would be a statement about the two
+     * feeds' enthalpies, not about the pump's active set.
      */
     @Test void aFilterBlockCostsAPumpedLineNoIntervalOfItsOwn() {
         var filtered=run(pumpLine(101325,0),40);
         var control=run(pumpControlLine(101325,0),40);
+        var shutoff=run(clearLine(601325,0),40);
         System.out.println("(ii) generator-pump-pipe-filter-pipe-tank, clear, at rest: "+filtered.detail());
         System.out.println("(control) generator-pump-3 pipes-tank at rest: "+control.detail());
+        System.out.println("(reference) passive generator at 601325 Pa-4 pipes-tank: "+shutoff.detail());
         assertTrue(filtered.survived()>=control.survived(),
                 "A filter block shortened a pumped line: filtered="+filtered.detail()+"\ncontrol="+control.detail());
+        assertTrue(control.detail().startsWith("OK"),control.detail());
+        assertTrue(filtered.detail().startsWith("OK"),filtered.detail());
+        assertTrue(shutoff.detail().startsWith("OK"),shutoff.detail());
+        var pumped=control.last();var reference=shutoff.last();
+        System.out.println("(endpoint) pumped tank P="+pumped.pressure()+" mass="+pumped.mass()+" T="+pumped.temperature()
+                +" liq="+(pumped.liquidVolume()+pumped.waterVolume())+" vap="+pumped.vaporVolume()
+                +"\n(endpoint) passive tank P="+reference.pressure()+" mass="+reference.mass()+" T="+reference.temperature()
+                +" liq="+(reference.liquidVolume()+reference.waterVolume())+" vap="+reference.vaporVolume());
+        assertEquals(101325+500000,pumped.pressure(),1e-6*601325,
+                "A pumped line must settle at its own shutoff pressure");
+        assertEquals(reference.pressure(),pumped.pressure(),1e-6*reference.pressure(),
+                "A pumped line at shutoff must settle where a passive line held at that pressure settles");
+        assertEquals(reference.mass(),pumped.mass(),1e-4*reference.mass(),
+                "A pumped line at shutoff must hold what a passive line held at that pressure holds");
     }
 
     @Test void filterLineToAVoidIntegratesWithSolidsAndNoDrivingPressure() {
