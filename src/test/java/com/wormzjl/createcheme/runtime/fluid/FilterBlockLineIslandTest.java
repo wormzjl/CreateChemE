@@ -198,25 +198,39 @@ class FilterBlockLineIslandTest {
     /**
      * The same line with the generator raised to 400 kPa, which is what a player does to make a
      * filter carry something. It fills the tank in under a minute and then settles against it, and
-     * at that point it stops: at interval 8, "Newton line search stalled at residual 3.5e-9".
+     * at that point it stops - and it has now stopped for three different reasons in a row, each
+     * uncovered by fixing the one in front of it.
      *
-     * <p>This is a third defect, and it is not one of the two the commits above fix. It is present
-     * at fca6a15 as well - there the same line dies at the same interval 8, but at 1.018e-10, the
-     * tolerance defect, which was simply reached first and hid this one. What is left when the
-     * island has settled is a 3.5e-4 Pa disagreement between the pressures of the filter's two
-     * zero-holdup junctions, carried by the filter edge's own hydraulic row. The hydraulic row
-     * divides by a fixed 1e5 Pa rather than by the island's own pressure, so a 1e-9 Newton
-     * tolerance demands 1e-4 Pa absolutely, whatever the island runs at: at 101 kPa that is a
-     * relative 1e-9 and converges, at 400 kPa it is 2.5e-10 and does not. Rescaling that row
-     * changes the residual of every island in the tree and cannot be bit-identical against the
-     * recorded regression reference, so it is not a change to fold into a filter fix.
+     * <p>At fca6a15 it died at interval 8 on the tolerance defect, at residual 1.018e-10. At
+     * 90f16c7 that was fixed and the same line died at interval 8 on the hydraulic row's constant
+     * 1e5 Pa scaling: the filter's two zero-holdup junctions settled 3.5e-4 Pa apart and a 1e-9
+     * Newton tolerance is an absolute 1e-4 Pa demand whatever the island runs at. That one is fixed
+     * too, by {@code PassiveStepSolver.Equations.pressureScales}; see
+     * {@code documentation/HYDRAULIC_ROW_SCALE.md} for the measurement. The hydraulic rows are no
+     * longer what stops this line at any pressure: at 400 kPa the filter edge's row now sits at
+     * -2.4e-14 where it used to floor the solve, and at 600 kPa it went from 4.39e-9 (the binding
+     * row) to 4.1e-12.
+     *
+     * <p>What stops it now is the tank's own node block, in two distinct shapes:
+     *
+     * <ul>
+     * <li>At 200, 350, 400 and 600 kPa the binding rows are the tank's nitrogen vapour/liquid
+     *     equilibrium row and its volume closure, which floor at 1.0e-9 to 1.4e-9 against the 1e-9
+     *     tolerance while the step is refined to 6.6e-9 s. The residual there is smooth - nudging
+     *     any unknown by one unit in the last place moves no row by more than 1e-13 - so this is
+     *     not evaluation noise but a near-degenerate trace-nitrogen equilibrium block on a
+     *     pressurized water tank.</li>
+     * <li>At 150, 250 and 300 kPa the filter's outlet junction starves once the tank is full: its
+     *     amount normalization row reaches -1.0 (total amount driven to zero) and its specific
+     *     enthalpy row ~-67, which is a gross failure rather than a tolerance one.</li>
+     * </ul>
      *
      * <p>Disabled rather than deleted so the reproduction survives: drop the annotation to see it.
      * The void-terminated fixtures below carry solids through a filter under real driving pressure
      * and do pass, so filtration itself works; it is a tank-terminated line above about 150 kPa
      * that still stops.
      */
-    @org.junit.jupiter.api.Disabled("Pre-existing hydraulic row scaling; see the comment and SOLID_PHASE_FILTER_ISLAND_DIAGNOSIS.md")
+    @org.junit.jupiter.api.Disabled("Tank node block, not the hydraulic row: see the comment and documentation/HYDRAULIC_ROW_SCALE.md")
     @Test void filterLineToATankKeepsIntegratingOnceTheTankIsFull() {
         var graph=reservoirLine(400000,0);
         String outcome=intervals(graph,40);
