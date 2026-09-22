@@ -28,8 +28,10 @@ import net.minecraft.nbt.NbtIo;
  * relative to the project directory. Those files are build output and are not committed; a missing
  * snapshot skips its fixtures instead of failing.
  *
- * <p>References live in {@code src/test/resources/fluid/regression} and were captured on
- * 154007d before any solver change. Regenerate with {@code -Dfluid.regression.capture=true}.
+ * <p>References live in {@code src/test/resources/fluid/regression} and are captured on the
+ * configured network basis ({@code tjl20_methane_nitrogen}). Regenerate with
+ * {@code gradlew fluidSolverRegression -PfluidRegressionCapture=true}; the island fixtures also
+ * need a current-basis stress-world snapshot in {@code build/probe}, without which they are skipped.
  */
 final class SolverRegressionHarness {
     static final String SNAPSHOT_PROPERTY="fluid.regression.snapshot";
@@ -115,12 +117,19 @@ final class SolverRegressionHarness {
             return result;
         }catch(java.io.IOException failure){throw new IllegalStateException("Cannot read "+path,failure);}
     }
-    /** The 100-reservoir cosine-pressure chain of {@link FluidNetworkBenchmarkTest}. */
+    /**
+     * The 100-reservoir cosine-pressure chain of {@link FluidNetworkBenchmarkTest}, on the
+     * configured network basis: the Tia Juana Light + methane assay placed by component name into
+     * the model's basis, with 0.1 mole nitrogen and 0.2 mole water added. Nothing here depends on
+     * the basis size, so a package that gains or loses a component moves the reference states,
+     * never the fixture's ability to build.
+     */
     static PassiveNetwork cosineChain(FluidThermodynamics model,int count) {
-        String id=FluidPresetCatalog.NETWORK_PACKAGE;
-        var composition=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage(id)
-                .crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),22);
-        composition[20]=.1;composition[21]=.2;
+        var crude=V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane");
+        var feed=crude.crudeFeed("createcheme:tia_juana_light_methane").moleFractions();
+        var composition=new double[model.componentCount()];
+        for(int c=0;c<feed.length;c++)composition[model.components().indexOf(crude.componentBasis().componentId(c))]=feed[c];
+        composition[model.components().indexOf("Nitrogen")]=.1;composition[model.components().indexOf("Water")]=.2;
         var nodes=new ArrayList<PassiveNetwork.Reservoir>();var pipes=new ArrayList<PassiveNetwork.Pipe>();
         for(int i=0;i<count;i++) {
             double pressure=150000+1000*Math.cos(i*.7);var n=composition.clone();var unit=model.flashTP(350,pressure,n,NOOP);
