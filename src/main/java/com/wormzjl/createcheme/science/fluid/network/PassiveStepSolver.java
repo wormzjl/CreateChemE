@@ -162,12 +162,14 @@ public final class PassiveStepSolver {
             int[] phases=new int[seeds.size()];for(int i=0;i<phases.length;i++)phases[i]=phaseCode(seeds.get(i));
             byte[] modeCodes=new byte[modes.size()];for(int i=0;i<modeCodes.length;i++)modeCodes[i]=(byte)modes.get(i).ordinal();
             var supports=supports(graph,seeds,reachable,promoted);
-            // The active-set state is exactly what varies between passes, so the structure key is
-            // also the cycle key: repeating one means the pass sequence cannot make progress.
-            var structure=new WorkspaceKey(0,nodeIds,kinds,pipeIdentities,phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone());
-            if(!seen.add(structure))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
             var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,reachable,supports);
-            var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,pipeIdentities,phases,componentMask,structure.supports,modeCodes,structure.boundaryClosed);
+            // The active-set state is exactly what varies between passes, so the structure key is
+            // also the cycle key: repeating one means the pass sequence cannot make progress. The
+            // frozen junction donors belong to it for the same reason the modes do - they decide
+            // which equations this pass states, and the pass loop revises them.
+            var structure=new WorkspaceKey(0,nodeIds,kinds,pipeIdentities,phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone(),equations.junctionDonorFirst);
+            if(!seen.add(structure))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
+            var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,pipeIdentities,phases,componentMask,structure.supports,modeCodes,structure.boundaryClosed,structure.junctionDonors);
             var workspace=workspaces.get(key);
             SolverDiagnostics.count(workspace==null?SolverDiagnostics.workspaceBuilds:SolverDiagnostics.workspaceReuses);
             if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
@@ -201,6 +203,12 @@ public final class PassiveStepSolver {
                 if(failure.lastVariables()==null)throw failure;
                 double[] trialFlows=Arrays.copyOfRange(failure.lastVariables(),equations.edgeOffset,equations.edgeOffset+graph.pipes().size());
                 if(refineJunctionReachability(graph,reachable,trialFlows)){seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);continue;}
+                // A point the Newton never reached is deliberately not read as evidence about this
+                // pass's frozen junction donors, unlike the converged test further down. Measured
+                // on the filter block line: turning a junction onto a diverged trial's flow sign
+                // hands it the tank's nitrogen as a seeded trace nothing delivers, and every swept
+                // pressure lost an interval by it - 400 kPa went from interval 8 back to 7, and
+                // from a tank settled at 399999.99971 Pa to one at 399998.24 Pa.
                 var changedSeeds=phaseCorrection(graph,equations.states(failure.lastVariables()),checkpoint,false);
                 if(changedSeeds==null)throw new SparseNewton.Nonconvergence(failure.getMessage()+"; active-set pass="+pass,failure.lastVariables());
                 seeds=changedSeeds;continue;
@@ -261,6 +269,13 @@ public final class PassiveStepSolver {
                 if(!(pipe.control() instanceof FlowControl.Passive))modes.set(illegalDirection,FlowControl.Mode.CLOSED);
                 changed=true;
             }
+            // A zero-holdup junction mixed on the donor this pass froze; see
+            // {@link Equations#junctionDonorFirst}. A converged point that turned one of those
+            // connections around was solved against the wrong neighbour's composition and
+            // enthalpy, so it is an active-set change like any other: the next pass starts from
+            // these flows, derives the turned donor from them, and the donor signs are part of the
+            // cycle key, so the sequence is finite.
+            if(!changed&&donorsTurned(graph,equations,flows))changed=true;
             if(changed){seeds=states;previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);continue;}
             for(int edge=0;edge<flows.length;edge++) {
                 var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
@@ -371,19 +386,22 @@ public final class PassiveStepSolver {
      * decides how many unknowns and rows each node block has, so the sparsity pattern, the colouring,
      * the ordering and every retained factorization belong to it as much as to the phase code. */
     private record WorkspaceKey(long stepBits,long[] nodeIds,byte[] kinds,List<PassiveNetwork.Pipe.Identity> pipes,
-                                int[] phases,boolean[] componentMask,byte[] supports,byte[] modes,boolean[] boundaryClosed) {
+                                int[] phases,boolean[] componentMask,byte[] supports,byte[] modes,boolean[] boundaryClosed,
+                                boolean[] junctionDonors) {
         @Override public boolean equals(Object other) {
             return other instanceof WorkspaceKey key&&stepBits==key.stepBits&&Arrays.equals(nodeIds,key.nodeIds)
                     &&Arrays.equals(kinds,key.kinds)&&pipes.equals(key.pipes)&&Arrays.equals(phases,key.phases)
                     &&Arrays.equals(componentMask,key.componentMask)&&Arrays.equals(supports,key.supports)
-                    &&Arrays.equals(modes,key.modes)&&Arrays.equals(boundaryClosed,key.boundaryClosed);
+                    &&Arrays.equals(modes,key.modes)&&Arrays.equals(boundaryClosed,key.boundaryClosed)
+                    &&Arrays.equals(junctionDonors,key.junctionDonors);
         }
         @Override public int hashCode() {
             int hash=31*Long.hashCode(stepBits)+Arrays.hashCode(nodeIds);
             hash=31*(31*hash+Arrays.hashCode(kinds))+pipes.hashCode();
             hash=31*(31*hash+Arrays.hashCode(phases))+Arrays.hashCode(componentMask);
             hash=31*hash+Arrays.hashCode(supports);
-            return 31*(31*hash+Arrays.hashCode(modes))+Arrays.hashCode(boundaryClosed);
+            hash=31*(31*hash+Arrays.hashCode(modes))+Arrays.hashCode(boundaryClosed);
+            return 31*hash+Arrays.hashCode(junctionDonors);
         }
     }
     /**
@@ -529,6 +547,22 @@ public final class PassiveStepSolver {
             for(int c=possible[i].nextSetBit(0);c>=0;c=possible[i].nextSetBit(c+1))result[i][c]=true;
         }
         return result;
+    }
+    /**
+     * Whether any connection into a zero-holdup junction points the other way from the donor this
+     * pass mixed that junction on; see {@link Equations#junctionDonorFirst}.
+     *
+     * <p>It is the same question the mode tests ask of a device: the pass stated its equations
+     * against one active set and the point it reached says another. A connection with no junction
+     * at either end is not asked, because nothing in its rows reads a frozen donor.
+     */
+    private static boolean donorsTurned(PassiveNetwork graph,Equations equations,double[] flows) {
+        for(int edge=0;edge<flows.length;edge++) {
+            var pipe=graph.pipes().get(edge);
+            if(!graph.reservoirs().get(pipe.first()).junction()&&!graph.reservoirs().get(pipe.second()).junction())continue;
+            if(equations.junctionDonorFirst[edge]!=flows[edge]>=0)return true;
+        }
+        return false;
     }
     private boolean refineJunctionReachability(PassiveNetwork graph,boolean[][] reachable,double[] flows){
         if(!hasSolids(graph)&&graph.pipes().stream().noneMatch(p->p.filter()!=null))return false;
@@ -806,6 +840,35 @@ public final class PassiveStepSolver {
          * Newton is already driving to the pass's own endpoint pressures.
          */
         final double[] pressureScales;
+        /** This pass's starting point, built once: {@link #junctionDonorFirst} is read off it. */
+        final double[] initialPoint;
+        /**
+         * Which end of each connection donates into a zero-holdup junction for the whole of this
+         * pass, taken from the point the pass starts at rather than from the live iterate.
+         *
+         * <p>A junction's mass fractions and its specific enthalpy are the mixture of what arrives,
+         * a ratio that does not shrink with the flows that form it. Deciding the donor inside the
+         * residual therefore put a finite jump in those rows at exactly zero flow, and the
+         * one-sided differences the Jacobian is built from only ever sample the positive side of
+         * it: on a settled island the Newton direction points the other way, so the derivative the
+         * step was computed from is not the derivative along the step. Measured on the valve block
+         * line at 400 kPa, the linear model predicted a residual of 8e-25 and the full step
+         * produced 1.7e-3, twenty orders apart, with every one of the twenty-four backtracks
+         * landing on the same plateau because the jump is a step and not a slope. That is the
+         * whole of why a tank behind a filter or a valve held while the same tank on plain pipes
+         * runs indefinitely: a plain pipe carries its donor's properties only inside terms already
+         * multiplied by the flow, so its own upwind switch is continuous and its jump is zero.
+         *
+         * <p>Freezing it makes one pass's residual smooth in its own unknowns, which is the rule
+         * every other switch in this solver already follows - device modes, phase regimes, trace
+         * support and boundary closure are all decided once per pass and revised by the outer
+         * loop. The outer loop does the same here: a converged point whose flow disagrees with the
+         * donor it was solved under is one more active-set change, and the donor signs join the
+         * cycle key so the pass sequence stays finite. Only the junction mixture reads them; the
+         * reservoir targets, the net-flow balance and every edge row keep the live upwind, so an
+         * accepted point is upwinded exactly as {@link ConservativeTransport} reconstructs it.
+         */
+        final boolean[] junctionDonorFirst;
         /** Residual scratch. Every one of these is written before it is read within a single
          * evaluation and never escapes it, and the evaluations of one solve are sequential on the
          * worker holding the latch, so they are filled again rather than allocated again. The
@@ -871,6 +934,16 @@ public final class PassiveStepSolver {
                 for(int edge:nodeEdges[node])open|=!this.boundaryClosed[edge]&&this.modes.get(edge)!=FlowControl.Mode.CLOSED;
                 if(!open)retainedPressures[node]=graph.reservoirs().get(node).state().pressure();
             }
+            initialPoint=buildInitial();
+            junctionDonorFirst=new boolean[graph.pipes().size()];
+            for(int edge=0;edge<junctionDonorFirst.length;edge++) {
+                var pipe=graph.pipes().get(edge);
+                // A connection with no junction at either end donates into no mixture, so it has no
+                // frozen donor to state and none to key a workspace on. Leaving it constant is what
+                // keeps an island without a single zero-holdup node bit for bit what it was.
+                junctionDonorFirst[edge]=!graph.reservoirs().get(pipe.first()).junction()&&!graph.reservoirs().get(pipe.second()).junction()
+                        ||initialPoint[edgeOffset+edge]>=0;
+            }
         }
         private void buildSparsity() {
             int count=layout.length;
@@ -929,7 +1002,8 @@ public final class PassiveStepSolver {
         }
         int nodeSize(int node){return layout[node]==null?0:layout[node].size();}
         public int[][] columnRows(){if(sparsity==null)buildSparsity();return sparsity;}
-        double[] initial() {
+        double[] initial(){return initialPoint.clone();}
+        private double[] buildInitial() {
             double[] x=new double[size];for(int i=0;i<layout.length;i++)if(layout[i]!=null){var encoded=layout[i].encode(seeds.get(i));System.arraycopy(encoded,0,x,offsets[i],encoded.length);}
             boolean warmFlow=graph.reservoirs().stream().anyMatch(node->node.junction()||node.fixed())
                     ||graph.pipes().stream().anyMatch(pipe->phaseCode(graph.reservoirs().get(pipe.first()).state())!=phaseCode(graph.reservoirs().get(pipe.second()).state()));
@@ -1061,15 +1135,28 @@ public final class PassiveStepSolver {
                 var amounts=transport.moles;double moving=dt*flow;
                 for(int c=0;c<amounts.length;c++){double moved=moving*amounts[c]/upstream.mass();target[c]+=first?-moved:moved;}
                 var moments=upstream.solidMoments().values();
-                for(int c=0;c<3;c++){if(!receiver||pipe.filter()==null)solidTargets[node][c]+=(first?-1:1)*moving*moments[c]/upstream.mass();if(receiver&&pipe.filter()==null)solidIncoming[node][c]+=Math.abs(flow)*moments[c]/upstream.mass();}
+                for(int c=0;c<3;c++)if(!receiver||pipe.filter()==null)solidTargets[node][c]+=(first?-1:1)*moving*moments[c]/upstream.mass();
                 double donorZ=graph.reservoirs().get(donor).elevation(),h=transport.specificEnthalpy;
-                if(receiver) {
-                    mass+=deliveredFlow;
-                    for(int c=0;c<amounts.length;c++)in[c]+=Math.abs(flow)*amounts[c]/upstream.mass();
-                    heat+=Math.abs(flow)*(h+GRAVITY*(donorZ-elevation));
-                }
                 stored+=(first?-1:1)*moving*(h+GRAVITY*(donorZ-elevation));
-                if(receiver&&pipe.filter()!=null){double capturedRate=Math.abs(flow)*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+captureFraction*GRAVITY*(donorZ-elevation));stored-=dt*capturedRate;heat-=capturedRate;}
+                // The mixture this node would hold if it holds nothing, on the donor this pass was
+                // solved under rather than on the live iterate's flow sign; see
+                // {@link #junctionDonorFirst}. Read only by the junction rows.
+                int mixed=junctionDonorFirst[edge]?a:b;
+                if(node==(junctionDonorFirst[edge]?b:a)) {
+                    var source=st[mixed];var carried=tr[mixed];var sourceAmounts=carried.moles;
+                    double sourceCapture=pipe.filter()==null?0:source.solidMoments().mass()/source.mass();
+                    double sourceZ=graph.reservoirs().get(mixed).elevation(),sourceEnthalpy=carried.specificEnthalpy;
+                    mass+=Math.abs(flow)*(1-sourceCapture);
+                    for(int c=0;c<sourceAmounts.length;c++)in[c]+=Math.abs(flow)*sourceAmounts[c]/source.mass();
+                    heat+=Math.abs(flow)*(sourceEnthalpy+GRAVITY*(sourceZ-elevation));
+                    var sourceMoments=source.solidMoments().values();
+                    if(pipe.filter()==null)for(int c=0;c<3;c++)solidIncoming[node][c]+=Math.abs(flow)*sourceMoments[c]/source.mass();
+                    else heat-=Math.abs(flow)*(source.solidMoments().enthalpy(source.temperature(),source.pressure())/source.mass()+sourceCapture*GRAVITY*(sourceZ-elevation));
+                }
+                if(receiver&&pipe.filter()!=null) {
+                    double capturedRate=Math.abs(flow)*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+captureFraction*GRAVITY*(donorZ-elevation));
+                    stored-=dt*capturedRate;
+                }
                 if(!first&&pipe.control() instanceof FlowControl.Pump pump) {
                     int control=controlOffsets[edge];double head=control<0?0:x[control]*1e5;
                     double power=Math.max(0,flow)/(st[a].mass()/st[a].volume())*Math.max(0,head)/pump.efficiency();
@@ -1282,7 +1369,8 @@ public final class PassiveStepSolver {
             layout[node].solidRows(st[node],x,offsets[node],solids,true,f);
         }
         /** Fills {@link #fractions} with this junction's incoming mass fractions and returns its
-         * incoming specific enthalpy, falling back to the stored guess when nothing arrives. */
+         * incoming specific enthalpy, falling back to the stored guess when nothing arrives. The
+         * accumulators it reads are the frozen donors'; see {@link #junctionDonorFirst}. */
         private double junctionInflow(int node) {
             var previous=graph.reservoirs().get(node).state();
             if(incomingMass[node]>ConservativeTransport.JUNCTION_INFLOW_FLOOR) {
@@ -1293,11 +1381,13 @@ public final class PassiveStepSolver {
             return previous.enthalpy()/previous.mass();
         }
         /** Whether this edge can carry a change of {@code node}'s decoded state into the other
-         * endpoint's rows: the transported amounts and enthalpy are the donor's, and a pump's
-         * shaft power is metered on the first endpoint's density. */
+         * endpoint's rows: the transported amounts and enthalpy are the donor's, a junction's
+         * mixture is this pass's frozen donor's, and a pump's shaft power is metered on the first
+         * endpoint's density. */
         private boolean carries(int edge,int node,double[] x) {
             var pipe=graph.pipes().get(edge);
             return node==(x[edgeOffset+edge]>=0?pipe.first():pipe.second())
+                    ||graph.reservoirs().get(other(edge,node)).junction()&&node==(junctionDonorFirst[edge]?pipe.first():pipe.second())
                     ||node==pipe.first()&&pipe.control() instanceof FlowControl.Pump;
         }
     }
