@@ -17,6 +17,7 @@ public record V3SolverDiagnostics(
         V3ConvergenceEvidence convergenceEvidence,
         double closureTolerance) {
     public static final int MAX_EVENTS = 32;
+    public static final int MAX_SOLVE_PATH_LENGTH = 128;
 
     /** Diagnostics of a solve at the frozen default convergence closure. */
     public V3SolverDiagnostics(
@@ -37,7 +38,7 @@ public record V3SolverDiagnostics(
                 || !Double.isFinite(finalStepNorm) || finalStepNorm < 0.0) {
             throw new IllegalArgumentException("V3 diagnostic norms must be finite and nonnegative");
         }
-        solvePath = bounded(solvePath, "solvePath", 128);
+        solvePath = bounded(solvePath, "solvePath", MAX_SOLVE_PATH_LENGTH);
         events = List.copyOf(events);
         if (events.size() > MAX_EVENTS || events.stream().anyMatch(event -> event == null || event.length() > 256)) {
             throw new IllegalArgumentException("V3 diagnostic events exceed the bounded contract");
