@@ -107,7 +107,11 @@ public final class PassiveIntervalSolver {
         // A transition is declared rather than refined once the step that would contain it is this
         // short, so it is located to within one such step of where it physically is.
         double transitionFloor=Math.max(1e-6,1e-9*duration);
-        int transitionRejects=0;SolidEventIntegrator.Transition declared=null;
+        // The controller's own estimate at the moment the search onto an event began. Refining onto
+        // a transition halves the step down to the floor, and that final micro-step is a statement
+        // about where the event is, not about what the trajectory can take: handing it to the next
+        // segment made every closure cost another twenty accepted substeps climbing back out.
+        int transitionRejects=0;double beforeTransition=0;SolidEventIntegrator.Transition declared=null;
         for(int attempt=0;attempt<settings.maximumAttempts&&elapsed<duration&&declared==null;attempt++) {
             checkpoint.run();double step=Math.min(h,duration-elapsed);
             try {
@@ -153,6 +157,7 @@ public final class PassiveIntervalSolver {
                 // error controller could not make work rather than for a physical regime boundary.
                 SolverDiagnostics.count(SolverDiagnostics.solidTransitionRejections);
                 if(transition.atStart||step<=transitionFloor||transitionRejects>=MAXIMUM_TRANSITION_REJECTIONS){declared=transition;break;}
+                if(transitionRejects==0)beforeTransition=h;
                 transitionRejects++;
                 if(rejectionReasons.size()<8||rejectionReasons.containsKey(TRANSITION_REJECTION))rejectionReasons.merge(TRANSITION_REJECTION,1,Integer::sum);
                 h=step*.5;
@@ -168,7 +173,11 @@ public final class PassiveIntervalSolver {
             }
         }
         if(declared==null&&elapsed<duration)throw new SparseNewton.Nonconvergence("Interval substep limit; no partial interval may commit: advanced="+elapsed+" of "+duration+" s, accepted="+acceptedCount+", rejected="+rejectedCount+", reasons="+rejectionReasons+", last="+lastRejection);
-        nextStepEstimate=h;
+        // A segment that ended on a declared transition hands the next one the estimate it held
+        // before the search, not the micro-step the search finished on. The error controller still
+        // rejects and halves if the post-closure transient needs it, and it does so from a step the
+        // island had already qualified rather than from 1e-6 s.
+        nextStepEstimate=declared!=null&&transitionRejects>0?beforeTransition:h;
         if(last==null)return new Prefix(null,Objects.requireNonNull(declared,"A completed interval always has a last substep"));
         // An unbroken interval advanced exactly what was requested and normalizes by it, bit for
         // bit as before; a prefix normalizes by what it did advance, so the caller's

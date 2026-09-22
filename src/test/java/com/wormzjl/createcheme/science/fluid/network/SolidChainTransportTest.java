@@ -59,9 +59,10 @@ class SolidChainTransportTest {
 
         assertEquals(0,reasons(result,"line search stalled"),"Solid dust must not bound the Newton step: "+result.rejectionReasons());
         // The bound is on the adaptive controller's own work. Walking onto each of the two closures
-        // costs its own rejections, which are counted separately and are not these.
-        assertTrue(result.acceptedSubsteps()<=140,"accepted="+result.acceptedSubsteps());
-        assertTrue(result.rejectedSubsteps()<=20,"rejected="+result.rejectedSubsteps());
+        // costs its own rejections, which are counted separately and are not these. Measured 29/6;
+        // the headroom covers a different event instant, not a different order of work.
+        assertTrue(result.acceptedSubsteps()<=50,"accepted="+result.acceptedSubsteps());
+        assertTrue(result.rejectedSubsteps()<=16,"rejected="+result.rejectedSubsteps());
         assertEquals(2,result.graph().pipes().stream().filter(p->p.blockedDirections()!=0).count(),
                 "Both deposition closures must be present");
         assertEquals(2,reasons(result,"DEPOSITION"));
@@ -80,8 +81,8 @@ class SolidChainTransportTest {
         long ms=(System.nanoTime()-start)/1_000_000;
 
         assertEquals(0,reasons(result,"line search stalled"),result.rejectionReasons().toString());
-        assertTrue(result.acceptedSubsteps()<=140,"accepted="+result.acceptedSubsteps());
-        assertTrue(result.rejectedSubsteps()<=20,"rejected="+result.rejectedSubsteps());
+        assertTrue(result.acceptedSubsteps()<=50,"accepted="+result.acceptedSubsteps()); // measured 31
+        assertTrue(result.rejectedSubsteps()<=16,"rejected="+result.rejectedSubsteps()); // measured 10
         assertSolidMassClosed(result,100);
         assertTrue(ms<=1500,"Thirty reservoirs took "+ms+" ms");
         System.out.printf(Locale.ROOT,"solid chain: 30 nodes 5 s ms=%d accepted=%d rejected=%d%n",
