@@ -57,7 +57,7 @@ final class SolidEventIntegrator {
         Transition result=null;double ratio=Double.POSITIVE_INFINITY;long identity=Long.MAX_VALUE;
         for(int i=0;i<flows.length;i++) {
             var pipe=graph.pipes().get(i);double flow=flows[i];int direction=flow>=0?1:2;
-            if(pipe.filter()!=null&&pipe.filter().clogged()&&pipe.blockedDirections()!=BOTH_DIRECTIONS)return clogged(i);
+            if(pipe.filter()!=null&&atCapacity(pipe.filter())&&pipe.blockedDirections()!=BOTH_DIRECTIONS)return clogged(i);
             if((pipe.blockedDirections()&direction)!=0)continue;
             var donor=states.get(flow>=0?pipe.first():pipe.second());
             var check=SolidMobility.check(model,donor,pipe,flow,SolidMobility.Outlet.MIXED);
@@ -70,6 +70,15 @@ final class SolidEventIntegrator {
     private static Transition clogged(int edge) {
         return new Transition(edge,BOTH_DIRECTIONS,new SolidMobility.Check(SolidMobility.Reason.FILTER_CLOGGED,0,0),false);
     }
+    /**
+     * Whether this cake has met its capacity and the connection must stop. The saturated inlet law
+     * aims a hair below capacity so that an owned cake never exceeds it, so "met" is a relative
+     * test rather than {@link InlineFilter#clogged()}'s exact one; a filter restored from a save
+     * at or past capacity, and one already stopped there, answer the same way either way.
+     */
+    private static boolean atCapacity(InlineFilter state) {
+        return state.clogged()||state.captured().volume()>=state.capacity()*(1-1e-9);
+    }
     private TrBdf2StepSolver.StageGuard guard(PassiveNetwork graph) {
         return new TrBdf2StepSolver.StageGuard() {
             public void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes) {}
@@ -81,7 +90,12 @@ final class SolidEventIntegrator {
                 var failure=failed(graph,states,flows);if(failure!=null)throw failure.atStart();
             }
             @Override public void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows) {
-                var full=cloggedFilter(filters);if(full!=null)throw full;
+                // A stage may not reach capacity: the exact test, so the saturated inlet law's own
+                // landing a relative hair below it is an accepted step whose closure the next
+                // step's t0 guard declares, while a step that overshot the remaining room - by
+                // more than the stage-two extrapolation absorbs, or on an island where the law is
+                // not applied at all - is refused and the controller halves onto the fill.
+                var over=overfilledFilter(filters);if(over!=null)throw over;
                 checkFlow(states,modes,flows);
             }
             @Override public void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows) {
@@ -89,11 +103,17 @@ final class SolidEventIntegrator {
                 if(failure!=null)throw failure;
             }
             private Transition cloggedFilter(Map<Long,InlineFilter> filters) {
+                return firstFilter(filters,SolidEventIntegrator::atCapacity);
+            }
+            private Transition overfilledFilter(Map<Long,InlineFilter> filters) {
+                return firstFilter(filters,InlineFilter::clogged);
+            }
+            private Transition firstFilter(Map<Long,InlineFilter> filters,java.util.function.Predicate<InlineFilter> refused) {
                 for(int i=0;i<graph.pipes().size();i++) {
                     var pipe=graph.pipes().get(i);
                     if(pipe.filter()==null||pipe.blockedDirections()==BOTH_DIRECTIONS)continue;
                     var state=filters.get(pipe.id());
-                    if(state!=null&&state.clogged())return clogged(i);
+                    if(state!=null&&refused.test(state))return clogged(i);
                 }
                 return null;
             }

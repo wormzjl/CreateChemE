@@ -27,6 +27,16 @@ public final class PassiveStepSolver {
      * and no backtrack could produce a different residual anyway.
      */
     private static final double SOLID_CLAMP_FRACTION=1e-6;
+    /**
+     * How far below its stated capacity the saturated filter inlet aims. The committed cake is
+     * reconstructed from the converged flow by a different summation than the loading row solves,
+     * so a law aimed exactly at capacity lands within a unit in the last place of it on either
+     * side, and a cake one ULP over its own capacity is not a state the owned inventory should
+     * ever hold. Aiming a hair under makes the landing one-sided while leaving it at capacity to
+     * far better than any audit resolves; {@link SolidEventIntegrator} treats a cake this close to
+     * capacity as having met it.
+     */
+    private static final double FILTER_CAPACITY_MARGIN=1e-12;
     private final FluidThermodynamics model;
     private final SolverOwnership ownership;
     private final Map<WorkspaceKey,SparseNewton.Workspace> workspaces=new LinkedHashMap<>();
@@ -570,6 +580,15 @@ public final class PassiveStepSolver {
         final double[][] cachedVariables;final FluidThermodynamics.State[] cachedStates;final Transport[] cachedTransport;
         final Transport[][] capSources;final double[][] capMassFlows,capPressureDrops;
         final FluidThermodynamics.Prepared[] cachedPrepared;
+        /**
+         * Whether a device in this island prescribes its own mass flow this pass. A saturated
+         * filter inlet and a pump holding a target volume flow are two equations for the same edge
+         * once continuity has related them, so the filter capacity is not imposed as a law while
+         * one is active; those islands meet the capacity by step refusal instead, exactly as every
+         * island did before the law existed. A pump on its head limit prescribes a pressure rather
+         * than a flow and leaves the edge free, so it does not count.
+         */
+        final boolean prescribedFlow;
         final boolean[] amountVariables,solidVariables;
         final double[] differenceFloors;
         /** Below this value an amount unknown's nonnegativity is not a live constraint on the step
@@ -590,6 +609,7 @@ public final class PassiveStepSolver {
         Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[][] reachable,
                   PhaseSupport[][] supports) {
             this.modes=List.copyOf(modes);
+            prescribedFlow=this.modes.contains(FlowControl.Mode.PUMP_TARGET);
             this.seeds=List.copyOf(seeds);
             this.boundaryClosed=boundaryClosed.clone();
             this.graph=graph;this.dt=dt;int count=graph.reservoirs().size();layout=new PhaseLayout[count];offsets=new int[count];oldAmounts=new double[count][];
@@ -853,6 +873,18 @@ public final class PassiveStepSolver {
                 // properties have the same cap and loss; keep one entry per edge/direction.
                 if(pipe.filter()!=null||capSources[edge][direction]!=transport) {
                     double limit=rho*pipe.minimumArea()*transport.velocityLimit;
+                    if(pipe.filter()!=null&&!rateOnly&&!prescribedFlow) {
+                        // A filter has a second inlet limit: the cake it can still hold. The
+                        // retained volume at the end of this step is the same expression the
+                        // loading row below states, so bounding the inlet by the room divided by
+                        // the step's own retention per unit mass makes the filter fill exactly at
+                        // a step boundary instead of past one. A rate solve carries no step and no
+                        // retention, so it is exempt, and a base already at capacity is left to
+                        // the stage guard rather than throttled to a degenerate zero limit.
+                        var state=st[donor];double retainedPerMass=state.solidMoments().volume()/state.mass();
+                        double room=pipe.filter().capacity()*(1-FILTER_CAPACITY_MARGIN)-pipe.filter().captured().volume();
+                        if(retainedPerMass>0&&room>0)limit=Math.min(limit,room/(dt*retainedPerMass));
+                    }
                     capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.filter()==null?pipe.pressureDrop(limit,rho,transport.viscosity):filterCoefficient*limit;capSources[edge][direction]=transport;
                 }
                 double limit=capMassFlows[edge][direction],limitDrop=capPressureDrops[edge][direction];
