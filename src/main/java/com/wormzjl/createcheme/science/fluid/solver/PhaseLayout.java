@@ -264,25 +264,50 @@ public final class PhaseLayout {
     /** Zero-holdup mixing: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization. */
     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                                  double netMassFlow,double[] result,int offset,double[] variables) {
-        junctionResidual(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,result,offset,variables,null);
+        junctionResidual(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,0,result,offset,variables,null);
     }
     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
-                                 double netMassFlow,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared) {
+                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared) {
         double[] l=state.liquidView(),v=state.vaporView();
-        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,result,offset,variables);
+        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables);
         equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
     }
     /** The mixing block of {@link #junctionResidual}: everything the inflow and the net flow move,
      * and nothing the equilibrium rows below it read. Returns the first row after this block. */
     public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                             double netMassFlow,double[] result,int offset,double[] variables) {
+        return junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,0,result,offset,variables);
+    }
+    /**
+     * {@code retainedPressure} is positive only for a junction no open connection reaches, and is
+     * then the pressure it keeps.
+     *
+     * <p>A junction owns no volume, so nothing but the hydraulics decides its pressure: the net
+     * mass flow row below balances what arrives against what leaves, and the connected pressure
+     * drops relate that to the pressure here. Close every connection and both halves of that
+     * disappear at once. Each closed connection already has a row of its own stating that its flow
+     * is zero, so the net flow row becomes their sum - satisfied identically, with no dependence on
+     * any unknown this junction owns - and the block is one equation short of its own pressure. The
+     * factorization is then singular, which is what a junction between two stopped filters, two
+     * shut pumps, or two connections a transport closure has taken in both directions produces.
+     *
+     * <p>So an isolated junction keeps the pressure it had, exactly as it keeps the composition it
+     * had: the remaining rows already pin its mass fractions, its specific enthalpy and its total
+     * amount to the stored guess, because nothing arrives to say otherwise. It is the same rule
+     * reachability already applies when it says that a junction nothing can reach retains only its
+     * arbitrary property guess.
+     */
+    public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
+                            double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables) {
         var n=totalAmounts(state,state.liquidView(),state.vaporView());
         int row=offset;
         for(int index=0;index<junctionBasis.length-1;index++) {
             int i=junctionBasis[index];double mw=i==n.length-1?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(i);
             result[row++]=n[i]*mw/state.mass()-incomingMassFractions[i];
         }
-        result[row++]=netMassFlow; // 1 kg/s reference scale
+        // 1 kg/s reference scale, or the retained pressure of an isolated junction, in the
+        // logarithmic variable the pressure unknown already is.
+        result[row++]=retainedPressure>0?variables[offset+pressureIndex]-Math.log(retainedPressure/1e5):netMassFlow;
         result[row++]=(state.enthalpy()/state.mass()-incomingSpecificEnthalpy)/Math.max(1,energyScale/state.mass());
         result[row++]=sum(n)/amountScale-1;
         if(solidIndex>=0){var target=solidReference.clone();for(int i=0;i<3;i++)target[i]/=state.mass();solidRows(state,variables,offset,target,true,result);row+=3;}

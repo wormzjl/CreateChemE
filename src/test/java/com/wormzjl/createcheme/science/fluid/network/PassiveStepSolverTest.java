@@ -33,6 +33,33 @@ class PassiveStepSolverTest {
         assertEquals(forward.massFlows()[0],-backward.massFlows()[0],1e-8);
         assertEquals(forward.states().get(0).pressure(),backward.states().get(1).pressure(),.001);
     }
+    @Test void aJunctionNoOpenConnectionReachesKeepsItsPressureInsteadOfGoingSingular() {
+        // A junction owns no volume, so only the hydraulics decide its pressure. Close every
+        // connection - two stopped filters, two shut pumps, two connections a transport closure has
+        // taken in both directions - and its net mass flow row is the sum of rows that already say
+        // each of those flows is zero: satisfied identically, with no dependence on anything the
+        // junction owns, so the block is one equation short of its own pressure and the
+        // factorization is singular. It keeps the pressure it had, as it already keeps the
+        // composition it had.
+        // The island has to be doing something elsewhere, or Newton meets its tolerance at
+        // iteration zero and never factorizes the matrix the isolated junction makes singular.
+        var geometry=new PipeResistance.Geometry(10,.05,.000045,0);
+        var graph=new PassiveNetwork(List.of(
+                new PassiveNetwork.Reservoir(1,0,fill(300000,0),PassiveNetwork.NodeKind.GENERATOR),
+                new PassiveNetwork.Reservoir(2,0,fill(170000,0),true),
+                new PassiveNetwork.Reservoir(3,0,fill(100000,0)),
+                new PassiveNetwork.Reservoir(4,0,fill(100000,0))),List.of(
+                new PassiveNetwork.Pipe(5,0,1,List.of(geometry),new FlowControl.Passive(),3),
+                new PassiveNetwork.Pipe(6,1,2,List.of(geometry),new FlowControl.Passive(),3),
+                new PassiveNetwork.Pipe(7,0,3,new PipeResistance.Geometry(10,.05,.000045,0))));
+        var result=new PassiveStepSolver(model).solve(graph,.1,()->{});
+        assertTrue(result.massFlows()[2]>0,"The open branch must still carry the step");
+        assertEquals(0,result.massFlows()[0]);assertEquals(0,result.massFlows()[1]);
+        assertEquals(170000,result.states().get(1).pressure(),1e-6*170000);
+        // Nothing crossed either closure, so the reservoir behind them is exactly where it was.
+        assertEquals(fill(100000,0).pressure(),result.states().get(2).pressure(),1e-6*100000);
+        assertEquals(graph.reservoirs().get(2).inventory().moles()[0],result.inventories().get(2).moles()[0],1e-12);
+    }
     @Test void branchJunctionHasNoInventoryAndBalancesEveryConnectedFlow() {
         var geometry=new PipeResistance.Geometry(10,.05,.000045,0);
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,fill(300000,0)),

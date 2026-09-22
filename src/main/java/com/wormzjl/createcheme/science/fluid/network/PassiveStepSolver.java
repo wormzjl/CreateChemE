@@ -619,6 +619,10 @@ public final class PassiveStepSolver {
          * residual accumulates that node's targets, energy and junction inflows in, so a per-node
          * re-assembly reproduces every accumulator bit for bit. */
         final int[][] nodeEdges;
+        /** The pressure a junction no open connection reaches keeps, or 0 for every other node.
+         * Depends on the pass's active set, so it is built with the equations and not per
+         * evaluation; see {@link PhaseLayout#junctionRows}. */
+        final double[] retainedPressures;
         /** Residual scratch. Every one of these is written before it is read within a single
          * evaluation and never escapes it, and the evaluations of one solve are sequential on the
          * worker holding the latch, so they are filled again rather than allocated again. The
@@ -671,6 +675,13 @@ public final class PassiveStepSolver {
             for(int edge=0;edge<graph.pipes().size();edge++) {
                 var pipe=graph.pipes().get(edge);
                 nodeEdges[pipe.first()][degree[pipe.first()]++]=edge;nodeEdges[pipe.second()][degree[pipe.second()]++]=edge;
+            }
+            retainedPressures=new double[count];
+            for(int node=0;node<count;node++) {
+                if(layout[node]==null||!graph.reservoirs().get(node).junction())continue;
+                boolean open=false;
+                for(int edge:nodeEdges[node])open|=!this.boundaryClosed[edge]&&this.modes.get(edge)!=FlowControl.Mode.CLOSED;
+                if(!open)retainedPressures[node]=graph.reservoirs().get(node).state().pressure();
             }
         }
         private void buildSparsity() {
@@ -1033,7 +1044,7 @@ public final class PassiveStepSolver {
         private void nodeRows(int node,double[] x,FluidThermodynamics.State[] st,FluidThermodynamics.Prepared[] pr,double[] f) {
             if(!graph.reservoirs().get(node).junction())
                 layout[node].residual(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node],x,pr[node]);
-            else layout[node].junctionResidual(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x,pr[node]);
+            else layout[node].junctionResidual(st[node],fractions,junctionInflow(node),netMass[node],retainedPressures[node],f,offsets[node],x,pr[node]);
             nodeSolidRows(node,x,st,f);
         }
         /**
@@ -1045,7 +1056,7 @@ public final class PassiveStepSolver {
         private void nodeTargetRows(int node,double[] x,FluidThermodynamics.State[] st,double[] f) {
             if(!graph.reservoirs().get(node).junction())
                 layout[node].balanceRows(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node],x);
-            else layout[node].junctionRows(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x);
+            else layout[node].junctionRows(st[node],fractions,junctionInflow(node),netMass[node],retainedPressures[node],f,offsets[node],x);
             nodeSolidRows(node,x,st,f);
         }
         /**
