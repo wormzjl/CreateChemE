@@ -152,7 +152,11 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         line(g,!view.hydraulicOwner()?"No hydraulic interval":"Lag  "+format((view.onlineTick()-view.committedTick())/20.0)+" s",x+10,y+110);
         if(!menu.debug()){int i=0;for(var label:labels.values())g.drawString(font,font.plainSubstrByWidth(label,imageWidth/2-20),right,y+57+i++*31,0xffb6ced6,false);}
         if(data.kind()==TopologyCompiler.Kind.RESERVOIR){line(g,"Adiabatic reservoir",right,y+60);line(g,"Bulk withdrawal:",right,y+77);line(g,"all phases together",right,y+89);}
-        if(view.filter()!=null){var cake=view.filter();line(g,"Load  "+format(100*cake.loading())+" %",right,y+58);line(g,"Captured  "+format(cake.captured().massKg())+" kg",right,y+71);line(g,"Capacity  "+format(cake.capacity()*1000)+" L solids",right,y+84);if(view.devicePressureChange()!=null)line(g,"Pressure drop  "+format(Math.abs(view.devicePressureChange())/1000)+" kPa",right,y+97);recoverButton.active=!cake.captured().empty();}
+        if(view.filter()!=null){var cake=view.filter();line(g,"Load  "+format(100*cake.loading())+" %",right,y+58);line(g,"Captured  "+format(cake.captured().massKg())+" kg",right,y+71);line(g,"Capacity  "+format(cake.capacity()*1000)+" L solids",right,y+84);if(view.devicePressureChange()!=null)line(g,"Pressure drop  "+format(Math.abs(view.devicePressureChange())/1000)+" kPa",right,y+97);}
+        // A filter waiting for its topology event reports no cake at all, and recovery used to stay
+        // offered there because the button was only ever disabled from inside the branch that has
+        // one. Nothing to recover is nothing to recover, whether the cake is empty or unknown.
+        recoverButton.active=view.filter()!=null&&!view.filter().captured().empty();
         if(presetButton.visible)presetButton.setMessage(Component.literal(font.plainSubstrByWidth(preset<0?"Preset: custom":data.presets().get(preset).name(),presetButton.getWidth()-8)));
         if(pathButton.visible)pathButton.setMessage(Component.literal((reverse?"Reverse":"Forward")+" / run "+(path+1)));
         if(menu.debug()&&!view.pipeHistory().isEmpty()) {
@@ -173,8 +177,12 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         g.drawString(font,font.plainSubstrByWidth(fraction,imageWidth/2-18),x+10,y+133,0xffb6ced6,false);
         if(editSolids||phase==3&&!editMixture){
             line(g,editSolids?"Material ID                         Size (µm)   Mass share":"Solid material / size / mass",x+10,y+149);
+            // Sixty-four grades at two or three rows a page is thirty-odd pages, and the editor
+            // gave no sign of which one was on screen; the composition heading has carried its
+            // page all along.
+            if(editSolids){String pages=(page+1)+"/"+((SolidInventory.MAXIMUM_POPULATIONS-1)/rows+1);g.drawString(font,pages,x+imageWidth-10-font.width(pages),y+149,0xffb6ced6,false);}
             if(!editSolids){var populations=displayedSolids().populations();for(int i=0;i<rows;i++){int atPopulation=page*rows+i;if(atPopulation>=populations.size())break;var p=populations.get(atPopulation);String text=p.material().id()+" / "+format(p.size().diameterMetres()*1e6)+" µm / "+format(p.massKg())+" kg";g.drawString(font,font.plainSubstrByWidth(text,imageWidth-24),x+12,y+163+i*12,0xffedf5f8,false);}}
-            if(!localMessage.isEmpty())g.drawString(font,font.plainSubstrByWidth(localMessage,imageWidth-18),x+9,y+imageHeight-36,0xffefca83,false);
+            message(g,x+9,y);
             phaseButton.active=!editSolids;return;
         }
         String heading=editMixture?"Generator composition (mole %)":phaseName()+" composition (mole %)";
@@ -187,8 +195,18 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             if(mouseX>=x+12&&mouseX<x+imageWidth-110&&mouseY>=rowY&&mouseY<rowY+12)hoveredMaterial=descriptor;
             if(!editMixture)g.drawString(font,sum>0?format(100*amounts[phase][c]/sum)+" %":"Absent",x+imageWidth-94,rowY,0xffb6ced6,false);
         }
-        if(!localMessage.isEmpty())g.drawString(font,font.plainSubstrByWidth(localMessage,imageWidth-18),x+9,y+imageHeight-36,0xffefca83,false);
+        message(g,x+9,y);
         phaseButton.active=!editMixture;
+    }
+    /**
+     * The last server or client answer, wrapped rather than cut. A refused particle row is
+     * explained in a sentence, and clipping one line of it to the panel ended messages in the
+     * middle of a word; the band between the last listed row and the button row holds two.
+     */
+    private void message(GuiGraphics g,int x,int y) {
+        if(localMessage.isEmpty())return;
+        var lines=font.split(Component.literal(localMessage),imageWidth-18);
+        for(int i=0;i<Math.min(2,lines.size());i++)g.drawString(font,lines.get(i),x,y+imageHeight-42+i*9,0xffefca83,false);
     }
     private void line(GuiGraphics g,String text,int x,int y){g.drawString(font,text,x,y,0xffedf5f8,false);}
     private static String format(double value){if(Math.abs(value)<1e-10)return "0.00";return String.format(Locale.ROOT,Math.abs(value)<.01?"%.3g":"%.2f",value);}
