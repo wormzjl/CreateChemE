@@ -78,7 +78,15 @@ public final class PhysicalFluidTopology {
         for(var members:groups) {
             var boundaries=members.stream().filter(boundaryStates::containsKey).sorted().toList();
             if(boundaries.isEmpty()){for(long id:members)if(physical.containsKey(id))diagnostics.put(id,"NO FLOW: no reservoir or boundary");continue;}
-            var seed=boundaryStates.get(boundaries.getFirst()).state();var reservoirs=new ArrayList<PassiveNetwork.Reservoir>();var indices=new HashMap<Long,Integer>();
+            // A zero-holdup junction is minted with the island's first boundary state as a property
+            // guess - a temperature, a pressure and a composition to start a solve from - and never
+            // with that boundary's stock. Solids are stock: carrying them over mints the
+            // generator's whole charge of particles on every junction the compiler creates, on
+            // every topology edit, including the junction on the far side of a filter edge, where
+            // no connection can ever deliver them. See documentation/FULL_TANK_SOLIDS_EVENT.md.
+            var boundarySeed=boundaryStates.get(boundaries.getFirst()).state();
+            var seed=boundarySeed.solids().empty()?boundarySeed:boundarySeed.withSolids(com.wormzjl.createcheme.science.fluid.state.SolidInventory.EMPTY);
+            var reservoirs=new ArrayList<PassiveNetwork.Reservoir>();var indices=new HashMap<Long,Integer>();
             for(long id:new TreeSet<>(members))if(retained.containsKey(id)) {
                 indices.put(id,reservoirs.size());var node=retained.get(id);var boundary=boundaryStates.get(id);
                 reservoirs.add(boundary!=null?boundary:new PassiveNetwork.Reservoir(id,node.elevation(),seed,PassiveNetwork.NodeKind.JUNCTION));
