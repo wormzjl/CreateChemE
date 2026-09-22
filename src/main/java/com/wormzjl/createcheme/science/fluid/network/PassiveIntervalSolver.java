@@ -63,7 +63,35 @@ public final class PassiveIntervalSolver {
     public double nextStepEstimate(){return nextStepEstimate;}
     private double nextStepEstimate;
 
+    /**
+     * An interval that a stage guard cut short, as the accepted prefix plus the transition that
+     * stopped it. {@code result} is {@code null} when the transition was already there at the
+     * interval's own t0 and nothing advanced, and its {@code advancedSeconds} is below the
+     * requested duration otherwise, with {@code averageMassFlows} averaged over what it did
+     * advance. No public path returns one: a partial interval may not commit, and the only caller
+     * is {@link SolidEventIntegrator}, which closes the connection and integrates the remainder.
+     */
+    record Prefix(Result result,SolidEventIntegrator.Transition transition) {}
+    /** Transition rejections spent refining one segment towards a single event. Each one halves the
+     * step, so this is a bound on how far below the controller's own estimate the search may go
+     * before the event is simply declared where the integration currently stands. */
+    private static final int MAXIMUM_TRANSITION_REJECTIONS=40;
+    private static final String TRANSITION_REJECTION="Solid transport transition inside the step";
+
     Result integrate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
+                     TrBdf2StepSolver.StageGuard guard,double startingStep) {
+        var prefix=run(initial,duration,settings,checkpoint,acceptance,guard,startingStep);
+        // No caller of the public contract can handle a prefix, so a guard that declares a
+        // transition on this path escapes exactly as it did before there was a prefix at all.
+        if(prefix.transition()!=null)throw prefix.transition();
+        return prefix.result();
+    }
+    /** {@link #integrate} with the prefix returned rather than thrown; see {@link Prefix}. */
+    Prefix integrateToTransition(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
+                                 TrBdf2StepSolver.StageGuard guard,double startingStep) {
+        return run(initial,duration,settings,checkpoint,acceptance,guard,startingStep);
+    }
+    private Prefix run(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
                              TrBdf2StepSolver.StageGuard guard,double startingStep) {
         if(!Double.isFinite(duration)||duration<=0)throw new IllegalArgumentException("Positive finite interval required");
         if(!Double.isFinite(startingStep)||startingStep<=0)throw new IllegalArgumentException("Positive finite starting step required");
@@ -76,7 +104,11 @@ public final class PassiveIntervalSolver {
         var pipeTransfers=new PipeTransfer.Accumulator();
         var rejectionReasons=new LinkedHashMap<String,Integer>();
         String lastRejection="";
-        for(int attempt=0;attempt<settings.maximumAttempts&&elapsed<duration;attempt++) {
+        // A transition is declared rather than refined once the step that would contain it is this
+        // short, so it is located to within one such step of where it physically is.
+        double transitionFloor=Math.max(1e-6,1e-9*duration);
+        int transitionRejects=0;SolidEventIntegrator.Transition declared=null;
+        for(int attempt=0;attempt<settings.maximumAttempts&&elapsed<duration&&declared==null;attempt++) {
             checkpoint.run();double step=Math.min(h,duration-elapsed);
             try {
                 var regimes=new RegimeTrace(guard,accepted);
@@ -113,6 +145,17 @@ public final class PassiveIntervalSolver {
                 pipeTransfers.add(first.pipeTransfers(),1);pipeTransfers.add(second.pipeTransfers(),1);
                 var q1=first.massFlows();var q2=second.massFlows();for(int i=0;i<transferred.length;i++){transferred[i]+=step*.5*(q1[i]+q2[i]);grossTransferred[i]+=step*.5*(Math.abs(q1[i])+Math.abs(q2[i]));}
                 h=grow(h,step,error,settings);
+            }catch(SolidEventIntegrator.Transition transition) {
+                // A rejection kind of its own. The step is not accepted, so no accepted step ever
+                // contains a stage past the transition; the search is a plain halving onto the
+                // event, and it is separate from the accuracy rejections both in the substep
+                // counts and in the consecutive-rejection limit, which answers for a step size the
+                // error controller could not make work rather than for a physical regime boundary.
+                SolverDiagnostics.count(SolverDiagnostics.solidTransitionRejections);
+                if(transition.atStart||step<=transitionFloor||transitionRejects>=MAXIMUM_TRANSITION_REJECTIONS){declared=transition;break;}
+                transitionRejects++;
+                if(rejectionReasons.size()<8||rejectionReasons.containsKey(TRANSITION_REJECTION))rejectionReasons.merge(TRANSITION_REJECTION,1,Integer::sum);
+                h=step*.5;
             }catch(SparseNewton.Nonconvergence|IllegalArgumentException|AccuracyRejection rejected) {
                 lastRejection=String.valueOf(rejected.getMessage());
                 String reason=String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#");
@@ -124,10 +167,15 @@ public final class PassiveIntervalSolver {
                 if(consecutiveRejects>=20||elapsed+h==elapsed)throw new SparseNewton.Nonconvergence("Substep refinement exhausted: "+rejected.getMessage());
             }
         }
-        if(elapsed<duration)throw new SparseNewton.Nonconvergence("Interval substep limit; no partial interval may commit: advanced="+elapsed+" of "+duration+" s, accepted="+acceptedCount+", rejected="+rejectedCount+", reasons="+rejectionReasons+", last="+lastRejection);
-        for(int i=0;i<transferred.length;i++)transferred[i]/=duration;
+        if(declared==null&&elapsed<duration)throw new SparseNewton.Nonconvergence("Interval substep limit; no partial interval may commit: advanced="+elapsed+" of "+duration+" s, accepted="+acceptedCount+", rejected="+rejectedCount+", reasons="+rejectionReasons+", last="+lastRejection);
         nextStepEstimate=h;
-        return new Result(accepted,elapsed,transferred,acceptedCount,rejectedCount,work,boundaries,rejectionReasons,Objects.requireNonNull(last).modes(),last.devicePressureChanges(),acceptance,pipeTransfers.snapshot());
+        if(last==null)return new Prefix(null,Objects.requireNonNull(declared,"A completed interval always has a last substep"));
+        // An unbroken interval advanced exactly what was requested and normalizes by it, bit for
+        // bit as before; a prefix normalizes by what it did advance, so the caller's
+        // advanced*averageMassFlows is still the transported mass.
+        double normalizer=declared==null?duration:elapsed;
+        for(int i=0;i<transferred.length;i++)transferred[i]/=normalizer;
+        return new Prefix(new Result(accepted,elapsed,transferred,acceptedCount,rejectedCount,work,boundaries,rejectionReasons,last.modes(),last.devicePressureChanges(),acceptance,pipeTransfers.snapshot()),declared);
     }
     /** An interval boundary truncating an attempt is not evidence about the step size, so growth
      * applies to the controller's own estimate whenever the attempt was the truncated one. */
@@ -194,6 +242,7 @@ public final class PassiveIntervalSolver {
         }
         @Override public void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkFlow(states,actualModes,flows);}
         @Override public void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkFilters(filters,states,actualModes,flows);}
+        @Override public void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> actualModes,double[] flows){check(states,actualModes);delegate.checkRate(filters,states,actualModes,flows);}
         private boolean smooth(){return smooth;}
     }
     private static double boundaryError(PassiveStepSolver.Result full,PassiveStepSolver.Result first,PassiveStepSolver.Result second) {

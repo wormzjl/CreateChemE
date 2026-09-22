@@ -139,6 +139,8 @@ public final class SolverDiagnostics {
      */
     public static final LongAdder solidMomentProjections=new LongAdder();
     public static final LongAdder solidMomentProjectionsAtAcceptedPoints=new LongAdder();
+    /** Substeps rejected because a stage guard saw a solid transport transition inside the step. */
+    public static final LongAdder solidTransitionRejections=new LongAdder();
     // ---- adaptive step control ----
     /** Every interval attempt, and the accepted subset; exact even when the attempt log is full. */
     public static final LongAdder stepAttempts=new LongAdder();
@@ -215,6 +217,7 @@ public final class SolverDiagnostics {
         map.put("traceReactivations",traceReactivations);
         map.put("solidMomentProjections",solidMomentProjections);
         map.put("solidMomentProjectionsAtAcceptedPoints",solidMomentProjectionsAtAcceptedPoints);
+        map.put("solidTransitionRejections",solidTransitionRejections);
         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
         return Collections.unmodifiableMap(map);
     }

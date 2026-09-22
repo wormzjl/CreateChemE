@@ -39,6 +39,13 @@ public final class TrBdf2StepSolver {
         default boolean requiresStepDoubling(){return false;}
         default void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){check(states,modes);}
         default void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
+        /**
+         * The endpoint rate at the start of a step, evaluated before any stage is solved, together
+         * with the live cake of the graph being stepped. A transition seen here is at the step's own
+         * t0 and is therefore already exactly located: the interval solver declares it at the
+         * current elapsed time instead of refining the step towards it.
+         */
+        default void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
     }
     public Trial trial(PassiveNetwork initial,double dt,Runnable checkpoint){return trial(initial,dt,checkpoint,PassiveStepSolver.Acceptance.FULL,StageGuard.NONE);}
     public Trial trial(PassiveNetwork initial,double dt,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,StageGuard guard){return integrate(initial,dt,checkpoint,true,acceptance,guard);}
@@ -69,7 +76,7 @@ public final class TrBdf2StepSolver {
             rate=new ConservativeTransport.Projection(solved.inventories(),solved.states(),solved.boundaries(),solved.externalMoles(),solved.externalEnergyJoule(),solved.pumpWorkJoule(),solved.filters());
             cache(initial,rate,initialFlows,initialModes,acceptance);
         }else {initialFlows=cached.flows.clone();rate=cached.properties;initialModes=cached.modes;}
-        guard.checkFlow(rate.states(),initialModes,initialFlows);
+        guard.checkRate(liveFilters(initial),rate.states(),initialModes,initialFlows);
         var byId=new HashMap<Long,Integer>();for(int i=0;i<ports.size();i++)byId.put(ports.get(i).id(),i);
         double[][] dn=new double[ports.size()][model.hydrocarbon.componentCount()+1];double[] du=new double[ports.size()];
         var firstSolids=new SolidInventory.Accumulator[ports.size()];for(int i=0;i<ports.size();i++){firstSolids[i]=new SolidInventory.Accumulator();firstSolids[i].add(initial.reservoirs().get(i).inventory().solids(),1);}
@@ -183,6 +190,12 @@ public final class TrBdf2StepSolver {
         append(estimatedBoundaries,physicalBoundaries,e0*dt);append(estimatedBoundaries,first.boundaries(),e1/ALPHA);append(estimatedBoundaries,second.boundaries(),e2/ALPHA);
         append(estimatedBoundaries,correctedBoundaries,1);append(estimatedBoundaries,second.boundaries(),-1);
         return new Trial(solution,correctedStates,estimated,estimatedBoundaries);
+    }
+    /** The cake each filter edge of this graph carries right now, for the start-of-step guard. */
+    private static Map<Long,InlineFilter> liveFilters(PassiveNetwork graph) {
+        Map<Long,InlineFilter> filters=null;
+        for(var pipe:graph.pipes())if(pipe.filter()!=null){if(filters==null)filters=new HashMap<>();filters.put(pipe.id(),pipe.filter());}
+        return filters==null?Map.of():filters;
     }
     private static List<PassiveNetwork.Pipe> filterStage(PassiveNetwork graph,Map<Long,InlineFilter> result,double weight) {
         return graph.pipes().stream().map(p->p.filter()==null?p:p.withFilter(InlineFilter.combine(p.filter(),1-weight,result.getOrDefault(p.id(),p.filter()),weight))).toList();
