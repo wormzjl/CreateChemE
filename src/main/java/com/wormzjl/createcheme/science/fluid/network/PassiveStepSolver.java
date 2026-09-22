@@ -1092,14 +1092,14 @@ public final class PassiveStepSolver {
             if(!graph.reservoirs().get(node).junction()) {
                 layout[node].solidRows(st[node],x,offsets[node],solidTargets[node],false,f);return;
             }
-            var solids=solidIncoming[node].clone();if(incomingMass[node]>1e-14){for(int c=0;c<3;c++)solids[c]/=incomingMass[node];}else{solids=graph.reservoirs().get(node).state().solidMoments().values();for(int c=0;c<3;c++)solids[c]/=graph.reservoirs().get(node).state().mass();}
+            var solids=solidIncoming[node].clone();if(incomingMass[node]>ConservativeTransport.JUNCTION_INFLOW_FLOOR){for(int c=0;c<3;c++)solids[c]/=incomingMass[node];}else{solids=graph.reservoirs().get(node).state().solidMoments().values();for(int c=0;c<3;c++)solids[c]/=graph.reservoirs().get(node).state().mass();}
             layout[node].solidRows(st[node],x,offsets[node],solids,true,f);
         }
         /** Fills {@link #fractions} with this junction's incoming mass fractions and returns its
          * incoming specific enthalpy, falling back to the stored guess when nothing arrives. */
         private double junctionInflow(int node) {
             var previous=graph.reservoirs().get(node).state();
-            if(incomingMass[node]>1e-14) {
+            if(incomingMass[node]>ConservativeTransport.JUNCTION_INFLOW_FLOOR) {
                 for(int c=0;c<fractions.length;c++)fractions[c]=incoming[node][c]*model.molecularWeight(c)/incomingMass[node];
                 return incomingEnergy[node]/incomingMass[node];
             }

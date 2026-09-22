@@ -11,6 +11,11 @@ import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 /** Conservative reconstruction for a candidate's already-solved flows; it does not solve hydraulics or flash. */
 public final class ConservativeTransport {
     private ConservativeTransport() {}
+    /** The delivered mass rate a zero-holdup junction has to receive before what arrives, rather
+     * than what it stored, decides its contents. It is the floor
+     * {@code PassiveStepSolver.Equations.junctionInflow} and {@code nodeSolidRows} already apply,
+     * repeated here so that the reconstruction mixes exactly the junctions the equations mixed. */
+    static final double JUNCTION_INFLOW_FLOOR=1e-14;
     /**
      * One island's transport linear algebra, retained across its reconstructions the way
      * {@code SparseNewton.Workspace.Shared} is retained across a fork family: one EJML storage that
@@ -124,13 +129,26 @@ public final class ConservativeTransport {
             if(transfer instanceof ScheduledTransfer.Withdrawal out){outgoing[node]+=out.massKgPerSecond();endMass[node]-=dt*out.massKgPerSecond();}
             else if(transfer instanceof ScheduledTransfer.Injection in){var n=in.molesPerSecond();for(int c=0;c<components;c++)endMass[node]+=dt*n[c]*molecularWeight[c];endMass[node]+=dt*in.solidsPerSecond().massKg();}
         }
+        // Whether a zero-holdup junction is fed, decided exactly as the equations decide it. The
+        // junction rows of PassiveStepSolver take a junction's mass fractions, its specific
+        // enthalpy and its aggregate solid moments from what arrives only while the arriving mass
+        // rate exceeds this same floor, and retain the stored guess below it; both accumulate the
+        // identical delivered rate over the same edges in the same order, so the two agree bit for
+        // bit. Asking here only whether a flow is exactly zero did not: an island at rest carries
+        // flows of order 1e-14 kg/s, which is nonzero and below the floor, so the reconstruction
+        // mixed a junction the equations had retained - and on the far side of a filter, where the
+        // arriving stream carries no solids at all, that disagreement is the junction's whole
+        // solid fraction. A clear island never noticed, because what arrives and what was stored
+        // are the same fluid.
+        boolean[] fed=new boolean[nodes];
+        for(int node=0;node<nodes;node++)fed[node]=!graph.reservoirs().get(node).junction()||incoming[node]>JUNCTION_INFLOW_FLOOR;
         var columns=new ArrayList<TreeMap<Integer,Double>>();for(int c=0;c<count;c++)columns.add(new TreeMap<>());
         double[][] rhs=new double[conserved][count];
         for(int node=0;node<nodes;node++)if(index[node]>=0) {
             checkpoint.run();int row=index[node];var reservoir=graph.reservoirs().get(node);
             if(reservoir.junction()) {
                 add(columns,row,row,1);
-                if(incoming[node]==0){var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)rhs[c][row]=n[c]*molecularWeight[c]/candidate.get(node).mass();
+                if(!fed[node]){var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)rhs[c][row]=n[c]*molecularWeight[c]/candidate.get(node).mass();
                     for(int c=0;c<populationKeys.size();c++)rhs[components+c][row]=reservoir.inventory().solids().mass(populationKeys.get(c))/candidate.get(node).mass();}
             }else {
                 if(!(endMass[node]>0)||!Double.isFinite(endMass[node]))throw new SparseNewton.Nonconvergence("Candidate overdraws a reservoir");
@@ -142,7 +160,7 @@ public final class ConservativeTransport {
         var solidColumns=new ArrayList<TreeMap<Integer,Double>>();for(var column:columns)solidColumns.add(new TreeMap<>(column));
         for(int edge=0;edge<flows.length;edge++) {
             var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
-            if(index[receiver]<0||flows[edge]==0)continue;
+            if(index[receiver]<0||flows[edge]==0||!fed[receiver])continue;
             double weight=graph.reservoirs().get(receiver).junction()?Math.abs(flows[edge])/incoming[receiver]:dt*Math.abs(flows[edge]);
             if(index[donor]>=0){add(columns,index[donor],index[receiver],-weight);if(pipe.filter()==null)add(solidColumns,index[donor],index[receiver],-weight);}
             else for(int c=0;c<conserved;c++)if(c<components||pipe.filter()==null)rhs[c][index[receiver]]+=weight*fractions[donor][c];
