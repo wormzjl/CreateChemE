@@ -640,6 +640,43 @@ public final class PassiveStepSolver {
          * Depends on the pass's active set, so it is built with the equations and not per
          * evaluation; see {@link PhaseLayout#junctionRows}. */
         final double[] retainedPressures;
+        /**
+         * The pressure each edge's pressure-dimensioned rows are stated in, so that the single
+         * Newton tolerance means the same <em>relative</em> closure on every island.
+         *
+         * <p>Those rows - the hydraulic balance, a pump's head limit, a valve's regulated inlet
+         * pressure and an open valve's zero head - used to divide by a literal 1e5 Pa. That is a
+         * fixed unit, not a scale: at a tolerance of 1e-9 it demands 1e-4 Pa of closure whatever
+         * the island runs at, which is a relative 1e-9 at atmospheric pressure and a relative
+         * 2.5e-10 at 400 kPa. The second is below what the endpoint pressures themselves can be
+         * resolved to once they are reconstructed and re-encoded through the logarithmic pressure
+         * unknown, so a driven line settles a fraction of a milli-pascal apart and the island
+         * stalls there forever - and the more resistive the edge, the larger the imbalance its own
+         * row shows, which is why an inline filter (clean resistance ~150x a plain pipe's) is what
+         * this stops first.
+         *
+         * <p>The scale is {@code max(1e5, max(P_first, P_second))} from the endpoint states of
+         * <em>this pass</em>, so:
+         *
+         * <ul>
+         * <li>it is constant through the whole Newton solve, which keeps it out of the Jacobian
+         *     entirely: no derivative of the scale, no new sparsity, and the block sweep and the
+         *     coloured whole-island sweep still evaluate the identical row;</li>
+         * <li>the 1e5 Pa floor leaves every island at or below atmospheric pressure bit-identical
+         *     to what it was, so only islands that actually run above 1 bar move at all;</li>
+         * <li>it is per edge rather than per island, because an island may span a 4 bar header and
+         *     an atmospheric vent and only the rows that sit at high pressure should be loosened. A
+         *     single island-wide maximum would relax an atmospheric branch by the header's factor
+         *     for no reason.</li>
+         * </ul>
+         *
+         * <p>Taking the live iterate's pressures instead was rejected: the scale would then be a
+         * function of the unknowns, so its derivative would enter every one of those rows, the
+         * {@code max} would put a kink in them, and the rows would stop being a fixed positive
+         * multiple of the physical equation - all of it to track a pressure that a converging
+         * Newton is already driving to the pass's own endpoint pressures.
+         */
+        final double[] pressureScales;
         /** Residual scratch. Every one of these is written before it is read within a single
          * evaluation and never escapes it, and the evaluations of one solve are sequential on the
          * worker holding the latch, so they are filled again rather than allocated again. The
@@ -692,6 +729,11 @@ public final class PassiveStepSolver {
             for(int edge=0;edge<graph.pipes().size();edge++) {
                 var pipe=graph.pipes().get(edge);
                 nodeEdges[pipe.first()][degree[pipe.first()]++]=edge;nodeEdges[pipe.second()][degree[pipe.second()]++]=edge;
+            }
+            pressureScales=new double[graph.pipes().size()];
+            for(int edge=0;edge<pressureScales.length;edge++) {
+                var pipe=graph.pipes().get(edge);
+                pressureScales[edge]=Math.max(1e5,Math.max(seeds.get(pipe.first()).pressure(),seeds.get(pipe.second()).pressure()));
             }
             retainedPressures=new double[count];
             for(int node=0;node<count;node++) {
@@ -914,7 +956,12 @@ public final class PassiveStepSolver {
             int control=controlOffsets[edge];double head=control<0?0:x[control]*1e5;
             double signedHead=pipe.control() instanceof FlowControl.Pump?head:-head;
             double driving=st[a].pressure()-st[b].pressure()-rho*GRAVITY*dz+signedHead;
-            f[edgeOffset+edge]=(driving-loss)/1e5;
+            // Every pressure-dimensioned row of this edge is stated in the island's own pressure,
+            // never in a fixed 1e5 Pa unit; see {@link #pressureScales}. The throttled-inlet row
+            // below and the closed-edge row are mass flows and keep their own flow scale, and the
+            // pump's target row is a volume flow.
+            double pressureScale=pressureScales[edge];
+            f[edgeOffset+edge]=(driving-loss)/pressureScale;
             if(canClamp(modes.get(edge))&&!boundaryClosed[edge]) {
                 int direction=flow>=0?0:1;
                 // A colored Jacobian perturbs only a few nodes. Unchanged immutable donor
@@ -944,9 +991,9 @@ public final class PassiveStepSolver {
             if(boundaryClosed[edge]&&control<0)f[edgeOffset+edge]=flow;
             if(control>=0)f[control]=switch(modes.get(edge)) {
                 case PUMP_TARGET->(flow/(st[a].mass()/st[a].volume())-((FlowControl.Pump)pipe.control()).targetVolumeFlow())/.01;
-                case PUMP_HEAD_LIMIT->(head-((FlowControl.Pump)pipe.control()).maximumAddedPressure())/1e5;
-                case VALVE_REGULATING->(st[a].pressure()-((FlowControl.PressureValve)pipe.control()).targetPressure())/1e5;
-                case VALVE_OPEN->head/1e5;
+                case PUMP_HEAD_LIMIT->(head-((FlowControl.Pump)pipe.control()).maximumAddedPressure())/pressureScale;
+                case VALVE_REGULATING->(st[a].pressure()-((FlowControl.PressureValve)pipe.control()).targetPressure())/pressureScale;
+                case VALVE_OPEN->head/pressureScale;
                 case CLOSED->flow;
                 case PASSIVE,VELOCITY_LIMITED,PUMP_VELOCITY_LIMIT,VALVE_VELOCITY_LIMIT->throw new IllegalStateException("Presentation-only or passive mode has actuator unknown");
             };
