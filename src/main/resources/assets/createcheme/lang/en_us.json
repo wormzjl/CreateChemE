@@ -34,6 +34,8 @@
   "gui.createcheme.column_preset.cold_lake_blend": "Cold Lake Blend",
   "gui.createcheme.column_preset.holland_3_2": "Holland Example 3-2",
   "gui.createcheme.column_presets": "Input presets",
+  "gui.createcheme.column_diameter": "Diameter (m)",
+  "gui.createcheme.column_diameter_hint": "Diameter 0 m keeps the authored uniform drop; a positive one computes the tray pressure drop and warns about flooding.",
   "gui.createcheme.preset_choose": "Choose an input preset",
   "gui.createcheme.preset_replaces": "Loading replaces the draft and clears its previous result.",
   "gui.createcheme.preset_conditions": "The five crude assays use the current Tia Juana column settings as editable starting points. Adjust operating conditions for each crude before running.",

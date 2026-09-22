@@ -20,7 +20,8 @@ public record V3ColumnDisplayResult(
         int acceptanceCheckCount,
         List<V3ColumnStreamProperties> streams,
         Optional<V3ColumnDutyLedger> dutyLedger,
-        double closureTolerance) {
+        double closureTolerance,
+        Optional<V3TrayHydraulicsSummary> trayHydraulics) {
     /** Legacy certificate without a duty ledger; older persisted and wire results decode through here. */
     public V3ColumnDisplayResult(
             String inputDigest, String formulationRevision, String assumptionsRevision, String datasetRevision,
@@ -40,8 +41,18 @@ public record V3ColumnDisplayResult(
                 V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE);
     }
 
+    /** Certificate of a prescribed-drop result; a version 10 persisted or wire result reads as empty. */
+    public V3ColumnDisplayResult(
+            String inputDigest, String formulationRevision, String assumptionsRevision, String datasetRevision,
+            int newtonIterations, double maximumScaledResidual, int acceptanceCheckCount,
+            List<V3ColumnStreamProperties> streams, Optional<V3ColumnDutyLedger> dutyLedger, double closureTolerance) {
+        this(inputDigest, formulationRevision, assumptionsRevision, datasetRevision, newtonIterations,
+                maximumScaledResidual, acceptanceCheckCount, streams, dutyLedger, closureTolerance, Optional.empty());
+    }
+
     public V3ColumnDisplayResult {
         Objects.requireNonNull(dutyLedger, "dutyLedger");
+        Objects.requireNonNull(trayHydraulics, "trayHydraulics");
         V3ConvergenceEvidence.requireClosure(closureTolerance);
         inputDigest = boundedDigest(inputDigest);
         formulationRevision = boundedRevision(formulationRevision, "formulationRevision");
@@ -71,7 +82,8 @@ public record V3ColumnDisplayResult(
                 result.acceptanceAudit().checks().size(),
                 result.streams(),
                 result.dutyLedger(),
-                result.closureTolerance());
+                result.closureTolerance(),
+                result.trayHydraulics());
     }
 
     private static String boundedDigest(String value) {

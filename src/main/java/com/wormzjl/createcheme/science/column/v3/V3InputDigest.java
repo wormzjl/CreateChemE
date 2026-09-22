@@ -91,6 +91,13 @@ public record V3InputDigest(String hexadecimalSha256) {
         }
         put(digest, "top-pressure-bits", canonicalBits(input.topPressurePascal()));
         put(digest, "stage-drop-bits", canonicalBits(input.stagePressureDropPascal()));
+        // Placement and the positive guard are intentional: a prescribed-drop request keeps its historical byte
+        // stream, while a hydraulics request is identified by its diameter and by the correlation that marched
+        // the profile, because the same diameter under a revised correlation is a different accepted state.
+        if (input.usesTrayHydraulics()) {
+            put(digest, "column-diameter-bits", canonicalBits(input.columnDiameterMetres()));
+            put(digest, "tray-hydraulics-revision", V3TrayHydraulics.CORRELATION_REVISION);
+        }
         put(digest, "condenser-branch", problem.topology().condenserPhaseBranch().name());
         for (V3ColumnSpecification specification : input.specifications()) {
             put(digest, "control", specification.controlledQuantity().name());

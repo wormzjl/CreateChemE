@@ -15,9 +15,26 @@ public final class V3ColumnProblemResolver {
      * @throws IllegalArgumentException if the input/schema/branch cannot form a closed V3 problem
      */
     public static V3ColumnProblem resolve(V3ColumnInput input, V3CondenserPhaseBranch condenserPhaseBranch) {
+        return resolve(input, condenserPhaseBranch, null);
+    }
+
+    /**
+     * Resolves one candidate branch on an explicitly supplied per-tray pressure profile.
+     *
+     * <p>{@code nodePressuresPascal} is null for the generated uniform profile — the only mode that existed
+     * before flow-dependent tray hydraulics — and otherwise is the marched profile of an accepted state. The
+     * profile is validated here and then flows into the problem, so every pressure-derived quantity downstream
+     * (steam superheat, the operating-domain assessment, the feed flash, the condenser water regime) reads the
+     * profile that is actually in use rather than the authored uniform drop.</p>
+     *
+     * @throws IllegalArgumentException if the input/schema/branch cannot form a closed V3 problem, or if the
+     *         supplied profile does not describe this geometry
+     */
+    public static V3ColumnProblem resolve(
+            V3ColumnInput input, V3CondenserPhaseBranch condenserPhaseBranch, double[] nodePressuresPascal) {
         input = Objects.requireNonNull(input, "input");
         condenserPhaseBranch = Objects.requireNonNull(condenserPhaseBranch, "condenserPhaseBranch");
-        validateInput(input);
+        validateInput(input, nodePressuresPascal);
         V3ColumnTopology topology = switch (condenserPhaseBranch) {
             case TWO_PHASE -> V3ColumnTopology.twoPhase(input.stageCount(), input.feedStageNumber());
             case VAPOR_ONLY -> V3ColumnTopology.vaporOnly(input.stageCount(), input.feedStageNumber());
@@ -32,7 +49,9 @@ public final class V3ColumnProblemResolver {
             throw new IllegalArgumentException("Invalid V3 degree-of-freedom contract: " + ledger.humanReadableDiagnostic());
         }
         return new V3ColumnProblem(input, topology, activeComponentBasis, condenserComponentPhases,
-                pressureProfile(input, topology), ledger, ledger.truncationSupport(), ledger.wetTraySet());
+                nodePressuresPascal == null ? pressureProfile(input, topology)
+                        : requireProfile(nodePressuresPascal, input, topology),
+                ledger, ledger.truncationSupport(), ledger.wetTraySet());
     }
 
     /**
@@ -74,6 +93,17 @@ public final class V3ColumnProblemResolver {
 
     /** Validates the authored geometry and rates without assembling a numerical ledger or calling properties. */
     public static void validateInput(V3ColumnInput input) {
+        validateInput(input, null);
+    }
+
+    /**
+     * The same validation against the pressure profile a solve will actually use.
+     *
+     * <p>Only the steam superheat bound and the bottom-pressure finiteness read pressures, and both take them
+     * from the supplied profile when there is one: steam that is superheated against the uniform nominal can be
+     * saturated against a marched profile that is 20 kPa higher at the sump.</p>
+     */
+    static void validateInput(V3ColumnInput input, double[] nodePressuresPascal) {
         Objects.requireNonNull(input, "input");
         if (input.schemaVersion() != V3ColumnInput.SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported V3 input schema revision " + input.schemaVersion());
@@ -84,6 +114,7 @@ public final class V3ColumnProblemResolver {
         if (input.feedStageNumber() < 1 || input.feedStageNumber() > input.stageCount()) {
             throw new IllegalArgumentException("V3 feed tray is outside the equilibrium-tray range");
         }
+        if (nodePressuresPascal != null) requireProfileShape(nodePressuresPascal, input);
         double totalDraw = 0.0;
         for (V3SideDrawSpec draw : input.sideDraws()) {
             if (draw.trayNumber() > input.stageCount()) {
@@ -100,8 +131,9 @@ public final class V3ColumnProblemResolver {
                 throw new IllegalArgumentException("V3 pumparound tray is outside the equilibrium-tray range");
             }
         }
-        double bottomPressure = input.topPressurePascal()
-                + (input.stageCount() - 1) * input.stagePressureDropPascal();
+        double bottomPressure = nodePressuresPascal == null
+                ? input.topPressurePascal() + (input.stageCount() - 1) * input.stagePressureDropPascal()
+                : nodePressuresPascal[input.stageCount()];
         if (!Double.isFinite(bottomPressure) || bottomPressure <= 0.0) {
             throw new IllegalArgumentException("V3 generated pressure profile is not finite and positive");
         }
@@ -114,8 +146,10 @@ public final class V3ColumnProblemResolver {
                     || feed.temperatureKelvin() > V3WaterProperties.maximumTemperature()) {
                 throw new IllegalArgumentException("V3 steam temperature is outside the water-property envelope");
             }
-            double injectionPressure = input.topPressurePascal()
-                    + (Math.min(feed.stageNumber(), input.stageCount()) - 1) * input.stagePressureDropPascal();
+            int injectionTray = Math.min(feed.stageNumber(), input.stageCount());
+            double injectionPressure = nodePressuresPascal == null
+                    ? input.topPressurePascal() + (injectionTray - 1) * input.stagePressureDropPascal()
+                    : nodePressuresPascal[injectionTray];
             double saturationTemperature = V3WaterProperties.saturationTemperatureKelvin(injectionPressure);
             if (feed.temperatureKelvin() < saturationTemperature + 5.0) {
                 throw new IllegalArgumentException("V3 steam must be superheated vapor at the injection pressure");
@@ -141,6 +175,45 @@ public final class V3ColumnProblemResolver {
                 throw new IllegalArgumentException("V3 free-water condenser temperature is below the ice-free property envelope");
             }
         }
+    }
+
+    /**
+     * A supplied profile must describe this column: the same node count, the authored top pressure on the
+     * condenser and the top tray, a nondecreasing tray section, and the sump on the bottom tray's pressure.
+     *
+     * <p>Those are exactly the invariants the generated uniform profile satisfies, so a solve cannot tell the
+     * two apart, and the N-1 tray-interval convention is preserved whichever produced the profile.</p>
+     */
+    private static void requireProfileShape(double[] nodePressuresPascal, V3ColumnInput input) {
+        int trayCount = input.stageCount();
+        if (nodePressuresPascal.length != trayCount + 2) {
+            throw new IllegalArgumentException("V3 supplied pressure profile does not match the tray count");
+        }
+        for (double pressure : nodePressuresPascal) {
+            if (!Double.isFinite(pressure) || pressure <= 0.0) {
+                throw new IllegalArgumentException("V3 supplied pressure profile must be finite and positive");
+            }
+        }
+        if (nodePressuresPascal[0] != input.topPressurePascal() || nodePressuresPascal[1] != input.topPressurePascal()) {
+            throw new IllegalArgumentException("V3 supplied pressure profile must start at the authored top pressure");
+        }
+        for (int tray = 2; tray <= trayCount; tray++) {
+            if (nodePressuresPascal[tray] < nodePressuresPascal[tray - 1]) {
+                throw new IllegalArgumentException("V3 supplied pressure profile must not rise up the column");
+            }
+        }
+        if (nodePressuresPascal[trayCount + 1] != nodePressuresPascal[trayCount]) {
+            throw new IllegalArgumentException("V3 supplied pressure profile must put the sump on the bottom tray");
+        }
+    }
+
+    private static double[] requireProfile(
+            double[] nodePressuresPascal, V3ColumnInput input, V3ColumnTopology topology) {
+        if (nodePressuresPascal.length != topology.nodeCount()
+                || topology.condenserNode() != 0 || topology.reboilerNode() != input.stageCount() + 1) {
+            throw new IllegalArgumentException("V3 supplied pressure profile does not match the resolved topology");
+        }
+        return nodePressuresPascal.clone();
     }
 
     private static double[] pressureProfile(V3ColumnInput input, V3ColumnTopology topology) {

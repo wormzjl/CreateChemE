@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 class V3ColumnInputDraftTest {
     private static final List<String> SCALARS =
-            List.of("360", "365", "24", "12", "29", "8", "2", "1.5", "0.75");
+            List.of("360", "365", "24", "12", "29", "8", "2", "1.5", "0.75", "8");
 
     @Test
     void assembledInputCarriesTheAuthoredCoolersWithTheirSplits() {
@@ -27,6 +27,7 @@ class V3ColumnInputDraftTest {
         assertEquals(24, assembled.stageCount());
         assertEquals(12, assembled.feedStageNumber());
         assertEquals(100.0, totalFeed(assembled), 1.0e-9);
+        assertEquals(8.0, assembled.columnDiameterMetres(), 1.0e-12);
     }
 
     @Test

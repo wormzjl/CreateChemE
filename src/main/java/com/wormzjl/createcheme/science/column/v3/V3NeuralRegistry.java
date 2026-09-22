@@ -87,7 +87,8 @@ public final class V3NeuralRegistry implements V3NeuralInitializer {
     private static V3ColumnInput project(V3ColumnInput input,List<String> ids,double[] feed) {
         return new V3ColumnInput(input.schemaVersion(),input.packageId(),input.assayId(),new V3ComponentBasis(ids),feed,
                 input.feedTemperatureKelvin(),input.stageCount(),input.feedStageNumber(),input.topPressurePascal(),
-                input.stagePressureDropPascal(),input.specifications(),input.sideDraws(),input.steamFeeds(),input.pumparounds());
+                input.stagePressureDropPascal(),input.specifications(),input.sideDraws(),input.steamFeeds(),input.pumparounds(),
+                input.columnDiameterMetres());
     }
     private record Bound(Entry entry,MaterialCatalog originalCatalog,MaterialCatalog view,
             V3ColumnInput original,V3ColumnInput projected) implements V3NeuralInitializer {

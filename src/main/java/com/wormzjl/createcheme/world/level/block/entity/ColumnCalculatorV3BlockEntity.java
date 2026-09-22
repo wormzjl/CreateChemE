@@ -7,6 +7,7 @@ import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import com.wormzjl.createcheme.science.column.v3.V3PumparoundSpec;
 import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
 import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
+import com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsSummary;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnOutcome;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
@@ -48,7 +49,15 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 9;
+    public static final int DATA_VERSION = 10;
+    /**
+     * Persisted versions this build can still read.
+     *
+     * <p>Version 10 added the column diameter. A version 9 input simply does not carry one and loads in the
+     * prescribed-drop mode it was authored in, which is bit-for-bit the behaviour it had, so it is migrated
+     * rather than retained as an unsupported state.</p>
+     */
+    private static final int MINIMUM_READABLE_DATA_VERSION = 9;
     public static final String LITERATURE_PACKAGE = "createcheme:tjl19_dwsim";
     private static final String TAG_DATA_VERSION = "V3DataVersion";
     private static final String TAG_INPUT_REVISION = "InputRevision";
@@ -249,7 +258,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             return;
         }
         int dataVersion = tag.getInt(TAG_DATA_VERSION);
-        if (dataVersion != DATA_VERSION) {
+        if (dataVersion > DATA_VERSION || dataVersion < MINIMUM_READABLE_DATA_VERSION) {
             incompatibleState = tag.copy();
             status = V3Status.INCOMPATIBLE;
             detail = "Incompatible material basis; explicitly load a current preset to replace this unsupported input";
@@ -435,6 +444,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         tag.putInt("FeedStage", input.feedStageNumber());
         tag.putDouble("TopPressure", input.topPressurePascal());
         tag.putDouble("PressureDrop", input.stagePressureDropPascal());
+        tag.putDouble("ColumnDiameter", input.columnDiameterMetres());
         ListTag specifications = new ListTag();
         for (V3ColumnSpecification specification : input.specifications()) {
             CompoundTag specificationTag = new CompoundTag();
@@ -545,7 +555,10 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 tag.getInt("Schema"), tag.getString("Package"), tag.getString("Assay"), new V3ComponentBasis(axis),
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
                 tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws,
-                steamFeeds, pumparounds);
+                steamFeeds, pumparounds,
+                // Absent before version 10; a persisted input without one keeps the prescribed uniform drop.
+                tag.contains("ColumnDiameter", Tag.TAG_DOUBLE) ? tag.getDouble("ColumnDiameter")
+                        : V3ColumnInput.PRESCRIBED_DROP_DIAMETER);
         if(com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().containsKey(input.packageId())) {
             var current=com.wormzjl.createcheme.science.material.MaterialRuntime.current().requirePackage(input.packageId());
             if(!current.components().equals(input.componentBasis().componentIds()))throw new IllegalArgumentException("Unsupported persisted component axis");
@@ -588,7 +601,30 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         tag.put("Streams", streams);
         result.dutyLedger().ifPresent(ledger -> tag.put("DutyLedger", writeDutyLedger(ledger)));
         tag.putDouble("ClosureTolerance", result.closureTolerance());
+        result.trayHydraulics().ifPresent(hydraulics -> tag.put("Hydraulics", writeTrayHydraulics(hydraulics)));
         return tag;
+    }
+
+    /** Trailing optional block, like the duty ledger: a result without tray hydraulics simply omits it. */
+    private static CompoundTag writeTrayHydraulics(V3TrayHydraulicsSummary hydraulics) {
+        CompoundTag tag = new CompoundTag();
+        tag.putDouble("Diameter", hydraulics.columnDiameterMetres());
+        tag.putDouble("TotalDrop", hydraulics.totalPressureDropPascal());
+        tag.putDouble("MeanTrayDrop", hydraulics.meanTrayPressureDropPascal());
+        tag.putDouble("MaximumFlood", hydraulics.maximumFloodFraction());
+        tag.putInt("MaximumFloodTray", hydraulics.maximumFloodTray());
+        tag.putBoolean("CorrectionApplied", hydraulics.correctionApplied());
+        tag.putDouble("ResidualMismatch", hydraulics.residualMismatchFraction());
+        tag.putDouble("WorstTrayDry", hydraulics.worstTrayDryPascal());
+        tag.putDouble("WorstTrayLiquid", hydraulics.worstTrayLiquidPascal());
+        return tag;
+    }
+
+    private static V3TrayHydraulicsSummary readTrayHydraulics(CompoundTag tag) {
+        return new V3TrayHydraulicsSummary(tag.getDouble("Diameter"), tag.getDouble("TotalDrop"),
+                tag.getDouble("MeanTrayDrop"), tag.getDouble("MaximumFlood"), tag.getInt("MaximumFloodTray"),
+                tag.getBoolean("CorrectionApplied"), tag.getDouble("ResidualMismatch"),
+                tag.getDouble("WorstTrayDry"), tag.getDouble("WorstTrayLiquid"));
     }
 
     /** Signed duties, positive into the column, are stored exactly as calculated. */
@@ -663,10 +699,15 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 ? Optional.of(readDutyLedger(tag.getCompound("DutyLedger"))) : Optional.empty();
         double closure = tag.contains("ClosureTolerance", Tag.TAG_DOUBLE)
                 ? tag.getDouble("ClosureTolerance") : V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE;
+        if (tag.contains("Hydraulics") && !tag.contains("Hydraulics", Tag.TAG_COMPOUND)) {
+            throw new IllegalArgumentException("Invalid V3 tray hydraulics summary");
+        }
+        Optional<V3TrayHydraulicsSummary> hydraulics = tag.contains("Hydraulics", Tag.TAG_COMPOUND)
+                ? Optional.of(readTrayHydraulics(tag.getCompound("Hydraulics"))) : Optional.empty();
         return new V3ColumnDisplayResult(
                 tag.getString("Digest"), tag.getString("Formulation"), tag.getString("Assumptions"),
                 tag.getString("Dataset"), tag.getInt("NewtonIterations"), tag.getDouble("MaximumResidual"),
-                tag.getInt("AcceptanceChecks"), streams, ledger, closure);
+                tag.getInt("AcceptanceChecks"), streams, ledger, closure, hydraulics);
     }
 
     private static V3ColumnSpecification specification(V3ControlledQuantity quantity, double value) {

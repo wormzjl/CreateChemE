@@ -45,7 +45,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 net.minecraft.network.chat.Component.literal(hoveredMaterial.id())),java.util.Optional.empty(),mouseX,mouseY);
     }
 
-    private static final int CORE_EDITOR_COUNT = 9;
+    private static final int CORE_EDITOR_COUNT = 10;
+    /**
+     * The scalar grid is four wide so the column diameter sits beside the pressures it belongs with, and the
+     * side-draw and steam blocks below it keep the three-column pitch and the vertical positions they had.
+     */
+    private static final int CORE_EDITOR_COLUMNS = 4;
     private static final int SIDE_DRAW_COUNT = 3;
     private static final int COOLER_COUNT = V3ColumnInput.MAX_PUMPAROUNDS;
     private static final int MAX_PANEL_WIDTH = 620;
@@ -206,13 +211,14 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private void buildEditors(
             String[] scalarDraft, String[] sideStageDrafts, String[] sideRateDrafts, String[] steamDrafts) {
         int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
-        String[] defaults = {"2610.7", "365", "29", "24", "126.85", "8", "2", "1.5", "0.75"};
+        int coreColumnWidth = Math.max(1, (imageWidth - 20) / CORE_EDITOR_COLUMNS);
+        String[] defaults = {"2610.7", "365", "29", "24", "126.85", "8", "2", "1.5", "0.75", "0"};
         for (int index = 0; index < CORE_EDITOR_COUNT; index++) {
-            int column = index % 3;
-            int row = index / 3;
-            EditBox editor = new EditBox(font, leftPos + 10 + column * scalarColumnWidth,
+            int column = index % CORE_EDITOR_COLUMNS;
+            int row = index / CORE_EDITOR_COLUMNS;
+            EditBox editor = new EditBox(font, leftPos + 10 + column * coreColumnWidth,
                     topPos + CONTENT_TOP + 13 + row * 38,
-                    Math.max(30, Math.min(104, scalarColumnWidth - 8)), 20, Component.literal("V3 input"));
+                    Math.max(30, Math.min(104, coreColumnWidth - 8)), 20, Component.literal("V3 input"));
             editor.setMaxLength(20);
             editor.setValue(scalarDraft == null ? defaults[index] : scalarDraft[index]);
             editor.setResponder(value -> onDraftEdited());
@@ -387,7 +393,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
                 compactDraft(specificationValue(input, V3ControlledQuantity.REBOILER_DUTY) / 1_000_000.0, 1),
                 compactDraft(specificationValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO), 2),
                 compactDraft(input.topPressurePascal() * PASCAL_TO_BAR, 2),
-                compactDraft(input.stagePressureDropPascal() / 1_000.0, 2)
+                compactDraft(input.stagePressureDropPascal() / 1_000.0, 2),
+                compactDraft(input.columnDiameterMetres(), 2)
         };
         if (coreEditors.size() == CORE_EDITOR_COUNT) {
             for (int index = 0; index < values.length; index++) coreEditors.get(index).setValue(values[index]);
@@ -642,16 +649,18 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
 
     private void renderInputs(GuiGraphics graphics) {
         String[] labels = {
-                "Feed (kmol/h)", "Feed temp (C)", "Theor. stages",
-                "Feed stage", "Condenser (C)", "Reboiler (MW)",
-                "Reflux L/D", "Top P (bar)", "Drop (kPa/stage)"
+                "Feed (kmol/h)", "Feed temp (C)", "Theor. stages", "Feed stage",
+                "Condenser (C)", "Reboiler (MW)", "Reflux L/D", "Top P (bar)",
+                "Drop (kPa/stage)",
+                Component.translatableWithFallback("gui.createcheme.column_diameter", "Diameter (m)").getString()
         };
         int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
+        int coreColumnWidth = Math.max(1, (imageWidth - 20) / CORE_EDITOR_COLUMNS);
         for (int index = 0; index < labels.length; index++) {
-            int column = index % 3;
-            int row = index / 3;
-            graphics.drawString(font, labels[index], 10 + column * scalarColumnWidth,
-                    CONTENT_TOP + row * 38, MUTED, false);
+            int column = index % CORE_EDITOR_COLUMNS;
+            int row = index / CORE_EDITOR_COLUMNS;
+            graphics.drawString(font, abbreviateToWidth(labels[index], Math.max(1, coreColumnWidth - 6)),
+                    10 + column * coreColumnWidth, CONTENT_TOP + row * 38, MUTED, false);
         }
         for (int index = 0; index < SIDE_DRAW_COUNT; index++) {
             graphics.drawString(font, "Side " + (index + 1) + "  stage / kmol/h", 10 + index * scalarColumnWidth,
@@ -684,6 +693,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         graphics.drawString(font, "Input revision " + serverState.inputRevision() + " • state " + serverState.stateRevision()
                         + " • V3 assay " + input.assayId(),
                 10, CONTENT_TOP + 237, MUTED, false);
+        if (imageHeight >= 340) {
+            graphics.drawString(font, Component.translatableWithFallback("gui.createcheme.column_diameter_hint",
+                            "Diameter 0 m keeps the authored uniform drop; a positive one computes the tray "
+                                    + "pressure drop and warns about flooding."),
+                    10, CONTENT_TOP + 251, MUTED, false);
+        }
         boolean calculating = calculationRequested || serverState.status() == V3Status.CALCULATING;
         int statusColor = calculating ? NOTICE : serverState.status() == V3Status.FAILED ? FAILURE
                 : run != null && run.active ? SUCCESS : NOTICE;
@@ -1092,6 +1107,31 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             graphics.drawString(font, "Input digest: " + result.inputDigest().substring(0, 16) + "…", 10, CONTENT_TOP + 139, MUTED, false);
             graphics.drawString(font, "Formulation: " + result.formulationRevision(), 10, CONTENT_TOP + 154, MUTED, false);
             graphics.drawString(font, "Dataset: " + result.datasetRevision(), 10, CONTENT_TOP + 169, MUTED, false);
+            result.trayHydraulics().ifPresent(hydraulics -> {
+                graphics.drawString(font, String.format(Locale.ROOT,
+                                "Tray pressure drop: %.1f kPa total · %.0f Pa/tray · %.0f%% of flood at tray %d (D %.1f m)",
+                                hydraulics.totalPressureDropPascal() / 1_000.0,
+                                hydraulics.meanTrayPressureDropPascal(), 100.0 * hydraulics.maximumFloodFraction(),
+                                hydraulics.maximumFloodTray(), hydraulics.columnDiameterMetres()),
+                        10, CONTENT_TOP + 184, hydraulics.floods() ? NOTICE : MUTED, false);
+                // The cause and the remedy are on the result page in their own right, so a flooded column says
+                // both even when another advisory leads the one-line status detail. Two fixed single lines
+                // rather than a wrapped block: the page below them is laid out at fixed offsets.
+                if (hydraulics.floods()) {
+                    graphics.drawString(font, abbreviateToWidth(String.format(Locale.ROOT,
+                                    "Tray %d floods: %.2f kPa (dry %.2f, froth %.2f); the %s load is too high for "
+                                            + "this diameter",
+                                    hydraulics.maximumFloodTray(),
+                                    (hydraulics.worstTrayDryPascal() + hydraulics.worstTrayLiquidPascal()) / 1_000.0,
+                                    hydraulics.worstTrayDryPascal() / 1_000.0,
+                                    hydraulics.worstTrayLiquidPascal() / 1_000.0,
+                                    hydraulics.vaporLimited() ? "vapor" : "liquid"), imageWidth - 20),
+                            10, CONTENT_TOP + 196, NOTICE, false);
+                    graphics.drawString(font, abbreviateToWidth(
+                                    "Widen the column, or cut feed, steam, reboiler duty or reflux", imageWidth - 20),
+                            10, CONTENT_TOP + 208, NOTICE, false);
+                }
+            });
         } else {
             graphics.drawString(font, "A successful fresh audit will publish provenance and physical stream properties.",
                     10, CONTENT_TOP + 68, MUTED, false);

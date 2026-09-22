@@ -62,6 +62,25 @@ public final class V3PengRobinsonThermo implements V3ThermoModel, V3ThermoDeriva
         return session.componentMolecularWeightKgPerMol(publicComponent);
     }
 
+    /**
+     * Registered public-axis pure-component constants used by the tray hydraulics.
+     *
+     * <p>They feed Kay's-rule pseudocritical properties and the Rackett scaling of the standard liquid density
+     * in {@link com.wormzjl.createcheme.science.column.v3.V3TrayHydraulics}, which is the only consumer: no
+     * equilibrium, enthalpy or flash path reads a constant through these.</p>
+     */
+    public double componentCriticalTemperatureKelvin(int publicComponent) {
+        return session.componentCriticalTemperatureKelvin(publicComponent);
+    }
+
+    public double componentAcentricFactor(int publicComponent) {
+        return session.componentAcentricFactor(publicComponent);
+    }
+
+    public double componentStandardLiquidDensityKgPerCubicMetre(int publicComponent) {
+        return session.componentStandardLiquidDensityKgPerCubicMetre(publicComponent);
+    }
+
     @Override
     public V3ComponentBasis componentBasis() {
         return session.componentBasis();

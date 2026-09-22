@@ -156,8 +156,9 @@ class V3PumparoundCodecTest {
         try {
             invoke(ColumnV3Network.class, "writeDisplayResult",
                     new Class<?>[] {RegistryFriendlyByteBuf.class, V3ColumnDisplayResult.class}, buffer, result);
-            // The stage-duty count precedes sixteen tray/duty pairs of nine bytes each.
-            buffer.setByte(buffer.writerIndex() - 9 * V3ColumnDutyLedger.MAX_STAGE_DUTIES - 1,
+            // The stage-duty count precedes sixteen tray/duty pairs of nine bytes each, and the ledger is
+            // followed by the absent-hydraulics flag.
+            buffer.setByte(buffer.writerIndex() - 9 * V3ColumnDutyLedger.MAX_STAGE_DUTIES - 2,
                     V3ColumnDutyLedger.MAX_STAGE_DUTIES + 1);
             assertInstanceOf(DecoderException.class, assertThrows(InvocationTargetException.class, () ->
                     invoke(ColumnV3Network.class, "readDisplayResult",

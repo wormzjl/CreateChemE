@@ -11,6 +11,11 @@ import java.util.Objects;
  *
  * <p>The feed vector is always returned as a defensive copy. Liquid side draws specify total
  * molar product rates; water/steam feeds are outside this dry contract.</p>
+ *
+ * <p>{@code columnDiameterMetres} selects how the pressure profile is generated. Zero is the prescribed-drop
+ * mode this contract has always had: every tray interval drops {@code stagePressureDropPascal}. A positive
+ * diameter asks for sieve-tray hydraulics ({@link V3TrayHydraulics}), where the authored drop becomes the
+ * nominal guess the first solve runs on and the published profile is marched from that solve's own traffic.</p>
  */
 public record V3ColumnInput(
         int schemaVersion,
@@ -26,13 +31,19 @@ public record V3ColumnInput(
         List<V3ColumnSpecification> specifications,
         List<V3SideDrawSpec> sideDraws,
         List<V3SteamFeedSpec> steamFeeds,
-        List<V3PumparoundSpec> pumparounds) {
+        List<V3PumparoundSpec> pumparounds,
+        double columnDiameterMetres) {
     public static final int SCHEMA_VERSION = 1;
     public static final int MIN_STAGE_COUNT = 2;
     public static final int MAX_STAGE_COUNT = 64;
     public static final int MAX_SIDE_DRAWS = 3;
     public static final int MAX_STEAM_FEEDS = 2;
     public static final int MAX_PUMPAROUNDS = 4;
+    /** Prescribed-drop mode: the historical uniform profile, bit-identical in every published field. */
+    public static final double PRESCRIBED_DROP_DIAMETER = 0.0;
+    /** Matches the shipped presets' ~100 kbpd throughput at about 69 % of flood on the default preset. */
+    public static final double DEFAULT_COLUMN_DIAMETER_METRES = 8.0;
+    public static final double MAX_COLUMN_DIAMETER_METRES = 15.0;
 
     /** Legacy no-draw input; preserves the existing schema and digest representation. */
     public V3ColumnInput(
@@ -68,6 +79,18 @@ public record V3ColumnInput(
                 specifications, sideDraws, steamFeeds, List.of());
     }
 
+    /** Legacy prescribed-drop input; every existing caller, wire payload and persisted state decodes through here. */
+    public V3ColumnInput(
+            int schemaVersion, String packageId, String assayId, V3ComponentBasis componentBasis,
+            double[] feedComponentMolarFlowsMolPerSecond, double feedTemperatureKelvin, int stageCount,
+            int feedStageNumber, double topPressurePascal, double stagePressureDropPascal,
+            List<V3ColumnSpecification> specifications, List<V3SideDrawSpec> sideDraws,
+            List<V3SteamFeedSpec> steamFeeds, List<V3PumparoundSpec> pumparounds) {
+        this(schemaVersion, packageId, assayId, componentBasis, feedComponentMolarFlowsMolPerSecond,
+                feedTemperatureKelvin, stageCount, feedStageNumber, topPressurePascal, stagePressureDropPascal,
+                specifications, sideDraws, steamFeeds, pumparounds, PRESCRIBED_DROP_DIAMETER);
+    }
+
     public V3ColumnInput {
         packageId = requireIdentifier(packageId, "packageId");
         assayId = requireIdentifier(assayId, "assayId");
@@ -78,6 +101,11 @@ public record V3ColumnInput(
                 || !Double.isFinite(topPressurePascal) || topPressurePascal <= 0.0
                 || !Double.isFinite(stagePressureDropPascal) || stagePressureDropPascal < 0.0) {
             throw new IllegalArgumentException("V3 feed temperature and pressure inputs must be finite and physically positive");
+        }
+        if (!Double.isFinite(columnDiameterMetres) || columnDiameterMetres < 0.0
+                || columnDiameterMetres > MAX_COLUMN_DIAMETER_METRES) {
+            throw new IllegalArgumentException("V3 column diameter must be finite and within 0.."
+                    + MAX_COLUMN_DIAMETER_METRES + " m");
         }
         specifications = canonicalSpecifications(specifications);
         sideDraws = canonicalSideDraws(sideDraws);
@@ -90,6 +118,20 @@ public record V3ColumnInput(
         return feedComponentMolarFlowsMolPerSecond.clone();
     }
 
+    /** Whether the pressure profile is marched from the solved traffic rather than prescribed uniformly. */
+    public boolean usesTrayHydraulics() {
+        return columnDiameterMetres > 0.0;
+    }
+
+    /** The same request in prescribed-drop mode; the seam tests and legacy pins author their inputs through. */
+    public V3ColumnInput withColumnDiameter(double diameterMetres) {
+        return diameterMetres == columnDiameterMetres ? this
+                : new V3ColumnInput(schemaVersion, packageId, assayId, componentBasis,
+                        feedComponentMolarFlowsMolPerSecond, feedTemperatureKelvin, stageCount, feedStageNumber,
+                        topPressurePascal, stagePressureDropPascal, specifications, sideDraws, steamFeeds,
+                        pumparounds, diameterMetres);
+    }
+
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof V3ColumnInput input)) return false;
@@ -99,6 +141,7 @@ public record V3ColumnInput(
                 && Double.doubleToLongBits(feedTemperatureKelvin) == Double.doubleToLongBits(input.feedTemperatureKelvin)
                 && Double.doubleToLongBits(topPressurePascal) == Double.doubleToLongBits(input.topPressurePascal)
                 && Double.doubleToLongBits(stagePressureDropPascal) == Double.doubleToLongBits(input.stagePressureDropPascal)
+                && Double.doubleToLongBits(columnDiameterMetres) == Double.doubleToLongBits(input.columnDiameterMetres)
                 && packageId.equals(input.packageId)
                 && assayId.equals(input.assayId)
                 && componentBasis.equals(input.componentBasis)
@@ -113,7 +156,7 @@ public record V3ColumnInput(
     public int hashCode() {
         int result = Objects.hash(schemaVersion, packageId, assayId, componentBasis, feedTemperatureKelvin, stageCount,
                 feedStageNumber, topPressurePascal, stagePressureDropPascal, specifications, sideDraws, steamFeeds,
-                pumparounds);
+                pumparounds, columnDiameterMetres);
         return 31 * result + Arrays.hashCode(feedComponentMolarFlowsMolPerSecond);
     }
 

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 class V3ColumnScalarDraftTest {
     private static final List<String> VALID = List.of(
-            "2610.7", "365", "30", "24", "126.85", "8", "2", "2.5", "0.75");
+            "2610.7", "365", "30", "24", "126.85", "8", "2", "2.5", "0.75", "8");
 
     @Test
     void parsesUnitsIndependentlyOfSideDrawRows() {
@@ -21,6 +21,7 @@ class V3ColumnScalarDraftTest {
         assertEquals(8_000_000, values.reboilerDutyWatts());
         assertEquals(250_000, values.topPressurePascal());
         assertEquals(750, values.pressureDropPascal());
+        assertEquals(8.0, values.columnDiameterMetres(), 1e-12);
     }
 
     @Test
@@ -31,6 +32,8 @@ class V3ColumnScalarDraftTest {
         assertInvalid(6, "NaN", "Reflux ratio");
         assertInvalid(6, "-0.01", "Reflux ratio");
         assertInvalid(7, "0", "Top pressure");
+        assertInvalid(9, "-1", "Column diameter");
+        assertInvalid(9, "16", "Column diameter");
     }
 
     @Test
@@ -43,11 +46,13 @@ class V3ColumnScalarDraftTest {
                 fields.set(6, Double.toString(reflux));
                 fields.set(7, stages == 2 ? "1" : "3");
                 fields.set(8, "0");
+                fields.set(9, "0");
                 V3ColumnScalarDraft.Values values = V3ColumnScalarDraft.parse(fields);
                 assertEquals(stages, values.stageCount());
                 assertEquals(reflux, values.refluxRatio());
                 assertEquals(stages == 2 ? 100_000.0 : 300_000.0, values.topPressurePascal());
                 assertEquals(0.0, values.pressureDropPascal());
+                assertEquals(0.0, values.columnDiameterMetres());
             }
         }
     }

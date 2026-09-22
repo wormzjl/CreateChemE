@@ -15,9 +15,10 @@ public final class MaterialPresets {
         }
         public boolean matches(V3ColumnInput input){return packageId.equals(input.packageId())&&assayId.equals(input.assayId());}
     }
+    /** {@code diameter} is the sieve-tray hydraulics input; zero authors the legacy prescribed uniform drop. */
     public record Column(Descriptor descriptor,int order,boolean visible,double feedVolume,double feedTemperature,
             int stages,int feedStage,double pressure,double pressureDrop,List<V3ColumnSpecification> specifications,
-            List<V3SideDrawSpec> draws,List<V3SteamFeedSpec> steam,List<V3PumparoundSpec> pumparounds) {
+            List<V3SideDrawSpec> draws,List<V3SteamFeedSpec> steam,List<V3PumparoundSpec> pumparounds,double diameter) {
         public Column {specifications=List.copyOf(specifications);draws=List.copyOf(draws);steam=List.copyOf(steam);pumparounds=List.copyOf(pumparounds);}
         public V3ColumnInput input(MaterialCatalog catalog) {
             var p=catalog.requirePackage(descriptor.packageId());double[] fractions=moleFractions(p,descriptor.assayId());
@@ -26,7 +27,7 @@ public final class MaterialPresets {
             double rate=feedVolume/volumePerMole;
             for(int i=0;i<fractions.length;i++)fractions[i]*=rate;
             return new V3ColumnInput(1,p.id(),descriptor.assayId(),new V3ComponentBasis(p.components()),fractions,
-                    feedTemperature,stages,feedStage,pressure,pressureDrop,specifications,draws,steam,pumparounds);
+                    feedTemperature,stages,feedStage,pressure,pressureDrop,specifications,draws,steam,pumparounds,diameter);
         }
     }
     public record Fluid(String id,String label,String component,String packageId,String assayId) {}
@@ -79,10 +80,13 @@ public final class MaterialPresets {
                 var steam=new ArrayList<V3SteamFeedSpec>();for(var v:o.getAsJsonArray("steamFeeds")){var x=v.getAsJsonObject();steam.add(new V3SteamFeedSpec(integer(x,"stageNumber"),number(x,"molarFlowMolPerSecond"),number(x,"temperatureKelvin")));}
                 var coolers=new ArrayList<V3PumparoundSpec>();for(var v:o.getAsJsonArray("pumparounds")){var x=v.getAsJsonObject();coolers.add(new V3PumparoundSpec(integer(x,"returnTray"),integer(x,"drawTray"),number(x,"dutyWatts"),V3PumparoundSpec.Split.valueOf(text(x,"split"))));}
                 double volume=number(o,"feedStandardVolumeCubicMetresPerSecond");if(volume<=0)throw new IllegalArgumentException("operating.feedStandardVolumeCubicMetresPerSecond: positive required");
-                var c=new Column(d,integer(row,"order"),bool(row,"visible"),volume,number(o,"feedTemperatureKelvin"),integer(o,"stageCount"),integer(o,"feedStageNumber"),number(o,"topPressurePascal"),number(o,"stagePressureDropPascal"),specs,draws,steam,coolers);
+                var c=new Column(d,integer(row,"order"),bool(row,"visible"),volume,number(o,"feedTemperatureKelvin"),integer(o,"stageCount"),integer(o,"feedStageNumber"),number(o,"topPressurePascal"),number(o,"stagePressureDropPascal"),specs,draws,steam,coolers,
+                        optionalNumber(o,"columnDiameterMetres",V3ColumnInput.PRESCRIBED_DROP_DIAMETER));
                 var p=packages.get(pkg);double t=c.feedTemperature(),bottom=c.pressure()+(c.stages()-1)*c.pressureDrop();
                 if(c.stages()<2||c.stages()>64||c.feedStage()<1||c.feedStage()>c.stages()||t<p.minimumTemperature()||t>p.maximumTemperature()||c.pressure()<p.minimumPressure()||bottom>p.maximumPressure()||c.pressureDrop()<0)
                     throw new IllegalArgumentException("operating: outside package or column domain");
+                if(c.diameter()<0||c.diameter()>V3ColumnInput.MAX_COLUMN_DIAMETER_METRES)
+                    throw new IllegalArgumentException("operating.columnDiameterMetres: outside 0.."+V3ColumnInput.MAX_COLUMN_DIAMETER_METRES+" m");
                 columns.put(id,c);
             } else if(kind.equals("fluid")) {
                 if(row.has("component")) {
@@ -104,6 +108,8 @@ public final class MaterialPresets {
     }
     private static void requireAssay(Map<String,MaterialCatalog.Package> packages,String pkg,String assay){if(!packages.containsKey(pkg)||!packages.get(pkg).assays().containsKey(assay))throw new IllegalArgumentException("package/assay: unknown "+pkg+"/"+assay);}
     private static String text(JsonObject row,String field){var e=row.get(field);if(e==null||!e.isJsonPrimitive()||!e.getAsJsonPrimitive().isString()||e.getAsString().isBlank())throw new IllegalArgumentException(field+": string required");return e.getAsString();}
+    /** A preset written before flow-dependent tray hydraulics keeps the prescribed uniform drop it authored. */
+    private static double optionalNumber(JsonObject row,String field,double fallback){return row.has(field)?number(row,field):fallback;}
     private static double number(JsonObject row,String field){var e=row.get(field);if(e==null||!e.isJsonPrimitive()||!e.getAsJsonPrimitive().isNumber()||!Double.isFinite(e.getAsDouble()))throw new IllegalArgumentException(field+": finite number required");return e.getAsDouble();}
     private static int integer(JsonObject row,String field){number(row,field);try{return row.get(field).getAsBigDecimal().intValueExact();}catch(ArithmeticException e){throw new IllegalArgumentException(field+": integer required",e);}}
     private static boolean bool(JsonObject row,String field){var e=row.get(field);if(e==null||!e.isJsonPrimitive()||!e.getAsJsonPrimitive().isBoolean())throw new IllegalArgumentException(field+": boolean required");return e.getAsBoolean();}

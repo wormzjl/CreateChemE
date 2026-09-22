@@ -56,6 +56,20 @@ public final class V3ColumnCalculator {
     private static final int PRESSURE_CONTINUATION_CORRECTOR_MAXIMUM_ITERATIONS = 12;
     private static final int PRESSURE_CONTINUATION_RECOVERY_MAXIMUM_ITERATIONS = 24;
     private static final int CONDENSER_PHASE_CORRECTOR_MAXIMUM_ITERATIONS = 24;
+    /**
+     * Relative total-drop disagreement a published profile may keep without re-solving the column.
+     *
+     * <p>The user's tolerance on total column pressure drop is about 10 %, and the measured contraction of the
+     * marched map is 0.018 median / 0.086 worst, so a mismatch below this bound is already inside the target
+     * without spending anything, and one above it is brought inside by a single correction.</p>
+     */
+    private static final double HYDRAULIC_MISMATCH_TOLERANCE = 0.10;
+    /** Measured 3 Newton iterations median, 5 maximum; the cap only bounds a correction that is not working. */
+    private static final int HYDRAULIC_CORRECTION_MAXIMUM_ITERATIONS = 64;
+    /** The correction's own wall clock; measured 29 ms median, 1.2 s on the slowest shipped preset. */
+    private static final long HYDRAULIC_CORRECTION_BUDGET_MILLIS = 10_000L;
+    /** Deliberately short: the published solve path is already near its bounded length on a ramped request. */
+    private static final String HYDRAULIC_CORRECTION_PATH_SUFFIX = "/hyd";
     private static final int DRAW_RAMP_INTERMEDIATE_MAXIMUM_ITERATIONS = 40;
     private static final int DRAW_RAMP_REQUESTED_MAXIMUM_ITERATIONS = 32;
     /**
@@ -418,13 +432,13 @@ public final class V3ColumnCalculator {
         List<String> events = fixedWaterRefined ? mergedEvents(List.of(
                 "wet seed refinement: fixed-water warm pass; final certificate releases every wet coordinate"), pass.solverEvents())
                 : pass.solverEvents();
-        V3SolverDiagnostics diagnostics = diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), events, policy);
         if (publishesSuccess(pass.attempt(), pass.audit()) && pass.reachedRequestedProblem()
                 && publishesRequestedGeometry(pass, input)) {
-            return acceptLearnedPass(input, pass, thermo, policy, diagnostics);
+            return acceptLearnedPass(input, pass, thermo, policy, control, pass.solvePath(), events);
         }
         return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE,
-                "Learned seed did not reach an audited requested solution", diagnostics);
+                "Learned seed did not reach an audited requested solution",
+                diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), events, policy));
     }
 
     /** An audited pass may publish only when it solved the authored request itself, every wet row included. */
@@ -441,19 +455,243 @@ public final class V3ColumnCalculator {
      * exported profile whichever of the two reached it.</p>
      */
     private static V3ColumnOutcome.Success acceptLearnedPass(V3ColumnInput input, V3SolvePass pass,
-            V3PengRobinsonThermo thermo, SolvePolicy policy, V3SolverDiagnostics diagnostics) {
-        V3ColumnProblem selected = pass.prepared().problem();
-        V3DryMeshState corrected = pass.attempt().state();
+            V3PengRobinsonThermo thermo, SolvePolicy policy, V3SolveControl control, String solvePath,
+            List<String> solverEvents) {
+        return publishAccepted(input, pass, thermo, policy, control, solvePath, solverEvents);
+    }
+
+    /**
+     * The single publication seam of an accepted requested state, for the classical and the learned route alike.
+     *
+     * <p>It is where the flow-dependent tray pressure profile is attached: the pass arriving here solved the
+     * request on its nominal profile and passed every gate, and {@link #trayHydraulics} either leaves that
+     * publication exactly as it is — always, in prescribed-drop mode — or replaces it by one bounded warm
+     * correction on the profile marched from this very state. Digest, duty ledger, exported profile and
+     * diagnostics are then built once, from whichever state is published.</p>
+     */
+    private static V3ColumnOutcome.Success publishAccepted(V3ColumnInput input, V3SolvePass pass,
+            V3PengRobinsonThermo thermo, SolvePolicy policy, V3SolveControl control, String solvePath,
+            List<String> solverEvents) {
+        HydraulicPublication publication = trayHydraulics(input, pass, thermo, policy, control, solvePath, solverEvents);
+        V3SolvePass published = publication.pass();
+        V3ColumnProblem selected = published.prepared().problem();
+        V3DryMeshState corrected = published.attempt().state();
         String revision = formulationRevision(input, policy.requestedCutoff(), policy.closureTolerance());
         V3ColumnResult result = V3ColumnResult.accepted(selected,
                 V3InputDigest.of(selected, revision, thermo.datasetRevision(), assumptionsRevision(input),
                         policy.requestedCutoff(), policy.closureTolerance()),
-                pass.audit(), pass.attempt().evidence().convergenceEvidence(), corrected, thermo, revision,
-                V3ColumnDutyLedger.fromAccepted(selected, corrected, thermo, pass.feedMolarEnthalpyJoulesPerMol()));
-        var success = new V3ColumnOutcome.Success(result, diagnostics);
+                publication.audit(), published.attempt().evidence().convergenceEvidence(), corrected, thermo, revision,
+                V3ColumnDutyLedger.fromAccepted(selected, corrected, thermo, published.feedMolarEnthalpyJoulesPerMol()),
+                publication.summary());
+        var success = new V3ColumnOutcome.Success(result, diagnostics(published.attempt(), publication.audit(),
+                publication.solvePath(), publication.solverEvents(), policy));
         if (policy.observer() != null)
             policy.observer().accept(V3NeuralSeed.capture(selected, corrected, thermo.datasetRevision()));
         return success;
+    }
+
+    /** What the hydraulic step decided to publish: possibly a different pass, and always its own evidence. */
+    private record HydraulicPublication(V3SolvePass pass, V3AcceptanceAudit audit, String solvePath,
+            List<String> solverEvents, V3TrayHydraulicsSummary summary) {}
+
+    /**
+     * Attaches the flow-dependent tray pressure profile to an accepted state.
+     *
+     * <p>March the profile from this state's own traffic; if it agrees with the profile the state was solved on
+     * to within {@link #HYDRAULIC_MISMATCH_TOLERANCE}, publish the state as it is and report the marched profile
+     * as the hydraulic reading. Otherwise re-solve the identical request once on the marched profile, warm from
+     * the accepted state, and publish that. A correction that will not close falls back to a half step and then
+     * to the full one; if that fails too, the first accepted state is published on its nominal profile with a
+     * hydraulic-mismatch warning. There is never a second correction and never a closure loop.</p>
+     *
+     * <p>Nothing here can fail a request. The first pass is already a complete accepted answer, so every way the
+     * hydraulic step can end badly — a profile outside the property envelope, a correction that does not
+     * converge or is not audited, its own wall clock, a cancelled request, an internal guard — publishes that
+     * answer with a warning instead. That includes cancellation: discarding a solved column to report a deadline
+     * that expired while polishing its pressure profile would be strictly worse for the caller.</p>
+     */
+    private static HydraulicPublication trayHydraulics(V3ColumnInput input, V3SolvePass pass,
+            V3PengRobinsonThermo thermo, SolvePolicy policy, V3SolveControl control, String solvePath,
+            List<String> solverEvents) {
+        HydraulicPublication nominal = new HydraulicPublication(pass, pass.audit(), solvePath, solverEvents, null);
+        if (!input.usesTrayHydraulics()) return nominal;
+        try {
+            V3TrayHydraulics hydraulics = V3TrayHydraulics.ofDiameter(input.columnDiameterMetres());
+            V3TrayHydraulics.ComponentConstants constants = V3TrayHydraulics.ComponentConstants.of(
+                    thermo, input.componentBasis().componentCount());
+            V3ColumnProblem solved = pass.prepared().problem();
+            V3ColumnTopology topology = solved.topology();
+            V3TrayHydraulics.Tray[] traffic = V3TrayHydraulics.traffic(solved, pass.attempt().state(), constants);
+            double[] marched = hydraulics.march(solved, traffic);
+            if (!V3TrayHydraulics.isAdmissible(topology, marched, thermo)) {
+                return advisory(nominal, "the flow-dependent tray pressure profile left the property package's "
+                        + "pressure envelope; the column was published on the authored uniform drop instead");
+            }
+            double mismatch = V3TrayHydraulics.totalDropMismatch(topology, solved.nodePressuresPascal(), marched);
+            if (mismatch <= HYDRAULIC_MISMATCH_TOLERANCE) {
+                return summarised(nominal, hydraulics, solved, traffic, marched, false, mismatch);
+            }
+            V3SolvePass corrected = hydraulicCorrection(input, pass, thermo, policy, control, marched);
+            if (corrected == null) {
+                // One half step, then the full one from the state it reached: a correction that refuses a 20 kPa
+                // jump in sump pressure in one go has been measured to take it in two.
+                V3SolvePass half = hydraulicCorrection(input, pass, thermo, policy, control,
+                        V3TrayHydraulics.halfway(topology, solved.nodePressuresPascal(), marched));
+                if (half != null) {
+                    V3ColumnProblem halfProblem = half.prepared().problem();
+                    double[] fromHalf = hydraulics.march(halfProblem,
+                            V3TrayHydraulics.traffic(halfProblem, half.attempt().state(), constants));
+                    if (V3TrayHydraulics.isAdmissible(topology, fromHalf, thermo)) {
+                        corrected = hydraulicCorrection(input, half, thermo, policy, control, fromHalf);
+                    }
+                }
+            }
+            if (corrected == null) {
+                return advisory(summarised(nominal, hydraulics, solved, traffic, marched, false, mismatch),
+                        String.format(Locale.ROOT, "the tray pressure drop of this column is %.1f kPa, which the "
+                                + "authored uniform drop misses by %.0f%%, and the column would not re-solve on it; "
+                                + "the published profile is the authored one",
+                                V3TrayHydraulics.totalDropPascal(topology, marched) / 1000.0, 100.0 * mismatch));
+            }
+            V3ColumnProblem correctedProblem = corrected.prepared().problem();
+            V3TrayHydraulics.Tray[] correctedTraffic =
+                    V3TrayHydraulics.traffic(correctedProblem, corrected.attempt().state(), constants);
+            double residual = V3TrayHydraulics.totalDropMismatch(topology, correctedProblem.nodePressuresPascal(),
+                    hydraulics.march(correctedProblem, correctedTraffic));
+            // The published path and events describe the state that is published: the correction's own solve,
+            // under the assembled path of the pass that seeded it.
+            HydraulicPublication publication = new HydraulicPublication(corrected, corrected.audit(),
+                    solvePath + HYDRAULIC_CORRECTION_PATH_SUFFIX,
+                    mergedEvents(corrected.solverEvents(), solverEvents), null);
+            return summarised(publication, hydraulics, correctedProblem, correctedTraffic,
+                    correctedProblem.nodePressuresPascal(), true, residual);
+        } catch (CancellationException expired) {
+            return advisory(nominal, "the request ended before the flow-dependent tray pressure profile could be "
+                    + "applied; the column was published on the authored uniform drop instead");
+        } catch (RuntimeException unavailable) {
+            return advisory(nominal, "the flow-dependent tray pressure profile could not be evaluated; the column "
+                    + "was published on the authored uniform drop instead");
+        }
+    }
+
+    /**
+     * One bounded warm correction of the identical request on a supplied per-tray profile.
+     *
+     * <p>Returns null unless the correction reaches an audited, certified solution of the requested geometry —
+     * the same three gates the first pass passed. It runs under its own wall clock inside the caller's deadline,
+     * so a correction that turns out to be expensive costs the request a bounded amount and nothing else.</p>
+     */
+    private static V3SolvePass hydraulicCorrection(V3ColumnInput input, V3SolvePass pass,
+            V3PengRobinsonThermo thermo, SolvePolicy policy, V3SolveControl control, double[] profile) {
+        long started = System.nanoTime();
+        V3SolveControl correctionControl = () -> {
+            control.checkpoint();
+            if (System.nanoTime() - started >= HYDRAULIC_CORRECTION_BUDGET_MILLIS * 1_000_000L)
+                throw new HydraulicBudgetExceeded();
+        };
+        V3ColumnProblem solved = pass.prepared().problem();
+        try {
+            // A profile is a request the whole contract has to admit, not just the solver: steam that was
+            // superheated against the nominal can be saturated 20 kPa lower down. A refusal here is a refusal
+            // of this step, so the caller can still try the half one.
+            V3ColumnProblem reprofiled = V3ColumnProblemResolver.resolve(
+                    input, solved.topology().condenserPhaseBranch(), profile);
+            if (V3OperatingDomainValidator.assess(reprofiled, thermo)
+                    instanceof V3OperatingDomainValidator.Assessment.Rejected) return null;
+            V3SolvePass corrected = solveSingleProblem(reprofiled, thermo, pass.attempt().state(), correctionControl,
+                    pass.solvePath(), ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                    HYDRAULIC_CORRECTION_MAXIMUM_ITERATIONS, policy,
+                    V3SimultaneousColumnSolver.RungBudget.DEFAULT,
+                    V3WetTraySet.of(reprofiled.topology(), wetTrayMask(solved)));
+            return publishesSuccess(corrected.attempt(), corrected.audit())
+                    && publishesRequestedGeometry(corrected, input)
+                    && corrected.attempt().evidence().convergenceEvidence().satisfiesGates(policy.closureTolerance())
+                    ? corrected : null;
+        } catch (HydraulicBudgetExceeded | V3ThermoException | IllegalArgumentException refused) {
+            return null;
+        }
+    }
+
+    /** The accepted free-water tray set, as the mask a re-resolved problem of the same topology re-admits. */
+    private static boolean[] wetTrayMask(V3ColumnProblem problem) {
+        boolean[] mask = new boolean[problem.topology().nodeCount()];
+        for (int tray : problem.wetTraySet().wetTrays()) mask[tray] = true;
+        return mask;
+    }
+
+    private static HydraulicPublication summarised(HydraulicPublication publication, V3TrayHydraulics hydraulics,
+            V3ColumnProblem problem, V3TrayHydraulics.Tray[] traffic, double[] profile, boolean correctionApplied,
+            double residualMismatch) {
+        V3TrayHydraulicsSummary summary = hydraulics.summarise(problem, traffic, profile, correctionApplied,
+                Math.min(residualMismatch, 1.0));
+        String event = String.format(Locale.ROOT,
+                "tray hydraulics: D=%.2f m, %.0f Pa/tray, %.2f kPa total, flood %.2f at tray %d, correction=%s, "
+                        + "residual mismatch %.2f %%",
+                summary.columnDiameterMetres(), summary.meanTrayPressureDropPascal(),
+                summary.totalPressureDropPascal() / 1000.0, summary.maximumFloodFraction(),
+                summary.maximumFloodTray(), correctionApplied ? "applied" : "not needed",
+                100.0 * summary.residualMismatchFraction());
+        HydraulicPublication summarised = new HydraulicPublication(publication.pass(), publication.audit(),
+                publication.solvePath(), mergedEvents(List.of(boundedEvent(event)), publication.solverEvents()),
+                summary);
+        if (!summary.floods()) return summarised;
+        return advisory(summarised, V3TrayHydraulics.floodingWarning(summary));
+    }
+
+    /**
+     * Adds one operator-facing warning to the published audit without touching a single acceptance check.
+     *
+     * <p>This is the same advisory channel the below-dew-point tray warning uses, so a flooded or
+     * hydraulically unresolved column publishes as "Success with warning" and never as a typed failure.</p>
+     */
+    private static HydraulicPublication advisory(HydraulicPublication publication, String warning) {
+        V3AcceptanceAudit audit = publication.audit();
+        if (audit.advisoryEvidence().size() >= 16) return publication;
+        List<String> evidence = new ArrayList<>(audit.advisoryEvidence());
+        String bounded = "Warning: " + warning;
+        evidence.add(bounded.length() <= 256 ? bounded : bounded.substring(0, 256));
+        return new HydraulicPublication(publication.pass(), new V3AcceptanceAudit(audit.checks(), evidence),
+                publication.solvePath(), publication.solverEvents(), publication.summary());
+    }
+
+    /** The correction's own wall-clock allowance, inside the caller's request deadline. */
+    private static final class HydraulicBudgetExceeded extends RuntimeException {}
+
+    /**
+     * Offline validation seam: one warm correction of the requested problem on a caller-supplied per-tray
+     * pressure profile.
+     *
+     * <p>It is {@link #hydraulicCorrection} with the profile chosen by the caller instead of by the march, and
+     * nothing else: the same resolve, the same operating-domain admission, the same solve, the same three
+     * publication gates. It exists because the converged hydraulic reference a validation campaign measures
+     * against is a fixed point of "march, re-solve, march again", and only the caller can drive that loop. No
+     * production entry point reaches it, and a request that authors a diameter is not what it is for: pass the
+     * prescribed-drop form of the input, so the published state stays on the supplied profile.</p>
+     */
+    static V3ColumnOutcome calculateOnSuppliedProfile(V3ColumnInput input, V3NeuralSeed seed, double[] profile,
+            V3SolveControl control, java.util.function.Consumer<V3NeuralSeed> observer) {
+        return com.wormzjl.createcheme.science.material.MaterialRuntime.pinned(input.packageId(), () -> {
+            V3PengRobinsonThermo thermo = V3PengRobinsonThermo.fromRegisteredPackage(input.packageId());
+            V3ColumnProblem problem = V3ColumnProblemResolver.resolve(input, seed.branch(), profile);
+            if (V3OperatingDomainValidator.assess(problem, thermo)
+                    instanceof V3OperatingDomainValidator.Assessment.Rejected rejected) {
+                return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, rejected.detail(),
+                        "offline/supplied-profile", thermo.advisoryEvidence());
+            }
+            SolvePolicy policy = new SolvePolicy(0.0, 0.0, V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE, observer);
+            V3SolvePass pass = solveSingleProblem(problem, thermo, seed.stateFor(problem), control,
+                    "offline/supplied-profile", ContinuationJacobianPolicy.STAGE_LOCAL_BLOCKS,
+                    HYDRAULIC_CORRECTION_MAXIMUM_ITERATIONS, policy,
+                    V3SimultaneousColumnSolver.RungBudget.DEFAULT,
+                    seed.wetSetFor(problem, V3InitializationOptions.WetStart.AUTO));
+            if (publishesSuccess(pass.attempt(), pass.audit()) && publishesRequestedGeometry(pass, input)
+                    && pass.attempt().evidence().convergenceEvidence().satisfiesGates(policy.closureTolerance())) {
+                return publishAccepted(input, pass, thermo, policy, control, pass.solvePath(), pass.solverEvents());
+            }
+            return new V3ColumnOutcome.Failure(V3SolverFailureCode.NONCONVERGENCE,
+                    "Offline supplied-profile correction did not reach an audited requested solution",
+                    diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), pass.solverEvents(), policy));
+        });
     }
 
     /**
@@ -513,8 +751,7 @@ public final class V3ColumnCalculator {
             if (!input.sideDraws().isEmpty()) solvePath += "/draws-" + input.sideDraws().size();
             if (!input.steamFeeds().isEmpty()) solvePath += "/steam-" + input.steamFeeds().size();
             if (!input.pumparounds().isEmpty()) solvePath += "/heat-" + input.pumparounds().size();
-            return acceptLearnedPass(input, ramped, thermo, policy,
-                    diagnostics(ramped.attempt(), ramped.audit(), solvePath, ramped.solverEvents(), policy));
+            return acceptLearnedPass(input, ramped, thermo, policy, control, solvePath, ramped.solverEvents());
         } catch (CancellationException cancelled) {
             throw cancelled;
         } catch (RuntimeException unavailable) {
@@ -1090,19 +1327,7 @@ public final class V3ColumnCalculator {
             if (pass.reachedRequestedProblem() && publishesRequestedGeometry(pass, input)
                     && attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged converged && audit.accepted()
                     && converged.evidence().convergenceEvidence().satisfiesGates(policy.closureTolerance())) {
-                String revision = formulationRevision(input, policy.requestedCutoff(), policy.closureTolerance());
-                V3InputDigest digest = V3InputDigest.of(selected.problem(), revision,
-                        thermo.datasetRevision(), assumptionsRevision(input), policy.requestedCutoff(),
-                        policy.closureTolerance());
-                V3ColumnResult result = V3ColumnResult.accepted(
-                        selected.problem(), digest, audit, converged.evidence().convergenceEvidence(), converged.state(), thermo,
-                        revision,
-                        V3ColumnDutyLedger.fromAccepted(selected.problem(), converged.state(), thermo,
-                                pass.feedMolarEnthalpyJoulesPerMol()));
-                V3ColumnOutcome.Success success = new V3ColumnOutcome.Success(result, diagnostics);
-                if (policy.observer() != null)
-                    policy.observer().accept(V3NeuralSeed.capture(selected.problem(), converged.state(), thermo.datasetRevision()));
-                return success;
+                return publishAccepted(input, pass, thermo, policy, control, solvePath, solverEvents);
             }
             if (attempt instanceof V3SimultaneousColumnSolver.Attempt.Failure failure) {
                 String detail = !pass.attemptedRequestedProblem() && pass.terminalStageCount() >= input.stageCount()
@@ -1834,7 +2059,7 @@ public final class V3ColumnCalculator {
             V3ColumnInput rampInput = new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(),
                     input.componentBasis(), input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(),
                     input.stageCount(), input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
-                    withReboilerDuty(input, reboilerDuty), draws, steam, heat);
+                    withReboilerDuty(input, reboilerDuty), draws, steam, heat, input.columnDiameterMetres());
             V3CondenserPhaseBranch branch = previous.prepared().problem().topology().condenserPhaseBranch();
             V3ColumnProblem problem = V3ColumnProblemResolver.resolve(rampInput, branch);
             rampAttempts.recordAttempt(branch);
@@ -2905,7 +3130,8 @@ public final class V3ColumnCalculator {
                 stageCount * input.feedStageNumber() / (double) input.stageCount()), 1, stageCount);
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), stageCount, feedStage,
-                input.topPressurePascal(), input.stagePressureDropPascal(), input.specifications(), List.of());
+                input.topPressurePascal(), input.stagePressureDropPascal(), input.specifications(), List.of(),
+                List.of(), List.of(), input.columnDiameterMetres());
     }
 
     private static V3ColumnInput withoutSideDraws(V3ColumnInput input) {
@@ -2913,7 +3139,8 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
-                input.specifications(), List.of(), input.steamFeeds(), input.pumparounds());
+                input.specifications(), List.of(), input.steamFeeds(), input.pumparounds(),
+                input.columnDiameterMetres());
     }
 
     /** Stage heat is never present in a cold seed; it is introduced only by continuation from an accepted state. */
@@ -2922,7 +3149,8 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
-                input.specifications(), input.sideDraws(), input.steamFeeds(), List.of());
+                input.specifications(), input.sideDraws(), input.steamFeeds(), List.of(),
+                input.columnDiameterMetres());
     }
 
     /** Supplies a dry boilup surrogate only for continuation seeds; publication always returns to authored duty. */
@@ -2932,7 +3160,8 @@ public final class V3ColumnCalculator {
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), input.topPressurePascal(), input.stagePressureDropPascal(),
                 withReboilerDuty(input, reboilerDutyWatts(input)
-                        + surrogateSteamDutyWatts(input)), input.sideDraws(), List.of(), input.pumparounds());
+                        + surrogateSteamDutyWatts(input)), input.sideDraws(), List.of(), input.pumparounds(),
+                input.columnDiameterMetres());
     }
 
     private static double surrogateSteamDutyWatts(V3ColumnInput input) {
@@ -2971,7 +3200,7 @@ public final class V3ColumnCalculator {
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), input.stageCount(),
                 input.feedStageNumber(), topPressurePascal, input.stagePressureDropPascal(), input.specifications(),
-                input.sideDraws(), input.steamFeeds(), input.pumparounds());
+                input.sideDraws(), input.steamFeeds(), input.pumparounds(), input.columnDiameterMetres());
     }
 
     private static List<Double> continuationPressureSteps(double requestedTopPressurePascal) {

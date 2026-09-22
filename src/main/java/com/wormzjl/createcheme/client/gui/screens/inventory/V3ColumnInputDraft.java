@@ -51,7 +51,7 @@ final class V3ColumnInputDraft {
                         new V3ColumnSpecification.CondenserOutletTemperature(scalar.condenserTemperatureKelvin()),
                         new V3ColumnSpecification.OrganicRefluxRatio(scalar.refluxRatio()),
                         new V3ColumnSpecification.ReboilerDuty(scalar.reboilerDutyWatts())),
-                draws, steam, pumparounds);
+                draws, steam, pumparounds, scalar.columnDiameterMetres());
     }
 
     private static double[] scaledFeed(V3ColumnInput base, double feedMolPerSecond) {

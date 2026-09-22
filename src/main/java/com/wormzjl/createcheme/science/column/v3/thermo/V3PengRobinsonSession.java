@@ -62,10 +62,26 @@ final class V3PengRobinsonSession {
     List<String> advisoryEvidence() { return propertyPackage.advisoryEvidence(); }
 
     double componentMolecularWeightKgPerMol(int publicComponent) {
+        return requireComponent(publicComponent).molecularWeightKgPerMol();
+    }
+
+    double componentCriticalTemperatureKelvin(int publicComponent) {
+        return requireComponent(publicComponent).criticalTemperatureKelvin();
+    }
+
+    double componentAcentricFactor(int publicComponent) {
+        return requireComponent(publicComponent).acentricFactor();
+    }
+
+    double componentStandardLiquidDensityKgPerCubicMetre(int publicComponent) {
+        return requireComponent(publicComponent).standardLiquidDensityKgPerCubicMetre();
+    }
+
+    private V3PropertyComponent requireComponent(int publicComponent) {
         if (publicComponent < 0 || publicComponent >= componentBasis.componentCount()) {
-            throw new IllegalArgumentException("V3 component molecular-weight index is outside the public basis");
+            throw new IllegalArgumentException("V3 component property index is outside the public basis");
         }
-        return propertyPackage.component(publicComponent).molecularWeightKgPerMol();
+        return propertyPackage.component(publicComponent);
     }
 
     Session newSession() { return new Session(kernel); }

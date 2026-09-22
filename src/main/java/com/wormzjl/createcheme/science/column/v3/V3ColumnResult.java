@@ -15,6 +15,7 @@ public final class V3ColumnResult {
     private final String formulationRevision;
     private final V3ColumnDutyLedger dutyLedger;
     private final String datasetRevision;
+    private final V3TrayHydraulicsSummary trayHydraulics;
 
     /** Scientific identity captured during the solve; never reconstructed from a later live catalog. */
     public String datasetRevision() { return datasetRevision; }
@@ -29,6 +30,14 @@ public final class V3ColumnResult {
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision,
             V3ColumnDutyLedger dutyLedger) {
+        this(problem, inputDigest, acceptanceAudit, convergenceEvidence, streams, formulationRevision, dutyLedger, null);
+    }
+
+    private V3ColumnResult(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision,
+            V3ColumnDutyLedger dutyLedger, V3TrayHydraulicsSummary trayHydraulics) {
+        this.trayHydraulics = trayHydraulics;
         this.dutyLedger = dutyLedger;
         this.problem = Objects.requireNonNull(problem, "problem");
         var catalogPackage = com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().get(problem.input().packageId());
@@ -80,9 +89,18 @@ public final class V3ColumnResult {
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
             String formulationRevision, V3ColumnDutyLedger dutyLedger) {
+        return accepted(problem, inputDigest, acceptanceAudit, convergenceEvidence, state, thermo,
+                formulationRevision, dutyLedger, null);
+    }
+
+    /** The same publication, carrying the tray hydraulics of a request that authored a column diameter. */
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
+            String formulationRevision, V3ColumnDutyLedger dutyLedger, V3TrayHydraulicsSummary trayHydraulics) {
         return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
                 V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision,
-                Objects.requireNonNull(dutyLedger, "dutyLedger"));
+                Objects.requireNonNull(dutyLedger, "dutyLedger"), trayHydraulics);
     }
 
     static V3ColumnResult accepted(
@@ -132,5 +150,15 @@ public final class V3ColumnResult {
     /** Recomputed boundary duties; absent only on the result paths that carry no property model. */
     public Optional<V3ColumnDutyLedger> dutyLedger() {
         return Optional.ofNullable(dutyLedger);
+    }
+
+    /**
+     * Tray hydraulics of the published pressure profile; present exactly for a request that authored a diameter.
+     *
+     * <p>The profile itself is {@code problem().nodePressuresPascal()}; this is the operator-facing reading of
+     * it — total and mean drop, and how close the worst tray came to flooding.</p>
+     */
+    public Optional<V3TrayHydraulicsSummary> trayHydraulics() {
+        return Optional.ofNullable(trayHydraulics);
     }
 }

@@ -79,7 +79,9 @@ class RegroupedCrudeTest {
             var targets=com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(stream,java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
             for(var element:targets.getAsJsonArray("targets")) {
                 var row=element.getAsJsonObject();var preset=ColumnInputPreset.fromId(row.get("preset").getAsString());
-                var input=preset.input(catalog);var success=assertInstanceOf(V3ColumnOutcome.Success.class,V3ColumnCalculator.calculate(input));
+                // Captured in the prescribed-drop mode; the shipped diameter marches a per-tray profile that
+                // moves every product volume, and is covered by V3TrayHydraulicsColumnTest.
+                var input=preset.input(catalog).withColumnDiameter(0.0);var success=assertInstanceOf(V3ColumnOutcome.Success.class,V3ColumnCalculator.calculate(input));
                 var properties=catalog.requirePackage(input.packageId());
                 for(var target:row.getAsJsonObject("targets_m3_per_second").entrySet()) {
                     var product=success.result().streams().stream().filter(v->v.streamId().equals(target.getKey())).findFirst().orElseThrow();

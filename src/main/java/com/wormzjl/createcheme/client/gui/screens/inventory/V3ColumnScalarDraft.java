@@ -3,15 +3,16 @@ package com.wormzjl.createcheme.client.gui.screens.inventory;
 import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
 import java.util.List;
 
-/** Pure parser for the nine scalar GUI fields, with field-specific diagnostics and SI conversion. */
+/** Pure parser for the ten scalar GUI fields, with field-specific diagnostics and SI conversion. */
 final class V3ColumnScalarDraft {
     private static final double KMOL_PER_HOUR_TO_MOL_PER_SECOND = 1_000.0 / 3_600.0;
     private static final double CELSIUS_TO_KELVIN = 273.15;
+    static final int FIELD_COUNT = 10;
 
     private V3ColumnScalarDraft() {}
 
     static Values parse(List<String> fields) {
-        if (fields.size() != 9) throw new IllegalArgumentException("V3 scalar draft requires nine fields");
+        if (fields.size() != FIELD_COUNT) throw new IllegalArgumentException("V3 scalar draft requires ten fields");
         double feed = number(fields, 0, "Feed flow") * KMOL_PER_HOUR_TO_MOL_PER_SECOND;
         double feedTemperature = number(fields, 1, "Feed temperature") + CELSIUS_TO_KELVIN;
         int stages = integer(fields, 2, "Stage count");
@@ -21,6 +22,7 @@ final class V3ColumnScalarDraft {
         double reflux = number(fields, 6, "Reflux ratio");
         double pressure = number(fields, 7, "Top pressure") * 100_000.0;
         double pressureDrop = number(fields, 8, "Pressure drop") * 1_000.0;
+        double diameter = number(fields, 9, "Column diameter");
         if (!(feed > 0.0)) throw invalid("Feed flow", "must be positive");
         if (!(feedTemperature > 0.0)) throw invalid("Feed temperature", "must be above absolute zero");
         if (stages < V3ColumnInput.MIN_STAGE_COUNT || stages > V3ColumnInput.MAX_STAGE_COUNT) {
@@ -32,8 +34,13 @@ final class V3ColumnScalarDraft {
         if (reflux < 0.0) throw invalid("Reflux ratio", "must be nonnegative");
         if (!(pressure > 0.0)) throw invalid("Top pressure", "must be positive");
         if (pressureDrop < 0.0) throw invalid("Pressure drop", "must be nonnegative");
+        // Zero is the prescribed-drop column this contract has always had; anything positive asks for
+        // flow-dependent sieve-tray hydraulics and is bounded by the schema's diameter range.
+        if (diameter < 0.0 || diameter > V3ColumnInput.MAX_COLUMN_DIAMETER_METRES) {
+            throw invalid("Column diameter", "must be within 0.." + V3ColumnInput.MAX_COLUMN_DIAMETER_METRES + " m");
+        }
         return new Values(feed, feedTemperature, stages, feedStage, condenserTemperature,
-                duty, reflux, pressure, pressureDrop);
+                duty, reflux, pressure, pressureDrop, diameter);
     }
 
     private static double number(List<String> fields, int index, String name) {
@@ -61,5 +68,5 @@ final class V3ColumnScalarDraft {
     record Values(
             double feedMolPerSecond, double feedTemperatureKelvin, int stageCount, int feedStage,
             double condenserTemperatureKelvin, double reboilerDutyWatts, double refluxRatio,
-            double topPressurePascal, double pressureDropPascal) {}
+            double topPressurePascal, double pressureDropPascal, double columnDiameterMetres) {}
 }

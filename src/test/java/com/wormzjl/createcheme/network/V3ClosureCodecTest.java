@@ -55,8 +55,8 @@ class V3ClosureCodecTest {
 
     @Test
     void aVersionSevenResultWithoutTheKeyReadsAsTheDefaultClosure() throws Exception {
-        assertEquals(9, ColumnCalculatorV3BlockEntity.DATA_VERSION);
-        assertEquals(11, ColumnV3Network.WIRE_SCHEMA_VERSION);
+        assertEquals(10, ColumnCalculatorV3BlockEntity.DATA_VERSION);
+        assertEquals(12, ColumnV3Network.WIRE_SCHEMA_VERSION);
 
         CompoundTag tag = writeNbt(result(Optional.of(ledger()), 1.0e-3));
         tag.remove("ClosureTolerance");
@@ -71,8 +71,8 @@ class V3ClosureCodecTest {
         RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         try {
             writeWire(buffer, result(Optional.empty(), 1.0e-3));
-            // The closure double is the last field of a ledger-free certificate but for the absent-ledger flag.
-            buffer.setDouble(buffer.writerIndex() - 9, Double.NaN);
+            // The closure double precedes the absent-ledger and absent-hydraulics flags of a bare certificate.
+            buffer.setDouble(buffer.writerIndex() - 10, Double.NaN);
             assertInstanceOf(DecoderException.class, assertThrows(InvocationTargetException.class,
                     () -> readWire(buffer)).getCause());
         } finally {
@@ -82,7 +82,7 @@ class V3ClosureCodecTest {
         RegistryFriendlyByteBuf tooLoose = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
         try {
             writeWire(tooLoose, result(Optional.empty(), 1.0e-3));
-            tooLoose.setDouble(tooLoose.writerIndex() - 9, 1.0e-2);
+            tooLoose.setDouble(tooLoose.writerIndex() - 10, 1.0e-2);
             assertInstanceOf(DecoderException.class, assertThrows(InvocationTargetException.class,
                     () -> readWire(tooLoose)).getCause());
         } finally {

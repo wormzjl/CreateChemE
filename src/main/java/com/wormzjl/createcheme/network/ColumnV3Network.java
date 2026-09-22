@@ -55,7 +55,8 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    public static final int WIRE_SCHEMA_VERSION = 11;
+    // Version 12 carries the authored column diameter and the tray hydraulics of an accepted result.
+    public static final int WIRE_SCHEMA_VERSION = 12;
 
     // Version 5 removes the legacy calculator packet family; both peers must use the V3-only protocol.
     private static final String PROTOCOL_VERSION = "8";
@@ -641,6 +642,7 @@ public final class ColumnV3Network {
         buffer.writeVarInt(input.feedStageNumber());
         buffer.writeDouble(input.topPressurePascal());
         buffer.writeDouble(input.stagePressureDropPascal());
+        buffer.writeDouble(input.columnDiameterMetres());
         buffer.writeVarInt(input.specifications().size());
         for (V3ColumnSpecification specification : input.specifications()) {
             buffer.writeUtf(specification.controlledQuantity().name(), MAX_COMPONENT_IDENTIFIER_LENGTH);
@@ -688,6 +690,7 @@ public final class ColumnV3Network {
             int feedStage = buffer.readVarInt();
             double topPressure = finite(buffer.readDouble(), "top pressure");
             double pressureDrop = finite(buffer.readDouble(), "pressure drop");
+            double columnDiameter = finite(buffer.readDouble(), "column diameter");
             int specificationCount = readCount(buffer, 3, "specification");
             if (specificationCount != 3) throw new DecoderException("V3 specification count must be three");
             List<V3ColumnSpecification> specifications = new ArrayList<>(specificationCount);
@@ -718,7 +721,7 @@ public final class ColumnV3Network {
             }
             return new V3ColumnInput(schemaVersion, packageId, assayId, new V3ComponentBasis(componentIds), flows,
                     feedTemperature, stages, feedStage, topPressure, pressureDrop, specifications, draws, steam,
-                    pumparounds);
+                    pumparounds, columnDiameter);
         } catch (DecoderException invalidWire) {
             throw invalidWire;
         } catch (IllegalArgumentException | NullPointerException | IndexOutOfBoundsException invalid) {
@@ -753,10 +756,22 @@ public final class ColumnV3Network {
                 buffer.writeDouble(fraction.massFraction());
             }
         }
-        // The optional duty ledger stays the trailing block of this record.
+        // The optional duty ledger and tray hydraulics stay the trailing blocks of this record.
         buffer.writeDouble(result.closureTolerance());
         buffer.writeBoolean(result.dutyLedger().isPresent());
         result.dutyLedger().ifPresent(ledger -> writeDutyLedger(buffer, ledger));
+        buffer.writeBoolean(result.trayHydraulics().isPresent());
+        result.trayHydraulics().ifPresent(hydraulics -> {
+            buffer.writeDouble(hydraulics.columnDiameterMetres());
+            buffer.writeDouble(hydraulics.totalPressureDropPascal());
+            buffer.writeDouble(hydraulics.meanTrayPressureDropPascal());
+            buffer.writeDouble(hydraulics.maximumFloodFraction());
+            buffer.writeVarInt(hydraulics.maximumFloodTray());
+            buffer.writeBoolean(hydraulics.correctionApplied());
+            buffer.writeDouble(hydraulics.residualMismatchFraction());
+            buffer.writeDouble(hydraulics.worstTrayDryPascal());
+            buffer.writeDouble(hydraulics.worstTrayLiquidPascal());
+        });
     }
 
     /** Signed duties, positive into the column, cross the wire exactly as calculated. */
@@ -829,9 +844,21 @@ public final class ColumnV3Network {
             double closure = finite(buffer.readDouble(), "closure tolerance");
             Optional<V3ColumnDutyLedger> ledger = buffer.readBoolean()
                     ? Optional.of(readDutyLedger(buffer)) : Optional.empty();
+            Optional<com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsSummary> hydraulics =
+                    buffer.readBoolean()
+                            ? Optional.of(new com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsSummary(
+                                    finite(buffer.readDouble(), "column diameter"),
+                                    finite(buffer.readDouble(), "total tray pressure drop"),
+                                    finite(buffer.readDouble(), "mean tray pressure drop"),
+                                    finite(buffer.readDouble(), "maximum flood fraction"),
+                                    buffer.readVarInt(), buffer.readBoolean(),
+                                    finite(buffer.readDouble(), "hydraulic residual mismatch"),
+                                    finite(buffer.readDouble(), "worst tray dry drop"),
+                                    finite(buffer.readDouble(), "worst tray liquid drop")))
+                            : Optional.empty();
             return new V3ColumnDisplayResult(
                     digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams, ledger,
-                    closure);
+                    closure, hydraulics);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 display result", invalid);
         }

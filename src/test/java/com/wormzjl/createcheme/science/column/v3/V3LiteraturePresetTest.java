@@ -19,6 +19,7 @@ class V3LiteraturePresetTest {
         assertEquals(37, input.feedStageNumber());
         assertEquals(250_000.0, input.topPressurePascal());
         assertEquals(0.0, input.stagePressureDropPascal());
+        assertEquals(V3ColumnInput.DEFAULT_COLUMN_DIAMETER_METRES, input.columnDiameterMetres());
         assertEquals(3, input.sideDraws().size());
         assertEquals(3, input.pumparounds().size());
         for (int index = 0; index < 3; index++) {
@@ -41,11 +42,15 @@ class V3LiteraturePresetTest {
      * publishes, closes its water balance, and says so as a warning that names the tray. No free-water phase can
      * lift that tray under these specifications, so no wet tray is admitted and the free-water continuation
      * records why (see V3_FREE_WATER_CONTINUATION_REVIEW).
+     *
+     * <p>Pinned in the prescribed-drop mode the numbers were measured in. The shipped preset authors a column
+     * diameter, and the flow-dependent tray pressure drop moves every one of them; that published state is
+     * covered by {@link V3TrayHydraulicsColumnTest} instead.</p>
      */
     @Test
     void theLiteraturePresetPublishesWithATrayOneWaterDewPointWarning() {
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(
-                ColumnCalculatorV3BlockEntity.literatureCduInput(), () -> {}, 0.0);
+                ColumnCalculatorV3BlockEntity.literatureCduInput().withColumnDiameter(0.0), () -> {}, 0.0);
         V3ColumnOutcome.Success success = assertInstanceOf(V3ColumnOutcome.Success.class, outcome, outcome::toString);
         assertTrue(outcome.diagnostics().maximumScaledResidual() < 1.0e-10, outcome::toString);
         V3AcceptanceAudit audit = success.diagnostics().acceptanceAudit();
