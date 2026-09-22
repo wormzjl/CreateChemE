@@ -1214,6 +1214,59 @@ public final class PassiveStepSolver {
          * accepted point is upwinded exactly as {@link ConservativeTransport} reconstructs it.
          */
         final boolean[] junctionDonorFirst;
+        /**
+         * The density each connection's static head {@code rho*g*dz} is stated with for the whole
+         * of this pass, read off the point the pass starts at rather than from the live iterate.
+         *
+         * <p>It is {@link #junctionDonorFirst}'s twin on the hydraulic row, and the reason is the
+         * same. {@code edgeRows} used to take the head's density from the upwind end of the
+         * <em>current</em> flow, so a connection whose two ends hold fluids of different density
+         * had a finite jump of {@code (rho_first - rho_second)*g*dz} in its own row at exactly
+         * zero flow - and the head does not shrink with the flow, so that jump is degree zero,
+         * exactly like a zero-holdup junction's mixture. The one-sided differences the Jacobian is
+         * built from sample only the branch the iterate is already on, so the line search is
+         * handed a direction whose derivative does not hold across the switch, and a settled line
+         * lands on a plateau it cannot leave. Every fixture in the tree used to be flat, where
+         * {@code dz} is zero and the term vanished; measured on a water generator four blocks
+         * below a nitrogen-charged tank at 400 kPa, the row jumped by 2.754e-2 - the predicted
+         * {@code (996.31-715.46)*9.80665*4/400000} to every digit - the linear model predicted
+         * 1.08e-19, the full step produced 2.76e-2, and all twenty-four backtracks landed on the
+         * same 2.716e-2 plateau. See documentation/ELEVATED_LINE_PROBE.md.
+         *
+         * <p>Freezing it is also the physically honest reading. A connection owns no holdup, so
+         * the fluid whose weight the head is has to be inferred, and what a vertical pipe from a
+         * water generator into a gas space actually contains is the water that was pushed into it
+         * - not whichever end momentarily reads as upstream of a 1e-8 kg/s flow. Stating it once
+         * per pass makes the column a property of the connection for that pass, the row a smooth
+         * function of the pass's own unknowns, and the rest point {@code P_b = P_a - rho*g*dz}
+         * an actual root instead of a value the residual steps over.
+         *
+         * <p>Which column it is, is stated below from the pass's own seed pressures and elevations
+         * - never from the start point's flow sign, which at a settled line is a numerical zero and
+         * means nothing, and never from a converged flow either. It is deliberately <em>not</em>
+         * revised by the outer active-set loop, which is the one place it differs from the junction
+         * donor, and the difference is measured rather than argued: the two columns of a line near
+         * its own hydrostatic balance each put the flow on the other one - the heavier column
+         * leaves the tank marginally over-filled, so the flow is negative, and the lighter one then
+         * leaves it marginally under-filled, so it is positive - so a rule that turned the head
+         * over on a converged disagreement would alternate forever, and if the column joined the
+         * cycle key it would alternate for exactly two passes and then throw. The pass keeps the
+         * column it solved under; the flow that disagrees with it is small by construction, and the
+         * connection's own boundary closure or the next step's seeds take it from there. The
+         * friction term keeps the live donor: {@code pressureDrop} is odd in the flow and zero at
+         * zero, so its upwind switch is continuous and carries no jump to freeze.
+         *
+         * <p>It is also deliberately not part of {@link WorkspaceKey}, unlike the junction donors,
+         * and that too was measured rather than argued. Adding it - as a real boolean per connected
+         * elevation and a constant for every flat one, so that a flat island's workspace identity
+         * could not move - kept the pass sequence honest in principle but cost the vertical line
+         * standing at its own hydrostatic balance its whole run: from forty intervals settled at
+         * 360918.3068 Pa to a hold on {@code Newton iteration limit at residual 2.202e-7}, because
+         * the extra key component churns the workspace cache and the modified Newton loses the
+         * preconditioner it was reusing. It belongs where {@link #pressureScales} belongs: a
+         * quantity each pass reads off its own seeds, revised only by the seeds moving.
+         */
+        final double[] headDensities;
         /** Residual scratch. Every one of these is written before it is read within a single
          * evaluation and never escapes it, and the evaluations of one solve are sequential on the
          * worker holding the latch, so they are filled again rather than allocated again. The
@@ -1288,6 +1341,69 @@ public final class PassiveStepSolver {
                 // keeps an island without a single zero-holdup node bit for bit what it was.
                 junctionDonorFirst[edge]=!graph.reservoirs().get(pipe.first()).junction()&&!graph.reservoirs().get(pipe.second()).junction()
                         ||initialPoint[edgeOffset+edge]>=0;
+            }
+            headDensities=new double[graph.pipes().size()];
+            for(int edge=0;edge<headDensities.length;edge++) {
+                var pipe=graph.pipes().get(edge);
+                var start=seeds.get(pipe.first());var end=seeds.get(pipe.second());
+                double first=start.mass()/start.volume(),second=end.mass()/end.volume();
+                double dz=graph.reservoirs().get(pipe.second()).elevation()-graph.reservoirs().get(pipe.first()).elevation();
+                // The same pressure difference the row drives on, actuator included: a pump's own
+                // head is the larger part of what pushes its connection, so a column decided
+                // without it is decided on the suction/discharge gap alone and always reads the
+                // discharge as the donor.
+                double actuator=controlOffsets[edge]<0?0:initialPoint[controlOffsets[edge]]*1e5;
+                double difference=start.pressure()-end.pressure()
+                        +(pipe.control() instanceof FlowControl.Pump?actuator:-actuator);
+                // The column that is its own donor. A column states which end fills the connection,
+                // so a column is admissible exactly when the driving pressure it produces points
+                // away from the end it was read off: the first end's when that pressure is forward,
+                // the second end's when it is backward. Where both columns agree on the direction
+                // only one of them is admissible and there is nothing to decide - a line pouring
+                // downhill stands in what feeds it from above, and a line the pressures cannot lift
+                // stands in what would come back down it.
+                //
+                // Taking the start point's upwind end instead reads a numerical zero as a
+                // direction, and both readings of that zero are wrong somewhere. A water generator
+                // four blocks under a nitrogen tank at the same pressure sits at a flow of exactly
+                // zero; read as the water column it asks for 39 kPa the generator has not got, so
+                // the pass is sent looking for a reverse flow the whole way across zero and stalls
+                // on the friction kink there, where the slope changes by three orders between the
+                // two fluids. Read the other way, a liquid line resting on its own two-metre column
+                // whose ends differ only by water's compressibility takes the lighter end's
+                // density, and the 0.18 Pa that leaves drives a permanent 8.3e-7 kg/s through a
+                // graph that has to be at rest.
+                //
+                // Two cases are left, and they are opposites rather than one band.
+                //
+                // Neither column admissible - the driving pressure is below the heavier head and
+                // above the lighter one - is where a settled line actually lives, and it is the
+                // same fact that forbids revising the head on a converged flow, since there each
+                // column puts the flow on the other one. The column to state is then the one
+                // nearest its own rest point, which makes rest a fixed point of the rule as well as
+                // of the equations: a line standing at {@code P_a - P_b = rho*g*dz} has no driving
+                // pressure at all under {@code rho} and the whole difference between the heads
+                // under the other one, so it keeps the column it is balanced under.
+                //
+                // Both columns admissible is genuine bistability - the connection can stand full of
+                // either fluid and be at rest in both - and there the start point's flow sign is
+                // the right evidence and the only evidence, because which fluid is in the pipe is
+                // exactly the history the model does not otherwise carry. Deciding it by rest point
+                // instead stops a filling line at the lighter column's balance: the falling
+                // four-block line at 400 kPa settled at 429851 Pa against the 439082 Pa its own
+                // water column demands, because the tank's own mixture balances 9 kPa earlier and
+                // the line met that point first.
+                //
+                // On an island whose devices all sit at one y both tests read the same pressure
+                // difference and the column they pick multiplies a {@code dz} of zero, so a flat
+                // island is bitwise what it was whichever end is named.
+                double drivingFirst=difference-first*GRAVITY*dz,drivingSecond=difference-second*GRAVITY*dz;
+                boolean fromFirst;
+                if(drivingFirst>=0&&drivingSecond>=0)fromFirst=true;
+                else if(drivingFirst<=0&&drivingSecond<=0)fromFirst=false;
+                else if(drivingFirst<0)fromFirst=Math.abs(drivingFirst)<=Math.abs(drivingSecond);
+                else fromFirst=initialPoint[edgeOffset+edge]>=0;
+                headDensities[edge]=fromFirst?first:second;
             }
         }
         private void buildSparsity() {
@@ -1484,7 +1600,10 @@ public final class PassiveStepSolver {
             }
             int control=controlOffsets[edge];double head=control<0?0:x[control]*1e5;
             double signedHead=pipe.control() instanceof FlowControl.Pump?head:-head;
-            double driving=st[a].pressure()-st[b].pressure()-rho*GRAVITY*dz+signedHead;
+            // The static column is this pass's, never the live iterate's upwind end; see
+            // {@link #headDensities}. On an island whose devices all sit at one y, {@code dz} is
+            // zero and this term is bitwise the zero it always was.
+            double driving=st[a].pressure()-st[b].pressure()-headDensities[edge]*GRAVITY*dz+signedHead;
             // Every pressure-dimensioned row of this edge is stated in the island's own pressure,
             // never in a fixed 1e5 Pa unit; see {@link #pressureScales}. The throttled-inlet row
             // below and the closed-edge row are mass flows and keep their own flow scale, and the
