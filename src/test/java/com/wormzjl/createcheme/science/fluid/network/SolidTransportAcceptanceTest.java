@@ -99,6 +99,40 @@ class SolidTransportAcceptanceTest {
         java.nio.file.Files.createDirectories(java.nio.file.Path.of("build/reports/fluid"));
         java.nio.file.Files.writeString(java.nio.file.Path.of("build/reports/fluid/solid-populations.json"),new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(report));
     }
+    /** {@code count} distinct grades from {@code from} micrometres up, each so light that its
+     * volume fraction is orders below the trace cutoff: conserved and transported, never active
+     * for blockage, so what closes here can only be the population limit. */
+    private SolidInventory traceGrades(int from,int count) {
+        var entries=new ArrayList<SolidInventory.Population>();
+        for(int i=0;i<count;i++)entries.add(new SolidInventory.Population(model.solids.require("createcheme:demo_particle"),
+                ParticleSize.micrometres(Integer.toString(from+i)),1e-12));
+        return new SolidInventory(entries);
+    }
+    @Test void aSixtyFifthPopulationClosesAFeedInsteadOfStallingTheInterval() {
+        // Two feeds of 64 grades each into one reservoir. Their union is 128 and a conserved stock
+        // holds 64, so the reconstruction refused every step of every interval and no smaller step
+        // could ever make one work: the island was held forever. It is a feasibility statement
+        // about the connection, so it closes one like any other transport failure does.
+        var run=new PipeResistance.Geometry(100,.05,.000045,0);
+        var graph=new PassiveNetwork(List.of(
+                new PassiveNetwork.Reservoir(1,0,water(200000).withSolids(traceGrades(1,64)),PassiveNetwork.NodeKind.GENERATOR),
+                new PassiveNetwork.Reservoir(2,0,water(190000).withSolids(traceGrades(65,64)),PassiveNetwork.NodeKind.GENERATOR),
+                new PassiveNetwork.Reservoir(3,0,water(150000)),
+                new PassiveNetwork.Reservoir(4,0,water(100000),PassiveNetwork.NodeKind.VOID)),List.of(
+                new PassiveNetwork.Pipe(10,0,2,run),new PassiveNetwork.Pipe(11,1,2,run),new PassiveNetwork.Pipe(12,2,3,run)));
+        var result=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
+
+        assertEquals(5,result.advancedSeconds());
+        assertTrue(result.rejectionReasons().keySet().stream().anyMatch(k->k.contains("POPULATION_LIMIT")),
+                "The limit must be declared as a closure: "+result.rejectionReasons());
+        var receiver=result.graph().reservoirs().get(2).inventory().solids();
+        assertTrue(receiver.populations().size()<=SolidInventory.MAXIMUM_POPULATIONS,
+                "The receiver holds "+receiver.populations().size()+" populations");
+        assertFalse(receiver.empty(),"The surviving feed must still deliver");
+        assertEquals(1,result.graph().pipes().stream().filter(p->p.blockedDirections()!=0).count(),
+                "Only the one feed the deterministic rule names may close: "+result.graph().pipes());
+        System.out.println("solid populations: "+receiver.populations().size()+" held, reasons="+result.rejectionReasons());
+    }
     @Test void closedParticlesRestartWhenDrivingPressureIncreases() {
         var source=water(150001).withSolids(stock(64,100));var sink=water(150000);
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,source,PassiveNetwork.NodeKind.GENERATOR),new PassiveNetwork.Reservoir(2,0,sink,PassiveNetwork.NodeKind.VOID)),List.of(pipe()));

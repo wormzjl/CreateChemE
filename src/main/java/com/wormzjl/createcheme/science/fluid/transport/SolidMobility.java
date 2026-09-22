@@ -7,7 +7,13 @@ import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 /** Outlet-specific transport eligibility. Existing physical outlets request MIXED. */
 public final class SolidMobility {
     public enum Outlet { MIXED, ORGANIC_LIQUID, WATER, GAS }
-    public enum Reason { MOBILE, IMMOBILE_LIQUID, NO_LIQUID_CARRIER, PACKED_SLURRY, PARTICLE_TOO_LARGE, DEPOSITION, FILTER_CLOGGED }
+    /**
+     * {@code POPULATION_LIMIT} is the one reason that is not a property of the donor: a conserved
+     * stock holds at most {@link SolidInventory#MAXIMUM_POPULATIONS} distinct material/size
+     * populations, and a connection whose delivery would push what receives it past that has to
+     * stop carrying rather than let the reconstruction refuse a step no smaller step can make work.
+     */
+    public enum Reason { MOBILE, IMMOBILE_LIQUID, NO_LIQUID_CARRIER, PACKED_SLURRY, PARTICLE_TOO_LARGE, DEPOSITION, FILTER_CLOGGED, POPULATION_LIMIT }
     public record Check(Reason reason, double velocity, double minimumVelocity) {
         public boolean allowed(){return reason==Reason.MOBILE;}
     }

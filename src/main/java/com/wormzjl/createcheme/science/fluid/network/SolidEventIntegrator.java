@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 import com.wormzjl.createcheme.science.fluid.transport.SolidMobility;
 import com.wormzjl.createcheme.science.fluid.solver.SparseNewton;
 import java.util.*;
@@ -55,17 +56,67 @@ final class SolidEventIntegrator {
     }
     private Transition failed(PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] flows) {
         Transition result=null;double ratio=Double.POSITIVE_INFINITY;long identity=Long.MAX_VALUE;
+        var reach=populationReach(graph,states,flows);
         for(int i=0;i<flows.length;i++) {
             var pipe=graph.pipes().get(i);double flow=flows[i];int direction=flow>=0?1:2;
             if(pipe.filter()!=null&&atCapacity(pipe.filter())&&pipe.blockedDirections()!=BOTH_DIRECTIONS)return clogged(i);
             if((pipe.blockedDirections()&direction)!=0)continue;
             var donor=states.get(flow>=0?pipe.first():pipe.second());
             var check=SolidMobility.check(model,donor,pipe,flow,SolidMobility.Outlet.MIXED);
+            if(check.allowed()&&reach!=null&&flow!=0&&overPopulated(graph,pipe,flow,reach))
+                check=new SolidMobility.Check(SolidMobility.Reason.POPULATION_LIMIT,check.velocity(),check.minimumVelocity());
             if(check.allowed())continue;
             double candidate=check.minimumVelocity()>0?check.velocity()/check.minimumVelocity():-1;
             if(candidate<ratio||candidate==ratio&&pipe.id()<identity){result=new Transition(i,direction,check,false);ratio=candidate;identity=pipe.id();}
         }
         return result;
+    }
+    /**
+     * The conserved population keys that can reach each node over one step, or {@code null} when
+     * this island cannot put more than {@link SolidInventory#MAXIMUM_POPULATIONS} of them anywhere.
+     *
+     * <p>The reconstruction's population system has only positive coefficients, so a stock reaches
+     * every node connected to it by open connections a filter does not empty - not only its
+     * immediate receivers - and the union that decides whether an inventory can be built is the
+     * transitive one. A node whose stock the reconstruction does not rebuild, which is every fixed
+     * node, neither receives nor forwards; it answers with its own inventory throughout.
+     *
+     * <p>The bound that skips all of this is the island's population count <em>with</em>
+     * duplicates: if the whole island holds 64 or fewer, no union of them can exceed 64. That is
+     * one field read per node, so an ordinary island never pays for the closure.
+     */
+    private static List<SortedSet<SolidInventory.Key>> populationReach(PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] flows) {
+        int held=0;
+        for(var state:states)held+=state.solids().populations().size();
+        for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection in)held+=in.solidsPerSecond().populations().size();
+        if(held<=SolidInventory.MAXIMUM_POPULATIONS)return null;
+        var reach=new ArrayList<SortedSet<SolidInventory.Key>>(states.size());
+        for(var state:states){var keys=new TreeSet<SolidInventory.Key>();for(var p:state.solids().populations())keys.add(p.key());reach.add(keys);}
+        for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection in)
+            for(var p:in.solidsPerSecond().populations())reach.get(in.node()).add(p.key());
+        for(int pass=0;pass<states.size();pass++) {
+            boolean changed=false;
+            for(int edge=0;edge<flows.length;edge++) {
+                var pipe=graph.pipes().get(edge);
+                if(pipe.filter()!=null||flows[edge]==0||pipe.blocked(flows[edge]))continue;
+                int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
+                if(graph.reservoirs().get(receiver).fixed())continue;
+                changed|=reach.get(receiver).addAll(reach.get(donor));
+            }
+            if(!changed)break;
+        }
+        return reach;
+    }
+    /** Whether delivering this connection's flow puts more distinct populations than a conserved
+     * stock can hold into what receives it: the far reservoir, or an inline filter's own cake. */
+    private static boolean overPopulated(PassiveNetwork graph,PassiveNetwork.Pipe pipe,double flow,List<SortedSet<SolidInventory.Key>> reach) {
+        int donor=flow>=0?pipe.first():pipe.second(),receiver=flow>=0?pipe.second():pipe.first();
+        if(pipe.filter()!=null) {
+            var union=new TreeSet<>(reach.get(donor));
+            for(var p:pipe.filter().captured().populations())union.add(p.key());
+            return union.size()>SolidInventory.MAXIMUM_POPULATIONS;
+        }
+        return !graph.reservoirs().get(receiver).fixed()&&reach.get(receiver).size()>SolidInventory.MAXIMUM_POPULATIONS;
     }
     private static Transition clogged(int edge) {
         return new Transition(edge,BOTH_DIRECTIONS,new SolidMobility.Check(SolidMobility.Reason.FILTER_CLOGGED,0,0),false);
@@ -123,18 +174,23 @@ final class SolidEventIntegrator {
         var graph=InventoryEquilibrium.refresh(initial,model,checkpoint);
         int[] blocked=new int[graph.pipes().size()];
         for(int i=0;i<blocked.length;i++){var p=graph.pipes().get(i);var a=graph.reservoirs().get(p.first());var b=graph.reservoirs().get(p.second());if(p.filter()!=null&&a.id()<0&&b.id()<0&&a.kind()==PassiveNetwork.NodeKind.GENERATOR&&b.kind()==PassiveNetwork.NodeKind.VOID)blocked[i]=BOTH_DIRECTIONS;}
+        double elapsed=0,work=0,step=startingStep;int accepted=0,rejected=0;
+        var reasons=new LinkedHashMap<String,Integer>();
         // Reconsider every closure on a new requested interval; none is a permanent physical deposit.
+        // A closure the interval starts with is reported like any other: it is the same event, at
+        // the interval's own t0 rather than inside it, and it is the only account of why a
+        // connection that carried material last interval carries none in this one.
         for(int attempt=0;SolidMobility.requiresFull(model,graph)&&attempt<=2*blocked.length;attempt++) {
             checkpoint.run();graph=masks(graph,blocked);
             var candidate=rate(graph,checkpoint);var failure=failed(graph,candidate.states(),candidate.massFlows());
             if(failure==null)break;
             blocked[failure.edge]|=failure.direction;
+            reasons.merge(failure.getMessage()+"; t="+elapsed,1,Integer::sum);
             if(attempt==2*blocked.length)throw new SparseNewton.Nonconvergence("Solid closure active set did not settle");
         }
-        double elapsed=0,work=0,step=startingStep;int accepted=0,rejected=0;
         double[] transported=new double[graph.pipes().size()];
         var histories=new PipeTransfer.Accumulator();var boundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
-        var reasons=new LinkedHashMap<String,Integer>();PassiveIntervalSolver.Result last=null;
+        PassiveIntervalSolver.Result last=null;
         // One segment per closure. The interval solver stops its own step grid on the transition
         // and hands back the prefix it accepted, so the event is located by the same adaptive
         // controller that integrates the rest of the interval, at the same tolerance, and the
