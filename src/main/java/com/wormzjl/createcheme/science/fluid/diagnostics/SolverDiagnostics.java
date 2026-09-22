@@ -141,6 +141,11 @@ public final class SolverDiagnostics {
     public static final LongAdder solidMomentProjectionsAtAcceptedPoints=new LongAdder();
     /** Substeps rejected because a stage guard saw a solid transport transition inside the step. */
     public static final LongAdder solidTransitionRejections=new LongAdder();
+    // ---- workspace reuse ----
+    /** Newton workspaces served from the retained map, and those that had to be built or forked.
+     * A cache key that accidentally varies per stage shows up here as zero reuse. */
+    public static final LongAdder workspaceReuses=new LongAdder();
+    public static final LongAdder workspaceBuilds=new LongAdder();
     // ---- adaptive step control ----
     /** Every interval attempt, and the accepted subset; exact even when the attempt log is full. */
     public static final LongAdder stepAttempts=new LongAdder();
@@ -218,6 +223,7 @@ public final class SolverDiagnostics {
         map.put("solidMomentProjections",solidMomentProjections);
         map.put("solidMomentProjectionsAtAcceptedPoints",solidMomentProjectionsAtAcceptedPoints);
         map.put("solidTransitionRejections",solidTransitionRejections);
+        map.put("workspaceReuses",workspaceReuses);map.put("workspaceBuilds",workspaceBuilds);
         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
         return Collections.unmodifiableMap(map);
     }

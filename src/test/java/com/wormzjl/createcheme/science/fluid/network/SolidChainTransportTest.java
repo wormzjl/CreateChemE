@@ -1,6 +1,7 @@
 package com.wormzjl.createcheme.science.fluid.network;
 
 import com.wormzjl.createcheme.fluid.support.FluidTestSupport;
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.state.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
@@ -103,4 +104,33 @@ class SolidChainTransportTest {
         assertEquals(5,two.rejectedSubsteps());
     }
 
+    @Test void filterIslandReusesItsSolverWorkspacesAcrossIntervals() {
+        // PassiveNetwork.Pipe is a record whose equality used to include the mutable cake, and
+        // TR-BDF2 rebuilds the pipe list with a re-weighted cake at every stage, so every workspace
+        // key, structure key and warm-flow comparison missed on every stage of a filter island.
+        var slurry=water(400000).withSolids(new SolidInventory(List.of(new SolidInventory.Population(
+                model.solids.require("createcheme:demo_particle"),ParticleSize.micrometres("100"),100))));
+        var graph=new PassiveNetwork(List.of(
+                new PassiveNetwork.Reservoir(1,0,slurry,PassiveNetwork.NodeKind.GENERATOR),
+                new PassiveNetwork.Reservoir(2,0,water(150000),PassiveNetwork.NodeKind.VOID)),List.of(
+                new PassiveNetwork.Pipe(3,0,1,List.of(new PipeResistance.Geometry(1,.05,.000045,0)),
+                        new FlowControl.Passive(),0,new InlineFilter(10,1e6,SolidInventory.EMPTY,0))));
+        var solver=new PassiveIntervalSolver(model);
+        boolean enabled=SolverDiagnostics.ENABLED;
+        try {
+            var first=solver.solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
+            SolverDiagnostics.reset();SolverDiagnostics.ENABLED=true;
+            var running=first.graph();
+            for(int interval=1;interval<20;interval++)running=solver.solve(running,5,PassiveIntervalSolver.Settings.defaults(),()->{}).graph();
+            var sample=SolverDiagnostics.sample();
+            long reuses=sample.value("workspaceReuses"),builds=sample.value("workspaceBuilds");
+            assertTrue(reuses>0,"A filter island never reused a solver workspace");
+            assertTrue(reuses>builds,"Workspace reuse must dominate after the first interval: "+reuses+" vs "+builds);
+            assertEquals(0,sample.value("solidMomentProjectionsAtAcceptedPoints"),
+                    "The decode projection must never be active at an accepted point");
+            assertFalse(running.pipes().getFirst().filter().captured().empty());
+            System.out.printf(Locale.ROOT,"solid chain: filter island reuses=%d builds=%d orderings=%d factorizations=%d%n",
+                    reuses,builds,sample.value("luOrderings"),sample.value("luFactorizations"));
+        } finally {SolverDiagnostics.ENABLED=enabled;SolverDiagnostics.reset();}
+    }
 }

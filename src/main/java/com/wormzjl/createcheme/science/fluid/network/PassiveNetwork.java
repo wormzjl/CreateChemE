@@ -60,6 +60,25 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
     public record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections,InlineFilter filter) {
         public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections){this(id,first,second,sections,control,blockedDirections,null);}
         public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control){this(id,first,second,sections,control,0);}
+        /**
+         * Everything about this connection that decides the shape and the coefficients of the
+         * equations it contributes, and nothing that only moves their right-hand side.
+         *
+         * <p>The captured cake is exactly that right-hand side: TR-BDF2 rebuilds the pipe list with
+         * a re-weighted cake at every stage, so a retained Newton workspace, sparsity pattern,
+         * fill-reducing ordering or warm flow keyed on the whole {@link Pipe} record would miss on
+         * every stage of any island that has a filter in it - a fresh factorization per stage, no
+         * preconditioner to fork, and the previous stage's flows thrown away. The filter's own
+         * settings do belong here, because its clean resistance and capacity are coefficients.
+         */
+        public record Identity(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,
+                               int blockedDirections,FilterSettings filter) {}
+        /** The immutable half of an {@link InlineFilter}; the cake and its energy are the mutable half. */
+        public record FilterSettings(double capacity,double cleanResistance) {}
+        public Identity identity() {
+            return new Identity(id,first,second,sections,control,blockedDirections,
+                    filter==null?null:new FilterSettings(filter.capacity(),filter.cleanResistance()));
+        }
         public Pipe withBlockedDirections(int directions){return new Pipe(id,first,second,sections,control,directions,filter);}
         public Pipe withFilter(InlineFilter value){return new Pipe(id,first,second,sections,control,blockedDirections,value);}
         public boolean blocked(double flow){return (blockedDirections&(flow>=0?1:2))!=0;}
