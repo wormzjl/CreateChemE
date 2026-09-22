@@ -248,34 +248,46 @@ class FilterBlockLineIslandTest {
      * filter-free control's 400000.00020 Pa, where before it stopped at interval 7 with the tank
      * still at 399998.24 Pa - but it does not finish.
      *
-     * <p>What stops it now is a second, filter-specific defect, measured at every swept pressure:
+     * <p>What stopped it then was a second, filter-specific defect, measured at every swept
+     * pressure and since fixed; see {@code documentation/JUNCTION_PHANTOM_TRACE.md}:
      *
      * <ul>
-     * <li>The undirected reachability closure lets the tank's nitrogen into both of the filter's
-     *     junctions, and {@code initialPhaseSeeds} then seeds each of them with {@code 1e-12} of
-     *     the node's own total. A junction owns no volume, so that trace flashes into a vapour
-     *     phase of 2.7e-14 of the junction's scale, and its water-saturation and partial-pressure
-     *     rows are then stated on a vapour that is numerically nothing. The junction block is rank
-     *     five of six (sigma from 3.5e15 down to 2.9e-145, and still 1.0e-139 using every column
-     *     in the island).</li>
-     * <li>Nothing delivers that trace, so the Newton's only root for it is exactly zero. The
+     * <li>The undirected reachability closure let the tank's nitrogen into both of the filter's
+     *     junctions, and {@code initialPhaseSeeds} then seeded each of them with {@code 1e-12} of
+     *     the node's own total - 5.53e-8 mol here. A junction owns no volume, so that trace
+     *     flashed into a vapour phase of 2.7e-14 of the junction's scale, and its water-saturation
+     *     and partial-pressure rows were then stated on a vapour that is numerically nothing. The
+     *     junction block was rank five of six (sigma from 3.5e15 down to 2.4e-149, and still
+     *     1.0e-139 using every column in the island).</li>
+     * <li>Nothing delivered that trace, so the Newton's only root for it was exactly zero. The
      *     nonnegativity step limiter caps the step at 0.99 of the distance to the boundary, so the
-     *     unknown falls by a factor 0.99 per iteration and the iteration limit arrives first, with
+     *     unknown fell by a factor 0.99 per iteration and the iteration limit arrived first, with
      *     the junction's water-saturation row left at 0.2979 and its partial-pressure closure at
-     *     3.2e-3 - or, when a phase correction intervenes first, at 65 to 70.</li>
+     *     3.2e-3 - or, when a phase correction intervened first, at 65 to 70. Reproduced exactly:
+     *     150 kPa held at interval 23 on 66.6965, 200 at 16 on 0.29765, 250 at 13 on 67.0521, 300
+     *     at 10 on 0.29797, 350 at 9 on 65.1547, 400 at 8 on 0.29788 and 600 at 5 on 1.6094.</li>
      * </ul>
      *
-     * <p>Disabled rather than deleted so the reproduction survives: drop the annotation to see it.
-     * The void-terminated fixtures below carry solids through a filter under real driving pressure
-     * and do pass, so filtration itself works; it is a tank-terminated filter line above about
-     * 150 kPa that still stops.
+     * <p>A zero-holdup junction now carries the species its donors deliver and no others, is
+     * seeded as the mixture they deliver rather than as its stored guess with a trace invented in
+     * it, and reads both from the point its pass starts at. The line runs to the end at every
+     * pressure swept above, and the tank settles where the filter-free control's does.
      */
-    @org.junit.jupiter.api.Disabled("Phantom trace on the filter's junctions: see the comment and documentation/TANK_NODE_BLOCK.md")
     @Test void filterLineToATankKeepsIntegratingOnceTheTankIsFull() {
-        var graph=reservoirLine(400000,0);
-        String outcome=intervals(graph,40);
-        System.out.println("(i-b) generator at 400 kPa-pipe-filter-pipe-tank, clear: "+outcome);
-        assertTrue(outcome.startsWith("OK"),outcome);
+        for(double pressure:new double[]{150000,200000,250000,300000,350000,400000,600000}) {
+            var driven=run(reservoirLine(pressure,0),40);
+            var control=run(clearLine(pressure,0),40);
+            System.out.println("(i-b) generator at "+(long)pressure+" Pa-pipe-filter-pipe-tank, clear: "+driven.detail()
+                    +"\n(control) generator at "+(long)pressure+" Pa-4 pipes-tank: "+control.detail()
+                    +"\n(endpoint) filter tank P="+driven.tank().pressure()+" mass="+driven.tank().mass()
+                    +"  control tank P="+control.tank().pressure()+" mass="+control.tank().mass());
+            assertTrue(driven.detail().startsWith("OK"),driven.detail());
+            assertTrue(control.detail().startsWith("OK"),control.detail());
+            assertEquals(pressure,driven.tank().pressure(),1e-6*pressure,
+                    "A tank behind a filter must settle on its generator");
+            assertEquals(control.tank().mass(),driven.tank().mass(),1e-6*control.tank().mass(),
+                    "A tank behind a filter must hold what the same tank on plain pipes holds");
+        }
     }
 
     /**
