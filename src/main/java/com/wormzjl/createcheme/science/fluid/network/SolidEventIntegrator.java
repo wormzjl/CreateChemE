@@ -9,12 +9,22 @@ import java.util.*;
 /** Worker-local strict transport events. Trial integrations never commit ownership. */
 final class SolidEventIntegrator {
     /**
-     * A filter that has met its capacity carries nothing either way, so its closure names both
-     * directions. A failed mobility check names only the direction that failed: closing both would
-     * put the Newton active set right on pass 0 - {@link PassiveStepSolver} presets
-     * {@code boundaryClosed} only for a fully closed pipe - but it also isolates a junction whose
-     * remaining connections are closed, and that is a singular block the step solver cannot
-     * factor. Either way the next interval's rate pass reconsiders every closure from scratch, so
+     * Every transport closure names both directions. A filter that has met its capacity carries
+     * nothing either way; a bed that has settled out of a carrier too slow to suspend it is in the
+     * connection, not in one end of it.
+     *
+     * <p>It is also what the step solver can actually work with. {@link PassiveStepSolver} presets
+     * {@code boundaryClosed} only for a fully closed connection, so a one-directional closure left
+     * the first Newton pass free to drive flow through the forbidden direction and to manufacture,
+     * hop by hop, the solid dust that used to stall the line search; the active set then needed two
+     * or three passes per solve to find its way back. Closing both puts it right on pass 0.
+     * Measured over eleven warm repeats: a ten-reservoir chain 70 -> 51 ms and a thirty-reservoir
+     * chain 215 -> 103 ms, against 226 -> 270 ms on the five-node pump-filter island, whose
+     * closures isolate a junction and are re-examined more often.
+     *
+     * <p>What made this impossible before was that isolating a junction produced a singular block;
+     * {@link com.wormzjl.createcheme.science.fluid.solver.PhaseLayout#junctionRows} now has a rule
+     * for one. The next interval's rate pass reconsiders every closure from scratch either way, so
      * none of them is a permanent physical deposit.
      */
     private static final int BOTH_DIRECTIONS=3;
@@ -30,6 +40,8 @@ final class SolidEventIntegrator {
      * substep while the interval solver refines onto the event, so it carries no stack trace.
      */
     static final class Transition extends RuntimeException {
+        /** {@code direction} is the closure mask to apply, which is {@link #BOTH_DIRECTIONS} for
+         * every transport closure; see there. */
         final int edge,direction;
         final SolidMobility.Check check;
         /** Seen on the endpoint rate at the start of a step: the event is at the accepted state
@@ -72,7 +84,7 @@ final class SolidEventIntegrator {
                 check=new SolidMobility.Check(SolidMobility.Reason.POPULATION_LIMIT,check.velocity(),check.minimumVelocity());
             if(check.allowed())continue;
             double candidate=check.minimumVelocity()>0?check.velocity()/check.minimumVelocity():-1;
-            if(candidate<ratio||candidate==ratio&&pipe.id()<identity){result=new Transition(i,direction,check,false);ratio=candidate;identity=pipe.id();}
+            if(candidate<ratio||candidate==ratio&&pipe.id()<identity){result=new Transition(i,BOTH_DIRECTIONS,check,false);ratio=candidate;identity=pipe.id();}
         }
         return result;
     }

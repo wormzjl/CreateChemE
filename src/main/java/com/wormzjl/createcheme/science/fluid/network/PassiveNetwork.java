@@ -53,9 +53,10 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
     /**
      * {@code blockedDirections} is a two-bit mask - 1 forbids flow from {@link #first} to
      * {@link #second}, 2 the reverse - and stays an int because the saved checkpoint format is one
-     * and {@link #blocked(double)} is still asked per direction. A failed solid mobility check
-     * names the direction that failed; only a filter that has met its capacity, which carries
-     * nothing either way, produces 3.
+     * and {@link #blocked(double)} is still asked per direction. Every closure the solid transport
+     * machinery makes produces 3: a settled bed and a filter at capacity are both properties of the
+     * connection rather than of one end of it. A saved checkpoint may still carry 1 or 2, and a
+     * caller may still impose one.
      */
     public record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections,InlineFilter filter) {
         public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections){this(id,first,second,sections,control,blockedDirections,null);}

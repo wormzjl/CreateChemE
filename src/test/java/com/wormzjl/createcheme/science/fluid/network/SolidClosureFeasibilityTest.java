@@ -51,9 +51,10 @@ class SolidClosureFeasibilityTest {
 
         double located = closureTime(result, "DEPOSITION"), exact = closureTime(reference, "DEPOSITION");
         assertEquals(exact, located, 5 * floor, "Located closure must sit within a few refinement floors of the tight one");
-        // A mobility failure closes the direction that failed, which here is the draining one.
-        assertEquals(1, result.graph().pipes().getFirst().blockedDirections());
-        assertEquals(1, reference.graph().pipes().getFirst().blockedDirections());
+        // A settled bed is in the connection, not in one end of it, so the closure names both
+        // directions; the next interval's rate pass reconsiders it from scratch.
+        assertEquals(3, result.graph().pipes().getFirst().blockedDirections());
+        assertEquals(3, reference.graph().pipes().getFirst().blockedDirections());
         // No transport after the closure, so the endpoint inventory is the inventory at the event.
         assertEquals(reference.graph().reservoirs().getFirst().state().mass(),
                 result.graph().reservoirs().getFirst().state().mass(), 2e-6);
