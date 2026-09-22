@@ -101,6 +101,8 @@ public final class PassiveStepSolver {
                 graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList(),List.of(),List.of());
         if(graph.reservoirs().stream().anyMatch(PassiveNetwork.Reservoir::empty))throw new IllegalArgumentException("Evacuated reservoir has no fluid temperature; connected filling requires a supported initialization state");
         var reachable=reachableComponents(graph);
+        boolean hasJunction=false;
+        for(var node:graph.reservoirs())hasJunction|=node.junction();
         var seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);
         var modes=new ArrayList<FlowControl.Mode>();
         boolean carryModes=previousModes.size()==graph.pipes().size()&&previousPipes.equals(identities(graph))&&Arrays.equals(previousNodeIds,nodeIds(graph));
@@ -152,6 +154,14 @@ public final class PassiveStepSolver {
         long[] nodeIds=nodeIds(graph);byte[] kinds=new byte[nodeIds.length];
         for(int i=0;i<kinds.length;i++)kinds[i]=(byte)graph.reservoirs().get(i).kind().ordinal();
         boolean[] componentMask=componentMask(graph);
+        // The connection directions every zero-holdup junction's basis and seed are stated from:
+        // the point a pass with this active set starts at, which is the same array
+        // {@link Equations#junctionDonorFirst} is read off, so the basis, the seed and the donor
+        // are three readings of one thing and cannot disagree. A pass whose own starting point
+        // carries differently - because an active-set change moved the flows it starts from -
+        // restates all three and runs again, and that is the only place {@code reachable} and the
+        // junction seeds are written.
+        double[] stated=null;
         // Components this solve has reactivated, per node. Reactivation is monotone within one solve
         // - a later pass's seed may not undo it - which is what keeps the support half of the cycle
         // key monotone and the pass sequence finite; demotion happens at the next solve's seed.
@@ -159,6 +169,22 @@ public final class PassiveStepSolver {
         int maximumPasses=Math.min(512,16+2*graph.reservoirs().size()+2*graph.pipes().size());
         for(int pass=0;pass<maximumPasses;pass++) {
             checkpoint.run();SolverDiagnostics.count(SolverDiagnostics.activeSetPasses);
+            // A zero-holdup junction owns no volume, so its composition is nothing but the mixture
+            // of what arrives: the species it carries are the ones the connections this pass reads
+            // as donating into it deliver, and its seed is that mixture. Both are stated here,
+            // from the point this pass starts at, which is the same array
+            // {@link Equations#junctionDonorFirst} is read off - so the basis, the seed and the
+            // donor cannot disagree - and both are revised only by a converged point, through
+            // {@link #junctionsTurned} and {@link #donorsTurned}, which move the flows this pass
+            // will start from and so restate all three on the pass after.
+            if(hasJunction) {
+                double[] start=new double[graph.pipes().size()];
+                startPoint(graph,modes,boundaryClosed,pipeIdentities,seeds,start,new double[start.length],new boolean[start.length]);
+                if(!sameTransport(stated,start)) {
+                    refineJunctionReachability(graph,reachable,start);
+                    seeds=restateJunctions(graph,seeds,reachable,start,checkpoint);stated=start;
+                }
+            }
             int[] phases=new int[seeds.size()];for(int i=0;i<phases.length;i++)phases[i]=phaseCode(seeds.get(i));
             byte[] modeCodes=new byte[modes.size()];for(int i=0;i<modeCodes.length;i++)modeCodes[i]=(byte)modes.get(i).ordinal();
             var supports=supports(graph,seeds,reachable,promoted);
@@ -202,19 +228,23 @@ public final class PassiveStepSolver {
             catch(SparseNewton.Nonconvergence failure) {
                 if(failure.lastVariables()==null)throw failure;
                 double[] trialFlows=Arrays.copyOfRange(failure.lastVariables(),equations.edgeOffset,equations.edgeOffset+graph.pipes().size());
-                if(refineJunctionReachability(graph,reachable,trialFlows)){seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);continue;}
                 // A point the Newton never reached is deliberately not read as evidence about this
-                // pass's frozen junction donors, unlike the converged test further down. Measured
-                // on the filter block line: turning a junction onto a diverged trial's flow sign
-                // hands it the tank's nitrogen as a seeded trace nothing delivers, and every swept
-                // pressure lost an interval by it - 400 kPa went from interval 8 back to 7, and
-                // from a tank settled at 399999.99971 Pa to one at 399998.24 Pa.
+                // pass's frozen junction donors, nor about the junction basis those donors state,
+                // unlike the converged tests further down. Measured on the filter block line:
+                // turning a junction onto a diverged trial's flow sign hands it the tank's nitrogen
+                // as a seeded trace nothing delivers, and every swept pressure lost an interval by
+                // it - 400 kPa went from interval 8 back to 7, and from a tank settled at
+                // 399999.99971 Pa to one at 399998.24 Pa. Widening the junction basis from the same
+                // diverged trial is the same mistake with a bigger blast radius, and it is what
+                // used to put the phantom trace back at every refinement level: the trial's flows
+                // at a stalled point are -1.14e-6 kg/s on a line whose generator drives it
+                // forwards, and reading them as backflow let the tank's nitrogen into both of the
+                // filter's zero-holdup junctions; see documentation/JUNCTION_PHANTOM_TRACE.md.
                 var changedSeeds=phaseCorrection(graph,equations.states(failure.lastVariables()),checkpoint,false);
                 if(changedSeeds==null)throw new SparseNewton.Nonconvergence(failure.getMessage()+"; active-set pass="+pass,failure.lastVariables());
                 seeds=changedSeeds;continue;
             }
             double[] x=numerical.variables();var states=equations.states(x);double[] flows=new double[graph.pipes().size()],heads=new double[flows.length];
-            if(refineJunctionReachability(graph,reachable,Arrays.copyOfRange(x,equations.edgeOffset,equations.edgeOffset+graph.pipes().size()))){seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);continue;}
             var changedSeeds=phaseCorrection(graph,states,checkpoint,true);if(changedSeeds!=null){seeds=changedSeeds;continue;}
             // The same outer stability question the phase correction above answers for a whole phase,
             // asked per component of the frozen trace support: this converged point's own fugacity
@@ -276,6 +306,12 @@ public final class PassiveStepSolver {
             // these flows, derives the turned donor from them, and the donor signs are part of the
             // cycle key, so the sequence is finite.
             if(!changed&&donorsTurned(graph,equations,flows))changed=true;
+            // And the composition basis those same donors state; see
+            // {@link #refineJunctionReachability}. A converged point whose connection directions
+            // are not the ones this pass mixed its junctions on was solved against the wrong
+            // species set, which is the same kind of evidence and takes the same action: the next
+            // pass starts from these flows and restates both the donors and the basis from them.
+            if(!changed&&hasJunction&&junctionsTurned(graph,stated,reachable,flows))changed=true;
             if(changed){seeds=states;previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);continue;}
             for(int edge=0;edge<flows.length;edge++) {
                 var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
@@ -564,30 +600,82 @@ public final class PassiveStepSolver {
         }
         return false;
     }
+    /**
+     * Whether this converged point's connection directions are not the ones the junction basis of
+     * this pass was stated from; the basis twin of {@link #donorsTurned}.
+     *
+     * <p>The question is about the basis and not about the flows. {@link #reachableComponents}
+     * reads a flow only through {@link #transportDirection}, and the rest of the closure - which
+     * ends a connection admits, which nodes hold stock, what an isolated junction falls back to -
+     * is a property of the graph and of the states this solve starts from, neither of which a pass
+     * can change. So two points that classify every connection the same way cannot produce
+     * different bases, and that cheap test is the screen; the converse does not hold - a
+     * connection crossing the deadband usually leaves the basis exactly where it was - so when the
+     * screen fires the closure is built and the bases are compared. Answering on the
+     * classification alone reports a change that restates nothing, and the pass after it rebuilds
+     * the same active set and trips the cycle guard.
+     */
+    private boolean junctionsTurned(PassiveNetwork graph,double[] stated,boolean[][] reachable,double[] flows) {
+        if(sameTransport(stated,flows))return false;
+        var directed=reachableComponents(graph,flows);
+        for(int i=0;i<reachable.length;i++)
+            if(graph.reservoirs().get(i).junction()&&!Arrays.equals(reachable[i],directed[i]))return true;
+        return false;
+    }
+    /** Which way {@link #reachableComponents} lets species cross a connection carrying this flow:
+     * downstream, upstream, or neither, which is what a flow inside the deadband means. */
+    private static int transportDirection(double flow){return flow>1e-14?1:flow<-1e-14?-1:0;}
+    /** Whether two points carry every connection the same way, which is all a junction basis and a
+     * junction seed read a flow for. {@code null} is no statement at all and matches nothing. */
+    private static boolean sameTransport(double[] stated,double[] flows) {
+        if(stated==null)return false;
+        for(int edge=0;edge<flows.length;edge++)if(transportDirection(stated[edge])!=transportDirection(flows[edge]))return false;
+        return true;
+    }
+    /**
+     * Restates every zero-holdup junction's composition basis as what these connection directions
+     * deliver into it, and reports whether any of them moved.
+     *
+     * <p>The undirected closure {@link #reachableComponents} runs with no directions is the right
+     * answer for a vessel, which owns stock and may be fed either way over a whole step. It is the
+     * wrong answer for a junction, which owns nothing: a species no connection is currently
+     * carrying into it is not in its mixture, and seeding it there anyway costs the junction a
+     * phase - and its rows - that its own equations cannot determine, because a junction has no
+     * volume closure to fix a phase amount with. That is the defect
+     * {@code documentation/JUNCTION_PHANTOM_TRACE.md} measures.
+     */
     private boolean refineJunctionReachability(PassiveNetwork graph,boolean[][] reachable,double[] flows){
-        if(!hasSolids(graph)&&graph.pipes().stream().noneMatch(p->p.filter()!=null))return false;
         var directed=reachableComponents(graph,flows);boolean changed=false;
         for(int i=0;i<reachable.length;i++)if(graph.reservoirs().get(i).junction()&&!Arrays.equals(reachable[i],directed[i])){reachable[i]=directed[i];changed=true;}
         return changed;
     }
+    /**
+     * A trial point for one pass, per node.
+     *
+     * <p>A vessel is seeded as it always was: its own inventory, plus a quarter of its mass at
+     * most of what is about to arrive, which is a correction to a stock it already owns. A
+     * zero-holdup junction is seeded by {@link #restateJunctions} instead, because it owns no
+     * stock and that model does not describe it.
+     */
     private List<FluidThermodynamics.State> initialPhaseSeeds(PassiveNetwork graph,double dt,Runnable checkpoint,boolean[][] reachable) {
-        int count=model.hydrocarbon.componentCount()+1;
-        var seeds=new ArrayList<FluidThermodynamics.State>();
-        for(int nodeIndex=0;nodeIndex<graph.reservoirs().size();nodeIndex++) {
+        int count=model.hydrocarbon.componentCount()+1,nodes=graph.reservoirs().size();
+        double[] flows=initialMassFlows(graph);
+        var seeds=new ArrayList<FluidThermodynamics.State>(nodes);
+        for(int nodeIndex=0;nodeIndex<nodes;nodeIndex++) {
             var node=graph.reservoirs().get(nodeIndex);var available=reachable[nodeIndex];
-            var state=node.state();if(node.fixed()){seeds.add(state);continue;}
+            var state=node.state();
+            if(node.fixed()||node.junction()){seeds.add(state);continue;}
             var n=PhaseLayout.totalAmounts(state);double total=Arrays.stream(n).sum();boolean changed=false;
-            // Only a zero-storage guess can discard an unreachable species; real inventories are untouched.
-            if(node.junction())for(int c=0;c<count;c++)if(!available[c]&&n[c]>0){n[c]=0;changed=true;}
             // This is only a trial guess. The accumulation equations still start from the exact original inventory.
             for(int i=0;i<count;i++)if(available[i]&&n[i]==0)changed=true;
             double weightedTemperature=state.mass()*state.temperature(),seedMass=state.mass();
             if(changed)for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection input&&input.node()==nodeIndex) {
                 var rates=input.molesPerSecond();for(int i=0;i<count;i++)n[i]+=dt*rates[i];
             }
-            if(changed)for(var pipe:graph.pipes()) {
+            if(changed)for(int edge=0;edge<flows.length;edge++) {
+                var pipe=graph.pipes().get(edge);
                 if(pipe.first()!=nodeIndex&&pipe.second()!=nodeIndex)continue;
-                double flow=initialMassFlow(graph,pipe);int receiver=flow>=0?pipe.second():pipe.first(),donor=flow>=0?pipe.first():pipe.second();
+                double flow=flows[edge];int receiver=flow>=0?pipe.second():pipe.first(),donor=flow>=0?pipe.first():pipe.second();
                 if(receiver!=nodeIndex||!boundaryAllowed(graph,pipe,flow))continue;
                 var incoming=graph.reservoirs().get(donor).state();double mass=Math.min(state.mass()*.25,dt*Math.abs(flow));var feed=PhaseLayout.totalAmounts(incoming);
                 for(int i=0;i<count;i++)n[i]+=mass*feed[i]/incoming.mass();
@@ -597,6 +685,263 @@ public final class PassiveStepSolver {
             seeds.add(changed?model.flashTP(weightedTemperature/seedMass,state.pressure(),n,checkpoint).withSolidState(state.solids(),state.solidMoments()):state);
         }
         return seeds;
+    }
+    /**
+     * The same seeds, with every zero-holdup junction's rewritten as the mixture the given
+     * connection flows deliver into it.
+     *
+     * <p>A junction owns no stock, so its converged composition <em>is</em> that mixture and not
+     * its stored guess with a step's worth of inflow blended in; on a settled line the two are
+     * orders of magnitude apart, and a Newton cannot travel between them, because the amount of a
+     * species the mixture does not contain has its root at exactly zero and the nonnegativity
+     * limiter takes one percent of the distance to it per iteration. The sweep runs along the
+     * donor chain, so a junction fed by another junction sees what that one is about to hold
+     * rather than what it happens to be holding now.
+     *
+     * <p>Nothing invents a trace on a junction. A species no donor delivers is simply not there,
+     * which is what {@link #refineJunctionReachability} has already said about its basis, and
+     * {@link PhaseLayout} then carries it as an omitted trace in the mask; on a vessel the
+     * {@code 1e-12} entry trace is unchanged, because a vessel has a volume closure that fixes the
+     * amount of the phase the trace opens and a junction has none. That pair is the defect
+     * {@code documentation/JUNCTION_PHANTOM_TRACE.md} measures.
+     */
+    private List<FluidThermodynamics.State> restateJunctions(PassiveNetwork graph,List<FluidThermodynamics.State> seeds,
+                                                            boolean[][] reachable,double[] flows,Runnable checkpoint) {
+        int count=model.hydrocarbon.componentCount()+1,nodes=graph.reservoirs().size(),junctions=0;
+        for(var node:graph.reservoirs())if(node.junction())junctions++;
+        if(junctions==0)return seeds;
+        var amounts=new double[nodes][];double[] temperature=new double[nodes],stock=new double[nodes];
+        for(int i=0;i<nodes;i++){var s=seeds.get(i);amounts[i]=PhaseLayout.totalAmounts(s);temperature[i]=s.temperature();stock[i]=PhaseLayout.sum(amounts[i]);}
+        boolean[] mixed=new boolean[nodes];
+        // One sweep per junction resolves any chain of them; a loop of junctions reaches its own
+        // fixed point or stops on the bound, and either is a trial guess.
+        for(int sweep=0;sweep<junctions;sweep++) {
+            boolean moved=false;
+            for(int j=0;j<nodes;j++) {
+                if(!graph.reservoirs().get(j).junction())continue;
+                double[] n=new double[count];double weightedTemperature=0,weight=0;
+                for(int edge=0;edge<flows.length;edge++) {
+                    int carried=transportDirection(flows[edge]);if(carried==0)continue;
+                    var pipe=graph.pipes().get(edge);
+                    int donor=carried>0?pipe.first():pipe.second();
+                    if((carried>0?pipe.second():pipe.first())!=j||!boundaryAllowed(graph,pipe,flows[edge]))continue;
+                    double rate=Math.abs(flows[edge]),donorMass=molarMass(amounts[donor]);
+                    if(!(donorMass>0))continue;
+                    for(int c=0;c<count;c++)n[c]+=rate*amounts[donor][c]/donorMass;
+                    weightedTemperature+=rate*temperature[donor];weight+=rate;
+                }
+                for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection input&&input.node()==j) {
+                    var rates=input.molesPerSecond();double rate=molarMass(rates);if(!(rate>0))continue;
+                    for(int c=0;c<count;c++)n[c]+=rates[c];
+                    weightedTemperature+=rate*temperature[j];weight+=rate;
+                }
+                double arriving=PhaseLayout.sum(n);
+                if(!(weight>0)||!(arriving>0)) {
+                    // Nothing delivers into it, so it keeps the guess it has - minus any species
+                    // its own basis no longer names, which only a zero-storage guess may drop.
+                    boolean dropped=false;
+                    for(int c=0;c<count;c++)if(!reachable[j][c]&&amounts[j][c]>0){amounts[j][c]=0;dropped=true;}
+                    if(dropped){mixed[j]=true;moved=true;}
+                    continue;
+                }
+                for(int c=0;c<count;c++)n[c]=reachable[j][c]?n[c]*stock[j]/arriving:0;
+                // The guess it already holds is the mixture it held when it was last reconstructed,
+                // so it is replaced only when the species arriving are not the species it carries -
+                // which is the whole question a junction's layout is built on, and the one case
+                // where its own guess is orders away from what it has to converge to. Matching the
+                // species and keeping the guess leaves a junction on a settled line exactly where
+                // it always was, unflashed.
+                if(sameSpecies(n,amounts[j]))continue;
+                amounts[j]=n;temperature[j]=weightedTemperature/weight;mixed[j]=true;moved=true;
+            }
+            if(!moved)break;
+        }
+        var restated=new ArrayList<>(seeds);
+        for(int j=0;j<nodes;j++)if(mixed[j]) {
+            var stored=graph.reservoirs().get(j).state();
+            restated.set(j,model.flashTP(temperature[j],stored.pressure(),amounts[j],checkpoint).withSolidState(stored.solids(),stored.solidMoments()));
+        }
+        return restated;
+    }
+    /** Whether two conserved amount vectors carry exactly the same species, at any amounts. */
+    private static boolean sameSpecies(double[] a,double[] b) {
+        for(int c=0;c<a.length;c++)if(a[c]>0!=b[c]>0)return false;
+        return true;
+    }
+    /** The mass of a conserved amount vector, water last. */
+    private double molarMass(double[] amounts) {
+        double mass=0;for(int c=0;c<amounts.length;c++)mass+=amounts[c]*model.molecularWeight(c);
+        return mass;
+    }
+    /**
+     * The whole island's connection flows as the states this solve starts at imply them, with
+     * every chain of zero-holdup junctions carrying one flow.
+     *
+     * <p>{@link #initialMassFlow} answers one connection at a time, against the two pressures at
+     * its ends. On a vessel that is the right question. Across a zero-holdup junction it is not:
+     * the junction stores nothing, so the connections on either side of it carry the <em>same</em>
+     * flow, and the junction's own pressure - which is what the per-connection answer reads - is
+     * an output of the previous solve carrying that solve's roundoff. On a settled line the
+     * pressures along the chain differ by micropascals and the per-connection answer is noise: at
+     * 150 kPa it said the tank was pushing -7.2e-7 kg/s back into the filter's outlet junction
+     * while the filter was pushing +1.6e-5 kg/s forward into the same junction, a pattern no
+     * junction can be in. Everything a pass states about a junction - which species it mixes, what
+     * that mixture is, which end of each connection donates into it - is read off this point, so
+     * stating it from a point like that is what left the tank's nitrogen on a junction nothing was
+     * feeding; see {@code documentation/JUNCTION_PHANTOM_TRACE.md}.
+     *
+     * <p>So a maximal run of degree-two junctions joined by passive connections is contracted to
+     * one resistance between the two nodes at its ends, which do own their pressures, and the
+     * single flow that resistance passes is laid on every connection in it. An actuator is never
+     * contracted through, because its own setpoint and not the chain's resistance decides what it
+     * passes; a junction of degree three or more is not contracted either, because its split needs
+     * the solve and not an estimate, and a converged point still restates it through
+     * {@link #junctionsTurned}.
+     */
+    private double[] initialMassFlows(PassiveNetwork graph) {
+        int edges=graph.pipes().size(),nodes=graph.reservoirs().size();
+        double[] q=new double[edges];
+        for(int edge=0;edge<edges;edge++)q[edge]=initialMassFlow(graph,graph.pipes().get(edge));
+        int[] degree=new int[nodes];boolean[] actuated=new boolean[nodes];
+        for(var pipe:graph.pipes()) {
+            degree[pipe.first()]++;degree[pipe.second()]++;
+            if(!(pipe.control() instanceof FlowControl.Passive)){actuated[pipe.first()]=true;actuated[pipe.second()]=true;}
+        }
+        boolean[] interior=new boolean[nodes];boolean any=false;
+        for(int i=0;i<nodes;i++)any|=interior[i]=graph.reservoirs().get(i).junction()&&degree[i]==2&&!actuated[i];
+        if(!any)return q;
+        int[][] nodeEdges=new int[nodes][];
+        for(int i=0;i<nodes;i++)nodeEdges[i]=new int[degree[i]];
+        Arrays.fill(degree,0);
+        for(int edge=0;edge<edges;edge++) {
+            var pipe=graph.pipes().get(edge);
+            nodeEdges[pipe.first()][degree[pipe.first()]++]=edge;nodeEdges[pipe.second()][degree[pipe.second()]++]=edge;
+        }
+        boolean[] taken=new boolean[edges];
+        for(int edge=0;edge<edges;edge++) {
+            if(taken[edge])continue;
+            var pipe=graph.pipes().get(edge);
+            if(!interior[pipe.first()]&&!interior[pipe.second()])continue;
+            // Walk out of this connection in both directions until a node that owns a pressure.
+            var chain=new ArrayList<Integer>();var order=new ArrayList<Integer>();
+            order.add(pipe.first());chain.add(edge);order.add(pipe.second());taken[edge]=true;
+            for(int end=0;end<2;end++) {
+                int at=end==0?pipe.first():pipe.second(),from=edge;
+                while(interior[at]) {
+                    int next=nodeEdges[at][0]==from?nodeEdges[at][1]:nodeEdges[at][0];
+                    if(taken[next])break;
+                    taken[next]=true;var step=graph.pipes().get(next);
+                    int beyond=step.first()==at?step.second():step.first();
+                    if(end==0){chain.addFirst(next);order.addFirst(beyond);}else{chain.add(next);order.add(beyond);}
+                    at=beyond;from=next;
+                }
+            }
+            int start=order.getFirst(),finish=order.getLast();
+            if(start==finish||interior[start]||interior[finish])continue;
+            var a=graph.reservoirs().get(start);var b=graph.reservoirs().get(finish);
+            var upstream=a.state().pressure()>=b.state().pressure()?a.state():b.state();
+            double rho=upstream.mass()/upstream.volume(),mu=viscosity(upstream);
+            double driving=a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation());
+            double lo=0,hi=1;
+            while(chainPressureDrop(graph,chain,hi,rho,mu)<Math.abs(driving)&&hi<1e6)hi*=2;
+            for(int j=0;j<50;j++) {
+                double mid=(lo+hi)/2;
+                if(chainPressureDrop(graph,chain,mid,rho,mu)>Math.abs(driving))hi=mid;else lo=mid;
+            }
+            double magnitude=(lo+hi)/2;
+            var donor=graph.reservoirs().get(driving>=0?start:finish).state();
+            for(int link:chain)magnitude=Math.min(magnitude,massFlowLimit(graph.pipes().get(link),donor));
+            double flow=Math.copySign(magnitude,driving);
+            for(int position=0;position<chain.size();position++) {
+                var link=graph.pipes().get(chain.get(position));
+                q[chain.get(position)]=link.first()==order.get(position)?flow:-flow;
+            }
+        }
+        return q;
+    }
+    /**
+     * The connection flows and actuator heads a pass with this active set starts from, which is
+     * the whole of {@link Equations#buildInitial}'s edge half.
+     *
+     * <p>It lives here rather than in {@link Equations} because the pass reads it twice: once to
+     * lay it into its own initial point, and once - before the equations exist - to state every
+     * zero-holdup junction's composition basis and seed from the same connection directions
+     * {@link Equations#junctionDonorFirst} is read off. Three readings of one array cannot
+     * disagree, which is the property the junction rules in {@link #solve} rest on.
+     *
+     * <p>{@code seeds} may be {@code null} before this solve has any, which only a regulating
+     * valve reads, and no pass can start in that mode.
+     */
+    private void startPoint(PassiveNetwork graph,List<FlowControl.Mode> modes,boolean[] boundaryClosed,
+                            List<PassiveNetwork.Pipe.Identity> pipeIdentities,List<FluidThermodynamics.State> seeds,
+                            double[] flows,double[] heads,boolean[] headSet) {
+        boolean warmFlow=graph.reservoirs().stream().anyMatch(node->node.junction()||node.fixed())
+                ||graph.pipes().stream().anyMatch(pipe->phaseCode(graph.reservoirs().get(pipe.first()).state())!=phaseCode(graph.reservoirs().get(pipe.second()).state()));
+        boolean previousAvailable=previousPipes.equals(pipeIdentities)&&Arrays.equals(previousNodeIds,nodeIds(graph));
+        // Built once, and only when this point has no history to start from; see
+        // {@link #initialMassFlows}.
+        double[] estimate=warmFlow&&!previousAvailable?initialMassFlows(graph):null;
+        for(int i=0;i<graph.pipes().size();i++) {
+            var pipe=graph.pipes().get(i);var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
+            if(boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED)continue;
+            if(modes.get(i)==FlowControl.Mode.PUMP_TARGET){flows[i]=((FlowControl.Pump)pipe.control()).targetVolumeFlow()*a.state().mass()/a.state().volume();continue;}
+            // A connection whose pump is holding its limit starts from a flow that limit can
+            // produce, never from one it has already refused; see {@link #headLimitMassFlow}.
+            // A point already on the limit - the previous pass, or the previous accepted step
+            // of a settled island - carries its own flow forward as before.
+            if(modes.get(i)==FlowControl.Mode.PUMP_HEAD_LIMIT&&pipe.control() instanceof FlowControl.Pump pump
+                    &&!(previousAvailable&&previousHeads[i]<=pump.maximumAddedPressure())) {
+                flows[i]=headLimitMassFlow(graph,pipe,pump);
+                heads[i]=pump.maximumAddedPressure()/1e5;headSet[i]=true;
+                continue;
+            }
+            if(previousAvailable){
+                flows[i]=previousFlows[i];heads[i]=previousHeads[i]/1e5;headSet[i]=true;
+                if(modes.get(i)==FlowControl.Mode.VALVE_REGULATING&&pipe.control() instanceof FlowControl.PressureValve valve) {
+                    double predictedDrop=a.state().pressure()-(seeds==null?a.state():seeds.get(pipe.first())).pressure();
+                    if(predictedDrop>0)flows[i]*=Math.clamp((a.state().pressure()-valve.targetPressure())/predictedDrop,0,1);
+                    double rho=a.state().mass()/a.state().volume();
+                    heads[i]=(a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation())
+                            -pipe.pressureDrop(flows[i],rho,viscosity(a.state())))/1e5;
+                }
+                continue;
+            }
+            if(!warmFlow)continue;
+            flows[i]=estimate[i];
+        }
+        if(!hasSolids(graph)&&graph.pipes().stream().noneMatch(pipe->pipe.filter()!=null))return;
+        int nodes=graph.reservoirs().size();int[] degree=new int[nodes];
+        for(var pipe:graph.pipes()){degree[pipe.first()]++;degree[pipe.second()]++;}
+        int[][] nodeEdges=new int[nodes][];
+        for(int i=0;i<nodes;i++)nodeEdges[i]=new int[degree[i]];
+        Arrays.fill(degree,0);
+        for(int edge=0;edge<graph.pipes().size();edge++) {
+            var pipe=graph.pipes().get(edge);
+            nodeEdges[pipe.first()][degree[pipe.first()]++]=edge;nodeEdges[pipe.second()][degree[pipe.second()]++]=edge;
+        }
+        boolean[] known=new boolean[graph.pipes().size()];
+        for(int i=0;i<known.length;i++)known[i]=modes.get(i)==FlowControl.Mode.PUMP_TARGET||boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED;
+        for(int pass=0;pass<known.length;pass++) {
+            boolean changed=false;
+            for(int node=0;node<nodes;node++)if(graph.reservoirs().get(node).junction()) {
+                int missing=-1;double net=0;boolean usable=true;
+                for(int edge:nodeEdges[node]) {
+                    if(!known[edge]){if(missing>=0){usable=false;break;}missing=edge;continue;}
+                    var pipe=graph.pipes().get(edge);double q=flows[edge];boolean receiving=node==(q>=0?pipe.second():pipe.first());
+                    double factor=receiving&&pipe.filter()!=null?1-graph.reservoirs().get(q>=0?pipe.first():pipe.second()).state().solidMoments().mass()/graph.reservoirs().get(q>=0?pipe.first():pipe.second()).state().mass():1;
+                    net+=receiving?Math.abs(q)*factor:-Math.abs(q);
+                }
+                if(!usable||missing<0)continue;
+                var pipe=graph.pipes().get(missing);double q=pipe.first()==node?net:-net;
+                if(node==(q>=0?pipe.second():pipe.first())&&pipe.filter()!=null){var donor=graph.reservoirs().get(q>=0?pipe.first():pipe.second()).state();q/=Math.max(1e-12,1-donor.solidMoments().mass()/donor.mass());}
+                if(boundaryAllowed(graph,pipe,q)){flows[missing]=q;known[missing]=true;changed=true;}
+            }
+            if(!changed)break;
+        }
+    }
+    private static double chainPressureDrop(PassiveNetwork graph,List<Integer> chain,double flow,double rho,double mu) {
+        double drop=0;for(int link:chain)drop+=graph.pipes().get(link).pressureDrop(flow,rho,mu);
+        return drop;
     }
     private double initialMassFlow(PassiveNetwork graph,PassiveNetwork.Pipe pipe) {
         var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
@@ -1003,59 +1348,17 @@ public final class PassiveStepSolver {
         int nodeSize(int node){return layout[node]==null?0:layout[node].size();}
         public int[][] columnRows(){if(sparsity==null)buildSparsity();return sparsity;}
         double[] initial(){return initialPoint.clone();}
+        /** The connection flows this pass starts from: the edge columns of {@link #initialPoint},
+         * which is the same array {@link #junctionDonorFirst} is read off. */
+        double[] startFlows(){return Arrays.copyOfRange(initialPoint,edgeOffset,edgeOffset+graph.pipes().size());}
         private double[] buildInitial() {
             double[] x=new double[size];for(int i=0;i<layout.length;i++)if(layout[i]!=null){var encoded=layout[i].encode(seeds.get(i));System.arraycopy(encoded,0,x,offsets[i],encoded.length);}
-            boolean warmFlow=graph.reservoirs().stream().anyMatch(node->node.junction()||node.fixed())
-                    ||graph.pipes().stream().anyMatch(pipe->phaseCode(graph.reservoirs().get(pipe.first()).state())!=phaseCode(graph.reservoirs().get(pipe.second()).state()));
-            boolean previousAvailable=previousPipes.equals(pipeIdentities)&&Arrays.equals(previousNodeIds,nodeIds(graph));
-            for(int i=0;i<graph.pipes().size();i++) {
-                var pipe=graph.pipes().get(i);var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
-                if(boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED)continue;
-                if(modes.get(i)==FlowControl.Mode.PUMP_TARGET){x[edgeOffset+i]=((FlowControl.Pump)pipe.control()).targetVolumeFlow()*a.state().mass()/a.state().volume();continue;}
-                // A connection whose pump is holding its limit starts from a flow that limit can
-                // produce, never from one it has already refused; see {@link #headLimitMassFlow}.
-                // A point already on the limit - the previous pass, or the previous accepted step
-                // of a settled island - carries its own flow forward as before.
-                if(modes.get(i)==FlowControl.Mode.PUMP_HEAD_LIMIT&&pipe.control() instanceof FlowControl.Pump pump
-                        &&!(previousAvailable&&previousHeads[i]<=pump.maximumAddedPressure())) {
-                    x[edgeOffset+i]=headLimitMassFlow(graph,pipe,pump);
-                    if(controlOffsets[i]>=0)x[controlOffsets[i]]=pump.maximumAddedPressure()/1e5;
-                    continue;
-                }
-                if(previousAvailable){
-                    x[edgeOffset+i]=previousFlows[i];if(controlOffsets[i]>=0)x[controlOffsets[i]]=previousHeads[i]/1e5;
-                    if(modes.get(i)==FlowControl.Mode.VALVE_REGULATING&&pipe.control() instanceof FlowControl.PressureValve valve) {
-                        double predictedDrop=a.state().pressure()-seeds.get(pipe.first()).pressure();
-                        if(predictedDrop>0)x[edgeOffset+i]*=Math.clamp((a.state().pressure()-valve.targetPressure())/predictedDrop,0,1);
-                        double rho=a.state().mass()/a.state().volume();
-                        x[controlOffsets[i]]=(a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation())
-                                -pipe.pressureDrop(x[edgeOffset+i],rho,viscosity(a.state())))/1e5;
-                    }
-                    continue;
-                }
-                if(!warmFlow)continue;
-                x[edgeOffset+i]=initialMassFlow(graph,pipe);
-            }
-            if(hasSolids(graph)||graph.pipes().stream().anyMatch(pipe->pipe.filter()!=null)) {
-                boolean[] known=new boolean[graph.pipes().size()];
-                for(int i=0;i<known.length;i++)known[i]=modes.get(i)==FlowControl.Mode.PUMP_TARGET||boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED;
-                for(int pass=0;pass<known.length;pass++) {
-                    boolean changed=false;
-                    for(int node=0;node<layout.length;node++)if(graph.reservoirs().get(node).junction()) {
-                        int missing=-1;double net=0;boolean usable=true;
-                        for(int edge:nodeEdges[node]) {
-                            if(!known[edge]){if(missing>=0){usable=false;break;}missing=edge;continue;}
-                            var pipe=graph.pipes().get(edge);double q=x[edgeOffset+edge];boolean receiving=node==(q>=0?pipe.second():pipe.first());
-                            double factor=receiving&&pipe.filter()!=null?1-graph.reservoirs().get(q>=0?pipe.first():pipe.second()).state().solidMoments().mass()/graph.reservoirs().get(q>=0?pipe.first():pipe.second()).state().mass():1;
-                            net+=receiving?Math.abs(q)*factor:-Math.abs(q);
-                        }
-                        if(!usable||missing<0)continue;
-                        var pipe=graph.pipes().get(missing);double q=pipe.first()==node?net:-net;
-                        if(node==(q>=0?pipe.second():pipe.first())&&pipe.filter()!=null){var donor=graph.reservoirs().get(q>=0?pipe.first():pipe.second()).state();q/=Math.max(1e-12,1-donor.solidMoments().mass()/donor.mass());}
-                        if(boundaryAllowed(graph,pipe,q)){x[edgeOffset+missing]=q;known[missing]=true;changed=true;}
-                    }
-                    if(!changed)break;
-                }
+            int edges=graph.pipes().size();
+            double[] q=new double[edges],head=new double[edges];boolean[] headSet=new boolean[edges];
+            startPoint(graph,modes,boundaryClosed,pipeIdentities,seeds,q,head,headSet);
+            for(int i=0;i<edges;i++) {
+                x[edgeOffset+i]=q[i];
+                if(headSet[i]&&controlOffsets[i]>=0)x[controlOffsets[i]]=head[i];
             }
             for(int i=0;i<filterOffsets.length;i++)if(filterOffsets[i]>=0)x[filterOffsets[i]]=graph.pipes().get(i).filter().loading();
             return x;

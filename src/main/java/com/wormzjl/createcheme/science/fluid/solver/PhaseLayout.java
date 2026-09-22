@@ -56,7 +56,11 @@ public final class PhaseLayout {
         if(componentMask!=null&&componentMask.length!=l.length)throw new IllegalArgumentException("Component mask mismatch");
         if(support.length!=l.length)throw new IllegalArgumentException("Phase support basis mismatch");
         this.support=support.clone();
-        for(int i=0;i<l.length;i++)if(l[i]+v[i]>0||(componentMask!=null&&componentMask[i]))present.add(i);
+        // A masked component the support calls ABSENT is an omitted trace, not a member of this
+        // layout: it carries no unknown and no row, and the mask keeps it available to the phase
+        // appearance pass. That is how a node with no hydrocarbon phase at all - a zero-holdup
+        // junction mixing pure water - can sit in an island whose mask names a hydrocarbon.
+        for(int i=0;i<l.length;i++)if((l[i]+v[i]>0||componentMask!=null&&componentMask[i])&&support[i]!=PhaseSupport.ABSENT)present.add(i);
         components=present.stream().mapToInt(Integer::intValue).toArray();
         liquidActive=seed.liquidVolume()>0;vaporActive=sum(v)>0;
         if(components.length>0&&!liquidActive&&!vaporActive)throw new IllegalArgumentException("A hydrocarbon-phase appearance pass is required");
@@ -415,6 +419,14 @@ public final class PhaseLayout {
         double nl=liquidActive?sum(l):0,nv=vaporActive?sum(v):0;
         for(int i=0;i<l.length;i++) {
             if(!(l[i]+v[i]>0||componentMask!=null&&componentMask[i]))support[i]=PhaseSupport.ABSENT;
+            // A masked component this reference holds none of, on a point with no hydrocarbon
+            // phase to hold it in, is an omitted trace: there is no phase to carry an amount for
+            // it, and inventing one for a species nothing delivers is the defect
+            // {@code documentation/JUNCTION_PHANTOM_TRACE.md} measures. It stays in the mask, so a
+            // pass whose seed does carry the component - because something delivered it - states
+            // it again. A component this reference does hold with no phase to hold it in is a real
+            // appearance problem and is left to the layout to refuse, as before.
+            else if(l[i]+v[i]==0&&!liquidActive&&!vaporActive)support[i]=PhaseSupport.ABSENT;
             else if(!vaporActive)support[i]=PhaseSupport.LIQUID_ONLY;
             else if(!liquidActive)support[i]=PhaseSupport.VAPOR_ONLY;
             else if(promoted!=null&&promoted[i])support[i]=PhaseSupport.BOTH;
