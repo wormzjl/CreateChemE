@@ -196,6 +196,42 @@ class FilterBlockLineIslandTest {
     }
 
     /**
+     * The same line with the generator raised to 400 kPa, which is what a player does to make a
+     * filter carry something. It fills the tank in under a minute and then settles against it, and
+     * at that point it stops: at interval 8, "Newton line search stalled at residual 3.5e-9".
+     *
+     * <p>This is a third defect, and it is not one of the two the commits above fix. It is present
+     * at fca6a15 as well - there the same line dies at the same interval 8, but at 1.018e-10, the
+     * tolerance defect, which was simply reached first and hid this one. What is left when the
+     * island has settled is a 3.5e-4 Pa disagreement between the pressures of the filter's two
+     * zero-holdup junctions, carried by the filter edge's own hydraulic row. The hydraulic row
+     * divides by a fixed 1e5 Pa rather than by the island's own pressure, so a 1e-9 Newton
+     * tolerance demands 1e-4 Pa absolutely, whatever the island runs at: at 101 kPa that is a
+     * relative 1e-9 and converges, at 400 kPa it is 2.5e-10 and does not. Rescaling that row
+     * changes the residual of every island in the tree and cannot be bit-identical against the
+     * recorded regression reference, so it is not a change to fold into a filter fix.
+     *
+     * <p>Disabled rather than deleted so the reproduction survives: drop the annotation to see it.
+     * The void-terminated fixtures below carry solids through a filter under real driving pressure
+     * and do pass, so filtration itself works; it is a tank-terminated line above about 150 kPa
+     * that still stops.
+     */
+    @org.junit.jupiter.api.Disabled("Pre-existing hydraulic row scaling; see the comment and SOLID_PHASE_FILTER_ISLAND_DIAGNOSIS.md")
+    @Test void filterLineToATankKeepsIntegratingOnceTheTankIsFull() {
+        var graph=reservoirLine(400000,0);
+        String outcome=intervals(graph,40);
+        System.out.println("(i-b) generator at 400 kPa-pipe-filter-pipe-tank, clear: "+outcome);
+        assertTrue(outcome.startsWith("OK"),outcome);
+    }
+
+    /** The same driven line with the filter block taken out of it: the control for (i-b). */
+    @Test void filterFreeLineToATankKeepsIntegratingOnceTheTankIsFull() {
+        String outcome=intervals(clearLine(400000,0),40);
+        System.out.println("(control) generator at 400 kPa-4 pipes-tank, clear: "+outcome);
+        assertTrue(outcome.startsWith("OK"),outcome);
+    }
+
+    /**
      * The recorded pumped shape, against the same line with the filter block taken out of it.
      *
      * <p>Both of these stop, and they stop for a reason that has nothing to do with filtration: a
