@@ -111,6 +111,16 @@ class FilterBlockLineIslandTest {
                 device(4,3,TopologyCompiler.Kind.PIPE),device(5,4,TopologyCompiler.Kind.VOID));
         return island(devices,Map.of(1L,generatorSpec(generatorPressure,solidFraction),5L,boundarySpec()));
     }
+    /** generator - pipe - pressure valve - two pipes - reservoir: a tank behind a device junction
+     * with no filter in it, and the shape {@code documentation/PUMP_SHUTOFF_ACTIVE_SET.md} section
+     * 5 recorded as holding at interval 6 with the tank at 387430 Pa. */
+    private PassiveNetwork valveLine(double generatorPressure) {
+        var devices=List.of(device(1,0,TopologyCompiler.Kind.GENERATOR),device(2,1,TopologyCompiler.Kind.PIPE),
+                device(3,2,TopologyCompiler.Kind.VALVE,PhysicalFluidTopology.Direction.EAST),
+                device(4,3,TopologyCompiler.Kind.PIPE),device(5,4,TopologyCompiler.Kind.PIPE),
+                device(6,5,TopologyCompiler.Kind.RESERVOIR));
+        return island(devices,Map.of(1L,generatorSpec(generatorPressure,0),6L,boundarySpec()));
+    }
     /** generator - pump - three pipes - reservoir: the pump control, with no filter in it. */
     private PassiveNetwork pumpControlLine(double generatorPressure,double solidFraction) {
         var devices=List.of(device(1,0,TopologyCompiler.Kind.GENERATOR),
@@ -142,6 +152,15 @@ class FilterBlockLineIslandTest {
     private record Run(int survived,String detail,PassiveNetwork finished) {
         /** The terminating vessel: every line here ends on its tank or its void. */
         FluidThermodynamics.State last(){return finished.reservoirs().getLast().state();}
+        /** The tank by kind rather than by position: a device mints its outlet junction after it,
+         * so on a filter or valve island the last node is a junction and not the vessel. */
+        FluidThermodynamics.State tank() {
+            for(int i=finished.reservoirs().size()-1;i>=0;i--) {
+                var node=finished.reservoirs().get(i);
+                if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR)return node.state();
+            }
+            throw new AssertionError("No reservoir in "+shape(finished));
+        }
     }
     private Run run(PassiveNetwork graph,int count) {
         var solver=new PassiveIntervalSolver(model);double step=RetainedSolver.COLD_START_SECONDS;
@@ -214,31 +233,82 @@ class FilterBlockLineIslandTest {
      * -2.4e-14 where it used to floor the solve, and at 600 kPa it went from 4.39e-9 (the binding
      * row) to 4.1e-12.
      *
-     * <p>What stops it now is the tank's own node block, in two distinct shapes:
+     * <p>The stall those measurements recorded is fixed too, by
+     * {@code PassiveStepSolver.Equations.junctionDonorFirst}; see
+     * {@code documentation/TANK_NODE_BLOCK.md}. The two rows that floored at 1.0e-9 to 1.4e-9 were
+     * the tank's own volume closure and water saturation (not its nitrogen equilibrium - the row
+     * map in HYDRAULIC_ROW_SCALE section 7 mislabels them; this tank's six rows are nitrogen
+     * material, water material, energy, volume closure, water saturation and partial-pressure
+     * closure). What made them unclosable was not the tank: it was that closing them moves the
+     * tank's pressure by about 1.5 mPa, which through the filter's resistance moves every flow in
+     * the island by 1.6e-6 kg/s, and the junctions' mixing rows were a step function of those
+     * flows. The same shape with a valve instead of a filter now runs to the end; see
+     * {@code valveLineToATankKeepsIntegratingOnceTheTankIsFull}. This line gets further too - at
+     * 400 kPa it reaches interval 8 with the tank settled at 399999.99971 Pa against the
+     * filter-free control's 400000.00020 Pa, where before it stopped at interval 7 with the tank
+     * still at 399998.24 Pa - but it does not finish.
+     *
+     * <p>What stops it now is a second, filter-specific defect, measured at every swept pressure:
      *
      * <ul>
-     * <li>At 200, 350, 400 and 600 kPa the binding rows are the tank's nitrogen vapour/liquid
-     *     equilibrium row and its volume closure, which floor at 1.0e-9 to 1.4e-9 against the 1e-9
-     *     tolerance while the step is refined to 6.6e-9 s. The residual there is smooth - nudging
-     *     any unknown by one unit in the last place moves no row by more than 1e-13 - so this is
-     *     not evaluation noise but a near-degenerate trace-nitrogen equilibrium block on a
-     *     pressurized water tank.</li>
-     * <li>At 150, 250 and 300 kPa the filter's outlet junction starves once the tank is full: its
-     *     amount normalization row reaches -1.0 (total amount driven to zero) and its specific
-     *     enthalpy row ~-67, which is a gross failure rather than a tolerance one.</li>
+     * <li>The undirected reachability closure lets the tank's nitrogen into both of the filter's
+     *     junctions, and {@code initialPhaseSeeds} then seeds each of them with {@code 1e-12} of
+     *     the node's own total. A junction owns no volume, so that trace flashes into a vapour
+     *     phase of 2.7e-14 of the junction's scale, and its water-saturation and partial-pressure
+     *     rows are then stated on a vapour that is numerically nothing. The junction block is rank
+     *     five of six (sigma from 3.5e15 down to 2.9e-145, and still 1.0e-139 using every column
+     *     in the island).</li>
+     * <li>Nothing delivers that trace, so the Newton's only root for it is exactly zero. The
+     *     nonnegativity step limiter caps the step at 0.99 of the distance to the boundary, so the
+     *     unknown falls by a factor 0.99 per iteration and the iteration limit arrives first, with
+     *     the junction's water-saturation row left at 0.2979 and its partial-pressure closure at
+     *     3.2e-3 - or, when a phase correction intervenes first, at 65 to 70.</li>
      * </ul>
      *
      * <p>Disabled rather than deleted so the reproduction survives: drop the annotation to see it.
      * The void-terminated fixtures below carry solids through a filter under real driving pressure
-     * and do pass, so filtration itself works; it is a tank-terminated line above about 150 kPa
-     * that still stops.
+     * and do pass, so filtration itself works; it is a tank-terminated filter line above about
+     * 150 kPa that still stops.
      */
-    @org.junit.jupiter.api.Disabled("Tank node block, not the hydraulic row: see the comment and documentation/HYDRAULIC_ROW_SCALE.md")
+    @org.junit.jupiter.api.Disabled("Phantom trace on the filter's junctions: see the comment and documentation/TANK_NODE_BLOCK.md")
     @Test void filterLineToATankKeepsIntegratingOnceTheTankIsFull() {
         var graph=reservoirLine(400000,0);
         String outcome=intervals(graph,40);
         System.out.println("(i-b) generator at 400 kPa-pipe-filter-pipe-tank, clear: "+outcome);
         assertTrue(outcome.startsWith("OK"),outcome);
+    }
+
+    /**
+     * A tank behind a pressure valve's zero-holdup junction, which is the same defect as (i-b)
+     * without a filter anywhere in it: the valve's target is below every generator pressure swept
+     * here, so the valve is never at a corner and its own active set is never the question.
+     *
+     * <p>At {@code ae3b37c} this line held at interval 6 with the tank at 387430 Pa - 187 kPa
+     * above the valve's own 200 kPa target - on
+     * {@code Newton line search stalled at residual 1.000000082240371E-9; active-set pass=0}, and
+     * identically with the pump active-set rules disabled; see
+     * {@code documentation/PUMP_SHUTOFF_ACTIVE_SET.md} section 5 and
+     * {@code documentation/TANK_NODE_BLOCK.md}. The stall was the junction's mixing rows being a
+     * step function of the flows that form them, so a settled tank's own last correction - which
+     * moves its pressure, and through the line's resistance its flows - could not be taken at any
+     * step length. It now runs to the end and the tank settles on the generator, which is the
+     * physical answer and the one the filter-free control reaches.
+     */
+    @Test void valveLineToATankKeepsIntegratingOnceTheTankIsFull() {
+        for(double pressure:new double[]{300000,400000,600000}) {
+            var driven=run(valveLine(pressure),40);
+            var control=run(clearLine(pressure,0),40);
+            System.out.println("(i-c) generator at "+(long)pressure+" Pa-pipe-valve-2 pipes-tank: "+driven.detail()
+                    +"\n(control) generator at "+(long)pressure+" Pa-4 pipes-tank: "+control.detail()
+                    +"\n(endpoint) valve tank P="+driven.tank().pressure()+" mass="+driven.tank().mass()
+                    +"  control tank P="+control.tank().pressure()+" mass="+control.tank().mass());
+            assertTrue(driven.detail().startsWith("OK"),driven.detail());
+            assertTrue(control.detail().startsWith("OK"),control.detail());
+            assertEquals(pressure,driven.tank().pressure(),1e-6*pressure,
+                    "A tank behind a valve must settle on its generator");
+            assertEquals(control.tank().mass(),driven.tank().mass(),1e-6*control.tank().mass(),
+                    "A tank behind a valve must hold what the same tank on plain pipes holds");
+        }
     }
 
     /** The same driven line with the filter block taken out of it: the control for (i-b). */
