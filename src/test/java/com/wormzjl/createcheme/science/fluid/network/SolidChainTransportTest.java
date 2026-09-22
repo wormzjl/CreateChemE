@@ -128,9 +128,14 @@ class SolidChainTransportTest {
             assertTrue(reuses>builds,"Workspace reuse must dominate after the first interval: "+reuses+" vs "+builds);
             assertEquals(0,sample.value("solidMomentProjectionsAtAcceptedPoints"),
                     "The decode projection must never be active at an accepted point");
+            // The block sweep covers solid and filter islands; a fallback here would mean every
+            // Jacobian of this island was paying a coloured whole-island residual per colour again.
+            assertTrue(sample.value("jacobianBlockBuilds")>0,"A filter island built no block Jacobian");
+            assertEquals(0,sample.value("jacobianBlockFallbacks"),"A filter island fell back to the coloured Jacobian sweep");
             assertFalse(running.pipes().getFirst().filter().captured().empty());
-            System.out.printf(Locale.ROOT,"solid chain: filter island reuses=%d builds=%d orderings=%d factorizations=%d%n",
-                    reuses,builds,sample.value("luOrderings"),sample.value("luFactorizations"));
+            System.out.printf(Locale.ROOT,"solid chain: filter island reuses=%d builds=%d orderings=%d factorizations=%d jacobians=%d block=%d fallbacks=%d%n",
+                    reuses,builds,sample.value("luOrderings"),sample.value("luFactorizations"),
+                    sample.value("jacobianBuilds"),sample.value("jacobianBlockBuilds"),sample.value("jacobianBlockFallbacks"));
         } finally {SolverDiagnostics.ENABLED=enabled;SolverDiagnostics.reset();}
     }
 }

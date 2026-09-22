@@ -46,7 +46,7 @@ public final class PassiveStepSolver {
     private double[] previousFlows=new double[0],previousHeads=new double[0];
     /** The last successful solve, together with the Newton tolerance it converged under: the
      * companion filter may not claim to resolve a defect the solve itself could not. */
-    private record LastSolve(Equations equations,double[] variables,SparseNewton.Workspace workspace,double newtonTolerance) {}
+    record LastSolve(Equations equations,double[] variables,SparseNewton.Workspace workspace,double newtonTolerance) {}
     private LastSolve lastSolve;
     private boolean rateOnly;
     /** Owned by this solver, which the ownership latch confines to one worker at a time. */
@@ -579,8 +579,14 @@ public final class PassiveStepSolver {
         if(s.vaporVolume()>0)value+=s.vaporVolume()*model.viscosity.vapor(s.temperature(),s.vaporView(),s.waterVapor(),viscosities,terms);
         return value/(liquidVolume==0?s.vaporVolume():s.volume());
     }
+    /** The equations of the last accepted solve, for the check that the block Jacobian sweep and an
+     * independent column-by-column difference of {@link Equations#residual} produce the same entries;
+     * {@code null} until a solve has been accepted. Nothing in production reads it. */
+    Equations acceptedEquations(){return lastSolve==null?null:lastSolve.equations();}
+    /** The point {@link #acceptedEquations} converged to. */
+    double[] acceptedPoint(){return lastSolve==null?null:lastSolve.variables().clone();}
     /** The rows a block Jacobian sweep has to re-evaluate for one perturbed node or edge column. */
-    private final class Equations implements SparseNewton.Equations {
+    final class Equations implements SparseNewton.Equations {
         final double[][] solidTargets,solidIncoming;
         final int[] filterOffsets;
         /** The connections as the warm-flow check may compare them: never including the cake. */
@@ -599,6 +605,9 @@ public final class PassiveStepSolver {
          * than a flow and leaves the edge free, so it does not count.
          */
         final boolean prescribedFlow;
+        /** Whether this island carries the three aggregate solid moment unknowns on every node;
+         * the whole-island predicate {@link PhaseLayout} is built with, evaluated once. */
+        final boolean solidSupport;
         final boolean[] amountVariables,solidVariables;
         final double[] differenceFloors;
         /** Below this value an amount unknown's nonnegativity is not a live constraint on the step
@@ -622,7 +631,7 @@ public final class PassiveStepSolver {
             prescribedFlow=this.modes.contains(FlowControl.Mode.PUMP_TARGET);
             this.seeds=List.copyOf(seeds);
             this.boundaryClosed=boundaryClosed.clone();
-            this.graph=graph;this.dt=dt;pipeIdentities=identities(graph);int count=graph.reservoirs().size();layout=new PhaseLayout[count];offsets=new int[count];oldAmounts=new double[count][];
+            this.graph=graph;this.dt=dt;pipeIdentities=identities(graph);solidSupport=hasSolids(graph);int count=graph.reservoirs().size();layout=new PhaseLayout[count];offsets=new int[count];oldAmounts=new double[count][];
             capSources=new Transport[graph.pipes().size()][2];capMassFlows=new double[graph.pipes().size()][2];capPressureDrops=new double[graph.pipes().size()][2];
             cachedVariables=new double[count][];cachedStates=new FluidThermodynamics.State[count];cachedTransport=new Transport[count];
             cachedPrepared=new FluidThermodynamics.Prepared[count];
@@ -630,7 +639,7 @@ public final class PassiveStepSolver {
             for(int i=0;i<count;i++) {
                 var state=graph.reservoirs().get(i).state();offsets[i]=cursor;oldAmounts[i]=graph.reservoirs().get(i).inventory().moles();
                 if(!graph.reservoirs().get(i).fixed()) {
-                    layout[i]=new PhaseLayout(model,seeds.get(i),Arrays.copyOf(reachable[i],model.hydrocarbon.componentCount()),oldAmounts[i],supports[i],hasSolids(graph));cursor+=layout[i].size();
+                    layout[i]=new PhaseLayout(model,seeds.get(i),Arrays.copyOf(reachable[i],model.hydrocarbon.componentCount()),oldAmounts[i],supports[i],solidSupport);cursor+=layout[i].size();
                     if(SolverDiagnostics.ENABLED) {
                         int omitted=layout[i].singlePhaseComponentCount();
                         if(omitted>0){SolverDiagnostics.traceOmittedUnknowns.add(omitted);SolverDiagnostics.truncatedNodePasses.increment();}
@@ -918,10 +927,11 @@ public final class PassiveStepSolver {
          *
          * <p>One local column at a time, for every node that owns one: the node is decoded at the
          * perturbed point and only the rows that can see it are re-assembled - its own block, the
-         * block of each neighbour across an incident edge (whose backward-Euler targets carry this
-         * node's composition and specific enthalpy when it is the donor), and the hydraulic and
-         * actuator rows of those edges. The flow and actuator columns sweep the same way over their
-         * own edge. Every such row is produced by the same {@link #nodeAccumulate},
+         * block of each neighbour across an incident edge (whose backward-Euler targets and
+         * aggregate solid targets carry this node's composition, solid moments and specific
+         * enthalpy when it is the donor), and the hydraulic, actuator and filter-loading rows of
+         * those edges. The flow, actuator and filter columns sweep the same way over their own
+         * edge. Every such row is produced by the same {@link #nodeAccumulate},
          * {@link #edgeRows} and {@link #nodeRows} the whole-island residual uses, in the same
          * accumulation order, so each entry is the double the coloured sweep computed: the
          * colouring guarantees that no other column in a group can reach a row, which is exactly
@@ -934,7 +944,6 @@ public final class PassiveStepSolver {
          */
         public int differentiateEntries(double[] x,double[] f,double differenceStep,int[] entryOffsets,int[] entryRows,
                                         double[] entries,Runnable checkpoint) {
-            if(hasSolids(graph)||graph.pipes().stream().anyMatch(p->p.filter()!=null))return -1;
             if(sparsity==null)buildSparsity();
             FluidThermodynamics.State[] st,baseStates;Transport[] tr,baseTransport;FluidThermodynamics.Prepared[] pr,basePrepared;
             double[] trial,perturbed;
@@ -980,15 +989,19 @@ public final class PassiveStepSolver {
                 for(int edge=0;edge<graph.pipes().size();edge++) {
                     checkpoint.run();
                     var pipe=graph.pipes().get(edge);
-                    for(int which=0;which<2;which++) {
-                        int column=which==0?edgeOffset+edge:controlOffsets[edge];
+                    // The filter's retained-volume unknown is the third column of an edge. It enters
+                    // this edge's clogging resistance and its own loading row and nothing else - no
+                    // node block carries it, which is what buildSparsity declares - so its whole
+                    // stencil is what one edge assembly writes.
+                    for(int which=0;which<3;which++) {
+                        int column=which==0?edgeOffset+edge:which==1?controlOffsets[edge]:filterOffsets[edge];
                         if(column<0)continue;
                         columns++;
                         double step=differenceStep*differenceScale(column,x[column]);
                         trial[column]+=step;
                         edgeRows(edge,trial,st,tr,perturbed);
                         // No node is decoded again, so only the two endpoints' inflow rows move.
-                        for(int node:new int[]{pipe.first(),pipe.second()})if(layout[node]!=null) {
+                        if(which<2)for(int node:new int[]{pipe.first(),pipe.second()})if(layout[node]!=null) {
                             seed(node,perturbed,f);nodeAccumulate(node,trial,st,tr);nodeTargetRows(node,trial,st,perturbed);
                         }
                         write(entryOffsets,entryRows,entries,column,perturbed,f,step);
@@ -1017,14 +1030,10 @@ public final class PassiveStepSolver {
         }
         /** The balance, energy, volume, equilibrium and closure rows this node owns. */
         private void nodeRows(int node,double[] x,FluidThermodynamics.State[] st,FluidThermodynamics.Prepared[] pr,double[] f) {
-            if(!graph.reservoirs().get(node).junction()) {
+            if(!graph.reservoirs().get(node).junction())
                 layout[node].residual(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node],x,pr[node]);
-                layout[node].solidRows(st[node],x,offsets[node],solidTargets[node],false,f);
-                return;
-            }
-            layout[node].junctionResidual(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x,pr[node]);
-            var solids=solidIncoming[node].clone();if(incomingMass[node]>1e-14){for(int c=0;c<3;c++)solids[c]/=incomingMass[node];}else{solids=graph.reservoirs().get(node).state().solidMoments().values();for(int c=0;c<3;c++)solids[c]/=graph.reservoirs().get(node).state().mass();}
-            layout[node].solidRows(st[node],x,offsets[node],solids,true,f);
+            else layout[node].junctionResidual(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x,pr[node]);
+            nodeSolidRows(node,x,st,f);
         }
         /**
          * Only the rows a change of this node's inflow can move. A block sweep that perturbs one of
@@ -1036,6 +1045,26 @@ public final class PassiveStepSolver {
             if(!graph.reservoirs().get(node).junction())
                 layout[node].balanceRows(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node],x);
             else layout[node].junctionRows(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x);
+            nodeSolidRows(node,x,st,f);
+        }
+        /**
+         * This node's three aggregate solid rows against the targets <em>this</em> evaluation
+         * accumulated, which is what makes them rows a neighbour's column can move.
+         *
+         * <p>{@link PhaseLayout#balanceRows} and {@link PhaseLayout#junctionRows} already write
+         * these rows, but against the layout's own seed reference, because a layout evaluated on its
+         * own has no accumulated target. Both whole-island assembly and block sweep therefore have
+         * to overwrite them here, with the same targets in the same order, or a neighbour's column
+         * would be differentiated against the seed reference while the base residual holds the real
+         * one - a silently wrong derivative rather than a missing one.
+         */
+        private void nodeSolidRows(int node,double[] x,FluidThermodynamics.State[] st,double[] f) {
+            if(!solidSupport)return;
+            if(!graph.reservoirs().get(node).junction()) {
+                layout[node].solidRows(st[node],x,offsets[node],solidTargets[node],false,f);return;
+            }
+            var solids=solidIncoming[node].clone();if(incomingMass[node]>1e-14){for(int c=0;c<3;c++)solids[c]/=incomingMass[node];}else{solids=graph.reservoirs().get(node).state().solidMoments().values();for(int c=0;c<3;c++)solids[c]/=graph.reservoirs().get(node).state().mass();}
+            layout[node].solidRows(st[node],x,offsets[node],solids,true,f);
         }
         /** Fills {@link #fractions} with this junction's incoming mass fractions and returns its
          * incoming specific enthalpy, falling back to the stored guess when nothing arrives. */
