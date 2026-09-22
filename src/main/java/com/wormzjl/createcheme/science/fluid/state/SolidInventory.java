@@ -79,6 +79,20 @@ public record SolidInventory(List<Population> populations) {
             for(var p:stock.populations){var old=basis.putIfAbsent(p.key(),p);if(old!=null&&!old.material().equals(p.material()))throw new IllegalArgumentException("Incompatible solid properties");masses.merge(p.key(),factor*p.massKg(),Double::sum);}
         }
         public SolidInventory finish() {var result=new ArrayList<Population>();for(var entry:masses.entrySet()){var p=basis.get(entry.getKey());result.add(new Population(p.material(),p.size(),entry.getValue()));}return new SolidInventory(result);}
+        /**
+         * The completed stock with each population floored at zero, for a weighted combination that
+         * is an uncommitted estimate rather than owned material.
+         *
+         * <p>TR-BDF2's embedded order-three companion is such a combination: two of its three
+         * weights are negative, and a population whose stage differences are of the same size as
+         * the stock they are differences of lands below zero. That is every node far enough down a
+         * chain from a solid source, where backward Euler leaves 1e-30 to 1e-70 of the source, and
+         * any node draining its last particles. Neither is a reason to refuse the step the estimate
+         * is about, and neither can reach an inventory: the companion's ledger is never committed,
+         * and the interval's own population comparison carries an absolute floor far above these
+         * masses. Owned material uses {@link #finish()}, which refuses a negative population.
+         */
+        public SolidInventory finishNonNegative() {var result=new ArrayList<Population>();for(var entry:masses.entrySet()){var p=basis.get(entry.getKey());result.add(new Population(p.material(),p.size(),Math.max(0,entry.getValue())));}return new SolidInventory(result);}
     }
     public static SolidInventory combine(SolidInventory first,double firstWeight,SolidInventory second,double secondWeight) {
         var total=new Accumulator();total.add(first,firstWeight);total.add(second,secondWeight);return total.finish();

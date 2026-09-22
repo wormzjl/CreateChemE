@@ -241,11 +241,25 @@ public final class PhaseLayout {
      * therefore {@code J*dx = +delta/scale}, because the residual subtracts the target.
      */
     public void targetRows(double[] deltaAmounts,double deltaEnergy,double[] rows,int offset) {
+        targetRows(deltaAmounts,deltaEnergy,null,rows,offset);
+    }
+    /**
+     * {@code deltaSolidMoments} is the matching shift of the three aggregate solid targets, which
+     * {@link #solidRows} subtracts in the same way and divides by {@link #solidScale}. A layout
+     * that carries no solid unknowns ignores it; one that does requires it, because leaving those
+     * rows at zero would claim the companion stage holds the solid inventory fixed while its own
+     * corrected graph moves it.
+     */
+    public void targetRows(double[] deltaAmounts,double deltaEnergy,double[] deltaSolidMoments,double[] rows,int offset) {
         if(deltaAmounts.length!=componentScales.length)throw new IllegalArgumentException("Balance basis mismatch");
         int row=offset,water=componentScales.length-1;
         for(int i:components)rows[row++]=deltaAmounts[i]/componentScales[i];
         if(waterLiquidIndex>=0||waterVaporIndex>=0)rows[row++]=deltaAmounts[water]/componentScales[water];
         rows[row]=deltaEnergy/energyScale;
+        if(solidIndex<0)return;
+        if(deltaSolidMoments==null||deltaSolidMoments.length!=3)throw new IllegalArgumentException("Solid target basis mismatch");
+        int solidRow=offset+componentBalanceCount()+2;
+        for(int i=0;i<3;i++)rows[solidRow+i]=deltaSolidMoments[i]/solidScale[i];
     }
     /** Zero-holdup mixing: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization. */
     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,

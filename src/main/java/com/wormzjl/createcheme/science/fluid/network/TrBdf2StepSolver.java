@@ -11,6 +11,10 @@ import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
  */
 public final class TrBdf2StepSolver {
     private static final double GAMMA=2-Math.sqrt(2), ALPHA=GAMMA/2, A=1/(GAMMA*(2-GAMMA));
+    /** The embedded order-three companion's weights on the endpoint rate and the two stages. They
+     * are constants of the tableau, hoisted so that the solid stock of the corrected reservoirs can
+     * be accumulated where the endpoint rate is read rather than reconstructed from it later. */
+    private static final double W=A*ALPHA, E0=(1-W)/3-W, E1=(3*W+1)/3-W, E2=ALPHA/3-ALPHA;
     private final FluidThermodynamics model;
     private final PassiveStepSolver implicit,algebraic;
     private record RateKey(PassiveNetwork graph,PassiveStepSolver.Acceptance acceptance) {}
@@ -36,7 +40,6 @@ public final class TrBdf2StepSolver {
     @FunctionalInterface public interface StageGuard {
         StageGuard NONE=(states,modes)->{};
         void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes);
-        default boolean requiresStepDoubling(){return false;}
         default void checkFlow(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){check(states,modes);}
         default void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows){checkFlow(states,modes,flows);}
         /**
@@ -57,7 +60,6 @@ public final class TrBdf2StepSolver {
     public PassiveStepSolver.Result solve(PassiveNetwork initial,double dt,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,StageGuard guard){return integrate(initial,dt,checkpoint,false,acceptance,guard).solution();}
     private Trial integrate(PassiveNetwork initial,double dt,Runnable checkpoint,boolean estimate,PassiveStepSolver.Acceptance acceptance,StageGuard guard) {
         Objects.requireNonNull(acceptance);Objects.requireNonNull(guard);
-        if(estimate&&(PassiveStepSolver.hasSolids(initial)||initial.pipes().stream().anyMatch(p->p.filter()!=null)))throw new IllegalArgumentException("Particle and filter error estimates require interval step doubling");
         ownership.check("TR-BDF2 workspace belongs to the worker holding its solver latch");
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
         if(initial.reservoirs().stream().anyMatch(n->n.kind()==PassiveNetwork.NodeKind.PORT))throw new IllegalArgumentException("Internal ports cannot be integrated");
@@ -80,6 +82,12 @@ public final class TrBdf2StepSolver {
         var byId=new HashMap<Long,Integer>();for(int i=0;i<ports.size();i++)byId.put(ports.get(i).id(),i);
         double[][] dn=new double[ports.size()][model.hydrocarbon.componentCount()+1];double[] du=new double[ports.size()];
         var firstSolids=new SolidInventory.Accumulator[ports.size()];for(int i=0;i<ports.size();i++){firstSolids[i]=new SolidInventory.Accumulator();firstSolids[i].add(initial.reservoirs().get(i).inventory().solids(),1);}
+        // The companion's corrected solid stock. Its endpoint-rate term is the same source and sink
+        // stream the stage-one base reads below, at the companion's own weight instead of alpha*dt,
+        // so it is accumulated here rather than divided back out of a finished stage inventory,
+        // which a node losing solids would have had to hold as a negative population.
+        var companionSolids=estimate?new SolidInventory.Accumulator[ports.size()]:null;
+        if(estimate)for(int i=0;i<ports.size();i++)companionSolids[i]=new SolidInventory.Accumulator();
         var physicalBoundaries=new ArrayList<ConservativeTransport.BoundaryTransfer>();
         for(var boundary:rate.boundaries()) {
             int i=byId.get(boundary.nodeId());var node=initial.reservoirs().get(i);
@@ -88,6 +96,7 @@ public final class TrBdf2StepSolver {
             for(int c=0;c<n.length;c++){dn[i][c]-=n[c];mass+=n[c]*model.molecularWeight(c);}
             mass+=boundary.solidDirection()*boundary.solids().massKg();
             firstSolids[i].add(boundary.solids(),-ALPHA*dt*boundary.solidDirection());
+            if(estimate)companionSolids[i].add(boundary.solids(),-E0*dt*boundary.solidDirection());
             du[i]-=boundary.totalEnergyJoule()-mass*PassiveStepSolver.GRAVITY*node.elevation();
         }
         for(var transfer:initial.scheduledTransfers()) {
@@ -105,6 +114,7 @@ public final class TrBdf2StepSolver {
             if(transfer instanceof ScheduledTransfer.Withdrawal out){moved=state.solids().scale(out.massKgPerSecond()/state.mass());direction=-1;}
             else{moved=((ScheduledTransfer.Injection)transfer).solidsPerSecond();direction=1;du[i]-=moved.massKg()*PassiveStepSolver.GRAVITY*node.elevation();}
             firstSolids[i].add(moved,ALPHA*dt*direction);
+            if(estimate)companionSolids[i].add(moved,E0*dt*direction);
             physicalBoundaries.add(new ConservativeTransport.BoundaryTransfer(transfer.id(),n,energy,moved,direction));
         }
         var firstBase=new ArrayList<PassiveNetwork.Reservoir>();
@@ -151,8 +161,9 @@ public final class TrBdf2StepSolver {
         // Embedded order-three companion. Its defect is smoothed through the same implicit operator,
         // which extends the usual (I-alpha*h*J)^-1 filter to our constrained states. The correction
         // is only an error estimate and its material/energy ledger is never committed.
-        double w=A*ALPHA,e0=(1-w)/3-w,e1=(3*w+1)/3-w,e2=ALPHA/3-ALPHA;
+        double e0=E0,e1=E1,e2=E2;
         double[][] deltaMoles=new double[ports.size()][dn[0].length];double[] deltaEnergy=new double[ports.size()];
+        double[][] deltaSolids=new double[ports.size()][3];
         var correctedBase=new ArrayList<PassiveNetwork.Reservoir>();
         for(int i=0;i<ports.size();i++) {
             var node=secondBase.get(i);var inventory=node.inventory();
@@ -161,14 +172,29 @@ public final class TrBdf2StepSolver {
                 for(int c=0;c<n.length;c++){deltaMoles[i][c]=e0*dt*dn[i][c]+e1/ALPHA*(n1[c]-n0[c])+e2/ALPHA*(n2[c]-base[c]);n[c]+=deltaMoles[i][c];}
                 deltaEnergy[i]=e0*dt*du[i]+e1/ALPHA*(first.inventories().get(i).internalEnergy()-firstBase.get(i).inventory().internalEnergy())
                         +e2/ALPHA*(second.inventories().get(i).internalEnergy()-inventory.internalEnergy());
-                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+deltaEnergy[i]);
+                // The same combination on the conserved populations, whose aggregate moments are
+                // the companion's targets for the three solid rows. The endpoint-rate term is
+                // already in the accumulator; the rest is the stage-two base plus the two stage
+                // differences, at the weights the amounts above use.
+                var baseSolids=inventory.solids();
+                companionSolids[i].add(baseSolids,1);
+                companionSolids[i].add(first.inventories().get(i).solids(),e1/ALPHA);
+                companionSolids[i].add(firstBase.get(i).inventory().solids(),-e1/ALPHA);
+                companionSolids[i].add(second.inventories().get(i).solids(),e2/ALPHA);
+                companionSolids[i].add(baseSolids,-e2/ALPHA);
+                var solids=companionSolids[i].finishNonNegative();
+                double[] before=baseSolids.moments().values(),after=solids.moments().values();
+                for(int c=0;c<3;c++)deltaSolids[i][c]=after[c]-before[c];
+                inventory=new PassiveNetwork.Inventory(inventory.volume(),n,inventory.internalEnergy()+deltaEnergy[i],solids);
             }
             correctedBase.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),second.states().get(i),node.kind(),inventory));
         }
-        var correctedGraph=new PassiveNetwork(correctedBase,initial.pipes(),initial.scheduledTransfers());
+        // The stage-two cakes, not the interval's: the companion reconstructs the same step the
+        // stage-two solve did, so the material it hands a filter has to land on the same base.
+        var correctedGraph=new PassiveNetwork(correctedBase,secondGraph.pipes(),initial.scheduledTransfers());
         // The companion stage changes nothing but those targets, so one solve of the stage-two
         // Jacobian answers it. The complete nonlinear stage stays the fallback and the reference.
-        var filtered=implicit.companion(secondGraph,correctedGraph,deltaMoles,deltaEnergy,second.devicePressureChanges(),ALPHA*dt,checkpoint);
+        var filtered=implicit.companion(secondGraph,correctedGraph,deltaMoles,deltaEnergy,deltaSolids,second.devicePressureChanges(),ALPHA*dt,checkpoint);
         List<FluidThermodynamics.State> correctedStates;double[] qc;List<ConservativeTransport.BoundaryTransfer> correctedBoundaries;
         if(filtered!=null) {
             SolverDiagnostics.count(SolverDiagnostics.companionFilters);

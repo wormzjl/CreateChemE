@@ -113,7 +113,7 @@ public final class PassiveIntervalSolver {
             try {
                 var regimes=new RegimeTrace(guard,accepted);
                 PassiveStepSolver.Result coarse=null;
-                if(errorControl==ErrorControl.EMBEDDED&&!guard.requiresStepDoubling()&&!PassiveStepSolver.hasSolids(initial)&&initial.pipes().stream().noneMatch(pipe->pipe.control() instanceof FlowControl.PressureValve)) {
+                if(errorControl==ErrorControl.EMBEDDED&&initial.pipes().stream().noneMatch(pipe->pipe.control() instanceof FlowControl.PressureValve)) {
                     var trial=stepSolver.trial(accepted,step,checkpoint,acceptance,regimes);var full=trial.solution();coarse=full;
                     if(regimes.smooth()) {
                     double stateError=error(full.states(),trial.estimatedStates());

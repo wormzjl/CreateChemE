@@ -82,7 +82,6 @@ final class SolidEventIntegrator {
     private TrBdf2StepSolver.StageGuard guard(PassiveNetwork graph) {
         return new TrBdf2StepSolver.StageGuard() {
             public void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes) {}
-            @Override public boolean requiresStepDoubling(){return PassiveStepSolver.hasSolids(graph)||graph.pipes().stream().anyMatch(p->p.filter()!=null);}
             @Override public void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows) {
                 // The graph this guard closes over is the one the segment started from, so its own
                 // cakes are stale by the steps already accepted; the live ones arrive here.

@@ -254,7 +254,7 @@ public final class PassiveStepSolver {
      * </ul>
      */
     Companion companion(PassiveNetwork solved,PassiveNetwork corrected,double[][] deltaMoles,double[] deltaEnergy,
-                        double[] heads,double dt,Runnable checkpoint) {
+                        double[][] deltaSolidMoments,double[] heads,double dt,Runnable checkpoint) {
         ownership.check("Each executing island job needs its own step workspace");
         var last=lastSolve;
         if(last==null||last.equations.graph!=solved||last.equations.dt!=dt)return null;
@@ -262,7 +262,8 @@ public final class PassiveStepSolver {
         double[] rows=new double[equations.size];
         for(int node=0;node<equations.layout.length;node++) {
             if(equations.layout[node]==null||solved.reservoirs().get(node).junction())continue;
-            equations.layout[node].targetRows(deltaMoles[node],deltaEnergy[node],rows,equations.offsets[node]);
+            equations.layout[node].targetRows(deltaMoles[node],deltaEnergy[node],
+                    deltaSolidMoments==null?null:deltaSolidMoments[node],rows,equations.offsets[node]);
         }
         double defect=0;for(double row:rows)defect=Math.max(defect,Math.abs(row));
         List<FluidThermodynamics.State> states;double[] flows=new double[solved.pipes().size()];
