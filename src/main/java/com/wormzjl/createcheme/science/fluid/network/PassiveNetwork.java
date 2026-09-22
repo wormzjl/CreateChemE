@@ -50,6 +50,13 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
         @Override public boolean equals(Object other){return other instanceof Inventory value&&Double.doubleToLongBits(volume)==Double.doubleToLongBits(value.volume)&&Double.doubleToLongBits(internalEnergy)==Double.doubleToLongBits(value.internalEnergy)&&Arrays.equals(moles,value.moles)&&solids.equals(value.solids);}
         @Override public int hashCode(){return 31*Objects.hash(volume,internalEnergy,solids)+Arrays.hashCode(moles);}
     }
+    /**
+     * {@code blockedDirections} is a two-bit mask - 1 forbids flow from {@link #first} to
+     * {@link #second}, 2 the reverse - and stays an int because the saved checkpoint format is one
+     * and {@link #blocked(double)} is still asked per direction. A failed solid mobility check
+     * names the direction that failed; only a filter that has met its capacity, which carries
+     * nothing either way, produces 3.
+     */
     public record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections,InlineFilter filter) {
         public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections){this(id,first,second,sections,control,blockedDirections,null);}
         public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control){this(id,first,second,sections,control,0);}

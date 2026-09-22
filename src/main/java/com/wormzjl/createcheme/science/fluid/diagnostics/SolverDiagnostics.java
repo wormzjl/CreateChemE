@@ -128,6 +128,17 @@ public final class SolverDiagnostics {
     public static final LongAdder traceOmittedUnknowns=new LongAdder();
     public static final LongAdder truncatedNodePasses=new LongAdder();
     public static final LongAdder traceReactivations=new LongAdder();
+    // ---- solid phase ----
+    /**
+     * Trial points whose decoded solid moments had to be projected onto the nonnegative orthant,
+     * and the subset of those projections that were active at an <em>accepted</em> solve point.
+     * The first is expected to be nonzero - it is the line search exploring past a moment boundary,
+     * which is what the projection exists to permit. The second must stay at zero: an accepted
+     * point with a negative solid unknown would mean owned inventory was being clipped rather than
+     * solved for, and the conservation audits would be reading a projected state.
+     */
+    public static final LongAdder solidMomentProjections=new LongAdder();
+    public static final LongAdder solidMomentProjectionsAtAcceptedPoints=new LongAdder();
     // ---- adaptive step control ----
     /** Every interval attempt, and the accepted subset; exact even when the attempt log is full. */
     public static final LongAdder stepAttempts=new LongAdder();
@@ -202,6 +213,8 @@ public final class SolverDiagnostics {
         map.put("reconstructCalls",reconstructCalls);map.put("reconstructNanos",reconstructNanos);
         map.put("traceOmittedUnknowns",traceOmittedUnknowns);map.put("truncatedNodePasses",truncatedNodePasses);
         map.put("traceReactivations",traceReactivations);
+        map.put("solidMomentProjections",solidMomentProjections);
+        map.put("solidMomentProjectionsAtAcceptedPoints",solidMomentProjectionsAtAcceptedPoints);
         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
         return Collections.unmodifiableMap(map);
     }

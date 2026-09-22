@@ -1,5 +1,6 @@
 package com.wormzjl.createcheme.science.fluid.solver;
 
+import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import com.wormzjl.createcheme.science.thermo.PhaseSupport;
 import com.wormzjl.createcheme.science.thermo.TraceTruncationPolicy;
@@ -103,9 +104,17 @@ public final class PhaseLayout {
         int count=0;for(int i:components)if(support[i].singlePhase())count++;
         return count;
     }
+    /**
+     * Whether this local column is one of the three aggregate solid moments (mass, volume, heat
+     * capacity). They are nonnegative like every other amount unknown, but unlike a component
+     * amount they are moments of a reconstructed population rather than a conserved species, and a
+     * chain of nodes downstream of a solid source carries them at 1e-30 to 1e-70 of their own
+     * scale - numerical dust the step limiter must not treat as a live boundary.
+     */
+    public boolean solidVariable(int local){return solidIndex>=0&&local>=solidIndex&&local<solidIndex+3;}
     /** Bulk component transport is independent of phase split, T and P at fixed total amounts and edge mass flow. */
     public boolean totalAmountVariable(int local) {
-        if(solidIndex>=0&&local>=solidIndex&&local<solidIndex+3)return true;
+        if(solidVariable(local))return true;
         if(local==waterLiquidIndex||local==waterVaporIndex)return true;
         for(int component:components)if(local==amountIndex[component])return true;
         return false;
@@ -185,8 +194,17 @@ public final class PhaseLayout {
         double t=350*Math.exp(variables[offset+temperatureIndex]),p=1e5*Math.exp(variables[offset+pressureIndex]);
         double pc=partialPressureIndex>=0?1e5*Math.exp(variables[offset+partialPressureIndex]):vaporActive?p:0;
         var state=model.adoptingState(t,p,l,v,wl,wv,pc,prepared);
-        return solidIndex<0?state:state.withSolidState(solidBasis,new SolidInventory.Moments(
-                variables[offset+solidIndex]*solidScale[0],variables[offset+solidIndex+1]*solidScale[1],variables[offset+solidIndex+2]*solidScale[2]));
+        if(solidIndex<0)return state;
+        // The three moments are hard-nonnegative in SolidInventory.Moments. Enforce that by
+        // projection rather than by refusing the trial: a Newton candidate that overshoots one of
+        // them by dust is a point the line search must be allowed to evaluate and reject on its
+        // residual, not a domain failure that kills every backtrack. Owned state keeps the
+        // invariant, because an accepted point never has the projection active - the
+        // solidMomentProjectionsAtAcceptedPoints counter is what verifies that.
+        double mass=variables[offset+solidIndex]*solidScale[0],volume=variables[offset+solidIndex+1]*solidScale[1],
+                capacity=variables[offset+solidIndex+2]*solidScale[2];
+        if(mass<0||volume<0||capacity<0)SolverDiagnostics.count(SolverDiagnostics.solidMomentProjections);
+        return state.withSolidState(solidBasis,new SolidInventory.Moments(Math.max(0,mass),Math.max(0,volume),Math.max(0,capacity)));
     }
     /** Target amounts/U may include backward-Euler edge contributions computed in the same residual evaluation. */
     public void residual(FluidThermodynamics.State state,double[] targetAmounts,double targetEnergy,double targetVolume,double[] result,int offset,double[] variables) {
@@ -195,7 +213,7 @@ public final class PhaseLayout {
     public void residual(FluidThermodynamics.State state,double[] targetAmounts,double targetEnergy,double targetVolume,double[] result,int offset,
                          double[] variables,FluidThermodynamics.Prepared prepared) {
         double[] l=state.liquidView(),v=state.vaporView();
-        int row=balanceRows(state,targetAmounts,targetEnergy,targetVolume,result,offset);
+        int row=balanceRows(state,targetAmounts,targetEnergy,targetVolume,result,offset,variables);
         equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
     }
     /**
@@ -206,13 +224,13 @@ public final class PhaseLayout {
      * first row after this block.
      */
     public int balanceRows(FluidThermodynamics.State state,double[] targetAmounts,double targetEnergy,double targetVolume,
-                           double[] result,int offset) {
+                           double[] result,int offset,double[] variables) {
         double[] l=state.liquidView(),v=state.vaporView();int row=offset;
         for(int i:components)result[row++]=(l[i]+v[i]-targetAmounts[i])/componentScales[i];
         if(waterLiquidIndex>=0||waterVaporIndex>=0)result[row++]=(state.waterLiquid()+state.waterVapor()-targetAmounts[l.length])/componentScales[l.length];
         result[row++]=(state.internalEnergy()-targetEnergy)/energyScale;
         result[row++]=(state.volume()-targetVolume)/targetVolume;
-        if(solidIndex>=0){solidRows(state,solidReference,false,result,offset);row+=3;}
+        if(solidIndex>=0){solidRows(state,variables,offset,solidReference,false,result);row+=3;}
         return row;
     }
     /**
@@ -237,13 +255,13 @@ public final class PhaseLayout {
     public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                                  double netMassFlow,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared) {
         double[] l=state.liquidView(),v=state.vaporView();
-        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,result,offset);
+        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,result,offset,variables);
         equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
     }
     /** The mixing block of {@link #junctionResidual}: everything the inflow and the net flow move,
      * and nothing the equilibrium rows below it read. Returns the first row after this block. */
     public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
-                            double netMassFlow,double[] result,int offset) {
+                            double netMassFlow,double[] result,int offset,double[] variables) {
         var n=totalAmounts(state,state.liquidView(),state.vaporView());
         int row=offset;
         for(int index=0;index<junctionBasis.length-1;index++) {
@@ -253,14 +271,27 @@ public final class PhaseLayout {
         result[row++]=netMassFlow; // 1 kg/s reference scale
         result[row++]=(state.enthalpy()/state.mass()-incomingSpecificEnthalpy)/Math.max(1,energyScale/state.mass());
         result[row++]=sum(n)/amountScale-1;
-        if(solidIndex>=0){var target=solidReference.clone();for(int i=0;i<3;i++)target[i]/=state.mass();solidRows(state,target,true,result,offset);row+=3;}
+        if(solidIndex>=0){var target=solidReference.clone();for(int i=0;i<3;i++)target[i]/=state.mass();solidRows(state,variables,offset,target,true,result);row+=3;}
         return row;
     }
-    /** Three aggregate balances; population identities are reconstructed outside Newton. */
-    public void solidRows(FluidThermodynamics.State state,double[] target,boolean junction,double[] result,int offset) {
+    /**
+     * Three aggregate balances; population identities are reconstructed outside Newton.
+     *
+     * <p>The moments are read from the unknowns rather than from the decoded state, so that each
+     * row stays exactly linear in its own unknown everywhere, including past the nonnegative
+     * boundary that {@link #decode} projects onto. Reading them back from the projected state
+     * would make the row constant for any trial point with a negative moment, which is a column of
+     * zeros in the Jacobian and a singular factorization - and a node whose incoming solids are
+     * zero, every node downstream of a filter for instance, sits exactly on that boundary. The two
+     * agree at every point the solver can accept, because the projection is inactive there.
+     */
+    public void solidRows(FluidThermodynamics.State state,double[] variables,int offset,double[] target,boolean junction,double[] result) {
         if(solidIndex<0)return;
-        var moments=state.solidMoments().values();int row=offset+componentBalanceCount()+2;
-        for(int i=0;i<3;i++)result[row+i]=junction?(moments[i]/state.mass()-target[i])/(solidScale[i]/solidScale[0]):(moments[i]-target[i])/solidScale[i];
+        int row=offset+componentBalanceCount()+2;
+        for(int i=0;i<3;i++) {
+            double moment=variables[offset+solidIndex+i]*solidScale[i];
+            result[row+i]=junction?(moment/state.mass()-target[i])/(solidScale[i]/solidScale[0]):(moment-target[i])/solidScale[i];
+        }
     }
     private void equilibriumResidual(FluidThermodynamics.State state,double[] l,double[] v,double[] result,int row,int offset,double[] variables,
                                      FluidThermodynamics.Prepared prepared) {

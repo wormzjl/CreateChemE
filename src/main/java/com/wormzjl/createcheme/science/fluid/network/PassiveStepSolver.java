@@ -14,6 +14,19 @@ import com.wormzjl.createcheme.science.fluid.transport.SlurryTransport;
 public final class PassiveStepSolver {
     public enum Acceptance { FULL, APPROXIMATE }
     public static final double GRAVITY=9.80665;
+    /**
+     * How far below its own difference floor a solid moment unknown stops bounding the Newton step
+     * length. The solid difference floors are {@code max(1e-6, encoded value)}, so on a node whose
+     * moments are dust this is a scaled value of {@value #SOLID_CLAMP_FRACTION}e-6.
+     *
+     * <p>Swept on the ten- and thirty-reservoir water chains at 0 (the unfloored rule), 1e-6, 1e-3
+     * and 1, i.e. scaled floors of 0, 1e-12, 1e-9 and 1e-6. All three nonzero values give exactly
+     * the same accepted/rejected counts and no line-search stall anywhere; 0 still fails the
+     * thirty-reservoir chain outright. The smallest that works is kept, so the exemption covers
+     * only values at which {@code x + alpha*d} is bitwise {@code x} for every unknown of order one
+     * and no backtrack could produce a different residual anyway.
+     */
+    private static final double SOLID_CLAMP_FRACTION=1e-6;
     private final FluidThermodynamics model;
     private final SolverOwnership ownership;
     private final Map<WorkspaceKey,SparseNewton.Workspace> workspaces=new LinkedHashMap<>();
@@ -75,7 +88,17 @@ public final class PassiveStepSolver {
             case FlowControl.PressureValve valve->graph.reservoirs().get(pipe.first()).state().pressure()>valve.targetPressure()+.01
                     ?FlowControl.Mode.VALVE_OPEN:FlowControl.Mode.CLOSED;
         });
-        boolean[] boundaryClosed=new boolean[graph.pipes().size()];for(int i=0;i<boundaryClosed.length;i++)if(graph.pipes().get(i).blockedDirections()==3)boundaryClosed[i]=true;var seen=new HashSet<WorkspaceKey>();
+        // A connection closed to all transport before the solve starts is in the same active-set
+        // state the pass-by-pass closure below produces, actuator included: an actuator left on its
+        // own setpoint across a closed edge is a second equation for a flow the closure has already
+        // decided, and on a junction whose other edges are closed too it is one equation too many
+        // and the factorization is singular.
+        boolean[] boundaryClosed=new boolean[graph.pipes().size()];
+        for(int i=0;i<boundaryClosed.length;i++)if(graph.pipes().get(i).blockedDirections()==3) {
+            boundaryClosed[i]=true;
+            if(!(graph.pipes().get(i).control() instanceof FlowControl.Passive))modes.set(i,FlowControl.Mode.CLOSED);
+        }
+        var seen=new HashSet<WorkspaceKey>();
         // Constant for this solve: every pass keys on the same graph identity and component support.
         long[] nodeIds=nodeIds(graph);byte[] kinds=new byte[nodeIds.length];
         for(int i=0;i<kinds.length;i++)kinds[i]=(byte)graph.reservoirs().get(i).kind().ordinal();
@@ -172,6 +195,8 @@ public final class PassiveStepSolver {
                     acceptedModes.set(edge,switch(pipe.control()){case FlowControl.Passive ignored->FlowControl.Mode.VELOCITY_LIMITED;case FlowControl.Pump ignored->FlowControl.Mode.PUMP_VELOCITY_LIMIT;case FlowControl.PressureValve ignored->FlowControl.Mode.VALVE_VELOCITY_LIMIT;});
                 }
             }
+            if(SolverDiagnostics.ENABLED)SolverDiagnostics.count(SolverDiagnostics.solidMomentProjectionsAtAcceptedPoints,
+                    equations.negativeSolidUnknowns(x)+equations.negativeSolidUnknowns(reconstructed));
             lastSolve=new LastSolve(equations,x,workspace,tolerance);
             return new Result(projection.states(),flows,dt,numerical,acceptedModes,heads,projection.pumpWork(),projection.externalMoles(),projection.externalEnergy(),projection.inventories(),projection.boundaries(),PipeTransfer.sample(graph,projection.states(),flows,dt),projection.filters());
         }
@@ -545,8 +570,12 @@ public final class PassiveStepSolver {
         final double[][] cachedVariables;final FluidThermodynamics.State[] cachedStates;final Transport[] cachedTransport;
         final Transport[][] capSources;final double[][] capMassFlows,capPressureDrops;
         final FluidThermodynamics.Prepared[] cachedPrepared;
-        final boolean[] amountVariables;
+        final boolean[] amountVariables,solidVariables;
         final double[] differenceFloors;
+        /** Below this value an amount unknown's nonnegativity is not a live constraint on the step
+         * length. Zero for every fluid amount, so {@link #maximumStep} is bit for bit the rule it
+         * was for a clear-fluid island; see {@link #SOLID_CLAMP_FRACTION}. */
+        final double[] clampFloors;
         /** Edge indices incident to each node, ascending - which is the order the whole-island
          * residual accumulates that node's targets, energy and junction inflows in, so a per-node
          * re-assembly reproduces every accumulator bit for bit. */
@@ -582,9 +611,13 @@ public final class PassiveStepSolver {
             for(int i=0;i<controlOffsets.length;i++)if(!(graph.pipes().get(i).control() instanceof FlowControl.Passive))controlOffsets[i]=cursor++;
             filterOffsets=new int[graph.pipes().size()];Arrays.fill(filterOffsets,-1);for(int i=0;i<filterOffsets.length;i++)if(graph.pipes().get(i).filter()!=null)filterOffsets[i]=cursor++;
             size=cursor;
-            amountVariables=new boolean[size];differenceFloors=new double[size];Arrays.fill(differenceFloors,1);
+            amountVariables=new boolean[size];solidVariables=new boolean[size];
+            differenceFloors=new double[size];clampFloors=new double[size];Arrays.fill(differenceFloors,1);
             for(int node=0;node<count;node++)if(layout[node]!=null)for(int local=0;local<layout[node].size();local++) {
-                amountVariables[offsets[node]+local]=layout[node].totalAmountVariable(local);differenceFloors[offsets[node]+local]=layout[node].differenceScale(local,0);
+                int column=offsets[node]+local;
+                amountVariables[column]=layout[node].totalAmountVariable(local);differenceFloors[column]=layout[node].differenceScale(local,0);
+                solidVariables[column]=layout[node].solidVariable(local);
+                if(solidVariables[column])clampFloors[column]=SOLID_CLAMP_FRACTION*differenceFloors[column];
             }
             int components=oldAmounts[0].length;
             targets=new double[count][components];incoming=new double[count][components];fractions=new double[components];
@@ -642,8 +675,18 @@ public final class PassiveStepSolver {
             double alpha=1;
             // Approach a nonnegative amount boundary directly instead of repeatedly halving a step
             // that misses it by roundoff. This bounds a trial step; it never clips accepted inventory.
-            for(int c=0;c<edgeOffset;c++)if(amountVariables[c]&&variables[c]>0&&direction[c]<0)alpha=Math.min(alpha,.99*variables[c]/-direction[c]);
+            // Below clampFloors the unknown is not a boundary this step has to respect: a solid
+            // moment 1e-30 to 1e-70 below its own scale would otherwise bound alpha at 1e-12 to
+            // 1e-18, at which x+alpha*d is bitwise x for every unknown of order one and no
+            // backtrack can ever produce a different residual.
+            for(int c=0;c<edgeOffset;c++)if(amountVariables[c]&&variables[c]>clampFloors[c]&&direction[c]<0)alpha=Math.min(alpha,.99*variables[c]/-direction[c]);
             return alpha;
+        }
+        /** Solid unknowns this point leaves negative, i.e. where {@link PhaseLayout#decode}'s
+         * nonnegativity projection would be active. Must be zero at every accepted point. */
+        int negativeSolidUnknowns(double[] x) {
+            int count=0;for(int c=0;c<edgeOffset;c++)if(solidVariables[c]&&x[c]<0)count++;
+            return count;
         }
         int nodeSize(int node){return layout[node]==null?0:layout[node].size();}
         public int[][] columnRows(){if(sparsity==null)buildSparsity();return sparsity;}
@@ -884,7 +927,7 @@ public final class PassiveStepSolver {
                             edgeRows(edge,trial,st,tr,perturbed);
                             int other=other(edge,node);
                             if(layout[other]!=null&&carries(edge,node,trial)) {
-                                nodeAccumulate(other,trial,st,tr);nodeTargetRows(other,st,perturbed);
+                                nodeAccumulate(other,trial,st,tr);nodeTargetRows(other,trial,st,perturbed);
                             }
                         }
                         write(entryOffsets,entryRows,entries,column,perturbed,f,step);
@@ -904,7 +947,7 @@ public final class PassiveStepSolver {
                         edgeRows(edge,trial,st,tr,perturbed);
                         // No node is decoded again, so only the two endpoints' inflow rows move.
                         for(int node:new int[]{pipe.first(),pipe.second()})if(layout[node]!=null) {
-                            seed(node,perturbed,f);nodeAccumulate(node,trial,st,tr);nodeTargetRows(node,st,perturbed);
+                            seed(node,perturbed,f);nodeAccumulate(node,trial,st,tr);nodeTargetRows(node,trial,st,perturbed);
                         }
                         write(entryOffsets,entryRows,entries,column,perturbed,f,step);
                         trial[column]=x[column];
@@ -934,12 +977,12 @@ public final class PassiveStepSolver {
         private void nodeRows(int node,double[] x,FluidThermodynamics.State[] st,FluidThermodynamics.Prepared[] pr,double[] f) {
             if(!graph.reservoirs().get(node).junction()) {
                 layout[node].residual(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node],x,pr[node]);
-                layout[node].solidRows(st[node],solidTargets[node],false,f,offsets[node]);
+                layout[node].solidRows(st[node],x,offsets[node],solidTargets[node],false,f);
                 return;
             }
             layout[node].junctionResidual(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x,pr[node]);
             var solids=solidIncoming[node].clone();if(incomingMass[node]>1e-14){for(int c=0;c<3;c++)solids[c]/=incomingMass[node];}else{solids=graph.reservoirs().get(node).state().solidMoments().values();for(int c=0;c<3;c++)solids[c]/=graph.reservoirs().get(node).state().mass();}
-            layout[node].solidRows(st[node],solids,true,f,offsets[node]);
+            layout[node].solidRows(st[node],x,offsets[node],solids,true,f);
         }
         /**
          * Only the rows a change of this node's inflow can move. A block sweep that perturbs one of
@@ -947,10 +990,10 @@ public final class PassiveStepSolver {
          * closure, the equilibrium rows and the amount normalization are the base residual's own
          * doubles and the sweep seeds them from it rather than recomputing them.
          */
-        private void nodeTargetRows(int node,FluidThermodynamics.State[] st,double[] f) {
+        private void nodeTargetRows(int node,double[] x,FluidThermodynamics.State[] st,double[] f) {
             if(!graph.reservoirs().get(node).junction())
-                layout[node].balanceRows(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node]);
-            else layout[node].junctionRows(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node]);
+                layout[node].balanceRows(st[node],targets[node],energy[node],graph.reservoirs().get(node).inventory().volume(),f,offsets[node],x);
+            else layout[node].junctionRows(st[node],fractions,junctionInflow(node),netMass[node],f,offsets[node],x);
         }
         /** Fills {@link #fractions} with this junction's incoming mass fractions and returns its
          * incoming specific enthalpy, falling back to the stored guess when nothing arrives. */
