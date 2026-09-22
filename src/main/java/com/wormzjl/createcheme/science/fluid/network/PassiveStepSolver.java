@@ -100,10 +100,8 @@ public final class PassiveStepSolver {
                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
                 graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList(),List.of(),List.of());
         if(graph.reservoirs().stream().anyMatch(PassiveNetwork.Reservoir::empty))throw new IllegalArgumentException("Evacuated reservoir has no fluid temperature; connected filling requires a supported initialization state");
-        var reachable=reachableComponents(graph,null);
         boolean hasJunction=false;
         for(var node:graph.reservoirs())hasJunction|=node.junction();
-        var seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);
         var modes=new ArrayList<FlowControl.Mode>();
         boolean carryModes=previousModes.size()==graph.pipes().size()&&previousPipes.equals(identities(graph))&&Arrays.equals(previousNodeIds,nodeIds(graph));
         // Pumps this solve has recognized as standing at their own shutoff corner; see
@@ -149,6 +147,15 @@ public final class PassiveStepSolver {
             if(!(graph.pipes().get(i).control() instanceof FlowControl.Passive))modes.set(i,FlowControl.Mode.CLOSED);
         }
         closeDeadHeads(graph,boundaryClosed);
+        // The species this island can carry, and the trial states built from them, are read off the
+        // connections this pass leaves open - so they are stated after the closure above and not
+        // before it. A connection the closure has taken carries exactly zero by a row of its own,
+        // for the whole solve, so it delivers nothing; seeding a vessel behind it with an entry
+        // trace of a component only that connection could bring puts an unknown on a nonnegativity
+        // boundary whose only root is zero, which is what used to refuse the whole Newton step. See
+        // {@link #closeDeadHeads} and documentation/DEAD_HEADED_LINE.md.
+        var reachable=reachableComponents(graph,null,boundaryClosed);
+        var seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);
         var seen=new HashSet<WorkspaceKey>();
         // Constant for this solve: every pass keys on the same graph identity and component support.
         var pipeIdentities=identities(graph);
@@ -546,7 +553,10 @@ public final class PassiveStepSolver {
     }
     /** Physical species can traverse passive pipes in either direction, actuators only downstream.
      * Junction property guesses own no inventory and therefore cannot introduce a species. */
-    private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions) {
+    private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions){return reachableComponents(graph,directions,null);}
+    /** {@code closed} names the connections this pass has already pinned to a flow of exactly zero;
+     * they carry no species in either direction. {@code null} is no closure at all. */
+    private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions,boolean[] closed) {
         int count=model.hydrocarbon.componentCount()+1,nodes=graph.reservoirs().size();
         var possible=new BitSet[nodes];var outgoing=new ArrayList<List<Integer>>(nodes);
         for(int i=0;i<nodes;i++) {
@@ -560,6 +570,7 @@ public final class PassiveStepSolver {
             var amounts=injection.molesPerSecond();for(int c=0;c<count;c++)if(amounts[c]>0)possible[injection.node()].set(c);
         }
         for(int edge=0;edge<graph.pipes().size();edge++) {var pipe=graph.pipes().get(edge);
+            if(closed!=null&&closed[edge])continue;
             if(!(pipe.control() instanceof FlowControl.Pump pump)||pump.targetVolumeFlow()>0) {
                 if((directions==null||directions[edge]>1e-14)&&boundaryAllowed(graph,pipe,1))outgoing.get(pipe.first()).add(pipe.second());
                 if((directions==null||directions[edge]<-1e-14)&&pipe.control() instanceof FlowControl.Passive&&boundaryAllowed(graph,pipe,-1))outgoing.get(pipe.second()).add(pipe.first());
