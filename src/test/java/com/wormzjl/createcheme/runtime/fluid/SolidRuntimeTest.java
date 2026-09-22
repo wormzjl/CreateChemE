@@ -21,6 +21,11 @@ class SolidRuntimeTest {
     private SolidInventory stock(double mass){
         return new SolidInventory(List.of(new SolidInventory.Population(catalog.solids().require("createcheme:demo_particle"),ParticleSize.micrometres("100"),mass)));
     }
+    private FluidThermodynamics.State water(double pressure){
+        double[] n=new double[model.componentCount()];n[n.length-1]=1;
+        n[n.length-1]/=model.flashTP(350,pressure,n,()->{}).volume();
+        return model.flashTP(350,pressure,n,()->{});
+    }
     private FluidCheckpointCodec.Checkpoint checkpoint(PassiveNetwork graph){
         var snapshot=new IslandCoordinator.Snapshot(1,0,graph,new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY");
         return new FluidCheckpointCodec.Checkpoint(List.of(new FluidCheckpointCodec.IslandEntry("minecraft:overworld",FluidPresetCatalog.NETWORK_PACKAGE,1e-9,snapshot)),new BufferedTransfers.Snapshot(0,Map.of(),Map.of()));
@@ -106,6 +111,25 @@ class SolidRuntimeTest {
         assertTrue(result.graph().pipes().stream().filter(p->p.filter()!=null).findFirst().orElseThrow().filter().clogged());
         assertEquals(0,result.averageMassFlows()[0],1e-9);
         assertTrue(result.graph().reservoirs().stream().filter(n->n.id()==6).findFirst().orElseThrow().inventory().solids().empty());
+    }
+    @Test void aClosedConnectionTellsTheDeviceStatusWhichReasonStoppedIt(){
+        var graph=new PassiveNetwork(List.of(
+                new PassiveNetwork.Reservoir(1,0,water(160000).withSolids(stock(100))),
+                new PassiveNetwork.Reservoir(2,0,water(150000))),
+                List.of(new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(100,.05,.000045,0))));
+        var result=new PassiveIntervalSolver(model).solve(graph,.05,PassiveIntervalSolver.Settings.defaults(),()->{});
+        assertNotEquals(0,result.graph().pipes().getFirst().blockedDirections());
+
+        String status=FluidWorldAuthority.solidClosure(3,result.rejectionReasons());
+        assertTrue(status.startsWith("blocked with solid: DEPOSITION ("),status);
+        assertTrue(status.contains(" m/s, needs "),status);
+        assertTrue(status.length()<80,"The status wraps to three lines on the screen: "+status);
+        // A connection with no record of its own keeps the bare text the blocked mask justifies,
+        // and a reason with no velocity of its own is named without two zeroes after it.
+        assertEquals("blocked with solid",FluidWorldAuthority.solidClosure(4,result.rejectionReasons()));
+        assertEquals("blocked with solid: POPULATION_LIMIT",FluidWorldAuthority.solidClosure(7,
+                Map.of("blocked with solid: POPULATION_LIMIT; pipe=7; velocity=0.0; deposition=0.0; t=0.0",1)));
+        assertEquals("blocked with solid",FluidWorldAuthority.solidClosure(7,Map.of("Solid transport transition inside the step",2)));
     }
     @Test void unrelatedSolidDefinitionsDoNotChangeTheFluidBasis(){
         var resources=new HashMap<>(catalog.resources());

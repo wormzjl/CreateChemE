@@ -43,16 +43,20 @@ final class SolidEventIntegrator {
         /** {@code direction} is the closure mask to apply, which is {@link #BOTH_DIRECTIONS} for
          * every transport closure; see there. */
         final int edge,direction;
+        /** The connection's own identity, which is what a player sees on a device and what the
+         * only durable record of a closure - the reason text - is looked up by. The edge index is
+         * a position in one graph and means nothing outside it. */
+        final long pipeId;
         final SolidMobility.Check check;
         /** Seen on the endpoint rate at the start of a step: the event is at the accepted state
          * itself, so it needs no refinement and is declared where the integration stands. */
         final boolean atStart;
-        Transition(int edge,int direction,SolidMobility.Check check,boolean atStart) {
-            super("blocked with solid: "+check.reason()+"; velocity="+check.velocity()+"; deposition="+check.minimumVelocity());
-            this.edge=edge;this.direction=direction;this.check=check;this.atStart=atStart;
+        Transition(int edge,long pipeId,int direction,SolidMobility.Check check,boolean atStart) {
+            super("blocked with solid: "+check.reason()+"; pipe="+pipeId+"; velocity="+check.velocity()+"; deposition="+check.minimumVelocity());
+            this.edge=edge;this.pipeId=pipeId;this.direction=direction;this.check=check;this.atStart=atStart;
         }
         SolidMobility.Reason reason(){return check.reason();}
-        Transition atStart(){return atStart?this:new Transition(edge,direction,check,true);}
+        Transition atStart(){return atStart?this:new Transition(edge,pipeId,direction,check,true);}
         @Override public synchronized Throwable fillInStackTrace(){return this;}
     }
     private PassiveNetwork masks(PassiveNetwork graph,int[] masks) {
@@ -75,7 +79,7 @@ final class SolidEventIntegrator {
         var prepared=new SolidMobility.Donor[states.size()];
         for(int i=0;i<flows.length;i++) {
             var pipe=graph.pipes().get(i);double flow=flows[i];int direction=flow>=0?1:2;
-            if(pipe.filter()!=null&&atCapacity(pipe.filter())&&pipe.blockedDirections()!=BOTH_DIRECTIONS)return clogged(i);
+            if(pipe.filter()!=null&&atCapacity(pipe.filter())&&pipe.blockedDirections()!=BOTH_DIRECTIONS)return clogged(i,pipe.id());
             if((pipe.blockedDirections()&direction)!=0)continue;
             int upstream=flow>=0?pipe.first():pipe.second();var donor=states.get(upstream);
             if(prepared[upstream]==null)prepared[upstream]=SolidMobility.donor(model,donor);
@@ -84,7 +88,7 @@ final class SolidEventIntegrator {
                 check=new SolidMobility.Check(SolidMobility.Reason.POPULATION_LIMIT,check.velocity(),check.minimumVelocity());
             if(check.allowed())continue;
             double candidate=check.minimumVelocity()>0?check.velocity()/check.minimumVelocity():-1;
-            if(candidate<ratio||candidate==ratio&&pipe.id()<identity){result=new Transition(i,BOTH_DIRECTIONS,check,false);ratio=candidate;identity=pipe.id();}
+            if(candidate<ratio||candidate==ratio&&pipe.id()<identity){result=new Transition(i,pipe.id(),BOTH_DIRECTIONS,check,false);ratio=candidate;identity=pipe.id();}
         }
         return result;
     }
@@ -135,8 +139,8 @@ final class SolidEventIntegrator {
         }
         return !graph.reservoirs().get(receiver).fixed()&&reach.get(receiver).size()>SolidInventory.MAXIMUM_POPULATIONS;
     }
-    private static Transition clogged(int edge) {
-        return new Transition(edge,BOTH_DIRECTIONS,new SolidMobility.Check(SolidMobility.Reason.FILTER_CLOGGED,0,0),false);
+    private static Transition clogged(int edge,long pipeId) {
+        return new Transition(edge,pipeId,BOTH_DIRECTIONS,new SolidMobility.Check(SolidMobility.Reason.FILTER_CLOGGED,0,0),false);
     }
     /**
      * Whether this cake has met its capacity and the connection must stop. The saturated inlet law
@@ -180,7 +184,7 @@ final class SolidEventIntegrator {
                     var pipe=graph.pipes().get(i);
                     if(pipe.filter()==null||pipe.blockedDirections()==BOTH_DIRECTIONS)continue;
                     var state=filters.get(pipe.id());
-                    if(state!=null&&refused.test(state))return clogged(i);
+                    if(state!=null&&refused.test(state))return clogged(i,pipe.id());
                 }
                 return null;
             }

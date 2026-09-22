@@ -288,7 +288,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
         }
         if(filter!=null)for(var pipe:snapshot.graph().pipes())if(pipe.id()==PhysicalFluidTopology.filterIdentity(id))devicePressureChange=snapshot.graph().reservoirs().get(pipe.first()).state().pressure()-snapshot.graph().reservoirs().get(pipe.second()).state().pressure();
         if(filter!=null&&filter.clogged())status="filter clogged / "+status;
-        for(var mapping:compiled.pipeViews().getOrDefault(id,List.of()))for(var pipe:snapshot.graph().pipes())if(pipe.id()==mapping.pipeId()&&pipe.blockedDirections()!=0&&pipe.filter()==null)status="blocked with solid / "+status;
+        var closures=snapshot.lastResult().map(PassiveIntervalSolver.Result::rejectionReasons).orElse(Map.of());
+        for(var mapping:compiled.pipeViews().getOrDefault(id,List.of()))for(var pipe:snapshot.graph().pipes())if(pipe.id()==mapping.pipeId()&&pipe.blockedDirections()!=0&&pipe.filter()==null)status=solidClosure(mapping.pipeId(),closures)+" / "+status;
         if(compiled.diagnostics().containsKey(id))status=compiled.diagnostics().get(id)+" / "+status;
         var active=topology.active().get(id);if(active==null||active.revision()!=registration.revision())status="WAITING: configuration event / "+status;
         if(unboundBindings.contains(id))status="UNBOUND: saved inventory retained / "+status;
@@ -299,6 +300,37 @@ public final class FluidWorldAuthority implements AutoCloseable {
         }
         return new FluidView(id,registration.revision(),snapshot.clock().committedTick(),topology.onlineTick(),status,state,flow,history,devicePressureChange,true,
                 snapshot.lastResult().map(PassiveIntervalSolver.Result::advancedSeconds).orElse(0.0),snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes,filter);
+    }
+    /**
+     * Why this connection carries nothing, in the words the solver used, for the device status a
+     * player reads. The event integrator names the connection and the two velocities in the reason
+     * it records against every closure, and a closure the interval started with is recorded again
+     * each interval, so the account stays true for as long as the connection is shut. Nothing else
+     * carries it: the blocked mask on the pipe says only that something closed it.
+     *
+     * <p>The status line is bounded and wraps to three lines on the screen, so this stays to one
+     * short clause. A reason with no velocity of its own - a population limit, a stopped filter -
+     * is named without one rather than with two zeroes, and an unrecognised or missing record
+     * falls back to the bare text the mask alone justifies.
+     */
+    static String solidClosure(long pipeId,Map<String,Integer> reasons) {
+        for(String key:reasons.keySet()) {
+            if(!key.startsWith(SOLID_CLOSURE)||!key.contains("; pipe="+pipeId+";"))continue;
+            int end=key.indexOf(';',SOLID_CLOSURE.length());if(end<0)break;
+            double velocity=closureField(key,"; velocity="),minimum=closureField(key,"; deposition=");
+            return SOLID_CLOSURE+key.substring(SOLID_CLOSURE.length(),end)
+                    +(minimum>0?" ("+speed(velocity)+" m/s, needs "+speed(minimum)+" m/s)":"");
+        }
+        return "blocked with solid";
+    }
+    private static final String SOLID_CLOSURE="blocked with solid: ";
+    private static double closureField(String key,String token) {
+        int at=key.indexOf(token);if(at<0)return 0;
+        int end=key.indexOf(';',at+token.length());
+        try{return Double.parseDouble(key.substring(at+token.length(),end<0?key.length():end));}catch(RuntimeException unreadable){return 0;}
+    }
+    private static String speed(double value) {
+        return String.format(java.util.Locale.ROOT,Math.abs(value)>=.01?"%.2f":"%.2e",value);
     }
     private String nodeLabel(long id) {
         var registration=topology.active().get(id);if(registration==null)return "Junction "+id;
