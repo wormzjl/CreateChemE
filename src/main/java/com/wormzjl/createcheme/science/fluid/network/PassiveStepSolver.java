@@ -100,7 +100,7 @@ public final class PassiveStepSolver {
                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
                 graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList(),List.of(),List.of());
         if(graph.reservoirs().stream().anyMatch(PassiveNetwork.Reservoir::empty))throw new IllegalArgumentException("Evacuated reservoir has no fluid temperature; connected filling requires a supported initialization state");
-        var reachable=reachableComponents(graph);
+        var reachable=reachableComponents(graph,null);
         boolean hasJunction=false;
         for(var node:graph.reservoirs())hasJunction|=node.junction();
         var seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);
@@ -148,6 +148,7 @@ public final class PassiveStepSolver {
             boundaryClosed[i]=true;
             if(!(graph.pipes().get(i).control() instanceof FlowControl.Passive))modes.set(i,FlowControl.Mode.CLOSED);
         }
+        closeDeadHeads(graph,boundaryClosed);
         var seen=new HashSet<WorkspaceKey>();
         // Constant for this solve: every pass keys on the same graph identity and component support.
         var pipeIdentities=identities(graph);
@@ -545,7 +546,6 @@ public final class PassiveStepSolver {
     }
     /** Physical species can traverse passive pipes in either direction, actuators only downstream.
      * Junction property guesses own no inventory and therefore cannot introduce a species. */
-    private boolean[][] reachableComponents(PassiveNetwork graph){return reachableComponents(graph,null);}
     private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions) {
         int count=model.hydrocarbon.componentCount()+1,nodes=graph.reservoirs().size();
         var possible=new BitSet[nodes];var outgoing=new ArrayList<List<Integer>>(nodes);
@@ -1046,6 +1046,111 @@ public final class PassiveStepSolver {
     private static int phaseCode(FluidThermodynamics.State state) {
         return (state.solidMoments().mass()>0?16:0)|(state.liquidVolume()>0?1:0)|(state.vaporProperties()!=null?2:0)
                 |(state.waterLiquid()>0?4:0)|(state.waterVapor()>0?8:0);
+    }
+    /**
+     * Closes, before the first pass, every passive connection whose own starting point leaves it no
+     * direction it is allowed to carry.
+     *
+     * <p>The hydraulic row of a connection is {@code driving - loss(q)}, and {@code loss} is zero at
+     * zero flow and strictly increasing away from it, so a root with {@code q > 0} exists only when
+     * the driving pressure a forward flow stands in is positive, and a root with {@code q < 0} only
+     * when the driving pressure a reverse flow stands in is negative. A connection one of whose ends
+     * forbids a direction - a generator, a void, a directionally blocked pipe - therefore has no
+     * admissible root at all when the only sign with a root is the forbidden one, and its one
+     * admissible answer is a flow of exactly zero. That is the same answer
+     * {@code boundaryClosed} already produces, and the pass loop already reaches it the moment a
+     * converged point shows a direction the boundary refuses. The whole defect is that on a
+     * dead-headed line the pass cannot converge to that point: the reverse root lies across a flow
+     * of zero, where the friction slope changes by three orders between a liquid and a gas, and the
+     * step limiter has its own reasons to refuse the journey. So the closure is taken from the
+     * starting point instead, which says the same thing without asking the Newton to travel there -
+     * the pre-interval rate pass of {@link SolidEventIntegrator} closes a transport failure the same
+     * way rather than letting the interval discover it.
+     *
+     * <p>Three conditions keep this a statement that cannot be wrong for the solve it is made in.
+     *
+     * <ul>
+     * <li><b>Both columns are asked.</b> A forward flow stands in the fluid of {@link
+     * PassiveNetwork.Pipe#first} and a reverse flow in that of {@link PassiveNetwork.Pipe#second},
+     * so each direction is tested against the static head of its own column - the same pairing
+     * {@link Equations#headDensities} states a connection's head on. A direction is refused only
+     * when the column that would fill it does not drive it.
+     * <li><b>Neither end of the run is a zero-holdup junction.</b> A junction owns no volume, so
+     * the pressure it carries into a pass is an output of the previous solve rather than a property
+     * of any stock, and it is free to move as far as the hydraulics need within this one. A
+     * vessel's and a boundary's are not: a boundary holds its pressure fixed by construction, and a
+     * vessel's pressure moves only with what it receives, monotonically against the flow that
+     * delivers it. So across a run between a boundary and a vessel a driving pressure that refuses
+     * a direction at the starting point refuses it everywhere the solve can go - delivering in the
+     * allowed direction only pushes it further away - while a junction's pressure says nothing. The
+     * run is the one {@link #initialMassFlows} already contracts: a maximal chain of passive
+     * connections through degree-two junctions, which carry the one flow the chain passes and own
+     * no pressure of their own, so a static column across the chain is the column across its two
+     * ends and nothing in between enters it. A run of one connection is the ordinary case.
+     * <li><b>Only passive connections.</b> An actuator decides its own mode, and the device-first
+     * rule of the pass loop exists precisely so that a boundary direction is never closed on
+     * evidence that is really a device's symptom. A pre-pass closure of an actuator's connection
+     * would take that decision before the device had spoken at all. A run through a junction an
+     * actuator touches is left alone for the same reason.
+     * </ul>
+     *
+     * <p>It cannot cycle. The closure is monotone within a solve, it is taken once before any pass,
+     * it is read by the existing pass loop exactly as a closure taken by that loop would be, and
+     * it is never cleared - so it adds no transition to the active-set sequence and cannot lengthen
+     * it. It is per solve, so a line whose generator is raised afterwards is decided again from the
+     * new starting point and opens.
+     */
+    private static void closeDeadHeads(PassiveNetwork graph,boolean[] boundaryClosed) {
+        int edges=graph.pipes().size(),nodes=graph.reservoirs().size();
+        int[] degree=new int[nodes];boolean[] actuated=new boolean[nodes];
+        for(var pipe:graph.pipes()) {
+            degree[pipe.first()]++;degree[pipe.second()]++;
+            if(!(pipe.control() instanceof FlowControl.Passive)){actuated[pipe.first()]=true;actuated[pipe.second()]=true;}
+        }
+        boolean[] interior=new boolean[nodes];
+        for(int i=0;i<nodes;i++)interior[i]=graph.reservoirs().get(i).junction()&&degree[i]==2&&!actuated[i];
+        int[][] nodeEdges=new int[nodes][];
+        for(int i=0;i<nodes;i++)nodeEdges[i]=new int[degree[i]];
+        Arrays.fill(degree,0);
+        for(int edge=0;edge<edges;edge++) {
+            var pipe=graph.pipes().get(edge);
+            nodeEdges[pipe.first()][degree[pipe.first()]++]=edge;nodeEdges[pipe.second()][degree[pipe.second()]++]=edge;
+        }
+        boolean[] taken=new boolean[edges];
+        for(int edge=0;edge<edges;edge++) {
+            if(taken[edge]||boundaryClosed[edge]||!(graph.pipes().get(edge).control() instanceof FlowControl.Passive))continue;
+            var pipe=graph.pipes().get(edge);
+            // The maximal passive run through degree-two junctions containing this connection, as
+            // a node order and the links between consecutive nodes; see {@link #initialMassFlows}.
+            var chain=new ArrayList<Integer>();var order=new ArrayList<Integer>();
+            order.add(pipe.first());chain.add(edge);order.add(pipe.second());taken[edge]=true;
+            for(int end=0;end<2;end++) {
+                int at=end==0?pipe.first():pipe.second(),from=edge;
+                while(interior[at]) {
+                    int next=nodeEdges[at][0]==from?nodeEdges[at][1]:nodeEdges[at][0];
+                    if(taken[next]||!(graph.pipes().get(next).control() instanceof FlowControl.Passive))break;
+                    taken[next]=true;var step=graph.pipes().get(next);
+                    int beyond=step.first()==at?step.second():step.first();
+                    if(end==0){chain.addFirst(next);order.addFirst(beyond);}else{chain.add(next);order.add(beyond);}
+                    at=beyond;from=next;
+                }
+            }
+            int start=order.getFirst(),finish=order.getLast();
+            if(start==finish||graph.reservoirs().get(start).junction()||graph.reservoirs().get(finish).junction())continue;
+            // Which way the run as a whole may carry: every link must allow its own share of it.
+            boolean forwardAllowed=true,reverseAllowed=true;
+            for(int position=0;position<chain.size();position++) {
+                var link=graph.pipes().get(chain.get(position));boolean aligned=link.first()==order.get(position);
+                forwardAllowed&=boundaryAllowed(graph,link,aligned?1:-1);
+                reverseAllowed&=boundaryAllowed(graph,link,aligned?-1:1);
+            }
+            if(forwardAllowed&&reverseAllowed)continue;
+            var a=graph.reservoirs().get(start);var b=graph.reservoirs().get(finish);
+            double dz=b.elevation()-a.elevation(),difference=a.state().pressure()-b.state().pressure();
+            boolean forward=forwardAllowed&&difference-a.state().mass()/a.state().volume()*GRAVITY*dz>0;
+            boolean reverse=reverseAllowed&&difference-b.state().mass()/b.state().volume()*GRAVITY*dz<0;
+            if(!forward&&!reverse)for(int link:chain)boundaryClosed[link]=true;
+        }
     }
     private static boolean boundaryAllowed(PassiveNetwork graph,PassiveNetwork.Pipe pipe,double flow) {
         var a=graph.reservoirs().get(pipe.first()).kind();var b=graph.reservoirs().get(pipe.second()).kind();
