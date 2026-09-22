@@ -98,6 +98,34 @@ public final class ConservativeTransport {
             SolverDiagnostics.reconstructNanos.add(System.nanoTime()-started);SolverDiagnostics.reconstructCalls.increment();
         }
     }
+    /**
+     * The mass fractions of a node whose composition this reconstruction does not solve for: a
+     * prescribed boundary, or a zero-holdup junction nothing is delivering into. Both are a
+     * <em>composition</em> and not a conserved amount, so every entry is read off one state - the
+     * candidate - and the stored inventory supplies nothing but the split of the candidate's
+     * aggregate solid mass across its populations.
+     *
+     * <p>A Newton candidate carries its solids as the three aggregate moments and keeps the seed's
+     * population list unscaled ({@link com.wormzjl.createcheme.science.fluid.solver.PhaseLayout#decode}),
+     * so the stored list is the only place the split can come from; its absolute masses are not.
+     * Reading the fluid half off the candidate and the solid half off the stored inventory, both
+     * over the candidate's total mass, is what broke: a junction owns no volume, so its total
+     * amount is a free scale the Newton moves, and an absolute stored 125.0 kg divided by a total
+     * the Newton has shrunk by 0.099 % leaves the fractions summing to 1.000115804 instead of 1.
+     * See {@code documentation/FULL_TANK_SOLIDS_EVENT.md}.
+     *
+     * <p>Where candidate and inventory already agree the scale is exactly 1.0 and this is bit for
+     * bit what the two separate reads produced, which is why the exact solver regression does not
+     * move.
+     */
+    private static void storedFractions(double[] result,FluidThermodynamics.State state,PassiveNetwork.Reservoir reservoir,
+                                        List<SolidInventory.Key> populationKeys,double[] molecularWeight,int components) {
+        var amounts=PhaseLayout.totalAmounts(state);
+        for(int c=0;c<components;c++)result[c]=amounts[c]*molecularWeight[c]/state.mass();
+        var stored=reservoir.inventory().solids();double storedMass=stored.massKg();
+        double scale=storedMass>0?state.solidMoments().mass()/storedMass:0;
+        for(int c=0;c<populationKeys.size();c++)result[components+c]=scale*stored.mass(populationKeys.get(c))/state.mass();
+    }
     private static Projection reconstruct0(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
                                          double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace) {
         int nodes=graph.reservoirs().size(),components=model.hydrocarbon.componentCount()+1;
@@ -115,8 +143,7 @@ public final class ConservativeTransport {
             for(int c=0;c<components;c++)endMass[node]+=old[node][c]*molecularWeight[c];
             endMass[node]+=reservoir.inventory().solids().massKg();
             if(!reservoir.fixed())index[node]=count++;
-            else{var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)fractions[node][c]=n[c]*molecularWeight[c]/candidate.get(node).mass();
-                for(int c=0;c<populationKeys.size();c++)fractions[node][components+c]=reservoir.inventory().solids().mass(populationKeys.get(c))/candidate.get(node).mass();}
+            else storedFractions(fractions[node],candidate.get(node),reservoir,populationKeys,molecularWeight,components);
         }
         for(int edge=0;edge<flows.length;edge++) {
             if(!Double.isFinite(flows[edge])||!Double.isFinite(heads[edge]))throw new IllegalArgumentException("Nonfinite candidate flow/head");
@@ -148,8 +175,8 @@ public final class ConservativeTransport {
             checkpoint.run();int row=index[node];var reservoir=graph.reservoirs().get(node);
             if(reservoir.junction()) {
                 add(columns,row,row,1);
-                if(!fed[node]){var n=PhaseLayout.totalAmounts(candidate.get(node));for(int c=0;c<components;c++)rhs[c][row]=n[c]*molecularWeight[c]/candidate.get(node).mass();
-                    for(int c=0;c<populationKeys.size();c++)rhs[components+c][row]=reservoir.inventory().solids().mass(populationKeys.get(c))/candidate.get(node).mass();}
+                if(!fed[node]){var held=new double[conserved];storedFractions(held,candidate.get(node),reservoir,populationKeys,molecularWeight,components);
+                    for(int c=0;c<conserved;c++)rhs[c][row]=held[c];}
             }else {
                 if(!(endMass[node]>0)||!Double.isFinite(endMass[node]))throw new SparseNewton.Nonconvergence("Candidate overdraws a reservoir");
                 add(columns,row,row,endMass[node]+dt*outgoing[node]);
