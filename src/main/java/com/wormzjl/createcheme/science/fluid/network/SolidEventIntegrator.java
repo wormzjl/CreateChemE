@@ -77,6 +77,7 @@ final class SolidEventIntegrator {
         // viscosities, which every wet island pays whether or not it carries a particle, depend on
         // the donor alone. A node that is never a donor this pass is never prepared at all.
         var prepared=new SolidMobility.Donor[states.size()];
+        Map<Integer,SolidMobility.Check> limited=null;
         for(int i=0;i<flows.length;i++) {
             var pipe=graph.pipes().get(i);double flow=flows[i];int direction=flow>=0?1:2;
             if(pipe.filter()!=null&&atCapacity(pipe.filter())&&pipe.blockedDirections()!=BOTH_DIRECTIONS)return clogged(i,pipe.id());
@@ -84,13 +85,77 @@ final class SolidEventIntegrator {
             int upstream=flow>=0?pipe.first():pipe.second();var donor=states.get(upstream);
             if(prepared[upstream]==null)prepared[upstream]=SolidMobility.donor(model,donor);
             var check=SolidMobility.check(prepared[upstream],donor,pipe,flow,SolidMobility.Outlet.MIXED);
-            if(check.allowed()&&reach!=null&&flow!=0&&overPopulated(graph,pipe,flow,reach))
+            if(check.allowed()&&reach!=null&&flow!=0&&overPopulated(graph,pipe,flow,reach)) {
                 check=new SolidMobility.Check(SolidMobility.Reason.POPULATION_LIMIT,check.velocity(),check.minimumVelocity());
+                // A node receiver can be fed by several connections at once, and every one of them
+                // is flagged although at most one of them has to stop; which one is decided over
+                // the whole set, once it is known. A filter's cake has the one donor that fills it.
+                if(pipe.filter()==null){(limited==null?limited=new LinkedHashMap<>():limited).put(i,check);continue;}
+            }
             if(check.allowed())continue;
-            double candidate=check.minimumVelocity()>0?check.velocity()/check.minimumVelocity():-1;
+            double candidate=closureRatio(check);
             if(candidate<ratio||candidate==ratio&&pipe.id()<identity){result=new Transition(i,pipe.id(),BOTH_DIRECTIONS,check,false);ratio=candidate;identity=pipe.id();}
         }
+        if(limited!=null)for(var entry:narrowLimits(graph,states,flows,reach,limited).entrySet()) {
+            var pipe=graph.pipes().get(entry.getKey());double candidate=closureRatio(entry.getValue());
+            if(candidate<ratio||candidate==ratio&&pipe.id()<identity){result=new Transition(entry.getKey(),pipe.id(),BOTH_DIRECTIONS,entry.getValue(),false);ratio=candidate;identity=pipe.id();}
+        }
         return result;
+    }
+    /** How far a connection is from carrying what it is asked to, as the shared closure rule orders
+     * it: the lowest ratio closes first, and a failure with no velocity of its own sorts ahead of
+     * every one that has one. */
+    private static double closureRatio(SolidMobility.Check check) {
+        return check.minimumVelocity()>0?check.velocity()/check.minimumVelocity():-1;
+    }
+    /**
+     * Which of an over-populated receiver's flagged connections actually has to stop: one per
+     * receiver, and never one whose delivery the limit did not need to refuse.
+     *
+     * <p>Every open inbound connection of a receiver whose union does not fit is flagged, so the
+     * shared rule - lowest velocity ratio, then lowest identity - could name a feed whose removal
+     * leaves the union over the limit anyway. A receiver holding sixty grades, fed four new ones by
+     * one connection and ten by another, closed the four-grade feed first and the ten-grade feed on
+     * the next pass: two closures, one of them for a delivery that always fit. So the feed that
+     * closes is the one contributing the most keys no other open inbound donor - and not the
+     * receiver's own stock or injection - supplies; the rest stay open and are reconsidered from
+     * scratch next pass like every other closure. Ties fall back to the shared rule, so the choice
+     * is still decided by the graph rather than by iteration order.
+     */
+    private static Map<Integer,SolidMobility.Check> narrowLimits(PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] flows,
+                                                                 List<SortedSet<SolidInventory.Key>> reach,Map<Integer,SolidMobility.Check> flagged) {
+        var byReceiver=new LinkedHashMap<Integer,List<Integer>>();
+        for(var edge:flagged.keySet()){var pipe=graph.pipes().get(edge);byReceiver.computeIfAbsent(flows[edge]>=0?pipe.second():pipe.first(),k->new ArrayList<Integer>()).add(edge);}
+        var kept=new LinkedHashMap<Integer,SolidMobility.Check>();
+        for(var entry:byReceiver.entrySet()) {
+            var group=entry.getValue();
+            if(group.size()==1){kept.put(group.getFirst(),flagged.get(group.getFirst()));continue;}
+            int best=-1,exclusive=-1;double ratio=Double.POSITIVE_INFINITY;long identity=Long.MAX_VALUE;
+            for(int edge:group) {
+                var pipe=graph.pipes().get(edge);var elsewhere=suppliedWithout(graph,states,flows,reach,entry.getKey(),edge);
+                int own=0;for(var key:reach.get(flows[edge]>=0?pipe.first():pipe.second()))if(!elsewhere.contains(key))own++;
+                double candidate=closureRatio(flagged.get(edge));
+                if(own>exclusive||own==exclusive&&(candidate<ratio||candidate==ratio&&pipe.id()<identity)){best=edge;exclusive=own;ratio=candidate;identity=pipe.id();}
+            }
+            kept.put(best,flagged.get(best));
+        }
+        return kept;
+    }
+    /** The keys this receiver would still be given without the named connection: its own stock and
+     * injections, and the reach of every other open inbound donor, flagged or not. */
+    private static SortedSet<SolidInventory.Key> suppliedWithout(PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] flows,
+                                                                 List<SortedSet<SolidInventory.Key>> reach,int receiver,int except) {
+        var keys=new TreeSet<SolidInventory.Key>();
+        for(var p:states.get(receiver).solids().populations())keys.add(p.key());
+        for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection in&&in.node()==receiver)
+            for(var p:in.solidsPerSecond().populations())keys.add(p.key());
+        for(int edge=0;edge<flows.length;edge++) {
+            if(edge==except||flows[edge]==0)continue;
+            var pipe=graph.pipes().get(edge);
+            if(pipe.filter()!=null||pipe.blocked(flows[edge])||(flows[edge]>=0?pipe.second():pipe.first())!=receiver)continue;
+            keys.addAll(reach.get(flows[edge]>=0?pipe.first():pipe.second()));
+        }
+        return keys;
     }
     /**
      * The conserved population keys that can reach each node over one step, or {@code null} when

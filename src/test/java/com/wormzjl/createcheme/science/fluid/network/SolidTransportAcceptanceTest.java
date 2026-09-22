@@ -133,6 +133,32 @@ class SolidTransportAcceptanceTest {
                 "Only the one feed the deterministic rule names may close: "+result.graph().pipes());
         System.out.println("solid populations: "+receiver.populations().size()+" held, reasons="+result.rejectionReasons());
     }
+    @Test void theFlaggedFeedThatCarriesTheKeysNobodyElseSuppliesIsTheOneThatCloses() {
+        // A receiver already holding sixty grades, fed four new ones by one connection and ten by
+        // another. The union is 74 and a conserved stock holds 64, so both feeds are flagged; but
+        // closing the four-grade feed leaves 70, still over the limit, and the ten-grade feed then
+        // closes on the next pass - two closures, one of them for a delivery that always fit.
+        // Only the feed whose keys nobody else supplies has to stop.
+        var run=new PipeResistance.Geometry(100,.05,.000045,0);
+        var graph=new PassiveNetwork(List.of(
+                new PassiveNetwork.Reservoir(1,0,water(200000).withSolids(traceGrades(1,4)),PassiveNetwork.NodeKind.GENERATOR),
+                new PassiveNetwork.Reservoir(2,0,water(200000).withSolids(traceGrades(5,10)),PassiveNetwork.NodeKind.GENERATOR),
+                new PassiveNetwork.Reservoir(3,0,water(150000).withSolids(traceGrades(101,60))),
+                new PassiveNetwork.Reservoir(4,0,water(100000),PassiveNetwork.NodeKind.VOID)),List.of(
+                new PassiveNetwork.Pipe(10,0,2,run),new PassiveNetwork.Pipe(11,1,2,run),new PassiveNetwork.Pipe(12,2,3,run)));
+        var result=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
+
+        assertEquals(5,result.advancedSeconds());
+        var closed=result.graph().pipes().stream().filter(p->p.blockedDirections()!=0).toList();
+        assertEquals(1,closed.size(),"Only one feed may close: "+result.graph().pipes());
+        assertEquals(11,closed.getFirst().id(),"The ten-grade feed is the one whose keys nobody else supplies");
+        assertTrue(result.averageMassFlows()[0]>0,"The four-grade feed still delivers");
+        assertTrue(result.rejectionReasons().keySet().stream().anyMatch(k->k.contains("POPULATION_LIMIT")&&k.contains("pipe=11")),
+                "The closure names the connection it closed: "+result.rejectionReasons());
+        var receiver=result.graph().reservoirs().get(2).inventory().solids();
+        assertEquals(SolidInventory.MAXIMUM_POPULATIONS,receiver.populations().size(),
+                "Sixty held plus four delivered is exactly what a conserved stock holds");
+    }
     @Test void closedParticlesRestartWhenDrivingPressureIncreases() {
         var source=water(150001).withSolids(stock(64,100));var sink=water(150000);
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,source,PassiveNetwork.NodeKind.GENERATOR),new PassiveNetwork.Reservoir(2,0,sink,PassiveNetwork.NodeKind.VOID)),List.of(pipe()));
