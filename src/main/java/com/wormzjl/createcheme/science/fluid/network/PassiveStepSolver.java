@@ -135,8 +135,25 @@ public final class PassiveStepSolver {
             if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
             if(structures.size()>=4&&!structures.containsKey(structure))structures.remove(structures.keySet().iterator().next());structures.put(structure,workspace);
             SparseNewton.Result numerical;
-            // Small headspaces amplify inventory roundoff into pressure/flow errors; solve these more tightly.
-            boolean smallHeadspace=seeds.stream().anyMatch(state->state.vaporVolume()/state.volume()<.01);
+            // Small headspaces amplify inventory roundoff into pressure/flow errors; solve these
+            // more tightly - but only a node that holds a finite inventory has a headspace at all.
+            // A generator and a void carry a prescribed boundary state, and a junction a
+            // normalized guess with no volume and no stock; none of them owns roundoff for a small
+            // headspace to amplify, and none of them contributes an unknown or a row, so none may
+            // tighten the tolerance every other node is then held to. A port does keep its say: it
+            // is a finite reservoir held fixed for one instantaneous rate evaluation, and holding
+            // a liquid-full pair of them at rest to 1e-10 kg/s is exactly what the tolerance buys.
+            //
+            // A filter block compiles to two junctions seeded from the island's first boundary
+            // state, which on a water line is liquid-full, so every placed filter line demanded
+            // 1e-10 of nodes that cannot reach it - a tank with a little water in it floors its
+            // water saturation row near 1.03e-10 - and the island refined its step to nothing.
+            boolean smallHeadspace=false;
+            for(int i=0;i<seeds.size();i++) {
+                var kind=graph.reservoirs().get(i).kind();
+                if(kind!=PassiveNetwork.NodeKind.RESERVOIR&&kind!=PassiveNetwork.NodeKind.PORT)continue;
+                if(seeds.get(i).vaporVolume()/seeds.get(i).volume()<.01){smallHeadspace=true;break;}
+            }
             // 1e-11 stalls on caloric cancellation in nearly liquid-full water with trace N2.
             // Keep two orders of margin to the unchanged 1e-8 full-equation gate; every final
             // reconstruction and the independent interval accuracy/accounting checks still run.
