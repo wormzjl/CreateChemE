@@ -57,12 +57,17 @@ final class SolidEventIntegrator {
     private Transition failed(PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] flows) {
         Transition result=null;double ratio=Double.POSITIVE_INFINITY;long identity=Long.MAX_VALUE;
         var reach=populationReach(graph,states,flows);
+        // One mobility preparation per donor node, not per connection leaving it: the carrier
+        // viscosities, which every wet island pays whether or not it carries a particle, depend on
+        // the donor alone. A node that is never a donor this pass is never prepared at all.
+        var prepared=new SolidMobility.Donor[states.size()];
         for(int i=0;i<flows.length;i++) {
             var pipe=graph.pipes().get(i);double flow=flows[i];int direction=flow>=0?1:2;
             if(pipe.filter()!=null&&atCapacity(pipe.filter())&&pipe.blockedDirections()!=BOTH_DIRECTIONS)return clogged(i);
             if((pipe.blockedDirections()&direction)!=0)continue;
-            var donor=states.get(flow>=0?pipe.first():pipe.second());
-            var check=SolidMobility.check(model,donor,pipe,flow,SolidMobility.Outlet.MIXED);
+            int upstream=flow>=0?pipe.first():pipe.second();var donor=states.get(upstream);
+            if(prepared[upstream]==null)prepared[upstream]=SolidMobility.donor(model,donor);
+            var check=SolidMobility.check(prepared[upstream],donor,pipe,flow,SolidMobility.Outlet.MIXED);
             if(check.allowed()&&reach!=null&&flow!=0&&overPopulated(graph,pipe,flow,reach))
                 check=new SolidMobility.Check(SolidMobility.Reason.POPULATION_LIMIT,check.velocity(),check.minimumVelocity());
             if(check.allowed())continue;

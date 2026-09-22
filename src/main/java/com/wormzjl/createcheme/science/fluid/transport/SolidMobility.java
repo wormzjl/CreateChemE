@@ -31,34 +31,73 @@ public final class SolidMobility {
         return graph.pipes().stream().anyMatch(p->p.filter()!=null)||graph.reservoirs().stream().anyMatch(n->n.state().solidMoments().mass()>0||n.state().liquidVolume()>0)
                 ||graph.scheduledTransfers().stream().anyMatch(t->t instanceof com.wormzjl.createcheme.science.fluid.network.ScheduledTransfer.Injection in&&!in.solidsPerSecond().empty());
     }
+    /**
+     * Everything {@link #check} decides from the donor alone: the two carrier-viscosity tests,
+     * whether any of its populations is large enough to matter for blockage, the largest of those
+     * and the suspension velocity the largest of them asks for.
+     *
+     * <p>A stage guard asks the same donor about every connection leaving it, in both directions,
+     * several times per step. Every one of those asked the carrier viscosities again - two
+     * correlation evaluations for a donor that may hold no particles at all - and evaluated the
+     * carrier density and mixture viscosity once per active population although neither depends on
+     * the population. Preparing the donor once per node per stage removes both without moving a
+     * single decision: what stays per connection is the liquid velocity, the bore, and whether the
+     * connection carries a filter.
+     */
+    public record Donor(boolean immobileOrganic, boolean immobileWater, boolean active,
+                        double liquidVolume, double solidVolume, double largestDiameter, double requiredVelocity) {}
+    /** {@link Donor} for one state. A donor with no population above the trace volume fraction
+     * costs the two carrier tests and nothing else: no deposition velocity, no mixture viscosity. */
+    public static Donor donor(FluidThermodynamics model, FluidThermodynamics.State state) {
+        boolean immobileOrganic=state.liquidVolume()>0
+                &&SlurryTransport.immobile(model.viscosity.liquid(state.temperature(),state.liquidView()).pascalSeconds(),model.solidSettings.immobileViscosity());
+        boolean immobileWater=state.waterVolume()>0
+                &&SlurryTransport.immobile(model.viscosity.waterLiquid(state.temperature()),model.solidSettings.immobileViscosity());
+        double liquidVolume=state.liquidVolume()+state.waterVolume();
+        boolean active=false;double largest=0,required=0,carrierDensity=0,carrierViscosity=0;
+        for(var population:state.solids().populations()) {
+            if(!SlurryTransport.activeForBlockage(population.volume(),state.volume(),model.solidSettings.traceVolumeFraction()))continue;
+            if(!active&&liquidVolume>0) {
+                double liquidMass=state.waterLiquid()*model.waterMolecularWeight;
+                var n=state.liquidView();for(int c=0;c<n.length;c++)liquidMass+=n[c]*model.molecularWeight(c);
+                double mu=0;
+                if(state.liquidVolume()>0)mu+=state.liquidVolume()*model.viscosity.liquid(state.temperature(),n).pascalSeconds();
+                if(state.waterVolume()>0)mu+=state.waterVolume()*model.viscosity.waterLiquid(state.temperature());
+                carrierDensity=liquidMass/liquidVolume;carrierViscosity=mu/liquidVolume;
+            }
+            active=true;
+            largest=Math.max(largest,population.size().diameterMetres());
+            if(liquidVolume>0)required=Math.max(required,SlurryTransport.depositionVelocity(population.size().diameterMetres(),
+                    population.material().density(),carrierDensity,carrierViscosity,model.solidSettings.suspensionMultiplier()));
+        }
+        return new Donor(immobileOrganic,immobileWater,active,liquidVolume,state.solidMoments().volume(),largest,required);
+    }
     public static Check check(FluidThermodynamics model, FluidThermodynamics.State donor,
                               PassiveNetwork.Pipe pipe, double massFlow, Outlet outlet) {
         if(outlet==Outlet.GAS)return new Check(Reason.MOBILE,0,0);
-        if((outlet==Outlet.MIXED||outlet==Outlet.ORGANIC_LIQUID)&&donor.liquidVolume()>0
-                &&SlurryTransport.immobile(model.viscosity.liquid(donor.temperature(),donor.liquidView()).pascalSeconds(),model.solidSettings.immobileViscosity()))
-            return new Check(Reason.IMMOBILE_LIQUID,0,0);
-        if((outlet==Outlet.MIXED||outlet==Outlet.WATER)&&donor.waterVolume()>0
-                &&SlurryTransport.immobile(model.viscosity.waterLiquid(donor.temperature()),model.solidSettings.immobileViscosity()))
-            return new Check(Reason.IMMOBILE_LIQUID,0,0);
-        double liquidVolume=donor.liquidVolume()+donor.waterVolume();
+        return check(donor(model,donor),donor,pipe,massFlow,outlet);
+    }
+    /**
+     * {@code prepared} must be {@link #donor} of this same state. The largest active population
+     * decides the bore refusal and the suspension velocity alike: the original walked the
+     * populations in order and refused on the first one too wide for the bore, which reports no
+     * suspension velocity at all, so taking the largest refuses on exactly the same donors and
+     * reports the same velocity everywhere it is read.
+     */
+    public static Check check(Donor prepared, FluidThermodynamics.State donor,
+                              PassiveNetwork.Pipe pipe, double massFlow, Outlet outlet) {
+        if(outlet==Outlet.GAS)return new Check(Reason.MOBILE,0,0);
+        if((outlet==Outlet.MIXED||outlet==Outlet.ORGANIC_LIQUID)&&prepared.immobileOrganic)return new Check(Reason.IMMOBILE_LIQUID,0,0);
+        if((outlet==Outlet.MIXED||outlet==Outlet.WATER)&&prepared.immobileWater)return new Check(Reason.IMMOBILE_LIQUID,0,0);
+        double liquidVolume=prepared.liquidVolume;
         double velocity=Math.abs(massFlow)/donor.mass()*liquidVolume/pipe.maximumArea();
-        double required=0;
-        boolean active=false;
-        for(var population:donor.solids().populations()) {
-            if(!SlurryTransport.activeForBlockage(population.volume(),donor.volume(),model.solidSettings.traceVolumeFraction()))continue;
-            active=true;
+        if(prepared.active) {
             if(liquidVolume==0)return new Check(Reason.NO_LIQUID_CARRIER,velocity,0);
-            if(population.size().diameterMetres()>=pipe.minimumDiameter())return new Check(Reason.PARTICLE_TOO_LARGE,velocity,0);
-            double liquidMass=donor.waterLiquid()*model.waterMolecularWeight;
-            var n=donor.liquidView();for(int c=0;c<n.length;c++)liquidMass+=n[c]*model.molecularWeight(c);
-            double mu=0;
-            if(donor.liquidVolume()>0)mu+=donor.liquidVolume()*model.viscosity.liquid(donor.temperature(),n).pascalSeconds();
-            if(donor.waterVolume()>0)mu+=donor.waterVolume()*model.viscosity.waterLiquid(donor.temperature());
-            required=Math.max(required,SlurryTransport.depositionVelocity(population.size().diameterMetres(),population.material().density(),
-                    liquidMass/liquidVolume,mu/liquidVolume,model.solidSettings.suspensionMultiplier()));
+            if(prepared.largestDiameter>=pipe.minimumDiameter())return new Check(Reason.PARTICLE_TOO_LARGE,velocity,0);
         }
-        if(active&&donor.solidMoments().volume()/(liquidVolume+donor.solidMoments().volume())>=SlurryTransport.MAXIMUM_PACKING_FRACTION)
+        double required=prepared.requiredVelocity;
+        if(prepared.active&&prepared.solidVolume/(liquidVolume+prepared.solidVolume)>=SlurryTransport.MAXIMUM_PACKING_FRACTION)
             return new Check(Reason.PACKED_SLURRY,velocity,required);
-        return new Check(pipe.filter()==null&&active&&velocity<=required?Reason.DEPOSITION:Reason.MOBILE,velocity,required);
+        return new Check(pipe.filter()==null&&prepared.active&&velocity<=required?Reason.DEPOSITION:Reason.MOBILE,velocity,required);
     }
 }

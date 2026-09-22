@@ -133,10 +133,16 @@ class SolidChainTransportTest {
             // Jacobian of this island was paying a coloured whole-island residual per colour again.
             assertTrue(sample.value("jacobianBlockBuilds")>0,"A filter island built no block Jacobian");
             assertEquals(0,sample.value("jacobianBlockFallbacks"),"A filter island fell back to the coloured Jacobian sweep");
+            // The endpoint rate of one step is the start-of-step rate of the next. A key that
+            // varied with the cake would miss on every step of a filling filter and pay one extra
+            // implicit solve for each; the cake belongs in it, because the clogging resistance
+            // reads the loading the cake sets.
+            long rateReuses=sample.value("endpointRateReuses"),rateBuilds=sample.value("endpointRateBuilds");
+            assertTrue(rateReuses>4*rateBuilds,"Endpoint rates were rebuilt: "+rateReuses+" reused against "+rateBuilds+" solved");
             assertFalse(running.pipes().getFirst().filter().captured().empty());
-            System.out.printf(Locale.ROOT,"solid chain: filter island reuses=%d builds=%d orderings=%d factorizations=%d jacobians=%d block=%d fallbacks=%d%n",
+            System.out.printf(Locale.ROOT,"solid chain: filter island reuses=%d builds=%d orderings=%d factorizations=%d jacobians=%d block=%d fallbacks=%d rates=%d/%d%n",
                     reuses,builds,sample.value("luOrderings"),sample.value("luFactorizations"),
-                    sample.value("jacobianBuilds"),sample.value("jacobianBlockBuilds"),sample.value("jacobianBlockFallbacks"));
+                    sample.value("jacobianBuilds"),sample.value("jacobianBlockBuilds"),sample.value("jacobianBlockFallbacks"),rateReuses,rateBuilds);
         } finally {SolverDiagnostics.ENABLED=enabled;SolverDiagnostics.reset();}
     }
 }

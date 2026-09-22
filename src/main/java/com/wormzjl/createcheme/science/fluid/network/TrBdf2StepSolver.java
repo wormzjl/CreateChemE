@@ -73,6 +73,7 @@ public final class TrBdf2StepSolver {
         var cached=endpointRates.get(new RateKey(initial,PassiveStepSolver.Acceptance.FULL));
         if(cached==null&&acceptance==PassiveStepSolver.Acceptance.APPROXIMATE)cached=endpointRates.get(new RateKey(initial,acceptance));
         double[] initialFlows;ConservativeTransport.Projection rate;List<FlowControl.Mode> initialModes;
+        SolverDiagnostics.count(cached==null?SolverDiagnostics.endpointRateBuilds:SolverDiagnostics.endpointRateReuses);
         if(cached==null) {
             var solved=algebraic.solveRate(portGraph,checkpoint,acceptance);initialFlows=solved.massFlows();initialModes=solved.modes();
             rate=new ConservativeTransport.Projection(solved.inventories(),solved.states(),solved.boundaries(),solved.externalMoles(),solved.externalEnergyJoule(),solved.pumpWorkJoule(),solved.filters());

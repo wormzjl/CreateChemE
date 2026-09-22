@@ -146,6 +146,11 @@ public final class SolverDiagnostics {
      * A cache key that accidentally varies per stage shows up here as zero reuse. */
     public static final LongAdder workspaceReuses=new LongAdder();
     public static final LongAdder workspaceBuilds=new LongAdder();
+    /** TR-BDF2 steps that found the previous step's endpoint rate already computed, and those that
+     * had to solve the algebraic port graph for it. A key that varies per step shows up here as
+     * zero reuse and one extra implicit solve per step. */
+    public static final LongAdder endpointRateReuses=new LongAdder();
+    public static final LongAdder endpointRateBuilds=new LongAdder();
     // ---- adaptive step control ----
     /** Every interval attempt, and the accepted subset; exact even when the attempt log is full. */
     public static final LongAdder stepAttempts=new LongAdder();
@@ -224,6 +229,7 @@ public final class SolverDiagnostics {
         map.put("solidMomentProjectionsAtAcceptedPoints",solidMomentProjectionsAtAcceptedPoints);
         map.put("solidTransitionRejections",solidTransitionRejections);
         map.put("workspaceReuses",workspaceReuses);map.put("workspaceBuilds",workspaceBuilds);
+        map.put("endpointRateReuses",endpointRateReuses);map.put("endpointRateBuilds",endpointRateBuilds);
         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
         return Collections.unmodifiableMap(map);
     }
