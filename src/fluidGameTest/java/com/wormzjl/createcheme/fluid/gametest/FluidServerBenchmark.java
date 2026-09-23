@@ -29,7 +29,7 @@ import java.util.*;
 public final class FluidServerBenchmark {
     private static final long TICK_NANOS=50_000_000L;
     /** Profiles measured over a fixed elapsed window instead of a count of accepted intervals per island. */
-    private static final Set<String> TIMED_PROFILES=Set.of("stress100","transient100","rest100","mixed100");
+    private static final Set<String> TIMED_PROFILES=Set.of("stress100","transient100","rest100","mixed100","viewers");
     /**
      * Ladder families. THROUGH is the stress100 ladder: a 150.1 kPa generator, 1 m3 reservoirs and a 150.0 kPa
      * void, near-stationary through-flow. TRANSIENT has no void: a 200 kPa generator fills 1000 m3 reservoirs
@@ -44,7 +44,16 @@ public final class FluidServerBenchmark {
     private static Run run;
     private static jdk.jfr.Recording recording;
     private FluidServerBenchmark() {}
-    private record Fixture(FluidThermodynamics model,FluidCheckpointCodec.Checkpoint checkpoint,WorldTopologyLedger.Snapshot topology,Set<Long> chunks,int physicalPipes,int compressedPipes,Map<Long,Ladder> ladders) {}
+    private record Fixture(FluidThermodynamics model,FluidCheckpointCodec.Checkpoint checkpoint,WorldTopologyLedger.Snapshot topology,Set<Long> chunks,int physicalPipes,int compressedPipes,Map<Long,Ladder> ladders,List<ViewerTarget> viewers) {}
+    /**
+     * The viewers profile's sixteen menus, one per network 0-15 of the mixed100 fixture, and the edits each one sends
+     * through the real edit handler. ACCEPTED edits change a generator's pressure or a pipe's roughness back and
+     * forth (networks 0 and 2: a transient and a through-flow generator; network 3: a pipe of a closed, certified
+     * ladder), INVALID ones ask for an out-of-range pressure (network 1), and STALE ones carry an old revision
+     * (networks 4-15; on a closed ladder's reservoir the kind is refused first). Only the three ACCEPTED islands
+     * change; every other island must follow the mixed100 trajectory bit for bit.
+     */
+    private record ViewerTarget(int network,long device,Kind kind,BlockPos position,String role) {}
     private record Sample(long island,IslandCoordinator.Metrics timing,String status,PassiveStepSolver.Acceptance acceptance,int substeps,int rejectedSubsteps,Double readyToPublicationMillis) {}
     /** Test-only one-second observations. Heap usage includes garbage awaiting collection; it is not retained live size. */
     private record MemorySample(long onlineTick,long epochMillis,double sinceStartSeconds,boolean measured,
@@ -88,12 +97,50 @@ public final class FluidServerBenchmark {
         void countTick() {
             var values=FluidRuntimeDiagnostics.sample();long[] delta=new long[counterNames.size()];
             for(int i=0;i<delta.length;i++){long value=values.get(counterNames.get(i));delta[i]=value-lastCounters[i];lastCounters[i]=value;}
-            boolean idle=true;for(var busy:List.of("completionsRouted","solvesDispatched","islandsPublished","deadlinesFired")){int index=counterNames.indexOf(busy);if(index>=0&&delta[index]!=0)idle=false;}
+            boolean idle=true;for(var busy:List.of("completionsRouted","solvesDispatched","islandsPublished","deadlinesFired","bucketFlushes")){int index=counterNames.indexOf(busy);if(index>=0&&delta[index]!=0)idle=false;}
             countedTicks++;if(idle)idleTicks++;
             for(int i=0;i<delta.length;i++){counterTotals[i]+=delta[i];maximumPerTick[i]=Math.max(maximumPerTick[i],delta[i]);if(idle){idleCounterTotals[i]+=delta[i];if(delta[i]>0)idleTicksWithWork[i]++;}}
         }
         /** Mean pressure gap between each transient ladder's generator and its reservoirs, sampled once a second. */
         final List<double[]> fillGaps=new ArrayList<>();
+        /** Viewers: the online tick the measurement window starts at, the open menus, and the edits they sent. */
+        final boolean viewers="viewers".equals(profile);
+        long measureStartTick=-1;boolean presentationPassed=true;
+        record ViewerMenu(ViewerTarget target,net.minecraft.server.level.ServerPlayer player,com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu,double original,boolean through) {}
+        record ScriptedEdit(int menu,int network,String role,long receivedTick,long revision) {}
+        final List<ViewerMenu> viewerMenus=new ArrayList<>();final List<ScriptedEdit> scriptedEdits=new ArrayList<>();
+        /** Ten seconds into the warm-up (every block entity bound by then) the menus open; in the window each edits five times, through the real handler. */
+        void viewerTick() {
+            if(!viewers)return;long now=world.onlineTick();
+            if(viewerMenus.isEmpty()&&now-startTick>=200) {
+                var level=server.overworld();
+                for(var target:fixture.viewers) {
+                    var player=net.neoforged.neoforge.common.util.FakePlayerFactory.get(level,new com.mojang.authlib.GameProfile(new UUID(2026092301L,target.network()),"FluidViewer"+target.network()));
+                    player.setGameMode(net.minecraft.world.level.GameType.CREATIVE);player.setPos(target.position().getX()+.5,target.position().getY()+1,target.position().getZ()+.5);
+                    var menu=new com.wormzjl.createcheme.world.inventory.FluidDeviceMenu(1000+target.network(),player.getInventory(),target.position(),target.device(),false);player.containerMenu=menu;
+                    var record=world.registrations().get(target.device());
+                    viewerMenus.add(new ViewerMenu(target,player,menu,target.kind()==Kind.PIPE?record.device().geometry().roughness():record.spec().pressure(),target.network()%4==2));
+                }
+            }
+            if(measureStartTick<0||viewerMenus.isEmpty())return;
+            for(int i=0;i<viewerMenus.size();i++) {
+                long offset=now-measureStartTick-7-23L*i;if(offset<0||offset%400!=0||offset/400>=5)continue;
+                var m=viewerMenus.get(i);var record=world.registrations().get(m.target().device());var c=com.wormzjl.createcheme.network.FluidNetwork.Controls.from(record);
+                long revision=record.revision();boolean even=offset/400%2==0;var gson=new com.google.gson.Gson();String json;
+                switch(m.target().role()) {
+                    case "ACCEPTED"->{
+                        double roughness=c.roughness(),pressure=c.pressure();
+                        if(m.target().kind()==Kind.PIPE)roughness=even?.00005:m.original();
+                        else pressure=even?m.original()-(m.through()?5:1000):m.original();
+                        json=gson.toJson(new com.wormzjl.createcheme.network.FluidNetwork.Controls(c.temperature(),pressure,c.diameter(),roughness,c.volumeFlow(),c.maximumAddedPressure(),c.composition()));
+                    }
+                    case "INVALID"->{var object=com.google.gson.JsonParser.parseString(gson.toJson(c)).getAsJsonObject();object.addProperty("pressure",3e6);json=object.toString();}
+                    default->{json=gson.toJson(c);revision+=7;}
+                }
+                scriptedEdits.add(new ScriptedEdit(i,m.target().network(),m.target().role(),now,revision));
+                com.wormzjl.createcheme.network.FluidNetwork.edit(new com.wormzjl.createcheme.network.FluidNetwork.EditPayload(m.menu().containerId,m.target().position(),m.target().device(),revision,json),m.player());
+            }
+        }
         Run(GameTestHelper helper){
             this.helper=helper;server=helper.getLevel().getServer();world=FluidWorldAuthority.find(server).orElseThrow();startTick=world.onlineTick();FluidRuntimeMeter.enable(server);world.observe(this::published);
             // Every fixture island was loaded together, so one offset maps the world tick to each island's online tick.
@@ -270,11 +317,12 @@ public final class FluidServerBenchmark {
         var devices=new ArrayList<PhysicalFluidTopology.Device>();var registrations=new LinkedHashMap<Long,WorldTopologyLedger.Registration>();var stocks=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();var reservoirs=new ArrayList<Long>();
         var ladderOf=new HashMap<Long,Ladder>();
         class Builder {
-            long next=1;int pipes;Ladder ladder;
+            long next=1;int pipes;Ladder ladder;int network=-1;final Map<Integer,Map<Kind,Long>> firstOf=new HashMap<>();
             void add(int x,int z,Kind kind,double pressure){add(x,z,kind,pressure,1,.05,1);}
             void add(int x,int z,Kind kind,double pressure,double length,double diameter,double volume) {
                 long id=next++;var device=new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",1024+x,80,1024+z),kind,PhysicalFluidTopology.Direction.EAST,new PipeResistance.Geometry(length,diameter,.000045,0),new FlowControl.Passive());devices.add(device);
                 if(ladder!=null)ladderOf.put(id,ladder);
+                if(network>=0)firstOf.computeIfAbsent(network,ignored->new EnumMap<>(Kind.class)).putIfAbsent(kind,id);
                 var spec=new FluidDeviceSpec(volume,350,pressure,composition);registrations.put(id,new WorldTopologyLedger.Registration(device,spec,0));
                 if(kind==Kind.PIPE){pipes++;return;}
                 if(kind==Kind.RESERVOIR) {
@@ -285,7 +333,7 @@ public final class FluidServerBenchmark {
             }
             /** stress100 builds 100 THROUGH ladders in exactly this device order and random sequence. */
             void ladder(int network,Ladder kind,Random random) {
-                ladder=kind;
+                ladder=kind;this.network=network;
                 int count=10+(network*13%21),columns=count/2,baseX=15360+80*(network%10),baseZ=15360+16*(network/10);
                 boolean fill=kind==Ladder.TRANSIENT;double volume=fill?TRANSIENT_RESERVOIR_VOLUME:1,diameter=fill?TRANSIENT_PIPE_DIAMETER:.05;
                 if(kind!=Ladder.CLOSED) {
@@ -305,7 +353,7 @@ public final class FluidServerBenchmark {
                     for(int dx=1;dx<4;dx++)add(end+dx,baseZ+4,Kind.PIPE,150010);
                     add(end+4,baseZ+4,Kind.VOID,150000);
                 }
-                ladder=null;
+                ladder=null;this.network=-1;
             }
         }
         var builder=new Builder();
@@ -313,7 +361,7 @@ public final class FluidServerBenchmark {
             var random=new Random(2026091603L);
             for(int network=0;network<100;network++)builder.ladder(network,switch(profile){
                 case "transient100"->Ladder.TRANSIENT;case "rest100"->Ladder.CLOSED;
-                case "mixed100"->network%4<2?Ladder.TRANSIENT:network%4==2?Ladder.THROUGH:Ladder.CLOSED;
+                case "mixed100","viewers"->network%4<2?Ladder.TRANSIENT:network%4==2?Ladder.THROUGH:Ladder.CLOSED;
                 default->Ladder.THROUGH;},random);
         }
         else if(profile.equals("many")||profile.equals("contention"))for(int row=0;row<100;row++){builder.add(0,4*row,Kind.GENERATOR,150100);for(int x=1;x<=5;x++)builder.add(x,4*row,Kind.PIPE,150050);builder.add(6,4*row,Kind.RESERVOIR,150050);for(int x=7;x<=11;x++)builder.add(x,4*row,Kind.PIPE,150050);builder.add(12,4*row,Kind.VOID,150000);}
@@ -351,14 +399,21 @@ public final class FluidServerBenchmark {
         var checkpoint=new FluidCheckpointCodec.Checkpoint(entries,new BufferedTransfers.Snapshot(0,buffers,Map.of()),modules,bindings);
         var chunks=new HashSet<Long>();var level=server.overworld();
         for(var device:devices) {
-            // This profile isolates the persistent engine; all fixture chunks stay unloaded.
-            if(timed)continue;
+            // The timed profiles isolate the persistent engine and keep every fixture chunk unloaded; viewers loads them all.
+            if(timed&&!profile.equals("viewers"))continue;
             var p=device.position();var pos=new BlockPos(p.x(),p.y(),p.z());var chunk=new ChunkPos(pos);if(chunks.add(chunk.toLong()))level.setChunkForced(chunk.x,chunk.z,true);
             var block=switch(device.kind()){case RESERVOIR->ModBlocks.FLUID_RESERVOIR.get();case GENERATOR->ModBlocks.FLUID_GENERATOR.get();case VOID->ModBlocks.FLUID_VOID.get();default->ModBlocks.FLUID_PIPE.get();};
             level.setBlock(pos,block.defaultBlockState(),3);
         }
         level.getDataStorage().set(FluidSavedData.DATA_NAME,new FluidSavedData(checkpoint,topology,key->model));
-        fixture=new Fixture(model,checkpoint,topology,Set.copyOf(chunks),builder.pipes,compiled.islands().stream().mapToInt(i->i.graph().pipes().size()).sum(),Map.copyOf(islandLadders));
+        var viewers=new ArrayList<ViewerTarget>();
+        if(profile.equals("viewers"))for(int network=0;network<16;network++) {
+            var first=builder.firstOf.get(network);boolean closed=network%4==3;
+            Kind kind=network==3?Kind.PIPE:closed?Kind.RESERVOIR:Kind.GENERATOR;long id=first.get(kind);
+            var p=registrations.get(id).device().position();
+            viewers.add(new ViewerTarget(network,id,kind,new BlockPos(p.x(),p.y(),p.z()),network==0||network==2||network==3?"ACCEPTED":network==1?"INVALID":"STALE"));
+        }
+        fixture=new Fixture(model,checkpoint,topology,Set.copyOf(chunks),builder.pipes,compiled.islands().stream().mapToInt(i->i.graph().pipes().size()).sum(),Map.copyOf(islandLadders),List.copyOf(viewers));
     }
 
     @GameTest(template="empty",timeoutTicks=200000,batch="paced-benchmark")
@@ -374,7 +429,7 @@ public final class FluidServerBenchmark {
     }
     public static void beforeTick(ServerTickEvent.Pre event) {
         if(run==null||run.finished)return;long now=System.nanoTime();
-        run.contentionTick();run.stressTick();run.memoryTick(false);run.referenceTick();
+        run.viewerTick();run.contentionTick();run.stressTick();run.memoryTick(false);run.referenceTick();
         if(run.measuring()&&run.previousTickStarted!=0)run.tickSpacingMillis.add((now-run.previousTickStarted)/1e6);
         run.tickStarted=now;run.previousTickStarted=now;
         run.eligibleTickStarts.put(run.world.onlineTick()+1,now);if(run.eligibleTickStarts.size()>8192)run.eligibleTickStarts.pollFirstEntry();
@@ -383,7 +438,7 @@ public final class FluidServerBenchmark {
         if(run==null||run.finished)return;run.referenceTick();long now=System.nanoTime(),meter=FluidRuntimeMeter.totalNanos(event.getServer());
         if(run.measuring()) {
             if(run.measuredStarted==0) {
-                run.measuredStarted=now;run.measuredStartEpochMillis=System.currentTimeMillis();
+                run.measuredStarted=now;run.measureStartTick=run.world.onlineTick();run.measuredStartEpochMillis=System.currentTimeMillis();
                 // Warm-up work is not the production steady state; start the counters here.
                 if(run.diagnosticsEnabled){SolverDiagnostics.reset();SolverDiagnostics.ENABLED=true;}
                 FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
@@ -436,6 +491,7 @@ public final class FluidServerBenchmark {
             report.put("memoryNote","One-second JVM observations; heap used includes uncollected garbage. Use JFR after-GC heap and pause durations separately; GC MXBean time is collection time, not necessarily stop-the-world pause time. External process RSS/private bytes are separate from Java heap.");}
         if(r.diagnostics!=null)report.put("solverDiagnostics",diagnostics(r,r.samples.size()-held,(now-r.measuredStarted)/1e9));
         report.put("runtimeCounters",runtimeCounters(r,(now-r.measuredStarted)/1e9));
+        if(r.viewers)report.put("presentation",presentation(r));
         var certified=new LinkedHashMap<String,Object>();
         certified.put("note","Rest and steady-flow certificates. Full solves are accepted solved intervals published in the window; replayed and identity-advanced spans are materialisations of STEADY and REST certificates, accounted in the boundary ledger but never solved. The reference state is every island's inventory at one mid-window island tick and the boundary ledger up to it, for comparing a run with certificates against one without.");
         certified.put("restDetection",certificates.enabled());certified.put("stationaryTolerance",certificates.stationaryTolerance());certified.put("inventoryBudget",certificates.inventoryBudget());
@@ -473,6 +529,7 @@ public final class FluidServerBenchmark {
                 case "transient100"->"100 isolated closed-end ladders, 10-30 finite 1000 m3 reservoirs each, filled by a 200 kPa generator through 100 m of 0.30 m pipe; no void; current-basis wet TJL + nitrogen";
                 case "rest100"->"100 isolated closed ladders, 10-30 finite 1 m3 reservoirs each, stress100 rung pressures spread over 100 Pa; no generator or void; current-basis wet TJL + nitrogen";
                 case "mixed100"->"100 isolated ladders by network index mod 4: 0-1 transient100 fill, 2 stress100 through-flow, 3 rest100 closed; current-basis wet TJL + nitrogen";
+                case "viewers"->"mixed100 with every fixture chunk loaded and bound, 16 open menus on networks 0-15 and scripted edits through the real edit handler; current-basis wet TJL + nitrogen";
                 default->"100 isolated ladder networks, 10-30 finite reservoirs each, series rails and parallel rungs; current-basis wet TJL + nitrogen";});
             var byLadder=new TreeMap<String,Object>();
             for(var ladder:Ladder.values()) {
@@ -494,7 +551,8 @@ public final class FluidServerBenchmark {
                 fill.put("samples",r.fillGaps);report.put("transientFill",fill);
             }
             report.put("reservoirsPerIsland",fixture.checkpoint.islands().stream().collect(java.util.stream.Collectors.toMap(i->i.snapshot().id(),i->i.snapshot().graph().reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).count())));
-            report.put("stressSamples",r.stressSamples);report.put("allFixtureChunksUnloaded",unloaded);report.put("everyIslandAdvanced",allAdvanced);
+            boolean loaded=fixture.topology.active().values().stream().allMatch(record->{var p=record.device().position();return r.server.overworld().hasChunkAt(new BlockPos(p.x(),p.y(),p.z()));});
+            report.put("stressSamples",r.stressSamples);report.put("allFixtureChunksUnloaded",unloaded);report.put("allFixtureChunksLoaded",loaded);report.put("everyIslandAdvanced",allAdvanced);
             double seconds=(now-r.measuredStarted)/1e9;
             report.put("completedIntervalsPerSecond",r.samples.stream().filter(s->s.timing().accepted()).count()/seconds);
             double advancedSeconds=r.samples.stream().filter(s->s.timing().accepted()).mapToDouble(s->(s.timing().endTick()-s.timing().startTick())/20.0).sum();
@@ -505,7 +563,7 @@ public final class FluidServerBenchmark {
             report.put("meanWorkerCpuOccupancy",r.samples.stream().mapToLong(s->Math.max(0,s.timing().workerCpuNanos())).sum()/(seconds*1e9*ProcessSolveServices.diagnostics(r.server).workerCount()));
             report.put("meanReportedActiveWorkers",r.stressSamples.stream().mapToInt(s->((Number)s.get("activeWorkers")).intValue()).average().orElse(0));
             report.put("finalDebtSeconds",statistics(finalState.islands().stream().map(i->(i.snapshot().clock().onlineTick()-i.snapshot().clock().committedTick())/20.0).toList()));
-            pass=maximumBalance<=1&&energyError<=1&&allAdvanced&&unloaded;
+            pass=maximumBalance<=1&&energyError<=1&&allAdvanced&&(r.viewers?loaded&&r.presentationPassed:unloaded);
             report.put("stressIntegrityPassed",pass);
         }
         try {var path=Path.of(System.getProperty("createcheme.fluid.benchmark.output"));Files.createDirectories(path.getParent());Files.writeString(path,new GsonBuilder().setPrettyPrinting().create().toJson(report));
@@ -544,6 +602,68 @@ public final class FluidServerBenchmark {
      * The {@link FluidRuntimeDiagnostics} readout for the measurement window, as totals, per wall second and
      * per server tick, and the same over idle ticks only. The harness's own world reads are paused out.
      */
+    /**
+     * The viewers profile's presentation readout over the measurement window: deliveries per menu, packets and view
+     * builds per 100 ticks per consumer, bucket flushes, and every scripted edit with its reply: the tick it was
+     * received, the first delivery after it (which must carry the reply), the latency in ticks and the reply.
+     */
+    private static Map<String,Object> presentation(Run r) {
+        long start=r.measureStartTick,end=r.world.onlineTick();double hundreds=(end-start)/100.0;
+        var result=new LinkedHashMap<String,Object>();
+        result.put("note","Presentation over the measurement window (online ticks start, end]. Consumers are the open menus and the loaded, bound devices. An edit's reply must be on the first delivery its menu receives after the tick the edit arrived in; an ACCEPTED edit's event must later be reported Applied. Latency is the delivery tick minus the arrival tick.");
+        result.put("windowStartTick",start);result.put("windowEndTick",end);result.put("windowTicks",end-start);
+        var stats=r.world.presentationStats();int menus=r.viewerMenus.size();int loaded=stats.loadedDevices();
+        result.put("openMenus",stats.menus());result.put("loadedDevices",loaded);result.put("dirtyDevicesAtEnd",stats.dirtyDevices());
+        java.util.function.ToLongFunction<String> total=name->r.counterTotals[r.counterNames.indexOf(name)];
+        long live=0,statics=0,offBucket=0;var perMenu=new ArrayList<Map<String,Object>>();
+        var logs=new HashMap<Integer,List<FluidPresentation.Delivery>>();
+        for(int i=0;i<menus;i++) {
+            var m=r.viewerMenus.get(i);var log=r.world.deliveries(m.menu());logs.put(i,log);
+            var window=log.stream().filter(d->d.tick()>start&&d.tick()<=end).toList();long s=window.stream().filter(FluidPresentation.Delivery::withStatic).count();
+            live+=window.size();statics+=s;for(var d:log)if(Math.floorMod(d.tick(),100L)!=d.bucket())offBucket++;
+            var row=new LinkedHashMap<String,Object>();row.put("network",m.target().network());row.put("device",m.target().device());row.put("kind",m.target().kind().name());row.put("role",m.target().role());
+            row.put("deliveriesInWindow",window.size());row.put("staticInWindow",s);row.put("deliveriesPer100Ticks",window.size()/hundreds);
+            row.put("buckets",window.stream().map(FluidPresentation.Delivery::bucket).distinct().toList());row.put("totalDeliveries",log.size());row.put("firstDeliveryTick",log.isEmpty()?null:log.getFirst().tick());
+            row.put("lastStatus",log.isEmpty()?null:log.getLast().status());
+            perMenu.add(row);
+        }
+        result.put("menus",perMenu);
+        result.put("livePacketsPer100TicksPerMenu",live/hundreds/menus);result.put("staticPacketsPer100TicksPerMenu",statics/hundreds/menus);
+        result.put("menuPacketsPer100TicksPerMenu",total.applyAsLong("menuPackets")/hundreds/menus);
+        result.put("viewBuildsPer100TicksPerConsumer",total.applyAsLong("viewBuilds")/hundreds/(menus+loaded));
+        result.put("devicePresentationsPer100TicksPerLoadedDevice",loaded==0?null:total.applyAsLong("devicePresentations")/hundreds/loaded);
+        result.put("bucketFlushes",total.applyAsLong("bucketFlushes"));result.put("bucketFlushesPer100Ticks",total.applyAsLong("bucketFlushes")/hundreds);
+        result.put("deliveriesOffTheirBucket",offBucket);
+        var edits=new ArrayList<Map<String,Object>>();var latencies=new ArrayList<Double>();var histogram=new TreeMap<Long,Long>();
+        long unanswered=0,notOnFollowingBucket=0,wrongReply=0,immediate=0,neverApplied=0;var replies=new TreeMap<String,Long>();
+        for(var edit:r.scriptedEdits) {
+            var log=logs.get(edit.menu());var after=log.stream().filter(d->d.tick()>edit.receivedTick()).toList();
+            var row=new LinkedHashMap<String,Object>();row.put("network",edit.network());row.put("role",edit.role());row.put("receivedTick",edit.receivedTick());row.put("revision",edit.revision());
+            immediate+=log.stream().filter(d->d.tick()==edit.receivedTick()&&!d.reply().isEmpty()).count();
+            if(after.isEmpty()){unanswered++;row.put("reply",null);edits.add(row);continue;}
+            var first=after.getFirst();String reply=first.reply();long latency=first.tick()-edit.receivedTick();
+            row.put("replyTick",first.tick());row.put("latencyTicks",latency);row.put("reply",reply);
+            if(reply.isEmpty())notOnFollowingBucket++;
+            boolean expected=switch(edit.role()){case "ACCEPTED"->reply.startsWith(FluidPresentation.QUEUED)||reply.equals(FluidPresentation.APPLIED);
+                case "INVALID"->reply.equals(FluidPresentation.REFUSED+"Controls are outside the supported range");default->reply.startsWith(FluidPresentation.REFUSED);};
+            if(!expected)wrongReply++;
+            if(edit.role().equals("ACCEPTED")) {
+                var applied=after.stream().filter(d->d.reply().contains(FluidPresentation.APPLIED)).findFirst();
+                row.put("appliedReplyTick",applied.map(FluidPresentation.Delivery::tick).orElse(null));if(applied.isEmpty())neverApplied++;
+            }
+            replies.merge(reply.replaceAll("\\d+","#"),1L,Long::sum);
+            latencies.add((double)latency);histogram.merge(latency/10*10,1L,Long::sum);edits.add(row);
+        }
+        result.put("edits",edits);result.put("editCount",r.scriptedEdits.size());result.put("replyTexts",replies);
+        result.put("latencyTicks",statistics(latencies));result.put("latencyHistogramTenTickBins",histogram);
+        result.put("latencyMinimumTicks",latencies.stream().mapToDouble(Double::doubleValue).min().orElse(-1));
+        result.put("unanswered",unanswered);result.put("repliesNotOnTheFollowingBucket",notOnFollowingBucket);result.put("wrongReplies",wrongReply);
+        result.put("repliesAtTheInputTick",immediate);result.put("acceptedEditsNeverApplied",neverApplied);
+        double perMenu100=live/hundreds/menus;
+        boolean passed=unanswered==0&&notOnFollowingBucket==0&&wrongReply==0&&immediate==0&&neverApplied==0&&offBucket==0&&perMenu100>=.95&&perMenu100<=1.05&&!r.scriptedEdits.isEmpty();
+        result.put("passed",passed);r.presentationPassed=passed;
+        return result;
+    }
     private static Map<String,Object> runtimeCounters(Run r,double measuredSeconds) {
         var result=new LinkedHashMap<String,Object>();
         result.put("note","Server-thread scheduling counters over the measurement window. A tick's counts cover its tick hooks and the mailbox work since the previous tick. Idle ticks routed no completion, dispatched no solve, published no island and fired no current scheduler deadline.");
