@@ -114,4 +114,64 @@ public final class FluidPropertyReloadGameTests {
             level.removeBlock(pos,false);
         }).thenWaitUntil(()->helper.assertTrue(!world.capture().world().active().containsKey(id),"Waiting for topology cleanup")).thenSucceed();
     }
+
+    /**
+     * Plan section 3.6 and section 5 item 8 with modules: three dry tanks coupled through two known-zero fixed-split
+     * modules certify REST on the shared workers. A property hold freezes every island's committed time and the
+     * modules with it while online time accrues; resume discards all three certificates, and each island solves its
+     * debt from the held state and certifies again only after restConfirmIntervals fresh intervals, the modules
+     * closing their cycles again.
+     */
+    @GameTest(template="empty",timeoutTicks=20000,batch="fluid-property-reload-modules")
+    public static void aModuleCoupledSetIsFrozenByAHoldAndRequalifiesAfterResume(GameTestHelper helper) {
+        var server=helper.getLevel().getServer();var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
+        var nitrogen=model.initialNitrogenCharge(1,298.15,101325,()->{});
+        var buffers=new HashMap<UUID,BufferedTransfers.Buffer>();var bindings=new ArrayList<CausalModuleCoordinator.Binding>();
+        for(int i=1;i<=3;i++){buffers.put(new UUID(23,i),new BufferedTransfers.Buffer(new UUID(23,i),1000,nitrogen.mass(),Map.of()));bindings.add(new CausalModuleCoordinator.Binding(new UUID(23,i),i,i));}
+        double[] fractions=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()];Arrays.fill(fractions,1);
+        var modules=List.of(
+                new FixedSplitModule.Snapshot(new FixedSplitModule.Definition(new UUID(23,100),List.of(new FixedSplitModule.Feed(new UUID(23,1),.2)),new UUID(23,2),new UUID(23,3),100,fractions),0,0,false,null),
+                new FixedSplitModule.Snapshot(new FixedSplitModule.Definition(new UUID(23,200),List.of(new FixedSplitModule.Feed(new UUID(23,2),.2)),new UUID(23,1),new UUID(23,3),300,fractions),0,0,false,null));
+        var host=new CausalModuleCoordinator(model,bindings,new BufferedTransfers.Snapshot(0,buffers,Map.of()),modules);
+        var policy=CertificatePolicy.defaults();boolean[] held={false};
+        MinecraftFluidRuntime[] runtime={null};Runnable[] advance={null};
+        // The world's wiring: modules advance on dependent publications, drained stragglers and their own horizon, never while held.
+        advance[0]=()->{if(held[0])return;host.advance();var c=runtime[0].coordinator();c.schedule(IslandScheduler.Kind.MODULE_HORIZON,host.nextHorizon(c::epochTick,c.now()),advance[0]);};
+        runtime[0]=new MinecraftFluidRuntime(server,changed->{if(!held[0]&&host.dependsOnAny(changed))advance[0].run();},new IslandCoordinator.Settings(5_000_000_000L,4_000_000_000L,64,false,100,policy),host::command,host::prepare);
+        var coordinator=runtime[0].coordinator();
+        coordinator.onReleased(island->{if(host.dependsOn(island))coordinator.schedule(IslandScheduler.Kind.MODULE_HORIZON,coordinator.now(),advance[0]);});
+        // Three thousand ticks of debt: the set catches up on the shared workers and certifies without waiting for real time.
+        for(int i=1;i<=3;i++)runtime[0].register(helper.getLevel().dimension(),new IslandCoordinator.Snapshot(i,0,new com.wormzjl.createcheme.science.fluid.network.PassiveNetwork(List.of(new com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.Reservoir(i,0,nitrogen)),List.of()),new IslandClock.Snapshot(3000,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),model);
+        host.attach(coordinator);advance[0].run();coordinator.pump();
+        helper.onEachTick(()->runtime[0].tick());
+        long[] frozen=new long[4];long[] online=new long[4];long[] moduleTicks=new long[2];
+        helper.startSequence().thenWaitUntil(()->{
+            for(long i=1;i<=3;i++)helper.assertTrue(coordinator.observe(i).certificate().isPresent(),"Waiting for island "+i+" to certify: "+coordinator.observe(i).status()+" / "+coordinator.certificationRefusal(i));
+        }).thenExecute(()->{
+            for(long i=1;i<=3;i++)helper.assertTrue(coordinator.observe(i).certificate().orElseThrow().kind()==IslandCertificate.Kind.REST,"A dry tank rests exactly");
+            held[0]=true;coordinator.suspendForPropertyChange("HELD: property data changed (module-coupled test)");
+            for(int i=1;i<=3;i++){var s=coordinator.observe(i);frozen[i]=s.clock().committedTick();online[i]=s.clock().onlineTick();helper.assertTrue(s.status().startsWith("HELD: property data"),"Not held: "+s.status());}
+            for(int m=0;m<2;m++)moduleTicks[m]=host.snapshots().get(m).committedTick();
+        }).thenIdle(40).thenExecute(()->{
+            for(int i=1;i<=3;i++) {
+                var s=coordinator.snapshot(i);
+                helper.assertTrue(s.clock().committedTick()==frozen[i],"Island "+i+" advanced during the hold: "+s.clock()+" against "+frozen[i]);
+                helper.assertTrue(s.clock().onlineTick()>=online[i]+40,"Island "+i+" lost online debt during the hold: "+s.clock());
+            }
+            for(int m=0;m<2;m++)helper.assertTrue(host.snapshots().get(m).committedTick()==moduleTicks[m],"A module advanced during the hold");
+            held[0]=false;coordinator.resumeQualifiedProperties();advance[0].run();
+            for(long i=1;i<=3;i++){var s=coordinator.observe(i);helper.assertTrue(s.certificate().isEmpty(),"Resume must discard the certificate of island "+i);helper.assertTrue(s.clock().committedTick()==frozen[(int)i],"Resume starts from the held state");}
+        }).thenWaitUntil(()->{
+            for(long i=1;i<=3;i++)helper.assertTrue(coordinator.observe(i).certificate().isPresent(),"Waiting for island "+i+" to requalify: "+coordinator.observe(i).status());
+        }).thenExecute(()->{
+            try {
+                for(int i=1;i<=3;i++) {
+                    var again=coordinator.observe(i).certificate().orElseThrow();
+                    helper.assertTrue(again.sinceTick()==again.baseTick()&&again.baseTick()>=frozen[i]+(long)policy.confirmIntervals()*100,
+                            "Island "+i+" requalified before "+policy.confirmIntervals()+" fresh intervals: base "+again.baseTick()+", held at "+frozen[i]);
+                }
+                for(int m=0;m<2;m++)helper.assertTrue(host.snapshots().get(m).committedTick()>moduleTicks[m],"Module "+m+" did not resume its cycles");
+            } finally {runtime[0].close();}
+        }).thenSucceed();
+    }
 }
