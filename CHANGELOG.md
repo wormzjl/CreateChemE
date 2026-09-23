@@ -18,10 +18,14 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 ### Added
 
 - Fluid scheduling WP0: opt-in server-thread counters of scheduling work (island visits, module scans, topology and island snapshots, views, menu packets, pumps, dispatches), elapsed-window `transient100`, `rest100` and `mixed100` benchmark profiles beside `stress100`, and bitwise trajectory fingerprints for the P12 and P31 qualification tests (`eb28fc5`; batch `2026-09-23-fluid-scheduling-rest`).
+- Fluid scheduling WP2: rest and steady-flow certificates. An island whose solved intervals repeat exactly (REST) or within `eps_s` (STEADY) advances by identity or by scaled replay of its last solved interval without solving, releases its solver caches, holds at most one deadline (its horizon or next module drive), is materialised on demand, revalidates at its horizon, and requalifies after a property hold; a pipe that moves less than `eps_s` of the inventory it draws on is exempt from the relative flow test; `[fluid]` keys `restDetection`, `certificateStationaryTolerance`, `certificateInventoryBudget`, `certificateMaximumIntervals`, `restConfirmIntervals`, `restRecheckSeconds` (`3075004`, `4f1686e`; batch `2026-09-23-fluid-scheduling-rest`).
 
 ### Changed
 
-- Fluid scheduling WP1: islands are scheduled by deadline on a shared online epoch instead of being visited on every tick; event owners come from a fence index, recoveries and module work run on deadlines and dependency changes, rounds close on their wall budget, and a drain that exhausts its per-tick budget owes one continuation; dispatch order, budgets and trajectories are unchanged (`a0a791a`..`cadd182`, `74b62e3`; benchmark script default jar `5f866a9`; batch `2026-09-23-fluid-scheduling-rest`).
+- Fluid scheduling WP1: islands are scheduled by deadline on a shared online epoch instead of being visited on every tick; event owners come from a fence index, recoveries and module work run on deadlines and dependency changes, and a drain that exhausts its per-tick budget owes one continuation; dispatch order, budgets and trajectories are unchanged (`a0a791a`..`cadd182`; benchmark script default jar `5f866a9`; batch `2026-09-23-fluid-scheduling-rest`).
+- Fluid scheduling: every tick checks the wall budget of the open dispatch rounds, so an expired round closes within one tick of its budget on a slow server (`74b62e3`; batch `2026-09-23-fluid-scheduling-rest`).
+- Fluid scheduling WP2: the module host keeps a per-island drive index (due ticks of pending inputs, positive withdrawals) and decides module cycles from stored island state, never materialising a certified island mid-decision (`7d89784`; batch `2026-09-23-fluid-scheduling-rest`).
+- Fluid scheduling WP2: the paced benchmark measures certificates: `-PfluidRestDetection` and `-PfluidCertificateTolerance`, full solves, replayed and identity-advanced spans, a mid-window reference state, after-GC heap, refusals, per-interval certificate evidence and publication fingerprints (`82568c6`, `115d690`, `3b7ff82`, `e924eae`; batch `2026-09-23-fluid-scheduling-rest`).
 
 ## [0.2.0] - 2026-09-23
 
