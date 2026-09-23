@@ -138,6 +138,31 @@ public final class FluidServerBenchmark {
         record ReferencePoint(long tick,List<double[]> inventories,double[] external) {}
         final Map<Long,double[]> islandExternal=new HashMap<>();
         final Map<Long,ReferencePoint> referenceBefore=new TreeMap<>(),referenceAfter=new TreeMap<>();
+        /**
+         * Per island, a 64-bit fingerprint of every accepted publication (solved or replayed): its end tick, every
+         * node's inventory, internal energy, temperature and pressure, and the interval's flows, boundary transfers
+         * and pump work, bit for bit. Two runs agree on an island's trajectory up to the first entry that differs,
+         * which locates where two runs part without storing their states.
+         */
+        final Map<Long,List<String>> fingerprints=new TreeMap<>();
+        /**
+         * Per island, what the certificate evidence measured at each solved interval ({@link
+         * IslandCoordinator.Evidence}): end tick, then the smallest stationary tolerance and its parts (state drift,
+         * component, energy, flow with quiet pipes exempt, relative flow change alone) against the interval before,
+         * and the interval's own drift d. Empty with certificates off, which compute nothing.
+         */
+        final Map<Long,List<double[]>> evidence=new TreeMap<>();
+        static String fingerprint(IslandCoordinator.Snapshot island,PassiveIntervalSolver.Result result,long endTick,IslandCoordinator.Advance advance) {
+            long[] h={0xcbf29ce484222325L};
+            java.util.function.LongConsumer mix=v->{long x=h[0]^v;x*=0x9E3779B97F4A7C15L;h[0]=x^(x>>>29);};
+            java.util.function.DoubleConsumer bits=v->mix.accept(Double.doubleToLongBits(v));
+            mix.accept(endTick);
+            for(var node:island.graph().reservoirs()){mix.accept(node.id());for(double n:node.inventory().moles())bits.accept(n);bits.accept(node.inventory().internalEnergy());bits.accept(node.state().temperature());bits.accept(node.state().pressure());}
+            for(double q:result.averageMassFlows())bits.accept(q);
+            for(var boundary:result.boundaries()){mix.accept(boundary.nodeId());for(double n:boundary.moles())bits.accept(n);bits.accept(boundary.totalEnergyJoule());}
+            bits.accept(result.pumpWorkJoule());
+            return endTick+":"+advance.name().charAt(0)+":"+Long.toHexString(h[0]);
+        }
         void referenceTick() {
             if(!stress||referenceMaterialised||world.onlineTick()!=referenceWorldTick)return;
             referenceMaterialised=true;FluidRuntimeDiagnostics.pause();
@@ -203,6 +228,14 @@ public final class FluidServerBenchmark {
                 var result=timing.accepted()?island.lastResult().orElseThrow():null;
                 if(result!=null){for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];externalEnergy+=boundary.totalEnergyJoule();}pumpWork+=result.pumpWorkJoule();}
                 if(result!=null&&stress) {
+                    fingerprints.computeIfAbsent(island.id(),ignored->new ArrayList<>()).add(fingerprint(island,result,timing.endTick(),timing.advance()));
+                    var measured=timing.advance()==IslandCoordinator.Advance.SOLVED?world.certificationEvidence(island.id()):null;
+                    if(measured!=null&&measured.endTick()==timing.endTick()) {
+                        // JSON has no NaN or infinity: -1 marks an interval with no consecutive one before it, and
+                        // Double.MAX_VALUE a discrete difference or material appearing in an empty node.
+                        var s=measured.stationarity();double none=-1;
+                        evidence.computeIfAbsent(island.id(),ignored->new ArrayList<>()).add(Arrays.stream(new double[]{timing.endTick(),s==null?none:s.measure(),s==null?none:s.state(),s==null?none:s.component(),s==null?none:s.energy(),s==null?none:s.flow(),s==null?none:s.largestRelativeFlowChange(),measured.drift()}).map(v->Double.isInfinite(v)?Double.MAX_VALUE:v).toArray());
+                    }
                     var ledger=islandExternal.computeIfAbsent(island.id(),ignored->new double[external.length+1]);
                     for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)ledger[c]+=n[c];ledger[n.length]+=boundary.totalEnergyJoule();}
                     ledger[ledger.length-1]+=result.pumpWorkJoule();
@@ -417,6 +450,10 @@ public final class FluidServerBenchmark {
         for(var island:finalIslands)if(island.certificate().isEmpty()){var reason=r.world.certificationRefusal(island.id());
             refusals.merge(reason==null?"none":reason.replaceAll("-?\\d+(\\.\\d+)?([eE][-+]?\\d+)?","#"),1L,Long::sum);if(reason!=null&&examples.size()<8)examples.add(island.id()+": "+reason);}
         certified.put("finalRefusals",refusals);certified.put("refusalExamples",examples);
+        var verbatim=new TreeMap<Long,String>();for(var island:finalIslands)if(island.certificate().isEmpty())verbatim.put(island.id(),String.valueOf(r.world.certificationRefusal(island.id())));
+        certified.put("finalRefusalsVerbatim",verbatim);
+        certified.put("evidenceColumns",List.of("endTick","measure","state","component","energy","flow","relativeFlowChange","drift"));
+        certified.put("evidence",r.evidence);certified.put("publicationFingerprints",r.fingerprints);
         certified.put("certifiedIslandsPerSecond",r.stressSamples.stream().map(s->s.get("certifiedIslands")).toList());
         certified.put("finalCertificates",finalIslands.stream().filter(s->s.certificate().isPresent()).collect(java.util.stream.Collectors.toMap(s->s.id(),s->s.certificate().orElseThrow(),(a,b)->a,TreeMap::new)));
         if(r.stress){var reference=new LinkedHashMap<String,Object>();reference.put("islandTick",r.referenceTick);reference.put("materialised",r.referenceMaterialised);
