@@ -162,14 +162,14 @@ public final class FluidWorldAuthority implements AutoCloseable {
     /**
      * The per-tick hook does only what is due. The epoch increment advances every island clock at once; the
      * coordinator's tick resets the dispatch budget and pops due deadlines (island slices and retries, round
-     * timeouts, the allocator shrink, module horizons, recovery retries); queued topology events are tried
-     * while any exist; a pump runs only if it would act. No island, module or registry is visited otherwise.
+     * timeouts, the allocator shrink, module horizons, recovery retries) and pumps only if that would act;
+     * queued topology events are tried while any exist, and an island an event created or released is
+     * offered to the pump in the same tick. No island, module or registry is visited otherwise.
      */
     private void tick() {
         owned();if(closed||legacyUnbound)return;refreshProperties();topology.tick();
         runtime.tick();
-        if(topology.hasPendingEvents())applyPending();
-        runtime.coordinator().pumpIfUseful();
+        if(topology.hasPendingEvents()){applyPending();runtime.coordinator().pumpIfUseful();}
         for(int i=0;i<64&&!pendingViews.isEmpty();i++){long id=pendingViews.removeFirst();queuedViews.remove(id);refreshLoaded(id);}
         data.setDirty();
     }

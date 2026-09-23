@@ -299,7 +299,11 @@ public final class IslandCoordinator {
                 reconsider(island);
             }
             if(!admitted.isEmpty()){var round=new Round(roundSequence=Math.addExact(roundSequence,1),List.copyOf(admitted),roundStarted);rounds.add(round);scheduleRoundTimeout(round,settings.hardBudgetNanos);}
-        } finally {pumping=false;}
+        } finally {
+            // Owners that became ready during this pump were offered to it; any left over wait for capacity,
+            // which pumpIfUseful checks directly, so no request survives the pump.
+            pumping=false;pumpRequested=false;
+        }
     }
     private int capacity(){return Math.min(dispatcher.availableWorkers(),Math.min(settings.maximumDispatchesPerTick-dispatchedThisTick,settings.maximumDispatchesPerTick-pending.size()));}
     /** A missing result denotes cancellation, failure or abandonment. Duplicate/late results never advance clocks. */
