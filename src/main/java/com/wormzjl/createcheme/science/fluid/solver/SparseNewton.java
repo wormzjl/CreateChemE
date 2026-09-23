@@ -19,6 +19,13 @@ public final class SparseNewton {
         default double differenceScale(int column,double value){return Math.max(1,Math.abs(value));}
         default double maximumStep(double[] variables,double[] direction){return 1;}
         /**
+         * Maps a line-search trial {@code candidate} (the current point {@code variables} plus a
+         * scaled step) onto the admissible side of a bound that {@link #maximumStep} deliberately
+         * leaves out of the step length, in place. Called for every trial, never for a Jacobian
+         * perturbation. The default leaves every trial as it is.
+         */
+        default void project(double[] variables,double[] candidate){}
+        /**
          * Optional block-structured Jacobian: fills {@code entries}, the values of the pattern
          * {@code columnRows()} declares in column-major order ({@code entryOffsets} indexes it per
          * column, {@code entryRows} is the row of each entry), with the same one-sided differences
@@ -138,6 +145,7 @@ public final class SparseNewton {
             for(int backtrack=0;backtrack<settings.backtracks();backtrack++,alpha*=.5) {
                 checkpoint.run();if(backtrack>0)SolverDiagnostics.count(SolverDiagnostics.newtonBacktracks);
                 double[] candidate=x.clone();for(int i=0;i<n;i++)candidate[i]+=alpha*direction[i];
+                equations.project(x,candidate);
                 try {
                     calls++;SolverDiagnostics.count(fresh?SolverDiagnostics.newtonStepEvaluationsFresh:SolverDiagnostics.newtonStepEvaluationsStale);
                     double[] next=evaluate(equations,candidate,n);double nextNorm=norm(next);

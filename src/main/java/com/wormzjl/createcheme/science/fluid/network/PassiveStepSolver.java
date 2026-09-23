@@ -28,6 +28,41 @@ public final class PassiveStepSolver {
      */
     private static final double SOLID_CLAMP_FRACTION=1e-6;
     /**
+     * How far below its own difference floor a fluid amount unknown stops bounding the Newton step
+     * length, and what a trial keeps of it instead: {@link Equations#project} holds such a trace at
+     * {@value #TRACE_RETENTION} of its value rather than let the whole step shrink to that trace's
+     * size. The same fraction as {@link #SOLID_CLAMP_FRACTION}, for the same reason: at a value this
+     * far below the scale the Jacobian's own differences resolve the unknown on, the one-sided
+     * difference step is a million times the unknown itself.
+     *
+     * <p>The case it settles is a connection whose flow the step reverses. A vessel's transported
+     * amounts are linearized with the donor of the current flow sign, so a step that turns a
+     * connection around predicts that the vessel on the far side loses the <em>near</em> side's
+     * composition. Where that vessel holds a species only as a trace - the {@code 1e-12} entry trace
+     * {@code initialPhaseSeeds} plants for every reachable component, or the 1e-14 to 1e-30 a reversal
+     * has already carried there - the prediction drives it negative by orders of magnitude, and
+     * {@link Equations#maximumStep}'s {@code .99*x/-d} rule then cut every step of the whole island
+     * to that trace's size: 2e-10 of a step at the first iteration, 2e-12 at the next, until the line
+     * search reported a stall at a residual its own direction would have removed. Measured on every
+     * pumped fill of a chain of nitrogen tanks with the placement defaults: water entering the first
+     * tank evaporates into its dry nitrogen, cools it about 17 K to its wet-bulb temperature within a
+     * few milliseconds, its pressure drops about 4.5 kPa, and every connection downstream reverses;
+     * 73 of the 76 Newton failures of the three-tank chain's first interval and every one of the
+     * six-tank chain's held retries in game ({@code Newton line search stalled at residual 0.096...})
+     * were this limiter on a steam trace in the second tank. See
+     * {@code documentation/fluid-followups/FLUID_PUMPED_FILL_REVIEW.md}.
+     *
+     * <p>Projecting instead is safe because such a trace is invisible to every row the Newton
+     * converges on: its material row is scaled by the node's whole amount (a gas node, or a trace
+     * the node did not hold at the start of the step), so a trace below the floor moves it by less
+     * than {@code 1e-10}, below the tightest tolerance; its equilibrium and closure rows carry it at
+     * the same order. Inventories are rebuilt from the converged flows by
+     * {@link ConservativeTransport#reconstruct}, so conservation never depends on the value the
+     * projection kept. In a liquid-full node whose trace is resolved against its own reference the
+     * difference floor is that trace itself, so only dust a millionth of it is exempt.
+     */
+    private static final double TRACE_CLAMP_FRACTION=1e-6,TRACE_RETENTION=.01;
+    /**
      * How far below its stated capacity the saturated filter inlet aims. The committed cake is
      * reconstructed from the converged flow by a different summation than the loading row solves,
      * so a law aimed exactly at capacity lands within a unit in the last place of it on either
@@ -1253,8 +1288,9 @@ public final class PassiveStepSolver {
         final boolean[] amountVariables,solidVariables;
         final double[] differenceFloors;
         /** Below this value an amount unknown's nonnegativity is not a live constraint on the step
-         * length. Zero for every fluid amount, so {@link #maximumStep} is bit for bit the rule it
-         * was for a clear-fluid island; see {@link #SOLID_CLAMP_FRACTION}. */
+         * length: a solid moment at or below it is dust (see {@link #SOLID_CLAMP_FRACTION}), and a
+         * fluid amount at or below it is a trace that {@link #project} keeps positive instead (see
+         * {@link #TRACE_CLAMP_FRACTION}). */
         final double[] clampFloors;
         /** Edge indices incident to each node, ascending - which is the order the whole-island
          * residual accumulates that node's targets, energy and junction inflows in, so a per-node
@@ -1422,6 +1458,7 @@ public final class PassiveStepSolver {
                 amountVariables[column]=layout[node].totalAmountVariable(local);differenceFloors[column]=layout[node].differenceScale(local,0);
                 solidVariables[column]=layout[node].solidVariable(local);
                 if(solidVariables[column])clampFloors[column]=SOLID_CLAMP_FRACTION*differenceFloors[column];
+                else if(amountVariables[column])clampFloors[column]=TRACE_CLAMP_FRACTION*differenceFloors[column];
             }
             int components=oldAmounts[0].length;
             targets=new double[count][components];incoming=new double[count][components];fractions=new double[components];
@@ -1570,6 +1607,19 @@ public final class PassiveStepSolver {
             // backtrack can ever produce a different residual.
             for(int c=0;c<edgeOffset;c++)if(amountVariables[c]&&variables[c]>clampFloors[c]&&direction[c]<0)alpha=Math.min(alpha,.99*variables[c]/-direction[c]);
             return alpha;
+        }
+        /**
+         * The other half of the trace rule in {@link #maximumStep}: a fluid amount at or below its
+         * floor does not bound the step, so a trial that would take it below {@value #TRACE_RETENTION}
+         * of its value keeps that fraction instead, which is the share the {@code .99} rule would have
+         * left it while scaling every other unknown by the same tiny factor. The rest of the step is
+         * taken as the Newton direction says; see {@link #TRACE_CLAMP_FRACTION}. Solid moments keep
+         * their own projection in {@link PhaseLayout#decode}.
+         */
+        @Override public void project(double[] variables,double[] candidate) {
+            for(int c=0;c<edgeOffset;c++)
+                if(amountVariables[c]&&!solidVariables[c]&&variables[c]<=clampFloors[c]&&candidate[c]<TRACE_RETENTION*variables[c])
+                    candidate[c]=TRACE_RETENTION*variables[c];
         }
         /** Solid unknowns this point leaves negative, i.e. where {@link PhaseLayout#decode}'s
          * nonnegativity projection would be active. Must be zero at every accepted point. */
