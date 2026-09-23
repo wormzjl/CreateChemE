@@ -130,6 +130,31 @@ class IslandCoordinatorTest {
         for(long id:List.of(1L,2L)){assertEquals(0,coordinator.snapshot(id).clock().committedTick());assertTrue(coordinator.snapshot(id).status().startsWith("HELD"));}
         assertEquals(2,coordinator.pendingCount(),"cancelled jobs keep their owners until the terminal drains");
     }
+    /** A lagging server: every tick takes 100 ms of wall time, so the 2 s budget runs out after 20 ticks while
+     * the nominal-tick deadline would not look until tick 40. Nothing else pumps; the round must still close
+     * within one tick of its wall deadline. */
+    @Test void anExpiredRoundClosesWithinOneTickOfItsWallBudgetOnASlowServer() {
+        var attempts=new LinkedHashMap<Long,IslandCoordinator.Attempt>();var cancelled=new ArrayList<Long>();
+        var slow=new IslandCoordinator.Dispatcher() {
+            long sequence;
+            public int availableWorkers(){return 2-attempts.size();}
+            public long nextRequestId(){return ++sequence;}
+            public boolean submit(IslandCoordinator.Attempt attempt,ProcessSolveServices.FluidIslandCommand command){attempts.put(attempt.slice().requestId(),attempt);return true;}
+            public void cancel(long request){cancelled.add(request);}
+        };
+        var lagging=new IslandCoordinator(slow,changed->{},time::get,new IslandCoordinator.Settings(2_000_000_000L,1_500_000_000L,64,false));
+        for(long id=1;id<=2;id++){var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(id,0,model.initialNitrogenCharge(1,298.15,101325,()->{}))),List.of());
+            lagging.register(new IslandCoordinator.Snapshot(id,0,graph,new IslandClock.Snapshot(100,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),model);}
+        lagging.pump();assertEquals(2,attempts.size());
+        int closedAt=-1;
+        for(int tick=1;tick<=40&&closedAt<0;tick++) {
+            time.addAndGet(100_000_000L);lagging.tick();
+            if(!cancelled.isEmpty())closedAt=tick;
+        }
+        assertTrue(closedAt>=20&&closedAt<=21,"the expired round closed at tick "+closedAt+", its wall budget ran out at tick 20");
+        assertEquals(Set.of(1L,2L),new HashSet<>(cancelled));
+        for(long id=1;id<=2;id++)assertTrue(lagging.snapshot(id).status().startsWith("HELD"));
+    }
     @Test void aHeldOwnerRetriesExactlyAtItsRetryDeadlineAndIsNotVisitedBefore() {
         register(1,100,0);coordinator.pump();var first=dispatch.attempts.remove(1L);dispatch.commands.remove(1L);
         coordinator.completed(first,Optional.of(new ProcessSolveServices.FluidIslandSolveResult(Optional.empty(),"HELD: test refusal",10,FallbackAllowance.NONE,Optional.empty())));

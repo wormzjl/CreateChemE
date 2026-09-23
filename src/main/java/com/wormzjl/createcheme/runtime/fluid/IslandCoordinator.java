@@ -219,13 +219,19 @@ public final class IslandCoordinator {
     /**
      * Called once per elapsed server tick, after the shared epoch advanced (or advancing this coordinator's own
      * epoch), never from wall time or for time spent offline. Constant cost when nothing is due: it resets the
-     * per-tick dispatch budget, pops only due deadlines, and pumps only when a pump would act.
+     * per-tick dispatch budget, pops only due deadlines, checks the wall budget of the open rounds, and pumps
+     * only when a pump would act.
      */
     public void tick() {
         owned();if(stopped)return;
         if(ownsEpoch)ownEpoch=Math.addExact(ownEpoch,1);
         dispatchedThisTick=0;
-        runDue();verify();
+        runDue();
+        // The ROUND_TIMEOUT deadline assumes nominal 50 ms ticks; a slow server spends the wall budget in fewer
+        // ticks. Checking each open round's budget here, O(open rounds) and nothing per island, closes an
+        // expired round within one tick of its wall deadline however long the ticks are.
+        if(!roundDue)for(var round:rounds)if(nanoClock.getAsLong()-round.startedNanos>=settings.hardBudgetNanos){roundDue=true;break;}
+        verify();
         pumpIfUseful();
     }
     /** Pops every deadline due at the current epoch tick and acts on the ones still current. */
