@@ -41,15 +41,18 @@ class CausalModuleCoordinatorTest {
             this(initialCheckpoint(graphs,definitions),polled);
         }
         Harness(FluidCheckpointCodec.Checkpoint checkpoint){this(checkpoint,true);}
-        Harness(FluidCheckpointCodec.Checkpoint checkpoint,boolean polled) {
-            this.polled=polled;
+        Harness(FluidCheckpointCodec.Checkpoint checkpoint,boolean polled){this(checkpoint,polled,CertificatePolicy.disabled(),true);}
+        /** Whether conservation is checked, reading every island, after each completion; off, nothing but the host reads. */
+        final boolean conserveEachCompletion;
+        Harness(FluidCheckpointCodec.Checkpoint checkpoint,boolean polled,CertificatePolicy certificates,boolean conserveEachCompletion) {
+            this.polled=polled;this.conserveEachCompletion=conserveEachCompletion;
             modules=new CausalModuleCoordinator(model,checkpoint.moduleBindings(),checkpoint.transfers(),checkpoint.modules());
             islands=new IslandCoordinator(new IslandCoordinator.Dispatcher() {
                 public int availableWorkers(){return 2-active;}
                 public long nextRequestId(){return ++requests;}
                 public boolean submit(IslandCoordinator.Attempt attempt,ProcessSolveServices.FluidIslandCommand command){work.add(new Job(attempt,modules.command(attempt,command)));active++;return true;}
                 public void cancel(long request){throw new AssertionError("No deadlines in deterministic qualification");}
-            },changed->{commits+=changed.size();published(changed);},()->0,new IslandCoordinator.Settings(30_000_000_000L,20_000_000_000L,64,false),modules::prepare);
+            },changed->{commits+=changed.size();published(changed);},()->0,new IslandCoordinator.Settings(30_000_000_000L,20_000_000_000L,64,false,100,certificates),modules::prepare);
             for(var entry:checkpoint.islands())islands.register(entry.snapshot(),model);
             modules.attach(islands);initial=totals();
             if(polled)advance();
@@ -82,7 +85,8 @@ class CausalModuleCoordinatorTest {
             return new FluidCheckpointCodec.Checkpoint(islands.snapshots().stream().map(s->new FluidCheckpointCodec.IslandEntry("minecraft:overworld","createcheme:tjl20_methane_nitrogen",1e-9,s)).toList(),modules.transfers(),modules.snapshots(),modules.bindings());
         }
         private void published(List<IslandCoordinator.Snapshot> changed) {
-            var owners=new HashMap<Long,Long>();for(var island:islands.snapshots())for(var node:island.graph().reservoirs())owners.put(node.id(),island.id());
+            // Ownership needs no current inventory, so the stored islands are read and nothing is materialised.
+            var owners=new HashMap<Long,Long>();for(var island:islands.observe())for(var node:island.graph().reservoirs())owners.put(node.id(),island.id());
             if(polled){modules.rebind(owners);advance();}
             else {
                 boolean rebound=!owners.equals(bound);if(rebound){modules.rebind(owners);bound=owners;}
@@ -109,7 +113,7 @@ class CausalModuleCoordinatorTest {
                 if(polled)advance();islands.tick();int drained=0;
                 while(!work.isEmpty()) {
                     assertTrue(++drained<100,"Unbounded dispatch loop");var job=work.removeFirst();var result=(ProcessSolveServices.FluidIslandSolveResult)job.command.solve(token);
-                    assertTrue(result.candidate().isPresent(),result.detail());active--;islands.completed(job.attempt,Optional.of(result));if(polled)advance();islands.pump();assertConserved();
+                    assertTrue(result.candidate().isPresent(),result.detail());active--;islands.completed(job.attempt,Optional.of(result));if(polled)advance();islands.pump();if(conserveEachCompletion)assertConserved();
                 }
             }
         }
@@ -117,6 +121,24 @@ class CausalModuleCoordinatorTest {
             double[] sum=new double[23];for(var island:islands.snapshots())for(var node:island.graph().reservoirs()) {var n=node.inventory().moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)sum[c]+=n[c];sum[22]+=node.inventory().internalEnergy();}
             for(var pending:modules.transfers().pending().values())add(sum,pending.remaining());
             for(var module:modules.snapshots())if(module.cycle()!=null)for(var input:module.cycle().inputs().values())add(sum,input.owned());return sum;
+        }
+        /** Everything physical at the end, read current: island clocks, fences and inventory bits, module and ledger state. */
+        List<String> outcome() {
+            var lines=new ArrayList<String>();
+            for(var island:islands.snapshots()) {
+                var line=new StringBuilder().append(island.id()).append(' ').append(island.clock().committedTick()).append('/').append(island.clock().onlineTick()).append(island.fences().values().stream().sorted().toList());
+                for(var node:island.graph().reservoirs()){for(double n:node.inventory().moles())line.append(':').append(Long.toHexString(Double.doubleToLongBits(n)));line.append('/').append(Long.toHexString(Double.doubleToLongBits(node.inventory().internalEnergy())));}
+                lines.add(line.toString());
+            }
+            for(var module:modules.snapshots()) {
+                var line=new StringBuilder("module ").append(module.committedTick()).append(',').append(module.revision()).append(',').append(module.running());
+                if(module.cycle()!=null){var c=module.cycle();line.append(',').append(c.startTick()).append('-').append(c.endTick()).append(',').append(c.status());
+                    for(var input:c.inputs().values().stream().sorted(Comparator.comparingDouble(FixedSplitModule.Input::targetKg)).toList())line.append(',').append(input.throughTick()).append('@').append(Long.toHexString(Double.doubleToLongBits(input.owned().massKg())));}
+                lines.add(line.toString());
+            }
+            for(var pending:modules.transfers().pending().values().stream().sorted(Comparator.comparingLong(PendingTransfers.Pending::dueTick).thenComparingDouble(p->p.remaining().massKg())).toList())
+                lines.add("pending "+pending.dueTick()+'@'+Long.toHexString(Double.doubleToLongBits(pending.remaining().massKg())));
+            return lines;
         }
         void assertConserved(){var actual=totals();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)assertEquals(initial[c],actual[c],1e-9*Math.max(1,initial[c]),"Component "+c);assertEquals(initial[22],actual[22],1e-6*Math.max(1,Math.abs(initial[22])));}
     }
@@ -211,5 +233,104 @@ class CausalModuleCoordinatorTest {
         var harness=new Harness(graphs(true,false,false),List.of(module(100,1,0,2,3,300,false)));harness.run(200);harness.remove(3);harness.run(700);
         assertEquals(900,harness.modules.snapshots().getFirst().committedTick());assertFalse(harness.modules.waitingReason(1).startsWith("STRANDED"));
         assertTrue(harness.islands.snapshot(2).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);harness.assertConserved();
+    }
+
+    // ---------------- certified islands under the module host (plan section 5 item 3) ----------------
+
+    private static long counted(String name){return FluidRuntimeDiagnostics.sample().get(name);}
+    private Harness certified(List<PassiveNetwork> graphs,List<FixedSplitModule.Snapshot> definitions,boolean reads) {
+        return new Harness(Harness.initialCheckpoint(graphs,definitions),false,CertificatePolicy.defaults(),reads);
+    }
+    private Harness reference(List<PassiveNetwork> graphs,List<FixedSplitModule.Snapshot> definitions) {
+        return new Harness(Harness.initialCheckpoint(graphs,definitions),false,CertificatePolicy.disabled(),true);
+    }
+    /**
+     * Feed and product islands certify REST between cycles and deliveries; a positive withdrawal or a due input
+     * wakes them at its tick, a known-zero cycle resolves its horizon by materialisation, several deliveries fall
+     * inside one window, and each transfer is delivered once at its due tick. The end state - island clocks,
+     * fences and inventory bits, module cycles, the pending ledger - equals the run in which every island solves
+     * every interval, whether something reads every island after each completion or nothing but the host reads.
+     */
+    @Test void certifiedIslandsReproduceTheModuleOutcomeOfIslandsThatSolveEveryInterval() {
+        record Case(String name,boolean[] wet,List<FixedSplitModule.Snapshot> modules) {}
+        for(var scenario:List.of(
+                new Case("coupled",new boolean[]{true,true,false,false},List.of(module(100,1,2,3,4,300,true))),
+                new Case("empty-cycle",new boolean[]{false,false,false},List.of(module(100,1,0,2,3,100,false),module(200,2,0,1,3,300,false))),
+                new Case("recycle",new boolean[]{true,true,false},List.of(module(100,1,0,2,3,100,false),module(200,2,0,1,3,300,false))))) {
+            var expected=reference(graphs(scenario.wet()),scenario.modules());expected.run(3_000);
+            for(boolean reads:new boolean[]{true,false}) {
+                FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+                try {
+                    var actual=certified(graphs(scenario.wet()),scenario.modules(),reads);actual.run(3_000);
+                    var sample=FluidRuntimeDiagnostics.sample();
+                    System.out.printf(Locale.ROOT,"%s (reads %b): %d vs %d solves, certificates %d, wakes %d, rested ticks %d, materialisations %d%n",scenario.name(),reads,
+                            sample.get("solvesDispatched"),expected.commits,sample.get("certificatesIssued"),sample.get("certificateWakes"),sample.get("restedTicks"),sample.get("materialisations"));
+                    assertEquals(expected.outcome(),actual.outcome(),scenario.name()+" reads="+reads);
+                    actual.assertConserved();
+                    assertTrue(counted("certificatesIssued")>0,scenario.name()+": islands certified");
+                    assertTrue(counted("restedTicks")>0,scenario.name()+": certified time advanced without solving");
+                    assertTrue(counted("solvesDispatched")<expected.commits,scenario.name()+": fewer solves");
+                } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+            }
+        }
+    }
+    /** Plan section 3.3: the drive index holds positive withdrawals and due inputs, and nothing for a known-zero cycle. */
+    @Test void theDriveIndexHoldsPositiveWithdrawalsAndDueInputsButNoKnownZeroCycle() {
+        var coupled=new Harness(graphs(true,true,false,false),List.of(module(100,1,2,3,4,300,true)),false);coupled.run(150);
+        var cycle=coupled.modules.snapshots().getFirst().cycle();assertNotNull(cycle);assertFalse(cycle.knownZero());
+        for(int feed=1;feed<=2;feed++) {
+            var input=cycle.inputs().get(id(feed));assertTrue(input.targetKg()>0&&input.throughTick()<cycle.endTick());
+            assertEquals(input.throughTick(),coupled.modules.earliestDrive(feed,0,Long.MAX_VALUE),"feed "+feed+": its next positive withdrawal");
+            assertEquals(Long.MAX_VALUE,coupled.modules.earliestDrive(feed,input.throughTick()+1,Long.MAX_VALUE));
+        }
+        int checked=0;
+        for(int tick=0;tick<900;tick++) {
+            coupled.run(1);
+            for(var pending:coupled.modules.transfers().pending().values()) {
+                if(pending.remaining().massKg()<=0)continue;checked++;
+                long receiver=coupled.modules.bindings().stream().filter(b->b.buffer().equals(pending.receiver())).findFirst().orElseThrow().island();
+                assertTrue(coupled.modules.earliestDrive(receiver,0,Long.MAX_VALUE)<=pending.dueTick(),"receiver "+receiver+" is driven by its due input");
+                assertEquals(pending.dueTick(),coupled.modules.earliestDrive(receiver,pending.dueTick(),pending.dueTick()));
+            }
+        }
+        assertTrue(checked>0,"products were pending for their receivers at some tick");
+        var idle=new Harness(graphs(false,false,false),List.of(module(100,1,0,2,3,100,false),module(200,2,0,1,3,300,false)),false);idle.run(900);
+        assertTrue(idle.modules.snapshots().stream().allMatch(m->m.cycle()!=null&&m.cycle().knownZero()));assertTrue(idle.modules.transfers().pending().isEmpty());
+        for(long island=1;island<=3;island++)assertEquals(Long.MAX_VALUE,idle.modules.earliestDrive(island,0,Long.MAX_VALUE),"a known-zero cycle drives nothing");
+    }
+    /** A known-zero cycle wakes no certified feed: its horizon is resolved by materialisation, with no solve. */
+    @Test void aKnownZeroCycleResolvesItsHorizonWithoutWakingACertifiedFeed() {
+        var harness=certified(graphs(false,false,false),List.of(module(100,1,0,2,3,100,false),module(200,2,0,1,3,300,false)),false);
+        harness.run(3_000);
+        for(var island:harness.islands.observe())assertTrue(island.certificate().isPresent(),"island "+island.id()+": "+island.status());
+        long moduleTick=harness.modules.snapshots().getFirst().committedTick();
+        FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+        try {
+            harness.run(1_000);
+            assertEquals(0,counted("solvesDispatched"),"known-zero cycles need no solve");assertEquals(0,counted("certificateWakes"));
+            assertTrue(counted("materialisations")>0,"the cycles' horizons materialise their feeds");
+            assertEquals(moduleTick+1_000,harness.modules.snapshots().getFirst().committedTick(),"the cycles kept closing on time");
+            assertTrue(harness.modules.snapshots().stream().allMatch(m->m.cycle()==null||m.cycle().knownZero()));
+        } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+    }
+    /** Stranded buffers and partial inputs: removal and restart leave the same end state with certificates as without. */
+    @Test void strandedBuffersAndPartialInputsBehaveTheSameUnderCertificates() {
+        for(int stop:new int[]{200,300}) {
+            var expected=reference(graphs(true,false,false),List.of(module(100,1,0,2,3,300,true)));
+            var actual=certified(graphs(true,false,false),List.of(module(100,1,0,2,3,300,true)),false);
+            for(var harness:List.of(expected,actual)){harness.run(stop);harness.remove(2);harness.run(1_500);}
+            assertEquals(expected.outcome(),actual.outcome(),"removal at "+stop);
+            assertTrue(actual.modules.waitingReason(1).startsWith("STRANDED"));actual.assertConserved();
+        }
+        for(int stop:new int[]{150,350}) {
+            var expected=reference(graphs(true,true,false,false),List.of(module(100,1,2,3,4,300,true)));expected.run(stop);
+            var actual=certified(graphs(true,true,false,false),List.of(module(100,1,2,3,4,300,true)),false);actual.run(stop);
+            var restored=new Harness(FluidCheckpointCodec.decode(FluidCheckpointCodec.encode(actual.checkpoint(),key->model),key->model),false,CertificatePolicy.defaults(),false);
+            expected.run(1_500);restored.run(1_500);
+            restored.assertConserved();
+            var a=expected.islands.snapshots();var b=restored.islands.snapshots();
+            for(int i=0;i<a.size();i++)assertEquals(a.get(i).clock(),b.get(i).clock(),"restart at "+stop+" island "+a.get(i).id());
+            assertEquals(expected.modules.snapshots().getFirst().committedTick(),restored.modules.snapshots().getFirst().committedTick());
+        }
     }
 }

@@ -28,6 +28,9 @@ public final class CausalModuleCoordinator {
     private final EnergyReference reference;
     private IslandCoordinator islands;
     private boolean advancing;
+    /** Per island, the ticks at which the host needs it solving: due ticks of pending inputs with material left for
+     * its buffers, and the next withdrawal tick of an active cycle with a positive target on its feed buffers. */
+    private Map<Long,TreeSet<Long>> drives=Map.of();
     public CausalModuleCoordinator(FluidThermodynamics model,List<Binding> bindings,BufferedTransfers.Snapshot ledger,List<FixedSplitModule.Snapshot> saved) {
         this.model=Objects.requireNonNull(model);this.transfers=new BufferedTransfers(ledger);var map=new LinkedHashMap<UUID,Binding>();var nodes=new HashSet<String>();
         for(var binding:bindings)if(map.putIfAbsent(binding.buffer(),binding)!=null||!nodes.add(binding.island()+":"+binding.reservoir())||!ledger.buffers().containsKey(binding.buffer()))throw new IllegalArgumentException("Duplicate or unknown buffer binding");
@@ -41,7 +44,37 @@ public final class CausalModuleCoordinator {
     private void owned(){if(Thread.currentThread()!=owner)throw new IllegalStateException("Module coordinator belongs to the logical server thread");}
     public void attach(IslandCoordinator coordinator) {
         owned();if(islands!=null)throw new IllegalStateException("Module coordinator already attached");islands=Objects.requireNonNull(coordinator);
-        for(var binding:bindings.values())if(binding.island()>0)node(islands.snapshot(binding.island()).graph(),binding.reservoir());
+        for(var binding:bindings.values())if(binding.island()>0)node(islands.observe(binding.island()).graph(),binding.reservoir());
+        islands.drives(this::earliestDrive);reindexDrives();
+    }
+    /**
+     * The earliest tick in [from, to] at which the host needs this island solving, or {@link Long#MAX_VALUE}:
+     * a pending input's due tick, or an active cycle's next positive withdrawal. A range query over the
+     * per-island index with no side effects; a known-zero cycle registers no drive (its horizons stay module
+     * deadlines, which a certified feed island answers by materialisation).
+     */
+    public long earliestDrive(long island,long from,long to) {
+        owned();var ticks=drives.get(island);if(ticks==null||from>to)return Long.MAX_VALUE;
+        var tick=ticks.ceiling(from);return tick==null||tick>to?Long.MAX_VALUE:tick;
+    }
+    /** Rebuilds the drive index from the ledger and the module cycles and tells the coordinator which islands'
+     * drives changed; called after every change the host makes (advance, rebind, a committed receipt). */
+    private void reindexDrives() {
+        var next=new HashMap<Long,TreeSet<Long>>();
+        for(var pending:transfers.snapshot().pending().values()) {
+            long receiver=binding(pending.receiver()).island();
+            if(receiver>0&&pending.remaining().massKg()>0)next.computeIfAbsent(receiver,ignored->new TreeSet<>()).add(pending.dueTick());
+        }
+        for(var module:modules.values()) {
+            var s=module.snapshot();if(s.cycle()==null||stranded(s.definition()))continue;
+            for(var feed:s.definition().feeds()) {
+                var input=s.cycle().inputs().get(feed.buffer());long island=binding(feed.buffer()).island();
+                if(input!=null&&input.targetKg()>0&&input.throughTick()<s.cycle().endTick()&&island>0)next.computeIfAbsent(island,ignored->new TreeSet<>()).add(input.throughTick());
+            }
+        }
+        var old=drives;drives=next;if(islands==null)return;
+        var touched=new HashSet<Long>(old.keySet());touched.addAll(next.keySet());
+        for(long island:touched)if(!Objects.equals(old.get(island),next.get(island)))islands.drivesChanged(island);
     }
     public BufferedTransfers.Snapshot transfers(){owned();return transfers.snapshot();}
     public List<FixedSplitModule.Snapshot> snapshots(){owned();return modules.values().stream().map(FixedSplitModule::snapshot).toList();}
@@ -59,7 +92,7 @@ public final class CausalModuleCoordinator {
         }
         if(!any)return;
         var occupancy=removed.isEmpty()?null:transfers.occupancy(removed);
-        if(occupancy!=null)transfers.commit(occupancy);bindings=Map.copyOf(changed);boundIslands=boundIslands(bindings);
+        if(occupancy!=null)transfers.commit(occupancy);bindings=Map.copyOf(changed);boundIslands=boundIslands(bindings);reindexDrives();
     }
     private static Set<Long> boundIslands(Map<UUID,Binding> bindings) {
         var ids=new HashSet<Long>();for(var binding:bindings.values())if(binding.island()>0)ids.add(binding.island());return Set.copyOf(ids);
@@ -105,7 +138,7 @@ public final class CausalModuleCoordinator {
     private void resolveStranded(FixedSplitModule.Snapshot saved) {
         var ids=new HashSet<UUID>();ids.add(horizon(saved.definition().id(),saved.committedTick(),"start"));
         if(saved.cycle()!=null){var c=saved.cycle();ids.add(horizon(saved.definition().id(),c.startTick(),"feed"));ids.add(horizon(saved.definition().id(),c.startTick(),"product"));ids.add(horizon(saved.definition().id(),c.endTick(),"product"));}
-        for(var island:islands.snapshots())for(var event:ids)if(island.fences().containsKey(event))islands.resolveDeliveryFence(event,Set.of(island.id()));
+        for(var island:islands.observe())for(var event:ids)if(island.fences().containsKey(event))islands.resolveDeliveryFence(event,Set.of(island.id()));
     }
     private Binding binding(UUID id){return Objects.requireNonNull(bindings.get(id),"Missing buffer binding "+id);}
     private static PassiveNetwork.Reservoir node(PassiveNetwork graph,long id){return graph.reservoirs().stream().filter(n->n.id()==id&&n.kind()==PassiveNetwork.NodeKind.RESERVOIR).findFirst().orElseThrow(()->new IllegalStateException("Missing finite buffer reservoir "+id));}
@@ -113,14 +146,17 @@ public final class CausalModuleCoordinator {
     private static UUID horizon(UUID module,long start,String role){return UUID.nameUUIDFromBytes((module+":"+start+":"+role).getBytes(StandardCharsets.UTF_8));}
     private Set<Long> feeds(FixedSplitModule.Definition d){var ids=new HashSet<Long>();for(var feed:d.feeds())ids.add(binding(feed.buffer()).island());return ids;}
     private Set<Long> products(FixedSplitModule.Definition d){var ids=new HashSet<Long>();if(Arrays.stream(d.firstFractions()).anyMatch(f->f>0))ids.add(binding(d.firstProduct()).island());if(Arrays.stream(d.firstFractions()).anyMatch(f->f<1))ids.add(binding(d.secondProduct()).island());return ids;}
-    private void ensureFence(UUID id,long tick,Set<Long> owners){for(long owner:owners)if(!islands.snapshot(owner).fences().containsKey(id))islands.fence(id,tick,List.of(owner));}
+    // The host decides from stored island state and never materialises a certified island while it decides:
+    // between releasing one fence and installing the next, a materialised island could pass the tick the next
+    // fence stands at. Island state it needs current is read after alignment, which materialises only up to a fence.
+    private void ensureFence(UUID id,long tick,Set<Long> owners){for(long owner:owners)if(!islands.hasFence(owner,id))islands.fence(id,tick,List.of(owner));}
     private void productionHorizon(FixedSplitModule.Definition definition,FixedSplitModule.Cycle cycle,Set<Long> receivers) {
         var current=horizon(definition.id(),cycle.startTick(),"product");
         if(!cycle.knownZero()){ensureFence(current,cycle.endTick(),receivers);return;}
         // Zero is known for this interval. The next interval is still unknown: announce that
         // later horizon before releasing this one, even if the producer's feed is lagging.
         ensureFence(horizon(definition.id(),cycle.endTick(),"product"),Math.addExact(cycle.endTick(),definition.cadenceTicks()),receivers);
-        for(long receiver:receivers)if(islands.snapshot(receiver).fences().containsKey(current))islands.resolveDeliveryFence(current,Set.of(receiver));
+        for(long receiver:receivers)if(islands.hasFence(receiver,current))islands.resolveDeliveryFence(current,Set.of(receiver));
     }
 
     public void advance() {
@@ -134,8 +170,10 @@ public final class CausalModuleCoordinator {
                     var c=saved.cycle();var feedHorizon=horizon(d.id(),c.startTick(),"feed");var productHorizon=horizon(d.id(),c.startTick(),"product");
                     ensureFence(feedHorizon,c.endTick(),feedOwners);productionHorizon(d,c,productOwners);
                     if(!c.inputsComplete()||!islands.aligned(feedHorizon,feedOwners))continue;
-                    long online=feedOwners.stream().mapToLong(id->islands.snapshot(id).clock().onlineTick()).min().orElseThrow();
-                    module.commit(module.finish(online));islands.releaseFence(feedHorizon,feedOwners);
+                    long online=feedOwners.stream().mapToLong(id->islands.observe(id).clock().onlineTick()).min().orElseThrow();
+                    // Each commit re-indexes the drives at once, so no later read in this pass can materialise a
+                    // certified island past a withdrawal or a delivery the commit just announced.
+                    module.commit(module.finish(online));reindexDrives();islands.releaseFence(feedHorizon,feedOwners);
                     if(!c.knownZero())islands.resolveDeliveryFence(productHorizon,productOwners);
                     saved=module.snapshot();
                 }
@@ -147,18 +185,19 @@ public final class CausalModuleCoordinator {
                 // Fences are checked before consuming capacity or publishing a new module interval.
                 ensureFence(horizon(d.id(),c.startTick(),"feed"),c.endTick(),feedOwners);
                 productionHorizon(d,c,productOwners);
-                module.commit(prepared);islands.releaseFence(startHorizon,feedOwners);
+                module.commit(prepared);reindexDrives();islands.releaseFence(startHorizon,feedOwners);
             }
             // A known but deferred input creates no unresolved-production wait. A future due time
             // is still an integration boundary until that receiver reaches it.
             for(var pending:transfers.snapshot().pending().values()) {
                 long receiver=binding(pending.receiver()).island();var event=horizon(pending.id(),pending.dueTick(),"input");
-                if(receiver==0){for(var snapshot:islands.snapshots())if(snapshot.fences().containsKey(event))islands.resolveDeliveryFence(event,Set.of(snapshot.id()));continue;}
-                var snapshot=islands.snapshot(receiver);
+                if(receiver==0){for(var snapshot:islands.observe())if(snapshot.fences().containsKey(event))islands.resolveDeliveryFence(event,Set.of(snapshot.id()));continue;}
+                var snapshot=islands.observe(receiver);
                 if(snapshot.clock().committedTick()<pending.dueTick())ensureFence(event,pending.dueTick(),Set.of(receiver));
                 else if(snapshot.fences().containsKey(event)&&islands.aligned(event,Set.of(receiver)))islands.releaseFence(event,Set.of(receiver));
             }
         } finally {advancing=false;}
+        reindexDrives();
     }
 
     /** Command advisor passed to MinecraftFluidRuntime; no live world or ledger reaches a worker. */
@@ -206,7 +245,7 @@ public final class CausalModuleCoordinator {
         }
         if(!recognized.containsAll(withdrawn.keySet()))throw new IllegalStateException("Unowned staged withdrawal");
         transfers.validate(ledger);receipts.forEach(FixedSplitModule::validate);
-        return Optional.of(()->{transfers.commit(ledger);receipts.forEach(FixedSplitModule::commit);});
+        return Optional.of(()->{transfers.commit(ledger);receipts.forEach(FixedSplitModule::commit);reindexDrives();});
     }
     private static void sameMaterial(MaterialParcel expected,MaterialParcel actual) {
         expected.takeMass(0).delivered().plus(actual.takeMass(0).delivered());var a=expected.moles();var b=actual.moles();
