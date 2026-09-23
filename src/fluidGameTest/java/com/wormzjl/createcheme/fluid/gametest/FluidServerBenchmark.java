@@ -78,15 +78,17 @@ public final class FluidServerBenchmark {
         final List<Map<String,Object>> contentionSamples=new ArrayList<>();
         final List<Map<String,Object>> stressSamples=new ArrayList<>();
         /** Scheduling counters over the measurement window; see {@link FluidRuntimeDiagnostics}. A tick is
-         * idle when it routed no completion, dispatched no solve and published no island; everything the
-         * engine still did on such a tick is scheduling overhead. The harness's own reads are paused out. */
+         * idle when it routed no completion, dispatched no solve, published no island and fired no current
+         * deadline (a counter that exists only once deadlines do, so the definition is the same for runs
+         * without them); everything the engine still did on such a tick is scheduling overhead. The
+         * harness's own reads are paused out. */
         final List<String> counterNames=FluidRuntimeDiagnostics.names();
         final long[] lastCounters=new long[counterNames.size()],counterTotals=new long[counterNames.size()],idleCounterTotals=new long[counterNames.size()],idleTicksWithWork=new long[counterNames.size()],maximumPerTick=new long[counterNames.size()];
         long countedTicks,idleTicks;
         void countTick() {
             var values=FluidRuntimeDiagnostics.sample();long[] delta=new long[counterNames.size()];
             for(int i=0;i<delta.length;i++){long value=values.get(counterNames.get(i));delta[i]=value-lastCounters[i];lastCounters[i]=value;}
-            boolean idle=delta[counterNames.indexOf("completionsRouted")]==0&&delta[counterNames.indexOf("solvesDispatched")]==0&&delta[counterNames.indexOf("islandsPublished")]==0;
+            boolean idle=true;for(var busy:List.of("completionsRouted","solvesDispatched","islandsPublished","deadlinesFired")){int index=counterNames.indexOf(busy);if(index>=0&&delta[index]!=0)idle=false;}
             countedTicks++;if(idle)idleTicks++;
             for(int i=0;i<delta.length;i++){counterTotals[i]+=delta[i];maximumPerTick[i]=Math.max(maximumPerTick[i],delta[i]);if(idle){idleCounterTotals[i]+=delta[i];if(delta[i]>0)idleTicksWithWork[i]++;}}
         }
@@ -421,7 +423,7 @@ public final class FluidServerBenchmark {
      */
     private static Map<String,Object> runtimeCounters(Run r,double measuredSeconds) {
         var result=new LinkedHashMap<String,Object>();
-        result.put("note","Server-thread scheduling counters over the measurement window. A tick's counts cover its tick hooks and the mailbox work since the previous tick. Idle ticks routed no completion, dispatched no solve and published no island.");
+        result.put("note","Server-thread scheduling counters over the measurement window. A tick's counts cover its tick hooks and the mailbox work since the previous tick. Idle ticks routed no completion, dispatched no solve, published no island and fired no current scheduler deadline.");
         result.put("measuredSeconds",measuredSeconds);result.put("ticks",r.countedTicks);result.put("idleTicks",r.idleTicks);
         var totals=new LinkedHashMap<String,Object>();var perSecond=new LinkedHashMap<String,Object>();var perTick=new LinkedHashMap<String,Object>();
         var idle=new LinkedHashMap<String,Object>();var idlePerTick=new LinkedHashMap<String,Object>();var idleWithWork=new LinkedHashMap<String,Object>();var maximum=new LinkedHashMap<String,Object>();
