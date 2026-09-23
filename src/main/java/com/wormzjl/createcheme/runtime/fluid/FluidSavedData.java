@@ -22,14 +22,16 @@ import java.util.function.Function;
  * encodes only the others. The dirty mark stays per tick, so online time is never lost at a save.
  */
 public final class FluidSavedData extends SavedData {
-    public static final int TOPOLOGY_VERSION=3;
+    /** The world topology ledger without its online tick, which is the checkpoint's epoch. */
+    public static final int TOPOLOGY_VERSION=4;
     public static final String DATA_NAME="createcheme_fluid_core";
     private final Thread owner=Thread.currentThread();
     private final Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models;
     private FluidCheckpointCodec.Checkpoint checkpoint;
     private Optional<WorldTopologyLedger.Snapshot> world=Optional.empty();
     private final FluidCheckpointCodec.PayloadCache payloads=new FluidCheckpointCodec.PayloadCache();
-    private byte[] encodedWorld;
+    /** The encoded topology and the snapshot it encodes: kept while the ledger is unchanged, whatever the online tick. */
+    private byte[] encodedWorld;private byte[] encodedWorldDigest;private WorldTopologyLedger.Snapshot encodedWorldSource;
     public record Capture(FluidCheckpointCodec.Checkpoint checkpoint,WorldTopologyLedger.Snapshot world) {}
     private java.util.function.Supplier<Capture> capture;
     /**
@@ -37,7 +39,7 @@ public final class FluidSavedData extends SavedData {
      * then encoding - island payloads encoded afresh or copied from the cache, the ledger and the topology - with the
      * bytes each part wrote. For the benchmark's save-time report.
      */
-    public record SaveTiming(long captureNanos,long encodeNanos,int islands,int payloadsEncoded,int payloadsReused,long payloadBytes,long ledgerBytes,long topologyBytes) {
+    public record SaveTiming(long captureNanos,long encodeNanos,int islands,int payloadsEncoded,int payloadsReused,long payloadBytes,long ledgerBytes,long topologyBytes,boolean topologyEncoded) {
         public long totalNanos(){return captureNanos+encodeNanos;}
         public long bytes(){return payloadBytes+ledgerBytes+topologyBytes;}
     }
@@ -57,7 +59,7 @@ public final class FluidSavedData extends SavedData {
     public void bindCapture(java.util.function.Supplier<Capture> capture){owned();this.capture=Objects.requireNonNull(capture);}
     public void replace(FluidCheckpointCodec.Checkpoint next){owned();checkpoint=Objects.requireNonNull(next);setDirty();}
     public void replace(FluidCheckpointCodec.Checkpoint next,WorldTopologyLedger.Snapshot nextWorld) {
-        owned();Objects.requireNonNull(next);Objects.requireNonNull(nextWorld);checkpoint=next;if(world.isEmpty()||world.orElseThrow()!=nextWorld)encodedWorld=null;world=Optional.of(nextWorld);setDirty();
+        owned();Objects.requireNonNull(next);Objects.requireNonNull(nextWorld);checkpoint=next;world=Optional.of(nextWorld);setDirty();
     }
     /** The cost of the last save, or null before the first. */
     public SaveTiming lastSave(){owned();return lastSave;}
@@ -70,18 +72,24 @@ public final class FluidSavedData extends SavedData {
         // The world epoch: the topology's online tick, or for a core-only checkpoint its most advanced island.
         long epoch=world.map(WorldTopologyLedger.Snapshot::onlineTick).orElseGet(()->checkpoint.islands().stream().mapToLong(i->i.snapshot().clock().onlineTick()).max().orElse(0));
         var written=FluidCheckpointCodec.write(tag,checkpoint,epoch,models,payloads);
-        long topologyBytes=0;
+        long topologyBytes=0;boolean topologyEncoded=false;
         if(world.isPresent()) {
-            if(encodedWorld==null)encodedWorld=FluidCheckpointCodec.encodeWorld(world.orElseThrow()).getBytes(StandardCharsets.UTF_8);
-            tag.putInt("TopologyFormat",TOPOLOGY_VERSION);tag.putByteArray("Topology",encodedWorld.clone());tag.putByteArray("TopologySHA256",digest(encodedWorld));topologyBytes=encodedWorld.length;
+            // The topology is saved without its online tick (that is the epoch), so an unchanged ledger keeps its bytes.
+            var current=world.orElseThrow();
+            if(encodedWorld==null||!FluidCheckpointCodec.sameWorldBody(encodedWorldSource,current)) {
+                encodedWorld=FluidCheckpointCodec.encodeWorldBody(current).getBytes(StandardCharsets.UTF_8);encodedWorldDigest=digest(encodedWorld);topologyEncoded=true;
+            } else if(FluidCheckpointCodec.verifying()&&!Arrays.equals(encodedWorld,FluidCheckpointCodec.encodeWorldBody(current).getBytes(StandardCharsets.UTF_8)))
+                throw new IllegalStateException("Cached topology encoding no longer matches the world ledger");
+            encodedWorldSource=current;
+            tag.putInt("TopologyFormat",TOPOLOGY_VERSION);tag.putByteArray("Topology",encodedWorld.clone());tag.putByteArray("TopologySHA256",encodedWorldDigest.clone());topologyBytes=encodedWorld.length;
         } else {tag.remove("TopologyFormat");tag.remove("Topology");tag.remove("TopologySHA256");}
         long finished=System.nanoTime();
-        lastSave=new SaveTiming(captured-started,finished-captured,written.islands(),written.encoded(),written.reused(),written.payloadBytes(),written.ledgerBytes(),topologyBytes);
+        lastSave=new SaveTiming(captured-started,finished-captured,written.islands(),written.encoded(),written.reused(),written.payloadBytes(),written.ledgerBytes(),topologyBytes,topologyEncoded);
         return tag;
     }
     /**
      * Reads format 3 and its topology. Any other format is refused with the instruction to create a fresh world:
-     * there is no upgrade from format 2 or older. The topology's online tick must be the checkpoint's world epoch.
+     * there is no upgrade from format 2 or older. The topology is read at the checkpoint's world epoch.
      */
     public static FluidSavedData load(CompoundTag tag,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models) {
         var data=new FluidSavedData(FluidCheckpointCodec.decode(tag,models),models);
@@ -89,9 +97,8 @@ public final class FluidSavedData extends SavedData {
             if(!tag.contains("TopologyFormat",Tag.TAG_INT)||tag.getInt("TopologyFormat")!=TOPOLOGY_VERSION||!tag.contains("Topology",Tag.TAG_BYTE_ARRAY)||!tag.contains("TopologySHA256",Tag.TAG_BYTE_ARRAY))
                 throw new IllegalArgumentException("Unsupported or incomplete fluid topology (this build reads topology format "+TOPOLOGY_VERSION+" only); create a fresh world for this development build");
             byte[] worldBytes=tag.getByteArray("Topology");if(!MessageDigest.isEqual(digest(worldBytes),tag.getByteArray("TopologySHA256")))throw new IllegalArgumentException("Topology checkpoint checksum mismatch");
-            var world=FluidCheckpointCodec.decodeWorld(new String(worldBytes,StandardCharsets.UTF_8));
-            if(world.onlineTick()!=FluidCheckpointCodec.epoch(tag))throw new IllegalArgumentException("Fluid topology at online tick "+world.onlineTick()+" does not match the checkpoint's world epoch "+FluidCheckpointCodec.epoch(tag));
-            data.world=Optional.of(world);data.encodedWorld=worldBytes.clone();
+            var world=FluidCheckpointCodec.decodeWorldBody(new String(worldBytes,StandardCharsets.UTF_8),FluidCheckpointCodec.epoch(tag));
+            data.world=Optional.of(world);data.encodedWorld=worldBytes.clone();data.encodedWorldDigest=digest(worldBytes);data.encodedWorldSource=world;
         }
         return data;
     }

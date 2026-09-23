@@ -481,7 +481,7 @@ public final class FluidServerBenchmark {
         result.put("onlineTick",r.world.onlineTick());result.put("cacheClearedFirst",cold);
         result.put("totalMilliseconds",timing.totalNanos()/1e6);result.put("captureMilliseconds",timing.captureNanos()/1e6);result.put("encodeMilliseconds",timing.encodeNanos()/1e6);
         result.put("islands",timing.islands());result.put("payloadsEncoded",timing.payloadsEncoded());result.put("payloadsReused",timing.payloadsReused());
-        result.put("payloadBytes",timing.payloadBytes());result.put("ledgerBytes",timing.ledgerBytes());result.put("topologyBytes",timing.topologyBytes());result.put("bytes",timing.bytes());
+        result.put("payloadBytes",timing.payloadBytes());result.put("ledgerBytes",timing.ledgerBytes());result.put("topologyBytes",timing.topologyBytes());result.put("topologyEncoded",timing.topologyEncoded());result.put("bytes",timing.bytes());
         try{var out=new java.io.ByteArrayOutputStream();var root=new net.minecraft.nbt.CompoundTag();root.put("data",tag);net.minecraft.nbt.NbtIo.writeCompressed(root,out);result.put("compressedBytes",out.size());}
         catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
         return result;
@@ -612,7 +612,7 @@ public final class FluidServerBenchmark {
     /** Writes the report once the post-window save was taken, and releases the fixture. */
     private static void complete(Run r) {
         var saveTime=new LinkedHashMap<String,Object>();
-        saveTime.put("note","Checkpoint format 3 saves of the whole fixture through the world's saved data, timed on the server thread: capture (materialises certified islands) plus encoding. cold: payload cache cleared first, at the end of the window; warm: the second consecutive save, same tick; nextCadence: one save 100 paced ticks later, after awake islands solved again. compressedBytes is the gzip NBT size a file write would produce, not timed.");
+        saveTime.put("note","Checkpoint format 3 saves of the whole fixture through the world's saved data, timed on the server thread: capture (materialises certified islands) plus encoding; the topology ledger is encoded again only when it changed (topologyEncoded). cold: payload cache cleared first, at the end of the window; warm: the second consecutive save, same tick; nextCadence: one save 100 paced ticks later, after awake islands solved again. compressedBytes is the gzip NBT size a file write would produce, not timed.");
         saveTime.putAll(r.saves);r.report.put("saveTime",saveTime);
         try {var path=Path.of(System.getProperty("createcheme.fluid.benchmark.output"));Files.createDirectories(path.getParent());Files.writeString(path,new GsonBuilder().setPrettyPrinting().create().toJson(r.report));
             if(recording!=null){recording.stop();recording.dump(path.resolveSibling("stress.jfr"));recording.close();recording=null;}}

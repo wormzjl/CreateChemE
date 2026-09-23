@@ -360,16 +360,21 @@ class FluidCheckpointFormatTest {
         var rig=new Rig(new CertificatePolicy(true,1e-9,1e-6,5,2,0));
         rig.register(1,deadHeadedLine(100,0));rig.register(2,closedPair(200,4));rig.register(3,slowFill(300,8));
         rig.runUntilCertified(List.of(1L,2L),2_000);
-        var data=new FluidSavedData(rig.checkpoint(),world(rig.epoch[0]),key->model);
-        data.bindCapture(()->new FluidSavedData.Capture(rig.checkpoint(),world(rig.epoch[0])));
+        // The world ledger, advanced with the islands' epoch as the world advances it; captured as the world captures it.
+        var ledger=new WorldTopologyLedger(world(0));
+        java.util.function.Supplier<WorldTopologyLedger.Snapshot> topology=()->{while(ledger.onlineTick()<rig.epoch[0])ledger.tick();return ledger.snapshot();};
+        var data=new FluidSavedData(rig.checkpoint(),topology.get(),key->model);
+        data.bindCapture(()->new FluidSavedData.Capture(rig.checkpoint(),topology.get()));
         countFromHere();
         data.save(new CompoundTag(),null);var first=data.lastSave();
-        assertEquals(3,first.payloadsEncoded());assertEquals(0,first.payloadsReused(),"the first save encodes every island");
+        assertEquals(3,first.payloadsEncoded());assertEquals(0,first.payloadsReused(),"the first save encodes every island");assertTrue(first.topologyEncoded());
         var immediate=data.save(new CompoundTag(),null);var second=data.lastSave();
         assertEquals(0,second.payloadsEncoded());assertEquals(3,second.payloadsReused(),"nothing changed: every payload is copied");
+        assertFalse(second.topologyEncoded(),"an unchanged world ledger keeps its encoding");
         long horizon=rig.stored(2).certificate().orElseThrow().horizonTick();
         rig.run(100);
         data.save(new CompoundTag(),null);var third=data.lastSave();
+        assertFalse(third.topologyEncoded(),"the ledger is unchanged at another online tick");
         assertEquals(1,third.payloadsEncoded(),"only the awake island solved");assertEquals(2,third.payloadsReused(),"the certified islands were only materialised");
         assertTrue(horizon>rig.epoch[0],"the horizon lies ahead");
         rig.run(horizon-rig.epoch[0]+100);
@@ -460,8 +465,9 @@ class FluidCheckpointFormatTest {
         assertTrue(FluidSavedData.load(current,key->{throw new AssertionError();}).world().isPresent());
         var oldTopology=current.copy();oldTopology.putInt("TopologyFormat",2);
         assertTrue(assertThrows(IllegalArgumentException.class,()->FluidSavedData.load(oldTopology,key->{throw new AssertionError();})).getMessage().contains("fresh world"));
-        var otherEpoch=current.copy();otherEpoch.putLong("Epoch",41);FluidCheckpointCodec.reseal(otherEpoch);
-        assertTrue(assertThrows(IllegalArgumentException.class,()->FluidSavedData.load(otherEpoch,key->{throw new AssertionError();})).getMessage().contains("world epoch"));
+        // The topology is saved without its online tick: the checkpoint's epoch is the one clock of the world.
+        var moved=current.copy();moved.putLong("Epoch",41);FluidCheckpointCodec.reseal(moved);
+        assertEquals(41,FluidSavedData.load(moved,key->{throw new AssertionError();}).world().orElseThrow().onlineTick());
         var unsigned=current.copy();unsigned.remove("TopologySHA256");
         assertThrows(IllegalArgumentException.class,()->FluidSavedData.load(unsigned,key->{throw new AssertionError();}));
     }

@@ -133,6 +133,28 @@ public final class FluidCheckpointCodec {
         var tree=JsonParser.parseString(json);strictShape(tree,WorldTopologyLedger.Snapshot.class,0,new int[]{0});
         var snapshot=GSON.fromJson(tree,WorldTopologyLedger.Snapshot.class);new WorldTopologyLedger(snapshot);return snapshot;
     }
+    /** The world topology ledger without its online tick, which a checkpoint keeps as its epoch: what a save writes.
+     * It changes only when the ledger commits, so a save can keep the encoding of an unchanged ledger. */
+    private record WorldBody(long nextIdentity,Map<Long,WorldTopologyLedger.Registration> active,List<WorldTopologyLedger.Event> events,
+                             WorldTopologyLedger.MaterialTotal constructed,WorldTopologyLedger.MaterialTotal destroyed,FluidBasis basis,Map<UUID,RecoveredSolid> recoveries) {}
+    public static String encodeWorldBody(WorldTopologyLedger.Snapshot world) {
+        String json=GSON.toJson(new WorldBody(world.nextIdentity(),world.active(),world.events(),world.constructed(),world.destroyed(),world.basis(),world.recoveries()));
+        if(json.length()>MAXIMUM_JSON_CHARS)throw new IllegalStateException("World topology exceeds format bound");return json;
+    }
+    /** The ledger a checkpoint saved, at the checkpoint's epoch, validated as the ledger itself validates it. */
+    public static WorldTopologyLedger.Snapshot decodeWorldBody(String json,long onlineTick) {
+        if(json.length()>MAXIMUM_JSON_CHARS)throw new IllegalArgumentException("World topology exceeds format bound");
+        var tree=JsonParser.parseString(json);strictShape(tree,WorldBody.class,0,new int[]{0});var body=GSON.fromJson(tree,WorldBody.class);
+        var snapshot=new WorldTopologyLedger.Snapshot(onlineTick,body.nextIdentity,body.active,body.events,body.constructed,body.destroyed,body.basis,body.recoveries);
+        new WorldTopologyLedger(snapshot);return snapshot;
+    }
+    /** Whether two ledger snapshots hold the same ledger, whatever their online ticks: a snapshot shares the ledger's
+     * immutable parts with the state it was taken from, so an unchanged ledger is the same objects. */
+    public static boolean sameWorldBody(WorldTopologyLedger.Snapshot a,WorldTopologyLedger.Snapshot b) {
+        return a.nextIdentity()==b.nextIdentity()&&a.active()==b.active()&&a.events()==b.events()&&a.constructed()==b.constructed()
+                &&a.destroyed()==b.destroyed()&&a.basis()==b.basis()&&a.recoveries()==b.recoveries();
+    }
+    static boolean verifying(){return VERIFY;}
     private static final class ControlAdapter implements JsonSerializer<FlowControl>,JsonDeserializer<FlowControl> {
         @Override public JsonElement serialize(FlowControl control,Type type,JsonSerializationContext context) {
             return context.serialize(switch(control) {
