@@ -214,6 +214,14 @@ public final class IslandCoordinator {
     /** A certified island is materialised first, so what is read (a view, a save, a module decision) is current. */
     public Snapshot snapshot(long id){owned();var island=require(id);materialise(island);return island.snapshot();}
     public Optional<Metrics> metrics(long id){owned();return Optional.ofNullable(require(id).metrics);}
+    /**
+     * A presentation read, for a view of a loaded device or an open menu: a certified island is materialised as by
+     * {@link #snapshot(long)}, but never onto a wake it has not acted on yet (a module drive or its horizon), so a
+     * view can never move an island's schedule. The island's own deadline acts on the wake at the same tick with or
+     * without viewers, and the materialised state is the certificate's state at that tick whatever the reads
+     * before it: presentation cadence never drives scientific progress.
+     */
+    public Snapshot presentation(long id){owned();var island=require(id);materialise(island,true);return island.snapshot();}
     /** Every island, certified ones materialised first; see {@link #snapshot(long)}. */
     public List<Snapshot> snapshots(){owned();for(var island:List.copyOf(islands.values()))materialise(island);return islands.values().stream().map(Island::snapshot).toList();}
     /** Every island as it is stored, without materialising a certified one: a diagnostic read that must not
@@ -634,14 +642,18 @@ public final class IslandCoordinator {
      * Advances a certified island to {@code target = min(online, nearest fence, hold tick, horizon, earliest
      * drive)} and acts on what it reached: a module drive wakes it, the horizon wakes it to solve one
      * revalidating slice. On demand only: a fence or event alignment, a module horizon, a read of its snapshot
-     * (a view, a save, a module decision), its own deadline. Each advance is reported to the replay listener with
+     * (a save, a module decision), a view (a presentation read, which never wakes), its own deadline. Each
+     * advance is reported to the replay listener with
      * the replayed span as the island's last result, so boundary and pump accounting stays exact.
      */
-    private void materialise(Island island) {
+    private void materialise(Island island){materialise(island,false);}
+    /** {@code presentation}: a view's read, which stops one tick short of a wake not yet acted on and never wakes. */
+    private void materialise(Island island,boolean presentation) {
         var certificate=island.certificate;if(certificate==null)return;
         long committed=island.clock.committedTick(),online=island.clock.onlineTick();
-        long drive=drives.earliest(island.id,committed,online);
-        long target=Math.min(Math.min(online,island.fence()),Math.min(island.holdTick,Math.min(certificate.horizonTick(),drive)));
+        long drive=drives.earliest(island.id,committed,online),wake=Math.min(certificate.horizonTick(),drive);
+        long target=Math.min(Math.min(online,island.fence()),Math.min(island.holdTick,wake));
+        if(presentation&&target==wake)target=wake-1;
         if(target>committed) {
             // The island keeps its last solved interval as its result (what a save records and a view reads, whose
             // rates replay repeats); the replayed span with its scaled accounting goes to the replay listener only.
@@ -655,7 +667,7 @@ public final class IslandCoordinator {
             var stored=island.snapshot();
             replayed.published(List.of(new Snapshot(stored.id(),stored.revision(),stored.graph(),stored.clock(),stored.allowance(),stored.anchor(),Optional.of(replay),stored.status(),stored.fences(),stored.certificate())));
         }
-        if(stopped||suspension!=null)return;
+        if(presentation||stopped||suspension!=null)return;
         if(drive!=Long.MAX_VALUE&&target==drive)wake(island,null,"WAITING: module drive at "+drive);
         else if(target==certificate.horizonTick())wake(island,certificate,"REVALIDATING: "+certificate.kind()+" certificate horizon at "+certificate.horizonTick()/20.0+" s");
     }

@@ -29,10 +29,10 @@ public final class IslandScheduler {
         MODULE_HORIZON,
         /** An undelivered solid recovery (offline player, full inventory, unloaded chunk) is retried. */
         RECOVERY_RETRY,
-        /** Reserved for certified islands (rest and steady-flow certificates). */
-        CERTIFICATE_HORIZON,
-        /** Reserved for coalesced presentation buckets. */
-        PRESENTATION_BUCKET
+        /** A certified island's horizon or next module drive (rest and steady-flow certificates). */
+        CERTIFICATE_HORIZON
+        // Presentation buckets are not entries here: FluidPresentation keeps its one next-bucket tick, checked in
+        // O(1) at the end of the world tick so that a bucket sees the events applied in its own tick.
     }
     public record Deadline(long tick,long sequence,Kind kind,long id,long generation) {
         public Deadline {Objects.requireNonNull(kind);}

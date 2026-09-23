@@ -57,6 +57,14 @@ public final class FluidRuntimeDiagnostics {
     public static final LongAdder materialisations=new LongAdder();
     public static final LongAdder replayedTicks=new LongAdder();
     public static final LongAdder restedTicks=new LongAdder();
+    /** Presentation (plan section 3.4): bucket flushes that had a dirty device or an open menu, views handed to
+     * loaded block entities, static payloads among {@link #menuPackets}, player inputs queued for a reply, and
+     * replies composed at a bucket. */
+    public static final LongAdder bucketFlushes=new LongAdder();
+    public static final LongAdder devicePresentations=new LongAdder();
+    public static final LongAdder staticPayloads=new LongAdder();
+    public static final LongAdder queuedInputs=new LongAdder();
+    public static final LongAdder inputReplies=new LongAdder();
 
     private static final Map<String,LongAdder> COUNTERS=counters();
     private static Map<String,LongAdder> counters() {
@@ -70,6 +78,8 @@ public final class FluidRuntimeDiagnostics {
         map.put("drainContinuations",drainContinuations);map.put("drainContinuationsDeferred",drainContinuationsDeferred);
         map.put("certificatesIssued",certificatesIssued);map.put("certificatesRenewed",certificatesRenewed);map.put("certificateWakes",certificateWakes);
         map.put("materialisations",materialisations);map.put("replayedTicks",replayedTicks);map.put("restedTicks",restedTicks);
+        map.put("bucketFlushes",bucketFlushes);map.put("devicePresentations",devicePresentations);map.put("staticPayloads",staticPayloads);
+        map.put("queuedInputs",queuedInputs);map.put("inputReplies",inputReplies);
         return Collections.unmodifiableMap(map);
     }
 

@@ -702,7 +702,7 @@ class IslandCertificateTest {
     // ---------------- certificates that never issue change nothing ----------------
 
     /** A bit-for-bit fingerprint of everything an island publishes: clock, status, graph and the interval's result. */
-    private static String publications(List<IslandCoordinator.Snapshot> published) {
+    static String publications(List<IslandCoordinator.Snapshot> published) {
         try {
             var sha=java.security.MessageDigest.getInstance("SHA-256");var buffer=java.nio.ByteBuffer.allocate(8);
             java.util.function.LongConsumer put=v->{buffer.clear();buffer.putLong(v);sha.update(buffer.array());};
