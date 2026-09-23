@@ -15,6 +15,17 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Fluid follow-ups F1: `certificateStationaryTolerance` (eps_s) defaults to 1e-7 instead of 1e-9 (same key and range 0 to 1e-6), so through-flow islands whose holdup drifts by a few 1e-7 per interval certify; paced `stress100`: 40 certificates, full solves 1200 to 1028, deviation 6.8e-9 against the 1e-6 budget (`1dac4bd`; batch `2026-09-23-fluid-followups`).
+
+### Fixed
+
+- Fluid follow-ups F1: pumped fills into chains of dry nitrogen tanks no longer hold. Water evaporating into the first tank cools it to its wet-bulb temperature and turns every downstream connection round; a steam trace in the next tank no longer pins the Newton step (a trace below a millionth of its difference floor is projected instead of bounding the step), and a passive connection's velocity cap is read off its driving pressure, removing its jump at zero flow. In game `fill100` went from 12.2 to 0.35 cores, and all 100 lines fill to the pump's shutoff and certify (`ee050d4`, `55ba5a0`; batch `2026-09-23-fluid-followups`).
+- Fluid follow-ups F1: hold policy. A held island is retried on a fresh solver (it used to warm-start from where the held attempt stopped and could fail the same way forever), every hold halves the slice, a hold at one tick waits a cadence times 2^k (at most 64 cadences) until an input changes, and a refused soft-budget fallback is retried as a full solve; new counters `budgetHolds`, `numericalHolds`, `retriesDeferred`. An island a topology change created starts on a one-tick slice that doubles back to the cadence (`5b3d903`, `7f933ff`; batch `2026-09-23-fluid-followups`).
+- Fluid follow-ups F1: a retry after a start-up wall-budget cut is deterministic: two paced `transient100` runs agree bit for bit on all 100 islands, the five held ones included (`5b3d903`; batch `2026-09-23-fluid-followups`).
+- Fluid follow-ups F1: the in-game rig's pumped fills and pump transfer are held as tests (`FluidPumpedFillLineTest`, `FluidPumpedFillGameTests`) (`e945e7f`, `d17e76a`; batch `2026-09-23-fluid-followups`).
+
 ## [0.3.0] - 2026-09-23
 
 ### Added
