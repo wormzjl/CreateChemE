@@ -128,13 +128,16 @@ public final class FluidServerBenchmark {
         long replayedIntervals,restedIntervals;double replayedSeconds,restedSeconds;
         /**
          * The reference state for comparing a run with certificates against one without: every island's
-         * inventory at island tick {@link #referenceTick} (mid-window, on the five-second grid), and everything
-         * that crossed a boundary up to it. Certified islands are materialised exactly then; solved islands
-         * publish an interval ending there. Both sides pay the same one materialising read.
+         * inventory and its own boundary ledger (components, then energy with pump work) at island tick
+         * {@link #referenceTick}, mid-window on the five-second grid. Certified islands are materialised exactly
+         * then; a solved island publishes an interval ending there, or - when a startup wall-deadline retry
+         * shifted its grid - the two publications around it are kept for interpolation. Both sides pay the same
+         * one materialising read.
          */
         final long referenceTick,referenceWorldTick;boolean referenceMaterialised;
-        final Map<Long,List<double[]>> referenceInventories=new TreeMap<>();
-        final double[] referenceExternal=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()+1];
+        record ReferencePoint(long tick,List<double[]> inventories,double[] external) {}
+        final Map<Long,double[]> islandExternal=new HashMap<>();
+        final Map<Long,ReferencePoint> referenceBefore=new TreeMap<>(),referenceAfter=new TreeMap<>();
         void referenceTick() {
             if(!stress||referenceMaterialised||world.onlineTick()!=referenceWorldTick)return;
             referenceMaterialised=true;FluidRuntimeDiagnostics.pause();
@@ -199,14 +202,18 @@ public final class FluidServerBenchmark {
                 var timing=timings.get(island.id());if(timing==null||seen.getOrDefault(island.id(),0L)>=timing.sequence())continue;seen.put(island.id(),timing.sequence());
                 var result=timing.accepted()?island.lastResult().orElseThrow():null;
                 if(result!=null){for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];externalEnergy+=boundary.totalEnergyJoule();}pumpWork+=result.pumpWorkJoule();}
-                if(result!=null&&stress&&timing.endTick()<=referenceTick) {
-                    for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)referenceExternal[c]+=n[c];referenceExternal[n.length]+=boundary.totalEnergyJoule();}
-                    referenceExternal[referenceExternal.length-1]+=result.pumpWorkJoule();
-                }
-                if(result!=null&&stress&&timing.endTick()==referenceTick) {
-                    var nodes=new ArrayList<double[]>();
-                    for(var node:island.graph().reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR){var n=node.inventory().moles();var row=Arrays.copyOf(n,n.length+1);row[n.length]=node.inventory().internalEnergy();nodes.add(row);}
-                    referenceInventories.put(island.id(),nodes);
+                if(result!=null&&stress) {
+                    var ledger=islandExternal.computeIfAbsent(island.id(),ignored->new double[external.length+1]);
+                    for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)ledger[c]+=n[c];ledger[n.length]+=boundary.totalEnergyJoule();}
+                    ledger[ledger.length-1]+=result.pumpWorkJoule();
+                    long end=timing.endTick();
+                    if(end>=referenceTick-200&&end<=referenceTick+200&&(end<=referenceTick||!referenceAfter.containsKey(island.id()))) {
+                        var nodes=new ArrayList<double[]>();
+                        for(var node:island.graph().reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR){var n=node.inventory().moles();var row=Arrays.copyOf(n,n.length+1);row[n.length]=node.inventory().internalEnergy();nodes.add(row);}
+                        var point=new ReferencePoint(end,nodes,ledger.clone());
+                        if(end<=referenceTick)referenceBefore.put(island.id(),point);
+                        if(end>=referenceTick&&!referenceAfter.containsKey(island.id()))referenceAfter.put(island.id(),point);
+                    }
                 }
                 // A replayed or identity-advanced span is accounted like any other advance, but it is not a solve.
                 if(timing.advance()!=IslandCoordinator.Advance.SOLVED) {
@@ -408,7 +415,8 @@ public final class FluidServerBenchmark {
         certified.put("certifiedIslandsPerSecond",r.stressSamples.stream().map(s->s.get("certifiedIslands")).toList());
         certified.put("finalCertificates",finalIslands.stream().filter(s->s.certificate().isPresent()).collect(java.util.stream.Collectors.toMap(s->s.id(),s->s.certificate().orElseThrow(),(a,b)->a,TreeMap::new)));
         if(r.stress){var reference=new LinkedHashMap<String,Object>();reference.put("islandTick",r.referenceTick);reference.put("materialised",r.referenceMaterialised);
-            reference.put("islandsRecorded",r.referenceInventories.size());reference.put("externalThroughReference",r.referenceExternal);reference.put("inventories",r.referenceInventories);certified.put("reference",reference);}
+            reference.put("islandsExact",r.referenceBefore.entrySet().stream().filter(e->e.getValue().tick()==r.referenceTick).count());
+            reference.put("before",r.referenceBefore);reference.put("after",r.referenceAfter);certified.put("reference",reference);}
         if(heapAfterForcedGc!=null)certified.put("heapAfterForcedGcBytes",heapAfterForcedGc);
         report.put("certificates",certified);
         report.put("warmupSamples",r.warmupSamples);report.put("warmupHeldIntervals",r.warmupSamples.stream().filter(s->!s.timing().accepted()).count());
