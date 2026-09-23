@@ -31,6 +31,15 @@ MEMORY_JFR_EVENTS = (
 )
 
 
+def default_artifact():
+    """The jar the build names from gradle.properties' mod_version, so a version bump needs no edit here."""
+    for line in Path("gradle.properties").read_text(encoding="utf-8").splitlines():
+        key, _, value = line.partition("=")
+        if key.strip() == "mod_version":
+            return Path(f"build/libs/createcheme-{value.strip()}.jar")
+    raise SystemExit("gradle.properties has no mod_version; pass --artifact explicitly")
+
+
 def runtime_error_lines(log_bytes):
     return [
         line
@@ -810,7 +819,8 @@ def build_parser():
         "--candidate-artifact",
         dest="artifact",
         type=Path,
-        default=Path("build/libs/createcheme-0.1.0.jar"),
+        default=None,
+        help="Candidate jar; defaults to build/libs/createcheme-<mod_version>.jar",
     )
     summary_parser.add_argument(
         "--runtime-root",
@@ -829,7 +839,8 @@ def build_parser():
     stress_parser.add_argument(
         "--artifact",
         type=Path,
-        default=Path("build/libs/createcheme-0.1.0.jar"),
+        default=None,
+        help="Candidate jar; defaults to build/libs/createcheme-<mod_version>.jar",
     )
 
     memory_parser = commands.add_parser(
@@ -883,7 +894,7 @@ def main(argv=None):
         print(f"{result['status']}: {result['errorCount']} runtime errors")
         return 0 if result["status"] == "PASS" else 1
     if args.command == "summarize":
-        result = summarize_ordinary(args.root, args.artifact, args.runtime_root)
+        result = summarize_ordinary(args.root, args.artifact or default_artifact(), args.runtime_root)
         write_json(args.output, result)
         print(
             f"{result['status']}: {len(result['ordinaryGroups'])} ordinary groups, "
@@ -891,7 +902,7 @@ def main(argv=None):
         )
         return 0
     if args.command == "stress":
-        result = summarize_stress(args.root, args.artifact)
+        result = summarize_stress(args.root, args.artifact or default_artifact())
         write_json(args.output, result)
         print(f"{len(result['runs'])} stress runs; {args.output}")
         return 0
