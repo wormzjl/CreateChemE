@@ -15,7 +15,13 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- Fluid scheduling WP0: opt-in server-thread counters of scheduling work (island visits, module scans, topology and island snapshots, views, menu packets, pumps, dispatches), elapsed-window `transient100`, `rest100` and `mixed100` benchmark profiles beside `stress100`, and bitwise trajectory fingerprints for the P12 and P31 qualification tests (`eb28fc5`; batch `2026-09-23-fluid-scheduling-rest`).
+
+### Changed
+
+- Fluid scheduling WP1: islands are scheduled by deadline on a shared online epoch instead of being visited on every tick; event owners come from a fence index, recoveries and module work run on deadlines and dependency changes, rounds close on their wall budget, and a drain that exhausts its per-tick budget owes one continuation; dispatch order, budgets and trajectories are unchanged (`a0a791a`..`cadd182`, `74b62e3`; benchmark script default jar `5f866a9`; batch `2026-09-23-fluid-scheduling-rest`).
 
 ## [0.2.0] - 2026-09-23
 
