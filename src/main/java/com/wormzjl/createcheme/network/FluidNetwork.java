@@ -18,8 +18,17 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.HandlerThread;
 import java.util.*;
 
-/** Position/identity/revision-bound controls; clients never send inventory or solver results. */
+/**
+ * Menu protocol {@value #PROTOCOL}: position/identity/revision-bound controls; clients never send inventory or
+ * solver results. The server answers nothing directly. A menu receives a static payload (kind, components,
+ * presets, material names) and a live payload (view, controls, the engine's reply) only on its island's
+ * presentation bucket ({@link FluidPresentation}); the static payload again only when the device's registration
+ * revision changed. An edit or recovery packet is validated as before, queued as a ledger event, and its reply -
+ * {@code Queued for simulation event at tick N}, {@code Applied} or {@code Not applied: <reason>} - arrives with
+ * the next bucket.
+ */
 public final class FluidNetwork {
+    public static final String PROTOCOL="fluid-4";
     private static final Gson JSON=new Gson();
     public static final int MAX_JSON=262144;
     public static final int MAX_EDIT_JSON=4096;
@@ -40,6 +49,10 @@ public final class FluidNetwork {
             return new Controls(record.spec().temperature(),pressure,d.geometry().diameter(),d.geometry().roughness(),flow,head,record.spec().composition(),record.spec().solids());
         }
     }
+    /**
+     * What a menu shows: a static part and a live part as one validated record. The server builds it at a bucket
+     * and splits it for the wire; the client joins the two parts it received and validates the whole again.
+     */
     public record MenuData(TopologyCompiler.Kind kind,FluidView view,Controls controls,List<String> components,List<FluidPresetCatalog.Preset> presets,String message,
             Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
         public MenuData(TopologyCompiler.Kind kind,FluidView view,Controls controls,List<String> components,List<FluidPresetCatalog.Preset> presets,String message) {
@@ -56,6 +69,26 @@ public final class FluidNetwork {
             for(var transfer:view.pipeHistory()){requirePhaseAxis(transfer.forward().phaseMoles(),components.size());requirePhaseAxis(transfer.reverse().phaseMoles(),components.size());}
             for(var p:presets)if(p.moleFractions().length!=components.size())throw new IllegalArgumentException("Fluid preset axis mismatch");
             for(var e:materialNames.entrySet())if(!e.getKey().equals(e.getValue().id()))throw new IllegalArgumentException("Fluid name identity mismatch");
+        }
+        /** Joins what a menu received: its last static payload and the live payload just delivered. */
+        public static MenuData of(StaticData fixed,LiveData live){return new MenuData(fixed.kind(),live.view(),live.controls(),fixed.components(),fixed.presets(),live.message(),fixed.materialNames());}
+        public StaticData staticData(long revision){return new StaticData(kind,revision,components,presets,materialNames);}
+        public LiveData liveData(){return new LiveData(view,controls,message);}
+    }
+    /** The static payload: what changes only with the device's registration revision (and never within one server run otherwise). */
+    public record StaticData(TopologyCompiler.Kind kind,long revision,List<String> components,List<FluidPresetCatalog.Preset> presets,Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
+        public StaticData {
+            Objects.requireNonNull(kind);components=new com.wormzjl.createcheme.science.material.MaterialAxis(components).ids();presets=List.copyOf(presets);materialNames=Map.copyOf(materialNames);
+            if(revision<0||presets.size()>com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS||materialNames.size()>components.size()||!components.containsAll(materialNames.keySet()))
+                throw new IllegalArgumentException("Invalid bounded fluid static state");
+            for(var p:presets)if(p.moleFractions().length!=components.size())throw new IllegalArgumentException("Fluid preset axis mismatch");
+        }
+    }
+    /** The live payload: the bucket's view, the device's current controls, and the engine's reply (empty for none). */
+    public record LiveData(FluidView view,Controls controls,String message) {
+        public LiveData {
+            Objects.requireNonNull(view);Objects.requireNonNull(controls);Objects.requireNonNull(message);
+            if(message.length()>1024||view.pipeHistory().size()>12||view.pipeRoutes().size()>12||view.status().length()>2048)throw new IllegalArgumentException("Fluid view exceeds display bounds");
         }
     }
     private static void requirePhaseAxis(double[][] phases,int components) {
@@ -78,41 +111,83 @@ public final class FluidNetwork {
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
-    public static void recoverSolids(FluidDeviceMenu menu,long revision){PacketDistributor.sendToServer(new RecoverPayload(menu.containerId,menu.position(),menu.identity(),revision));}
-    private static void recover(RecoverPayload payload,IPayloadContext context){
-        if(!(context.player() instanceof ServerPlayer player)||!(player.containerMenu instanceof FluidDeviceMenu menu))return;
-        if(menu.containerId!=payload.menuId||menu.identity()!=payload.identity||!menu.position().equals(payload.position)||!menu.stillValid(player)||menu.debug()||!player.mayBuild()||player.isSpectator()||!player.level().mayInteract(player,payload.position)||!menu.admitEdit(player.server.getTickCount()))return;
-        FluidWorldAuthority.find(player.server).ifPresent(world->{try{world.recoverFilter(payload.identity,payload.revision,player);sendState(player,menu,"Solid recovery requested.");}catch(RuntimeException rejected){sendState(player,menu,"Not applied: "+rejected.getMessage());}});
+    /** Server to client, at a bucket: the static part of a menu's state, as JSON of {@link StaticData}. */
+    public record StaticPayload(int menuId,long identity,String json) implements CustomPacketPayload {
+        public static final Type<StaticPayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(CreateChemE.MOD_ID,"fluid_static"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,StaticPayload> STREAM_CODEC=new StreamCodec<>() {
+            public StaticPayload decode(RegistryFriendlyByteBuf b){return new StaticPayload(b.readVarInt(),b.readLong(),b.readUtf(MAX_JSON));}
+            public void encode(RegistryFriendlyByteBuf b,StaticPayload p){b.writeVarInt(p.menuId);b.writeLong(p.identity);b.writeUtf(p.json,MAX_JSON);}
+        };
+        @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
-    public record StatePayload(int menuId,long identity,String json) implements CustomPacketPayload {
-        public static final Type<StatePayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(CreateChemE.MOD_ID,"fluid_state"));
-        public static final StreamCodec<RegistryFriendlyByteBuf,StatePayload> STREAM_CODEC=new StreamCodec<>() {
-            public StatePayload decode(RegistryFriendlyByteBuf b){return new StatePayload(b.readVarInt(),b.readLong(),b.readUtf(MAX_JSON));}
-            public void encode(RegistryFriendlyByteBuf b,StatePayload p){b.writeVarInt(p.menuId);b.writeLong(p.identity);b.writeUtf(p.json,MAX_JSON);}
+    /** Server to client, at every bucket of an open menu: the live part, as JSON of {@link LiveData}. */
+    public record LivePayload(int menuId,long identity,String json) implements CustomPacketPayload {
+        public static final Type<LivePayload> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(CreateChemE.MOD_ID,"fluid_live"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,LivePayload> STREAM_CODEC=new StreamCodec<>() {
+            public LivePayload decode(RegistryFriendlyByteBuf b){return new LivePayload(b.readVarInt(),b.readLong(),b.readUtf(MAX_JSON));}
+            public void encode(RegistryFriendlyByteBuf b,LivePayload p){b.writeVarInt(p.menuId);b.writeLong(p.identity);b.writeUtf(p.json,MAX_JSON);}
         };
         @Override public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar=event.registrar("fluid-3").executesOn(HandlerThread.MAIN);
+        var registrar=event.registrar(PROTOCOL).executesOn(HandlerThread.MAIN);
         registrar.playToServer(EditPayload.TYPE,EditPayload.STREAM_CODEC,FluidNetwork::edit);
         registrar.playToServer(RecoverPayload.TYPE,RecoverPayload.STREAM_CODEC,FluidNetwork::recover);
-        registrar.playToClient(StatePayload.TYPE,StatePayload.STREAM_CODEC,(payload,context)->{
-            if(context.player().containerMenu instanceof FluidDeviceMenu menu&&menu.containerId==payload.menuId&&menu.identity()==payload.identity)menu.acceptData(JSON.fromJson(payload.json,MenuData.class));
+        registrar.playToClient(StaticPayload.TYPE,StaticPayload.STREAM_CODEC,(payload,context)->{
+            if(context.player().containerMenu instanceof FluidDeviceMenu menu&&menu.containerId==payload.menuId&&menu.identity()==payload.identity)menu.acceptStatic(decodeStatic(payload.json));
+        });
+        registrar.playToClient(LivePayload.TYPE,LivePayload.STREAM_CODEC,(payload,context)->{
+            if(context.player().containerMenu instanceof FluidDeviceMenu menu&&menu.containerId==payload.menuId&&menu.identity()==payload.identity)menu.acceptLive(decodeLive(payload.json));
         });
     }
-    public static void sendState(ServerPlayer player,FluidDeviceMenu menu,String message) {
+    public static StaticData decodeStatic(String json){return Objects.requireNonNull(JSON.fromJson(json,StaticData.class));}
+    public static LiveData decodeLive(String json){return Objects.requireNonNull(JSON.fromJson(json,LiveData.class));}
+
+    // ---- server: delivery at a bucket only ----
+
+    /**
+     * Delivers one presentation bucket to an open menu. Called only by the engine's flush ({@link FluidPresentation}):
+     * the static payload when the menu has not yet received the device's current registration revision, then the
+     * live payload with the view built for this bucket and the reply the engine composed.
+     */
+    public static void deliver(FluidWorldAuthority world,FluidDeviceMenu menu,WorldTopologyLedger.Registration record,boolean withStatic,FluidView view,String reply) {
+        var player=menu.serverPlayer();if(player==null)return;
+        var data=new MenuData(record.device().kind(),view,Controls.from(record),world.components(),world.presets(),reply,world.materialNames());
+        if(withStatic) {
+            PacketDistributor.sendToPlayer(player,new StaticPayload(menu.containerId,menu.identity(),JSON.toJson(data.staticData(record.revision()))));
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.menuPackets);FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.staticPayloads);
+        }
+        PacketDistributor.sendToPlayer(player,new LivePayload(menu.containerId,menu.identity(),JSON.toJson(data.liveData())));
+        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.menuPackets);
+    }
+
+    // ---- server: inputs are queued, never answered here ----
+
+    public static void recoverSolids(FluidDeviceMenu menu,long revision){PacketDistributor.sendToServer(new RecoverPayload(menu.containerId,menu.position(),menu.identity(),revision));}
+    private static void recover(RecoverPayload payload,IPayloadContext context){if(context.player() instanceof ServerPlayer player)recover(payload,player);}
+    /** The recovery handler: the same admission as an edit; the recovery is queued as a ledger event and the handler returns without a reply. */
+    public static void recover(RecoverPayload payload,ServerPlayer player) {
+        if(!(player.containerMenu instanceof FluidDeviceMenu menu))return;
+        if(menu.containerId!=payload.menuId||menu.identity()!=payload.identity||!menu.position().equals(payload.position)||!menu.stillValid(player)||menu.debug()||!player.mayBuild()||player.isSpectator()||!player.level().mayInteract(player,payload.position)||!menu.admitEdit(player.server.getTickCount()))return;
         FluidWorldAuthority.find(player.server).ifPresent(world->{
-            var record=world.registrations().get(menu.identity());if(record==null)return;
-            var data=new MenuData(record.device().kind(),world.view(menu.identity()),Controls.from(record),world.components(),world.presets(),message,world.materialNames());
-            PacketDistributor.sendToPlayer(player,new StatePayload(menu.containerId,menu.identity(),JSON.toJson(data)));
-            com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.count(com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.menuPackets);
+            WorldTopologyLedger.Event event=null;String refusal=null;
+            try{event=world.recoverFilter(payload.identity,payload.revision,player);}catch(RuntimeException rejected){refusal=reason(rejected);}
+            world.input(menu,event,refusal);
         });
     }
     public static void sendEdit(FluidDeviceMenu menu,long revision,Controls controls){PacketDistributor.sendToServer(new EditPayload(menu.containerId,menu.position(),menu.identity(),revision,JSON.toJson(controls)));}
-    private static void edit(EditPayload payload,IPayloadContext context) {
-        if(!(context.player() instanceof ServerPlayer player)||!(player.containerMenu instanceof FluidDeviceMenu menu))return;
+    private static void edit(EditPayload payload,IPayloadContext context){if(context.player() instanceof ServerPlayer player)edit(payload,player);}
+    /**
+     * The edit handler: validates the menu, the player and the payload's revision and bounds as before, queues the
+     * change as a ledger event, and returns without a reply. The engine composes the reply with the menu's next
+     * bucket. An inadmissible packet (wrong menu, position or identity, a probe, a distant, read-only or flooding
+     * player) is dropped with no reply at all, as before.
+     */
+    public static void edit(EditPayload payload,ServerPlayer player) {
+        if(!(player.containerMenu instanceof FluidDeviceMenu menu))return;
         if(menu.containerId!=payload.menuId||menu.identity()!=payload.identity||!menu.position().equals(payload.position)||!menu.stillValid(player)||menu.debug()||!player.mayBuild()||player.isSpectator()||!player.level().mayInteract(player,payload.position)||!menu.admitEdit(player.server.getTickCount()))return;
         FluidWorldAuthority.find(player.server).ifPresent(world->{
+            WorldTopologyLedger.Event event=null;String refusal=null;
             try {
                 var controls=Objects.requireNonNull(JSON.fromJson(payload.json,Controls.class));
                 if(controls.composition().length!=world.components().size())throw new IllegalArgumentException("Composition differs from the server network axis");
@@ -126,8 +201,33 @@ public final class FluidNetwork {
                     case VOID->spec=new FluidDeviceSpec(spec.volume(),spec.temperature(),controls.pressure,spec.composition());
                     case RESERVOIR->throw new IllegalArgumentException("Reservoir initialization is fixed; existing fluid is conserved.");
                 }
-                world.edit(d.id(),payload.revision,new PhysicalFluidTopology.Device(d.id(),d.position(),d.kind(),d.facing(),geometry,control),spec);sendState(player,menu,"Settings accepted at the current simulation event.");
-            }catch(RuntimeException rejected){sendState(player,menu,"Not applied: "+String.valueOf(rejected.getMessage()));}
+                event=world.edit(d.id(),payload.revision,new PhysicalFluidTopology.Device(d.id(),d.position(),d.kind(),d.facing(),geometry,control),spec);
+            }catch(RuntimeException rejected){refusal=reason(rejected);}
+            world.input(menu,event,refusal);
         });
     }
+
+    /**
+     * The player-facing reason of a refused input: the innermost refusal message. A control refused by its own
+     * validation reaches the handler wrapped by the JSON reader, whose message names the constructor and its
+     * arguments; the player reads the control's reason.
+     */
+    public static String reason(Throwable refused) {
+        String message=null;
+        for(Throwable t=refused;t!=null;t=t.getCause()==t?null:t.getCause())if(t.getMessage()!=null&&(t instanceof IllegalArgumentException||t instanceof IllegalStateException))message=t.getMessage();
+        return message!=null?message:String.valueOf(refused.getMessage());
+    }
+
+    // ---- client: the last delivered view of each device ----
+
+    private static final int REMEMBERED_VIEWS=32;
+    private static final Map<Long,MenuData> DELIVERED=new LinkedHashMap<>(16,.75f,true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<Long,MenuData> eldest){return size()>REMEMBERED_VIEWS;}
+    };
+    /** Client: remembers the last state delivered for a device, so a menu reopened on it shows that view until its next bucket. */
+    public static synchronized void remember(long identity,MenuData data){DELIVERED.put(identity,Objects.requireNonNull(data));}
+    /** Client: the last state delivered for a device in this session, or null. Opening a menu never asks the server. */
+    public static synchronized MenuData lastDelivered(long identity){return DELIVERED.get(identity);}
+    /** Client: forgets every delivered state (leaving a world; identities belong to a world). */
+    public static synchronized void forgetDelivered(){DELIVERED.clear();}
 }

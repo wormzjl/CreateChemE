@@ -52,7 +52,15 @@ class FluidPacketCodecTest {
         var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,view,new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,amounts),ids,presets,"",descriptors);
         String json=new Gson().toJson(data);assertTrue(json.length()<FluidNetwork.MAX_JSON);
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
-        try {var packet=new FluidNetwork.StatePayload(1,1,json);FluidNetwork.StatePayload.STREAM_CODEC.encode(buffer,packet);assertTrue(buffer.readableBytes()<1048576);assertEquals(packet,FluidNetwork.StatePayload.STREAM_CODEC.decode(buffer));}
+        try {
+            // fluid-4: the static part (axis, presets, names) and the live part (view, controls, reply) each fit on their own.
+            String fixed=new Gson().toJson(data.staticData(7)),live=new Gson().toJson(data.liveData());
+            assertTrue(fixed.length()<FluidNetwork.MAX_JSON&&live.length()<FluidNetwork.MAX_JSON,"static "+fixed.length()+", live "+live.length());
+            var s=new FluidNetwork.StaticPayload(1,1,fixed);FluidNetwork.StaticPayload.STREAM_CODEC.encode(buffer,s);var l=new FluidNetwork.LivePayload(1,1,live);FluidNetwork.LivePayload.STREAM_CODEC.encode(buffer,l);
+            assertTrue(buffer.readableBytes()<1048576);assertEquals(s,FluidNetwork.StaticPayload.STREAM_CODEC.decode(buffer));assertEquals(l,FluidNetwork.LivePayload.STREAM_CODEC.decode(buffer));
+            var joined=FluidNetwork.MenuData.of(FluidNetwork.decodeStatic(fixed),FluidNetwork.decodeLive(live));
+            assertEquals(ids,joined.components());assertEquals(32,joined.presets().size());assertEquals(count,joined.materialNames().size());
+        }
         finally{buffer.release();}
     }
     @Test void aFullBranchHistoryFitsTheBoundedClientWireAndSurvivesTheActualJsonSchema() {
@@ -64,9 +72,74 @@ class FluidPacketCodecTest {
         var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,view,controls,names,List.of(),"");var gson=new Gson();String json=gson.toJson(data);assertTrue(json.length()<FluidNetwork.MAX_JSON);
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
-            var packet=new FluidNetwork.StatePayload(3,42,json);FluidNetwork.StatePayload.STREAM_CODEC.encode(buffer,packet);var decoded=FluidNetwork.StatePayload.STREAM_CODEC.decode(buffer);
-            assertEquals(packet,decoded);var roundTrip=gson.fromJson(decoded.json(),FluidNetwork.MenuData.class);
+            String live=gson.toJson(data.liveData());assertTrue(live.length()<FluidNetwork.MAX_JSON);
+            var packet=new FluidNetwork.LivePayload(3,42,live);FluidNetwork.LivePayload.STREAM_CODEC.encode(buffer,packet);var decoded=FluidNetwork.LivePayload.STREAM_CODEC.decode(buffer);
+            assertEquals(packet,decoded);var roundTrip=FluidNetwork.MenuData.of(data.staticData(0),FluidNetwork.decodeLive(decoded.json()));
             assertEquals(12,roundTrip.view().pipeHistory().size());assertArrayEquals(amounts[2],roundTrip.view().pipeHistory().get(11).reverse().phaseMoles()[2]);assertEquals(250,roundTrip.view().onlineTick());
         } finally {buffer.release();}
+    }
+    // ---------------- fluid-4: static and live payloads ----------------
+
+    private static FluidNetwork.MenuData generatorMenu(String message) {
+        int count=com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;var names=new ArrayList<String>();for(int i=0;i<count;i++)names.add("component_"+i);
+        double[] amounts=new double[count];amounts[0]=1;
+        var presets=List.of(new FluidPresetCatalog.Preset("a","First",amounts),new FluidPresetCatalog.Preset("b","Second",amounts));
+        var descriptor=new com.wormzjl.createcheme.science.material.MaterialName("component_0","component.zero","Zero","lump",null,null,false);
+        var view=new FluidView(9,4,1200,1300,"RESTING: no flow since 55.0 s",null,0,List.of());
+        return new FluidNetwork.MenuData(TopologyCompiler.Kind.GENERATOR,view,new FluidNetwork.Controls(298.15,150000,.05,.000045,.01,500000,amounts),names,presets,message,Map.of("component_0",descriptor));
+    }
+    /** The protocol is fluid-4 and every payload has its own wire identity. */
+    @Test void theProtocolIsFluidFourWithDistinctStaticAndLivePayloads() {
+        assertEquals("fluid-4",FluidNetwork.PROTOCOL);
+        var ids=java.util.Set.of(FluidNetwork.EditPayload.TYPE.id(),FluidNetwork.RecoverPayload.TYPE.id(),FluidNetwork.StaticPayload.TYPE.id(),FluidNetwork.LivePayload.TYPE.id());
+        assertEquals(4,ids.size());
+    }
+    /** The static part carries the axis, presets, names and kind only; the live part the view, controls and reply only; joined they are the menu state. */
+    @Test void theStaticAndLivePayloadsSplitAndRejoinIntoTheSameMenuState() {
+        var data=generatorMenu(FluidPresentation.QUEUED+"1250");var gson=new Gson();
+        String fixed=gson.toJson(data.staticData(4)),live=gson.toJson(data.liveData());
+        for(String key:new String[]{"\"view\"","\"controls\"","\"message\""})assertFalse(fixed.contains(key),"static payload carries "+key);
+        for(String key:new String[]{"\"components\"","\"presets\"","\"materialNames\""})assertFalse(live.contains(key),"live payload carries "+key);
+        var decodedStatic=FluidNetwork.decodeStatic(fixed);var decodedLive=FluidNetwork.decodeLive(live);
+        assertEquals(4,decodedStatic.revision());assertEquals(TopologyCompiler.Kind.GENERATOR,decodedStatic.kind());
+        var joined=FluidNetwork.MenuData.of(decodedStatic,decodedLive);
+        assertEquals(data.kind(),joined.kind());assertEquals(data.components(),joined.components());assertEquals(data.materialNames(),joined.materialNames());
+        assertEquals(data.presets().size(),joined.presets().size());assertEquals(data.message(),joined.message());
+        assertEquals(data.view().status(),joined.view().status());assertEquals(1300,joined.view().onlineTick());
+        assertArrayEquals(data.controls().composition(),joined.controls().composition());
+        // The live part is small: it is what every bucket sends, the static part only on a revision change.
+        assertTrue(live.length()<fixed.length(),"live "+live.length()+" static "+fixed.length());
+    }
+    /** A live payload joined to the static part of another axis, or with an unbounded reply, is refused. */
+    @Test void aLivePayloadMustMatchItsStaticAxisAndABoundedReply() {
+        var data=generatorMenu("");
+        var shortAxis=new FluidNetwork.StaticData(TopologyCompiler.Kind.GENERATOR,0,List.of("only"),List.of(),Map.of());
+        assertThrows(IllegalArgumentException.class,()->FluidNetwork.MenuData.of(shortAxis,data.liveData()));
+        assertThrows(IllegalArgumentException.class,()->new FluidNetwork.LiveData(data.view(),data.controls(),"x".repeat(1025)));
+        assertThrows(IllegalArgumentException.class,()->new FluidNetwork.StaticData(TopologyCompiler.Kind.GENERATOR,-1,data.components(),List.of(),Map.of()));
+    }
+    /** The client remembers the last delivered state of the 32 most recent devices, so a reopened menu shows it until its bucket; leaving a world forgets it. */
+    @Test void theClientRemembersTheLastDeliveredStateOfRecentDevices() {
+        FluidNetwork.forgetDelivered();
+        try {
+            assertNull(FluidNetwork.lastDelivered(1));
+            var first=generatorMenu("");var second=generatorMenu(FluidPresentation.APPLIED);
+            FluidNetwork.remember(1,first);assertSame(first,FluidNetwork.lastDelivered(1));
+            FluidNetwork.remember(1,second);assertSame(second,FluidNetwork.lastDelivered(1),"the last delivery replaces the earlier one");
+            for(long id=2;id<=32;id++)FluidNetwork.remember(id,first);
+            assertNotNull(FluidNetwork.lastDelivered(1),"thirty-two devices fit");
+            FluidNetwork.lastDelivered(1);FluidNetwork.remember(33,first);
+            assertNotNull(FluidNetwork.lastDelivered(1),"the most recently read device stays");assertNull(FluidNetwork.lastDelivered(2),"the least recently used device goes");
+            FluidNetwork.forgetDelivered();assertNull(FluidNetwork.lastDelivered(1));
+        } finally {FluidNetwork.forgetDelivered();}
+    }
+    /** A refused control reaches the handler wrapped by the JSON reader; the player reads the control's own reason, not the wrapper. */
+    @Test void aRefusedControlIsRepliedWithItsOwnReason() {
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
+        var gson=new Gson();var object=com.google.gson.JsonParser.parseString(gson.toJson(new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,n))).getAsJsonObject();object.addProperty("pressure",3e6);
+        var refused=assertThrows(RuntimeException.class,()->gson.fromJson(object.toString(),FluidNetwork.Controls.class));
+        assertEquals("Controls are outside the supported range",FluidNetwork.reason(refused));
+        assertEquals("Stale fluid controls",FluidNetwork.reason(new IllegalStateException("Stale fluid controls")));
+        assertEquals("null",FluidNetwork.reason(new RuntimeException()));
     }
 }

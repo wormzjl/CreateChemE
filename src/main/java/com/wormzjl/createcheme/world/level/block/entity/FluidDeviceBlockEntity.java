@@ -14,7 +14,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Loaded presentation binding only. No nitrogen, fluid amount, energy, or clock is reconstructed from this TE. */
+/**
+ * Loaded presentation binding only. No nitrogen, fluid amount, energy, or clock is reconstructed from this TE.
+ * Loading and identity binding only mark the device for its presentation bucket; the view arrives with that
+ * bucket. The block update this entity sends carries its identity and nothing else.
+ */
 public final class FluidDeviceBlockEntity extends BlockEntity implements FluidView.Receiver {
     private long identity;
     private FluidView lastView;
@@ -28,15 +32,22 @@ public final class FluidDeviceBlockEntity extends BlockEntity implements FluidVi
             if(world.at(p).orElseThrow().device().id()!=id)throw new IllegalStateException("Fluid identity belongs to a different position");
         }
         identity=id;setChanged();
-        if(level instanceof ServerLevel serverLevel){FluidWorldAuthority.find(serverLevel.getServer()).ifPresent(w->w.refreshLoaded(id));level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),2);}
+        if(level instanceof ServerLevel serverLevel){FluidWorldAuthority.find(serverLevel.getServer()).ifPresent(w->w.deviceLoaded(id));level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),2);}
     }
     @Override public void onLoad() {
         super.onLoad();if(!(level instanceof ServerLevel serverLevel))return;
         FluidWorldAuthority.find(serverLevel.getServer()).ifPresent(world->{
             var p=new PhysicalFluidTopology.Position(level.dimension().location().toString(),worldPosition.getX(),worldPosition.getY(),worldPosition.getZ());
-            world.at(p).ifPresent(record->{if(identity!=record.device().id())bindIdentity(record.device().id());else world.refreshLoaded(identity);});
+            world.at(p).ifPresent(record->{if(identity!=record.device().id())bindIdentity(record.device().id());else world.deviceLoaded(identity);});
         });
     }
+    @Override public void onChunkUnloaded(){super.onChunkUnloaded();released();}
+    @Override public void setRemoved(){super.setRemoved();released();}
+    /** Unloaded or removed: publications stop marking this device. */
+    private void released() {
+        if(identity!=0&&level instanceof ServerLevel serverLevel&&serverLevel.getServer().isSameThread())FluidWorldAuthority.find(serverLevel.getServer()).ifPresent(world->world.deviceUnloaded(identity));
+    }
+    /** The engine's bucket hands over the view; the block entity keeps it for server-side readers. */
     @Override public void acceptFluidView(FluidView view){if(view.identity()==identity)lastView=view;}
     public FluidView lastView(){return lastView;}
     public void open(ServerPlayer player,boolean debug) {

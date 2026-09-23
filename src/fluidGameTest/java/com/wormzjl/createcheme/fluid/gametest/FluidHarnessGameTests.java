@@ -43,7 +43,7 @@ public final class FluidHarnessGameTests {
             if(phase[0]==2) {
                 var view=world.view(tankId);helper.assertTrue(view.committedTick()>changedAt[0]&&view.state().phaseMoles()[1][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]>before[0]+1e-6,"Waiting for changed flow with every endpoint unloaded");
                 helper.assertTrue(!level.hasChunkAt(source)&&!level.hasChunkAt(reservoir)&&!level.hasChunkAt(middle),"Simulation loaded a chunk");
-                level.getChunk(reservoir);world.refreshLoaded(tankId);
+                level.getChunk(reservoir);world.markViewDirty(tankId);
                 var entity=(com.wormzjl.createcheme.world.level.block.entity.FluidDeviceBlockEntity)level.getBlockEntity(reservoir);
                 helper.assertTrue(entity.fluidIdentity()==tankId,"Reload changed the tank identity");
                 helper.assertTrue(Math.abs(world.view(tankId).state().phaseMoles()[2][com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]-initialNitrogen)<1e-8,"Reload recreated nitrogen");

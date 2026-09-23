@@ -15,6 +15,7 @@ import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 
 /** Compact native Minecraft controls with explicit SI units and last-interval phase history. */
 public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDeviceMenu> {
+    private static final String WAITING=com.wormzjl.createcheme.runtime.fluid.FluidPresentation.WAITING;
     private final Map<String,EditBox> fields=new LinkedHashMap<>();
     private final List<EditBox> mixtureFields=new ArrayList<>();
     private final Map<String,String> labels=new LinkedHashMap<>();
@@ -46,7 +47,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         addRenderableWidget(Button.builder(Component.literal(">"),button->{if(collectMixture()){page=Math.min(Math.max(0,(editSolids?64:phase==3?displayedSolids().populations().size():composition.length)-1)/rows,page+1);showMixture();}}).bounds(leftPos+97,bottom,20,18).build());
         mixButton=addRenderableWidget(Button.builder(Component.literal("Edit mix"),button->{if(collectMixture()){editMixture=!editMixture;showMixture();}}).bounds(leftPos+120,bottom,52,18).build());mixButton.visible=false;
         solidsButton=addRenderableWidget(Button.builder(Component.literal("Solids"),button->{if(collectMixture()){editSolids=!editSolids;editMixture=false;page=0;showMixture();}}).bounds(leftPos+176,bottom,58,18).build());solidsButton.visible=false;
-        recoverButton=addRenderableWidget(Button.builder(Component.literal("Recover solids"),button->FluidNetwork.recoverSolids(menu,draftRevision)).bounds(leftPos+176,bottom,94,18).build());recoverButton.visible=false;
+        recoverButton=addRenderableWidget(Button.builder(Component.literal("Recover solids"),button->{FluidNetwork.recoverSolids(menu,draftRevision);localMessage=WAITING;}).bounds(leftPos+176,bottom,94,18).build());recoverButton.visible=false;
         applyButton=addRenderableWidget(Button.builder(Component.literal("Apply"),button->apply()).bounds(leftPos+imageWidth-111,bottom,52,18).build());
         addRenderableWidget(Button.builder(Component.literal("Close"),button->onClose()).bounds(leftPos+imageWidth-56,bottom,48,18).build());
         presetButton=addRenderableWidget(Button.builder(Component.literal("Preset"),button->preset()).bounds(right,topPos+122,fieldWidth,18).build());presetButton.visible=false;
@@ -96,7 +97,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         if(!collectMixture()||menu.clientData()==null)return;
         try {
             var controls=new FluidNetwork.Controls(number("temperature"),number("pressure"),number("diameter"),number("roughness"),number("volumeFlow"),number("maximumAddedPressure"),composition,particleFeed());
-            FluidNetwork.sendEdit(menu,draftRevision,controls);localMessage="Waiting for server validation...";
+            // The server answers nothing now: the engine's reply comes with this device's next presentation bucket.
+            FluidNetwork.sendEdit(menu,draftRevision,controls);localMessage=WAITING;
         }catch(RuntimeException invalid){localMessage="Not applied: "+invalid.getMessage();}
     }
     private double number(String key){return Double.parseDouble(fields.get(key).getValue());}
@@ -128,7 +130,9 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     @Override protected void renderBg(GuiGraphics g,float partialTick,int mouseX,int mouseY) {
         int x=leftPos,y=topPos,right=x+imageWidth/2+8;
         g.fill(x,y,x+imageWidth,y+imageHeight,0xff17232e);g.fill(x+1,y+1,x+imageWidth-1,y+20,0xff294252);g.drawString(font,title,x+9,y+7,0xffedf5f8,false);
-        var data=menu.clientData();if(data==null){g.drawString(font,"Waiting for server state...",x+10,y+35,0xffb6ced6,false);return;}
+        // Opening a menu asks the server for nothing: it shows the last state delivered for this device, if any,
+        // and otherwise waits for the device's presentation bucket.
+        var data=menu.clientData();if(data==null){g.drawString(font,WAITING,x+10,y+35,0xffb6ced6,false);return;}
         var view=data.view();var statusLines=font.split(Component.literal(view.status()),imageWidth-20);for(int i=0;i<Math.min(3,statusLines.size());i++)g.drawString(font,statusLines.get(i),x+10,y+25+i*9,0xffb6ced6,false);
         if(view.state()!=null&&data.kind()!=TopologyCompiler.Kind.PIPE) {
             var s=view.state();line(g,"Pressure  "+format(s.pressure()/1000)+" kPa abs",x+10,y+58);line(g,"Temperature  "+format(s.temperature())+" K",x+10,y+71);
@@ -149,7 +153,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             if(view.hydraulicOwner())line(g,"Committed  "+format(view.committedTick()/20.0)+" s",x+10,y+84);
             if(view.intervalSeconds()>0)line(g,format(view.intervalSeconds())+" s / "+view.intervalQuality(),x+10,y+97);
         }
-        line(g,!view.hydraulicOwner()?"No hydraulic interval":"Lag  "+format((view.onlineTick()-view.committedTick())/20.0)+" s",x+10,y+110);
+        // The engine's bucket time of this view: it moves in steps of about five seconds, never on its own.
+        line(g,(!view.hydraulicOwner()?"No hydraulic interval":"Lag  "+format((view.onlineTick()-view.committedTick())/20.0)+" s")+"   View  "+format(view.onlineTick()/20.0)+" s",x+10,y+110);
         if(!menu.debug()){int i=0;for(var label:labels.values())g.drawString(font,font.plainSubstrByWidth(label,imageWidth/2-20),right,y+57+i++*31,0xffb6ced6,false);}
         if(data.kind()==TopologyCompiler.Kind.RESERVOIR){line(g,"Adiabatic reservoir",right,y+60);line(g,"Bulk withdrawal:",right,y+77);line(g,"all phases together",right,y+89);}
         if(view.filter()!=null){var cake=view.filter();line(g,"Load  "+format(100*cake.loading())+" %",right,y+58);line(g,"Captured  "+format(cake.captured().massKg())+" kg",right,y+71);line(g,"Capacity  "+format(cake.capacity()*1000)+" L solids",right,y+84);if(view.devicePressureChange()!=null)line(g,"Pressure drop  "+format(Math.abs(view.devicePressureChange())/1000)+" kPa",right,y+97);}
@@ -204,8 +209,9 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
      * middle of a word; the band between the last listed row and the button row holds two.
      */
     private void message(GuiGraphics g,int x,int y) {
-        if(localMessage.isEmpty())return;
-        var lines=font.split(Component.literal(localMessage),imageWidth-18);
+        String text=localMessage.isEmpty()&&menu.showingLastDelivered()?"Last delivered view. "+WAITING:localMessage;
+        if(text.isEmpty())return;
+        var lines=font.split(Component.literal(text),imageWidth-18);
         for(int i=0;i<Math.min(2,lines.size());i++)g.drawString(font,lines.get(i),x,y+imageHeight-42+i*9,0xffefca83,false);
     }
     private void line(GuiGraphics g,String text,int x,int y){g.drawString(font,text,x,y,0xffedf5f8,false);}
