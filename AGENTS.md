@@ -23,7 +23,18 @@ Standing rules from the project owner. They apply to every agent working in this
 - One Gradle invocation at a time on the machine; never a test suite while a dev client is running.
 - Never use bare `git stash` or `git stash pop`; set work aside with a WIP commit or a tagged stash entry restored with `git stash apply`.
 - Work only inside your own worktree; never modify another agent's worktree sources.
-- Every review or audit is written to `documentation/<TOPIC>_REVIEW.md`; plans to `documentation/<TOPIC>_PLAN.md`.
+- Every review or audit is written to `documentation/<batch>/<TOPIC>_REVIEW.md`; plans to `documentation/<batch>/<TOPIC>_PLAN.md`, inside the folder of the batch of work they belong to (see the next section).
 - GUI work is verified in the dev client through the langyo/minecraft-mod-mcp bridge (jar in `<worktree>/run/mods`, `.mcp.json` in the worktree root).
 - Large solver campaigns run with 8 to 10 worker threads and never overlap another campaign or a Gradle suite.
 - Commit messages end with the attribution line given for the session.
+
+## Documentation, research, tools and versions (recorded 2026-09-23)
+
+- Working documents, research material and offline tooling are local and git-ignored, in three folders of the main checkout (`D:/Minecraft/Modding/1.21/CreateChemE`), which holds the canonical copy:
+  - `documentation/`: one folder per batch of work, named `YYYY-MM-DD-topic/` after the day the batch started, plus `reference/` and `repository/`. `documentation/INDEX.md` lists every batch with its status; `documentation/README.md` explains the layout.
+  - `research/`: datasets, literature sources, study harnesses and journals, grouped by batch, indexed in `research/INDEX.md`.
+  - `tools/`: offline scripts and harnesses, one folder per tool, indexed in `tools/INDEX.md`. `tools/development.gradle` stays at that path.
+- Do not add new top-level folders for documents or scripts. `examples/` is tracked and referenced by the build and tests; leave it where it is.
+- After every task, update the documentation of its batch in the same session: put the task's documents in the batch folder (create a new dated folder for a new batch) and update the batch row of `documentation/INDEX.md` (and `research/INDEX.md` or `tools/INDEX.md` when those changed) with the status and its date: Implemented (date it reached `main`), In progress since, Planned, Concluded (research only), or Abandoned / Superseded with the reason.
+- Documents written in a worktree are copied into the main checkout's `documentation/<batch>/` when the work merges, or when the task ends if it never merges.
+- Every merge to `main` adds a `CHANGELOG.md` entry (Keep a Changelog format, one line per batch with its commits and batch folder) and bumps `mod_version` in `gradle.properties` in the same merge: minor version for a merged batch of work, patch version for a merge that only fixes. `0.1.0` is the state before the changelog existed; `0.2.0` is the solid-phase fluid system merge. Branches record their entry under `[Unreleased]`; the merge turns it into the new version heading.
