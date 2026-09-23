@@ -304,6 +304,10 @@ tasks.withType(Test).configureEach {
 def fluidBenchmarkRunId = providers.gradleProperty('fluidBenchmarkRunId').getOrElse('manual')
 def fluidBenchmarkDirectory = layout.projectDirectory.dir("run/fluid-benchmark/${fluidBenchmarkRunId}").asFile
 def fluidBenchmarkWorkerCount = providers.gradleProperty('fluidBenchmarkWorkers').getOrElse('2').toInteger()
+// Rest and steady-flow certificates: on by default, as in a world; -PfluidRestDetection=false is the baseline side.
+// -PfluidCertificateTolerance overrides eps_s for a sensitivity run only; unset, the world default applies.
+def fluidBenchmarkRestDetection = providers.gradleProperty('fluidRestDetection').getOrElse('true')
+def fluidBenchmarkCertificateTolerance = providers.gradleProperty('fluidCertificateTolerance').getOrElse('')
 def fluidBenchmarkArtifact = tasks.named('jar', Jar).flatMap { it.archiveFile }.get().asFile
 def fluidBenchmarkClasses = sourceSets.fluidGameTest.output.classesDirs.files.toList()
 def prepareFluidBenchmark = tasks.register('prepareFluidBenchmark') {
@@ -317,7 +321,12 @@ def prepareFluidBenchmark = tasks.register('prepareFluidBenchmark') {
         if (workers < 0 || workers > 32) throw new GradleException('Invalid benchmark worker count')
         def config = new File(directory, 'config/createcheme-common.toml')
         config.parentFile.mkdirs()
-        config.text = "[solver]\nworkers = ${workers}\n[fluid]\ninitialIntervalSeconds = 5\nadaptiveCadence = false\nwallBudgetMilliseconds = 2000\n"
+        def restDetection = fluidBenchmarkRestDetection
+        if (!(restDetection in ['true', 'false'])) throw new GradleException('fluidRestDetection must be true or false')
+        def tolerance = fluidBenchmarkCertificateTolerance
+        if (tolerance && !(tolerance.toDouble() >= 0 && tolerance.toDouble() <= 1e-6)) throw new GradleException('fluidCertificateTolerance must lie in [0, 1e-6]')
+        config.text = "[solver]\nworkers = ${workers}\n[fluid]\ninitialIntervalSeconds = 5\nadaptiveCadence = false\nwallBudgetMilliseconds = 2000\nrestDetection = ${restDetection}\n" +
+                (tolerance ? "certificateStationaryTolerance = ${tolerance}\n" : "")
         def digest = { byte[] bytes -> java.security.MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
         def classHashes = new TreeMap<String,String>()
         fluidBenchmarkClasses.each { root ->

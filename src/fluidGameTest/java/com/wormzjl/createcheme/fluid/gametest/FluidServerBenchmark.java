@@ -49,7 +49,7 @@ public final class FluidServerBenchmark {
     /** Test-only one-second observations. Heap usage includes garbage awaiting collection; it is not retained live size. */
     private record MemorySample(long onlineTick,long epochMillis,double sinceStartSeconds,boolean measured,
                                 long heapUsed,long heapCommitted,long heapMax,long nonHeapUsed,
-                                long directBufferBytes,long mappedBufferBytes,long gcCount,long gcMillis) {}
+                                long directBufferBytes,long mappedBufferBytes,long gcCount,long gcMillis,long heapAfterLastGc) {}
     private static final class Run {
         final MinecraftServer server;final GameTestHelper helper;final FluidWorldAuthority world;
         final boolean pilot=Boolean.getBoolean("createcheme.fluid.benchmark.pilot");
@@ -96,6 +96,11 @@ public final class FluidServerBenchmark {
         final List<double[]> fillGaps=new ArrayList<>();
         Run(GameTestHelper helper){
             this.helper=helper;server=helper.getLevel().getServer();world=FluidWorldAuthority.find(server).orElseThrow();startTick=world.onlineTick();FluidRuntimeMeter.enable(server);world.observe(this::published);
+            // Every fixture island was loaded together, so one offset maps the world tick to each island's online tick.
+            var islands=world.diagnosticSnapshots();long offset=islands.getFirst().clock().onlineTick()-world.onlineTick();
+            if(islands.stream().anyMatch(s->s.clock().onlineTick()-world.onlineTick()!=offset))throw new IllegalStateException("Fixture islands do not share one online clock");
+            long middle=world.onlineTick()+offset+warmupTicks+stressMeasurementNanos/100_000_000L;
+            referenceTick=(middle+99)/100*100;referenceWorldTick=referenceTick-offset;
             if(memoryEnabled) {
                 var path=Path.of(System.getProperty("createcheme.fluid.benchmark.output")).resolveSibling("memory-start.json");
                 try {Files.createDirectories(path.getParent());Files.writeString(path,new GsonBuilder().setPrettyPrinting().create().toJson(Map.of(
@@ -111,7 +116,29 @@ public final class FluidServerBenchmark {
             for(var gc:gcBeans){if(gc.getCollectionCount()>=0)count+=gc.getCollectionCount();if(gc.getCollectionTime()>=0)millis+=gc.getCollectionTime();}
             for(var pool:bufferPools){if(pool.getName().equals("direct"))direct+=pool.getMemoryUsed();else if(pool.getName().equals("mapped"))mapped+=pool.getMemoryUsed();}
             memorySamples.add(new MemorySample(world.onlineTick(),System.currentTimeMillis(),(System.nanoTime()-startNanos)/1e9,
-                    measuredStarted!=0,heap.getUsed(),heap.getCommitted(),heap.getMax(),memoryBean.getNonHeapMemoryUsage().getUsed(),direct,mapped,count,millis));
+                    measuredStarted!=0,heap.getUsed(),heap.getCommitted(),heap.getMax(),memoryBean.getNonHeapMemoryUsage().getUsed(),direct,mapped,count,millis,heapAfterLastGc()));
+        }
+        /** Heap in use right after each heap pool's most recent collection, summed: live size without forcing a GC. */
+        long heapAfterLastGc() {
+            long used=0;
+            for(var pool:java.lang.management.ManagementFactory.getMemoryPoolMXBeans())if(pool.getType()==java.lang.management.MemoryType.HEAP&&pool.getCollectionUsage()!=null)used+=pool.getCollectionUsage().getUsed();
+            return used;
+        }
+        /** Rest and steady-flow certificates: the replayed and identity-advanced spans inside the window, never solves. */
+        long replayedIntervals,restedIntervals;double replayedSeconds,restedSeconds;
+        /**
+         * The reference state for comparing a run with certificates against one without: every island's
+         * inventory at island tick {@link #referenceTick} (mid-window, on the five-second grid), and everything
+         * that crossed a boundary up to it. Certified islands are materialised exactly then; solved islands
+         * publish an interval ending there. Both sides pay the same one materialising read.
+         */
+        final long referenceTick,referenceWorldTick;boolean referenceMaterialised;
+        final Map<Long,List<double[]>> referenceInventories=new TreeMap<>();
+        final double[] referenceExternal=new double[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount()+1];
+        void referenceTick() {
+            if(!stress||referenceMaterialised||world.onlineTick()!=referenceWorldTick)return;
+            referenceMaterialised=true;FluidRuntimeDiagnostics.pause();
+            try{world.materialiseAll();}finally{FluidRuntimeDiagnostics.resume();}
         }
         boolean measuring(){return world.onlineTick()-startTick>=warmupTicks;}
         boolean enoughSamples() {
@@ -130,7 +157,9 @@ public final class FluidServerBenchmark {
         }
         private void stressSample() {
             var diagnostics=ProcessSolveServices.diagnostics(server);
-            var snapshots=world.capture().checkpoint().islands().stream().map(FluidCheckpointCodec.IslandEntry::snapshot).toList();
+            // Stored islands, not a capture: a capture materialises every certified island, and this once-a-second
+            // read must not advance anything the engine itself would not.
+            var snapshots=world.diagnosticSnapshots();
             // Committed simulated seconds, not online seconds: the graph is the state at the committed tick.
             double gap=0,committed=0;int filling=0;
             for(var s:snapshots)if(fixture.ladders.get(s.id())==Ladder.TRANSIENT) {
@@ -138,12 +167,18 @@ public final class FluidServerBenchmark {
                 committed+=s.clock().committedTick()/20.0;filling++;
             }
             if(filling>0)fillGaps.add(new double[]{committed/filling,gap/filling});
-            var debts=snapshots.stream().map(s->(s.clock().onlineTick()-s.clock().committedTick())/20.0).toList();
-            long eligible=snapshots.stream().filter(s->s.clock().onlineTick()-s.clock().committedTick()>=s.clock().cadenceTicks()).count();
-            stressSamples.add(Map.of("onlineTick",world.onlineTick(),"activeWorkers",diagnostics.activeWorkers(),
-                    "workerLimit",diagnostics.workerCount(),
-                    "outstandingJobs",diagnostics.outstandingJobs(),"readyJobs",diagnostics.readyJobs(),"pendingCompletions",diagnostics.pendingCompletions(),
-                    "eligibleIslands",eligible,"debtSeconds",statistics(debts),"wallSeconds",(System.nanoTime()-measuredStarted)/1e9));
+            // A certified island's stored committed tick lags by design; it owes nothing, so debt counts awake islands only.
+            var awake=snapshots.stream().filter(s->s.certificate().isEmpty()).toList();
+            var debts=awake.stream().map(s->(s.clock().onlineTick()-s.clock().committedTick())/20.0).toList();
+            long eligible=awake.stream().filter(s->s.clock().onlineTick()-s.clock().committedTick()>=s.clock().cadenceTicks()).count();
+            long rest=snapshots.stream().filter(s->s.certificate().map(c->c.kind()==IslandCertificate.Kind.REST).orElse(false)).count();
+            long steady=snapshots.stream().filter(s->s.certificate().map(c->c.kind()==IslandCertificate.Kind.STEADY).orElse(false)).count();
+            var sample=new LinkedHashMap<String,Object>();
+            sample.put("onlineTick",world.onlineTick());sample.put("activeWorkers",diagnostics.activeWorkers());sample.put("workerLimit",diagnostics.workerCount());
+            sample.put("outstandingJobs",diagnostics.outstandingJobs());sample.put("readyJobs",diagnostics.readyJobs());sample.put("pendingCompletions",diagnostics.pendingCompletions());
+            sample.put("eligibleIslands",eligible);sample.put("certifiedIslands",rest+steady);sample.put("restIslands",rest);sample.put("steadyIslands",steady);
+            sample.put("debtSeconds",statistics(debts));sample.put("wallSeconds",(System.nanoTime()-measuredStarted)/1e9);
+            stressSamples.add(sample);
         }
         void contentionTick() {
             if(!contention||!measuring())return;
@@ -164,6 +199,21 @@ public final class FluidServerBenchmark {
                 var timing=timings.get(island.id());if(timing==null||seen.getOrDefault(island.id(),0L)>=timing.sequence())continue;seen.put(island.id(),timing.sequence());
                 var result=timing.accepted()?island.lastResult().orElseThrow():null;
                 if(result!=null){for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];externalEnergy+=boundary.totalEnergyJoule();}pumpWork+=result.pumpWorkJoule();}
+                if(result!=null&&stress&&timing.endTick()<=referenceTick) {
+                    for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)referenceExternal[c]+=n[c];referenceExternal[n.length]+=boundary.totalEnergyJoule();}
+                    referenceExternal[referenceExternal.length-1]+=result.pumpWorkJoule();
+                }
+                if(result!=null&&stress&&timing.endTick()==referenceTick) {
+                    var nodes=new ArrayList<double[]>();
+                    for(var node:island.graph().reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR){var n=node.inventory().moles();var row=Arrays.copyOf(n,n.length+1);row[n.length]=node.inventory().internalEnergy();nodes.add(row);}
+                    referenceInventories.put(island.id(),nodes);
+                }
+                // A replayed or identity-advanced span is accounted like any other advance, but it is not a solve.
+                if(timing.advance()!=IslandCoordinator.Advance.SOLVED) {
+                    if(measuring()){double seconds=(timing.endTick()-timing.startTick())/20.0;
+                        if(timing.advance()==IslandCoordinator.Advance.REPLAYED){replayedIntervals++;replayedSeconds+=seconds;}else{restedIntervals++;restedSeconds+=seconds;}}
+                    continue;
+                }
                 var ready=eligibleTickStarts.get(timing.endTick());Double totalLatency=ready==null?null:(System.nanoTime()-ready)/1e6;
                 var sample=new Sample(island.id(),timing,island.status(),result==null?null:result.acceptance(),result==null?0:result.acceptedSubsteps(),result==null?0:result.rejectedSubsteps(),totalLatency);
                 if(measuring())samples.add(sample);else if(warmupSamples.size()<10000)warmupSamples.add(sample);
@@ -284,13 +334,13 @@ public final class FluidServerBenchmark {
     }
     public static void beforeTick(ServerTickEvent.Pre event) {
         if(run==null||run.finished)return;long now=System.nanoTime();
-        run.contentionTick();run.stressTick();run.memoryTick(false);
+        run.contentionTick();run.stressTick();run.memoryTick(false);run.referenceTick();
         if(run.measuring()&&run.previousTickStarted!=0)run.tickSpacingMillis.add((now-run.previousTickStarted)/1e6);
         run.tickStarted=now;run.previousTickStarted=now;
         run.eligibleTickStarts.put(run.world.onlineTick()+1,now);if(run.eligibleTickStarts.size()>8192)run.eligibleTickStarts.pollFirstEntry();
     }
     public static void afterTick(ServerTickEvent.Post event) {
-        if(run==null||run.finished)return;long now=System.nanoTime(),meter=FluidRuntimeMeter.totalNanos(event.getServer());
+        if(run==null||run.finished)return;run.referenceTick();long now=System.nanoTime(),meter=FluidRuntimeMeter.totalNanos(event.getServer());
         if(run.measuring()) {
             if(run.measuredStarted==0) {
                 run.measuredStarted=now;run.measuredStartEpochMillis=System.currentTimeMillis();
@@ -310,7 +360,14 @@ public final class FluidServerBenchmark {
         // Close the counters before anything else, so the readout covers the window and nothing after it.
         if(r.diagnosticsEnabled){SolverDiagnostics.ENABLED=false;r.diagnostics=SolverDiagnostics.sample();}
         FluidRuntimeDiagnostics.ENABLED=false;
+        // Certified islands are materialised to now while the observer still listens, so the replayed spans reach
+        // the boundary ledger before the final state is read (the capture below then has nothing left to advance).
+        r.world.materialiseAll();
         r.finished=true;r.world.observe(null);r.memoryTick(true);long now=System.nanoTime();
+        Long heapAfterForcedGc=null;
+        if(r.memoryEnabled){System.gc();System.gc();heapAfterForcedGc=r.memoryBean.getHeapMemoryUsage().getUsed();}
+        var certificates=r.world.certificates();
+        var finalIslands=r.world.diagnosticSnapshots();
         var worker=r.samples.stream().map(Sample::timing).filter(m->m.workerNanos()>=0).map(m->m.workerNanos()/1e6).toList();
         var latency=r.samples.stream().map(s->s.timing().dispatchToPublicationNanos()/1e6).toList();long held=r.samples.stream().filter(s->!s.timing().accepted()).count();
         var endToEnd=r.samples.stream().map(Sample::readyToPublicationMillis).filter(Objects::nonNull).toList();
@@ -339,6 +396,21 @@ public final class FluidServerBenchmark {
             report.put("memoryNote","One-second JVM observations; heap used includes uncollected garbage. Use JFR after-GC heap and pause durations separately; GC MXBean time is collection time, not necessarily stop-the-world pause time. External process RSS/private bytes are separate from Java heap.");}
         if(r.diagnostics!=null)report.put("solverDiagnostics",diagnostics(r,r.samples.size()-held,(now-r.measuredStarted)/1e9));
         report.put("runtimeCounters",runtimeCounters(r,(now-r.measuredStarted)/1e9));
+        var certified=new LinkedHashMap<String,Object>();
+        certified.put("note","Rest and steady-flow certificates. Full solves are accepted solved intervals published in the window; replayed and identity-advanced spans are materialisations of STEADY and REST certificates, accounted in the boundary ledger but never solved. The reference state is every island's inventory at one mid-window island tick and the boundary ledger up to it, for comparing a run with certificates against one without.");
+        certified.put("restDetection",certificates.enabled());certified.put("stationaryTolerance",certificates.stationaryTolerance());certified.put("inventoryBudget",certificates.inventoryBudget());
+        certified.put("maximumIntervals",certificates.maximumIntervals());certified.put("confirmIntervals",certificates.confirmIntervals());certified.put("recheckSeconds",certificates.recheckSeconds());
+        certified.put("fullSolves",r.samples.stream().filter(s->s.timing().accepted()).count());
+        certified.put("replayedIntervals",r.replayedIntervals);certified.put("replayedSeconds",r.replayedSeconds);
+        certified.put("restedIntervals",r.restedIntervals);certified.put("identityAdvancedSeconds",r.restedSeconds);
+        var kinds=new TreeMap<String,Long>();for(var island:finalIslands)kinds.merge(island.certificate().map(c->c.kind().name()).orElse("AWAKE"),1L,Long::sum);
+        certified.put("finalIslandKinds",kinds);
+        certified.put("certifiedIslandsPerSecond",r.stressSamples.stream().map(s->s.get("certifiedIslands")).toList());
+        certified.put("finalCertificates",finalIslands.stream().filter(s->s.certificate().isPresent()).collect(java.util.stream.Collectors.toMap(s->s.id(),s->s.certificate().orElseThrow(),(a,b)->a,TreeMap::new)));
+        if(r.stress){var reference=new LinkedHashMap<String,Object>();reference.put("islandTick",r.referenceTick);reference.put("materialised",r.referenceMaterialised);
+            reference.put("islandsRecorded",r.referenceInventories.size());reference.put("externalThroughReference",r.referenceExternal);reference.put("inventories",r.referenceInventories);certified.put("reference",reference);}
+        if(heapAfterForcedGc!=null)certified.put("heapAfterForcedGcBytes",heapAfterForcedGc);
+        report.put("certificates",certified);
         report.put("warmupSamples",r.warmupSamples);report.put("warmupHeldIntervals",r.warmupSamples.stream().filter(s->!s.timing().accepted()).count());
         report.put("moduleCommittedTicks",finalState.modules().stream().map(FixedSplitModule.Snapshot::committedTick).toList());report.put("pendingTransferRecords",finalState.transfers().pending().size());report.put("plannedCapacityRecords",finalState.transfers().planned().size());
         report.put("qualificationNote","One fresh-JVM replicate only. Three replicates and one/many/module, worker-count, contention and soak coverage are required. Queue debt is present in each sample and is not hidden in worker timing.");
@@ -378,6 +450,7 @@ public final class FluidServerBenchmark {
             double advancedSeconds=r.samples.stream().filter(s->s.timing().accepted()).mapToDouble(s->(s.timing().endTick()-s.timing().startTick())/20.0).sum();
             report.put("equivalentFiveSecondIntervalsPerSecond",advancedSeconds/(5*seconds));
             report.put("aggregateRealtimeRatio",advancedSeconds/(fixture.checkpoint.islands().size()*seconds));
+            report.put("aggregateRealtimeRatioIncludingCertified",(advancedSeconds+r.replayedSeconds+r.restedSeconds)/(fixture.checkpoint.islands().size()*seconds));
             report.put("workerCpuOccupancyNote","Lower bound from outcomes retained before their deadline; timed-out outcomes can omit CPU. Use the JFR CPU-load trace for process utilization, including rejected work.");
             report.put("meanWorkerCpuOccupancy",r.samples.stream().mapToLong(s->Math.max(0,s.timing().workerCpuNanos())).sum()/(seconds*1e9*ProcessSolveServices.diagnostics(r.server).workerCount()));
             report.put("meanReportedActiveWorkers",r.stressSamples.stream().mapToInt(s->((Number)s.get("activeWorkers")).intValue()).average().orElse(0));
