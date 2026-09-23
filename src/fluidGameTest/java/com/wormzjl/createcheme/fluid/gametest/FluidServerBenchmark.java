@@ -28,11 +28,23 @@ import java.util.*;
 @PrefixGameTestTemplate(false)
 public final class FluidServerBenchmark {
     private static final long TICK_NANOS=50_000_000L;
+    /** Profiles measured over a fixed elapsed window instead of a count of accepted intervals per island. */
+    private static final Set<String> TIMED_PROFILES=Set.of("stress100","transient100","rest100","mixed100");
+    /**
+     * Ladder families. THROUGH is the stress100 ladder: a 150.1 kPa generator, 1 m3 reservoirs and a 150.0 kPa
+     * void, near-stationary through-flow. TRANSIENT has no void: a 200 kPa generator fills 1000 m3 reservoirs
+     * through 100 m of 0.30 m pipe, a fill time constant of about 2,500 to 7,400 s for 10 to 30 reservoirs
+     * (4,930 s measured for 20 by direct interval solves), so every interval changes inventory by about 5e-4
+     * and that change itself moves by about 1e-7 per interval for the whole run. CLOSED has no generator and
+     * no void: the stress100 rung pressures spread over 1 m3 reservoirs and settle to rest.
+     */
+    private enum Ladder {THROUGH,TRANSIENT,CLOSED}
+    private static final double TRANSIENT_GENERATOR_PRESSURE=200000,TRANSIENT_RESERVOIR_VOLUME=1000,TRANSIENT_PIPE_DIAMETER=.3,TRANSIENT_FEED_LENGTH=100;
     private static Fixture fixture;
     private static Run run;
     private static jdk.jfr.Recording recording;
     private FluidServerBenchmark() {}
-    private record Fixture(FluidThermodynamics model,FluidCheckpointCodec.Checkpoint checkpoint,WorldTopologyLedger.Snapshot topology,Set<Long> chunks,int physicalPipes,int compressedPipes) {}
+    private record Fixture(FluidThermodynamics model,FluidCheckpointCodec.Checkpoint checkpoint,WorldTopologyLedger.Snapshot topology,Set<Long> chunks,int physicalPipes,int compressedPipes,Map<Long,Ladder> ladders) {}
     private record Sample(long island,IslandCoordinator.Metrics timing,String status,PassiveStepSolver.Acceptance acceptance,int substeps,int rejectedSubsteps,Double readyToPublicationMillis) {}
     /** Test-only one-second observations. Heap usage includes garbage awaiting collection; it is not retained live size. */
     private record MemorySample(long onlineTick,long epochMillis,double sinceStartSeconds,boolean measured,
@@ -42,7 +54,8 @@ public final class FluidServerBenchmark {
         final MinecraftServer server;final GameTestHelper helper;final FluidWorldAuthority world;
         final boolean pilot=Boolean.getBoolean("createcheme.fluid.benchmark.pilot");
         final boolean contention="contention".equals(System.getProperty("createcheme.fluid.benchmark.profile"));
-        final boolean stress="stress100".equals(System.getProperty("createcheme.fluid.benchmark.profile"));
+        final String profile=System.getProperty("createcheme.fluid.benchmark.profile","one");
+        final boolean stress=TIMED_PROFILES.contains(profile);
         final int warmupTicks=stress?20*Math.max(10,Integer.getInteger("createcheme.fluid.stress.warmupSeconds",60)):pilot?20*Math.max(5,Integer.getInteger("createcheme.fluid.benchmark.pilotWarmupSeconds",5)):2400,targetIntervals=pilot?5:200;
         final long stressMeasurementNanos=1_000_000_000L*Math.max(20,Integer.getInteger("createcheme.fluid.stress.measurementSeconds",120));
         final long startTick,startNanos=System.nanoTime();
@@ -64,6 +77,21 @@ public final class FluidServerBenchmark {
         FluidContentionProbe competing;long contentionStartTick,contentionFinishedTick,maximumDebtTicks;int maximumOutstanding,maximumReady;boolean bounded=true;
         final List<Map<String,Object>> contentionSamples=new ArrayList<>();
         final List<Map<String,Object>> stressSamples=new ArrayList<>();
+        /** Scheduling counters over the measurement window; see {@link FluidRuntimeDiagnostics}. A tick is
+         * idle when it routed no completion, dispatched no solve and published no island; everything the
+         * engine still did on such a tick is scheduling overhead. The harness's own reads are paused out. */
+        final List<String> counterNames=FluidRuntimeDiagnostics.names();
+        final long[] lastCounters=new long[counterNames.size()],counterTotals=new long[counterNames.size()],idleCounterTotals=new long[counterNames.size()],idleTicksWithWork=new long[counterNames.size()],maximumPerTick=new long[counterNames.size()];
+        long countedTicks,idleTicks;
+        void countTick() {
+            var values=FluidRuntimeDiagnostics.sample();long[] delta=new long[counterNames.size()];
+            for(int i=0;i<delta.length;i++){long value=values.get(counterNames.get(i));delta[i]=value-lastCounters[i];lastCounters[i]=value;}
+            boolean idle=delta[counterNames.indexOf("completionsRouted")]==0&&delta[counterNames.indexOf("solvesDispatched")]==0&&delta[counterNames.indexOf("islandsPublished")]==0;
+            countedTicks++;if(idle)idleTicks++;
+            for(int i=0;i<delta.length;i++){counterTotals[i]+=delta[i];maximumPerTick[i]=Math.max(maximumPerTick[i],delta[i]);if(idle){idleCounterTotals[i]+=delta[i];if(delta[i]>0)idleTicksWithWork[i]++;}}
+        }
+        /** Mean pressure gap between each transient ladder's generator and its reservoirs, sampled once a second. */
+        final List<double[]> fillGaps=new ArrayList<>();
         Run(GameTestHelper helper){
             this.helper=helper;server=helper.getLevel().getServer();world=FluidWorldAuthority.find(server).orElseThrow();startTick=world.onlineTick();FluidRuntimeMeter.enable(server);world.observe(this::published);
             if(memoryEnabled) {
@@ -95,8 +123,19 @@ public final class FluidServerBenchmark {
         }
         void stressTick() {
             if(!stress||!measuring()||world.onlineTick()%20!=0)return;
+            FluidRuntimeDiagnostics.pause();
+            try{stressSample();}finally{FluidRuntimeDiagnostics.resume();}
+        }
+        private void stressSample() {
             var diagnostics=ProcessSolveServices.diagnostics(server);
             var snapshots=world.capture().checkpoint().islands().stream().map(FluidCheckpointCodec.IslandEntry::snapshot).toList();
+            // Committed simulated seconds, not online seconds: the graph is the state at the committed tick.
+            double gap=0,committed=0;int filling=0;
+            for(var s:snapshots)if(fixture.ladders.get(s.id())==Ladder.TRANSIENT) {
+                gap+=TRANSIENT_GENERATOR_PRESSURE-s.graph().reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).mapToDouble(n->n.state().pressure()).average().orElseThrow();
+                committed+=s.clock().committedTick()/20.0;filling++;
+            }
+            if(filling>0)fillGaps.add(new double[]{committed/filling,gap/filling});
             var debts=snapshots.stream().map(s->(s.clock().onlineTick()-s.clock().committedTick())/20.0).toList();
             long eligible=snapshots.stream().filter(s->s.clock().onlineTick()-s.clock().committedTick()>=s.clock().cadenceTicks()).count();
             stressSamples.add(Map.of("onlineTick",world.onlineTick(),"activeWorkers",diagnostics.activeWorkers(),
@@ -132,42 +171,58 @@ public final class FluidServerBenchmark {
 
     public static void installFixture(ServerStartingEvent event) {
         var server=event.getServer();String profile=System.getProperty("createcheme.fluid.benchmark.profile","one");
-        if(!Set.of("one","many","module","contention","stress100").contains(profile))throw new IllegalArgumentException("Unknown benchmark profile "+profile);
+        if(!Set.of("one","many","module","contention").contains(profile)&&!TIMED_PROFILES.contains(profile))throw new IllegalArgumentException("Unknown benchmark profile "+profile);
         if(Files.exists(server.getWorldPath(LevelResource.ROOT).resolve("data/"+FluidSavedData.DATA_NAME+".dat")))throw new IllegalStateException("Benchmark requires a fresh disposable world");
         var model=FluidThermodynamics.forNetwork(MaterialRuntime.active(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
         var composition=Arrays.copyOf(MaterialRuntime.with(MaterialRuntime.active(),FluidPresetCatalog.NETWORK_PACKAGE,()->V3PengRobinsonThermo.fromRegisteredPackage(FluidPresetCatalog.NETWORK_PACKAGE).crudeFeed("createcheme:tia_juana_light_methane").moleFractions()),com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount());composition[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]=.1;composition[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]=.2;
         var devices=new ArrayList<PhysicalFluidTopology.Device>();var registrations=new LinkedHashMap<Long,WorldTopologyLedger.Registration>();var stocks=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();var reservoirs=new ArrayList<Long>();
+        var ladderOf=new HashMap<Long,Ladder>();
         class Builder {
-            long next=1;int pipes;
-            void add(int x,int z,Kind kind,double pressure) {
-                long id=next++;var device=new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",1024+x,80,1024+z),kind,PhysicalFluidTopology.Direction.EAST,new PipeResistance.Geometry(1,.05,.000045,0),new FlowControl.Passive());devices.add(device);
-                var spec=new FluidDeviceSpec(1,350,pressure,composition);registrations.put(id,new WorldTopologyLedger.Registration(device,spec,0));
+            long next=1;int pipes;Ladder ladder;
+            void add(int x,int z,Kind kind,double pressure){add(x,z,kind,pressure,1,.05,1);}
+            void add(int x,int z,Kind kind,double pressure,double length,double diameter,double volume) {
+                long id=next++;var device=new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",1024+x,80,1024+z),kind,PhysicalFluidTopology.Direction.EAST,new PipeResistance.Geometry(length,diameter,.000045,0),new FlowControl.Passive());devices.add(device);
+                if(ladder!=null)ladderOf.put(id,ladder);
+                var spec=new FluidDeviceSpec(volume,350,pressure,composition);registrations.put(id,new WorldTopologyLedger.Registration(device,spec,0));
                 if(kind==Kind.PIPE){pipes++;return;}
                 if(kind==Kind.RESERVOIR) {
-                    var amounts=composition.clone();var unit=model.flashTP(350,pressure,amounts,()->{});for(int c=0;c<model.componentCount();c++)amounts[c]/=unit.volume();var state=model.flashTP(350,pressure,amounts,()->{});
-                    stocks.put(id,new PassiveNetwork.Reservoir(id,80,state,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,amounts,state.internalEnergy())));reservoirs.add(id);
+                    // Divide first, then scale: a 1 m3 reservoir keeps the exact amounts of the original stress100 fixture.
+                    var amounts=composition.clone();var unit=model.flashTP(350,pressure,amounts,()->{});for(int c=0;c<model.componentCount();c++)amounts[c]=amounts[c]/unit.volume()*volume;var state=model.flashTP(350,pressure,amounts,()->{});
+                    stocks.put(id,new PassiveNetwork.Reservoir(id,80,state,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(volume,amounts,state.internalEnergy())));reservoirs.add(id);
                 }else stocks.put(id,spec.initialize(device,model,()->{}));
             }
-        }
-        var builder=new Builder();
-        if(profile.equals("stress100")) {
-            var random=new Random(2026091603L);
-            for(int network=0;network<100;network++) {
+            /** stress100 builds 100 THROUGH ladders in exactly this device order and random sequence. */
+            void ladder(int network,Ladder kind,Random random) {
+                ladder=kind;
                 int count=10+(network*13%21),columns=count/2,baseX=15360+80*(network%10),baseZ=15360+16*(network/10);
-                builder.add(baseX-8,baseZ,Kind.GENERATOR,150100);
-                for(int x=-7;x<0;x++)builder.add(baseX+x,baseZ,x==-4&&count%2==1?Kind.RESERVOIR:Kind.PIPE,150090);
+                boolean fill=kind==Ladder.TRANSIENT;double volume=fill?TRANSIENT_RESERVOIR_VOLUME:1,diameter=fill?TRANSIENT_PIPE_DIAMETER:.05;
+                if(kind!=Ladder.CLOSED) {
+                    add(baseX-8,baseZ,Kind.GENERATOR,fill?TRANSIENT_GENERATOR_PRESSURE:150100);
+                    for(int x=-7;x<0;x++)add(baseX+x,baseZ,x==-4&&count%2==1?Kind.RESERVOIR:Kind.PIPE,150090,fill?TRANSIENT_FEED_LENGTH/7:1,diameter,volume);
+                }
                 for(int c=0;c<columns;c++) {
                     double pressure=150100-100*(c+.5)/columns;
                     for(int row=0;row<2;row++) {
-                        builder.add(baseX+4*c,baseZ+4*row,Kind.RESERVOIR,pressure+4*(random.nextDouble()-.5));
-                        if(c+1<columns)for(int dx=1;dx<4;dx++)builder.add(baseX+4*c+dx,baseZ+4*row,Kind.PIPE,pressure);
+                        add(baseX+4*c,baseZ+4*row,Kind.RESERVOIR,pressure+4*(random.nextDouble()-.5),1,diameter,volume);
+                        if(c+1<columns)for(int dx=1;dx<4;dx++)add(baseX+4*c+dx,baseZ+4*row,Kind.PIPE,pressure,1,diameter,volume);
                     }
-                    for(int dz=1;dz<4;dz++)builder.add(baseX+4*c,baseZ+dz,Kind.PIPE,pressure);
+                    for(int dz=1;dz<4;dz++)add(baseX+4*c,baseZ+dz,Kind.PIPE,pressure,1,diameter,volume);
                 }
-                int end=baseX+4*(columns-1);
-                for(int dx=1;dx<4;dx++)builder.add(end+dx,baseZ+4,Kind.PIPE,150010);
-                builder.add(end+4,baseZ+4,Kind.VOID,150000);
+                if(kind==Ladder.THROUGH) {
+                    int end=baseX+4*(columns-1);
+                    for(int dx=1;dx<4;dx++)add(end+dx,baseZ+4,Kind.PIPE,150010);
+                    add(end+4,baseZ+4,Kind.VOID,150000);
+                }
+                ladder=null;
             }
+        }
+        var builder=new Builder();
+        if(TIMED_PROFILES.contains(profile)) {
+            var random=new Random(2026091603L);
+            for(int network=0;network<100;network++)builder.ladder(network,switch(profile){
+                case "transient100"->Ladder.TRANSIENT;case "rest100"->Ladder.CLOSED;
+                case "mixed100"->network%4<2?Ladder.TRANSIENT:network%4==2?Ladder.THROUGH:Ladder.CLOSED;
+                default->Ladder.THROUGH;},random);
         }
         else if(profile.equals("many")||profile.equals("contention"))for(int row=0;row<100;row++){builder.add(0,4*row,Kind.GENERATOR,150100);for(int x=1;x<=5;x++)builder.add(x,4*row,Kind.PIPE,150050);builder.add(6,4*row,Kind.RESERVOIR,150050);for(int x=7;x<=11;x++)builder.add(x,4*row,Kind.PIPE,150050);builder.add(12,4*row,Kind.VOID,150000);}
         else {
@@ -179,11 +234,16 @@ public final class FluidServerBenchmark {
             }
             for(int pipe=0;pipe<5;pipe++)builder.add(++x,0,Kind.PIPE,150050);builder.add(++x,0,Kind.VOID,150000);
         }
-        if(!profile.equals("stress100")&&(builder.pipes!=1000||reservoirs.size()!=100))throw new IllegalStateException("Benchmark component count mismatch");
+        boolean timed=TIMED_PROFILES.contains(profile);
+        if(!timed&&(builder.pipes!=1000||reservoirs.size()!=100))throw new IllegalStateException("Benchmark component count mismatch");
         var compiled=PhysicalFluidTopology.compile(devices,stocks);var entries=new ArrayList<FluidCheckpointCodec.IslandEntry>();var ownerByNode=new HashMap<Long,Long>();long next=builder.next;
-        if(profile.equals("stress100")&&(compiled.islands().size()!=100||compiled.islands().stream().anyMatch(i->{long count=i.graph().reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).count();return count<10||count>30;})))throw new IllegalStateException("Stress fixture must contain 100 isolated 10-30-reservoir islands");
+        if(timed&&(compiled.islands().size()!=100||compiled.islands().stream().anyMatch(i->{long count=i.graph().reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).count();return count<10||count>30;})))throw new IllegalStateException("Timed fixture must contain 100 isolated 10-30-reservoir islands");
+        var islandLadders=new HashMap<Long,Ladder>();
         for(var island:compiled.islands()) {
             if(island.error().isPresent())throw new IllegalStateException(island.error().orElseThrow());long id=next++;
+            var kinds=island.physicalIds().stream().map(ladderOf::get).filter(Objects::nonNull).distinct().toList();
+            if(timed&&kinds.size()!=1)throw new IllegalStateException("A fixture island must come from exactly one ladder");
+            if(timed)islandLadders.put(id,kinds.getFirst());
             var snapshot=new IslandCoordinator.Snapshot(id,0,island.graph(),new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY");
             entries.add(new FluidCheckpointCodec.IslandEntry("minecraft:overworld",FluidPresetCatalog.NETWORK_PACKAGE,1e-9,snapshot));for(var node:island.graph().reservoirs())ownerByNode.put(node.id(),id);
         }
@@ -200,13 +260,13 @@ public final class FluidServerBenchmark {
         var chunks=new HashSet<Long>();var level=server.overworld();
         for(var device:devices) {
             // This profile isolates the persistent engine; all fixture chunks stay unloaded.
-            if(profile.equals("stress100"))continue;
+            if(timed)continue;
             var p=device.position();var pos=new BlockPos(p.x(),p.y(),p.z());var chunk=new ChunkPos(pos);if(chunks.add(chunk.toLong()))level.setChunkForced(chunk.x,chunk.z,true);
             var block=switch(device.kind()){case RESERVOIR->ModBlocks.FLUID_RESERVOIR.get();case GENERATOR->ModBlocks.FLUID_GENERATOR.get();case VOID->ModBlocks.FLUID_VOID.get();default->ModBlocks.FLUID_PIPE.get();};
             level.setBlock(pos,block.defaultBlockState(),3);
         }
         level.getDataStorage().set(FluidSavedData.DATA_NAME,new FluidSavedData(checkpoint,topology,key->model));
-        fixture=new Fixture(model,checkpoint,topology,Set.copyOf(chunks),builder.pipes,compiled.islands().stream().mapToInt(i->i.graph().pipes().size()).sum());
+        fixture=new Fixture(model,checkpoint,topology,Set.copyOf(chunks),builder.pipes,compiled.islands().stream().mapToInt(i->i.graph().pipes().size()).sum(),Map.copyOf(islandLadders));
     }
 
     @GameTest(template="empty",timeoutTicks=200000,batch="paced-benchmark")
@@ -234,7 +294,8 @@ public final class FluidServerBenchmark {
                 run.measuredStarted=now;run.measuredStartEpochMillis=System.currentTimeMillis();
                 // Warm-up work is not the production steady state; start the counters here.
                 if(run.diagnosticsEnabled){SolverDiagnostics.reset();SolverDiagnostics.ENABLED=true;}
-            }
+                FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+            } else run.countTick();
             run.engineMillis.add((meter-run.lastMeter)/1e6);if(run.tickStarted!=0)run.tickMillis.add((now-run.tickStarted)/1e6);
         }
         run.lastMeter=meter;
@@ -246,6 +307,7 @@ public final class FluidServerBenchmark {
     private static void finish(Run r) {
         // Close the counters before anything else, so the readout covers the window and nothing after it.
         if(r.diagnosticsEnabled){SolverDiagnostics.ENABLED=false;r.diagnostics=SolverDiagnostics.sample();}
+        FluidRuntimeDiagnostics.ENABLED=false;
         r.finished=true;r.world.observe(null);r.memoryTick(true);long now=System.nanoTime();
         var worker=r.samples.stream().map(Sample::timing).filter(m->m.workerNanos()>=0).map(m->m.workerNanos()/1e6).toList();
         var latency=r.samples.stream().map(s->s.timing().dispatchToPublicationNanos()/1e6).toList();long held=r.samples.stream().filter(s->!s.timing().accepted()).count();
@@ -274,6 +336,7 @@ public final class FluidServerBenchmark {
         if(r.memoryEnabled){report.put("memorySamples",r.memorySamples);report.put("startEpochMillis",r.startEpochMillis);report.put("measuredStartEpochMillis",r.measuredStartEpochMillis);
             report.put("memoryNote","One-second JVM observations; heap used includes uncollected garbage. Use JFR after-GC heap and pause durations separately; GC MXBean time is collection time, not necessarily stop-the-world pause time. External process RSS/private bytes are separate from Java heap.");}
         if(r.diagnostics!=null)report.put("solverDiagnostics",diagnostics(r,r.samples.size()-held,(now-r.measuredStarted)/1e9));
+        report.put("runtimeCounters",runtimeCounters(r,(now-r.measuredStarted)/1e9));
         report.put("warmupSamples",r.warmupSamples);report.put("warmupHeldIntervals",r.warmupSamples.stream().filter(s->!s.timing().accepted()).count());
         report.put("moduleCommittedTicks",finalState.modules().stream().map(FixedSplitModule.Snapshot::committedTick).toList());report.put("pendingTransferRecords",finalState.transfers().pending().size());report.put("plannedCapacityRecords",finalState.transfers().planned().size());
         report.put("qualificationNote","One fresh-JVM replicate only. Three replicates and one/many/module, worker-count, contention and soak coverage are required. Queue debt is present in each sample and is not hidden in worker timing.");
@@ -282,7 +345,30 @@ public final class FluidServerBenchmark {
             boolean allAdvanced=finalState.islands().stream().allMatch(i->i.snapshot().clock().committedTick()>0);
             boolean unloaded=fixture.topology.active().values().stream().noneMatch(record->{var p=record.device().position();return r.server.overworld().hasChunkAt(new BlockPos(p.x(),p.y(),p.z()));});
             report.put("status","STRESS_COMPLETED");report.put("qualificationNote","Fixed-duration stress characterization, not an M9 qualification replicate. All failures, lag, warmup and quality are retained; ordinary latency gates are reported separately.");
-            report.put("reservoirs",reservoirCount);report.put("fixtureSeed",2026091603L);report.put("topology","100 isolated ladder networks, 10-30 finite reservoirs each, series rails and parallel rungs; current-basis wet TJL + nitrogen");
+            report.put("reservoirs",reservoirCount);report.put("fixtureSeed",2026091603L);report.put("topology",switch(r.profile){
+                case "transient100"->"100 isolated closed-end ladders, 10-30 finite 1000 m3 reservoirs each, filled by a 200 kPa generator through 100 m of 0.30 m pipe; no void; current-basis wet TJL + nitrogen";
+                case "rest100"->"100 isolated closed ladders, 10-30 finite 1 m3 reservoirs each, stress100 rung pressures spread over 100 Pa; no generator or void; current-basis wet TJL + nitrogen";
+                case "mixed100"->"100 isolated ladders by network index mod 4: 0-1 transient100 fill, 2 stress100 through-flow, 3 rest100 closed; current-basis wet TJL + nitrogen";
+                default->"100 isolated ladder networks, 10-30 finite reservoirs each, series rails and parallel rungs; current-basis wet TJL + nitrogen";});
+            var byLadder=new TreeMap<String,Object>();
+            for(var ladder:Ladder.values()) {
+                var ids=fixture.ladders.entrySet().stream().filter(e->e.getValue()==ladder).map(Map.Entry::getKey).collect(java.util.stream.Collectors.toSet());if(ids.isEmpty())continue;
+                var own=r.samples.stream().filter(s->ids.contains(s.island())).toList();var summary=new LinkedHashMap<String,Object>();
+                summary.put("islands",ids.size());summary.put("measuredIntervals",own.size());summary.put("acceptedIntervals",own.stream().filter(s->s.timing().accepted()).count());
+                summary.put("advancedSimulatedSecondsPerWallSecond",own.stream().filter(s->s.timing().accepted()).mapToDouble(s->(s.timing().endTick()-s.timing().startTick())/20.0).sum()/((now-r.measuredStarted)/1e9));
+                summary.put("workerMilliseconds",statistics(own.stream().map(Sample::timing).filter(m->m.workerNanos()>=0).map(m->m.workerNanos()/1e6).toList()));
+                summary.put("readyToPublicationMilliseconds",statistics(own.stream().map(Sample::readyToPublicationMillis).filter(Objects::nonNull).toList()));
+                summary.put("substeps",statistics(own.stream().filter(s->s.timing().accepted()).map(s->(double)s.substeps()).toList()));
+                byLadder.put(ladder.name(),summary);
+            }
+            report.put("ladders",byLadder);
+            if(r.fillGaps.size()>=2) {
+                var first=r.fillGaps.getFirst();var last=r.fillGaps.getLast();var fill=new LinkedHashMap<String,Object>();
+                fill.put("definition","Mean over transient ladders of generator pressure minus mean reservoir pressure, against mean committed simulated seconds; time constant assumes exponential approach over the measurement window");
+                fill.put("firstSample",Map.of("committedSeconds",first[0],"gapPascal",first[1]));fill.put("lastSample",Map.of("committedSeconds",last[0],"gapPascal",last[1]));
+                fill.put("timeConstantSeconds",last[1]<first[1]&&last[0]>first[0]?(last[0]-first[0])/Math.log(first[1]/last[1]):null);
+                fill.put("samples",r.fillGaps);report.put("transientFill",fill);
+            }
             report.put("reservoirsPerIsland",fixture.checkpoint.islands().stream().collect(java.util.stream.Collectors.toMap(i->i.snapshot().id(),i->i.snapshot().graph().reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).count())));
             report.put("stressSamples",r.stressSamples);report.put("allFixtureChunksUnloaded",unloaded);report.put("everyIslandAdvanced",allAdvanced);
             double seconds=(now-r.measuredStarted)/1e9;
@@ -327,6 +413,25 @@ public final class FluidServerBenchmark {
         result.put("recordedAttempts",r.diagnostics.attempts().size());
         result.put("attemptLogTruncated",r.diagnostics.attempts().size()>=SolverDiagnostics.MAXIMUM_ATTEMPTS);
         result.put("attemptDominantTerms",dominant);
+        return result;
+    }
+    /**
+     * The {@link FluidRuntimeDiagnostics} readout for the measurement window, as totals, per wall second and
+     * per server tick, and the same over idle ticks only. The harness's own world reads are paused out.
+     */
+    private static Map<String,Object> runtimeCounters(Run r,double measuredSeconds) {
+        var result=new LinkedHashMap<String,Object>();
+        result.put("note","Server-thread scheduling counters over the measurement window. A tick's counts cover its tick hooks and the mailbox work since the previous tick. Idle ticks routed no completion, dispatched no solve and published no island.");
+        result.put("measuredSeconds",measuredSeconds);result.put("ticks",r.countedTicks);result.put("idleTicks",r.idleTicks);
+        var totals=new LinkedHashMap<String,Object>();var perSecond=new LinkedHashMap<String,Object>();var perTick=new LinkedHashMap<String,Object>();
+        var idle=new LinkedHashMap<String,Object>();var idlePerTick=new LinkedHashMap<String,Object>();var idleWithWork=new LinkedHashMap<String,Object>();var maximum=new LinkedHashMap<String,Object>();
+        for(int i=0;i<r.counterNames.size();i++) {
+            String name=r.counterNames.get(i);totals.put(name,r.counterTotals[i]);perSecond.put(name,r.counterTotals[i]/measuredSeconds);
+            perTick.put(name,r.countedTicks>0?r.counterTotals[i]/(double)r.countedTicks:null);maximum.put(name,r.maximumPerTick[i]);
+            idle.put(name,r.idleCounterTotals[i]);idlePerTick.put(name,r.idleTicks>0?r.idleCounterTotals[i]/(double)r.idleTicks:null);idleWithWork.put(name,r.idleTicksWithWork[i]);
+        }
+        result.put("totals",totals);result.put("perSecond",perSecond);result.put("perTick",perTick);result.put("maximumPerTick",maximum);
+        result.put("idleTickTotals",idle);result.put("idleTickPerTick",idlePerTick);result.put("idleTicksWithAny",idleWithWork);
         return result;
     }
     private static Double percentile(List<Double> values,double fraction){if(values.isEmpty())return null;var sorted=new ArrayList<>(values);Collections.sort(sorted);return sorted.get(Math.min(sorted.size()-1,(int)Math.ceil(fraction*sorted.size())-1));}

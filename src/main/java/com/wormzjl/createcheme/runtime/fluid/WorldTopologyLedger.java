@@ -47,6 +47,7 @@ public final class WorldTopologyLedger {
             this(onlineTick,nextIdentity,active,events,constructed,destroyed,FluidBasis.capture(com.wormzjl.createcheme.science.material.MaterialRuntime.current()));
         }
         public Snapshot {
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.topologySnapshots);
             recoveries=Map.copyOf(recoveries);if(recoveries.size()>MAXIMUM_EVENTS)throw new IllegalArgumentException("Recovery queue is full");
             if(onlineTick<0||nextIdentity<1||events.size()>MAXIMUM_EVENTS)throw new IllegalArgumentException("Invalid world topology snapshot");
             active=Map.copyOf(active);events=List.copyOf(events);Objects.requireNonNull(constructed);Objects.requireNonNull(destroyed);

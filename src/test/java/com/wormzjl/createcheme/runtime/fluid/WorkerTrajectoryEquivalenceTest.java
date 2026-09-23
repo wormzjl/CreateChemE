@@ -69,6 +69,28 @@ class WorkerTrajectoryEquivalenceTest {
         assertEquals(12,runs.get(Mode.AUTOMATIC_TWELVE).maximumOutstanding(),
                 "all twelve owners must be outstanding before the owner thread drains completions");
         for(var mode:List.of(Mode.FIXED_TWO,Mode.AUTOMATIC_TWELVE))assertSameTrajectory(reference,runs.get(mode),mode);
+        // A bitwise fingerprint of each mode's trajectory, so a scheduler change can be compared against a
+        // previous build's report as well as across worker counts within this run.
+        var digests=new java.util.TreeMap<String,String>();for(var entry:runs.entrySet())digests.put(entry.getKey().name(),digest(entry.getValue()));
+        var output=java.nio.file.Path.of("build/reports/fluid/P12-worker-trajectories.json");java.nio.file.Files.createDirectories(output.getParent());
+        java.nio.file.Files.writeString(output,new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(digests));
+    }
+
+    private static String digest(Run run) throws java.security.NoSuchAlgorithmException {
+        var sha=java.security.MessageDigest.getInstance("SHA-256");var buffer=java.nio.ByteBuffer.allocate(8);
+        java.util.function.LongConsumer put=value->{buffer.clear();buffer.putLong(value);sha.update(buffer.array());};
+        for(long island:new java.util.TreeSet<>(run.histories().keySet())) {
+            put.accept(island);var clock=run.clocks().get(island);put.accept(clock.onlineTick());put.accept(clock.committedTick());put.accept(clock.retryAtTick());put.accept(clock.cadenceTicks());
+            for(var frame:run.histories().get(island)) {
+                put.accept(frame.committedTick());put.accept(frame.acceptedSubsteps());put.accept(frame.rejectedSubsteps());
+                for(double flow:frame.averageMassFlows())put.accept(Double.doubleToLongBits(flow));
+                for(var node:frame.nodes()) {
+                    put.accept(node.id());for(double n:node.moles())put.accept(Double.doubleToLongBits(n));
+                    for(double v:new double[]{node.elevation(),node.internalEnergy(),node.pressure(),node.temperature(),node.mass(),node.vaporVolume(),node.liquidVolume(),node.waterVolume()})put.accept(Double.doubleToLongBits(v));
+                }
+            }
+        }
+        return java.util.HexFormat.of().formatHex(sha.digest());
     }
 
     private static final class Harness implements AutoCloseable {

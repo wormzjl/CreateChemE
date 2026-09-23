@@ -47,6 +47,7 @@ public final class IslandCoordinator {
             this(id,revision,graph,clock,allowance,anchor,lastResult,status,Map.of());
         }
         public Snapshot {
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandSnapshots);
             if(id<=0||revision<0)throw new IllegalArgumentException("Invalid island identity");
             Objects.requireNonNull(graph);Objects.requireNonNull(clock);Objects.requireNonNull(allowance);
             Objects.requireNonNull(anchor);Objects.requireNonNull(lastResult);Objects.requireNonNull(status);
@@ -145,12 +146,14 @@ public final class IslandCoordinator {
     /** Called once per elapsed server tick, never from wall time or for time spent offline. */
     public void tick() {
         owned();if(stopped)return;dispatchedThisTick=0;
+        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits,islands.size());
         for(var island:islands.values())island.clock.accrueOnlineTicks(1);
         pump();
     }
     /** May also run after terminal draining, allowing catch-up between ordinary tick boundaries. */
     public void pump() {
         owned();if(stopped||pumping)return;pumping=true;
+        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.readinessPumps);
         try {
             if(suspension!=null){dispatcher.demand(0);return;}
             for(var round:List.copyOf(rounds)) {
@@ -158,6 +161,7 @@ public final class IslandCoordinator {
                     rounds.remove(round);closeRound(round);
                 }
             }
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits,islands.size());
             int eligible=0;for(var island:islands.values())if(!hasPending(island.id)&&island.clock.nextSlice(1,island.fence(),island.maximumSliceTicks).isPresent())eligible++;
             dispatcher.demand(eligible);
             // Completed results waiting at another group's barrier retain a bounded staging slot.
@@ -165,7 +169,7 @@ public final class IslandCoordinator {
             if(capacity<=0)return;
             var admitted=new ArrayList<Pending>();long roundStarted=nanoClock.getAsLong();
             for(int slot=0;slot<capacity;slot++) {
-                var next=ready.nextReady(id->{var i=require(id);return !hasPending(id)&&i.clock.nextSlice(1,i.fence(),i.maximumSliceTicks).isPresent();});
+                var next=ready.nextReady(id->{FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits);var i=require(id);return !hasPending(id)&&i.clock.nextSlice(1,i.fence(),i.maximumSliceTicks).isPresent();});
                 if(next.isEmpty())break;
                 var island=require(next.getAsLong());long request=dispatcher.nextRequestId();
                 var slice=island.clock.nextSlice(request,island.fence(),island.maximumSliceTicks).orElseThrow();
@@ -173,7 +177,7 @@ public final class IslandCoordinator {
                 var policy=island.anchor.isPresent()&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
                 var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
                 if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";break;}
-                island.clock.admitted(slice);island.status="SOLVING";
+                island.clock.admitted(slice);island.status="SOLVING";FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.solvesDispatched);
                 var entry=new Pending(attempt,island.clock.snapshot().onlineTick(),nanoClock.getAsLong());pending.put(request,entry);admitted.add(entry);dispatchedThisTick++;
             }
             if(!admitted.isEmpty())rounds.add(new Round(List.copyOf(admitted),roundStarted));
@@ -183,6 +187,7 @@ public final class IslandCoordinator {
     public void completed(Attempt attempt,Optional<ProcessSolveServices.FluidIslandSolveResult> result) {
         owned();Objects.requireNonNull(result);var entry=pending.get(attempt.slice.requestId());
         if(entry==null||!entry.attempt.equals(attempt)||entry.terminal)return;
+        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.completionsRouted);
         entry.terminal=true;entry.result=nanoClock.getAsLong()-entry.admittedNanos>=settings.hardBudgetNanos?null:result.orElse(null);
         if(entry.closed){pending.remove(attempt.slice.requestId());return;}
         // The completion router calls pump after its entire bounded drain, avoiding recursive dispatch here.
@@ -229,6 +234,7 @@ public final class IslandCoordinator {
             if(entry.terminal)pending.remove(attempt.slice.requestId());else dispatcher.cancel(attempt.slice.requestId());
             changed.add(island.snapshot());
         }
+        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandsPublished,changed.size());
         publisher.published(List.copyOf(changed));
     }
     private static boolean sameConnections(List<PassiveNetwork.Pipe> before,List<PassiveNetwork.Pipe> after){

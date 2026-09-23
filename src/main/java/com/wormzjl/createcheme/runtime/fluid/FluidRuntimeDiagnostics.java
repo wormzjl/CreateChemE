@@ -1,0 +1,71 @@
+package com.wormzjl.createcheme.runtime.fluid;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.LongAdder;
+
+/**
+ * Opt-in counters of the scheduling work the fluid runtime does on the logical server thread: how often the
+ * coordinator examines one island's scheduling state, how often the module host scans its modules, how many
+ * topology and island snapshots are built, how many device views and menu packets are produced, how often the
+ * readiness pump runs and how many solves it dispatches. They exist to show which of that work happens on
+ * ticks where nothing is due.
+ *
+ * <p>{@link #ENABLED} defaults to {@code false}; every recording site then performs one volatile read and
+ * nothing else, so production scheduling is unchanged whether or not it is enabled. The counters are
+ * measurement, not simulation state: nothing reads them to decide anything, and they are never persisted.
+ * A harness that observes the world through the same APIs brackets its own reads with {@link #pause()} and
+ * {@link #resume()}, so its observation overhead is not charged to the engine.
+ *
+ * <p>Definitions. An <em>island visit</em> is one examination of one island's scheduling state by the
+ * coordinator: a clock accrual, an eligibility test, or a readiness test in the fair queue. A <em>module
+ * scan</em> is one pass of {@link CausalModuleCoordinator#advance()} over every module and pending transfer.
+ * A <em>readiness pump</em> is one execution of the coordinator's pump past its re-entrancy guard.
+ */
+public final class FluidRuntimeDiagnostics {
+    private FluidRuntimeDiagnostics() {}
+
+    /** Master switch. Off in production; only a diagnostic harness or test turns it on. */
+    public static volatile boolean ENABLED=false;
+    private static volatile int paused;
+
+    public static final LongAdder islandVisits=new LongAdder();
+    public static final LongAdder moduleScans=new LongAdder();
+    public static final LongAdder topologySnapshots=new LongAdder();
+    public static final LongAdder islandSnapshots=new LongAdder();
+    public static final LongAdder viewBuilds=new LongAdder();
+    public static final LongAdder menuPackets=new LongAdder();
+    public static final LongAdder readinessPumps=new LongAdder();
+    public static final LongAdder solvesDispatched=new LongAdder();
+    /** Terminal worker results the coordinator accepted for an owned attempt. */
+    public static final LongAdder completionsRouted=new LongAdder();
+    /** Island snapshots handed to the publisher by round closure. */
+    public static final LongAdder islandsPublished=new LongAdder();
+
+    private static final Map<String,LongAdder> COUNTERS=counters();
+    private static Map<String,LongAdder> counters() {
+        var map=new LinkedHashMap<String,LongAdder>();
+        map.put("islandVisits",islandVisits);map.put("moduleScans",moduleScans);
+        map.put("topologySnapshots",topologySnapshots);map.put("islandSnapshots",islandSnapshots);
+        map.put("viewBuilds",viewBuilds);map.put("menuPackets",menuPackets);
+        map.put("readinessPumps",readinessPumps);map.put("solvesDispatched",solvesDispatched);
+        map.put("completionsRouted",completionsRouted);map.put("islandsPublished",islandsPublished);
+        return Collections.unmodifiableMap(map);
+    }
+
+    public static void count(LongAdder target){if(ENABLED&&paused==0)target.increment();}
+    public static void count(LongAdder target,long amount){if(ENABLED&&paused==0&&amount!=0)target.add(amount);}
+    /** Excludes the caller's own observation of the world from the counters until {@link #resume()}. */
+    public static void pause(){paused++;}
+    public static void resume(){if(paused<=0)throw new IllegalStateException("Unbalanced diagnostics pause");paused--;}
+
+    /** Ordered counter names, for tabular reports. */
+    public static java.util.List<String> names(){return java.util.List.copyOf(COUNTERS.keySet());}
+    /** Every counter, in declaration order. */
+    public static Map<String,Long> sample() {
+        var values=new LinkedHashMap<String,Long>();COUNTERS.forEach((name,adder)->values.put(name,adder.sum()));
+        return Collections.unmodifiableMap(values);
+    }
+    public static void reset(){COUNTERS.values().forEach(LongAdder::reset);}
+}

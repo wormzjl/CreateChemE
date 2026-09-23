@@ -16,25 +16,30 @@ class CadenceTrajectoryQualificationTest {
     private final FluidThermodynamics model=FluidTestSupport.networkModel();
     private final double[] molecularWeights=FluidTestSupport.molecularWeights(model);
     private record Frame(int tick,PassiveNetwork graph,double massTransferred) {}
-    private record Trajectory(List<Frame> frames,Set<Integer> cadences,int intervals) {}
+    /** {@code published} holds every interval, and {@code clocks} the clock each adaptive publication carried. */
+    private record Trajectory(List<Frame> frames,Set<Integer> cadences,int intervals,List<Frame> published,List<IslandClock.Snapshot> clocks) {
+        Trajectory(List<Frame> frames,Set<Integer> cadences,int intervals){this(frames,cadences,intervals,frames,List.of());}
+    }
 
     @Test void fixedAndAdaptiveCadencesPreserveTheRefinedPhysicalTrajectory() throws Exception {
-        var rows=new ArrayList<Map<String,Object>>();
+        var rows=new ArrayList<Map<String,Object>>();var digests=new TreeMap<String,String>();
         for(String fluid:List.of("nitrogen","water","wet-crude")) {
             var initial=initial(fluid);
             var coarse=reference(initial,.5);var fine=reference(initial,.25);
             compare(fluid,"reference-refinement",coarse,fine,.001,rows);
-            for(int cadence:new int[]{1,5,20})compare(fluid,"fixed-"+cadence,runFixed(initial,cadence),fine,.005,rows);
-            var adaptive=runAdaptive(initial);
+            for(int cadence:new int[]{1,5,20}){var fixed=runFixed(initial,cadence);digests.put(fluid+"/fixed-"+cadence,digest(fixed));compare(fluid,"fixed-"+cadence,fixed,fine,.005,rows);}
+            var adaptive=runAdaptive(initial);digests.put(fluid+"/adaptive-controlled-cpu",digest(adaptive));
             assertTrue(adaptive.cadences().stream().anyMatch(c->c>100),"Controlled high CPU samples did not increase cadence");
             assertTrue(adaptive.cadences().size()>2,"Controlled recovery did not exercise cadence changes");
             compare(fluid,"adaptive-controlled-cpu",adaptive,fine,.005,rows);
         }
+        // Ordered maps throughout, so an unchanged trajectory writes a byte-identical report.
         var output=Path.of("build/reports/fluid/P31-cadence-trajectories.json");Files.createDirectories(output.getParent());
-        Files.writeString(output,new GsonBuilder().setPrettyPrinting().create().toJson(Map.of(
-                "reference","TR-BDF2 step-doubling with 0.5/0.25 s ceilings and 1e-5 tolerance; refinement <=0.1%",
-                "scope","Fixed 1/5/20 s and production clock with injected CPU observations; not aggregate-load performance qualification",
-                "rows",rows)));
+        var report=new LinkedHashMap<String,Object>();
+        report.put("reference","TR-BDF2 step-doubling with 0.5/0.25 s ceilings and 1e-5 tolerance; refinement <=0.1%");
+        report.put("scope","Fixed 1/5/20 s and production clock with injected CPU observations; not aggregate-load performance qualification");
+        report.put("trajectoryDigests",digests);report.put("rows",rows);
+        Files.writeString(output,new GsonBuilder().setPrettyPrinting().create().toJson(report));
     }
 
     private PassiveNetwork initial(String fluid) {
@@ -60,13 +65,13 @@ class CadenceTrajectoryQualificationTest {
         return new Trajectory(frames,Set.of(),4);
     }
     private Trajectory runFixed(PassiveNetwork initial,int cadenceSeconds) {
-        var graph=initial;double moved=0;var frames=new ArrayList<Frame>();int intervals=0;
+        var graph=initial;double moved=0;var frames=new ArrayList<Frame>();var published=new ArrayList<Frame>();int intervals=0;
         for(int tick=20*cadenceSeconds;tick<=1600;tick+=20*cadenceSeconds) {
             var result=new PassiveIntervalSolver(model).solve(graph,cadenceSeconds,PassiveIntervalSolver.Settings.defaults(),()->{});
             graph=result.graph();assertClosed(initial,graph);moved+=cadenceSeconds*result.averageMassFlows()[0];intervals++;
-            if(tick%400==0)frames.add(new Frame(tick,graph,moved));
+            published.add(new Frame(tick,graph,moved));if(tick%400==0)frames.add(new Frame(tick,graph,moved));
         }
-        return new Trajectory(frames,Set.of(20*cadenceSeconds),intervals);
+        return new Trajectory(frames,Set.of(20*cadenceSeconds),intervals,published,List.of());
     }
     private Trajectory runAdaptive(PassiveNetwork initial) {
         class Dispatch implements IslandCoordinator.Dispatcher {
@@ -76,11 +81,12 @@ class CadenceTrajectoryQualificationTest {
             public boolean submit(IslandCoordinator.Attempt a,ProcessSolveServices.FluidIslandCommand c){attempt=a;command=c;return true;}
             public void cancel(long request){fail("Controlled cadence fixture must not time out");}
         }
-        var dispatch=new Dispatch();double[] moved={0};var frames=new ArrayList<Frame>();var cadences=new TreeSet<Integer>();int[] intervals={0};
+        var dispatch=new Dispatch();double[] moved={0};var frames=new ArrayList<Frame>();var published=new ArrayList<Frame>();var clocks=new ArrayList<IslandClock.Snapshot>();var cadences=new TreeSet<Integer>();int[] intervals={0};
         var coordinator=new IslandCoordinator(dispatch,changes->{
             for(var state:changes) {
                 var result=state.lastResult().orElseThrow();assertEquals(PassiveStepSolver.Acceptance.FULL,result.acceptance());assertClosed(initial,state.graph());
                 moved[0]+=result.advancedSeconds()*result.averageMassFlows()[0];cadences.add(state.clock().cadenceTicks());intervals[0]++;
+                published.add(new Frame((int)state.clock().committedTick(),state.graph(),moved[0]));clocks.add(state.clock());
                 if(state.clock().committedTick()%400==0)frames.add(new Frame((int)state.clock().committedTick(),state.graph(),moved[0]));
             }
         },()->0,new IslandCoordinator.Settings(2_000_000_000L,1_500_000_000L,64,true));
@@ -98,7 +104,7 @@ class CadenceTrajectoryQualificationTest {
             if(tick%400==0&&tick<1600){coordinator.releaseFence(boundary,List.of(1L));boundary=UUID.randomUUID();coordinator.fence(boundary,tick+400,List.of(1L));}
         }
         assertEquals(1600,coordinator.snapshot(1).clock().committedTick());assertEquals(0,coordinator.pendingCount());
-        coordinator.stop();return new Trajectory(frames,cadences,intervals[0]);
+        coordinator.stop();return new Trajectory(frames,cadences,intervals[0],published,clocks);
     }
 
     private void compare(String fluid,String cadence,Trajectory candidate,Trajectory reference,double relativeTolerance,List<Map<String,Object>> rows) {
@@ -121,11 +127,31 @@ class CadenceTrajectoryQualificationTest {
             assertTrue(maximumPhaseError<=relativeTolerance,fluid+" "+cadence+" phase");
             double massError=Math.abs(actual.massTransferred()-expected.massTransferred());
             assertTrue(massError<=1e-8+relativeTolerance*Math.abs(expected.massTransferred()),fluid+" "+cadence+" cumulative flow: "+massError);
-            rows.add(Map.of("fluid",fluid,"cadence",cadence,"tick",actual.tick(),"intervals",candidate.intervals(),
-                    "cadenceTicksObserved",candidate.cadences(),"maximumPressureRelativeError",maximumPressureError,
-                    "maximumTemperatureErrorK",maximumTemperatureError,"maximumPhaseVolumeFractionError",maximumPhaseError,
-                    "cumulativeMassAbsoluteErrorKg",massError,"status","PASS"));
+            var row=new LinkedHashMap<String,Object>();
+            row.put("fluid",fluid);row.put("cadence",cadence);row.put("tick",actual.tick());row.put("intervals",candidate.intervals());
+            row.put("cadenceTicksObserved",new TreeSet<>(candidate.cadences()));row.put("maximumPressureRelativeError",maximumPressureError);
+            row.put("maximumTemperatureErrorK",maximumTemperatureError);row.put("maximumPhaseVolumeFractionError",maximumPhaseError);
+            row.put("cumulativeMassAbsoluteErrorKg",massError);row.put("status","PASS");rows.add(row);
         }
+    }
+    /** SHA-256 over the raw bits of every published interval (tick, transferred mass, each node's inventory and
+     * state) and of every clock an adaptive publication carried, which also fixes when each slice was dispatched. */
+    private static String digest(Trajectory trajectory) {
+        try {
+            var sha=java.security.MessageDigest.getInstance("SHA-256");var buffer=java.nio.ByteBuffer.allocate(8);
+            java.util.function.LongConsumer put=value->{buffer.clear();buffer.putLong(value);sha.update(buffer.array());};
+            for(var clock:trajectory.clocks()){put.accept(clock.onlineTick());put.accept(clock.committedTick());put.accept(clock.retryAtTick());put.accept(clock.cadenceTicks());}
+            for(var frame:trajectory.published()) {
+                put.accept(frame.tick());put.accept(Double.doubleToLongBits(frame.massTransferred()));
+                for(var node:frame.graph().reservoirs()) {
+                    put.accept(node.id());for(double n:node.inventory().moles())put.accept(Double.doubleToLongBits(n));
+                    put.accept(Double.doubleToLongBits(node.inventory().internalEnergy()));var s=node.state();
+                    for(double v:new double[]{s.pressure(),s.temperature(),s.mass(),s.vaporVolume(),s.liquidVolume(),s.waterVolume()})put.accept(Double.doubleToLongBits(v));
+                }
+            }
+            put.accept(trajectory.intervals());for(int cadence:new TreeSet<>(trajectory.cadences()))put.accept(cadence);
+            return java.util.HexFormat.of().formatHex(sha.digest());
+        } catch(java.security.NoSuchAlgorithmException impossible){throw new AssertionError(impossible);}
     }
     private void assertClosed(PassiveNetwork initial,PassiveNetwork actual) {
         var before=FluidTestSupport.finiteLedger(initial,molecularWeights);

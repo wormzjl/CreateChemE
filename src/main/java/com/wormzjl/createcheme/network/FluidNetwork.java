@@ -105,6 +105,7 @@ public final class FluidNetwork {
             var record=world.registrations().get(menu.identity());if(record==null)return;
             var data=new MenuData(record.device().kind(),world.view(menu.identity()),Controls.from(record),world.components(),world.presets(),message,world.materialNames());
             PacketDistributor.sendToPlayer(player,new StatePayload(menu.containerId,menu.identity(),JSON.toJson(data)));
+            com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.count(com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.menuPackets);
         });
     }
     public static void sendEdit(FluidDeviceMenu menu,long revision,Controls controls){PacketDistributor.sendToServer(new EditPayload(menu.containerId,menu.position(),menu.identity(),revision,JSON.toJson(controls)));}

@@ -88,6 +88,7 @@ public final class CausalModuleCoordinator {
 
     public void advance() {
         owned();if(advancing)return;advancing=true;
+        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.moduleScans);
         try {
             for(var module:modules.values()) {
                 var saved=module.snapshot();var d=saved.definition();var feedOwners=feeds(d);var productOwners=products(d);
