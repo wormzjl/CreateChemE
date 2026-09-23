@@ -199,6 +199,8 @@ public final class CreateChemE {
         gameEventBus.addListener(CreateChemE::onFluidChunkLoaded);
         // Opt-in in-game measurement log (WP5 rig); registers nothing unless its system property is set.
         com.wormzjl.createcheme.runtime.fluid.FluidInGameDiagnostics.register(gameEventBus);
+        if(com.wormzjl.createcheme.runtime.fluid.FluidInGameDiagnostics.enabled()&&net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
+            com.wormzjl.createcheme.runtime.fluid.FluidInGameClientDiagnostics.register(gameEventBus);
     }
     private static void onFluidChunkLoaded(net.neoforged.neoforge.event.level.ChunkEvent.Load event) {
         if(event.getLevel() instanceof net.minecraft.server.level.ServerLevel level) {
