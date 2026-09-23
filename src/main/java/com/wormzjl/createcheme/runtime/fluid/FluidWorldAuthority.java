@@ -76,6 +76,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
             CreateChemE.LOGGER.error("fluid_world status=LEGACY_UNBOUND detail=Core inventories preserved; physical bindings are unavailable in this older checkpoint");return;
         }
         for(var entry:data.checkpoint().islands())runtime.register(dimension(entry.dimension()),entry.snapshot(),model(new FluidCheckpointCodec.PackageKey(entry.packageId(),entry.compressibility())));
+        logLoad();
         var stock=boundaries();compiled=PhysicalFluidTopology.compile(topology.snapshot().active().values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock,filterStock(),model.initialNitrogenCharge(1,298.15,101325,()->{}));
         rebuildOwners();validateOwnership();chunkMembers=chunkIndex(topology.active());data.bindCapture(this::capture);
         // Block entities whose chunks loaded before this authority existed never reported themselves: every device
@@ -85,6 +86,16 @@ public final class FluidWorldAuthority implements AutoCloseable {
         if(moduleHost!=null){moduleHost.attach(runtime.coordinator());advanceModules();}
         // Saved recoveries are first attempted on the first tick, as before, then on their retry deadline.
         if(topology.hasRecoveries())scheduleRecoveryRetry(1);
+    }
+    /** What the load restored: the checkpoint format, islands, certificates saved and restored (a restored island is
+     * materialised and holds only its horizon; it solves nothing at the load), and every discarded certificate. */
+    private void logLoad() {
+        var loaded=runtime.coordinator().observe();
+        long saved=data.checkpoint().islands().stream().filter(e->e.snapshot().certificate().flatMap(IslandCoordinator.Certified::saved).isPresent()).count();
+        long restored=loaded.stream().filter(s->s.certificate().isPresent()).count();
+        CreateChemE.LOGGER.info("fluid_world status=LOADED format={} online_tick={} islands={} certificates_saved={} certificates_restored={} awake={}",
+                FluidCheckpointCodec.VERSION,topology.onlineTick(),loaded.size(),saved,restored,loaded.size()-restored);
+        for(var s:loaded)if(s.status().startsWith("WAITING: saved "))CreateChemE.LOGGER.warn("fluid_island={} status=CERTIFICATE_DISCARDED detail={}",s.id(),s.status());
     }
     public static void start(MinecraftServer server){if(SERVERS.containsKey(server))throw new IllegalStateException("Duplicate fluid world authority");SERVERS.put(server,new FluidWorldAuthority(server));}
     public static Optional<FluidWorldAuthority> find(MinecraftServer server){if(!server.isSameThread())throw new IllegalStateException("Fluid world lookup requires server thread");return Optional.ofNullable(SERVERS.get(server));}
