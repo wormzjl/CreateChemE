@@ -15,6 +15,8 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-23
+
 ### Added
 
 - Fluid scheduling WP0: opt-in server-thread counters of scheduling work (island visits, module scans, topology and island snapshots, views, menu packets, pumps, dispatches), elapsed-window `transient100`, `rest100` and `mixed100` benchmark profiles beside `stress100`, and bitwise trajectory fingerprints for the P12 and P31 qualification tests (`eb28fc5`; batch `2026-09-23-fluid-scheduling-rest`).
