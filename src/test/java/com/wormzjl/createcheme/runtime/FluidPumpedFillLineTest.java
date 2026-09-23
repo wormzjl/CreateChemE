@@ -104,6 +104,18 @@ class FluidPumpedFillLineTest {
     }
 
     /**
+     * The three-tank fill's twelve-tick slice from a cold solver: at 0.128 s the second tank has cooled and the third
+     * pushes nitrogen back into it, and a rate solve that starts from a numerically positive flow on that connection
+     * used to meet the velocity clamp's donor switch at zero flow and hold at {@code Newton line search stalled at
+     * residual 0.10479353009252752} (in game after the first committed tick: {@code 0.10479996312241754}).
+     */
+    @Test void aPumpedFillPassesTheSecondTanksBackflowWithoutAHold() {
+        var result=new PassiveIntervalSolver(model).solve(line("GUPRPRPR"),.6,PassiveIntervalSolver.Settings.defaults(),()->{},RetainedSolver.COLD_START_SECONDS);
+        System.out.println("three-tank fill, 0.6 s: accepted="+result.acceptedSubsteps()+" rejected="+result.rejectedSubsteps()+" reasons="+result.rejectionReasons());
+        assertEquals(.6,result.advancedSeconds(),1e-12);
+    }
+
+    /**
      * {@code fill100}'s line: water pumped into a closed chain of three nitrogen tanks. It fills until the pump stands
      * at its 500 kPa limit over the generator (601,325 Pa), where it closes, and the island certifies STEADY.
      */

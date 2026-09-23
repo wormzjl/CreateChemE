@@ -1777,11 +1777,28 @@ public final class PassiveStepSolver {
             double pressureScale=pressureScales[edge];
             f[edgeOffset+edge]=(driving-loss)/pressureScale;
             if(canClamp(modes.get(edge))&&!boundaryClosed[edge]) {
-                int direction=flow>=0?0:1;
+                // Which end's velocity limit caps a plain passive connection is read off the driving
+                // pressure, not the live flow: at every root of this row the flow has the driving
+                // pressure's sign, so the two agree wherever it matters, but deciding it by the
+                // flow put a finite jump in the row at exactly zero flow whenever the driving
+                // pressure lay between the two ends' limit drops - the hydraulic row on one side,
+                // the throttled law's (+-limit - flow)/limit, about -1, on the other. The one-sided
+                // Jacobian only samples one side of it, so a Newton step that turns the connection
+                // round lands on a plateau no backtrack leaves: measured on the pumped three-tank
+                // fill, where the second tank cools and the third pushes nitrogen back into it,
+                // as the held retries in game at "Newton line search stalled at residual
+                // 0.1047..." and here, bit for bit. See {@link #TRACE_CLAMP_FRACTION} for the
+                // start-up it belongs to. A device's connection keeps its flow's donor: a pump or a
+                // valve decides its direction through its own active set (a pump pushed backwards
+                // is closed, not throttled), and a filter keeps its cake-dependent resistance on
+                // the flow's donor as before.
+                boolean byDriving=pipe.filter()==null&&pipe.control() instanceof FlowControl.Passive;
+                int direction=(byDriving?driving>=0:flow>=0)?0:1;
+                var capTransport=byDriving?tr[direction==0?a:b]:transport;
                 // A colored Jacobian perturbs only a few nodes. Unchanged immutable donor
                 // properties have the same cap and loss; keep one entry per edge/direction.
-                if(pipe.filter()!=null||capSources[edge][direction]!=transport) {
-                    double limit=rho*pipe.minimumArea()*transport.velocityLimit;
+                if(pipe.filter()!=null||capSources[edge][direction]!=capTransport) {
+                    double limit=capTransport.density*pipe.minimumArea()*capTransport.velocityLimit;
                     if(pipe.filter()!=null&&!rateOnly&&!prescribedFlow) {
                         // A filter has a second inlet limit: the cake it can still hold. The
                         // retained volume at the end of this step is the same expression the
@@ -1794,7 +1811,7 @@ public final class PassiveStepSolver {
                         double room=pipe.filter().capacity()*(1-FILTER_CAPACITY_MARGIN)-pipe.filter().captured().volume();
                         if(retainedPerMass>0&&room>0)limit=Math.min(limit,room/(dt*retainedPerMass));
                     }
-                    capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.filter()==null?pipe.pressureDrop(limit,rho,transport.viscosity):filterCoefficient*limit;capSources[edge][direction]=transport;
+                    capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.filter()==null?pipe.pressureDrop(limit,capTransport.density,capTransport.viscosity):filterCoefficient*limit;capSources[edge][direction]=capTransport;
                 }
                 double limit=capMassFlows[edge][direction],limitDrop=capPressureDrops[edge][direction];
                 // A saturated pressure/flow law: the unused driving pressure is throttled.
