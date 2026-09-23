@@ -407,17 +407,30 @@ public final class ProcessSolveServices {
                     var candidate=retained.solve(model,snapshot,durationSeconds,settings,checkpoint);hard.run();
                     return new FluidIslandSolveResult(Optional.of(candidate),"FULL",elapsed[0],FallbackAllowance.NONE,Optional.of(ApproximationAnchor.fromFull(model,candidate)));
                 }catch(FluidSoftDeadline deadline) {
-                    hard.run();var guard=fallback.anchor().orElseThrow().guard(model,snapshot);
-                    var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,.0025,256);
-                    var candidate=retained.solveApproximate(model,snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
-                    return new FluidIslandSolveResult(Optional.of(candidate),"APPROXIMATE: soft budget",elapsed[0],fallback.allowance().accept(ticks,fallback.cadenceTicks()),fallback.anchor());
+                    hard.run();
+                    // A refused fallback is still the soft budget's decision: the full solve had not finished when it
+                    // ran out. Its detail says so, so the hold policy treats it as a budget hold (IslandCoordinator.hold).
+                    try {
+                        var guard=fallback.anchor().orElseThrow().guard(model,snapshot);
+                        var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,.0025,256);
+                        var candidate=retained.solveApproximate(model,snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
+                        return new FluidIslandSolveResult(Optional.of(candidate),"APPROXIMATE: soft budget",elapsed[0],fallback.allowance().accept(ticks,fallback.cadenceTicks()),fallback.anchor());
+                    }catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected refused) {
+                        cancellationToken.throwIfCancellationRequested();
+                        return new FluidIslandSolveResult(Optional.empty(),SOFT_BUDGET_REFUSED+refused.getMessage(),elapsed[0],fallback.allowance(),fallback.anchor());
+                    }
                 }
-            }catch(FluidWallDeadline deadline){return new FluidIslandSolveResult(Optional.empty(),"HELD: wall deadline",elapsed[0],fallback.allowance(),fallback.anchor());}
+            }catch(FluidWallDeadline deadline){return new FluidIslandSolveResult(Optional.empty(),WALL_DEADLINE,elapsed[0],fallback.allowance(),fallback.anchor());}
             catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected failed) {
                 cancellationToken.throwIfCancellationRequested();return new FluidIslandSolveResult(Optional.empty(),"HELD: "+failed.getMessage(),elapsed[0],fallback.allowance(),fallback.anchor());
             }
         }
     }
+    /** The detail of an island interval the hard wall budget cut. */
+    public static final String WALL_DEADLINE="HELD: wall deadline";
+    /** The detail prefix of an island interval whose full solve ran out of the soft budget and whose approximate
+     * fallback then refused the interval. */
+    public static final String SOFT_BUDGET_REFUSED="HELD: soft budget; approximate fallback refused: ";
     private static final class FluidWallDeadline extends RuntimeException {}
     private static final class FluidSoftDeadline extends RuntimeException {}
     public record FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,long workerCpuNanos,
@@ -455,7 +468,8 @@ public final class ProcessSolveServices {
             Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> proposal=Optional.empty();String detail;
             try {
                 proposal=Optional.of(new com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner(model).prepare(snapshot,startTick,durationTicks,inputs,withdrawals,checkpoint,retained));checkpoint.run();detail="FULL: buffered transfers";
-            }catch(FluidWallDeadline|com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();detail="HELD: buffered interval "+held.getMessage();}
+            }catch(FluidWallDeadline cut){proposal=Optional.empty();detail=WALL_DEADLINE+" (buffered interval)";}
+            catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();detail="HELD: buffered interval "+held.getMessage();}
             token.throwIfCancellationRequested();long elapsed=System.nanoTime()-started;
             long cpu=WorkerAllocation.CpuTime.elapsed(cpuStart,WorkerAllocation.CpuTime.sample());
             var candidate=proposal.map(com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal::candidate);

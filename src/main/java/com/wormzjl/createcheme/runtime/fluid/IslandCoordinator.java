@@ -151,6 +151,11 @@ public final class IslandCoordinator {
         // Ephemeral cost hint, not material state or a renewed fallback allowance. A restart
         // may rediscover the hint; saved inventory, cadence, debt and fences stay authoritative.
         private int maximumSliceTicks=Integer.MAX_VALUE;
+        // Holds in a row at the one-tick slice, for the retry wait; see {@link #hold}. Ephemeral like the slice hint.
+        private int holdStreak;
+        // Set by a hold whose soft budget ran out and whose approximate fallback refused the slice: the retry runs the
+        // full solve on the whole budget instead; cleared by the next accepted interval. See {@link #hold}.
+        private boolean fullOnly;
         // Ephemeral solver caches for this island's jobs; replaced, never mutated, on a revision
         // bump, so a job still running under the old revision keeps its own handle.
         private RetainedSolver retained=new RetainedSolver();
@@ -364,7 +369,7 @@ public final class IslandCoordinator {
     public void resumeQualifiedProperties() {
         owned();if(stopped||suspension==null)return;suspension=null;
         for(var island:islands.values()) {
-            island.holdTick=Long.MAX_VALUE;island.suspended=false;island.status="WAITING: full solve after property reload";island.clock.inputsChanged();
+            island.holdTick=Long.MAX_VALUE;island.suspended=false;island.status="WAITING: full solve after property reload";inputsChanged(island);
             if(island.certificate!=null){island.certificate=null;island.certifiedSince=-1;island.signature=null;island.retained=new RetainedSolver();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificateWakes);}
             island.lastInterval=null;island.streak=0;
             island.touch();reconsider(island);
@@ -455,7 +460,7 @@ public final class IslandCoordinator {
                 var island=require(next.getAsLong());long request=dispatcher.nextRequestId();
                 var slice=island.clock.nextSlice(request,island.fence(),island.maximumSliceTicks).orElseThrow();
                 var attempt=new Attempt(island.id,island.revision,slice);
-                var policy=island.anchor.isPresent()&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
+                var policy=island.anchor.isPresent()&&!island.fullOnly&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
                 var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
                 if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";island.touch();break;}
                 island.clock.admitted(slice);island.status="SOLVING";island.touch();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.solvesDispatched);
@@ -510,11 +515,13 @@ public final class IslandCoordinator {
             if(!accept)island.status=refusal!=null?"HELD: "+refusal:outcome==null?"HELD: round deadline or worker failure":outcome.detail().startsWith("HELD")?outcome.detail():"HELD: "+outcome.detail();
             island.clock.completed(attempt.slice,accept);
             if(suspension!=null)island.status=suspension;
-            if(suspension==null&&!accept&&(outcome==null||outcome.detail().startsWith("HELD: wall deadline"))) {
-                island.maximumSliceTicks=Math.max(1,(int)((attempt.slice.endTick()-attempt.slice.startTick())/2));
-            } else if(accept&&outcome.candidate().orElseThrow().acceptance()==PassiveStepSolver.Acceptance.FULL&&island.maximumSliceTicks!=Integer.MAX_VALUE) {
-                int cadence=island.clock.snapshot().cadenceTicks();
-                island.maximumSliceTicks=island.maximumSliceTicks>=cadence/2?Integer.MAX_VALUE:island.maximumSliceTicks*2;
+            if(suspension==null&&!accept&&refusal==null&&attempt.revision==island.revision)hold(island,attempt.slice,outcome);
+            else if(accept) {
+                island.holdStreak=0;island.fullOnly=false;
+                if(outcome.candidate().orElseThrow().acceptance()==PassiveStepSolver.Acceptance.FULL&&island.maximumSliceTicks!=Integer.MAX_VALUE) {
+                    int cadence=island.clock.snapshot().cadenceTicks();
+                    island.maximumSliceTicks=island.maximumSliceTicks>=cadence/2?Integer.MAX_VALUE:island.maximumSliceTicks*2;
+                }
             }
             island.metrics=new Metrics(island.metrics==null?1:Math.addExact(island.metrics.sequence(),1),attempt.slice.startTick(),attempt.slice.endTick(),entry.dispatchedAtTick,island.clock.snapshot().onlineTick(),outcome==null?-1:outcome.workerNanos(),outcome==null?-1:outcome.workerCpuNanos(),Math.max(0,nanoClock.getAsLong()-entry.admittedNanos),accept);
             if(settings.adaptive&&outcome!=null) {
@@ -531,6 +538,53 @@ public final class IslandCoordinator {
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandsPublished,changed.size());
         publisher.published(List.copyOf(changed));
     }
+    /** The longest a held island waits between retries at the shortest slice, in cadences: 2^6 = 64. */
+    static final int MAXIMUM_RETRY_DOUBLINGS=6;
+    /**
+     * The hold policy: what a held attempt (no committed candidate, no refused transaction) changes before the retry.
+     *
+     * <p>Every hold hands the retry a fresh {@link RetainedSolver}. The one the attempt used carries the step
+     * solver's last flows, modes and factorizations from wherever inside the slice that attempt stopped - the cut
+     * of a wall budget or the last pass of a failed solve - and a retry that warm-starts from them starts the slice
+     * again from its first state with the flows of a later one: measured on the vented three-tank chain, a rate
+     * solve that starts from 0.45 and -0.22 kg/s on tanks still at rest converges linearly through the friction kink
+     * at zero and fails the same way at every retry. It is also what made a retry's trajectory depend on how far the
+     * cancelled job had got. With a fresh solver a retry is the same computation as the first attempt on the same
+     * committed state and slice, so a numerical failure is reproducible exactly and a retry of the same slice is
+     * pointless.
+     *
+     * <p>So every hold also changes the problem: a slice longer than one tick is halved (a shorter whole interval,
+     * never a partial commit; the first full acceptance doubles it back), whether the budget cut it or the solve
+     * failed, and a hold at one tick waits {@code cadence * 2^k} ticks for its retry, k the number of such holds in a
+     * row, at most {@link #MAXIMUM_RETRY_DOUBLINGS}. A budget hold at one tick is retried too, because a warmer or
+     * less loaded worker can pass it; it just stops being retried every cadence. Anything that changes the island's
+     * inputs (a fence, a released fence, a resolved delivery, a property resume) clears the wait and the count; a
+     * topology change makes a new island. Online ticks only: no wall clock decides a delay.
+     *
+     * <p>A hold whose soft budget ran out and whose approximate fallback then refused the slice spent a quarter of
+     * the budget on a fallback that cannot pass it: the retry runs the full solve alone on the whole budget, until
+     * the next accepted interval.
+     */
+    private void hold(Island island,IslandClock.Slice slice,ProcessSolveServices.FluidIslandSolveResult outcome) {
+        FluidRuntimeDiagnostics.count(budgetHold(outcome)?FluidRuntimeDiagnostics.budgetHolds:FluidRuntimeDiagnostics.numericalHolds);
+        int ticks=(int)(slice.endTick()-slice.startTick());
+        if(ticks>1)island.maximumSliceTicks=Math.max(1,ticks/2);
+        else {
+            int cadence=island.clock.snapshot().cadenceTicks();
+            island.clock.deferRetry((long)cadence<<Math.min(island.holdStreak,MAXIMUM_RETRY_DOUBLINGS));
+            island.holdStreak=Math.min(island.holdStreak+1,MAXIMUM_RETRY_DOUBLINGS);
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.retriesDeferred);
+        }
+        if(outcome!=null&&outcome.detail().startsWith(ProcessSolveServices.SOFT_BUDGET_REFUSED))island.fullOnly=true;
+        if(island.certificate==null)island.retained=new RetainedSolver();
+    }
+    /** A hold the worker's budget decided rather than the solve: no result by the round deadline, the wall budget,
+     * or a soft budget whose approximate fallback refused. A repeat can pass with more CPU; the rest cannot. */
+    static boolean budgetHold(ProcessSolveServices.FluidIslandSolveResult outcome) {
+        return outcome==null||outcome.detail().startsWith(ProcessSolveServices.WALL_DEADLINE)||outcome.detail().startsWith(ProcessSolveServices.SOFT_BUDGET_REFUSED);
+    }
+    /** Something the island solves against changed: a held island is retried at once, from its first retry again. */
+    private static void inputsChanged(Island island){island.clock.inputsChanged();island.holdStreak=0;}
     private static boolean sameConnections(List<PassiveNetwork.Pipe> before,List<PassiveNetwork.Pipe> after){
         if(before.size()!=after.size())return false;
         for(int i=0;i<before.size();i++){var a=before.get(i);var b=after.get(i);
@@ -557,7 +611,7 @@ public final class IslandCoordinator {
                 throw new IllegalStateException("Event would modify an admitted or committed interval");
             if(island.fences.containsKey(event))throw new IllegalStateException("Duplicate event fence");
         }
-        for(long id:affected){var island=require(id);island.fences.put(event,tick);fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(id);island.clock.inputsChanged();island.touch();reconsider(island);}
+        for(long id:affected){var island=require(id);island.fences.put(event,tick);fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(id);inputsChanged(island);island.touch();reconsider(island);}
     }
     /** A certified owner answers by materialisation: it advances to the fence and is then aligned like any other. */
     public boolean aligned(UUID event,Collection<Long> affected) {
@@ -566,14 +620,14 @@ public final class IslandCoordinator {
     }
     public void releaseFence(UUID event,Collection<Long> affected) {
         owned();if(!aligned(event,affected))throw new IllegalStateException("Event owners have not aligned");
-        for(long id:affected){var i=require(id);removeFence(i,event);i.clock.inputsChanged();i.touch();reconsider(i);}
+        for(long id:affected){var i=require(id);removeFence(i,event);inputsChanged(i);i.touch();reconsider(i);}
     }
     /** Production has become known (including zero production). A lagging receiver need not
      * reach the promised time to resolve this dependency. The host separately retains a known
      * input-time boundary when needed, so it cannot inject into an already admitted interval. */
     public void resolveDeliveryFence(UUID event,Collection<Long> receivers) {
         owned();for(long id:receivers)if(!require(id).fences.containsKey(event))throw new IllegalStateException("Missing delivery horizon");
-        for(long id:receivers){var island=require(id);removeFence(island,event);island.clock.inputsChanged();island.touch();reconsider(island);}
+        for(long id:receivers){var island=require(id);removeFence(island,event);inputsChanged(island);island.touch();reconsider(island);}
     }
     public record Replacement(long id,PassiveNetwork graph) {
         public Replacement {if(id<=0)throw new IllegalArgumentException("Invalid replacement identity");Objects.requireNonNull(graph);}

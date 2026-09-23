@@ -167,8 +167,75 @@ class IslandCoordinatorTest {
             assertEquals(0,FluidRuntimeDiagnostics.sample().get("readinessPumps"));
             coordinator.tick();
             assertEquals(1,FluidRuntimeDiagnostics.sample().get("deadlinesFired"));assertEquals(1,FluidRuntimeDiagnostics.sample().get("readinessPumps"));
-            var retry=dispatch.attempts.values().iterator().next();assertEquals(0,retry.slice().startTick());assertEquals(100,retry.slice().endTick());
+            // A failed solve is retried on a different problem, half the slice (IslandCoordinator.hold).
+            var retry=dispatch.attempts.values().iterator().next();assertEquals(0,retry.slice().startTick());assertEquals(50,retry.slice().endTick());
         } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+    }
+    private void hold(IslandCoordinator.Attempt attempt,String detail) {
+        dispatch.attempts.remove(attempt.slice().requestId());dispatch.commands.remove(attempt.slice().requestId());
+        coordinator.completed(attempt,Optional.of(new ProcessSolveServices.FluidIslandSolveResult(Optional.empty(),detail,10,FallbackAllowance.NONE,Optional.empty())));
+        coordinator.pump();
+    }
+    /** Ticks until the island's next attempt is dispatched; that attempt. */
+    private Map.Entry<Integer,IslandCoordinator.Attempt> nextAttempt() {
+        for(int tick=0;tick<100_000;tick++){if(!dispatch.attempts.isEmpty())return Map.entry(tick,dispatch.attempts.values().iterator().next());coordinator.tick();}
+        throw new AssertionError("no retry within 100,000 ticks");
+    }
+    /**
+     * The hold policy (IslandCoordinator.hold). A failed solve on the same committed state, slice and a fresh solver is
+     * the same computation, so every hold hands the retry a fresh retained solver and a different problem: half the
+     * slice, down to one tick, and at one tick a wait of cadence * 2^k ticks, at most 64 cadences. A fence, a released
+     * fence, a resolved delivery or a property resume clears the wait and the count.
+     */
+    @Test void aHeldOwnerRetriesAFreshSolverOnHalvedSlicesAndThenWaitsLongerAtOneTick() {
+        register(1,1_000_000,0);coordinator.pump();
+        RetainedSolver previous=null;
+        int[] slices={100,50,25,12,6,3,1,1,1,1,1,1,1,1,1};
+        int[] waits={0,100,100,100,100,100,100,100,200,400,800,1600,3200,6400,6400};
+        FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+        try {
+            for(int k=0;k<slices.length;k++) {
+                var next=nextAttempt();var attempt=next.getValue();var command=dispatch.commands.get(attempt.slice().requestId());
+                assertEquals(waits[k],next.getKey(),"wait before attempt "+k);
+                assertEquals(slices[k],attempt.slice().endTick()-attempt.slice().startTick(),"slice of attempt "+k);
+                assertNotSame(previous,command.retained(),"every retry after a hold runs on a fresh retained solver");
+                previous=command.retained();
+                hold(attempt,"HELD: Substep refinement exhausted: test");
+            }
+            assertEquals(slices.length,FluidRuntimeDiagnostics.sample().get("numericalHolds"));assertEquals(0,FluidRuntimeDiagnostics.sample().get("budgetHolds"));
+            assertEquals(9,FluidRuntimeDiagnostics.sample().get("retriesDeferred"));
+        } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+        // An input change clears the wait and the count: retried at once, and the next hold waits one cadence.
+        long committed=coordinator.snapshot(1).clock().committedTick();
+        coordinator.fence(UUID.randomUUID(),committed+10_000,List.of(1L));coordinator.pump();
+        assertEquals(1,dispatch.attempts.size(),"a fence retries a waiting owner at once");
+        hold(dispatch.attempts.values().iterator().next(),"HELD: Substep refinement exhausted: test");
+        assertEquals(100,nextAttempt().getKey(),"the count restarted");
+    }
+    /** A wall-budget hold halves the slice the same way, and its retry runs on a fresh solver too. */
+    @Test void aBudgetHoldHalvesTheSliceAndReplacesTheSolver() {
+        register(1,1_000,0);coordinator.pump();var first=dispatch.attempts.values().iterator().next();var solver=dispatch.commands.get(first.slice().requestId()).retained();
+        FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+        try {
+            hold(first,ProcessSolveServices.WALL_DEADLINE);
+            var retry=nextAttempt();assertEquals(100,retry.getKey());assertEquals(50,retry.getValue().slice().endTick());
+            assertNotSame(solver,dispatch.commands.get(retry.getValue().slice().requestId()).retained());
+            assertEquals(1,FluidRuntimeDiagnostics.sample().get("budgetHolds"));
+        } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+    }
+    /** A soft budget whose approximate fallback refused the slice: the retry is a full solve on the whole budget,
+     * until an interval is accepted again. */
+    @Test void aRefusedFallbackIsRetriedAsAFullSolveUntilAnIntervalIsAccepted() {
+        register(1,1_000,0);coordinator.pump();dispatch.finish(dispatch.attempts.keySet().iterator().next());coordinator.pump();
+        var second=dispatch.attempts.values().iterator().next();
+        assertTrue(dispatch.commands.get(second.slice().requestId()).fallback().enabled(),"an anchored island offers the fallback");
+        hold(second,ProcessSolveServices.SOFT_BUDGET_REFUSED+"test");
+        var third=nextAttempt().getValue();
+        assertFalse(dispatch.commands.get(third.slice().requestId()).fallback().enabled(),"the retry of a refused fallback solves in full");
+        assertEquals(50,third.slice().endTick()-third.slice().startTick());
+        dispatch.finish(third.slice().requestId());coordinator.pump();
+        var fourth=nextAttempt().getValue();
+        assertTrue(dispatch.commands.get(fourth.slice().requestId()).fallback().enabled(),"an accepted interval offers the fallback again");
     }
     @Test void thePerTickDispatchBudgetResumesOnTheNextTickWithoutPolling() {
         var budgeted=new IslandCoordinator(dispatch,publications::add,time::get,new IslandCoordinator.Settings(1000,750,2,false));

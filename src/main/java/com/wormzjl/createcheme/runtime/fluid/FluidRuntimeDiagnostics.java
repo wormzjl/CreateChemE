@@ -71,6 +71,11 @@ public final class FluidRuntimeDiagnostics {
     public static final LongAdder certificatesDiscarded=new LongAdder();
     public static final LongAdder payloadsEncoded=new LongAdder();
     public static final LongAdder payloadsReused=new LongAdder();
+    /** The hold policy (IslandCoordinator.hold): held attempts the wall or soft budget cut, held attempts whose solve
+     * failed, and retries at the one-tick slice deferred past the next cadence. */
+    public static final LongAdder budgetHolds=new LongAdder();
+    public static final LongAdder numericalHolds=new LongAdder();
+    public static final LongAdder retriesDeferred=new LongAdder();
 
     private static final Map<String,LongAdder> COUNTERS=counters();
     private static Map<String,LongAdder> counters() {
@@ -88,6 +93,7 @@ public final class FluidRuntimeDiagnostics {
         map.put("queuedInputs",queuedInputs);map.put("inputReplies",inputReplies);
         map.put("certificatesRestored",certificatesRestored);map.put("certificatesDiscarded",certificatesDiscarded);
         map.put("payloadsEncoded",payloadsEncoded);map.put("payloadsReused",payloadsReused);
+        map.put("budgetHolds",budgetHolds);map.put("numericalHolds",numericalHolds);map.put("retriesDeferred",retriesDeferred);
         return Collections.unmodifiableMap(map);
     }
 

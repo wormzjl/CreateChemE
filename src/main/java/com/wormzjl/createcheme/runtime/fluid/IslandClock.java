@@ -100,6 +100,11 @@ public final class IslandClock {
         if(toTick<committedTick||toTick>online()||toTick>causalFenceTick)throw new IllegalArgumentException("Rest target "+toTick+" outside committed "+committedTick+", online "+online()+", fence "+causalFenceTick);
         committedTick=toTick;retryAtTick=0;
     }
+    /** Moves a held owner's retry to {@code delayTicks} online ticks from now, never earlier than it already is. */
+    public void deferRetry(long delayTicks) {
+        owned();if(delayTicks<0||outstanding!=null)throw new IllegalStateException("Only a held owner with no outstanding slice defers its retry");
+        retryAtTick=Math.max(retryAtTick,Math.addExact(online(),delayTicks));
+    }
     /** A configuration/event change may justify retrying a held owner before its ordinary backoff expires. */
     public void inputsChanged(){owned();retryAtTick=0;}
     /** CPU gating is supplied by measurements; elapsed wall time alone is not evidence of CPU saturation. */
