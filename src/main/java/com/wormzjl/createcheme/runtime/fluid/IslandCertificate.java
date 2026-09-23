@@ -2,12 +2,18 @@ package com.wormzjl.createcheme.runtime.fluid;
 
 import com.wormzjl.createcheme.science.fluid.network.*;
 import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 /**
  * A rest or steady-flow certificate (plan section 3.3): the evidence that an island's interval map is the
  * identity (REST) or stationary (STEADY), and the arithmetic that advances the island without solving.
- * In memory only; a restart starts every island awake.
+ * A checkpoint keeps it as a {@link Saved} record with its validity {@link Signature} (plan section 3.5); a
+ * restart restores it while the signature still holds, and otherwise discards it and keeps the inventory.
  *
  * <p>Replay is arithmetic on the last solved interval, never a model evaluation: from the base tick b to a tick
  * t the island holds {@code base + f * delta} with {@code f = (t - b) / D} in every finite node, component and
@@ -29,6 +35,7 @@ public final class IslandCertificate {
 
     /** What the evidence compares, derived once per solved interval. Row n is null for a node that owns no stock. */
     static final class Summary {
+        final Interval interval;
         final long startTick,endTick;final int durationTicks;
         final PassiveNetwork before,after;final PassiveIntervalSolver.Result result;
         final double[][] moles;final double[] energy;final int[] phases;
@@ -43,7 +50,7 @@ public final class IslandCertificate {
         final boolean fullAcceptance,transitionFree,closuresUnchanged,solidsUnchanged,phasesUnchanged,exactZero,grossWithoutNet,solidsInTransport,hasFilter;
         /** {@code molecularWeights} (kg/mol, conserved-component order) weigh the finite inventories for {@link #referenceMass}. */
         Summary(Interval interval,double[] molecularWeights) {
-            startTick=interval.startTick;endTick=interval.endTick;durationTicks=Math.toIntExact(endTick-startTick);
+            this.interval=interval;startTick=interval.startTick;endTick=interval.endTick;durationTicks=Math.toIntExact(endTick-startTick);
             before=interval.before;result=interval.result;after=result.graph();
             if(before.reservoirs().size()!=after.reservoirs().size()||before.pipes().size()!=after.pipes().size())throw new IllegalArgumentException("Interval changed the island's structure");
             int nodes=after.reservoirs().size();moles=new double[nodes][];energy=new double[nodes];phases=new int[nodes];
@@ -280,6 +287,133 @@ public final class IslandCertificate {
         static Result of(IslandCertificate certificate){return new Result(certificate,null);}
         static Result refused(String reason){return new Result(null,reason);}
     }
+
+    // ---------------- persistence (plan section 3.5) ----------------
+
+    /**
+     * The validity signature of a certificate: the model's full property revision ({@link ApproximationAnchor#revision},
+     * which also carries the velocity clamp, the trace cutoff and the solid settings), the six certificate policy values
+     * it was issued under, and a SHA-256 digest of its island's graph identity - node ids, kinds, elevations and finite
+     * volumes, fixed-node inventories and states, and pipe identities with their sections, controls, blocked masks and
+     * filters. Replay repeats one solved interval of one graph under one model and one policy, so a certificate holds
+     * only under the signature it was issued with; a saved one whose signature is not its island's current one is
+     * discarded on load and the island keeps its inventory.
+     */
+    public record Signature(String propertyRevision,String policy,String graph) {
+        public Signature {
+            Objects.requireNonNull(propertyRevision);Objects.requireNonNull(policy);Objects.requireNonNull(graph);
+            if(propertyRevision.isBlank()||propertyRevision.length()>4096||policy.isBlank()||policy.length()>512||!graph.matches("[0-9a-f]{64}"))
+                throw new IllegalArgumentException("Invalid certificate signature");
+        }
+        /** The signature a certificate of this graph gets under this model and policy. */
+        public static Signature of(FluidThermodynamics model,CertificatePolicy policy,PassiveNetwork graph) {
+            return new Signature(ApproximationAnchor.revision(model),policyValues(policy),graphIdentity(graph));
+        }
+        /** Which part of this signature differs from {@code current}, or null when none does. */
+        public String difference(Signature current) {
+            if(!propertyRevision.equals(current.propertyRevision))return "property revision";
+            if(!policy.equals(current.policy))return "certificate policy ("+policy+" when saved, "+current.policy+" now)";
+            if(!graph.equals(current.graph))return "graph identity";
+            return null;
+        }
+    }
+    /** The six policy values, exactly (doubles in hexadecimal), in a fixed order. */
+    static String policyValues(CertificatePolicy policy) {
+        return "restDetection="+policy.enabled()+";stationaryTolerance="+Double.toHexString(policy.stationaryTolerance())
+                +";inventoryBudget="+Double.toHexString(policy.inventoryBudget())+";maximumIntervals="+policy.maximumIntervals()
+                +";confirmIntervals="+policy.confirmIntervals()+";recheckSeconds="+policy.recheckSeconds();
+    }
+    /** The digest of what replay takes to be fixed about an island: everything but its finite inventories and states. */
+    static String graphIdentity(PassiveNetwork graph) {
+        var d=new Digest();d.text("createcheme-certificate-graph-identity-1");d.integer(graph.reservoirs().size());
+        for(var node:graph.reservoirs()) {
+            d.number(node.id());d.text(node.kind().name());d.real(node.elevation());
+            // A junction's volume is a numerical placeholder that a solve may move; a vessel's is its identity.
+            if(!node.junction())d.real(node.inventory().volume());
+            if(node.fixed()) {
+                var inventory=node.inventory();d.integer(inventory.moles().length);for(double n:inventory.moles())d.real(n);
+                d.real(inventory.internalEnergy());d.solids(inventory.solids());d.real(node.state().temperature());d.real(node.state().pressure());
+            }
+        }
+        d.integer(graph.pipes().size());
+        for(var pipe:graph.pipes()) {
+            d.number(pipe.id());d.integer(pipe.first());d.integer(pipe.second());d.integer(pipe.sections().size());
+            for(var section:pipe.sections()){d.real(section.length());d.real(section.diameter());d.real(section.roughness());d.real(section.minorLoss());}
+            switch(pipe.control()) {
+                case FlowControl.Passive ignored->d.text("passive");
+                case FlowControl.Pump pump->{d.text("pump");d.real(pump.targetVolumeFlow());d.real(pump.maximumAddedPressure());d.real(pump.efficiency());}
+                case FlowControl.PressureValve valve->{d.text("valve");d.real(valve.targetPressure());}
+            }
+            d.integer(pipe.blockedDirections());
+            var filter=pipe.filter();
+            if(filter==null)d.text("no filter");
+            else{d.text("filter");d.real(filter.capacity());d.real(filter.cleanResistance());d.integer(filter.stoppedAtCapacity()?1:0);d.solids(filter.captured());d.real(filter.energyJoule());}
+        }
+        return d.hex();
+    }
+    /** A canonical SHA-256 stream: every value with its exact bits, every text with its length. */
+    private static final class Digest {
+        private final MessageDigest sha;private final ByteBuffer buffer=ByteBuffer.allocate(8);
+        Digest(){try{sha=MessageDigest.getInstance("SHA-256");}catch(NoSuchAlgorithmException impossible){throw new AssertionError(impossible);}}
+        void number(long value){buffer.clear();buffer.putLong(value);sha.update(buffer.array(),0,8);}
+        void integer(int value){number(value);}
+        void real(double value){number(Double.doubleToRawLongBits(value));}
+        void text(String value){var bytes=value.getBytes(StandardCharsets.UTF_8);integer(bytes.length);sha.update(bytes);}
+        void solids(SolidInventory solids){integer(solids.populations().size());for(var p:solids.populations()){text(p.material().id());text(p.size().metres());real(p.massKg());}}
+        String hex(){return HexFormat.of().formatHex(sha.digest());}
+    }
+
+    /**
+     * A certificate as a checkpoint keeps it: its kind, the tick its island first certified (a renewal keeps it), its
+     * horizon, the solved interval it replays together with the graph that interval started from, and the signature it
+     * was issued under. The interval's end is the certificate's base tick; its result's graph is the base graph.
+     */
+    public record Saved(Kind kind,long sinceTick,long horizonTick,Interval interval,Signature signature) {
+        public Saved {
+            Objects.requireNonNull(kind);Objects.requireNonNull(interval);Objects.requireNonNull(signature);
+            if(sinceTick<0||sinceTick>interval.endTick()||horizonTick<=interval.endTick())
+                throw new IllegalArgumentException("Saved certificate needs 0 <= since <= base < horizon: since "+sinceTick+", base "+interval.endTick()+", horizon "+horizonTick);
+        }
+        public long baseTick(){return interval.endTick();}
+        @Override public String toString(){return "Saved["+kind+", since "+sinceTick+", base "+baseTick()+", horizon "+horizonTick+", "+signature.graph().substring(0,12)+"]";}
+    }
+    /**
+     * The replay arithmetic of a saved certificate, rebuilt from its interval without judging whether it still holds:
+     * what a load materialises its island from, from the base tick to the saved committed tick. Refuses an interval
+     * whose length disagrees with its result, a structure change inside it, or nonfinite per-interval deltas.
+     */
+    static IslandCertificate rebuild(Saved saved,double[] molecularWeights) {
+        var interval=saved.interval();
+        if(interval.result().advancedSeconds()!=(interval.endTick()-interval.startTick())/20.0)
+            throw new IllegalArgumentException("Saved certificate interval ["+interval.startTick()+", "+interval.endTick()+"] disagrees with its result of "+interval.result().advancedSeconds()+" s");
+        var summary=new Summary(interval,molecularWeights);
+        for(int n=0;n<summary.moles.length;n++) {
+            if(summary.moles[n]==null)continue;
+            for(double delta:summary.moles[n])if(!Double.isFinite(delta))throw new IllegalArgumentException("Saved certificate has a nonfinite component delta at node "+summary.after.reservoirs().get(n).id());
+            if(!Double.isFinite(summary.energy[n]))throw new IllegalArgumentException("Saved certificate has a nonfinite energy delta at node "+summary.after.reservoirs().get(n).id());
+        }
+        return new IslandCertificate(saved.kind(),summary,saved.horizonTick());
+    }
+    /** A saved certificate judged for its island now: the certificate, or null with the reason it is discarded. */
+    record Restored(IslandCertificate certificate,String discarded) {}
+    /**
+     * Whether a saved certificate still holds under the island's current model and policy: off when certificates are
+     * off, discarded when any part of its signature differs. A matching signature with a kind or horizon that the
+     * saved interval does not give under that same policy is inconsistent data, and the load is refused.
+     */
+    static Restored restore(Saved saved,FluidThermodynamics model,CertificatePolicy policy) {
+        if(!policy.enabled())return new Restored(null,"certificates are off (restDetection=false)");
+        String difference=saved.signature().difference(Signature.of(model,policy,saved.interval().result().graph()));
+        if(difference!=null)return new Restored(null,"its "+difference+" changed");
+        var rebuilt=rebuild(saved,model.molecularWeights());
+        var issued=issue(rebuilt.summary,policy);
+        if(issued.certificate()==null||issued.certificate().kind!=saved.kind()||issued.certificate().horizonTick!=saved.horizonTick())
+            throw new IllegalArgumentException("Saved "+saved.kind()+" certificate with horizon "+saved.horizonTick()+" is not the certificate its interval gives under its own signature: "
+                    +(issued.certificate()==null?issued.refusal():issued.certificate().kind+" with horizon "+issued.certificate().horizonTick));
+        return new Restored(issued.certificate(),null);
+    }
+    /** The solved interval this certificate replays, with the graph it started from. */
+    public Interval interval(){return summary.interval;}
 
     public Kind kind(){return kind;}
     /** The committed tick the certificate was issued at: the end of its qualifying interval. */

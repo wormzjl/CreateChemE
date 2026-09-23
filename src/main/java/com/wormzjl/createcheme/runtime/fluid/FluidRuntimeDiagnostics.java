@@ -65,6 +65,12 @@ public final class FluidRuntimeDiagnostics {
     public static final LongAdder staticPayloads=new LongAdder();
     public static final LongAdder queuedInputs=new LongAdder();
     public static final LongAdder inputReplies=new LongAdder();
+    /** Persistence (plan section 3.5): saved certificates restored and discarded at load, and island payloads a
+     * checkpoint encoded afresh or copied from its cache. */
+    public static final LongAdder certificatesRestored=new LongAdder();
+    public static final LongAdder certificatesDiscarded=new LongAdder();
+    public static final LongAdder payloadsEncoded=new LongAdder();
+    public static final LongAdder payloadsReused=new LongAdder();
 
     private static final Map<String,LongAdder> COUNTERS=counters();
     private static Map<String,LongAdder> counters() {
@@ -80,6 +86,8 @@ public final class FluidRuntimeDiagnostics {
         map.put("materialisations",materialisations);map.put("replayedTicks",replayedTicks);map.put("restedTicks",restedTicks);
         map.put("bucketFlushes",bucketFlushes);map.put("devicePresentations",devicePresentations);map.put("staticPayloads",staticPayloads);
         map.put("queuedInputs",queuedInputs);map.put("inputReplies",inputReplies);
+        map.put("certificatesRestored",certificatesRestored);map.put("certificatesDiscarded",certificatesDiscarded);
+        map.put("payloadsEncoded",payloadsEncoded);map.put("payloadsReused",payloadsReused);
         return Collections.unmodifiableMap(map);
     }
 

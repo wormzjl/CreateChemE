@@ -511,7 +511,9 @@ public final class FluidServerBenchmark {
         certified.put("evidenceColumns",List.of("endTick","measure","state","component","energy","flow","relativeFlowChange","drift"));
         certified.put("evidence",r.evidence);certified.put("publicationFingerprints",r.fingerprints);
         certified.put("certifiedIslandsPerSecond",r.stressSamples.stream().map(s->s.get("certifiedIslands")).toList());
-        certified.put("finalCertificates",finalIslands.stream().filter(s->s.certificate().isPresent()).collect(java.util.stream.Collectors.toMap(s->s.id(),s->s.certificate().orElseThrow(),(a,b)->a,TreeMap::new)));
+        // What each certificate says, without the saved interval it carries for a checkpoint.
+        certified.put("finalCertificates",finalIslands.stream().filter(s->s.certificate().isPresent()).collect(java.util.stream.Collectors.toMap(s->s.id(),s->{var c=s.certificate().orElseThrow();var v=new LinkedHashMap<String,Object>();
+            v.put("kind",c.kind());v.put("sinceTick",c.sinceTick());v.put("baseTick",c.baseTick());v.put("horizonTick",c.horizonTick());v.put("largestFlow",c.largestFlow());return v;},(a,b)->a,TreeMap::new)));
         if(r.stress){var reference=new LinkedHashMap<String,Object>();reference.put("islandTick",r.referenceTick);reference.put("derivation","First island tick on the 100-tick grid at or after the middle of the configured window: warm-up "+r.warmupTicks/20+" s plus half of "+r.stressMeasurementNanos/1_000_000_000L+" s");reference.put("materialised",r.referenceMaterialised);
             reference.put("islandsExact",r.referenceBefore.entrySet().stream().filter(e->e.getValue().tick()==r.referenceTick).count());
             reference.put("before",r.referenceBefore);reference.put("after",r.referenceAfter);certified.put("reference",reference);}

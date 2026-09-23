@@ -22,12 +22,18 @@ import java.util.function.LongSupplier;
  * Round timeouts and the worker allocator's shrink are deadlines too.
  *
  * <p>An island whose solved intervals repeat (an exact identity, or stationary within the policy's tolerance)
- * is <em>certified</em> ({@link IslandCertificate}, in memory only): it is never ready, releases its solver
+ * is <em>certified</em> ({@link IslandCertificate}): it is never ready, releases its solver
  * caches, and holds at most one deadline, at its certificate horizon or its next module drive. Its committed
  * time is not stored per tick but materialised on demand - at a read of its snapshot, an event alignment, a
  * property hold, its own deadline - by the identity or by scaled replay of its last solved interval, never past
  * the online clock, a fence or a hold. A module drive or the horizon wakes it; a property resume or a topology
- * event discards the certificate.
+ * event discards the certificate. A snapshot carries the certificate in its saved form; {@link #register}
+ * restores it while its signature holds and otherwise discards it, keeping the materialised inventory.
+ *
+ * <p>Every snapshot also carries a payload generation: a JVM-wide unique number that changes whenever anything
+ * a checkpoint payload records about the island changes (a solve, a dispatch, a fence, a certificate issued or
+ * ended, a hold or resume), and never when a certified island is only materialised, so a checkpoint can keep an
+ * encoded payload for as long as its island's generation stands.
  */
 public final class IslandCoordinator {
     public interface Dispatcher {
@@ -76,27 +82,49 @@ public final class IslandCoordinator {
         }
         public Metrics {Objects.requireNonNull(advance);}
     }
-    /** A certified island, in memory only: its kind, the tick it first certified (renewals keep it), the base of the
-     * current certificate, the last tick replay may reach, and the largest flow it keeps replaying. */
-    public record Certified(IslandCertificate.Kind kind,long sinceTick,long baseTick,long horizonTick,double largestFlow) {
-        public Certified {Objects.requireNonNull(kind);}
+    /**
+     * A certified island: its kind, the tick it first certified (renewals keep it), the base of the current
+     * certificate, the last tick replay may reach, the largest flow it keeps replaying, and the certificate as a
+     * checkpoint keeps it. {@code saved} is empty while a property hold freezes the island: resume discards every
+     * certificate, so one saved during a hold is not kept either, and the island restarts awake from the held state.
+     */
+    public record Certified(IslandCertificate.Kind kind,long sinceTick,long baseTick,long horizonTick,double largestFlow,Optional<IslandCertificate.Saved> saved) {
+        public Certified {
+            Objects.requireNonNull(kind);Objects.requireNonNull(saved);
+            if(saved.isPresent()){var s=saved.orElseThrow();if(s.kind()!=kind||s.sinceTick()!=sinceTick||s.baseTick()!=baseTick||s.horizonTick()!=horizonTick)throw new IllegalArgumentException("Saved certificate disagrees with its island");}
+        }
+        @Override public String toString(){return "Certified["+kind+", since "+sinceTick+", base "+baseTick+", horizon "+horizonTick+", largest flow "+largestFlow+(saved.isPresent()?"":", held")+"]";}
+        /** Equal when they say the same: the saved form is compared by its interval's ticks and its signature (which
+         * digests the graph), since the graphs and results it carries have no value equality of their own. */
+        @Override public boolean equals(Object other) {
+            return other instanceof Certified c&&kind==c.kind&&sinceTick==c.sinceTick&&baseTick==c.baseTick&&horizonTick==c.horizonTick
+                    &&Double.doubleToLongBits(largestFlow)==Double.doubleToLongBits(c.largestFlow)&&saved.map(Certified::identity).equals(c.saved.map(Certified::identity));
+        }
+        @Override public int hashCode(){return Objects.hash(kind,sinceTick,baseTick,horizonTick,largestFlow,saved.map(Certified::identity));}
+        private static List<Object> identity(IslandCertificate.Saved s){return List.of(s.interval().startTick(),s.interval().endTick(),s.signature());}
     }
     public record Snapshot(long id,long revision,PassiveNetwork graph,IslandClock.Snapshot clock,
                            FallbackAllowance allowance,Optional<ApproximationAnchor> anchor,
-                           Optional<PassiveIntervalSolver.Result> lastResult,String status,Map<UUID,Long> fences,Optional<Certified> certificate) {
+                           Optional<PassiveIntervalSolver.Result> lastResult,String status,Map<UUID,Long> fences,Optional<Certified> certificate,long payloadGeneration) {
         public Snapshot(long id,long revision,PassiveNetwork graph,IslandClock.Snapshot clock,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor,Optional<PassiveIntervalSolver.Result> lastResult,String status) {
             this(id,revision,graph,clock,allowance,anchor,lastResult,status,Map.of());
         }
         public Snapshot(long id,long revision,PassiveNetwork graph,IslandClock.Snapshot clock,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor,Optional<PassiveIntervalSolver.Result> lastResult,String status,Map<UUID,Long> fences) {
             this(id,revision,graph,clock,allowance,anchor,lastResult,status,fences,Optional.empty());
         }
+        /** A snapshot with no payload generation (0): a checkpoint encodes it every time and never caches it. */
+        public Snapshot(long id,long revision,PassiveNetwork graph,IslandClock.Snapshot clock,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor,Optional<PassiveIntervalSolver.Result> lastResult,String status,Map<UUID,Long> fences,Optional<Certified> certificate) {
+            this(id,revision,graph,clock,allowance,anchor,lastResult,status,fences,certificate,0);
+        }
         public Snapshot {
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandSnapshots);
-            if(id<=0||revision<0)throw new IllegalArgumentException("Invalid island identity");
+            if(id<=0||revision<0||payloadGeneration<0)throw new IllegalArgumentException("Invalid island identity");
             Objects.requireNonNull(graph);Objects.requireNonNull(clock);Objects.requireNonNull(allowance);
             Objects.requireNonNull(anchor);Objects.requireNonNull(lastResult);Objects.requireNonNull(status);Objects.requireNonNull(certificate);
             fences=Map.copyOf(fences);
             if(fences.values().stream().anyMatch(t->t<clock.committedTick()))throw new IllegalArgumentException("Persisted fence precedes state");
+            if(certificate.isPresent()&&(certificate.orElseThrow().baseTick()>clock.committedTick()||certificate.orElseThrow().horizonTick()<clock.committedTick()))
+                throw new IllegalArgumentException("Certified island "+id+" committed at "+clock.committedTick()+" outside its certificate window ["+certificate.orElseThrow().baseTick()+", "+certificate.orElseThrow().horizonTick()+"]");
             if(allowance.acceptedIntervals()>0&&anchor.isEmpty())throw new IllegalArgumentException("Degraded state needs its episode anchor");
         }
     }
@@ -105,6 +133,9 @@ public final class IslandCoordinator {
     /** Test and GameTest runs set this to re-derive every island's readiness and deadline from scratch at each
      * pump and tick and fail on any difference from the incrementally maintained schedule. */
     private static final boolean VERIFY=Boolean.getBoolean("createcheme.fluid.scheduler.verify");
+    /** Payload generations are unique in the JVM, so a checkpoint cache can never mistake one island object's
+     * payload for another's that happens to share its identity, revision and count of changes. */
+    private static final java.util.concurrent.atomic.AtomicLong PAYLOAD_GENERATIONS=new java.util.concurrent.atomic.AtomicLong();
     private static final class Island {
         private final long id;
         private long revision;
@@ -129,9 +160,10 @@ public final class IslandCoordinator {
         private int pendingEntries;
         private boolean ready;
         private long deadline=Long.MAX_VALUE,generation;
-        // Certificate state, in memory only: the certificate while certified, the one being revalidated by the
-        // slice solved at its horizon, the tick the island first certified, the last qualifying interval with the
-        // length of the stationary streak it ends, and the online tick a property hold caps materialisation at.
+        // Certificate state: the certificate while certified and the tick the island first certified (both saved by a
+        // checkpoint), and in memory only the one being revalidated by the slice solved at its horizon, the last
+        // qualifying interval with the length of the stationary streak it ends, and the online tick a property hold
+        // caps materialisation at (a certificate saved during a hold is not kept).
         private IslandCertificate certificate,revalidating;
         private long certifiedSince=-1,holdTick=Long.MAX_VALUE;
         private IslandCertificate.Summary lastInterval;
@@ -140,13 +172,20 @@ public final class IslandCoordinator {
         // of two consecutive solved intervals measured: diagnostics only, never read by a decision.
         private String refusal;
         private Evidence evidence;
+        // The certificate's validity signature, made once when it is issued or restored; and the payload generation.
+        private IslandCertificate.Signature signature;
+        private long payloadGeneration=PAYLOAD_GENERATIONS.incrementAndGet();
         private Island(Snapshot saved,FluidThermodynamics model,LongSupplier epoch) {
             id=saved.id;revision=saved.revision;this.model=Objects.requireNonNull(model);graph=saved.graph;
             clock=new IslandClock(saved.clock,epoch);allowance=saved.allowance;anchor=saved.anchor;lastResult=saved.lastResult;status=saved.status;fences.putAll(saved.fences);
         }
         private Snapshot snapshot(){return new Snapshot(id,revision,graph,clock.snapshot(),allowance,anchor,lastResult,
                 !suspended&&!clock.busy()&&fence()==clock.committedTick()?"WAITING: event alignment":status,fences,
-                certificate==null?Optional.empty():Optional.of(new Certified(certificate.kind(),certifiedSince,certificate.baseTick(),certificate.horizonTick(),certificate.largestFlow())));}
+                certificate==null?Optional.empty():Optional.of(new Certified(certificate.kind(),certifiedSince,certificate.baseTick(),certificate.horizonTick(),certificate.largestFlow(),
+                        suspended?Optional.empty():Optional.of(new IslandCertificate.Saved(certificate.kind(),certifiedSince,certificate.horizonTick(),certificate.interval(),signature)))),
+                payloadGeneration);}
+        /** Something a checkpoint payload records changed: the next checkpoint encodes this island afresh. */
+        private void touch(){payloadGeneration=PAYLOAD_GENERATIONS.incrementAndGet();}
         private long fence(){return fences.values().stream().mapToLong(Long::longValue).min().orElse(Long.MAX_VALUE);}
     }
     private static final class Pending {
@@ -209,7 +248,27 @@ public final class IslandCoordinator {
     public void register(Snapshot saved,FluidThermodynamics model) {
         owned();if(stopped||islands.containsKey(saved.id))throw new IllegalStateException("Stopped/duplicate island");
         if(saved.graph.reservoirs().stream().anyMatch(n->n.kind()==PassiveNetwork.NodeKind.PORT))throw new IllegalArgumentException("Internal ports cannot own world state");
-        var island=new Island(saved,model,epoch);islands.put(saved.id,island);ready.register(saved.id,false);index(island);reconsider(island);
+        var island=new Island(saved,model,epoch);
+        var persisted=saved.certificate.flatMap(Certified::saved);
+        if(persisted.isPresent())restore(island,persisted.orElseThrow());
+        islands.put(saved.id,island);ready.register(saved.id,false);index(island);reconsider(island);
+    }
+    /**
+     * A saved certificate (plan section 3.5). The snapshot's graph is already its island at the saved committed tick,
+     * materialised from the base without a solve. Restored when certificates are on and its signature is the island's
+     * current one: the island is certified again with its saved since tick, keeps no solver caches, and holds only its
+     * horizon (or module drive) deadline. Otherwise the certificate is discarded and the island starts awake from that
+     * inventory, to solve its debt and qualify again.
+     */
+    private void restore(Island island,IslandCertificate.Saved saved) {
+        var restored=IslandCertificate.restore(saved,island.model,settings.certificates());
+        if(restored.certificate()!=null) {
+            island.certificate=restored.certificate();island.certifiedSince=saved.sinceTick();island.signature=saved.signature();island.retained=null;
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificatesRestored);
+        } else {
+            island.status="WAITING: saved "+saved.kind()+" certificate discarded: "+restored.discarded();island.refusal="saved certificate discarded: "+restored.discarded();
+            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificatesDiscarded);
+        }
     }
     /** A certified island is materialised first, so what is read (a view, a save, a module decision) is current. */
     public Snapshot snapshot(long id){owned();var island=require(id);materialise(island);return island.snapshot();}
@@ -294,7 +353,7 @@ public final class IslandCoordinator {
             island.lastInterval=null;island.streak=0;island.revalidating=null;
             island.revision=Math.addExact(island.revision,1);island.suspended=true;island.status=reason;island.retained=island.certificate==null?new RetainedSolver():null;
             island.anchor=island.anchor.map(a->new ApproximationAnchor("invalidated:property-reload",a.graph(),a.modes()));
-            reconsider(island);
+            island.touch();reconsider(island);
         }
         var closing=List.copyOf(rounds);rounds.clear();
         for(var round:closing){for(var entry:round.entries)entry.result=null;closeRound(round);}
@@ -306,9 +365,9 @@ public final class IslandCoordinator {
         owned();if(stopped||suspension==null)return;suspension=null;
         for(var island:islands.values()) {
             island.holdTick=Long.MAX_VALUE;island.suspended=false;island.status="WAITING: full solve after property reload";island.clock.inputsChanged();
-            if(island.certificate!=null){island.certificate=null;island.certifiedSince=-1;island.retained=new RetainedSolver();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificateWakes);}
+            if(island.certificate!=null){island.certificate=null;island.certifiedSince=-1;island.signature=null;island.retained=new RetainedSolver();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificateWakes);}
             island.lastInterval=null;island.streak=0;
-            reconsider(island);
+            island.touch();reconsider(island);
         }
         publisher.published(snapshots());
     }
@@ -398,8 +457,8 @@ public final class IslandCoordinator {
                 var attempt=new Attempt(island.id,island.revision,slice);
                 var policy=island.anchor.isPresent()&&!com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(island.model,island.graph)?FluidFallbackPolicy.active(island.anchor.orElseThrow(),island.allowance,island.clock.snapshot().cadenceTicks(),settings.softBudgetNanos):FluidFallbackPolicy.disabled();
                 var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
-                if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";break;}
-                island.clock.admitted(slice);island.status="SOLVING";FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.solvesDispatched);
+                if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";island.touch();break;}
+                island.clock.admitted(slice);island.status="SOLVING";island.touch();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.solvesDispatched);
                 var entry=new Pending(attempt,island.clock.snapshot().onlineTick(),nanoClock.getAsLong());pending.put(request,entry);island.pendingEntries++;admitted.add(entry);dispatchedThisTick++;
                 reconsider(island);
             }
@@ -466,7 +525,7 @@ public final class IslandCoordinator {
             entry.closed=true;
             if(entry.terminal){pending.remove(attempt.slice.requestId());island.pendingEntries--;}else dispatcher.cancel(attempt.slice.requestId());
             qualify(island,accept?outcome:null,before,attempt);
-            reconsider(island);
+            reconsider(island);island.touch();
             changed.add(island.snapshot());
         }
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandsPublished,changed.size());
@@ -498,7 +557,7 @@ public final class IslandCoordinator {
                 throw new IllegalStateException("Event would modify an admitted or committed interval");
             if(island.fences.containsKey(event))throw new IllegalStateException("Duplicate event fence");
         }
-        for(long id:affected){var island=require(id);island.fences.put(event,tick);fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(id);island.clock.inputsChanged();reconsider(island);}
+        for(long id:affected){var island=require(id);island.fences.put(event,tick);fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(id);island.clock.inputsChanged();island.touch();reconsider(island);}
     }
     /** A certified owner answers by materialisation: it advances to the fence and is then aligned like any other. */
     public boolean aligned(UUID event,Collection<Long> affected) {
@@ -507,14 +566,14 @@ public final class IslandCoordinator {
     }
     public void releaseFence(UUID event,Collection<Long> affected) {
         owned();if(!aligned(event,affected))throw new IllegalStateException("Event owners have not aligned");
-        for(long id:affected){var i=require(id);removeFence(i,event);i.clock.inputsChanged();reconsider(i);}
+        for(long id:affected){var i=require(id);removeFence(i,event);i.clock.inputsChanged();i.touch();reconsider(i);}
     }
     /** Production has become known (including zero production). A lagging receiver need not
      * reach the promised time to resolve this dependency. The host separately retains a known
      * input-time boundary when needed, so it cannot inject into an already admitted interval. */
     public void resolveDeliveryFence(UUID event,Collection<Long> receivers) {
         owned();for(long id:receivers)if(!require(id).fences.containsKey(event))throw new IllegalStateException("Missing delivery horizon");
-        for(long id:receivers){var island=require(id);removeFence(island,event);island.clock.inputsChanged();reconsider(island);}
+        for(long id:receivers){var island=require(id);removeFence(island,event);island.clock.inputsChanged();island.touch();reconsider(island);}
     }
     public record Replacement(long id,PassiveNetwork graph) {
         public Replacement {if(id<=0)throw new IllegalArgumentException("Invalid replacement identity");Objects.requireNonNull(graph);}
@@ -664,8 +723,11 @@ public final class IslandCoordinator {
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.materialisations);
             FluidRuntimeDiagnostics.count(advance==Advance.RESTED?FluidRuntimeDiagnostics.restedTicks:FluidRuntimeDiagnostics.replayedTicks,target-committed);
             if(suspension==null)island.status=certifiedStatus(island);
+            // A certified payload records the base, not the materialised state, so materialisation changes nothing a
+            // checkpoint keeps - except that an island stopped at its fence reads "WAITING: event alignment".
+            if(target==island.fence())island.touch();
             var stored=island.snapshot();
-            replayed.published(List.of(new Snapshot(stored.id(),stored.revision(),stored.graph(),stored.clock(),stored.allowance(),stored.anchor(),Optional.of(replay),stored.status(),stored.fences(),stored.certificate())));
+            replayed.published(List.of(new Snapshot(stored.id(),stored.revision(),stored.graph(),stored.clock(),stored.allowance(),stored.anchor(),Optional.of(replay),stored.status(),stored.fences(),stored.certificate(),stored.payloadGeneration())));
         }
         if(presentation||stopped||suspension!=null)return;
         if(drive!=Long.MAX_VALUE&&target==drive)wake(island,null,"WAITING: module drive at "+drive);
@@ -675,7 +737,7 @@ public final class IslandCoordinator {
     private void wake(Island island,IslandCertificate revalidating,String status) {
         island.certificate=null;island.revalidating=revalidating;island.retained=new RetainedSolver();
         island.lastInterval=null;island.streak=0;if(revalidating==null)island.certifiedSince=-1;
-        island.status=status;FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificateWakes);
+        island.status=status;island.signature=null;island.touch();FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificateWakes);
         reconsider(island);released.accept(island.id);
     }
     /**
@@ -725,6 +787,7 @@ public final class IslandCoordinator {
     }
     private void certify(Island island,IslandCertificate certificate) {
         island.certificate=certificate;if(island.certifiedSince<0)island.certifiedSince=certificate.baseTick();
+        island.signature=IslandCertificate.Signature.of(island.model,settings.certificates(),certificate.interval().result().graph());island.touch();
         island.lastInterval=null;island.streak=0;island.refusal=null;
         // Only here, after the terminal completion that produced the qualifying interval, so no worker owns the caches.
         island.retained=null;island.status=certifiedStatus(island);FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificatesIssued);
