@@ -246,19 +246,23 @@ class IslandCertificateTest {
      * certify while the composition is still being replaced; once the flush is complete the tank is steady.
      */
     @Test void aTankBeingFlushedWithAnotherCompositionDoesNotCertifyUntilTheFlushIsComplete() {
-        var rig=new Rig(CertificatePolicy.defaults());rig.register(1,throughTank(mix(.6),mix(.4),10,113000));
-        double largest=0;String refusal=null;
-        for(int tick=1;tick<=40_000&&rig.stored(1).certificate().isEmpty();tick++) {
-            rig.tick();if(tick%100!=0)continue;
-            var n=node(rig.stored(1).graph(),4).inventory().moles();double deviation=Math.abs(n[methane]/(n[methane]+n[nitrogen])-.6);
-            if(rig.stored(1).certificate().isPresent())assertTrue(deviation<1e-6,"certified at tick "+tick+" with the methane fraction still "+deviation+" from the feed");
-            else if(deviation>1e-4){largest=Math.max(largest,deviation);refusal=rig.coordinator.certificationRefusal(1);}
+        // The flush decays exponentially, so what is left of it when an interval first changes by less than eps_s
+        // scales with eps_s: under 1e-6 of the feed fraction at 1e-9, under 1e-4 at the default 1e-7.
+        for(var policy:List.of(new CertificatePolicy(true,1e-9,1e-6,17_280,2,0),CertificatePolicy.defaults())) {
+            var rig=new Rig(policy);rig.register(1,throughTank(mix(.6),mix(.4),10,113000));
+            double largest=0,allowed=1000*policy.stationaryTolerance();String refusal=null;
+            for(int tick=1;tick<=40_000&&rig.stored(1).certificate().isEmpty();tick++) {
+                rig.tick();if(tick%100!=0)continue;
+                var n=node(rig.stored(1).graph(),4).inventory().moles();double deviation=Math.abs(n[methane]/(n[methane]+n[nitrogen])-.6);
+                if(rig.stored(1).certificate().isPresent())assertTrue(deviation<allowed,"eps_s "+policy.stationaryTolerance()+": certified at tick "+tick+" with the methane fraction still "+deviation+" from the feed");
+                else if(deviation>1e-3){largest=Math.max(largest,deviation);refusal=rig.coordinator.certificationRefusal(1);}
+            }
+            System.out.println("composition replacement at eps_s "+policy.stationaryTolerance()+": "+rig.stored(1).certificate()+", last refusal while flushing: "+refusal);
+            // Refused on the component rates or, first, on the pressure the changing composition moves.
+            assertTrue(largest>.1,"the flush was observed");
+            assertTrue(refusal!=null&&(refusal.contains("component")||refusal.contains("temperature or pressure")),"refused as not stationary: "+refusal);
+            assertTrue(rig.stored(1).certificate().isPresent(),"the completed flush is steady");
         }
-        System.out.println("composition replacement: "+rig.stored(1).certificate()+", last refusal while flushing: "+refusal);
-        // Refused on the component rates or, first, on the pressure the changing composition moves.
-        assertTrue(largest>.1,"the flush was observed");
-        assertTrue(refusal!=null&&(refusal.contains("component")||refusal.contains("temperature or pressure")),"refused as not stationary: "+refusal);
-        assertTrue(rig.stored(1).certificate().isPresent(),"the completed flush is steady");
     }
 
     /** Plan section 5 item 5: slow monotonic evolution (a generator filling a large tank) fails stationarity. */
@@ -695,8 +699,9 @@ class IslandCertificateTest {
         assertTrue(at>0,"did not certify: "+rig.coordinator.certificationRefusal(1));
         assertEquals(IslandCertificate.Kind.STEADY,rig.stored(1).certificate().orElseThrow().kind());
         assertEquals(at,evidence.endTick());
-        assertTrue(evidence.stationarity().flow()<=1e-9,evidence.toString());
-        assertTrue(evidence.stationarity().largestRelativeFlowChange()>1e-9,"the relative flow test alone would have refused: "+evidence);
+        double tolerance=CertificatePolicy.defaults().stationaryTolerance();
+        assertTrue(evidence.stationarity().flow()<=tolerance,evidence.toString());
+        assertTrue(evidence.stationarity().largestRelativeFlowChange()>tolerance,"the relative flow test alone would have refused: "+evidence);
     }
 
     // ---------------- certificates that never issue change nothing ----------------
@@ -727,13 +732,14 @@ class IslandCertificateTest {
     /**
      * With certificates on, an island that never certifies must follow the certificates-off trajectory bit for bit:
      * the evidence reads the solved intervals and never feeds anything back. Slow fill, pump heating and the
-     * stress100 through-flow ladder, each for forty intervals.
+     * stress100 through-flow ladder, each for forty intervals, at eps_s 1e-9, where none of them certifies (the
+     * ladder's holdup drifts by about 2e-7 per interval and certifies at the default 1e-7).
      */
     @Test void anIslandThatNeverCertifiesSolvesBitForBitAsWithCertificatesOff() {
         var devices=line(Kind.GENERATOR,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.RESERVOIR);
         var slowFill=island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,150000,pure(nitrogen)),6L,new FluidDeviceSpec(1000,298.15,101325,pure(nitrogen))));
         for(var fixture:List.of(Map.entry("slow fill",slowFill),Map.entry("pumped loop",pumpedLoop()),Map.entry("stress100 ladder 7",benchmarkLadder(7,true)))) {
-            var off=new Rig(CertificatePolicy.disabled());var on=new Rig(CertificatePolicy.defaults());
+            var off=new Rig(CertificatePolicy.disabled());var on=new Rig(new CertificatePolicy(true,1e-9,1e-6,17_280,2,0));
             for(var rig:List.of(off,on)){rig.register(1,fixture.getValue());rig.run(4_000);}
             assertTrue(on.stored(1).certificate().isEmpty(),fixture.getKey()+" certified");
             assertNotNull(on.coordinator.certificationEvidence(1),fixture.getKey()+": the evidence ran");

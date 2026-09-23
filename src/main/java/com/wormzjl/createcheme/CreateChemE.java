@@ -114,8 +114,9 @@ public final class CreateChemE {
                 .define("restDetection",true);
         FLUID_CERTIFICATE_TOLERANCE=builder.comment("Largest change between two consecutive intervals that still counts as stationary: per node and component,",
                 "relative to that inventory; per node energy, relative to its thermal scale; per pipe, relative to the island's largest flow;",
-                "and the largest per-interval drift of a node's temperature or pressure. 0 admits only intervals that repeat exactly. Captured on server start.")
-                .defineInRange("certificateStationaryTolerance",1e-9,0,1e-6);
+                "and the largest per-interval drift of a node's temperature or pressure. 0 admits only intervals that repeat exactly.",
+                "The default 1e-7 lets through-flow islands whose holdup drifts by a few 1e-7 per interval certify; their replay stays within the inventory budget. Captured on server start.")
+                .defineInRange("certificateStationaryTolerance",1e-7,0,1e-6);
         FLUID_CERTIFICATE_BUDGET=builder.comment("Largest relative inventory change a STEADY certificate may extrapolate before one interval is solved again. Captured on server start.")
                 .defineInRange("certificateInventoryBudget",1e-6,1e-12,1e-3);
         FLUID_CERTIFICATE_MAXIMUM_INTERVALS=builder.comment("Most intervals one STEADY certificate may replay; 17280 is one game day at a 5 s cadence. Captured on server start.")

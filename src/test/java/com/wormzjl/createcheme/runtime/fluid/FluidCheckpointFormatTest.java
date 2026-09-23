@@ -327,10 +327,10 @@ class FluidCheckpointFormatTest {
         var cases=List.of(
                 new Case("property revision",FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),PACKAGE,1e-9,10),defaults,tag),
                 new Case("certificate policy",model,new CertificatePolicy(true,1e-8,1e-6,17_280,2,0),tag),
-                new Case("certificate policy",model,new CertificatePolicy(true,1e-9,1e-5,17_280,2,0),tag),
-                new Case("certificate policy",model,new CertificatePolicy(true,1e-9,1e-6,17_279,2,0),tag),
-                new Case("certificate policy",model,new CertificatePolicy(true,1e-9,1e-6,17_280,3,0),tag),
-                new Case("certificate policy",model,new CertificatePolicy(true,1e-9,1e-6,17_280,2,60),tag),
+                new Case("certificate policy",model,new CertificatePolicy(true,1e-7,1e-5,17_280,2,0),tag),
+                new Case("certificate policy",model,new CertificatePolicy(true,1e-7,1e-6,17_279,2,0),tag),
+                new Case("certificate policy",model,new CertificatePolicy(true,1e-7,1e-6,17_280,3,0),tag),
+                new Case("certificate policy",model,new CertificatePolicy(true,1e-7,1e-6,17_280,2,60),tag),
                 new Case("graph identity",model,defaults,FluidCheckpointCodec.withPayload(tag,0,payload)));
         assertNotEquals(ApproximationAnchor.revision(model),ApproximationAnchor.revision(cases.getFirst().model()));
         assertEquals(ApproximationAnchor.thermodynamicRevision(model),ApproximationAnchor.thermodynamicRevision(cases.getFirst().model()),"a velocity limit leaves the saved inventory readable");

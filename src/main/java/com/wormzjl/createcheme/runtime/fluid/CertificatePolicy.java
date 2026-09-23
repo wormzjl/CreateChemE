@@ -22,7 +22,7 @@ public record CertificatePolicy(boolean enabled,double stationaryTolerance,doubl
                 ||maximumIntervals<1||maximumIntervals>1_000_000||confirmIntervals<1||confirmIntervals>10
                 ||recheckSeconds<0||recheckSeconds>86_400)throw new IllegalArgumentException("Invalid certificate policy");
     }
-    public static CertificatePolicy defaults(){return new CertificatePolicy(true,1e-9,1e-6,17_280,2,0);}
+    public static CertificatePolicy defaults(){return new CertificatePolicy(true,1e-7,1e-6,17_280,2,0);}
     /** The same values with certificates off: the scheduling of an island that solves every interval. */
     public static CertificatePolicy disabled(){return defaults().withEnabled(false);}
     public CertificatePolicy withEnabled(boolean value){return new CertificatePolicy(value,stationaryTolerance,inventoryBudget,maximumIntervals,confirmIntervals,recheckSeconds);}
