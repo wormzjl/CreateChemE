@@ -8,10 +8,7 @@ import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler;
 import com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings;
 import com.wormzjl.createcheme.science.material.*;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.*;
-import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +43,7 @@ class SolidRuntimeTest {
         var cake=new InlineFilter(.01,1e6,stock(4),1234);
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,source),new PassiveNetwork.Reservoir(2,0,model.initialNitrogenCharge(1,298.15,101325,()->{}))),
                 List.of(new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(1,.05,0,0)).withFilter(cake)));
-        String json=FluidCheckpointCodec.encode(checkpoint(graph),key->model);
+        var json=FluidCheckpointCodec.encode(checkpoint(graph),key->model);
         var restored=FluidCheckpointCodec.decode(json,key->model).islands().getFirst().snapshot().graph();
         assertEquals(cake,restored.pipes().getFirst().filter());
         assertEquals(source.solids(),restored.reservoirs().getFirst().inventory().solids());
@@ -54,19 +51,6 @@ class SolidRuntimeTest {
         var resized=FluidCheckpointCodec.decode(json,key->changed).islands().getFirst().snapshot().graph().pipes().getFirst().filter();
         assertTrue(resized.clogged());assertEquals(cake.captured(),resized.captured());assertEquals(cake.energyJoule(),resized.energyJoule());
         assertEquals(.0001,resized.capacity());assertEquals(2e6,resized.cleanResistance());
-    }
-    @Test void actualVersionOnePayloadMigratesAdditively() throws Exception{
-        var initial=model.initialNitrogenCharge(1,298.15,101325,()->{});
-        var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,initial)),List.of());
-        var tag=new FluidSavedData(checkpoint(graph),WorldTopologyLedger.Snapshot.empty(catalog),key->model).save(new CompoundTag(),null);
-        var core=JsonParser.parseString(new String(tag.getByteArray("Checkpoint"),StandardCharsets.UTF_8));stripExtensions(core);core.getAsJsonObject().addProperty("version",1);
-        byte[] bytes=core.toString().getBytes(StandardCharsets.UTF_8);tag.putInt("FluidFormat",1);tag.putByteArray("Checkpoint",bytes);tag.putByteArray("SHA256",MessageDigest.getInstance("SHA-256").digest(bytes));
-        var world=JsonParser.parseString(new String(tag.getByteArray("Topology"),StandardCharsets.UTF_8));stripExtensions(world);
-        bytes=world.toString().getBytes(StandardCharsets.UTF_8);tag.putInt("TopologyFormat",2);tag.putByteArray("Topology",bytes);tag.putByteArray("TopologySHA256",MessageDigest.getInstance("SHA-256").digest(bytes));
-        var loaded=FluidSavedData.load(tag,key->model);
-        assertEquals(graph.reservoirs().getFirst().inventory(),loaded.checkpoint().islands().getFirst().snapshot().graph().reservoirs().getFirst().inventory());
-        assertTrue(loaded.world().orElseThrow().recoveries().isEmpty());
-        var next=loaded.save(new CompoundTag(),null);assertEquals(2,next.getInt("FluidFormat"));assertEquals(3,next.getInt("TopologyFormat"));
     }
     @Test void solidOnlyParcelsConserveEnergyAndRefuseUndefinedSplits(){
         var parcel=new MaterialParcel(new double[model.componentCount()],model.molecularWeights(),2345,EnergyReference.sensible(model.components()),stock(10));
@@ -140,9 +124,5 @@ class SolidRuntimeTest {
         var changed=new HashMap<>(catalog.resources());var key="data/createcheme/materials/solids/demo_particle.json";
         var record=JsonParser.parseString(changed.get(key)).getAsJsonObject();record.addProperty("density_kg_per_m3",2600);changed.put(key,record.toString());
         assertThrows(IllegalArgumentException.class,()->MaterialCatalog.parse(changed).solids().validate(stock(1)));
-    }
-    private static void stripExtensions(JsonElement element){
-        if(element.isJsonArray()){for(var child:element.getAsJsonArray())stripExtensions(child);}
-        else if(element.isJsonObject()){var object=element.getAsJsonObject();for(String key:List.of("solids","solidDirection","solidMasses","blockedDirections","filter","recoveries","recovery"))object.remove(key);for(var e:object.entrySet())stripExtensions(e.getValue());}
     }
 }

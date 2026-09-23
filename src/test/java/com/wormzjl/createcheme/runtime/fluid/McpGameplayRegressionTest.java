@@ -8,10 +8,32 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class McpGameplayRegressionTest {
+    /**
+     * The first island of an archived gameplay capture (see mcp-held-drain-checkpoint.md), a checkpoint saved on
+     * 2026-09-16 and kept byte for byte for reproducibility. It is solver input, not a save that is loaded: no
+     * checkpoint format reads it any more, so only its graph is taken, in the shape the payloads still use.
+     */
+    private com.google.gson.JsonObject archivedIsland(String resource) throws java.io.IOException {
+        try(var input=Objects.requireNonNull(getClass().getResourceAsStream(resource))) {
+            return com.google.gson.JsonParser.parseString(new String(input.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("islands").get(0).getAsJsonObject();
+        }
+    }
+    /** The capture predates solids, blocked masks and filters and holds none of them, so they are empty here. */
+    private static PassiveNetwork archivedGraph(com.google.gson.JsonObject island,FluidThermodynamics model) {
+        var graph=island.getAsJsonObject("graph").deepCopy();
+        for(var node:graph.getAsJsonArray("nodes")) {
+            var inventory=node.getAsJsonObject().getAsJsonObject("inventory");assertFalse(inventory.has("solids"));
+            var empty=new com.google.gson.JsonObject();empty.add("populations",new com.google.gson.JsonArray());inventory.add("solids",empty);
+        }
+        for(var pipe:graph.getAsJsonArray("pipes")) {
+            var p=pipe.getAsJsonObject();assertFalse(p.has("blockedDirections")||p.has("filter"));
+            p.addProperty("blockedDirections",0);p.add("filter",com.google.gson.JsonNull.INSTANCE);
+        }
+        return FluidCheckpointCodec.decodeGraph(graph,model);
+    }
     @Test void clampedDrainContinuesAfterTheTankBecomesAlmostLiquidFull() throws Exception {
         var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
-        String json;try(var input=Objects.requireNonNull(getClass().getResourceAsStream("/fluid/mcp-clamped-liquid-full-checkpoint.json"))){json=new String(input.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);}
-        var graph=FluidCheckpointCodec.decode(json,key->model).islands().getFirst().snapshot().graph();
+        var graph=archivedGraph(archivedIsland("/fluid/mcp-clamped-liquid-full-checkpoint.json"),model);
         var result=new PassiveIntervalSolver(model).solve(graph,1,PassiveIntervalSolver.Settings.defaults(),()->{});
         assertEquals(1,result.advancedSeconds());assertTrue(result.graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]>0);
         var refined=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,1,new PassiveIntervalSolver.Settings(.005,.02,.0001,4096),()->{});
@@ -29,9 +51,8 @@ class McpGameplayRegressionTest {
     }
     @Test void savedSonicRefusalAdvancesWithVelocityClampingAndKeepsCanonicalBalances() throws Exception {
         var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
-        String json;try(var input=Objects.requireNonNull(getClass().getResourceAsStream("/fluid/mcp-held-drain-checkpoint.json"))){json=new String(input.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);}
-        var saved=FluidCheckpointCodec.decode(json,key->model).islands().getFirst().snapshot();var graph=saved.graph();
-        assertTrue(saved.status().contains("Unsupported sonic flow"));var result=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
+        var saved=archivedIsland("/fluid/mcp-held-drain-checkpoint.json");var graph=archivedGraph(saved,model);
+        assertTrue(saved.get("status").getAsString().contains("Unsupported sonic flow"));var result=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
         assertEquals(5,result.advancedSeconds());assertTrue(Arrays.stream(result.averageMassFlows()).anyMatch(q->Math.abs(q)>1e-6));
         double[] before=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],after=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],external=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];double beforeEnergy=0,afterEnergy=0,externalEnergy=0;
         for(var boundary:result.boundaries()){var n=boundary.moles();for(int c=0;c<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;c++)external[c]+=n[c];externalEnergy+=boundary.totalEnergyJoule();}

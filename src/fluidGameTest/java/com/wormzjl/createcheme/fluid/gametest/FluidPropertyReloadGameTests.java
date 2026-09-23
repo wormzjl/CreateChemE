@@ -41,7 +41,7 @@ public final class FluidPropertyReloadGameTests {
                 helper.assertTrue(world.view(id).status().contains("property data changed"),"Loaded view hides the property-data hold");
                 var capture=world.capture();
                 var model=FluidThermodynamics.forNetwork(original,FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
-                String encoded=FluidCheckpointCodec.encode(capture.checkpoint(),key->model);
+                var encoded=FluidCheckpointCodec.encode(capture.checkpoint(),capture.world().onlineTick(),key->model);
                 var roundTrip=FluidCheckpointCodec.decode(encoded,key->model);
                 helper.assertTrue(roundTrip.islands().getFirst().snapshot().allowance().equals(held.allowance()),"Save renewed degraded grace");
                 boolean refused=false;try{FluidCheckpointCodec.decode(encoded,key->FluidThermodynamics.forNetwork(changed,key.packageId(),key.compressibility()));}

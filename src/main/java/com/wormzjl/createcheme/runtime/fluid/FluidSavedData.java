@@ -15,7 +15,12 @@ import java.security.*;
 import java.util.*;
 import java.util.function.Function;
 
-/** One committed core checkpoint in overworld SavedData, independent of chunk residency. */
+/**
+ * One committed core checkpoint in overworld SavedData, independent of chunk residency: checkpoint format 3
+ * ({@link FluidCheckpointCodec}) and, beside it, the world topology ledger. Island payloads are cached across saves
+ * (plan section 3.5), so a save copies the payload of every island that did not change since the last save and
+ * encodes only the others. The dirty mark stays per tick, so online time is never lost at a save.
+ */
 public final class FluidSavedData extends SavedData {
     public static final int TOPOLOGY_VERSION=3;
     public static final String DATA_NAME="createcheme_fluid_core";
@@ -23,10 +28,20 @@ public final class FluidSavedData extends SavedData {
     private final Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models;
     private FluidCheckpointCodec.Checkpoint checkpoint;
     private Optional<WorldTopologyLedger.Snapshot> world=Optional.empty();
-    private byte[] encoded;
+    private final FluidCheckpointCodec.PayloadCache payloads=new FluidCheckpointCodec.PayloadCache();
     private byte[] encodedWorld;
     public record Capture(FluidCheckpointCodec.Checkpoint checkpoint,WorldTopologyLedger.Snapshot world) {}
     private java.util.function.Supplier<Capture> capture;
+    /**
+     * What one save cost on the server thread: capturing the live authority (which materialises certified islands),
+     * then encoding - island payloads encoded afresh or copied from the cache, the ledger and the topology - with the
+     * bytes each part wrote. For the benchmark's save-time report.
+     */
+    public record SaveTiming(long captureNanos,long encodeNanos,int islands,int payloadsEncoded,int payloadsReused,long payloadBytes,long ledgerBytes,long topologyBytes) {
+        public long totalNanos(){return captureNanos+encodeNanos;}
+        public long bytes(){return payloadBytes+ledgerBytes+topologyBytes;}
+    }
+    private SaveTiming lastSave;
 
     public FluidSavedData(FluidCheckpointCodec.Checkpoint checkpoint,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models) {
         this.checkpoint=Objects.requireNonNull(checkpoint);this.models=Objects.requireNonNull(models);
@@ -36,54 +51,49 @@ public final class FluidSavedData extends SavedData {
     }
     private void owned(){if(Thread.currentThread()!=owner)throw new IllegalStateException("Fluid SavedData must be captured on its server thread");}
     public FluidCheckpointCodec.Checkpoint checkpoint(){owned();return checkpoint;}
-    /** Empty identifies an older core-only checkpoint, whose inventories remain fully preserved. */
+    /** Empty for a checkpoint saved without its world topology (a core-only fixture). */
     public Optional<WorldTopologyLedger.Snapshot> world(){owned();return world;}
     /** Snapshot live authority only at the server's save boundary, before its asynchronous file write. */
     public void bindCapture(java.util.function.Supplier<Capture> capture){owned();this.capture=Objects.requireNonNull(capture);}
-    public void replace(FluidCheckpointCodec.Checkpoint next){owned();checkpoint=Objects.requireNonNull(next);encoded=null;setDirty();}
+    public void replace(FluidCheckpointCodec.Checkpoint next){owned();checkpoint=Objects.requireNonNull(next);setDirty();}
     public void replace(FluidCheckpointCodec.Checkpoint next,WorldTopologyLedger.Snapshot nextWorld) {
-        owned();Objects.requireNonNull(next);Objects.requireNonNull(nextWorld);checkpoint=next;world=Optional.of(nextWorld);encoded=null;encodedWorld=null;setDirty();
+        owned();Objects.requireNonNull(next);Objects.requireNonNull(nextWorld);checkpoint=next;if(world.isEmpty()||world.orElseThrow()!=nextWorld)encodedWorld=null;world=Optional.of(nextWorld);setDirty();
     }
+    /** The cost of the last save, or null before the first. */
+    public SaveTiming lastSave(){owned();return lastSave;}
+    /** Forgets every cached island payload, so the next save encodes them all: a cold save. */
+    public void clearPayloadCache(){owned();payloads.clear();}
     @Override public CompoundTag save(CompoundTag tag,HolderLookup.Provider registries) {
-        owned();if(capture!=null){var current=capture.get();replace(current.checkpoint,current.world);}
-        owned();if(encoded==null)encoded=FluidCheckpointCodec.encode(checkpoint,models).getBytes(StandardCharsets.UTF_8);
-        tag.putInt("FluidFormat",FluidCheckpointCodec.VERSION);tag.putByteArray("Checkpoint",encoded.clone());tag.putByteArray("SHA256",digest(encoded));
-        // Additive extension: retain the existing core format and its load path unchanged.
+        owned();long started=System.nanoTime();
+        if(capture!=null){var current=capture.get();replace(current.checkpoint,current.world);}
+        long captured=System.nanoTime();
+        // The world epoch: the topology's online tick, or for a core-only checkpoint its most advanced island.
+        long epoch=world.map(WorldTopologyLedger.Snapshot::onlineTick).orElseGet(()->checkpoint.islands().stream().mapToLong(i->i.snapshot().clock().onlineTick()).max().orElse(0));
+        var written=FluidCheckpointCodec.write(tag,checkpoint,epoch,models,payloads);
+        long topologyBytes=0;
         if(world.isPresent()) {
             if(encodedWorld==null)encodedWorld=FluidCheckpointCodec.encodeWorld(world.orElseThrow()).getBytes(StandardCharsets.UTF_8);
-            tag.putInt("TopologyFormat",TOPOLOGY_VERSION);tag.putByteArray("Topology",encodedWorld.clone());tag.putByteArray("TopologySHA256",digest(encodedWorld));
+            tag.putInt("TopologyFormat",TOPOLOGY_VERSION);tag.putByteArray("Topology",encodedWorld.clone());tag.putByteArray("TopologySHA256",digest(encodedWorld));topologyBytes=encodedWorld.length;
         } else {tag.remove("TopologyFormat");tag.remove("Topology");tag.remove("TopologySHA256");}
+        long finished=System.nanoTime();
+        lastSave=new SaveTiming(captured-started,finished-captured,written.islands(),written.encoded(),written.reused(),written.payloadBytes(),written.ledgerBytes(),topologyBytes);
         return tag;
     }
+    /**
+     * Reads format 3 and its topology. Any other format is refused with the instruction to create a fresh world:
+     * there is no upgrade from format 2 or older. The topology's online tick must be the checkpoint's world epoch.
+     */
     public static FluidSavedData load(CompoundTag tag,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models) {
-        if(!tag.contains("FluidFormat",Tag.TAG_INT)||(tag.getInt("FluidFormat")!=1&&tag.getInt("FluidFormat")!=FluidCheckpointCodec.VERSION)
-                ||!tag.contains("Checkpoint",Tag.TAG_BYTE_ARRAY)||!tag.contains("SHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid save");
-        byte[] bytes=tag.getByteArray("Checkpoint");
-        if(!MessageDigest.isEqual(digest(bytes),tag.getByteArray("SHA256")))throw new IllegalArgumentException("Fluid checkpoint checksum mismatch");
-        var data=new FluidSavedData(FluidCheckpointCodec.decode(new String(bytes,StandardCharsets.UTF_8),models),models);data.encoded=null;
+        var data=new FluidSavedData(FluidCheckpointCodec.decode(tag,models),models);
         if(tag.contains("Topology")||tag.contains("TopologyFormat")||tag.contains("TopologySHA256")) {
-            if(!tag.contains("TopologyFormat",Tag.TAG_INT)||(tag.getInt("TopologyFormat")!=2&&tag.getInt("TopologyFormat")!=TOPOLOGY_VERSION)||!tag.contains("Topology",Tag.TAG_BYTE_ARRAY)||!tag.contains("TopologySHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid topology basis; use a fresh development world or explicitly reset its fluid data");
+            if(!tag.contains("TopologyFormat",Tag.TAG_INT)||tag.getInt("TopologyFormat")!=TOPOLOGY_VERSION||!tag.contains("Topology",Tag.TAG_BYTE_ARRAY)||!tag.contains("TopologySHA256",Tag.TAG_BYTE_ARRAY))
+                throw new IllegalArgumentException("Unsupported or incomplete fluid topology (this build reads topology format "+TOPOLOGY_VERSION+" only); create a fresh world for this development build");
             byte[] worldBytes=tag.getByteArray("Topology");if(!MessageDigest.isEqual(digest(worldBytes),tag.getByteArray("TopologySHA256")))throw new IllegalArgumentException("Topology checkpoint checksum mismatch");
-            data.world=Optional.of(FluidCheckpointCodec.decodeWorld(new String(worldBytes,StandardCharsets.UTF_8),tag.getInt("TopologyFormat")==2));data.encodedWorld=tag.getInt("TopologyFormat")==TOPOLOGY_VERSION?worldBytes.clone():null;
+            var world=FluidCheckpointCodec.decodeWorld(new String(worldBytes,StandardCharsets.UTF_8));
+            if(world.onlineTick()!=FluidCheckpointCodec.epoch(tag))throw new IllegalArgumentException("Fluid topology at online tick "+world.onlineTick()+" does not match the checkpoint's world epoch "+FluidCheckpointCodec.epoch(tag));
+            data.world=Optional.of(world);data.encodedWorld=worldBytes.clone();
         }
         return data;
-    }
-    /** Prepare an explicit reference migration without mutating the input tag or writing a file.
-     * The caller can review the result and publish it through the normal atomic SavedData writer. */
-    public static FluidSavedData migrateToSensibleReference(CompoundTag tag,com.wormzjl.createcheme.science.fluid.state.EnergyReference previous,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models) {
-        if(!tag.contains("FluidFormat",Tag.TAG_INT)||(tag.getInt("FluidFormat")!=1&&tag.getInt("FluidFormat")!=FluidCheckpointCodec.VERSION)||!tag.contains("Checkpoint",Tag.TAG_BYTE_ARRAY)||!tag.contains("SHA256",Tag.TAG_BYTE_ARRAY))throw new IllegalArgumentException("Unsupported/incomplete fluid save");
-        var bytes=tag.getByteArray("Checkpoint");if(!MessageDigest.isEqual(digest(bytes),tag.getByteArray("SHA256")))throw new IllegalArgumentException("Fluid checkpoint checksum mismatch");
-        var checkpoint=FluidCheckpointCodec.migrateToSensibleReference(new String(bytes,StandardCharsets.UTF_8),previous,models);
-        var copy=tag.copy();copy.putInt("FluidFormat",FluidCheckpointCodec.VERSION);var next=FluidCheckpointCodec.encode(checkpoint,models).getBytes(StandardCharsets.UTF_8);copy.putByteArray("Checkpoint",next);copy.putByteArray("SHA256",digest(next));
-        // Validate every existing extension before changing its historical accounting datum.
-        var result=load(copy,models);
-        if(result.world.isPresent()) {
-            var old=result.world.orElseThrow();var target=com.wormzjl.createcheme.science.fluid.state.EnergyReference.sensible(previous.components());
-            var constructed=new WorldTopologyLedger.MaterialTotal(old.constructed().moles(),previous.rebase(old.constructed().totalEnergy(),old.constructed().moles(),target),old.constructed().solidMasses());
-            var destroyed=new WorldTopologyLedger.MaterialTotal(old.destroyed().moles(),previous.rebase(old.destroyed().totalEnergy(),old.destroyed().moles(),target),old.destroyed().solidMasses());
-            result.replace(checkpoint,new WorldTopologyLedger.Snapshot(old.onlineTick(),old.nextIdentity(),old.active(),old.events(),constructed,destroyed,old.basis(),old.recoveries()));
-        }
-        return result;
     }
     /** A failed read must never be treated as an empty new world and reinitialize its reservoirs. */
     public static FluidSavedData open(MinecraftServer server,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models) {
@@ -94,7 +104,12 @@ public final class FluidSavedData extends SavedData {
         var path=server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(DATA_NAME+".dat");
         try {
             Files.readAttributes(path,BasicFileAttributes.class);
-            throw new IllegalStateException("Existing fluid authority could not be read; refusing to replace its inventories: "+path);
+            // The storage logs the failure and returns nothing; read the file again so the refusal names its reason
+            // (an older format, a checksum, a changed property basis). The file itself is left exactly as it is.
+            String reason;
+            try{load(net.minecraft.nbt.NbtIo.readCompressed(path,net.minecraft.nbt.NbtAccounter.unlimitedHeap()).getCompound("data"),models);reason="unknown reason";}
+            catch(IOException|RuntimeException failure){reason=failure.getMessage();}
+            throw new IllegalStateException("Existing fluid authority could not be read: "+reason+" Refusing to replace its inventories: "+path);
         }catch(NoSuchFileException missing) {
             var created=factory.constructor().get();storage.set(DATA_NAME,created);created.setDirty();return created;
         }catch(IOException failure){throw new IllegalStateException("Cannot establish whether fluid authority exists",failure);}

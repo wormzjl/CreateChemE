@@ -108,7 +108,7 @@ public final class FluidHarnessGameTests {
                 try{net.neoforged.neoforge.common.IOUtilities.atomicWrite(path,out->{out.write(new byte[]{1,2,3});throw new java.io.IOException("Injected checkpoint write failure");});}
                 catch(java.io.IOException expected){failed=true;}
                 helper.assertTrue(failed&&java.util.Arrays.equals(before,java.nio.file.Files.readAllBytes(path)),"Failed write replaced the complete checkpoint");
-                var corrupt=root.getCompound("data").copy();var bytes=corrupt.getByteArray("Checkpoint").clone();bytes[0]^=1;corrupt.putByteArray("Checkpoint",bytes);
+                var corrupt=root.getCompound("data").copy();var payloadOwner=((net.minecraft.nbt.ListTag)corrupt.get("Islands")).getCompound(0);var bytes=payloadOwner.getByteArray("Payload").clone();bytes[0]^=1;payloadOwner.putByteArray("Payload",bytes);
                 boolean rejected=false;try{com.wormzjl.createcheme.runtime.fluid.FluidSavedData.load(corrupt,key->model);}catch(IllegalArgumentException expected){rejected=true;}
                 helper.assertTrue(rejected,"Corrupt fluid authority was accepted");java.nio.file.Files.delete(path);
             }catch(java.io.IOException failure){helper.fail("Checkpoint integration failed: "+failure.getMessage());}

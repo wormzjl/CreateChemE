@@ -64,18 +64,18 @@ class FixedSplitModuleTest {
         var ledger=ledger(1000);var module=module(300,ledger);module.commit(module.begin(Map.of(feedA,new FixedSplitModule.Observation(0,material(100)),feedB,new FixedSplitModule.Observation(0,material(100)))));
         var request=module.withdrawals(0,100,Set.of(feedA)).getFirst();module.commit(module.receive(request.id(),0,100,material(7)));
         var checkpoint=new FluidCheckpointCodec.Checkpoint(List.of(),ledger.snapshot(),List.of(module.snapshot()));
-        var json=FluidCheckpointCodec.encode(checkpoint,key->{throw new AssertionError();});var decoded=FluidCheckpointCodec.decode(json,key->{throw new AssertionError();});
+        var tag=FluidCheckpointCodec.encode(checkpoint,key->{throw new AssertionError();});var decoded=FluidCheckpointCodec.decode(tag,key->{throw new AssertionError();});
         var saved=decoded.modules().getFirst();assertEquals(300,saved.cycle().endTick());assertEquals(100,saved.cycle().inputs().get(feedA).throughTick());assertEquals(0,saved.cycle().inputs().get(feedB).throughTick());
         assertArrayEquals(material(7).moles(),saved.cycle().inputs().get(feedA).owned().moles());assertEquals(700,saved.cycle().inputs().get(feedA).owned().energyJoule());
         assertEquals(2,decoded.transfers().planned().size());assertTrue(decoded.transfers().pending().isEmpty());
-        var typed=com.google.gson.JsonParser.parseString(json).getAsJsonObject();var typedState=typed.getAsJsonObject("modules").getAsJsonArray("states").get(0).getAsJsonObject();
+        var typed=FluidCheckpointCodec.ledgerJson(tag);var typedState=typed.getAsJsonObject("modules").getAsJsonArray("states").get(0).getAsJsonObject();
         typedState.addProperty("scientificRevision","unknown-revision");
-        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(typed.toString(),key->{throw new AssertionError();}));
+        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(FluidCheckpointCodec.withLedger(tag,typed),key->{throw new AssertionError();}));
         typedState.remove("scientificRevision");
-        assertThrows(RuntimeException.class,()->FluidCheckpointCodec.decode(typed.toString(),key->{throw new AssertionError();}));
+        assertThrows(RuntimeException.class,()->FluidCheckpointCodec.decode(FluidCheckpointCodec.withLedger(tag,typed),key->{throw new AssertionError();}));
         typedState.remove("type");
-        assertEquals(1,FluidCheckpointCodec.decode(typed.toString(),key->{throw new AssertionError();}).modules().size());
-        var legacy=com.google.gson.JsonParser.parseString(FluidCheckpointCodec.encode(new FluidCheckpointCodec.Checkpoint(List.of(),ledger(1000).snapshot()),key->{throw new AssertionError();})).getAsJsonObject();legacy.remove("modules");legacy.getAsJsonObject("transfers").remove("productionCapacity");
-        assertTrue(FluidCheckpointCodec.decode(legacy.toString(),key->{throw new AssertionError();}).modules().isEmpty());
+        assertThrows(RuntimeException.class,()->FluidCheckpointCodec.decode(FluidCheckpointCodec.withLedger(tag,typed),key->{throw new AssertionError();}),"format 3 names every module's type");
+        var incomplete=FluidCheckpointCodec.ledgerJson(tag);incomplete.remove("modules");
+        assertThrows(RuntimeException.class,()->FluidCheckpointCodec.decode(FluidCheckpointCodec.withLedger(tag,incomplete),key->{throw new AssertionError();}),"format 3 has no absent-field defaults");
     }
 }

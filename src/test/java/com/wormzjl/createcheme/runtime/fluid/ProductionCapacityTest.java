@@ -1,6 +1,5 @@
 package com.wormzjl.createcheme.runtime.fluid;
 
-import com.google.gson.JsonParser;
 import com.wormzjl.createcheme.science.fluid.state.EnergyReference;
 import org.junit.jupiter.api.Test;
 import java.util.*;
@@ -28,15 +27,17 @@ class ProductionCapacityTest {
         assertThrows(IllegalArgumentException.class,()->ledger.reserve(List.of(new PendingTransfers.Pending(UUID.randomUUID(),producer,receiver,300,0,material(1)))));
         ledger.commit(ledger.produce(Set.of(id),List.of()));assertEquals(100,ledger.snapshot().freeKg(receiver));assertTrue(ledger.snapshot().pending().isEmpty());
     }
-    @Test void optionalCapacityExtensionRoundTripsAndLegacyCheckpointKeepsItsMaterial() {
+    @Test void capacityReservationsAndProducedMaterialRoundTripAndAnIncompleteLedgerIsRefused() {
         var ledger=ledger();ledger.commit(ledger.reserveCapacity(List.of(new BufferedTransfers.CapacityReservation(id,producer,receiver,300,100))));
-        var json=FluidCheckpointCodec.encode(new FluidCheckpointCodec.Checkpoint(List.of(),ledger.snapshot()),key->{throw new AssertionError();});
-        var loaded=FluidCheckpointCodec.decode(json,key->{throw new AssertionError();});assertEquals(ledger.snapshot(),loaded.transfers());
-        var bad=JsonParser.parseString(json).getAsJsonObject();bad.getAsJsonObject("transfers").getAsJsonObject("productionCapacity").addProperty("version",99);
-        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(bad.toString(),key->{throw new AssertionError();}));
+        var tag=FluidCheckpointCodec.encode(new FluidCheckpointCodec.Checkpoint(List.of(),ledger.snapshot()),key->{throw new AssertionError();});
+        var loaded=FluidCheckpointCodec.decode(tag,key->{throw new AssertionError();});assertEquals(ledger.snapshot(),loaded.transfers());
+        var bad=FluidCheckpointCodec.ledgerJson(tag);bad.getAsJsonObject("transfers").getAsJsonObject("productionCapacity").addProperty("version",99);
+        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(FluidCheckpointCodec.withLedger(tag,bad),key->{throw new AssertionError();}));
         ledger.commit(ledger.produce(Set.of(id),List.of(new PendingTransfers.Pending(id,producer,receiver,300,0,material(40)))));
-        var legacy=JsonParser.parseString(FluidCheckpointCodec.encode(new FluidCheckpointCodec.Checkpoint(List.of(),ledger.snapshot()),key->{throw new AssertionError();})).getAsJsonObject();legacy.getAsJsonObject("transfers").remove("productionCapacity");
-        var restored=FluidCheckpointCodec.decode(legacy.toString(),key->{throw new AssertionError();});assertTrue(restored.transfers().planned().isEmpty());
+        var produced=FluidCheckpointCodec.encode(new FluidCheckpointCodec.Checkpoint(List.of(),ledger.snapshot()),key->{throw new AssertionError();});
+        var restored=FluidCheckpointCodec.decode(produced,key->{throw new AssertionError();});assertTrue(restored.transfers().planned().isEmpty());
         assertEquals(40,restored.transfers().pending().get(id).remaining().massKg());assertEquals(4000,restored.transfers().pending().get(id).remaining().energyJoule());
+        var incomplete=FluidCheckpointCodec.ledgerJson(produced);incomplete.getAsJsonObject("transfers").remove("productionCapacity");
+        assertThrows(RuntimeException.class,()->FluidCheckpointCodec.decode(FluidCheckpointCodec.withLedger(produced,incomplete),key->{throw new AssertionError();}),"format 3 has no absent-field defaults");
     }
 }
