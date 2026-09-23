@@ -59,6 +59,20 @@ repositories {
     }
 }
 
+// In-game performance rig (fluid scheduling WP5) for the client and server runs; every switch is opt-in and absent
+// by default. -PfluidRigDiagnosticTicks=N logs a fluid_diag summary every N server ticks (FluidInGameDiagnostics),
+// -PfluidRigHeapMiB=N sets -Xmx, -PfluidClientQuickPlay=<save folder> opens that singleplayer world at client launch.
+def fluidRigDiagnosticTicks = providers.gradleProperty('fluidRigDiagnosticTicks').getOrElse('')
+if (fluidRigDiagnosticTicks && !(fluidRigDiagnosticTicks ==~ /[1-9][0-9]{0,6}/)) throw new GradleException('fluidRigDiagnosticTicks must be a positive tick count')
+def fluidRigHeapMiB = providers.gradleProperty('fluidRigHeapMiB').getOrElse('')
+if (fluidRigHeapMiB && !(fluidRigHeapMiB ==~ /[0-9]+/ && fluidRigHeapMiB.toInteger() >= 1024 && fluidRigHeapMiB.toInteger() <= 32768)) throw new GradleException('fluidRigHeapMiB must be between 1024 and 32768')
+def fluidClientQuickPlay = providers.gradleProperty('fluidClientQuickPlay').getOrElse('')
+if (fluidClientQuickPlay && !(fluidClientQuickPlay ==~ /[A-Za-z0-9_-]+/)) throw new GradleException('fluidClientQuickPlay must be an alphanumeric save folder name')
+def fluidRig = { run ->
+    if (fluidRigDiagnosticTicks) run.systemProperty 'createcheme.fluid.diagnostics.logTicks', fluidRigDiagnosticTicks
+    if (fluidRigHeapMiB) run.jvmArguments.add("-Xmx${fluidRigHeapMiB}m")
+}
+
 neoForge {
     version = neo_version
     addModdingDependenciesTo sourceSets.fluidGameTest
@@ -73,12 +87,15 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+            fluidRig(delegate)
+            if (fluidClientQuickPlay) programArguments.addAll('--quickPlaySingleplayer', fluidClientQuickPlay)
         }
 
         server {
             server()
             programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+            fluidRig(delegate)
         }
 
         gameTestServer {
