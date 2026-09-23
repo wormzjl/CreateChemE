@@ -65,11 +65,11 @@ public final class FluidWorldAuthority implements AutoCloseable {
         topology=new WorldTopologyLedger(savedTopology);transfers=new BufferedTransfers(data.checkpoint().transfers());
         weights=model.molecularWeights();
         moduleHost=data.checkpoint().modules().isEmpty()||legacyUnbound?null:new CausalModuleCoordinator(model,data.checkpoint().moduleBindings(),data.checkpoint().transfers(),data.checkpoint().modules());
-        var settings=new IslandCoordinator.Settings(options.wallBudgetNanos(),options.wallBudgetNanos()*3/4,64,options.adaptiveCadence(),options.initialCadenceTicks());
+        var settings=new IslandCoordinator.Settings(options.wallBudgetNanos(),options.wallBudgetNanos()*3/4,64,options.adaptiveCadence(),options.initialCadenceTicks(),options.certificates());
         // Island clocks read the world's online tick: one epoch increment per tick advances every island.
         runtime=moduleHost==null?new MinecraftFluidRuntime(server,this::published,settings,(attempt,command)->command,IslandCoordinator.CommitHook.NO_MATERIAL,topology::onlineTick)
                 :new MinecraftFluidRuntime(server,this::published,settings,moduleHost::command,moduleHost::prepare,topology::onlineTick);
-        runtime.coordinator().onReleased(this::released);
+        runtime.coordinator().onReleased(this::released);runtime.coordinator().onReplayed(this::replayed);
         if(legacyUnbound) {
             CreateChemE.LOGGER.error("fluid_world status=LEGACY_UNBOUND detail=Core inventories preserved; physical bindings are unavailable in this older checkpoint");return;
         }
@@ -111,6 +111,12 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public long onlineTick(){owned();return topology.onlineTick();}
     /** Optional read-only diagnostics; all values are immutable and callbacks run on the server thread. */
     public void observe(java.util.function.BiConsumer<List<IslandCoordinator.Snapshot>,Map<Long,IslandCoordinator.Metrics>> observer){owned();this.observer=observer;}
+    /** Every island as stored, without materialising certified ones: a diagnostic read that advances nothing. */
+    public List<IslandCoordinator.Snapshot> diagnosticSnapshots(){owned();return runtime.coordinator().observe();}
+    /** Materialises every certified island to now, as a save does; the observer receives the replayed accounting. */
+    public void materialiseAll(){owned();runtime.coordinator().snapshots();}
+    /** The rest and steady-flow certificate policy captured at server start. */
+    public CertificatePolicy certificates(){owned();return options.certificates();}
     public Map<Long,WorldTopologyLedger.Registration> registrations(){owned();if(latest==null)latest=topology.latest();return latest;}
     public Optional<WorldTopologyLedger.Registration> at(PhysicalFluidTopology.Position position){owned();return registrations().values().stream().filter(r->r.device().position().equals(position)).findFirst();}
     public WorldTopologyLedger.Registration place(PhysicalFluidTopology.Position position,TopologyCompiler.Kind kind,PhysicalFluidTopology.Direction facing) {
@@ -377,6 +383,12 @@ public final class FluidWorldAuthority implements AutoCloseable {
         unboundBindings.remove(id);
         if(level.getBlockEntity(pos) instanceof com.wormzjl.createcheme.world.level.block.entity.FluidDeviceBlockEntity entity&&entity.fluidIdentity()!=id){entity.bindIdentity(id);return;}
         if(level.getBlockEntity(pos) instanceof FluidView.Receiver receiver&&receiver.fluidIdentity()==id)receiver.acceptFluidView(view(id));
+    }
+    /** A certified island's materialisation: only accounting (the diagnostic observer) and the save mark need it.
+     * It changes no dependency, so modules are not advanced, and it queues no view refresh of its own. */
+    private void replayed(List<IslandCoordinator.Snapshot> changed) {
+        if(observer!=null){var timings=new HashMap<Long,IslandCoordinator.Metrics>();for(var island:changed)runtime.coordinator().metrics(island.id()).ifPresent(m->timings.put(island.id(),m));observer.accept(changed,Map.copyOf(timings));}
+        data.setDirty();
     }
     private void published(List<IslandCoordinator.Snapshot> changed) {
         if(moduleHost!=null&&propertyHold==null) {

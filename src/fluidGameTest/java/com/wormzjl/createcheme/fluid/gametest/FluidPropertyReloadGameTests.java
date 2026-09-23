@@ -62,4 +62,56 @@ public final class FluidPropertyReloadGameTests {
             level.removeBlock(pos,false);
         }).thenWaitUntil(()->helper.assertTrue(!world.capture().world().active().containsKey(id),"Waiting for topology cleanup")).thenSucceed();
     }
+
+    /**
+     * Plan section 3.6 with a certificate: a lone tank certifies REST; a property hold materialises it to the hold
+     * tick and freezes it there while online time accrues; resume discards the certificate, and the island solves
+     * its debt from the held state and certifies again only after restConfirmIntervals fresh intervals.
+     */
+    @GameTest(template="empty",timeoutTicks=10000,batch="fluid-property-reload")
+    public static void aCertifiedIslandIsFrozenByAHoldAndRequalifiesAfterResume(GameTestHelper helper) {
+        var level=helper.getLevel();var server=level.getServer();var world=FluidWorldAuthority.find(server).orElseThrow();
+        var original=MaterialRuntime.active();var resources=new HashMap<>(original.resources());
+        String path="data/createcheme/materials/properties/crude_pc07.json";
+        var property=JsonParser.parseString(resources.get(path)).getAsJsonObject();property.addProperty("molecular_weight_kg_per_mol",.31);resources.put(path,property.toString());
+        var changed=MaterialCatalog.parse(resources);
+        var pos=helper.absolutePos(new BlockPos(0,1,0));level.setBlock(pos,ModBlocks.FLUID_RESERVOIR.get().defaultBlockState(),3);
+        long id=((FluidDeviceBlockEntity)level.getBlockEntity(pos)).fluidIdentity();
+        // Stored, not materialised: what the island holds without a read advancing it.
+        java.util.function.Supplier<IslandCoordinator.Snapshot> stored=()->world.diagnosticSnapshots().stream()
+                .filter(s->s.graph().reservoirs().stream().anyMatch(n->n.id()==id)).findFirst().orElseThrow();
+        java.util.function.Supplier<IslandCoordinator.Snapshot> current=()->world.capture().checkpoint().islands().stream().map(FluidCheckpointCodec.IslandEntry::snapshot)
+                .filter(s->s.graph().reservoirs().stream().anyMatch(n->n.id()==id)).findFirst().orElseThrow();
+        long[] hold={-1};IslandCoordinator.Snapshot[] held={null};
+        helper.startSequence().thenWaitUntil(()->helper.assertTrue(stored.get().certificate().isPresent(),"Waiting for the lone tank to certify"))
+        .thenExecute(()->{
+            var certified=stored.get();
+            helper.assertTrue(certified.certificate().orElseThrow().kind()==IslandCertificate.Kind.REST,"A lone tank rests exactly: "+certified.certificate());
+            helper.assertTrue(certified.status().startsWith("RESTING: no flow since"),"Status while certified: "+certified.status());
+            try {
+                MaterialRuntime.publish(changed);ProcessSolveCoordinator.drainCompletedCalculations(server);
+                var s=stored.get();hold[0]=s.clock().onlineTick();held[0]=s;
+                helper.assertTrue(s.status().startsWith("HELD: property data"),"Not held: "+s.status());
+                helper.assertTrue(s.clock().committedTick()==hold[0],"The hold must materialise the certified island to the hold tick: "+s.clock());
+            }catch(RuntimeException|AssertionError failure){MaterialRuntime.publish(original);FluidWorldAuthority.refreshProperties(server);helper.fail("Certified hold scenario failed: "+failure);}
+        }).thenIdle(40).thenExecute(()->{
+            try {
+                var s=current.get();
+                helper.assertTrue(s.clock().committedTick()==hold[0],"A read during the hold advanced committed time: "+s.clock());
+                helper.assertTrue(s.clock().onlineTick()>=hold[0]+40,"The hold discarded online debt: "+s.clock());
+                helper.assertTrue(s.graph().equals(held[0].graph()),"The hold changed inventory");
+            }finally{MaterialRuntime.publish(original);FluidWorldAuthority.refreshProperties(server);}
+            var resumed=stored.get();
+            helper.assertTrue(resumed.certificate().isEmpty(),"Resume must discard the certificate");
+            helper.assertTrue(resumed.clock().committedTick()==hold[0],"Resume starts from the held state");
+        }).thenWaitUntil(()->helper.assertTrue(stored.get().certificate().isPresent(),"Waiting to requalify after resume"))
+        .thenExecute(()->{
+            var again=stored.get();var certificate=again.certificate().orElseThrow();
+            int confirm=world.certificates().confirmIntervals();
+            helper.assertTrue(certificate.sinceTick()==certificate.baseTick()&&certificate.baseTick()>=hold[0]+(long)confirm*again.clock().cadenceTicks(),
+                    "Requalified before "+confirm+" fresh intervals: base "+certificate.baseTick()+", hold "+hold[0]+", cadence "+again.clock().cadenceTicks());
+            helper.assertTrue(again.graph().reservoirs().getFirst().inventory().equals(held[0].graph().reservoirs().getFirst().inventory()),"Recovery changed the resting inventory");
+            level.removeBlock(pos,false);
+        }).thenWaitUntil(()->helper.assertTrue(!world.capture().world().active().containsKey(id),"Waiting for topology cleanup")).thenSucceed();
+    }
 }

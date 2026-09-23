@@ -121,7 +121,9 @@ public final class FluidHarnessGameTests {
         int[] publications={0};
         var runtime=new com.wormzjl.createcheme.runtime.fluid.MinecraftFluidRuntime(helper.getLevel().getServer(),changed->{
             helper.assertTrue(helper.getLevel().getServer().isSameThread(),"Publication left server thread");publications[0]++;
-        },com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.Settings.defaults());
+        // This fixture counts nine solved catch-up intervals, so it runs with certificates off: an idle charge
+        // would otherwise certify REST after two intervals and advance the rest of its debt by identity.
+        },com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.Settings.defaults().withCertificates(com.wormzjl.createcheme.runtime.fluid.CertificatePolicy.disabled()));
         long id=com.wormzjl.createcheme.runtime.ProcessSolveServices.nextRequestId();
         runtime.register(helper.getLevel().dimension(),new com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.Snapshot(id,0,graph,
                 new com.wormzjl.createcheme.runtime.fluid.IslandClock.Snapshot(900,0,0,100),com.wormzjl.createcheme.runtime.fluid.FallbackAllowance.NONE,

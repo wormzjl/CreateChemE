@@ -96,4 +96,18 @@ class IslandClockTest {
             }
         }
     }
+    /** Plan section 3.2: the identity or replay commit refuses exactly what a solved commit may not do. */
+    @Test void restCommitsWithoutASolveButNeverPastTheOnlineClockAFenceOrAroundAnOutstandingSlice() {
+        long[] epoch={1_000};var clock=new IslandClock(new IslandClock.Snapshot(700,200,650,100),()->epoch[0]);
+        assertThrows(IllegalArgumentException.class,()->clock.rest(199,Long.MAX_VALUE),"below the committed tick");
+        assertThrows(IllegalArgumentException.class,()->clock.rest(701,Long.MAX_VALUE),"past the online clock");
+        assertThrows(IllegalArgumentException.class,()->clock.rest(500,499),"past a fence");
+        assertEquals(200,clock.committedTick());assertEquals(650,clock.retryAtTick());
+        clock.rest(200,200);assertEquals(200,clock.committedTick(),"a zero advance at a fence is allowed");
+        clock.rest(450,450);assertEquals(450,clock.committedTick());assertEquals(0,clock.retryAtTick(),"a commit clears the retry");
+        epoch[0]+=100;clock.rest(800,Long.MAX_VALUE);assertEquals(800,clock.committedTick());assertEquals(0,clock.debtTicks());
+        epoch[0]+=100;var slice=clock.nextSlice(1,Long.MAX_VALUE).orElseThrow();clock.admitted(slice);
+        assertThrows(IllegalStateException.class,()->clock.rest(850,Long.MAX_VALUE),"nothing commits around an outstanding slice");
+        clock.completed(slice,true);assertEquals(900,clock.committedTick());
+    }
 }

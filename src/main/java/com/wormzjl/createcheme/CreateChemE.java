@@ -47,6 +47,9 @@ public final class CreateChemE {
     private static final ModConfigSpec.DoubleValue SOLID_IMMOBILE_VISCOSITY,SOLID_TRACE_FRACTION,SOLID_SUSPENSION_MULTIPLIER,FILTER_CAPACITY,FILTER_RESISTANCE;
     private static final ModConfigSpec.DoubleValue FLUID_LIQUID_COMPRESSIBILITY,FLUID_INITIAL_VOLUME,FLUID_INITIAL_TEMPERATURE,FLUID_INITIAL_PRESSURE,FLUID_MAXIMUM_VELOCITY,FLUID_TRACE_CUTOFF;
     private static final ModConfigSpec.BooleanValue FLUID_DEBUG_CHAT,FLUID_ADAPTIVE_CADENCE;
+    private static final ModConfigSpec.BooleanValue FLUID_REST_DETECTION;
+    private static final ModConfigSpec.DoubleValue FLUID_CERTIFICATE_TOLERANCE,FLUID_CERTIFICATE_BUDGET;
+    private static final ModConfigSpec.IntValue FLUID_CERTIFICATE_MAXIMUM_INTERVALS,FLUID_REST_CONFIRM_INTERVALS,FLUID_REST_RECHECK_SECONDS;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_STAGE_TRACE_CUTOFF_MOL_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_CONVERGENCE_CLOSURE_PERCENT;
     private static final ModConfigSpec.DoubleValue COLUMN_V3_LIQUID_SUPPLY_SCREEN_RATIO;
@@ -106,6 +109,21 @@ public final class CreateChemE {
                 .defineInRange("fluidTraceCutoffMoleFraction",FluidThermodynamics.DEFAULT_TRACE_CUTOFF_MOLE_FRACTION,
                         0,FluidThermodynamics.MAX_TRACE_CUTOFF_MOLE_FRACTION);
         FLUID_DEBUG_CHAT=builder.comment("Report held fluid intervals in chat, at most once per second; full details remain in the server log.").define("debugChat",false);
+        FLUID_REST_DETECTION=builder.comment("Certify islands whose interval map is exactly the identity (REST) or stationary (STEADY) and advance them without solving:",
+                "REST by identity, STEADY by replaying the last solved interval. Off disables certificates; islands solve every interval. Captured on server start.")
+                .define("restDetection",true);
+        FLUID_CERTIFICATE_TOLERANCE=builder.comment("Largest change between two consecutive intervals that still counts as stationary: per node and component,",
+                "relative to that inventory; per node energy, relative to its thermal scale; per pipe, relative to the island's largest flow;",
+                "and the largest per-interval drift of a node's temperature or pressure. 0 admits only intervals that repeat exactly. Captured on server start.")
+                .defineInRange("certificateStationaryTolerance",1e-9,0,1e-6);
+        FLUID_CERTIFICATE_BUDGET=builder.comment("Largest relative inventory change a STEADY certificate may extrapolate before one interval is solved again. Captured on server start.")
+                .defineInRange("certificateInventoryBudget",1e-6,1e-12,1e-3);
+        FLUID_CERTIFICATE_MAXIMUM_INTERVALS=builder.comment("Most intervals one STEADY certificate may replay; 17280 is one game day at a 5 s cadence. Captured on server start.")
+                .defineInRange("certificateMaximumIntervals",17_280,1,1_000_000);
+        FLUID_REST_CONFIRM_INTERVALS=builder.comment("Consecutive stationary solved intervals before an island certifies, and again after a property hold. Captured on server start.")
+                .defineInRange("restConfirmIntervals",2,1,10);
+        FLUID_REST_RECHECK_SECONDS=builder.comment("Solve an exact-zero REST island again after this many simulated seconds; 0 means never. Captured on server start.")
+                .defineInRange("restRecheckSeconds",0,0,86_400);
         builder.pop();
         builder.push("columnV3");
         COLUMN_V3_INITIALIZER_MODE = builder
@@ -190,11 +208,14 @@ public final class CreateChemE {
     public static boolean calculationLoggingEnabled() {
         return CALCULATION_LOGGING.getAsBoolean();
     }
-    public record FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings solids) {
+    public record FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings solids,com.wormzjl.createcheme.runtime.fluid.CertificatePolicy certificates) {
         public FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction){this(initialCadenceTicks,wallBudgetNanos,compressibility,volume,temperature,pressure,debugChat,adaptiveCadence,maximumVelocity,traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings.defaults());}
+        public FluidOptions(int initialCadenceTicks,long wallBudgetNanos,double compressibility,double volume,double temperature,double pressure,boolean debugChat,boolean adaptiveCadence,double maximumVelocity,double traceCutoffMoleFraction,com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings solids){this(initialCadenceTicks,wallBudgetNanos,compressibility,volume,temperature,pressure,debugChat,adaptiveCadence,maximumVelocity,traceCutoffMoleFraction,solids,com.wormzjl.createcheme.runtime.fluid.CertificatePolicy.defaults());}
+        public FluidOptions {java.util.Objects.requireNonNull(solids);java.util.Objects.requireNonNull(certificates);}
     }
     public static FluidOptions fluidOptions() {
-        return new FluidOptions(20*FLUID_INITIAL_INTERVAL_SECONDS.getAsInt(),1_000_000L*FLUID_WALL_BUDGET_MILLISECONDS.getAsInt(),FLUID_LIQUID_COMPRESSIBILITY.get(),FLUID_INITIAL_VOLUME.get(),FLUID_INITIAL_TEMPERATURE.get(),FLUID_INITIAL_PRESSURE.get(),FLUID_DEBUG_CHAT.getAsBoolean(),FLUID_ADAPTIVE_CADENCE.getAsBoolean(),FLUID_MAXIMUM_VELOCITY.get(),FLUID_TRACE_CUTOFF.get(),new com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings(SOLID_IMMOBILE_VISCOSITY.get(),SOLID_TRACE_FRACTION.get(),SOLID_SUSPENSION_MULTIPLIER.get(),FILTER_CAPACITY.get(),FILTER_RESISTANCE.get()));
+        return new FluidOptions(20*FLUID_INITIAL_INTERVAL_SECONDS.getAsInt(),1_000_000L*FLUID_WALL_BUDGET_MILLISECONDS.getAsInt(),FLUID_LIQUID_COMPRESSIBILITY.get(),FLUID_INITIAL_VOLUME.get(),FLUID_INITIAL_TEMPERATURE.get(),FLUID_INITIAL_PRESSURE.get(),FLUID_DEBUG_CHAT.getAsBoolean(),FLUID_ADAPTIVE_CADENCE.getAsBoolean(),FLUID_MAXIMUM_VELOCITY.get(),FLUID_TRACE_CUTOFF.get(),new com.wormzjl.createcheme.science.fluid.transport.SolidTransportSettings(SOLID_IMMOBILE_VISCOSITY.get(),SOLID_TRACE_FRACTION.get(),SOLID_SUSPENSION_MULTIPLIER.get(),FILTER_CAPACITY.get(),FILTER_RESISTANCE.get()),
+                new com.wormzjl.createcheme.runtime.fluid.CertificatePolicy(FLUID_REST_DETECTION.getAsBoolean(),FLUID_CERTIFICATE_TOLERANCE.get(),FLUID_CERTIFICATE_BUDGET.get(),FLUID_CERTIFICATE_MAXIMUM_INTERVALS.getAsInt(),FLUID_REST_CONFIRM_INTERVALS.getAsInt(),FLUID_REST_RECHECK_SECONDS.getAsInt()));
     }
 
     /**

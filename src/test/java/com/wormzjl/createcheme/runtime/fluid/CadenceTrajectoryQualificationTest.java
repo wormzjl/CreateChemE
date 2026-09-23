@@ -89,7 +89,8 @@ class CadenceTrajectoryQualificationTest {
                 published.add(new Frame((int)state.clock().committedTick(),state.graph(),moved[0]));clocks.add(state.clock());
                 if(state.clock().committedTick()%400==0)frames.add(new Frame((int)state.clock().committedTick(),state.graph(),moved[0]));
             }
-        },()->0,new IslandCoordinator.Settings(2_000_000_000L,1_500_000_000L,64,true));
+        // Certificates off: these rows qualify every solved interval and must stay byte-identical to the WP0 fingerprint.
+        },()->0,new IslandCoordinator.Settings(2_000_000_000L,1_500_000_000L,64,true,100,CertificatePolicy.disabled()));
         coordinator.register(new IslandCoordinator.Snapshot(1,0,initial,new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),model);
         UUID boundary=UUID.randomUUID();coordinator.fence(boundary,400,List.of(1L));
         for(int tick=1;tick<=1600;tick++) {

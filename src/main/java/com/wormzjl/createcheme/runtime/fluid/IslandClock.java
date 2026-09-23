@@ -44,6 +44,7 @@ public final class IslandClock {
      * epoch advances with the epoch. Kept for clocks driven directly, such as a detached test clock. */
     public void accrueOnlineTicks(long elapsed){owned();if(elapsed<0)throw new IllegalArgumentException("Negative elapsed ticks");base=Math.subtractExact(base,elapsed);}
     public long debtTicks(){owned();return online()-committedTick;}
+    public long onlineTick(){owned();return online();}
     public long committedTick(){owned();return committedTick;}
     public long retryAtTick(){owned();return retryAtTick;}
     public boolean busy(){owned();return outstanding!=null;}
@@ -86,6 +87,18 @@ public final class IslandClock {
         owned();if(!slice.equals(outstanding))throw new IllegalStateException("Stale/duplicate clock completion");outstanding=null;
         if(accepted){committedTick=slice.endTick;retryAtTick=0;}
         else retryAtTick=Math.addExact(online(),cadenceTicks);
+    }
+    /**
+     * Commits an identity or replay advance to {@code toTick} without a solve (a certified island's
+     * materialisation). Refuses while a slice is outstanding, and a target below the committed tick, above
+     * the online tick or past the causal fence; clears any retry. The same guards as a solved commit: no
+     * commit past a fence, with an outstanding job, or past the online clock.
+     */
+    public void rest(long toTick,long causalFenceTick) {
+        owned();
+        if(outstanding!=null)throw new IllegalStateException("A slice is outstanding; nothing may commit around it");
+        if(toTick<committedTick||toTick>online()||toTick>causalFenceTick)throw new IllegalArgumentException("Rest target "+toTick+" outside committed "+committedTick+", online "+online()+", fence "+causalFenceTick);
+        committedTick=toTick;retryAtTick=0;
     }
     /** A configuration/event change may justify retrying a held owner before its ordinary backoff expires. */
     public void inputsChanged(){owned();retryAtTick=0;}

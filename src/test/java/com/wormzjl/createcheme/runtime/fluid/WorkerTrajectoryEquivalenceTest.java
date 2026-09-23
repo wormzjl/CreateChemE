@@ -145,7 +145,7 @@ class WorkerTrajectoryEquivalenceTest {
                 }
             };
             coordinator=new IslandCoordinator(dispatcher,this::published,System::nanoTime,
-                    new IslandCoordinator.Settings(Duration.ofSeconds(30).toNanos(),Duration.ofSeconds(20).toNanos(),64,false,20));
+                    new IslandCoordinator.Settings(Duration.ofSeconds(30).toNanos(),Duration.ofSeconds(20).toNanos(),64,false,20,CertificatePolicy.disabled()));
             for(int index=0;index<ISLANDS;index++) {
                 long islandId=index+1L;var graph=graph(index);initialGraphs.add(graph);histories.put(islandId,new ArrayList<>());
                 coordinator.register(new IslandCoordinator.Snapshot(islandId,0,graph,new IslandClock.Snapshot(0,0,0,20),

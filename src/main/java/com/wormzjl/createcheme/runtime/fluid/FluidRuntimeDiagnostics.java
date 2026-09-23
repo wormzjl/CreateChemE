@@ -49,6 +49,14 @@ public final class FluidRuntimeDiagnostics {
      * continuations that ran inside the exhausted tick and therefore deferred to the next tick's drain. */
     public static final LongAdder drainContinuations=new LongAdder();
     public static final LongAdder drainContinuationsDeferred=new LongAdder();
+    /** Certificates issued from a qualifying streak, renewed at a horizon, and ended by a wake (drive, horizon, hold). */
+    public static final LongAdder certificatesIssued=new LongAdder();
+    public static final LongAdder certificatesRenewed=new LongAdder();
+    public static final LongAdder certificateWakes=new LongAdder();
+    /** Materialisations of certified islands, and the online ticks they advanced by STEADY replay and by REST identity. */
+    public static final LongAdder materialisations=new LongAdder();
+    public static final LongAdder replayedTicks=new LongAdder();
+    public static final LongAdder restedTicks=new LongAdder();
 
     private static final Map<String,LongAdder> COUNTERS=counters();
     private static Map<String,LongAdder> counters() {
@@ -60,6 +68,8 @@ public final class FluidRuntimeDiagnostics {
         map.put("completionsRouted",completionsRouted);map.put("islandsPublished",islandsPublished);
         map.put("deadlinesFired",deadlinesFired);
         map.put("drainContinuations",drainContinuations);map.put("drainContinuationsDeferred",drainContinuationsDeferred);
+        map.put("certificatesIssued",certificatesIssued);map.put("certificatesRenewed",certificatesRenewed);map.put("certificateWakes",certificateWakes);
+        map.put("materialisations",materialisations);map.put("replayedTicks",replayedTicks);map.put("restedTicks",restedTicks);
         return Collections.unmodifiableMap(map);
     }
 

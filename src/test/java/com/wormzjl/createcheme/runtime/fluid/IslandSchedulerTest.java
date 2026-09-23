@@ -123,4 +123,45 @@ class IslandSchedulerTest {
             assertEquals(active,visits,"the transient island's scheduling work must not scale with "+count+" idle islands");
         }
     }
+
+    /**
+     * Plan section 5 item 1: 1, 100 and 1,000 certified islands with no viewers and no events cost nothing over
+     * 10,000 ticks - no island visit, readiness pump, solve, deadline, snapshot or materialisation, and no heap
+     * entry - while online time accrues; a read materialises only the island read; and a transient island
+     * beside them does the same scheduling work at every count.
+     */
+    @Test void certifiedIslandsCostNothingPerTickAtOneHundredOrAThousand() {
+        long active=-1;
+        for(int count:new int[]{1,100,1000}) {
+            var dispatch=new Dispatch();
+            var coordinator=new IslandCoordinator(dispatch,changed->{},()->0,new IslandCoordinator.Settings(2_000_000_000L,1_500_000_000L,64,false,100,CertificatePolicy.defaults()));
+            dispatch.coordinator=coordinator;
+            for(long id=1;id<=count;id++)coordinator.register(island(id,0,0,Map.of()),MODEL);
+            int tick=0;
+            for(;tick<1_000&&coordinator.observe().stream().anyMatch(s->s.certificate().isEmpty());tick++){coordinator.tick();if(!dispatch.attempts.isEmpty())dispatch.finishAll();}
+            for(var snapshot:coordinator.observe())assertEquals(IslandCertificate.Kind.REST,snapshot.certificate().orElseThrow().kind(),"island "+snapshot.id());
+            assertEquals(0,coordinator.readyCount());assertEquals(0,coordinator.pendingCount());assertEquals(2L*count,dispatch.submitted.size(),"two exact-zero intervals each");
+            count();
+            for(int idle=0;idle<10_000;idle++){coordinator.tick();tick++;if(!dispatch.attempts.isEmpty())dispatch.finishAll();}
+            for(var name:List.of("islandVisits","readinessPumps","solvesDispatched","deadlinesFired","islandSnapshots","moduleScans","topologySnapshots","materialisations","certificateWakes"))
+                assertEquals(0,counted(name),count+" certified islands: "+name+" over 10,000 ticks");
+            assertEquals(Long.MAX_VALUE,coordinator.nextDue());assertEquals(2L*count,dispatch.submitted.size());
+            final long now=tick;
+            var read=coordinator.snapshot(1);assertEquals(now,read.clock().onlineTick());assertEquals(now,read.clock().committedTick(),"a read materialises the island to now");
+            assertEquals(1,counted("materialisations"),"and only the island read");
+            assertTrue(coordinator.observe().stream().filter(s->s.id()!=1).allMatch(s->s.clock().committedTick()<now-9_000),"the others were not advanced");
+            // One transient island beside them: a generator filling a thousand-cubic-metre tank never certifies here.
+            var generator=new PassiveNetwork.Reservoir(10_000_001,0,MODEL.initialNitrogenCharge(1,298.15,150000,()->{}),PassiveNetwork.NodeKind.GENERATOR);
+            var tank=new PassiveNetwork.Reservoir(10_000_002,0,MODEL.initialNitrogenCharge(1000,298.15,101325,()->{}));
+            var filling=new PassiveNetwork(List.of(generator,tank),List.of(new PassiveNetwork.Pipe(10_000_003,0,1,new PipeResistance.Geometry(4,.05,.000045,0))));
+            long id=count+1L;coordinator.register(new IslandCoordinator.Snapshot(id,0,filling,new IslandClock.Snapshot(0,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),MODEL);
+            count();
+            for(int step=0;step<2_000;step++){coordinator.tick();if(!dispatch.attempts.isEmpty())dispatch.finishAll();}
+            assertTrue(coordinator.observe(id).certificate().isEmpty(),"the filling tank must not certify");
+            assertEquals(20,counted("solvesDispatched"));assertEquals(2_000,coordinator.observe(id).clock().committedTick());
+            assertEquals(0,counted("materialisations"));
+            long visits=counted("islandVisits");if(active<0)active=visits;
+            assertEquals(active,visits,"the transient island's scheduling work must not scale with "+count+" certified islands");
+        }
+    }
 }
