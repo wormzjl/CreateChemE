@@ -85,9 +85,12 @@ class IslandSchedulerTest {
         var removal=UUID.randomUUID();coordinator.fence(removal,0,List.of(3L));
         coordinator.topology(removal,Set.of(3L),List.of(),MODEL,0,0,Map.of(),Set.of(3L),()->{});
         assertEquals(Set.of(4L),coordinator.snapshots().stream().map(IslandCoordinator.Snapshot::id).collect(java.util.stream.Collectors.toSet()));
-        count();for(int tick=0;tick<100;tick++)coordinator.tick();
-        assertEquals(1,counted("deadlinesFired"),"only the replacement's deadline is current");
-        assertEquals(List.of(4L),dispatch.submitted.stream().map(IslandCoordinator.Attempt::islandId).toList());
+        // The replacement starts cold (IslandCoordinator.topology): one-tick first slice, doubling as each is accepted,
+        // so it fires one slice deadline per dispatch; the replaced islands' entries, due at tick 100, fire nothing.
+        count();for(int tick=0;tick<=100;tick++){coordinator.tick();dispatch.finishAll();}
+        assertEquals(dispatch.submitted.size(),counted("deadlinesFired"),"only the replacement's deadlines are current");
+        assertEquals(List.of(1L,2L,4L,8L,16L,32L),dispatch.submitted.stream().map(a->a.slice().endTick()-a.slice().startTick()).toList());
+        assertTrue(dispatch.submitted.stream().allMatch(a->a.islandId()==4L));
         assertTrue(coordinator.fencedIslands(merge).isEmpty()&&coordinator.fencedIslands(removal).isEmpty(),"released events leave no index entries");
     }
 

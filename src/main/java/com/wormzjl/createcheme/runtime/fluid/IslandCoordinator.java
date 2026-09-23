@@ -681,7 +681,15 @@ public final class IslandCoordinator {
                 var old=stock.get(node.id());
                 if(!seen.add(node.id())||old==null||!old.inventory().equals(node.inventory())||old.elevation()!=node.elevation())throw new IllegalStateException("Topology event changed stock or elevation energy");
             }
-            staged.add(new Island(new Snapshot(replacement.id,revision,replacement.graph,new IslandClock.Snapshot(online,committed,0,cadence),allowance,anchor,Optional.empty(),"WAITING: full solve after topology change",fences),model,epoch));
+            var island=new Island(new Snapshot(replacement.id,revision,replacement.graph,new IslandClock.Snapshot(online,committed,0,cadence),allowance,anchor,Optional.empty(),"WAITING: full solve after topology change",fences),model,epoch);
+            // A topology change starts the island cold: its first slice is one tick and each accepted full interval
+            // doubles it back to the cadence (as after a budget hold). Whatever the player just built - a pump
+            // filling dry tanks, a valve opening - starts its transient here, and its first milliseconds can cost
+            // more than the wall budget: measured in game, 100 pumped fills placed at once spent their first 100 s
+            // being cut at 100, 50, 25, 12, 6 and 3 ticks before a slice fitted, 2 s of work thrown away each time.
+            // A quiet island pays six short solves instead. Islands registered from a save start at their cadence.
+            island.maximumSliceTicks=1;
+            staged.add(island);
         }
         if(!seen.equals(stock.keySet()))throw new IllegalStateException("Topology event lost reservoir ownership");
         var oldFilters=new HashMap<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter>();for(var original:originals)for(var pipe:original.graph.pipes())if(pipe.filter()!=null)oldFilters.put(pipe.id(),pipe.filter());
