@@ -136,8 +136,10 @@ public final class IslandCoordinator {
         private long certifiedSince=-1,holdTick=Long.MAX_VALUE;
         private IslandCertificate.Summary lastInterval;
         private int streak;
-        // Why the last closed interval did not certify the island (null once it did): diagnostics only.
+        // Why the last closed interval did not certify the island (null once it did), and what the last comparison
+        // of two consecutive solved intervals measured: diagnostics only, never read by a decision.
         private String refusal;
+        private Evidence evidence;
         private Island(Snapshot saved,FluidThermodynamics model,LongSupplier epoch) {
             id=saved.id;revision=saved.revision;this.model=Objects.requireNonNull(model);graph=saved.graph;
             clock=new IslandClock(saved.clock,epoch);allowance=saved.allowance;anchor=saved.anchor;lastResult=saved.lastResult;status=saved.status;fences.putAll(saved.fences);
@@ -224,6 +226,14 @@ public final class IslandCoordinator {
     boolean retainsSolver(long id){owned();return require(id).retained!=null;}
     /** Why the island's last closed interval did not certify it, or null; diagnostics only, never a decision. */
     public String certificationRefusal(long id){owned();return require(id).refusal;}
+    /**
+     * What the entry evidence measured at the island's last usable solved interval (ending at {@code endTick}):
+     * its comparison with the interval before it, null when there was no consecutive usable one, and the
+     * interval's own drift, the d of the horizon. Diagnostics only, never a decision; null when certificates
+     * are off or no usable interval has closed since the island last woke or certified.
+     */
+    public record Evidence(long endTick,IslandCertificate.Stationarity stationarity,double drift) {}
+    public Evidence certificationEvidence(long id){owned();return require(id).evidence;}
     /** Installs the module host's drive index; see {@link Drives}. */
     public void drives(Drives index){owned();drives=Objects.requireNonNull(index);}
     /** The module host changed this island's drives: a certified island may have to wake earlier or at once. */
@@ -669,12 +679,14 @@ public final class IslandCoordinator {
         boolean usable=policy.enabled()&&!stopped&&suspension==null&&accepted!=null&&accepted.materialTransfers().isEmpty()
                 &&island.allowance.acceptedIntervals()==0&&accepted.candidate().orElseThrow().acceptance()==PassiveStepSolver.Acceptance.FULL;
         if(!usable) {
-            island.lastInterval=null;island.streak=0;if(revalidation!=null)island.certifiedSince=-1;
+            island.lastInterval=null;island.streak=0;island.evidence=null;if(revalidation!=null)island.certifiedSince=-1;
             island.refusal=!policy.enabled()?null:accepted==null?"no accepted interval":"not a FULL interval without material transfers or a degraded episode";return;
         }
-        var summary=new IslandCertificate.Summary(new IslandCertificate.Interval(attempt.slice.startTick(),attempt.slice.endTick(),before,accepted.candidate().orElseThrow()));
+        var summary=new IslandCertificate.Summary(new IslandCertificate.Interval(attempt.slice.startTick(),attempt.slice.endTick(),before,accepted.candidate().orElseThrow()),island.model.molecularWeights());
         if(revalidation!=null) {
-            String refusal=IslandCertificate.stationaryRefusal(revalidation.summary(),summary,policy.stationaryTolerance());
+            var measured=IslandCertificate.stationarity(revalidation.summary(),summary);
+            island.evidence=new Evidence(summary.endTick,measured,summary.drift());
+            String refusal=measured.refusal(policy.stationaryTolerance());
             if(refusal==null&&!noDrive(island))refusal="a module drive is due";
             if(refusal==null) {
                 var issued=IslandCertificate.issue(summary,policy);
@@ -684,7 +696,9 @@ public final class IslandCoordinator {
             island.certifiedSince=-1;island.lastInterval=summary;island.streak=1;island.refusal="revalidation: "+refusal;return;
         }
         var previous=island.lastInterval;
-        String refusal=previous==null?"first qualifying interval":previous.endTick!=summary.startTick?"not consecutive with the last one":IslandCertificate.stationaryRefusal(previous,summary,policy.stationaryTolerance());
+        var measured=previous==null||previous.endTick!=summary.startTick?null:IslandCertificate.stationarity(previous,summary);
+        island.evidence=new Evidence(summary.endTick,measured,summary.drift());
+        String refusal=previous==null?"first qualifying interval":measured==null?"not consecutive with the last one":measured.refusal(policy.stationaryTolerance());
         island.streak=refusal==null?island.streak+1:1;island.lastInterval=summary;
         int needed=summary.exactZero?policy.confirmIntervals():Math.max(2,policy.confirmIntervals());
         if(island.streak<needed){island.refusal=refusal!=null?refusal:"stationary for "+island.streak+" of "+needed+" intervals";return;}

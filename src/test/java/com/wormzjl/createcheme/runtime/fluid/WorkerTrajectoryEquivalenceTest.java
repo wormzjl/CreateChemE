@@ -28,11 +28,15 @@ class WorkerTrajectoryEquivalenceTest {
     private static final int FINAL_TICK=60;
     private static final long WAIT_SECONDS=45;
 
+    /** The last mode runs with rest and steady-flow certificates on, the entry evidence evaluated at every interval,
+     * but a confirm count of ten, which three intervals cannot reach (some water pairs are stationary from the
+     * start and would certify at the default two). Nothing certifies, so it must reproduce the others bit for bit.
+     * It stays out of the P12 fingerprint file. */
     private enum Mode {
-        FIXED_ONE(1,false), FIXED_TWO(2,false), AUTOMATIC_TWELVE(12,true);
+        FIXED_ONE(1,false,false), FIXED_TWO(2,false,false), AUTOMATIC_TWELVE(12,true,false), AUTOMATIC_TWELVE_CERTIFICATES(12,true,true);
         final int capacity;
-        final boolean automatic;
-        Mode(int capacity,boolean automatic){this.capacity=capacity;this.automatic=automatic;}
+        final boolean automatic,certificates;
+        Mode(int capacity,boolean automatic,boolean certificates){this.capacity=capacity;this.automatic=automatic;this.certificates=certificates;}
     }
     private record NodeFrame(long id,double elevation,double[] moles,double internalEnergy,
                              double pressure,double temperature,double mass,double vaporVolume,
@@ -68,10 +72,11 @@ class WorkerTrajectoryEquivalenceTest {
                 "independent demand must grow the configurable automatic limit to twelve");
         assertEquals(12,runs.get(Mode.AUTOMATIC_TWELVE).maximumOutstanding(),
                 "all twelve owners must be outstanding before the owner thread drains completions");
-        for(var mode:List.of(Mode.FIXED_TWO,Mode.AUTOMATIC_TWELVE))assertSameTrajectory(reference,runs.get(mode),mode);
+        for(var mode:List.of(Mode.FIXED_TWO,Mode.AUTOMATIC_TWELVE,Mode.AUTOMATIC_TWELVE_CERTIFICATES))assertSameTrajectory(reference,runs.get(mode),mode);
         // A bitwise fingerprint of each mode's trajectory, so a scheduler change can be compared against a
         // previous build's report as well as across worker counts within this run.
-        var digests=new java.util.TreeMap<String,String>();for(var entry:runs.entrySet())digests.put(entry.getKey().name(),digest(entry.getValue()));
+        var digests=new java.util.TreeMap<String,String>();for(var entry:runs.entrySet())if(!entry.getKey().certificates)digests.put(entry.getKey().name(),digest(entry.getValue()));
+        assertEquals(digests.get(Mode.AUTOMATIC_TWELVE.name()),digest(runs.get(Mode.AUTOMATIC_TWELVE_CERTIFICATES)),"certificates that never issue change nothing");
         var output=java.nio.file.Path.of("build/reports/fluid/P12-worker-trajectories.json");java.nio.file.Files.createDirectories(output.getParent());
         java.nio.file.Files.writeString(output,new com.google.gson.GsonBuilder().setPrettyPrinting().create().toJson(digests));
     }
@@ -145,7 +150,7 @@ class WorkerTrajectoryEquivalenceTest {
                 }
             };
             coordinator=new IslandCoordinator(dispatcher,this::published,System::nanoTime,
-                    new IslandCoordinator.Settings(Duration.ofSeconds(30).toNanos(),Duration.ofSeconds(20).toNanos(),64,false,20,CertificatePolicy.disabled()));
+                    new IslandCoordinator.Settings(Duration.ofSeconds(30).toNanos(),Duration.ofSeconds(20).toNanos(),64,false,20,mode.certificates?new CertificatePolicy(true,1e-9,1e-6,17_280,10,0):CertificatePolicy.disabled()));
             for(int index=0;index<ISLANDS;index++) {
                 long islandId=index+1L;var graph=graph(index);initialGraphs.add(graph);histories.put(islandId,new ArrayList<>());
                 coordinator.register(new IslandCoordinator.Snapshot(islandId,0,graph,new IslandClock.Snapshot(0,0,0,20),

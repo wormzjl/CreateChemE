@@ -453,7 +453,7 @@ class IslandCertificateTest {
         var boundary=new ConservativeTransport.BoundaryTransfer(2,amounts(-flow*5/.028,0),-flow*5e3);
         var result=new PassiveIntervalSolver.Result(after,5,new double[]{flow},1,0,0,flow==0?List.of():List.of(boundary),reasons,List.of(FlowControl.Mode.PASSIVE),new double[]{0},
                 PassiveStepSolver.Acceptance.FULL,List.of(new PipeTransfer(9,stream(forward),stream(reverse))));
-        return new IslandCertificate.Summary(new IslandCertificate.Interval(start,start+100,before,result));
+        return new IslandCertificate.Summary(new IslandCertificate.Interval(start,start+100,before,result),model.molecularWeights());
     }
     /** Two consecutive intervals of a tank draining component amounts {@code delta1} then {@code delta2} from {@code moles}. */
     private IslandCertificate.Summary[] draining(double[] moles,double[] delta1,double[] delta2,double flow1,double flow2) {
@@ -570,5 +570,177 @@ class IslandCertificateTest {
         assertThrows(IllegalArgumentException.class,()->certificate.replay(300,300));
         assertThrows(IllegalArgumentException.class,()->certificate.graphAt(certificate.horizonTick()+1));
         assertThrows(IllegalArgumentException.class,()->certificate.graphAt(199));
+    }
+
+    // ---------------- quiet pipes ----------------
+
+    /**
+     * Plan section 3.3, flow test: a pipe that moves less than eps_s of the finite inventory it draws on in both
+     * intervals is quiet and exempt from the relative test; a pipe that moves more is held to it; a pipe with no
+     * finite inventory behind it is never quiet; a junction stands for the island's smallest finite inventory.
+     */
+    @Test void aQuietPipeIsExemptFromTheRelativeFlowTestAndALoudOneIsNot() {
+        // The reference is the smaller inventory the pipe draws on, here the tank after the second interval.
+        double kilograms=1000*model.molecularWeight(nitrogen),drained=999.998*model.molecularWeight(nitrogen),tolerance=1e-9;
+        // Noise flows of 1e-10 then 3e-10 kg/s out of a 28 kg tank: the flow changes by two thirds of itself, which
+        // the relative test alone refused, but the pipe moves 5e-11 of the tank per interval.
+        var noise=draining(amounts(1000,0),amounts(-1e-3,0),amounts(-1e-3,0),1e-10,3e-10);
+        var measured=IslandCertificate.stationarity(noise[0],noise[1]);
+        assertNull(measured.refusal(tolerance),measured.toString());
+        assertEquals(2.0/3,measured.largestRelativeFlowChange(),1e-12,"the relative test alone refuses");
+        assertEquals(3e-10*5/drained,measured.flowMoves(),1e-12*3e-10*5/drained);
+        // The same relative change on a flow that moves material is refused.
+        var loud=draining(amounts(1000,0),amounts(-1e-3,0),amounts(-1e-3,0),1e-3,3e-3);
+        var refusal=IslandCertificate.stationaryRefusal(loud[0],loud[1],tolerance);
+        assertNotNull(refusal);assertTrue(refusal.contains("pipe flow"),refusal);
+        // The edge: quiet below eps_s of the inventory per interval, refused above it.
+        for(double moves:new double[]{.9e-9,1.1e-9}) {
+            double flow=moves*drained/5;var edge=draining(amounts(1000,0),amounts(-1e-3,0),amounts(-1e-3,0),flow/3,flow);
+            var s=IslandCertificate.stationarity(edge[0],edge[1]);
+            assertEquals(moves,s.flowMoves(),1e-12*moves);
+            assertEquals(moves<tolerance,s.refusal(tolerance)==null,moves+" of the tank per interval: "+s);
+        }
+        // eps_s = 0 admits only an exact repeat, so no flow that changes at all is quiet.
+        assertNotNull(IslandCertificate.stationaryRefusal(noise[0],noise[1],0));
+        // measure() is the smallest tolerance the pair passes at.
+        for(var pair:List.of(noise,loud)) {
+            var s=IslandCertificate.stationarity(pair[0],pair[1]);double m=s.measure();
+            assertNull(s.refusal(m));assertNotNull(s.refusal(Math.nextDown(m)));
+        }
+        // A generator straight into a void draws on no finite inventory: its noise is never quiet.
+        var generator=new PassiveNetwork.Reservoir(1,0,gas,PassiveNetwork.NodeKind.GENERATOR);var sink=new PassiveNetwork.Reservoir(2,0,gas,PassiveNetwork.NodeKind.VOID);
+        var line=new PassiveNetwork(List.of(generator,sink),List.of(new PassiveNetwork.Pipe(9,0,1,BLOCK)));
+        var boundaries=IslandCertificate.stationaryRefusal(interval(0,line,line,1e-10,5e-10,0,Map.of()),interval(100,line,line,3e-10,1.5e-9,0,Map.of()),tolerance);
+        assertNotNull(boundaries);assertTrue(boundaries.contains("pipe flow"),boundaries);
+        // A junction holds nothing and passes its flow on: it stands for the island's smallest finite inventory.
+        var small=new PassiveNetwork.Reservoir(1,0,gas,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,amounts(1000,0),-1e5));
+        var large=new PassiveNetwork.Reservoir(4,0,gas,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,amounts(5000,0),-5e5));
+        var junction=new PassiveNetwork.Reservoir(3,0,gas,PassiveNetwork.NodeKind.JUNCTION);
+        var tee=new PassiveNetwork(List.of(small,junction,large,sink),List.of(new PassiveNetwork.Pipe(9,0,1,BLOCK),new PassiveNetwork.Pipe(10,1,2,BLOCK),new PassiveNetwork.Pipe(11,2,3,BLOCK)));
+        var summary=interval(0,tee,tee,0,0,0,Map.of());
+        assertArrayEquals(new double[]{kilograms,kilograms,5*kilograms},summary.referenceMass,1e-12*kilograms);
+    }
+
+    /** The paced benchmark's composition: the Tia Juana light feed with 0.1 nitrogen and 0.2 water, not renormalised. */
+    private static double[] benchmarkComposition() {
+        var catalog=MaterialCatalog.bundled();
+        var z=Arrays.copyOf(com.wormzjl.createcheme.science.material.MaterialRuntime.with(catalog,FluidPresetCatalog.NETWORK_PACKAGE,
+                ()->com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo.fromRegisteredPackage(FluidPresetCatalog.NETWORK_PACKAGE)
+                        .crudeFeed("createcheme:tia_juana_light_methane").moleFractions()),
+                com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.conservedCount());
+        z[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.nitrogenIndex()]=.1;z[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]=.2;
+        return z;
+    }
+    /**
+     * Ladder {@code network} of the paced benchmark's timed fixtures ({@code FluidServerBenchmark.installFixture}),
+     * rebuilt with the same device identities, positions, rung pressures and inventories: CLOSED as in rest100,
+     * THROUGH as in stress100. The ladders before it only count identities and draw from the shared random sequence.
+     */
+    private PassiveNetwork benchmarkLadder(int network,boolean through) {
+        var composition=benchmarkComposition();var random=new Random(2026091603L);
+        var devices=new ArrayList<PhysicalFluidTopology.Device>();var stocks=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();long[] next={1};
+        class Builder {
+            boolean keep;
+            void add(int x,int z,Kind kind,double pressure) {
+                long id=next[0]++;if(!keep)return;
+                var device=new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",1024+x,80,1024+z),kind,PhysicalFluidTopology.Direction.EAST,
+                        new PipeResistance.Geometry(1,.05,.000045,0),new FlowControl.Passive());
+                devices.add(device);
+                if(kind==Kind.PIPE)return;
+                if(kind==Kind.RESERVOIR) {
+                    var amounts=composition.clone();var unit=model.flashTP(350,pressure,amounts,()->{});
+                    for(int c=0;c<amounts.length;c++)amounts[c]=amounts[c]/unit.volume();
+                    var state=model.flashTP(350,pressure,amounts,()->{});
+                    stocks.put(id,new PassiveNetwork.Reservoir(id,80,state,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,amounts,state.internalEnergy())));
+                }else stocks.put(id,new FluidDeviceSpec(1,350,pressure,composition).initialize(device,model,()->{}));
+            }
+        }
+        var b=new Builder();
+        for(int k=0;k<=network;k++) {
+            b.keep=k==network;
+            int count=10+(k*13%21),columns=count/2,baseX=15360+80*(k%10),baseZ=15360+16*(k/10);
+            if(through) {
+                b.add(baseX-8,baseZ,Kind.GENERATOR,150100);
+                for(int x=-7;x<0;x++)b.add(baseX+x,baseZ,x==-4&&count%2==1?Kind.RESERVOIR:Kind.PIPE,150090);
+            }
+            for(int c=0;c<columns;c++) {
+                double pressure=150100-100*(c+.5)/columns;
+                for(int row=0;row<2;row++) {
+                    b.add(baseX+4*c,baseZ+4*row,Kind.RESERVOIR,pressure+4*(random.nextDouble()-.5));
+                    if(c+1<columns)for(int dx=1;dx<4;dx++)b.add(baseX+4*c+dx,baseZ+4*row,Kind.PIPE,pressure);
+                }
+                for(int dz=1;dz<4;dz++)b.add(baseX+4*c,baseZ+dz,Kind.PIPE,pressure);
+            }
+            if(through) {
+                int end=baseX+4*(columns-1);
+                for(int dx=1;dx<4;dx++)b.add(end+dx,baseZ+4,Kind.PIPE,150010);
+                b.add(end+4,baseZ+4,Kind.VOID,150000);
+            }
+        }
+        var islands=PhysicalFluidTopology.compile(devices,stocks).islands();
+        assertEquals(1,islands.size());return islands.getFirst().graph();
+    }
+
+    /**
+     * The flow test on a real island: rest100's ladder 65 settles to noise flows whose relative changes are of
+     * order one, and the relative test alone refused it for the whole benchmark window (0.35 of the largest flow at
+     * its end). With quiet pipes exempt it certifies STEADY, and its evidence shows the relative test would still
+     * have refused the qualifying pair.
+     */
+    @Test void aSettledBenchmarkClosedLadderCertifiesOnceItsQuietPipesAreExempt() {
+        var rig=new Rig(CertificatePolicy.defaults());rig.register(1,benchmarkLadder(65,false));
+        long at=rig.runUntilCertified(1,6_000);
+        var evidence=rig.coordinator.certificationEvidence(1);
+        System.out.println("closed ladder 65: certified at tick "+at+" "+rig.stored(1).certificate()+" refusal="+rig.coordinator.certificationRefusal(1)+" evidence="+evidence);
+        assertTrue(at>0,"did not certify: "+rig.coordinator.certificationRefusal(1));
+        assertEquals(IslandCertificate.Kind.STEADY,rig.stored(1).certificate().orElseThrow().kind());
+        assertEquals(at,evidence.endTick());
+        assertTrue(evidence.stationarity().flow()<=1e-9,evidence.toString());
+        assertTrue(evidence.stationarity().largestRelativeFlowChange()>1e-9,"the relative flow test alone would have refused: "+evidence);
+    }
+
+    // ---------------- certificates that never issue change nothing ----------------
+
+    /** A bit-for-bit fingerprint of everything an island publishes: clock, status, graph and the interval's result. */
+    private static String publications(List<IslandCoordinator.Snapshot> published) {
+        try {
+            var sha=java.security.MessageDigest.getInstance("SHA-256");var buffer=java.nio.ByteBuffer.allocate(8);
+            java.util.function.LongConsumer put=v->{buffer.clear();buffer.putLong(v);sha.update(buffer.array());};
+            java.util.function.DoubleConsumer bits=v->put.accept(Double.doubleToLongBits(v));
+            for(var s:published) {
+                put.accept(s.id());put.accept(s.clock().onlineTick());put.accept(s.clock().committedTick());put.accept(s.clock().retryAtTick());put.accept(s.clock().cadenceTicks());
+                sha.update(s.status().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                for(var node:s.graph().reservoirs()) {
+                    put.accept(node.id());for(double n:node.inventory().moles())bits.accept(n);bits.accept(node.inventory().internalEnergy());
+                    var state=node.state();for(double v:new double[]{state.temperature(),state.pressure(),state.mass(),state.vaporVolume(),state.liquidVolume(),state.waterVolume()})bits.accept(v);
+                }
+                var result=s.lastResult().orElseThrow();
+                for(double q:result.averageMassFlows())bits.accept(q);
+                for(var boundary:result.boundaries()){put.accept(boundary.nodeId());for(double n:boundary.moles())bits.accept(n);bits.accept(boundary.totalEnergyJoule());}
+                bits.accept(result.pumpWorkJoule());put.accept(result.acceptedSubsteps());put.accept(result.rejectedSubsteps());
+                for(var pipe:result.pipeTransfers()){put.accept(pipe.pipeId());bits.accept(pipe.forward().massKg());bits.accept(pipe.reverse().massKg());}
+            }
+            return java.util.HexFormat.of().formatHex(sha.digest());
+        }catch(java.security.NoSuchAlgorithmException impossible){throw new AssertionError(impossible);}
+    }
+
+    /**
+     * With certificates on, an island that never certifies must follow the certificates-off trajectory bit for bit:
+     * the evidence reads the solved intervals and never feeds anything back. Slow fill, pump heating and the
+     * stress100 through-flow ladder, each for forty intervals.
+     */
+    @Test void anIslandThatNeverCertifiesSolvesBitForBitAsWithCertificatesOff() {
+        var devices=line(Kind.GENERATOR,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.RESERVOIR);
+        var slowFill=island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,150000,pure(nitrogen)),6L,new FluidDeviceSpec(1000,298.15,101325,pure(nitrogen))));
+        for(var fixture:List.of(Map.entry("slow fill",slowFill),Map.entry("pumped loop",pumpedLoop()),Map.entry("stress100 ladder 7",benchmarkLadder(7,true)))) {
+            var off=new Rig(CertificatePolicy.disabled());var on=new Rig(CertificatePolicy.defaults());
+            for(var rig:List.of(off,on)){rig.register(1,fixture.getValue());rig.run(4_000);}
+            assertTrue(on.stored(1).certificate().isEmpty(),fixture.getKey()+" certified");
+            assertNotNull(on.coordinator.certificationEvidence(1),fixture.getKey()+": the evidence ran");
+            assertNull(off.coordinator.certificationEvidence(1),fixture.getKey()+": certificates off compute nothing");
+            assertTrue(on.replayed.isEmpty());assertEquals(40,on.published.size());
+            System.out.println(fixture.getKey()+": "+on.coordinator.certificationRefusal(1));
+            assertEquals(publications(off.published),publications(on.published),fixture.getKey());
+        }
     }
 }

@@ -34,25 +34,42 @@ public final class IslandCertificate {
         final double[][] moles;final double[] energy;final int[] phases;
         /** The largest relative change of any finite node's temperature or pressure over the interval. */
         final double stateChange;
+        /**
+         * Per pipe, the fluid mass (kg) of the smaller finite inventory its flow draws on at the end of the
+         * interval: the smaller of its endpoints' masses, a junction standing for the island's smallest finite
+         * inventory (it holds nothing and passes the flow on), a generator, void or port for none (infinity).
+         */
+        final double[] referenceMass;
         final boolean fullAcceptance,transitionFree,closuresUnchanged,solidsUnchanged,phasesUnchanged,exactZero,grossWithoutNet,solidsInTransport,hasFilter;
-        Summary(Interval interval) {
+        /** {@code molecularWeights} (kg/mol, conserved-component order) weigh the finite inventories for {@link #referenceMass}. */
+        Summary(Interval interval,double[] molecularWeights) {
             startTick=interval.startTick;endTick=interval.endTick;durationTicks=Math.toIntExact(endTick-startTick);
             before=interval.before;result=interval.result;after=result.graph();
             if(before.reservoirs().size()!=after.reservoirs().size()||before.pipes().size()!=after.pipes().size())throw new IllegalArgumentException("Interval changed the island's structure");
             int nodes=after.reservoirs().size();moles=new double[nodes][];energy=new double[nodes];phases=new int[nodes];
+            var nodeMass=new double[nodes];double smallest=Double.POSITIVE_INFINITY;
             boolean zero=true,solids=true,phase=true;double state=0;
             for(int n=0;n<nodes;n++) {
                 var a=before.reservoirs().get(n);var b=after.reservoirs().get(n);
                 if(a.id()!=b.id()||a.kind()!=b.kind())throw new IllegalArgumentException("Interval changed the island's structure");
+                nodeMass[n]=Double.POSITIVE_INFINITY;
                 if(b.kind()!=PassiveNetwork.NodeKind.RESERVOIR)continue;
                 phases[n]=phases(b.state());if(phases(a.state())!=phases[n])phase=false;
                 // An empty vessel's state is a numerical guess, not a physical temperature or pressure.
                 if(!a.empty()&&!b.empty())state=Math.max(state,Math.max(Math.abs(b.state().temperature()-a.state().temperature())/b.state().temperature(),
                         Math.abs(b.state().pressure()-a.state().pressure())/b.state().pressure()));
                 var m0=a.inventory().moles();var m1=b.inventory().moles();moles[n]=new double[m1.length];
-                for(int c=0;c<m1.length;c++){moles[n][c]=m1[c]-m0[c];if(moles[n][c]!=0)zero=false;}
+                if(m1.length!=molecularWeights.length)throw new IllegalArgumentException("Molecular weights do not match the component basis");
+                double mass=0;
+                for(int c=0;c<m1.length;c++){moles[n][c]=m1[c]-m0[c];if(moles[n][c]!=0)zero=false;mass+=m1[c]*molecularWeights[c];}
+                nodeMass[n]=mass;smallest=Math.min(smallest,mass);
                 energy[n]=b.inventory().internalEnergy()-a.inventory().internalEnergy();if(energy[n]!=0)zero=false;
                 if(!a.inventory().solids().equals(b.inventory().solids()))solids=false;
+            }
+            referenceMass=new double[after.pipes().size()];
+            for(int p=0;p<referenceMass.length;p++) {
+                var pipe=after.pipes().get(p);
+                referenceMass[p]=Math.min(endpointMass(after,nodeMass,smallest,pipe.first()),endpointMass(after,nodeMass,smallest,pipe.second()));
             }
             for(double q:result.averageMassFlows())if(q!=0)zero=false;
             if(result.pumpWorkJoule()!=0)zero=false;
@@ -77,7 +94,28 @@ public final class IslandCertificate {
         static int phases(com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.State state) {
             return (state.vaporVolume()>0?1:0)|(state.liquidVolume()>0?2:0)|(state.waterVolume()>0?4:0);
         }
+        private static double endpointMass(PassiveNetwork graph,double[] nodeMass,double smallest,int node) {
+            return graph.reservoirs().get(node).junction()?smallest:nodeMass[node];
+        }
         double largestFlow(){double q=0;for(double v:result.averageMassFlows())q=Math.max(q,Math.abs(v));return q;}
+        /**
+         * The largest relative change of the interval: of any finite node's component (against that inventory),
+         * internal energy (against {@link #energyScale}), temperature or pressure. Infinite when a component or
+         * energy appears in a node that held none. This is the d of the plan's horizon {@code budget / d}.
+         */
+        double drift() {
+            double relative=stateChange;
+            for(int n=0;n<moles.length;n++) {
+                if(moles[n]==null)continue;var node=after.reservoirs().get(n);var inventory=node.inventory().moles();
+                if(energy[n]!=0){double scale=energyScale(node);if(scale<=0)return Double.POSITIVE_INFINITY;relative=Math.max(relative,Math.abs(energy[n])/scale);}
+                for(int c=0;c<inventory.length;c++) {
+                    double delta=moles[n][c];if(delta==0)continue;
+                    if(inventory[c]<=0)return Double.POSITIVE_INFINITY;
+                    relative=Math.max(relative,Math.abs(delta)/inventory[c]);
+                }
+            }
+            return relative;
+        }
     }
     /**
      * The energy a node's internal energy is compared with: its magnitude, but at least the thermal scale
@@ -101,14 +139,82 @@ public final class IslandCertificate {
     }
 
     /**
-     * Why the later interval is not a stationary repeat of the earlier one, or null when it is: equal duration,
-     * both FULL with no transition and no closure, cake, phase or node-solid change inside either interval, equal
-     * modes, blocked masks, filter cakes and fixed-node states, no finite node's temperature or pressure drifting
-     * by more than {@code tolerance} per interval (two identity maps excepted), every finite node's component
-     * change within {@code tolerance} of its inventory and energy change within {@code tolerance} of its
-     * {@link #energyScale}, and every pipe's flow within {@code tolerance} of the island's largest flow.
+     * How far the later of two consecutive intervals is from a stationary repeat of the earlier one: the first
+     * discrete difference, or null when there is none, and for each continuous test the smallest tolerance it
+     * passes at. The pair is stationary at a tolerance {@code eps} exactly when {@code discrete} is null and every
+     * measure is at most {@code eps} ({@link #refusal}); {@link #measure} is the smallest such {@code eps}.
+     *
+     * <ul>
+     * <li>{@code discrete}: unequal durations; an interval not FULL, or with a solid transport transition, a
+     *     closure, cake, phase or node-solid change inside it; unequal modes, phases, blocked masks, filter cakes
+     *     or fixed-node states.</li>
+     * <li>{@code state}: the larger interval's largest relative temperature or pressure drift of a finite node.
+     *     A node whose state drifts at a constant rate (pump heating, a slow depletion) is not stationary. Zero
+     *     between two identity maps, whose states differ at most by decode roundoff.</li>
+     * <li>{@code component}: the largest change between the intervals of a finite node's component change,
+     *     relative to that inventory.</li>
+     * <li>{@code energy}: the same for internal energy, relative to {@link #energyScale}.</li>
+     * <li>{@code flow}: per pipe the smaller of two ratios, the largest over the pipes. The first is the change
+     *     of its flow relative to the larger of that flow and the island's largest flow. The second is the mass
+     *     the pipe moves in one interval (the larger of the two intervals) relative to the smaller finite
+     *     inventory it draws on ({@link Summary#referenceMass}): a pipe that moves less than {@code eps} of that
+     *     inventory in both intervals is quiet, because whatever its flow does is already bounded by the
+     *     component and energy tests of the inventories it moves between. Without it the relative test is
+     *     ill-conditioned wherever the island's largest flow is itself solver noise (a settled closed island at
+     *     1e-10 kg/s), since a noise flow's change is of the order of the flow itself. A pipe between two
+     *     boundaries (a generator straight into a void) draws on no finite inventory and is never quiet.</li>
+     * </ul>
+     * {@code flowChange} and {@code flowMoves} are the two ratios of the pipe that sets {@code flow};
+     * {@code largestRelativeFlowChange} is the largest first ratio over all pipes, the whole flow test before
+     * quiet pipes were exempt, kept for diagnostics. The locations are for the refusal text only. Nothing here
+     * decides accounting: replay scales the recorded interval, so conservation is exact whatever the tolerance.
      */
-    static String stationaryRefusal(Summary a,Summary b,double tolerance) {
+    public record Stationarity(String discrete,double state,double component,String componentAt,double energy,String energyAt,
+                               double flow,String flowAt,double flowChange,double flowMoves,double largestRelativeFlowChange) {
+        /** The smallest tolerance at which the pair counts as stationary; infinity after a discrete difference. */
+        public double measure(){return discrete!=null?Double.POSITIVE_INFINITY:Math.max(Math.max(state,component),Math.max(energy,flow));}
+        /** Why the pair is not stationary at {@code tolerance}, or null when it is. */
+        public String refusal(double tolerance) {
+            if(discrete!=null)return discrete;
+            if(state>tolerance)return "a node's temperature or pressure changed by "+state+" per interval";
+            if(component>tolerance)return componentAt+" changed by "+component+" of its inventory";
+            if(energy>tolerance)return energyAt+" changed by "+energy+" of its scale";
+            if(flow>tolerance)return "pipe flow changed by "+flowChange+" of the larger of its flow and the island's largest flow and moves "+flowMoves+" of the inventory it draws on per interval ("+flowAt+")";
+            return null;
+        }
+    }
+    static Stationarity stationarity(Summary a,Summary b) {
+        String discrete=discreteDifference(a,b);
+        if(discrete!=null)return new Stationarity(discrete,0,0,null,0,null,0,null,0,0,0);
+        double state=a.exactZero&&b.exactZero?0:Math.max(a.stateChange,b.stateChange);
+        var y=b.after;double component=0,energy=0;String componentAt=null,energyAt=null;
+        for(int n=0;n<y.reservoirs().size();n++) {
+            if(b.moles[n]==null)continue;var t=y.reservoirs().get(n);
+            var inventory=t.inventory().moles();
+            for(int c=0;c<inventory.length;c++) {
+                double change=Math.abs(b.moles[n][c]-a.moles[n][c]);if(change==0)continue;
+                double ratio=inventory[c]>0?change/inventory[c]:Double.POSITIVE_INFINITY;
+                if(ratio>component){component=ratio;componentAt="node "+t.id()+" component "+c;}
+            }
+            double change=Math.abs(b.energy[n]-a.energy[n]);
+            if(change!=0){double scale=energyScale(t);double ratio=scale>0?change/scale:Double.POSITIVE_INFINITY;if(ratio>energy){energy=ratio;energyAt="node "+t.id()+" energy";}}
+        }
+        var q1=a.result.averageMassFlows();var q2=b.result.averageMassFlows();double reference=b.largestFlow(),seconds=b.durationTicks/20.0;
+        double flow=0,worstChange=0,moves=0,largest=0;String flowAt=null;
+        for(int i=0;i<q2.length;i++) {
+            double change=Math.abs(q2[i]-q1[i]);if(change==0)continue;
+            double scale=Math.max(Math.abs(q2[i]),reference);
+            double relative=scale>0?change/scale:Double.POSITIVE_INFINITY;
+            double moved=Math.max(Math.abs(q1[i]),Math.abs(q2[i]))*seconds,mass=Math.min(a.referenceMass[i],b.referenceMass[i]);
+            // No finite inventory behind the pipe (both ends boundaries) or an empty one: never quiet.
+            double fraction=mass>0&&mass<Double.POSITIVE_INFINITY?moved/mass:Double.POSITIVE_INFINITY;
+            double pipe=Math.min(relative,fraction);largest=Math.max(largest,relative);
+            if(pipe>flow){flow=pipe;worstChange=relative;moves=fraction;flowAt="pipe "+y.pipes().get(i).id();}
+        }
+        return new Stationarity(null,state,component,componentAt,energy,energyAt,flow,flowAt,worstChange,moves,largest);
+    }
+    /** Everything that must repeat exactly between the two intervals, or null when it does. */
+    private static String discreteDifference(Summary a,Summary b) {
         if(a.durationTicks!=b.durationTicks)return "interval lengths differ";
         if(!a.fullAcceptance||!b.fullAcceptance)return "an interval was not FULL";
         if(!a.transitionFree||!b.transitionFree)return "a solid transport transition";
@@ -116,9 +222,6 @@ public final class IslandCertificate {
         if(!a.solidsUnchanged||!b.solidsUnchanged)return "node solids changed";
         if(!a.phasesUnchanged||!b.phasesUnchanged||!Arrays.equals(a.phases,b.phases))return "a phase appeared or disappeared";
         if(!a.result.endpointModes().equals(b.result.endpointModes()))return "endpoint modes changed";
-        // A node whose temperature or pressure drifts is not stationary even at a constant rate of change (pump
-        // heating, a slow depletion). Two identity maps are exempt: their states differ at most by decode roundoff.
-        if(!(a.exactZero&&b.exactZero)&&Math.max(a.stateChange,b.stateChange)>tolerance)return "a node's temperature or pressure changed by "+Math.max(a.stateChange,b.stateChange)+" per interval";
         var x=a.after;var y=b.after;
         if(x.reservoirs().size()!=y.reservoirs().size()||x.pipes().size()!=y.pipes().size())return "structure changed";
         for(int p=0;p<y.pipes().size();p++) {
@@ -130,15 +233,11 @@ public final class IslandCertificate {
             if(s.id()!=t.id()||s.kind()!=t.kind())return "structure changed";
             if(t.fixed()&&(!s.inventory().equals(t.inventory())||Double.doubleToLongBits(s.state().temperature())!=Double.doubleToLongBits(t.state().temperature())
                     ||Double.doubleToLongBits(s.state().pressure())!=Double.doubleToLongBits(t.state().pressure())))return "a fixed node changed";
-            if(b.moles[n]==null)continue;
-            var inventory=t.inventory().moles();
-            for(int c=0;c<inventory.length;c++)if(Math.abs(b.moles[n][c]-a.moles[n][c])>tolerance*inventory[c])return "node "+t.id()+" component "+c+" changed by "+Math.abs(b.moles[n][c]-a.moles[n][c])/Math.max(Double.MIN_VALUE,inventory[c])+" of its inventory";
-            if(Math.abs(b.energy[n]-a.energy[n])>tolerance*energyScale(t))return "node "+t.id()+" energy changed by "+Math.abs(b.energy[n]-a.energy[n])/energyScale(t)+" of its scale";
         }
-        var q1=a.result.averageMassFlows();var q2=b.result.averageMassFlows();double reference=b.largestFlow();
-        for(int i=0;i<q2.length;i++)if(Math.abs(q2[i]-q1[i])>tolerance*Math.max(Math.abs(q2[i]),reference))return "pipe flow changed by "+Math.abs(q2[i]-q1[i])/Math.max(Double.MIN_VALUE,reference)+" of the largest flow";
         return null;
     }
+    /** Why the later interval is not a stationary repeat of the earlier one at {@code tolerance}, or null when it is; see {@link Stationarity}. */
+    static String stationaryRefusal(Summary a,Summary b,double tolerance){return stationarity(a,b).refusal(tolerance);}
 
     private final Kind kind;
     private final long baseTick,horizonTick;
@@ -164,16 +263,11 @@ public final class IslandCertificate {
         }
         if(last.solidsInTransport)return Result.refused("solids in transport");
         if(last.hasFilter)return Result.refused("a filter on the island");
-        double relative=last.stateChange;long zeroLimit=Long.MAX_VALUE;
+        double relative=last.drift();long zeroLimit=Long.MAX_VALUE;
+        if(relative==Double.POSITIVE_INFINITY)return Result.refused("material or energy appears in an empty node");
         for(int n=0;n<last.moles.length;n++) {
-            if(last.moles[n]==null)continue;var node=last.after.reservoirs().get(n);var inventory=node.inventory().moles();
-            relative=Math.max(relative,Math.abs(last.energy[n])/energyScale(node));
-            for(int c=0;c<inventory.length;c++) {
-                double delta=last.moles[n][c];if(delta==0)continue;
-                if(inventory[c]<=0)return Result.refused("a component appears in an empty node");
-                relative=Math.max(relative,Math.abs(delta)/inventory[c]);
-                if(delta<0)zeroLimit=Math.min(zeroLimit,(long)Math.ceil(inventory[c]/-delta)-1);
-            }
+            if(last.moles[n]==null)continue;var inventory=last.after.reservoirs().get(n).inventory().moles();
+            for(int c=0;c<inventory.length;c++){double delta=last.moles[n][c];if(delta<0)zeroLimit=Math.min(zeroLimit,(long)Math.ceil(inventory[c]/-delta)-1);}
         }
         long intervals=policy.maximumIntervals();
         if(relative>0)intervals=Math.min(intervals,(long)Math.floor(policy.inventoryBudget()/relative));
