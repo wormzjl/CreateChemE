@@ -412,6 +412,11 @@ public final class FluidServerBenchmark {
         certified.put("restedIntervals",r.restedIntervals);certified.put("identityAdvancedSeconds",r.restedSeconds);
         var kinds=new TreeMap<String,Long>();for(var island:finalIslands)kinds.merge(island.certificate().map(c->c.kind().name()).orElse("AWAKE"),1L,Long::sum);
         certified.put("finalIslandKinds",kinds);
+        // Why the awake islands did not certify at the end: reasons with their numbers masked, and a few verbatim.
+        var refusals=new TreeMap<String,Long>();var examples=new ArrayList<String>();
+        for(var island:finalIslands)if(island.certificate().isEmpty()){var reason=r.world.certificationRefusal(island.id());
+            refusals.merge(reason==null?"none":reason.replaceAll("-?\\d+(\\.\\d+)?([eE][-+]?\\d+)?","#"),1L,Long::sum);if(reason!=null&&examples.size()<8)examples.add(island.id()+": "+reason);}
+        certified.put("finalRefusals",refusals);certified.put("refusalExamples",examples);
         certified.put("certifiedIslandsPerSecond",r.stressSamples.stream().map(s->s.get("certifiedIslands")).toList());
         certified.put("finalCertificates",finalIslands.stream().filter(s->s.certificate().isPresent()).collect(java.util.stream.Collectors.toMap(s->s.id(),s->s.certificate().orElseThrow(),(a,b)->a,TreeMap::new)));
         if(r.stress){var reference=new LinkedHashMap<String,Object>();reference.put("islandTick",r.referenceTick);reference.put("materialised",r.referenceMaterialised);

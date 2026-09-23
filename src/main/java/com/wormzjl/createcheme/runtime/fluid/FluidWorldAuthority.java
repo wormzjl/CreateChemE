@@ -117,6 +117,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public void materialiseAll(){owned();runtime.coordinator().snapshots();}
     /** The rest and steady-flow certificate policy captured at server start. */
     public CertificatePolicy certificates(){owned();return options.certificates();}
+    /** Why an island's last closed interval did not certify it, or null; diagnostics only. */
+    public String certificationRefusal(long island){owned();return runtime.coordinator().certificationRefusal(island);}
     public Map<Long,WorldTopologyLedger.Registration> registrations(){owned();if(latest==null)latest=topology.latest();return latest;}
     public Optional<WorldTopologyLedger.Registration> at(PhysicalFluidTopology.Position position){owned();return registrations().values().stream().filter(r->r.device().position().equals(position)).findFirst();}
     public WorldTopologyLedger.Registration place(PhysicalFluidTopology.Position position,TopologyCompiler.Kind kind,PhysicalFluidTopology.Direction facing) {
