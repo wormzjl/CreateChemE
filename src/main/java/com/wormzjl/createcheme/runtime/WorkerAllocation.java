@@ -67,5 +67,11 @@ public final class WorkerAllocation {
             }
             return limit;
         }
+
+        /** The tick from which an observation applies the pending lower-demand shrink, or -1 when none is
+         * pending. Lets an event-driven owner schedule that one observation instead of observing every tick. */
+        public long shrinkTick() {
+            return lowSince < 0 ? -1 : lowSince + 200;
+        }
     }
 }

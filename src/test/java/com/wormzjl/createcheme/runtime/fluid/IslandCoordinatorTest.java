@@ -117,4 +117,83 @@ class IslandCoordinatorTest {
         assertEquals(second.inventory(),coordinator.snapshot(5).graph().reservoirs().getFirst().inventory());
         assertEquals(2,coordinator.snapshot(4).revision());
     }
+
+    // ---- scheduling duties driven by their own deadlines, with no pump from outside ----
+
+    @Test void aRoundTimeoutClosesTheRoundFromItsDeadlineAlone() {
+        register(1,100,0);register(2,100,0);coordinator.pump();assertEquals(2,dispatch.attempts.size());
+        time.set(500);coordinator.tick();
+        assertTrue(dispatch.cancelled.isEmpty(),"half the budget: the first check re-arms instead of closing");
+        coordinator.tick();assertTrue(dispatch.cancelled.isEmpty());
+        time.set(1000);coordinator.tick();
+        assertEquals(Set.of(1L,2L),dispatch.cancelled,"the expired round closed on its re-armed deadline");
+        for(long id:List.of(1L,2L)){assertEquals(0,coordinator.snapshot(id).clock().committedTick());assertTrue(coordinator.snapshot(id).status().startsWith("HELD"));}
+        assertEquals(2,coordinator.pendingCount(),"cancelled jobs keep their owners until the terminal drains");
+    }
+    @Test void aHeldOwnerRetriesExactlyAtItsRetryDeadlineAndIsNotVisitedBefore() {
+        register(1,100,0);coordinator.pump();var first=dispatch.attempts.remove(1L);dispatch.commands.remove(1L);
+        coordinator.completed(first,Optional.of(new ProcessSolveServices.FluidIslandSolveResult(Optional.empty(),"HELD: test refusal",10,FallbackAllowance.NONE,Optional.empty())));
+        coordinator.pump();assertEquals(200,coordinator.snapshot(1).clock().retryAtTick());
+        FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+        try {
+            for(int tick=1;tick<100;tick++)coordinator.tick();
+            assertTrue(dispatch.attempts.isEmpty());
+            assertEquals(0,FluidRuntimeDiagnostics.sample().get("islandVisits"),"nothing looks at a held owner before its retry");
+            assertEquals(0,FluidRuntimeDiagnostics.sample().get("readinessPumps"));
+            coordinator.tick();
+            assertEquals(1,FluidRuntimeDiagnostics.sample().get("deadlinesFired"));assertEquals(1,FluidRuntimeDiagnostics.sample().get("readinessPumps"));
+            var retry=dispatch.attempts.values().iterator().next();assertEquals(0,retry.slice().startTick());assertEquals(100,retry.slice().endTick());
+        } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+    }
+    @Test void thePerTickDispatchBudgetResumesOnTheNextTickWithoutPolling() {
+        var budgeted=new IslandCoordinator(dispatch,publications::add,time::get,new IslandCoordinator.Settings(1000,750,2,false));
+        dispatch.capacity=10;var order=new ArrayList<Long>();
+        for(long id=1;id<=5;id++){var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(id,0,model.initialNitrogenCharge(1,298.15,101325,()->{}))),List.of());
+            budgeted.register(new IslandCoordinator.Snapshot(id,0,graph,new IslandClock.Snapshot(100,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),model);}
+        Runnable completeAll=()->{
+            for(long request:List.copyOf(dispatch.attempts.keySet())) {
+                var attempt=dispatch.attempts.remove(request);var command=dispatch.commands.remove(request);order.add(attempt.islandId());
+                var result=new PassiveIntervalSolver(model).solve(command.snapshot(),command.durationSeconds(),command.settings(),()->{});
+                budgeted.completed(attempt,Optional.of(new ProcessSolveServices.FluidIslandSolveResult(Optional.of(result),"FULL",10,FallbackAllowance.NONE,Optional.of(ApproximationAnchor.fromFull(model,result)))));
+            }
+            budgeted.pump();
+        };
+        budgeted.pump();assertEquals(2,dispatch.attempts.size());
+        completeAll.run();assertTrue(dispatch.attempts.isEmpty(),"the tick's dispatch budget is spent, so the completion pump dispatches nothing");
+        budgeted.pumpIfUseful();assertTrue(dispatch.attempts.isEmpty());
+        budgeted.tick();assertEquals(2,dispatch.attempts.size(),"the next tick resets the budget and the ready owners go out");
+        completeAll.run();budgeted.tick();assertEquals(1,dispatch.attempts.size());completeAll.run();
+        assertEquals(List.of(1L,2L,3L,4L,5L),order,"registration order is kept across the budget boundary");
+    }
+    @Test void theAllocatorShrinkIsObservedExactlyAtItsDeadlineWithNoOtherActivity() {
+        long[] epoch={0};var allocator=new com.wormzjl.createcheme.runtime.WorkerAllocation.Demand(8);int[] limit={1};var observed=new ArrayList<long[]>();
+        var attempts=new LinkedHashMap<Long,IslandCoordinator.Attempt>();var commands=new HashMap<Long,ProcessSolveServices.FluidIslandCommand>();
+        var elastic=new IslandCoordinator.Dispatcher() {
+            long sequence;
+            @Override public void demand(int eligible){limit[0]=allocator.observe(eligible+attempts.size(),epoch[0]);observed.add(new long[]{epoch[0],limit[0]});}
+            @Override public long demandShrinkDelay(){long due=allocator.shrinkTick();return due<0?-1:due-epoch[0];}
+            public int availableWorkers(){return limit[0]-attempts.size();}
+            public long nextRequestId(){return ++sequence;}
+            public boolean submit(IslandCoordinator.Attempt attempt,ProcessSolveServices.FluidIslandCommand command){attempts.put(attempt.slice().requestId(),attempt);commands.put(attempt.slice().requestId(),command);return true;}
+            public void cancel(long request){}
+        };
+        // A shared epoch: the owner advances it before each tick, as the world does.
+        var shared=new IslandCoordinator(elastic,changed->{},time::get,new IslandCoordinator.Settings(1000,750,64,false),IslandCoordinator.CommitHook.NO_MATERIAL,()->epoch[0]);
+        for(long id=1;id<=3;id++){var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(id,0,model.initialNitrogenCharge(1,298.15,101325,()->{}))),List.of());
+            shared.register(new IslandCoordinator.Snapshot(id,0,graph,new IslandClock.Snapshot(100,0,0,100),FallbackAllowance.NONE,Optional.empty(),Optional.empty(),"READY"),model);}
+        shared.pump();assertEquals(3,limit[0]);assertEquals(3,attempts.size());
+        for(long request:List.copyOf(attempts.keySet())) {
+            var attempt=attempts.remove(request);var command=commands.remove(request);var result=new PassiveIntervalSolver(model).solve(command.snapshot(),command.durationSeconds(),command.settings(),()->{});
+            shared.completed(attempt,Optional.of(new ProcessSolveServices.FluidIslandSolveResult(Optional.of(result),"FULL",10,FallbackAllowance.NONE,Optional.of(ApproximationAnchor.fromFull(model,result)))));
+        }
+        // Park all three owners on an event so nothing but the allocator deadline can wake the coordinator.
+        shared.fence(UUID.randomUUID(),100,List.of(1L,2L,3L));shared.pump();
+        assertEquals(3,limit[0]);assertEquals(200,allocator.shrinkTick(),"lower demand observed at epoch 0");
+        int before=observed.size();
+        for(epoch[0]=1;epoch[0]<200;epoch[0]++)shared.tick();
+        assertEquals(before,observed.size(),"no demand observation before the shrink deadline");assertEquals(3,limit[0]);
+        shared.tick();assertEquals(200,epoch[0]);
+        assertEquals(before+1,observed.size());assertEquals(1,limit[0],"the shrink applied exactly at its deadline");
+        assertEquals(-1,allocator.shrinkTick());assertEquals(Long.MAX_VALUE,shared.nextDue());
+    }
 }

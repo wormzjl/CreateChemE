@@ -83,6 +83,11 @@ public final class WorldTopologyLedger {
     public long onlineTick(){owned();return onlineTick;}
     public long nextIdentity(){owned();return state.nextIdentity;}
     public boolean hasPendingEvents(){owned();return !state.events.isEmpty();}
+    /** Queued events in timestamp order, without building a snapshot. */
+    public List<Event> events(){owned();return state.events;}
+    /** Undelivered solid recoveries; O(1), without building a snapshot. */
+    public Map<UUID,RecoveredSolid> recoveries(){owned();return state.recoveries;}
+    public boolean hasRecoveries(){owned();return !state.recoveries.isEmpty();}
     public Map<Long,Registration> active(){owned();return state.active;}
     public Map<Long,Registration> latest() {
         owned();var records=new LinkedHashMap<>(state.active);
@@ -108,15 +113,17 @@ public final class WorldTopologyLedger {
         return applyReady(state.events.getFirst().id,additions,removals,weights,nextIdentity);
     }
     /** Events may pass an earlier event only when physical identities AND positions are disjoint.
-     * Position dependencies keep removal/replacement ordered even though identities differ. */
+     * Position dependencies keep removal/replacement ordered even though identities differ.
+     * A position is the one the last queued edit gives an identity, else its active one; only the identities
+     * the queued events name are looked up, so the cost follows the queue, not the size of the world. */
     public List<Event> readyEvents() {
-        owned();var positions=new HashMap<Long,PhysicalFluidTopology.Position>();
-        state.active.forEach((id,r)->positions.put(id,r.device.position()));
-        for(var event:state.events)for(var edit:event.edits)if(edit.replacement!=null)positions.put(edit.id,edit.replacement.device.position());
+        owned();var edited=new HashMap<Long,PhysicalFluidTopology.Position>();
+        for(var event:state.events)for(var edit:event.edits)if(edit.replacement!=null)edited.put(edit.id,edit.replacement.device.position());
         var earlierIds=new HashSet<Long>();var earlierPositions=new HashSet<PhysicalFluidTopology.Position>();var ready=new ArrayList<Event>();
         for(var event:state.events) {
             var ids=new HashSet<>(event.touched);for(var edit:event.edits)ids.add(edit.id);
-            var locations=new HashSet<PhysicalFluidTopology.Position>();for(long id:ids){var position=positions.get(id);if(position!=null)locations.add(position);}
+            var locations=new HashSet<PhysicalFluidTopology.Position>();
+            for(long id:ids){var position=edited.get(id);if(position==null){var record=state.active.get(id);if(record!=null)position=record.device.position();}if(position!=null)locations.add(position);}
             if(Collections.disjoint(ids,earlierIds)&&Collections.disjoint(locations,earlierPositions))ready.add(event);
             earlierIds.addAll(ids);earlierPositions.addAll(locations);
         }

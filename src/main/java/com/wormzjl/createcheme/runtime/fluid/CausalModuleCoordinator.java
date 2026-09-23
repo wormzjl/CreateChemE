@@ -9,7 +9,10 @@ import java.util.*;
 
 /** Owner-thread host for the fixed-split qualification equipment. Scientific work stays in the
  * shared worker service through BufferedIslandCommand; ownership and horizons publish here.
- * Call advance before the first island pump, after publication, and after online ticks. */
+ * Call advance before the first island pump, after a publication that {@link #dependsOnAny} a bound island or
+ * follows an ownership change, when an attempt on a bound island drains after its round closed, and at
+ * {@link #nextHorizon}. Its decisions depend only on committed island state, fences, attempts and the ledger,
+ * never on the online tick itself, so it need not run on ticks where none of those changed. */
 public final class CausalModuleCoordinator {
     public record Binding(UUID buffer,long island,long reservoir) {
         /** island=0 retains an explicitly stranded buffer identity after its reservoir is removed. */
@@ -18,6 +21,7 @@ public final class CausalModuleCoordinator {
     private final Thread owner=Thread.currentThread();
     private final FluidThermodynamics model;
     private Map<UUID,Binding> bindings;
+    private Set<Long> boundIslands;
     private final BufferedTransfers transfers;
     private final Map<UUID,FixedSplitModule> modules=new LinkedHashMap<>();
     private final double[] weights;
@@ -27,7 +31,7 @@ public final class CausalModuleCoordinator {
     public CausalModuleCoordinator(FluidThermodynamics model,List<Binding> bindings,BufferedTransfers.Snapshot ledger,List<FixedSplitModule.Snapshot> saved) {
         this.model=Objects.requireNonNull(model);this.transfers=new BufferedTransfers(ledger);var map=new LinkedHashMap<UUID,Binding>();var nodes=new HashSet<String>();
         for(var binding:bindings)if(map.putIfAbsent(binding.buffer(),binding)!=null||!nodes.add(binding.island()+":"+binding.reservoir())||!ledger.buffers().containsKey(binding.buffer()))throw new IllegalArgumentException("Duplicate or unknown buffer binding");
-        this.bindings=Map.copyOf(map);weights=model.molecularWeights();
+        this.bindings=Map.copyOf(map);boundIslands=boundIslands(this.bindings);weights=model.molecularWeights();
         reference=EnergyReference.sensible(model.components());
         for(var snapshot:saved) {
             var d=snapshot.definition();binding(d.firstProduct());binding(d.secondProduct());for(var feed:d.feeds())binding(feed.buffer());
@@ -55,7 +59,40 @@ public final class CausalModuleCoordinator {
         }
         if(!any)return;
         var occupancy=removed.isEmpty()?null:transfers.occupancy(removed);
-        if(occupancy!=null)transfers.commit(occupancy);bindings=Map.copyOf(changed);
+        if(occupancy!=null)transfers.commit(occupancy);bindings=Map.copyOf(changed);boundIslands=boundIslands(bindings);
+    }
+    private static Set<Long> boundIslands(Map<UUID,Binding> bindings) {
+        var ids=new HashSet<Long>();for(var binding:bindings.values())if(binding.island()>0)ids.add(binding.island());return Set.copyOf(ids);
+    }
+    /**
+     * Whether a publication of this island can change what {@link #advance()} decides. Advance reads islands
+     * only through buffer bindings (feeds, products and pending-input receivers); a fence it installed on an
+     * island that has since lost its buffer is resolved by the advance that follows the rebind that removed
+     * the binding, and ownership changes always rebind. So only bound islands matter.
+     */
+    public boolean dependsOn(long island){owned();return boundIslands.contains(island);}
+    public boolean dependsOnAny(Collection<IslandCoordinator.Snapshot> changed) {
+        owned();for(var snapshot:changed)if(boundIslands.contains(snapshot.id()))return true;return false;
+    }
+    /**
+     * The earliest epoch tick after {@code now} at which a module horizon of its own falls: the end of an
+     * active cycle, as seen by each feed island's clock, or the due tick of a pending input for its receiver;
+     * {@link Long#MAX_VALUE} when there is none. {@code epochTick} maps an island and an online tick of its
+     * clock to the shared epoch. Every such horizon is also reached through a publication of the island
+     * concerned, which advances the host; the deadline is the module's own wake-up and the entry point for
+     * islands that will advance without publishing.
+     */
+    public long nextHorizon(java.util.function.LongBinaryOperator epochTick,long now) {
+        owned();long next=Long.MAX_VALUE;
+        for(var module:modules.values()) {
+            var s=module.snapshot();if(s.cycle()==null||stranded(s.definition()))continue;
+            for(long feed:feeds(s.definition())){long tick=epochTick.applyAsLong(feed,s.cycle().endTick());if(tick>now)next=Math.min(next,tick);}
+        }
+        for(var pending:transfers.snapshot().pending().values()) {
+            long receiver=binding(pending.receiver()).island();if(receiver==0)continue;
+            long tick=epochTick.applyAsLong(receiver,pending.dueTick());if(tick>now)next=Math.min(next,tick);
+        }
+        return next;
     }
     public String waitingReason(long island) {
         owned();for(var module:modules.values()) {

@@ -27,28 +27,68 @@ class CausalModuleCoordinatorTest {
         final CausalModuleCoordinator modules;
         final ArrayDeque<Job> work=new ArrayDeque<>();
         final double[] initial;
-        int active;long requests;int commits;
+        int active;long requests;int commits,advances;
+        /** Polled: advance before every tick and after every completion, the host's old contract. Otherwise the
+         * modules advance only from dependent publications, drained stragglers and their own horizon deadline. */
+        final boolean polled;
+        Map<Long,Long> bound;
+        /** Every publication, in order: each published island's clock and inventory bits, then every module's state. */
+        final List<String> trajectory=new ArrayList<>();
         Harness(List<PassiveNetwork> graphs,List<FixedSplitModule.Snapshot> definitions) {
             this(initialCheckpoint(graphs,definitions));
         }
-        Harness(FluidCheckpointCodec.Checkpoint checkpoint) {
+        Harness(List<PassiveNetwork> graphs,List<FixedSplitModule.Snapshot> definitions,boolean polled) {
+            this(initialCheckpoint(graphs,definitions),polled);
+        }
+        Harness(FluidCheckpointCodec.Checkpoint checkpoint){this(checkpoint,true);}
+        Harness(FluidCheckpointCodec.Checkpoint checkpoint,boolean polled) {
+            this.polled=polled;
             modules=new CausalModuleCoordinator(model,checkpoint.moduleBindings(),checkpoint.transfers(),checkpoint.modules());
             islands=new IslandCoordinator(new IslandCoordinator.Dispatcher() {
                 public int availableWorkers(){return 2-active;}
                 public long nextRequestId(){return ++requests;}
                 public boolean submit(IslandCoordinator.Attempt attempt,ProcessSolveServices.FluidIslandCommand command){work.add(new Job(attempt,modules.command(attempt,command)));active++;return true;}
                 public void cancel(long request){throw new AssertionError("No deadlines in deterministic qualification");}
-            },changed->{commits+=changed.size();published();},()->0,new IslandCoordinator.Settings(30_000_000_000L,20_000_000_000L,64,false),modules::prepare);
+            },changed->{commits+=changed.size();published(changed);},()->0,new IslandCoordinator.Settings(30_000_000_000L,20_000_000_000L,64,false),modules::prepare);
             for(var entry:checkpoint.islands())islands.register(entry.snapshot(),model);
-            modules.attach(islands);initial=totals();modules.advance();
+            modules.attach(islands);initial=totals();
+            if(polled)advance();
+            else {
+                islands.onReleased(id->{if(modules.dependsOn(id))islands.schedule(IslandScheduler.Kind.MODULE_HORIZON,islands.now(),this::advance);});
+                advance();
+            }
+        }
+        private void advance() {
+            advances++;modules.advance();
+            if(!polled)islands.schedule(IslandScheduler.Kind.MODULE_HORIZON,modules.nextHorizon(islands::epochTick,islands.now()),this::advance);
+        }
+        private void record(List<IslandCoordinator.Snapshot> changed) {
+            var line=new StringBuilder();
+            for(var island:changed) {
+                line.append(island.id()).append(island.clock()).append(island.fences().values().stream().sorted().toList());
+                for(var node:island.graph().reservoirs()){for(double n:node.inventory().moles())line.append(':').append(Long.toHexString(Double.doubleToLongBits(n)));line.append('/').append(Long.toHexString(Double.doubleToLongBits(node.inventory().internalEnergy())));}
+            }
+            for(var module:modules.snapshots()) {
+                line.append('|').append(module.committedTick()).append(',').append(module.revision()).append(',').append(module.running());
+                if(module.cycle()!=null){var c=module.cycle();line.append(',').append(c.startTick()).append('-').append(c.endTick()).append(',').append(c.status());
+                    for(var input:c.inputs().values().stream().sorted(Comparator.comparingDouble(FixedSplitModule.Input::targetKg)).toList())line.append(',').append(input.throughTick()).append('@').append(Long.toHexString(Double.doubleToLongBits(input.owned().massKg())));}
+            }
+            for(var pending:modules.transfers().pending().values().stream().sorted(Comparator.comparingLong(PendingTransfers.Pending::dueTick).thenComparingDouble(p->p.remaining().massKg())).toList())
+                line.append("|p").append(pending.dueTick()).append('@').append(Long.toHexString(Double.doubleToLongBits(pending.remaining().massKg())));
+            trajectory.add(line.toString());
         }
         FluidCheckpointCodec.Checkpoint checkpoint() {
             assertTrue(work.isEmpty());assertEquals(0,active);
             return new FluidCheckpointCodec.Checkpoint(islands.snapshots().stream().map(s->new FluidCheckpointCodec.IslandEntry("minecraft:overworld","createcheme:tjl20_methane_nitrogen",1e-9,s)).toList(),modules.transfers(),modules.snapshots(),modules.bindings());
         }
-        private void published() {
+        private void published(List<IslandCoordinator.Snapshot> changed) {
             var owners=new HashMap<Long,Long>();for(var island:islands.snapshots())for(var node:island.graph().reservoirs())owners.put(node.id(),island.id());
-            modules.rebind(owners);modules.advance();
+            if(polled){modules.rebind(owners);advance();}
+            else {
+                boolean rebound=!owners.equals(bound);if(rebound){modules.rebind(owners);bound=owners;}
+                if(rebound||modules.dependsOnAny(changed))advance();
+            }
+            record(changed);
         }
         void remove(int islandId) {
             assertEquals(0,active);var snapshot=islands.snapshot(islandId);var removed=snapshot.graph().reservoirs().getFirst().inventory();
@@ -66,10 +106,10 @@ class CausalModuleCoordinatorTest {
         void run(int ticks) {
             var token=new BoundedCpuSolveService.CancellationToken(){public long deadlineNanos(){return Long.MAX_VALUE;}public boolean isDeadlineExceeded(){return false;}public boolean isCancellationRequested(){return false;}public void throwIfCancellationRequested(){}};
             for(int tick=0;tick<ticks;tick++) {
-                modules.advance();islands.tick();int drained=0;
+                if(polled)advance();islands.tick();int drained=0;
                 while(!work.isEmpty()) {
                     assertTrue(++drained<100,"Unbounded dispatch loop");var job=work.removeFirst();var result=(ProcessSolveServices.FluidIslandSolveResult)job.command.solve(token);
-                    assertTrue(result.candidate().isPresent(),result.detail());active--;islands.completed(job.attempt,Optional.of(result));modules.advance();islands.pump();assertConserved();
+                    assertTrue(result.candidate().isPresent(),result.detail());active--;islands.completed(job.attempt,Optional.of(result));if(polled)advance();islands.pump();assertConserved();
                 }
             }
         }
@@ -87,6 +127,35 @@ class CausalModuleCoordinatorTest {
         assertEquals(900,harness.modules.snapshots().getFirst().committedTick());for(var island:harness.islands.snapshots())assertEquals(900,island.clock().committedTick(),island.status());
         assertTrue(harness.islands.snapshot(3).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);assertTrue(harness.islands.snapshot(4).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]>0);
         assertTrue(harness.modules.transfers().pending().size()<=2);assertTrue(harness.modules.transfers().planned().size()<=2);assertEquals(0,harness.active);
+    }
+    /** Advancing only from dependent publications, drained stragglers and the modules' own horizon deadline
+     * reproduces, publication for publication, the cycles and trajectories of advancing on every tick. */
+    @Test void deadlineDrivenAdvanceReproducesThePolledCycleSequence() {
+        record Case(String name,boolean[] wet,List<FixedSplitModule.Snapshot> modules) {}
+        for(var scenario:List.of(
+                new Case("coupled",new boolean[]{true,true,false,false},List.of(module(100,1,2,3,4,300,true))),
+                new Case("empty-cycle",new boolean[]{false,false,false},List.of(module(100,1,0,2,3,100,false),module(200,2,0,1,3,300,false))),
+                new Case("recycle",new boolean[]{true,true,false},List.of(module(100,1,0,2,3,100,false),module(200,2,0,1,3,300,false))))) {
+            var polled=new Harness(graphs(scenario.wet()),scenario.modules(),true);polled.run(900);
+            var driven=new Harness(graphs(scenario.wet()),scenario.modules(),false);driven.run(900);
+            assertEquals(polled.trajectory.size(),driven.trajectory.size(),scenario.name()+" publications");
+            for(int i=0;i<polled.trajectory.size();i++)assertEquals(polled.trajectory.get(i),driven.trajectory.get(i),scenario.name()+" publication "+i);
+            for(var module:driven.modules.snapshots())assertEquals(900,module.committedTick(),scenario.name());
+            driven.assertConserved();
+            assertTrue(driven.advances<polled.advances,scenario.name()+": module scans "+driven.advances+" driven vs "+polled.advances+" polled");
+            System.out.printf(Locale.ROOT,"%s: %d publications, module scans %d polled, %d deadline-driven%n",scenario.name(),polled.trajectory.size(),polled.advances,driven.advances);
+        }
+    }
+    /** The same across a buffer removal: stranding, the fences it resolves and the islands it releases. */
+    @Test void deadlineDrivenAdvanceMatchesThePolledHostAcrossABufferRemoval() {
+        for(int stop:new int[]{200,300}) {
+            var polled=new Harness(graphs(true,false,false),List.of(module(100,1,0,2,3,300,true)),true);
+            var driven=new Harness(graphs(true,false,false),List.of(module(100,1,0,2,3,300,true)),false);
+            for(var harness:List.of(polled,driven)){harness.run(stop);harness.remove(2);harness.run(600);}
+            assertEquals(polled.trajectory,driven.trajectory,"removal at "+stop);
+            assertTrue(driven.modules.waitingReason(1).startsWith("STRANDED"));
+            for(var island:driven.islands.snapshots()){assertEquals(stop+600,island.clock().committedTick());assertTrue(island.fences().isEmpty());}
+        }
     }
     @Test void emptyCycleWithDifferentCadencesBootstrapsWithoutCircularProductionWait() {
         var harness=new Harness(graphs(false,false,false),List.of(module(100,1,0,2,3,100,false),module(200,2,0,1,3,300,false)));harness.run(900);

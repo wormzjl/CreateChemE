@@ -35,6 +35,10 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private final double[] weights;
     private PhysicalFluidTopology.Compiled compiled;
     private Map<Long,Long> owners=new HashMap<>();
+    /** The owners map the module host was last rebound to; a topology commit replaces {@link #owners}. */
+    private Map<Long,Long> boundOwners;
+    /** How long an undeliverable recovery (offline player, full inventory, unloaded chunk) waits for its next attempt. */
+    private static final int RECOVERY_RETRY_TICKS=20;
     private Map<Long,List<Long>> members=Map.of();
     private record ChunkKey(String dimension,long chunk) {}
     private Map<ChunkKey,List<Long>> chunkMembers=Map.of();
@@ -62,14 +66,19 @@ public final class FluidWorldAuthority implements AutoCloseable {
         weights=model.molecularWeights();
         moduleHost=data.checkpoint().modules().isEmpty()||legacyUnbound?null:new CausalModuleCoordinator(model,data.checkpoint().moduleBindings(),data.checkpoint().transfers(),data.checkpoint().modules());
         var settings=new IslandCoordinator.Settings(options.wallBudgetNanos(),options.wallBudgetNanos()*3/4,64,options.adaptiveCadence(),options.initialCadenceTicks());
-        runtime=moduleHost==null?new MinecraftFluidRuntime(server,this::published,settings):new MinecraftFluidRuntime(server,this::published,settings,moduleHost::command,moduleHost::prepare);
+        // Island clocks read the world's online tick: one epoch increment per tick advances every island.
+        runtime=moduleHost==null?new MinecraftFluidRuntime(server,this::published,settings,(attempt,command)->command,IslandCoordinator.CommitHook.NO_MATERIAL,topology::onlineTick)
+                :new MinecraftFluidRuntime(server,this::published,settings,moduleHost::command,moduleHost::prepare,topology::onlineTick);
+        runtime.coordinator().onReleased(this::released);
         if(legacyUnbound) {
             CreateChemE.LOGGER.error("fluid_world status=LEGACY_UNBOUND detail=Core inventories preserved; physical bindings are unavailable in this older checkpoint");return;
         }
         for(var entry:data.checkpoint().islands())runtime.register(dimension(entry.dimension()),entry.snapshot(),model(new FluidCheckpointCodec.PackageKey(entry.packageId(),entry.compressibility())));
         var stock=boundaries();compiled=PhysicalFluidTopology.compile(topology.snapshot().active().values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock,filterStock(),model.initialNitrogenCharge(1,298.15,101325,()->{}));
         rebuildOwners();validateOwnership();chunkMembers=chunkIndex(topology.active());for(long id:topology.active().keySet())queueView(id);data.bindCapture(this::capture);
-        if(moduleHost!=null){moduleHost.attach(runtime.coordinator());moduleHost.advance();}
+        if(moduleHost!=null){moduleHost.attach(runtime.coordinator());advanceModules();}
+        // Saved recoveries are first attempted on the first tick, as before, then on their retry deadline.
+        if(topology.hasRecoveries())scheduleRecoveryRetry(1);
     }
     public static void start(MinecraftServer server){if(SERVERS.containsKey(server))throw new IllegalStateException("Duplicate fluid world authority");SERVERS.put(server,new FluidWorldAuthority(server));}
     public static Optional<FluidWorldAuthority> find(MinecraftServer server){if(!server.isSameThread())throw new IllegalStateException("Fluid world lookup requires server thread");return Optional.ofNullable(SERVERS.get(server));}
@@ -150,21 +159,36 @@ public final class FluidWorldAuthority implements AutoCloseable {
         var prepared=topology.queue(edits,touched,nextId,recovery);var affected=new HashSet<Long>();for(long id:touched)if(owners.containsKey(id))affected.add(owners.get(id));
         runtime.coordinator().fence(prepared.event().id(),prepared.event().tick(),affected);topology.commit(prepared);latest=null;data.setDirty();applyPending();
     }
+    /**
+     * The per-tick hook does only what is due. The epoch increment advances every island clock at once; the
+     * coordinator's tick resets the dispatch budget and pops due deadlines (island slices and retries, round
+     * timeouts, the allocator shrink, module horizons, recovery retries); queued topology events are tried
+     * while any exist; a pump runs only if it would act. No island, module or registry is visited otherwise.
+     */
     private void tick() {
         owned();if(closed||legacyUnbound)return;refreshProperties();topology.tick();
-        if(moduleHost!=null&&propertyHold==null)moduleHost.advance();runtime.tick();applyPending();deliverRecoveries();
-        if(moduleHost!=null&&propertyHold==null)moduleHost.advance();runtime.coordinator().pump();
+        runtime.tick();
+        if(topology.hasPendingEvents())applyPending();
+        runtime.coordinator().pumpIfUseful();
         for(int i=0;i<64&&!pendingViews.isEmpty();i++){long id=pendingViews.removeFirst();queuedViews.remove(id);refreshLoaded(id);}
         data.setDirty();
     }
+    /** Attempted when a recovery is queued and on its retry deadline, never polled; delivery stays exactly-once. */
     private void deliverRecoveries(){
-        int delivered=0;for(var entry:topology.snapshot().recoveries().entrySet()){
-            if(delivered++>=64)break;var pending=entry.getValue();var stack=com.wormzjl.createcheme.world.item.RecoveredSolidsItem.create(entry.getKey(),pending);boolean accepted=false;
+        if(!topology.hasRecoveries())return;
+        int delivered=0;boolean capped=false;for(var entry:topology.recoveries().entrySet()){
+            if(delivered++>=64){capped=true;break;}var pending=entry.getValue();var stack=com.wormzjl.createcheme.world.item.RecoveredSolidsItem.create(entry.getKey(),pending);boolean accepted=false;
             if(pending.player()!=null){var player=server.getPlayerList().getPlayer(pending.player());if(player!=null){for(int slot=0;slot<player.getInventory().getContainerSize();slot++)if(com.wormzjl.createcheme.world.item.RecoveredSolidsItem.carriesTransfer(player.getInventory().getItem(slot),entry.getKey())){accepted=true;break;}if(!accepted&&player.getInventory().getFreeSlot()>=0)accepted=player.getInventory().add(stack);}}
             else {var position=pending.position();var level=server.getLevel(dimension(position.dimension()));var pos=new net.minecraft.core.BlockPos(position.x(),position.y(),position.z());
                 if(level!=null&&level.hasChunkAt(pos))accepted=level.addFreshEntity(new net.minecraft.world.entity.item.ItemEntity(level,pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5,stack));}
             if(accepted){topology.deliveredRecovery(entry.getKey());data.setDirty();}
         }
+        // An offline player, a full inventory or an unloaded chunk leaves the record queued for a bounded retry;
+        // more than one batch continues on the next tick.
+        if(topology.hasRecoveries())scheduleRecoveryRetry(capped?1:RECOVERY_RETRY_TICKS);
+    }
+    private void scheduleRecoveryRetry(int ticks) {
+        var coordinator=runtime.coordinator();coordinator.schedule(IslandScheduler.Kind.RECOVERY_RETRY,Math.addExact(coordinator.now(),ticks),()->{if(!closed)deliverRecoveries();});
     }
     private Map<Long,InlineFilter> filterStock(){
         var result=new HashMap<Long,InlineFilter>();for(var island:runtime.coordinator().snapshots())for(var pipe:island.graph().pipes())if(pipe.filter()!=null)result.put(pipe.id()-Long.MIN_VALUE,pipe.filter());
@@ -177,20 +201,22 @@ public final class FluidWorldAuthority implements AutoCloseable {
     }
     private void applyPending() {
         if(propertyHold!=null)return;
+        boolean queuedRecovery=false;
         for(int count=0;count<16;count++) {
-            // Avoid constructing/validating a full physical-registry snapshot on every tick
-            // when no edit is pending. Snapshot validation remains at actual capture/transactions.
-            if(!topology.hasPendingEvents())return;
-            var saved=topology.snapshot();var selectedEvent=nextReadyEvent();if(selectedEvent==null)return;
-            var event=selectedEvent.event();var affected=selectedEvent.affected();
+            // No full physical-registry snapshot is constructed here: ready events come from the ledger's
+            // queue, their owners from the coordinator's fence index, and state from the live ledger.
+            // Snapshot validation remains at actual capture/transactions.
+            if(!topology.hasPendingEvents())break;
+            var selectedEvent=nextReadyEvent();if(selectedEvent==null)break;
+            var event=selectedEvent.event();var affected=selectedEvent.affected();var registered=topology.active();
             var cakes=filterStock();RecoveredSolid recovered=null;
-            if(event.recovery()!=null){var request=event.recovery();var cake=cakes.get(request.filterId());var record=saved.active().get(request.filterId());
+            if(event.recovery()!=null){var request=event.recovery();var cake=cakes.get(request.filterId());var record=registered.get(request.filterId());
                 var player=request.player()==null?null:server.getPlayerList().getPlayer(request.player());
                 if(record!=null&&cake!=null&&!cake.captured().empty()&&(request.player()==null||player!=null&&player.getInventory().getFreeSlot()>=0)){
                     recovered=new RecoveredSolid(record.device().position(),request.player(),cake.captured(),cake.energyJoule());cakes.put(request.filterId(),cake.cleared());
                 }else if(player!=null)player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Filter unchanged: inventory full or no captured solids."));
             }
-            var active=new HashMap<>(saved.active());var stock=boundaries();var additions=new HashMap<Long,PassiveNetwork.Reservoir>();var removed=new HashMap<Long,PassiveNetwork.Reservoir>();
+            var active=new HashMap<>(registered);var stock=boundaries();var additions=new HashMap<Long,PassiveNetwork.Reservoir>();var removed=new HashMap<Long,PassiveNetwork.Reservoir>();
             var selected=new HashSet<Long>(event.touched());for(var entry:owners.entrySet())if(affected.contains(entry.getValue()))selected.add(entry.getKey());
             for(var edit:event.edits()) {
                 var old=active.get(edit.id());var replacement=edit.replacement();
@@ -210,7 +236,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
                 long id=nextId++;replacements.add(new IslandCoordinator.Replacement(id,island.graph()));
                 for(long physical:island.physicalIds()){nextOwners.put(physical,id);dimension=active.get(physical).device().position().dimension();}
             }
-            if(dimension==null){var edit=event.edits().getFirst();var record=edit.replacement()!=null?edit.replacement():saved.active().get(edit.id());dimension=record.device().position().dimension();}
+            if(dimension==null){var edit=event.edits().getFirst();var record=edit.replacement()!=null?edit.replacement():registered.get(edit.id());dimension=record.device().position().dimension();}
             var preparation=topology.applyReady(event.id(),additions.values(),removed.values(),weights,nextId);
             var prepared=recovered==null?preparation:topology.withRecovery(preparation,recovered);
             var nextMembers=inverse(nextOwners);
@@ -218,19 +244,24 @@ public final class FluidWorldAuthority implements AutoCloseable {
             runtime.topology(dimension(dimension),event.id(),affected,replacements,model,event.tick(),topology.onlineTick(),additions,removed.keySet(),recovered==null?Map.of():Map.of(PhysicalFluidTopology.filterIdentity(event.recovery().filterId()),filterStock().get(event.recovery().filterId())),()->{
                 topology.commit(prepared);compiled=nextCompiled;owners=nextOwners;members=nextMembers;chunkMembers=nextChunks;unboundBindings.retainAll(active.keySet());latest=null;
             });
-            for(var future:topology.snapshot().events())for(var replacement:replacements) {
+            for(var future:topology.events())for(var replacement:replacements) {
                 boolean touches=future.touched().stream().anyMatch(id->Objects.equals(owners.get(id),replacement.id()));
-                if(touches&&!runtime.coordinator().snapshot(replacement.id()).fences().containsKey(future.id()))runtime.coordinator().fence(future.id(),future.tick(),List.of(replacement.id()));
+                if(touches&&!runtime.coordinator().hasFence(replacement.id(),future.id()))runtime.coordinator().fence(future.id(),future.tick(),List.of(replacement.id()));
             }
+            queuedRecovery|=recovered!=null;
             data.setDirty();
         }
+        // A newly queued recovery is attempted at once, as the old per-tick attempt after applying events did.
+        if(queuedRecovery)deliverRecoveries();
     }
     private record ReadyEvent(WorldTopologyLedger.Event event,Set<Long> affected) {}
+    /** Owners of an event: islands already fenced for it (from the coordinator's fence index) and the current
+     * owners of the identities it touches. No island snapshot is built. */
     private ReadyEvent nextReadyEvent() {
         for(var event:topology.readyEvents()) {
-            var affected=new HashSet<Long>();for(var island:runtime.coordinator().snapshots())if(island.fences().containsKey(event.id()))affected.add(island.id());
+            var affected=new HashSet<Long>(runtime.coordinator().fencedIslands(event.id()));
             for(long id:event.touched())if(owners.containsKey(id))affected.add(owners.get(id));
-            for(long id:affected)if(!runtime.coordinator().snapshot(id).fences().containsKey(event.id()))runtime.coordinator().fence(event.id(),event.tick(),List.of(id));
+            for(long id:affected)if(!runtime.coordinator().hasFence(id,event.id()))runtime.coordinator().fence(event.id(),event.tick(),List.of(id));
             if(runtime.coordinator().aligned(event.id(),affected))return new ReadyEvent(event,Set.copyOf(affected));
         }
         return null;
@@ -348,7 +379,12 @@ public final class FluidWorldAuthority implements AutoCloseable {
         if(level.getBlockEntity(pos) instanceof FluidView.Receiver receiver&&receiver.fluidIdentity()==id)receiver.acceptFluidView(view(id));
     }
     private void published(List<IslandCoordinator.Snapshot> changed) {
-        if(moduleHost!=null&&propertyHold==null){moduleHost.rebind(owners);moduleHost.advance();}
+        if(moduleHost!=null&&propertyHold==null) {
+            // Rebind only when a topology commit replaced the owners map; advance only when the publication
+            // can change what the modules decide.
+            boolean rebound=boundOwners!=owners;if(rebound){moduleHost.rebind(owners);boundOwners=owners;}
+            if(rebound||moduleHost.dependsOnAny(changed))advanceModules();
+        }
         if(observer!=null){var timings=new HashMap<Long,IslandCoordinator.Metrics>();for(var island:changed)runtime.coordinator().metrics(island.id()).ifPresent(m->timings.put(island.id(),m));observer.accept(changed,Map.copyOf(timings));}
         data.setDirty();var ids=new HashSet<Long>();for(var snapshot:changed){ids.add(snapshot.id());if(snapshot.status().startsWith("HELD"))CreateChemE.LOGGER.warn("fluid_island={} committed_tick={} status={}",snapshot.id(),snapshot.clock().committedTick(),snapshot.status());}
         for(long island:ids)for(long physical:members.getOrDefault(island,List.of()))queueView(physical);
@@ -358,6 +394,17 @@ public final class FluidWorldAuthority implements AutoCloseable {
                 var text=net.minecraft.network.chat.Component.literal(message);for(var player:server.getPlayerList().getPlayers())player.sendSystemMessage(text);
             });
         }
+    }
+    /** Advances the modules and books their next own horizon as the one module deadline. */
+    private void advanceModules() {
+        moduleHost.advance();var coordinator=runtime.coordinator();
+        coordinator.schedule(IslandScheduler.Kind.MODULE_HORIZON,moduleHost.nextHorizon(coordinator::epochTick,coordinator.now()),this::moduleDeadline);
+    }
+    private void moduleDeadline(){if(!closed&&moduleHost!=null&&propertyHold==null)advanceModules();}
+    /** An attempt drained after its round closed changes an island's ownership without a publication; a module
+     * bound to that island sees it at once through an immediate module deadline, before the next dispatch. */
+    private void released(long island) {
+        if(moduleHost!=null&&moduleHost.dependsOn(island)){var coordinator=runtime.coordinator();coordinator.schedule(IslandScheduler.Kind.MODULE_HORIZON,coordinator.now(),this::moduleDeadline);}
     }
     @Override public void close(){owned();if(closed)return;closed=true;runtime.close();data.setDirty();}
 }

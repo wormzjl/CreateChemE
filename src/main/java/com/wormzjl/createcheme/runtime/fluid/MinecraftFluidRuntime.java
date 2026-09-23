@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
 import java.util.*;
+import java.util.function.LongSupplier;
 
 /** Owner-thread bridge to the existing shared pool. The world authority owns this bridge's lifetime. */
 public final class MinecraftFluidRuntime implements AutoCloseable {
@@ -21,10 +22,18 @@ public final class MinecraftFluidRuntime implements AutoCloseable {
     public MinecraftFluidRuntime(MinecraftServer server,IslandCoordinator.Publisher publisher,IslandCoordinator.Settings settings,
             java.util.function.BiFunction<IslandCoordinator.Attempt,ProcessSolveServices.FluidIslandCommand,ProcessSolveServices.FluidSolveCommand> commands,
             IslandCoordinator.CommitHook commitHook) {
+        this(server,publisher,settings,commands,commitHook,null);
+    }
+    /** {@code epoch} is the world's online tick, advanced by its owner before {@link #tick()}; null gives this
+     * runtime's coordinator its own epoch, advanced by {@link #tick()}. */
+    public MinecraftFluidRuntime(MinecraftServer server,IslandCoordinator.Publisher publisher,IslandCoordinator.Settings settings,
+            java.util.function.BiFunction<IslandCoordinator.Attempt,ProcessSolveServices.FluidIslandCommand,ProcessSolveServices.FluidSolveCommand> commands,
+            IslandCoordinator.CommitHook commitHook,LongSupplier epoch) {
         this.server=Objects.requireNonNull(server);owned();
         Objects.requireNonNull(commands);
         coordinator=new IslandCoordinator(new IslandCoordinator.Dispatcher() {
             public void demand(int eligibleOwners){ProcessSolveServices.fluidWorkerDemand(server,eligibleOwners);}
+            public long demandShrinkDelay(){return ProcessSolveServices.fluidDemandShrinkDelay(server);}
             public int availableWorkers(){var d=ProcessSolveServices.diagnostics(server);return d.readyJobs()>0?0:Math.max(0,d.workerCount()-d.activeWorkers());}
             public long nextRequestId(){return ProcessSolveServices.nextRequestId();}
             public boolean submit(IslandCoordinator.Attempt attempt,ProcessSolveServices.FluidIslandCommand command) {
@@ -36,8 +45,10 @@ public final class MinecraftFluidRuntime implements AutoCloseable {
                 return ProcessSolveServices.submitFluidIsland(server,new ProcessSolveServices.FluidIslandRequest(attempt.slice().requestId(),target,attempt.revision(),handler),Objects.requireNonNull(commands.apply(attempt,command))).admission()==ProcessSolveServices.Admission.ACCEPTED;
             }
             public void cancel(long requestId){ProcessSolveServices.cancelRequest(server,requestId);}
-        },publisher,System::nanoTime,settings,commitHook);
-        previousPump=ProcessSolveServices.setReadinessPump(server,coordinator::pump);
+        },publisher,System::nanoTime,settings,commitHook,epoch);
+        // Called after every completion drain: pumps only when a completion, a newly ready owner, a due round or
+        // allocator deadline, or free capacity for an already ready owner gives the pump something to do.
+        previousPump=ProcessSolveServices.setReadinessPump(server,coordinator::pumpIfUseful);
     }
     private void owned(){if(!server.isSameThread())throw new IllegalStateException("Fluid runtime requires the logical server thread");}
     public IslandCoordinator coordinator(){owned();return coordinator;}
@@ -63,6 +74,7 @@ public final class MinecraftFluidRuntime implements AutoCloseable {
             metadataCommit.run();affected.forEach(dimensions::remove);for(var replacement:replacements)dimensions.put(replacement.id(),dimension);
         });
     }
+    /** Once per server tick, after the epoch advanced: resets the dispatch budget and acts on due deadlines. */
     public void tick(){owned();if(!closed)coordinator.tick();}
     @Override public void close(){owned();if(closed)return;closed=true;coordinator.stop();ProcessSolveServices.setReadinessPump(server,previousPump);}
 }

@@ -19,7 +19,8 @@ import java.util.concurrent.atomic.LongAdder;
  * {@link #resume()}, so its observation overhead is not charged to the engine.
  *
  * <p>Definitions. An <em>island visit</em> is one examination of one island's scheduling state by the
- * coordinator: a clock accrual, an eligibility test, or a readiness test in the fair queue. A <em>module
+ * coordinator: a re-derivation of its readiness and deadline, or a readiness test in the fair queue (before
+ * the deadline scheduler: a clock accrual, an eligibility test, or a fair-queue test). A <em>module
  * scan</em> is one pass of {@link CausalModuleCoordinator#advance()} over every module and pending transfer.
  * A <em>readiness pump</em> is one execution of the coordinator's pump past its re-entrancy guard.
  */
@@ -42,6 +43,12 @@ public final class FluidRuntimeDiagnostics {
     public static final LongAdder completionsRouted=new LongAdder();
     /** Island snapshots handed to the publisher by round closure. */
     public static final LongAdder islandsPublished=new LongAdder();
+    /** Scheduler deadlines popped while still current and acted on; stale entries are not counted. */
+    public static final LongAdder deadlinesFired=new LongAdder();
+    /** Completion drains that stopped at the per-tick budget with work left and owed one continuation, and the
+     * continuations that ran inside the exhausted tick and therefore deferred to the next tick's drain. */
+    public static final LongAdder drainContinuations=new LongAdder();
+    public static final LongAdder drainContinuationsDeferred=new LongAdder();
 
     private static final Map<String,LongAdder> COUNTERS=counters();
     private static Map<String,LongAdder> counters() {
@@ -51,6 +58,8 @@ public final class FluidRuntimeDiagnostics {
         map.put("viewBuilds",viewBuilds);map.put("menuPackets",menuPackets);
         map.put("readinessPumps",readinessPumps);map.put("solvesDispatched",solvesDispatched);
         map.put("completionsRouted",completionsRouted);map.put("islandsPublished",islandsPublished);
+        map.put("deadlinesFired",deadlinesFired);
+        map.put("drainContinuations",drainContinuations);map.put("drainContinuationsDeferred",drainContinuationsDeferred);
         return Collections.unmodifiableMap(map);
     }
 

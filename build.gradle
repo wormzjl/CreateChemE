@@ -94,6 +94,8 @@ neoForge {
             gameDirectory = layout.projectDirectory.dir(fixtureRun.isEmpty() ? 'run/fluid-gametest' : "run/fluid-gametest-${fixtureRun}")
             systemProperty 'neoforge.enabledGameTestNamespaces', 'createcheme_fluid_test'
             systemProperty 'createcheme.fluid.testFailure', providers.gradleProperty('fluidGameTestDeliberateFailure').getOrElse('false')
+            // Re-derive every island's schedule from scratch at each pump and tick; any drift fails the run.
+            systemProperty 'createcheme.fluid.scheduler.verify', 'true'
         }
         columnGameTestServer {
             type = 'gameTestServer'
@@ -276,6 +278,8 @@ tasks.withType(Test).configureEach {
             if (taskName == 'fluidRuntimeTest') includeTestsMatching 'com.wormzjl.createcheme.runtime.Fluid*Test'
             failOnNoMatchingTests = true
         }
+        // Re-derive every island's schedule from scratch at each pump and tick; any drift fails the test.
+        systemProperty 'createcheme.fluid.scheduler.verify', 'true'
     }
 }
 
@@ -388,6 +392,7 @@ tasks.register('fluidSolverRegression', Test) {
 }
 tasks.named('test', Test) {
     exclude '**/fluid/benchmark/**'
+    systemProperty 'createcheme.fluid.scheduler.verify', 'true'
 }
 
 tasks.register('v3HollandBenchmark', Test) {

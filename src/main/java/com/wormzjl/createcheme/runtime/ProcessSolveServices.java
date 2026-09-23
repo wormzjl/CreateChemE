@@ -136,6 +136,15 @@ public final class ProcessSolveServices {
         var state=STATES.get(server);if(state==null||state.stopResult!=null)return;
         state.fluidDemand=eligibleOwners;allocateWorkers(server,state,0);
     }
+    /** Ticks until the automatic allocator would apply its pending lower-demand shrink when observed, or -1 when
+     * none is pending or the pool is fixed. The fluid scheduler answers it with one deadline instead of
+     * observing demand on every tick. */
+    public static long fluidDemandShrinkDelay(MinecraftServer server) {
+        requireServerThread(server);var state=STATES.get(server);
+        if(state==null||state.stopResult!=null||state.allocator==null)return -1;
+        long due=state.allocator.shrinkTick();
+        return due<0?-1:Math.max(0,due-Integer.toUnsignedLong(server.getTickCount()));
+    }
     private static void allocateWorkers(MinecraftServer server,ServerState state,int incoming) {
         if(state.allocator==null)return;
         int demand=Math.addExact(state.service.diagnostics().outstandingJobs(),Math.addExact(state.fluidDemand,incoming));
@@ -206,9 +215,34 @@ public final class ProcessSolveServices {
         int remaining=Math.min(maximum,Math.max(0,MAXIMUM_COMPLETIONS_PER_TICK-state.drainedThisTick));
         // A wakeup can arrive after this tick has consumed its budget. Keep the terminal
         // message queued for the next tick; the underlying service requires a positive drain.
-        if(remaining==0)return List.of();
+        if(remaining==0){owe(server,state,tick);return List.of();}
         var result=drain(state,remaining);
-        state.drainedThisTick+=result.size();return result;
+        state.drainedThisTick+=result.size();
+        if(state.drainedThisTick>=MAXIMUM_COMPLETIONS_PER_TICK)owe(server,state,tick);
+        return result;
+    }
+    /**
+     * A drain that stopped at the per-tick budget with completions left behind owes exactly one continuation.
+     * It is posted once per exhausted tick and never drains inside that tick, so it cannot spin; it drains
+     * once the tick has advanced, so completed work cannot strand even with no further worker activity.
+     *
+     * <p>The TickTask tick is not a delay in this Minecraft version (it only marks a task as late), so the
+     * posted task normally runs in the same tick's idle phase, finds the tick unchanged and leaves the owed
+     * drain to the next tick's completion hook, which drains before anything else that tick. If the task
+     * instead runs in a later tick (a blocked mailbox), it performs the drain itself.
+     */
+    private static void owe(MinecraftServer server,ServerState state,int exhaustedTick) {
+        if(state.continuationTick==exhaustedTick||state.service.diagnostics().pendingCompletions()==0)return;
+        state.continuationTick=exhaustedTick;
+        com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.count(com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.drainContinuations);
+        server.tell(new TickTask(1,()->{
+            if(STATES.get(server)!=state||state.stopResult!=null)return;
+            if(server.getTickCount()==exhaustedTick) {
+                com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.count(com.wormzjl.createcheme.runtime.fluid.FluidRuntimeDiagnostics.drainContinuationsDeferred);
+                return;
+            }
+            com.wormzjl.createcheme.network.ProcessSolveCoordinator.drainCompletedCalculations(server);
+        }));
     }
 
     /** Stops admission and performs the owned bounded two-phase shutdown. */
@@ -677,7 +711,7 @@ public final class ProcessSolveServices {
         private final WorkerAllocation.Demand allocator;
         private int fluidDemand;
         private Runnable readinessPump=()->{};
-        private int lastDrainTick=Integer.MIN_VALUE,drainedThisTick;
+        private int lastDrainTick=Integer.MIN_VALUE,drainedThisTick,continuationTick=Integer.MIN_VALUE;
         private final Map<Long, RequestContext> requestsBySequence = new LinkedHashMap<>();
         private StopResult stopResult;
 

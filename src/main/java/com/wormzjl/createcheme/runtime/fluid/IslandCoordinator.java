@@ -4,16 +4,29 @@ import com.wormzjl.createcheme.runtime.ProcessSolveServices;
 import com.wormzjl.createcheme.science.fluid.network.*;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.*;
+import java.util.function.LongConsumer;
 import java.util.function.LongSupplier;
 
 /**
  * Server-thread authority over island clocks and atomic result publication. Workers receive only commands.
  * A round contains at most the available dispatch capacity; waiting owners retain duration, not queued snapshots.
  * The dispatcher must deliver terminal callbacks asynchronously on this coordinator's owning thread.
+ *
+ * <p>Scheduling is driven by deadlines, dependency changes and completions, never by visiting every island on
+ * every tick. Island clocks read a shared online epoch. Each island is either <em>ready</em> (its next slice
+ * can be dispatched now), holds one deadline in the {@link IslandScheduler} for the epoch tick at which the
+ * passage of time alone makes it ready, or waits for an event that re-examines it (a completion, a fence
+ * change, a property resume). Every change to what decides readiness re-examines exactly the island it
+ * changed. The fair queue holds ready owners only, so dispatch order among ready owners, the per-tick
+ * dispatch limit, the capacity rule and the round barrier are those of the polled coordinator this replaces.
+ * Round timeouts and the worker allocator's shrink are deadlines too.
  */
 public final class IslandCoordinator {
     public interface Dispatcher {
         default void demand(int eligibleOwners) {}
+        /** Ticks until the shared worker allocator would apply a lower-demand shrink when observed again, or a
+         * negative value when none is pending. Answered with an allocator deadline instead of per-tick polling. */
+        default long demandShrinkDelay(){return -1;}
         int availableWorkers();
         long nextRequestId();
         boolean submit(Attempt attempt, ProcessSolveServices.FluidIslandCommand command);
@@ -56,6 +69,11 @@ public final class IslandCoordinator {
             if(allowance.acceptedIntervals()>0&&anchor.isEmpty())throw new IllegalArgumentException("Degraded state needs its episode anchor");
         }
     }
+    /** Nominal online tick length; converts the wall-clock round budget into a first deadline. */
+    private static final long NOMINAL_TICK_NANOS=50_000_000L;
+    /** Test and GameTest runs set this to re-derive every island's readiness and deadline from scratch at each
+     * pump and tick and fail on any difference from the incrementally maintained schedule. */
+    private static final boolean VERIFY=Boolean.getBoolean("createcheme.fluid.scheduler.verify");
     private static final class Island {
         private final long id;
         private long revision;
@@ -75,9 +93,14 @@ public final class IslandCoordinator {
         // bump, so a job still running under the old revision keeps its own handle.
         private RetainedSolver retained=new RetainedSolver();
         private final Map<UUID,Long> fences=new HashMap<>();
-        private Island(Snapshot saved,FluidThermodynamics model) {
+        // Scheduling state, never saved: attempts still owning this island (running, or closed but not yet
+        // terminally drained), whether it is ready, and its one live deadline with that entry's generation.
+        private int pendingEntries;
+        private boolean ready;
+        private long deadline=Long.MAX_VALUE,generation;
+        private Island(Snapshot saved,FluidThermodynamics model,LongSupplier epoch) {
             id=saved.id;revision=saved.revision;this.model=Objects.requireNonNull(model);graph=saved.graph;
-            clock=new IslandClock(saved.clock);allowance=saved.allowance;anchor=saved.anchor;lastResult=saved.lastResult;status=saved.status;fences.putAll(saved.fences);
+            clock=new IslandClock(saved.clock,epoch);allowance=saved.allowance;anchor=saved.anchor;lastResult=saved.lastResult;status=saved.status;fences.putAll(saved.fences);
         }
         private Snapshot snapshot(){return new Snapshot(id,revision,graph,clock.snapshot(),allowance,anchor,lastResult,
                 !suspended&&!clock.busy()&&fence()==clock.committedTick()?"WAITING: event alignment":status,fences);}
@@ -96,32 +119,81 @@ public final class IslandCoordinator {
     private final LongSupplier nanoClock;
     private final Settings settings;
     private final CommitHook commitHook;
+    private final LongSupplier epoch;
+    private final boolean ownsEpoch;
+    private long ownEpoch;
     private final Map<Long,Island> islands=new LinkedHashMap<>();
     private final Map<Long,Pending> pending=new HashMap<>();
     private final FairIslandQueue ready=new FairIslandQueue();
-    private record Round(List<Pending> entries,long startedNanos) {}
+    private final IslandScheduler scheduler=new IslandScheduler();
+    /** Event fences by event: which islands hold a fence for it, so an event finds its owners without a scan. */
+    private final Map<UUID,Set<Long>> fenceOwners=new HashMap<>();
+    private record Round(long id,List<Pending> entries,long startedNanos) {}
     private final List<Round> rounds=new ArrayList<>();
+    private long roundSequence,generations,shrinkTick=Long.MAX_VALUE;
+    private final EnumMap<IslandScheduler.Kind,Runnable> externalActions=new EnumMap<>(IslandScheduler.Kind.class);
+    private final EnumMap<IslandScheduler.Kind,Long> externalTicks=new EnumMap<>(IslandScheduler.Kind.class);
+    private LongConsumer released=island->{};
     private int dispatchedThisTick;
     private boolean stopped,pumping;
+    // Reasons a pump would act; each is set where it arises and all are cleared when a pump runs.
+    private boolean pumpRequested,completionsSincePump,roundDue,shrinkDue;
     private String suspension;
 
+    /** A coordinator with its own epoch, advanced once per {@link #tick()}. */
     public IslandCoordinator(Dispatcher dispatcher,Publisher publisher,LongSupplier nanoClock,Settings settings) {
         this(dispatcher,publisher,nanoClock,settings,CommitHook.NO_MATERIAL);
     }
     public IslandCoordinator(Dispatcher dispatcher,Publisher publisher,LongSupplier nanoClock,Settings settings,CommitHook commitHook) {
+        this(dispatcher,publisher,nanoClock,settings,commitHook,null);
+    }
+    /** {@code epoch} is the shared online tick (the world's), which its owner advances before calling
+     * {@link #tick()}; null gives the coordinator its own epoch, advanced by {@link #tick()}. */
+    public IslandCoordinator(Dispatcher dispatcher,Publisher publisher,LongSupplier nanoClock,Settings settings,CommitHook commitHook,LongSupplier epoch) {
         this.dispatcher=Objects.requireNonNull(dispatcher);this.publisher=Objects.requireNonNull(publisher);
         this.nanoClock=Objects.requireNonNull(nanoClock);this.settings=Objects.requireNonNull(settings);this.commitHook=Objects.requireNonNull(commitHook);
+        ownsEpoch=epoch==null;this.epoch=ownsEpoch?()->ownEpoch:epoch;
     }
     private void owned(){if(Thread.currentThread()!=owner)throw new IllegalStateException("Island coordinator belongs to its server thread");}
     public void register(Snapshot saved,FluidThermodynamics model) {
         owned();if(stopped||islands.containsKey(saved.id))throw new IllegalStateException("Stopped/duplicate island");
         if(saved.graph.reservoirs().stream().anyMatch(n->n.kind()==PassiveNetwork.NodeKind.PORT))throw new IllegalArgumentException("Internal ports cannot own world state");
-        islands.put(saved.id,new Island(saved,model));ready.register(saved.id);
+        var island=new Island(saved,model,epoch);islands.put(saved.id,island);ready.register(saved.id,false);index(island);reconsider(island);
     }
     public Snapshot snapshot(long id){owned();return require(id).snapshot();}
     public Optional<Metrics> metrics(long id){owned();return Optional.ofNullable(require(id).metrics);}
     public List<Snapshot> snapshots(){owned();return islands.values().stream().map(Island::snapshot).toList();}
     public int pendingCount(){owned();return pending.size();}
+    /** The shared online epoch this coordinator's clocks read. */
+    public long now(){owned();return epoch.getAsLong();}
+    /** O(1): the earliest tick at which a deadline is scheduled, possibly a stale one; see {@link IslandScheduler}. */
+    public long nextDue(){owned();return scheduler.nextDue();}
+    /** Scheduled deadline entries, live and not yet popped stale ones. */
+    public int scheduledDeadlines(){owned();return scheduler.size();}
+    /** Owners whose next slice can be dispatched now. */
+    public int readyCount(){owned();return ready.readyCount();}
+    /** The epoch tick at which an island's online time reads {@code onlineTick}. */
+    public long epochTick(long island,long onlineTick){owned();return require(island).clock.epochTickAt(onlineTick);}
+    public boolean hasFence(long island,UUID event){owned();return require(island).fences.containsKey(event);}
+    /** Islands holding a fence for this event, from the fence index rather than a scan. */
+    public Set<Long> fencedIslands(UUID event){owned();return Set.copyOf(fenceOwners.getOrDefault(event,Set.of()));}
+    /** Told when an island's last attempt drains after its round already closed: its ownership changed
+     * without a publication, which a dependency (the module host) may have to see. */
+    public void onReleased(LongConsumer listener){owned();released=Objects.requireNonNull(listener);}
+    /**
+     * Schedules the one deadline of an external kind ({@link IslandScheduler.Kind#MODULE_HORIZON},
+     * {@link IslandScheduler.Kind#RECOVERY_RETRY}) at an epoch tick, replacing any earlier one of that kind;
+     * {@link Long#MAX_VALUE} cancels it. The action runs on this thread from {@link #tick()} once due.
+     */
+    public void schedule(IslandScheduler.Kind kind,long epochTick,Runnable action) {
+        owned();Objects.requireNonNull(action);
+        if(kind!=IslandScheduler.Kind.MODULE_HORIZON&&kind!=IslandScheduler.Kind.RECOVERY_RETRY)throw new IllegalArgumentException("Not an external deadline kind: "+kind);
+        if(stopped)return;
+        externalActions.put(kind,action);
+        if(Objects.equals(externalTicks.get(kind),epochTick))return;
+        long generation=++generations;externalTicks.put(kind,epochTick);
+        if(epochTick!=Long.MAX_VALUE)schedule(epochTick,kind,generation,generation);
+    }
 
     /** Invalidates old proposals without changing committed stock, debt, fences or allowance.
      * Cancellation retains ownership until the actual terminal completion is drained. */
@@ -131,6 +203,7 @@ public final class IslandCoordinator {
         for(var island:islands.values()) {
             island.revision=Math.addExact(island.revision,1);island.suspended=true;island.status=reason;island.retained=new RetainedSolver();
             island.anchor=island.anchor.map(a->new ApproximationAnchor("invalidated:property-reload",a.graph(),a.modes()));
+            reconsider(island);
         }
         var closing=List.copyOf(rounds);rounds.clear();
         for(var round:closing){for(var entry:round.entries)entry.result=null;closeRound(round);}
@@ -139,21 +212,65 @@ public final class IslandCoordinator {
     /** Only the world property's compatibility guard may resume this pinned model. */
     public void resumeQualifiedProperties() {
         owned();if(stopped||suspension==null)return;suspension=null;
-        for(var island:islands.values()){island.suspended=false;island.status="WAITING: full solve after property reload";island.clock.inputsChanged();}
+        for(var island:islands.values()){island.suspended=false;island.status="WAITING: full solve after property reload";island.clock.inputsChanged();reconsider(island);}
         publisher.published(snapshots());
     }
 
-    /** Called once per elapsed server tick, never from wall time or for time spent offline. */
+    /**
+     * Called once per elapsed server tick, after the shared epoch advanced (or advancing this coordinator's own
+     * epoch), never from wall time or for time spent offline. Constant cost when nothing is due: it resets the
+     * per-tick dispatch budget, pops only due deadlines, and pumps only when a pump would act.
+     */
     public void tick() {
-        owned();if(stopped)return;dispatchedThisTick=0;
-        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits,islands.size());
-        for(var island:islands.values())island.clock.accrueOnlineTicks(1);
-        pump();
+        owned();if(stopped)return;
+        if(ownsEpoch)ownEpoch=Math.addExact(ownEpoch,1);
+        dispatchedThisTick=0;
+        runDue();verify();
+        pumpIfUseful();
+    }
+    /** Pops every deadline due at the current epoch tick and acts on the ones still current. */
+    private void runDue() {
+        long now=epoch.getAsLong();
+        for(var due=scheduler.poll(now);due!=null;due=scheduler.poll(now)) {
+            switch(due.kind()) {
+                case SLICE_DUE,RETRY->{
+                    var island=islands.get(due.id());if(island==null||island.generation!=due.generation())continue;
+                    FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.deadlinesFired);island.deadline=Long.MAX_VALUE;reconsider(island);
+                }
+                case ROUND_TIMEOUT->{
+                    Round round=null;for(var open:rounds)if(open.id==due.id())round=open;if(round==null)continue;
+                    FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.deadlinesFired);
+                    long remaining=settings.hardBudgetNanos-(nanoClock.getAsLong()-round.startedNanos);
+                    if(remaining<=0)roundDue=true;else scheduleRoundTimeout(round,remaining);
+                }
+                case ALLOCATOR_SHRINK->{
+                    // The current allocator deadline is the one at shrinkTick; any other entry was replaced.
+                    if(shrinkTick!=due.tick())continue;
+                    FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.deadlinesFired);shrinkTick=Long.MAX_VALUE;shrinkDue=true;
+                }
+                case MODULE_HORIZON,RECOVERY_RETRY->{
+                    var tick=externalTicks.get(due.kind());if(tick==null||tick!=due.tick())continue;
+                    FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.deadlinesFired);externalTicks.remove(due.kind());externalActions.get(due.kind()).run();
+                }
+                default->throw new IllegalStateException("No handler for deadline "+due.kind());
+            }
+        }
+    }
+    /**
+     * The O(1) check the tick hooks make: pumps only when a pump would act, that is when a state change made
+     * an owner ready, a completion arrived, a round or allocator deadline fell due, or ready owners meet free
+     * capacity (for example after the per-tick dispatch budget was reset). Installed as the readiness pump
+     * called after completion drains.
+     */
+    public void pumpIfUseful() {
+        owned();if(stopped||pumping||suspension!=null)return;
+        if(pumpRequested||completionsSincePump||roundDue||shrinkDue||ready.readyCount()>0&&capacity()>0)pump();
     }
     /** May also run after terminal draining, allowing catch-up between ordinary tick boundaries. */
     public void pump() {
         owned();if(stopped||pumping)return;pumping=true;
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.readinessPumps);
+        pumpRequested=false;completionsSincePump=false;roundDue=false;shrinkDue=false;
         try {
             if(suspension!=null){dispatcher.demand(0);return;}
             for(var round:List.copyOf(rounds)) {
@@ -161,15 +278,15 @@ public final class IslandCoordinator {
                     rounds.remove(round);closeRound(round);
                 }
             }
-            FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits,islands.size());
-            int eligible=0;for(var island:islands.values())if(!hasPending(island.id)&&island.clock.nextSlice(1,island.fence(),island.maximumSliceTicks).isPresent())eligible++;
-            dispatcher.demand(eligible);
+            verify();
+            int eligible=ready.readyCount();
+            dispatcher.demand(eligible);scheduleShrink();
             // Completed results waiting at another group's barrier retain a bounded staging slot.
-            int capacity=Math.min(dispatcher.availableWorkers(),Math.min(settings.maximumDispatchesPerTick-dispatchedThisTick,settings.maximumDispatchesPerTick-pending.size()));
+            int capacity=capacity();
             if(capacity<=0)return;
             var admitted=new ArrayList<Pending>();long roundStarted=nanoClock.getAsLong();
             for(int slot=0;slot<capacity;slot++) {
-                var next=ready.nextReady(id->{FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits);var i=require(id);return !hasPending(id)&&i.clock.nextSlice(1,i.fence(),i.maximumSliceTicks).isPresent();});
+                var next=ready.nextReady(id->{FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits);var i=require(id);return i.pendingEntries==0&&i.clock.nextSlice(1,i.fence(),i.maximumSliceTicks).isPresent();});
                 if(next.isEmpty())break;
                 var island=require(next.getAsLong());long request=dispatcher.nextRequestId();
                 var slice=island.clock.nextSlice(request,island.fence(),island.maximumSliceTicks).orElseThrow();
@@ -178,18 +295,25 @@ public final class IslandCoordinator {
                 var command=new ProcessSolveServices.FluidIslandCommand(island.model,island.graph,slice.seconds(),PassiveIntervalSolver.Settings.defaults(),settings.hardBudgetNanos,policy,island.retained);
                 if(!dispatcher.submit(attempt,command)) {island.status="WAITING: shared worker capacity";break;}
                 island.clock.admitted(slice);island.status="SOLVING";FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.solvesDispatched);
-                var entry=new Pending(attempt,island.clock.snapshot().onlineTick(),nanoClock.getAsLong());pending.put(request,entry);admitted.add(entry);dispatchedThisTick++;
+                var entry=new Pending(attempt,island.clock.snapshot().onlineTick(),nanoClock.getAsLong());pending.put(request,entry);island.pendingEntries++;admitted.add(entry);dispatchedThisTick++;
+                reconsider(island);
             }
-            if(!admitted.isEmpty())rounds.add(new Round(List.copyOf(admitted),roundStarted));
+            if(!admitted.isEmpty()){var round=new Round(roundSequence=Math.addExact(roundSequence,1),List.copyOf(admitted),roundStarted);rounds.add(round);scheduleRoundTimeout(round,settings.hardBudgetNanos);}
         } finally {pumping=false;}
     }
+    private int capacity(){return Math.min(dispatcher.availableWorkers(),Math.min(settings.maximumDispatchesPerTick-dispatchedThisTick,settings.maximumDispatchesPerTick-pending.size()));}
     /** A missing result denotes cancellation, failure or abandonment. Duplicate/late results never advance clocks. */
     public void completed(Attempt attempt,Optional<ProcessSolveServices.FluidIslandSolveResult> result) {
         owned();Objects.requireNonNull(result);var entry=pending.get(attempt.slice.requestId());
         if(entry==null||!entry.attempt.equals(attempt)||entry.terminal)return;
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.completionsRouted);
         entry.terminal=true;entry.result=nanoClock.getAsLong()-entry.admittedNanos>=settings.hardBudgetNanos?null:result.orElse(null);
-        if(entry.closed){pending.remove(attempt.slice.requestId());return;}
+        completionsSincePump=true;
+        if(entry.closed) {
+            pending.remove(attempt.slice.requestId());var island=islands.get(attempt.islandId);
+            if(island!=null){island.pendingEntries--;reconsider(island);released.accept(island.id);}
+            return;
+        }
         // The completion router calls pump after its entire bounded drain, avoiding recursive dispatch here.
     }
     private void closeRound(Round round) {
@@ -231,7 +355,8 @@ public final class IslandCoordinator {
                 island.clock.performanceSample(cpuBound&&wall>=settings.softBudgetNanos,accept&&cpu>=0&&wall<settings.softBudgetNanos/4);
             }
             entry.closed=true;
-            if(entry.terminal)pending.remove(attempt.slice.requestId());else dispatcher.cancel(attempt.slice.requestId());
+            if(entry.terminal){pending.remove(attempt.slice.requestId());island.pendingEntries--;}else dispatcher.cancel(attempt.slice.requestId());
+            reconsider(island);
             changed.add(island.snapshot());
         }
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandsPublished,changed.size());
@@ -263,21 +388,21 @@ public final class IslandCoordinator {
                 throw new IllegalStateException("Event would modify an admitted or committed interval");
             if(island.fences.containsKey(event))throw new IllegalStateException("Duplicate event fence");
         }
-        for(long id:affected){var island=require(id);island.fences.put(event,tick);island.clock.inputsChanged();}
+        for(long id:affected){var island=require(id);island.fences.put(event,tick);fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(id);island.clock.inputsChanged();reconsider(island);}
     }
     public boolean aligned(UUID event,Collection<Long> affected) {
-        owned();return affected.stream().allMatch(id->{var i=require(id);var tick=i.fences.get(event);return tick!=null&&i.clock.committedTick()==tick&&!hasPending(id);});
+        owned();return affected.stream().allMatch(id->{var i=require(id);var tick=i.fences.get(event);return tick!=null&&i.clock.committedTick()==tick&&i.pendingEntries==0;});
     }
     public void releaseFence(UUID event,Collection<Long> affected) {
         owned();if(!aligned(event,affected))throw new IllegalStateException("Event owners have not aligned");
-        for(long id:affected){var i=require(id);i.fences.remove(event);i.clock.inputsChanged();}
+        for(long id:affected){var i=require(id);removeFence(i,event);i.clock.inputsChanged();reconsider(i);}
     }
     /** Production has become known (including zero production). A lagging receiver need not
      * reach the promised time to resolve this dependency. The host separately retains a known
      * input-time boundary when needed, so it cannot inject into an already admitted interval. */
     public void resolveDeliveryFence(UUID event,Collection<Long> receivers) {
         owned();for(long id:receivers)if(!require(id).fences.containsKey(event))throw new IllegalStateException("Missing delivery horizon");
-        for(long id:receivers){var island=require(id);island.fences.remove(event);island.clock.inputsChanged();}
+        for(long id:receivers){var island=require(id);removeFence(island,event);island.clock.inputsChanged();reconsider(island);}
     }
     public record Replacement(long id,PassiveNetwork graph) {
         public Replacement {if(id<=0)throw new IllegalArgumentException("Invalid replacement identity");Objects.requireNonNull(graph);}
@@ -331,7 +456,7 @@ public final class IslandCoordinator {
                 var old=stock.get(node.id());
                 if(!seen.add(node.id())||old==null||!old.inventory().equals(node.inventory())||old.elevation()!=node.elevation())throw new IllegalStateException("Topology event changed stock or elevation energy");
             }
-            staged.add(new Island(new Snapshot(replacement.id,revision,replacement.graph,new IslandClock.Snapshot(online,committed,0,cadence),allowance,anchor,Optional.empty(),"WAITING: full solve after topology change",fences),model));
+            staged.add(new Island(new Snapshot(replacement.id,revision,replacement.graph,new IslandClock.Snapshot(online,committed,0,cadence),allowance,anchor,Optional.empty(),"WAITING: full solve after topology change",fences),model,epoch));
         }
         if(!seen.equals(stock.keySet()))throw new IllegalStateException("Topology event lost reservoir ownership");
         var oldFilters=new HashMap<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter>();for(var original:originals)for(var pipe:original.graph.pipes())if(pipe.filter()!=null)oldFilters.put(pipe.id(),pipe.filter());
@@ -343,8 +468,8 @@ public final class IslandCoordinator {
         }
         for(var removed:oldFilters.entrySet())if(!removed.getValue().captured().empty()&&!releasedFilters.containsKey(removed.getKey()))throw new IllegalStateException("Topology lost captured solids");
         metadataCommit.run();
-        for(long id:affected){islands.remove(id);ready.remove(id);}
-        for(var island:staged){islands.put(island.id,island);ready.register(island.id);}
+        for(long id:affected){var old=islands.remove(id);ready.remove(id);unindex(old);old.deadline=Long.MAX_VALUE;old.generation=++generations;}
+        for(var island:staged){islands.put(island.id,island);ready.register(island.id,false);index(island);reconsider(island);}
         publisher.published(staged.stream().map(Island::snapshot).toList());
     }
     /** Stops admission; unresolved proposals are held. Actual execution capacity is owned by the shared pool. */
@@ -352,7 +477,87 @@ public final class IslandCoordinator {
         owned();if(stopped)return;stopped=true;
         var closing=List.copyOf(rounds);rounds.clear();
         for(var round:closing){for(var entry:round.entries)entry.result=null;closeRound(round);}
+        scheduler.clear();externalTicks.clear();externalActions.clear();
     }
-    private boolean hasPending(long id){return pending.values().stream().anyMatch(p->p.attempt.islandId==id);}
     private Island require(long id){var value=islands.get(id);if(value==null)throw new IllegalArgumentException("Unknown island "+id);return value;}
+
+    /**
+     * Re-derives one island's readiness and its deadline after anything that decides them changed. An island
+     * is ready exactly when the polled coordinator's eligibility test held: no attempt owns it and its clock
+     * offers a slice. Otherwise its clock says from which online tick time alone would make it ready, and that
+     * becomes its single deadline; a stopped or suspended coordinator keeps no island ready or scheduled.
+     */
+    private void reconsider(Island island) {
+        FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.islandVisits);
+        boolean eligible=false;long due=Long.MAX_VALUE;var kind=IslandScheduler.Kind.SLICE_DUE;
+        if(!stopped&&suspension==null&&island.pendingEntries==0) {
+            long fence=island.fence();
+            if(island.clock.nextSlice(1,fence,island.maximumSliceTicks).isPresent())eligible=true;
+            else {
+                long at=island.clock.readyAtTick(fence,island.maximumSliceTicks);
+                // The label only records which bound set the time: the held owner's backoff or its slice.
+                if(at!=Long.MAX_VALUE){due=island.clock.epochTickAt(at);if(island.clock.retryAtTick()==at)kind=IslandScheduler.Kind.RETRY;}
+            }
+        }
+        if(island.ready!=eligible) {
+            island.ready=eligible;ready.setReady(island.id,eligible);
+            if(eligible)pumpRequested=true;
+        }
+        if(due!=island.deadline) {
+            island.deadline=due;island.generation=++generations;
+            if(due!=Long.MAX_VALUE)schedule(due,kind,island.id,island.generation);
+        }
+    }
+    private void schedule(long tick,IslandScheduler.Kind kind,long id,long generation) {
+        scheduler.schedule(tick,kind,id,generation);
+        // Stale entries are popped lazily; compact only if they come to dominate the heap.
+        if(scheduler.size()>4*(islands.size()+rounds.size()+8))scheduler.compact(this::live);
+    }
+    private boolean live(IslandScheduler.Deadline entry) {
+        return switch(entry.kind()) {
+            case SLICE_DUE,RETRY->{var island=islands.get(entry.id());yield island!=null&&island.generation==entry.generation();}
+            case ROUND_TIMEOUT->rounds.stream().anyMatch(round->round.id==entry.id());
+            case ALLOCATOR_SHRINK->shrinkTick==entry.tick();
+            case MODULE_HORIZON,RECOVERY_RETRY->Objects.equals(externalTicks.get(entry.kind()),entry.tick());
+            default->false;
+        };
+    }
+    /** A round's first check comes when its budget would expire at the nominal tick length; a round that ticks
+     * outran is checked again when its measured remainder would expire. */
+    private void scheduleRoundTimeout(Round round,long remainingNanos) {
+        long ticks=Math.max(1,(remainingNanos+NOMINAL_TICK_NANOS-1)/NOMINAL_TICK_NANOS);
+        schedule(Math.addExact(epoch.getAsLong(),ticks),IslandScheduler.Kind.ROUND_TIMEOUT,round.id,0);
+    }
+    /** After each demand observation: the allocator's next shrink, if one is pending, becomes a deadline. */
+    private void scheduleShrink() {
+        long delay=dispatcher.demandShrinkDelay();
+        long tick=delay<0?Long.MAX_VALUE:Math.addExact(epoch.getAsLong(),Math.max(1,delay));
+        if(tick==shrinkTick)return;
+        shrinkTick=tick;if(tick!=Long.MAX_VALUE)schedule(tick,IslandScheduler.Kind.ALLOCATOR_SHRINK,0,++generations);
+    }
+    private void index(Island island){for(var event:island.fences.keySet())fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(island.id);}
+    private void unindex(Island island){for(var event:island.fences.keySet()){var owners=fenceOwners.get(event);if(owners!=null){owners.remove(island.id);if(owners.isEmpty())fenceOwners.remove(event);}}}
+    private void removeFence(Island island,UUID event) {
+        island.fences.remove(event);var owners=fenceOwners.get(event);
+        if(owners!=null){owners.remove(island.id);if(owners.isEmpty())fenceOwners.remove(event);}
+    }
+    /** In verification runs, the incremental schedule must equal a from-scratch derivation for every island. */
+    private void verify() {
+        if(!VERIFY)return;
+        for(var island:islands.values()) {
+            boolean eligible=false;long due=Long.MAX_VALUE;
+            if(!stopped&&suspension==null&&island.pendingEntries==0) {
+                long fence=island.fence();
+                if(island.clock.nextSlice(1,fence,island.maximumSliceTicks).isPresent())eligible=true;
+                else{long at=island.clock.readyAtTick(fence,island.maximumSliceTicks);if(at!=Long.MAX_VALUE)due=island.clock.epochTickAt(at);}
+            }
+            long owning=pending.values().stream().filter(p->p.attempt.islandId==island.id).count();
+            if(island.ready!=eligible||ready.isReady(island.id)!=eligible||island.deadline!=due||owning!=island.pendingEntries)
+                throw new IllegalStateException("Scheduler state diverged for island "+island.id+": ready="+island.ready+"/"+ready.isReady(island.id)+" expected "+eligible
+                        +", deadline="+island.deadline+" expected "+due+", pending="+island.pendingEntries+" expected "+owning+", epoch="+epoch.getAsLong());
+            for(var event:island.fences.keySet())if(!fenceOwners.getOrDefault(event,Set.of()).contains(island.id))throw new IllegalStateException("Fence index lost island "+island.id);
+        }
+        if(ready.readyCount()!=islands.values().stream().filter(i->i.ready).count())throw new IllegalStateException("Ready queue holds unknown owners");
+        for(var entry:fenceOwners.entrySet())for(long id:entry.getValue()){var island=islands.get(id);if(island==null||!island.fences.containsKey(entry.getKey()))throw new IllegalStateException("Fence index holds a stale owner "+id);}
+    }
 }
