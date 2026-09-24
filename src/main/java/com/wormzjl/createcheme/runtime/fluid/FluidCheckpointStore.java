@@ -125,7 +125,6 @@ public final class FluidCheckpointStore {
     private final Object lock=new Object();
     private volatile long lastCommitted,lastFailed;
     private Set<Long> previousReferenced=Set.of();
-    private volatile long lastWriteNanos,lastWrittenBytes;
 
     private FluidCheckpointStore(Backend backend,Executor io){this.backend=Objects.requireNonNull(backend);this.io=Objects.requireNonNull(io);}
     /** A store in memory, committing on the calling thread: tests and tools. */
@@ -260,9 +259,6 @@ public final class FluidCheckpointStore {
     public void flush(){pending.join();}
     /** Whether the last prepared save was committed. */
     public boolean committed(){pending.join();return lastCommitted==sequence;}
-    /** The time and bytes of the last commit that wrote (IO thread), for the benchmark's save report. */
-    public long lastWriteNanos(){return lastWriteNanos;}
-    public long lastWrittenBytes(){return lastWrittenBytes;}
 
     private void write(Plan plan) {
         synchronized(lock) {
@@ -271,9 +267,8 @@ public final class FluidCheckpointStore {
                 CreateChemE.LOGGER.error("fluid_checkpoint status=NOT_WRITTEN sequence={} detail=the save it builds on ({}) was not written; the next save writes every unit afresh",plan.sequence,plan.basedOn);
                 return;
             }
-            long started=System.nanoTime();long bytes=0;
             try {
-                for(var pack:plan.packs){byte[] data=assemble(pack);backend.writePack(pack.number,data);bytes+=data.length;}
+                for(var pack:plan.packs){byte[] data=assemble(pack);backend.writePack(pack.number,data);}
                 backend.writeCore(plan.core);
                 lastCommitted=plan.sequence;
             } catch(IOException|RuntimeException failure) {
@@ -281,7 +276,6 @@ public final class FluidCheckpointStore {
                 CreateChemE.LOGGER.error("fluid_checkpoint status=WRITE_FAILED sequence={} detail=the previous save stays in force; the next save writes every unit afresh",plan.sequence,failure);
                 return;
             }
-            lastWriteNanos=System.nanoTime()-started;lastWrittenBytes=bytes;
             var keep=new HashSet<Long>();for(long p:plan.referenced)keep.add(p);var referenced=Set.copyOf(keep);keep.addAll(previousReferenced);
             try{for(long p:backend.packs())if(!keep.contains(p))backend.deletePack(p);}
             catch(IOException failure){CreateChemE.LOGGER.warn("fluid_checkpoint status=CLEANUP_FAILED detail=unreferenced packs stay until the next save or load",failure);}

@@ -360,27 +360,6 @@ tasks.register('fluidServerBenchmark') {
         if (!matches.isEmpty()) throw new GradleException("Benchmark had ${matches.size()} runtime errors; numerical gates cannot qualify this run")
     }
 }
-tasks.register('fluidStressProfile', Test) {
-    group = 'verification'
-    description = 'Read-only replay of an unadvanced stress island; never qualification evidence.'
-    testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath
-    filter { includeTestsMatching 'com.wormzjl.createcheme.fluid.benchmark.FluidStressProfileTest'; failOnNoMatchingTests = true }
-    systemProperty 'fluid.profile.snapshot', providers.gradleProperty('fluidProfileSnapshot').getOrElse(layout.projectDirectory.file('run/fluid-benchmark/stress100-baseline-auto-r01/world/data/createcheme_fluid_core.dat').asFile.absolutePath)
-    outputs.upToDateWhen { false }
-}
-tasks.register('fluidModuleProfile', Test) {
-    group = 'verification'
-    description = 'Read-only replay of a saved deferred receiver, excluded from ordinary tests and M9 acceptance.'
-    testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath
-    filter { includeTestsMatching 'com.wormzjl.createcheme.fluid.benchmark.FluidModuleProfileTest'; failOnNoMatchingTests = true }
-    systemProperty 'fluid.profile.snapshot', providers.gradleProperty('fluidProfileSnapshot').getOrElse(layout.projectDirectory.file('run/fluid-benchmark/pilot-module-warm-01/world/data/createcheme_fluid_core.dat').asFile.absolutePath)
-    outputs.upToDateWhen { false }
-    if (providers.gradleProperty('fluidProfile').getOrElse('false').toBoolean()) {
-        jvmArgs "-XX:StartFlightRecording=filename=${layout.buildDirectory.file('reports/fluid/M9/module-receiver.jfr').get().asFile.absolutePath},settings=profile,dumponexit=true"
-    }
-}
 tasks.register('fluidSolverRegression', Test) {
     group = 'verification'
     description = 'Replays saved islands against the captured solver reference states and reports solver cost.'
