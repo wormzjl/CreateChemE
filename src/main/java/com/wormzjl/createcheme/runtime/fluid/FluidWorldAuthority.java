@@ -34,8 +34,14 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private final boolean legacyUnbound;
     /** Island ownership, compiler diagnostics and chunk membership of the registered devices, and the event path. */
     private final PhysicalRegistry registry;
-    /** The owners map the module host was last rebound to; a topology commit replaces the registry's owners. */
-    private Map<Long,Long> boundOwners;
+    /** The ownership version the module host was last rebound to; every topology commit changes the registry's. */
+    private long boundOwnersVersion=-1;
+    /**
+     * Queued topology events apply as one batch at the next tick's hook, or earlier when something reads what they
+     * change (a view, a capture, a filter recovery). A run of events inside one tick (a command placing thousands of
+     * blocks) applies every this many, far inside the ledger's queue bound, so the queue never waits on a whole command.
+     */
+    static final int APPLY_BATCH=1024;
     /** How long an undeliverable recovery (offline player, full inventory, unloaded chunk) waits for its next attempt. */
     private static final int RECOVERY_RETRY_TICKS=20;
     private final Set<Long> unboundBindings=new HashSet<>();
@@ -124,7 +130,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
     /** Every island as stored, without materialising certified ones: a diagnostic read that advances nothing. */
     public List<IslandCoordinator.Snapshot> diagnosticSnapshots(){owned();return runtime.coordinator().observe();}
     /** Materialises every certified island to now, as a save does; the observer receives the replayed accounting. */
-    public void materialiseAll(){owned();runtime.coordinator().snapshots();}
+    public void materialiseAll(){owned();flush();runtime.coordinator().snapshots();}
     /** The rest and steady-flow certificate policy captured at server start. */
     public CertificatePolicy certificates(){owned();return options.certificates();}
     /** Why an island's last closed interval did not certify it, or null; diagnostics only. */
@@ -155,23 +161,29 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public void remove(long id){owned();var old=registrations().get(id);if(old!=null)submit(List.of(new WorldTopologyLedger.Edit(id,null)),topology.nextIdentity(),old.device().kind()==TopologyCompiler.Kind.FILTER?new WorldTopologyLedger.Recovery(id,null):null);}
     /** Queues a filter's solid recovery as a ledger event and returns it. */
     public WorldTopologyLedger.Event recoverFilter(long id,long expectedRevision,net.minecraft.server.level.ServerPlayer player){
-        owned();var old=registrations().get(id);if(old==null||old.revision()!=expectedRevision||old.device().kind()!=TopologyCompiler.Kind.FILTER)throw new IllegalStateException("Stale filter controls");
+        owned();flush();var old=registrations().get(id);if(old==null||old.revision()!=expectedRevision||old.device().kind()!=TopologyCompiler.Kind.FILTER)throw new IllegalStateException("Stale filter controls");
         if(player.getInventory().getFreeSlot()<0)throw new IllegalStateException("Inventory full; filter unchanged");
-        var cake=registry.filterStock().get(id);if(cake==null||cake.captured().empty())throw new IllegalStateException("Filter has no captured solids");
-        var event=submit(List.of(new WorldTopologyLedger.Edit(id,new WorldTopologyLedger.Registration(old.device(),old.spec(),Math.addExact(old.revision(),1)))),topology.nextIdentity(),new WorldTopologyLedger.Recovery(id,player.getUUID()));deliverRecoveries();
+        var cake=registry.cake(id);if(cake==null||cake.captured().empty())throw new IllegalStateException("Filter has no captured solids");
+        // A recovery applies at once, as it always has, so the player's item is delivered with the action.
+        var event=submit(List.of(new WorldTopologyLedger.Edit(id,new WorldTopologyLedger.Registration(old.device(),old.spec(),Math.addExact(old.revision(),1)))),topology.nextIdentity(),new WorldTopologyLedger.Recovery(id,player.getUUID()));
+        applyPending();deliverRecoveries();
         return event;
     }
     private WorldTopologyLedger.Event submit(List<WorldTopologyLedger.Edit> edits,long nextId){return submit(edits,nextId,null);}
     private WorldTopologyLedger.Event submit(List<WorldTopologyLedger.Edit> edits,long nextId,WorldTopologyLedger.Recovery recovery) {
         if(closed||legacyUnbound)throw new IllegalStateException("Fluid world is closed or has unbound legacy inventories");
-        var event=registry.submit(edits,nextId,recovery);data.setDirty();applyPending();
+        var event=registry.submit(edits,nextId,recovery);data.setDirty();
+        if(registry.unapplied()>=APPLY_BATCH)applyPending();
         return event;
     }
+    /** Applies the events queued since the last application before a read that must see them. */
+    private void flush(){if(!closed&&!legacyUnbound&&registry.unapplied()>0)applyPending();}
     /**
      * The per-tick hook does only what is due. The epoch increment advances every island clock at once; the
      * coordinator's tick resets the dispatch budget and pops due deadlines (island slices and retries, round
      * timeouts, the allocator shrink, module horizons, recovery retries) and pumps only if that would act;
-     * queued topology events are tried while any exist, and an island an event created or released is
+     * queued topology events are tried while any exist - everything queued since the last tick applies here as
+     * batches, each compiling only the components it touches - and an island an event created or released is
      * offered to the pump in the same tick. No island, module or registry is visited otherwise. Last, the
      * presentation bucket of this tick is flushed if one is due (an O(1) check otherwise), after the tick's
      * events, so its replies and views include them.
@@ -232,7 +244,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public long presentationKey(long device){owned();Long owner=registry.owner(device);return owner!=null?owner:device;}
     public boolean viewDirty(long device){owned();return presentation.dirty(device);}
     public FluidSavedData.Capture capture() {
-        owned();var islands=new ArrayList<FluidCheckpointCodec.IslandEntry>();var world=topology.snapshot();
+        owned();flush();var islands=new ArrayList<FluidCheckpointCodec.IslandEntry>();var world=topology.snapshot();
         for(var snapshot:runtime.coordinator().snapshots()) {
             String dimension=world.active().get(registry.members(snapshot.id()).getFirst()).device().position().dimension();
             islands.add(new FluidCheckpointCodec.IslandEntry(dimension,com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog),compressibility,snapshot));
@@ -240,7 +252,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         return new FluidSavedData.Capture(new FluidCheckpointCodec.Checkpoint(islands,moduleHost==null?transfers.snapshot():moduleHost.transfers(),moduleHost==null?data.checkpoint().modules():moduleHost.snapshots(),moduleHost==null?data.checkpoint().moduleBindings():moduleHost.bindings()),world);
     }
     /** A device's view, as a presentation read: a certified island is materialised to now but never woken by it. */
-    public FluidView view(long id){owned();return view(id,new HashMap<>());}
+    public FluidView view(long id){owned();flush();return view(id,new HashMap<>());}
     /** {@code islands} caches island reads, so one bucket reads each island once however many of its devices it presents. */
     private FluidView view(long id,Map<Long,IslandCoordinator.Snapshot> islands) {
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.viewBuilds);var registration=registrations().get(id);if(registration==null)return new FluidView(id,0,0,topology.onlineTick(),"REMOVED",null,0,List.of());
@@ -341,14 +353,14 @@ public final class FluidWorldAuthority implements AutoCloseable {
     /** The world side of {@link PhysicalRegistry}: the runtime's islands, players for recoveries, and what a commit changes here. */
     private final class RegistryHost implements PhysicalRegistry.Host {
         public IslandCoordinator coordinator(){return runtime.coordinator();}
-        public void topology(String name,UUID event,Set<Long> affected,List<IslandCoordinator.Replacement> replacements,long committed,long online,
+        public void topology(String name,Set<UUID> events,Set<Long> affected,List<IslandCoordinator.Replacement> replacements,long committed,long online,
                              Map<Long,PassiveNetwork.Reservoir> additions,Set<Long> removals,Map<Long,InlineFilter> releasedFilters,Runnable commit) {
-            runtime.topology(dimension(name),event,affected,replacements,model,committed,online,additions,removals,releasedFilters,commit);
+            runtime.topology(dimension(name),events,affected,replacements,model,committed,online,additions,removals,releasedFilters,commit);
         }
         public boolean acceptsRecovery(UUID player){var online=server.getPlayerList().getPlayer(player);return online!=null&&online.getInventory().getFreeSlot()>=0;}
         public void refused(UUID event,String reason){refuseEvent(event,reason);}
-        public void committed(Map<Long,WorldTopologyLedger.Registration> active) {
-            unboundBindings.retainAll(active.keySet());
+        public void committed(Set<Long> removed) {
+            unboundBindings.removeAll(removed);
             // Open menus follow their devices to the replacement islands' buckets.
             presentation.rekey();
         }
@@ -361,9 +373,9 @@ public final class FluidWorldAuthority implements AutoCloseable {
     }
     private void published(List<IslandCoordinator.Snapshot> changed) {
         if(moduleHost!=null&&propertyHold==null) {
-            // Rebind only when a topology commit replaced the owners map; advance only when the publication
+            // Rebind only when a topology commit changed the owners; advance only when the publication
             // can change what the modules decide.
-            var owners=registry.owners();boolean rebound=boundOwners!=owners;if(rebound){moduleHost.rebind(owners);boundOwners=owners;}
+            long version=registry.ownersVersion();boolean rebound=boundOwnersVersion!=version;if(rebound){moduleHost.rebind(registry.owners());boundOwnersVersion=version;}
             if(rebound||moduleHost.dependsOnAny(changed))advanceModules();
         }
         if(observer!=null){var timings=new HashMap<Long,IslandCoordinator.Metrics>();for(var island:changed)runtime.coordinator().metrics(island.id()).ifPresent(m->timings.put(island.id(),m));observer.accept(changed,Map.copyOf(timings));}

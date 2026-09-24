@@ -76,6 +76,11 @@ public final class FluidRuntimeDiagnostics {
     public static final LongAdder budgetHolds=new LongAdder();
     public static final LongAdder numericalHolds=new LongAdder();
     public static final LongAdder retriesDeferred=new LongAdder();
+    /** Topology events (PhysicalRegistry): batches applied, events they applied, and devices they compiled - the
+     * connected components the batches touched, never the rest of the registry. */
+    public static final LongAdder topologyBatches=new LongAdder();
+    public static final LongAdder topologyEvents=new LongAdder();
+    public static final LongAdder compiledDevices=new LongAdder();
 
     private static final Map<String,LongAdder> COUNTERS=counters();
     private static Map<String,LongAdder> counters() {
@@ -94,6 +99,7 @@ public final class FluidRuntimeDiagnostics {
         map.put("certificatesRestored",certificatesRestored);map.put("certificatesDiscarded",certificatesDiscarded);
         map.put("payloadsEncoded",payloadsEncoded);map.put("payloadsReused",payloadsReused);
         map.put("budgetHolds",budgetHolds);map.put("numericalHolds",numericalHolds);map.put("retriesDeferred",retriesDeferred);
+        map.put("topologyBatches",topologyBatches);map.put("topologyEvents",topologyEvents);map.put("compiledDevices",compiledDevices);
         return Collections.unmodifiableMap(map);
     }
 
