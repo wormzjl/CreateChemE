@@ -4,6 +4,7 @@ import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
 import com.wormzjl.createcheme.science.fluid.linalg.SparseLuSolver;
 import com.wormzjl.createcheme.science.fluid.linalg.SparseMatrix;
+import com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation;
 import java.util.*;
 
 /** Per-call sparse Newton workspace. Inputs and residuals must already be dimensionlessly scaled. */
@@ -57,9 +58,23 @@ public final class SparseNewton {
     }
     public static final class Nonconvergence extends RuntimeException {
         private final double[] lastVariables;
+        private final ThermoDomainViolation domainViolation;
         public Nonconvergence(String message){this(message,null);}
-        public Nonconvergence(String message,double[] lastVariables){super(message);this.lastVariables=lastVariables==null?null:lastVariables.clone();}
+        public Nonconvergence(String message,double[] lastVariables){this(message,lastVariables,null);}
+        /** {@code domainViolation}: the property domain stopped this solve - the failing iteration's line search was
+         * refused by it - and a rejection count or a held island should name it rather than the Newton symptom. */
+        public Nonconvergence(String message,double[] lastVariables,ThermoDomainViolation domainViolation) {
+            super(message);this.lastVariables=lastVariables==null?null:lastVariables.clone();this.domainViolation=domainViolation;
+        }
         public double[] lastVariables(){return lastVariables==null?null:lastVariables.clone();}
+        /** The domain violation that stopped this solve, or {@code null} when the failure was numerical. */
+        public ThermoDomainViolation domainViolation(){return domainViolation;}
+    }
+    /** The domain violation a refusal stands for: the violation itself, or the one a failed solve carries; else null. */
+    public static ThermoDomainViolation domainViolation(Throwable refusal) {
+        if(refusal instanceof ThermoDomainViolation violation)return violation;
+        if(refusal instanceof Nonconvergence failure)return failure.domainViolation();
+        return null;
     }
 
     /** Reusable modified-Newton workspace for one unchanged equation structure on one worker. */
@@ -123,10 +138,14 @@ public final class SparseNewton {
         boolean openedPreconditioned=!refresh;
         if(openedPreconditioned)SolverDiagnostics.count(SolverDiagnostics.newtonSolvesPreconditioned);
         checkpoint.run();double[] f=evaluate(equations,x,n);double norm=norm(f);
+        // The property-domain refusal the current iteration's line search met, if any: when that iteration is the one
+        // that fails, the failure is the domain's and says so.
+        ThermoDomainViolation domain=null;
         for(int iteration=0;iteration<=settings.iterations();iteration++) {
             checkpoint.run();
             if(norm<=settings.tolerance())return new Result(x,norm,iteration,calls,lastNonzeros,pattern.groups.size());
             if(iteration==settings.iterations())break;
+            domain=null;
             SolverDiagnostics.count(SolverDiagnostics.newtonIterations);
             if(openedPreconditioned)SolverDiagnostics.count(SolverDiagnostics.newtonIterationsPreconditioned);
             boolean fresh=refresh;
@@ -170,7 +189,10 @@ public final class SparseNewton {
                         if(refresh)SolverDiagnostics.count(reduction>.8?SolverDiagnostics.newtonRefreshesStalled:SolverDiagnostics.newtonRefreshesAged);
                         x=candidate;f=next;norm=nextNorm;accepted=true;break;
                     }
-                }catch(IllegalArgumentException outsideDomain){ /* A smaller Newton step may stay in the valid domain. */ }
+                }catch(IllegalArgumentException outsideDomain){
+                    // A smaller Newton step may stay in the valid domain.
+                    if(outsideDomain instanceof ThermoDomainViolation violation)domain=violation;
+                }
             }
             if(!accepted) {
                 // A direction that never contracts is the one case where the skipped backward-error
@@ -181,11 +203,11 @@ public final class SparseNewton {
                     workspace.invalidate();throw new Nonconvergence("Singular Newton Jacobian: "+failure.getMessage(),x);
                 }
                 if(!fresh){SolverDiagnostics.count(SolverDiagnostics.newtonRefreshesFailed);refresh=true;continue;}
-                workspace.invalidate();throw new Nonconvergence("Newton line search stalled at residual "+norm,x);
+                workspace.invalidate();throw new Nonconvergence("Newton line search stalled at residual "+norm,x,domain);
             }
         }
         workspace.invalidate();
-        throw new Nonconvergence("Newton iteration limit at residual "+norm,x);
+        throw new Nonconvergence("Newton iteration limit at residual "+norm,x,domain);
     }
     /**
      * One linearized correction on the factorization the workspace already holds:

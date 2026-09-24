@@ -284,7 +284,7 @@ public final class PassiveStepSolver {
                 // forwards, and reading them as backflow let the tank's nitrogen into both of the
                 // filter's zero-holdup junctions; see documentation/JUNCTION_PHANTOM_TRACE.md.
                 var changedSeeds=phaseCorrection(graph,equations.states(failure.lastVariables()),checkpoint,false);
-                if(changedSeeds==null)throw new SparseNewton.Nonconvergence(failure.getMessage()+"; active-set pass="+pass,failure.lastVariables());
+                if(changedSeeds==null)throw new SparseNewton.Nonconvergence(failure.getMessage()+"; active-set pass="+pass,failure.lastVariables(),failure.domainViolation());
                 seeds=changedSeeds;continue;
             }
             double[] x=numerical.variables();var states=equations.states(x);double[] flows=new double[graph.pipes().size()],heads=new double[flows.length];
@@ -728,7 +728,8 @@ public final class PassiveStepSolver {
                 weightedTemperature+=mass*incoming.temperature();seedMass+=mass;
             }
             for(int i=0;i<count;i++)if(available[i]&&n[i]==0)n[i]=total*1e-12;
-            seeds.add(changed?model.flashTP(weightedTemperature/seedMass,state.pressure(),n,checkpoint).withSolidState(state.solids(),state.solidMoments()):state);
+            try{seeds.add(changed?model.flashTP(weightedTemperature/seedMass,state.pressure(),n,checkpoint).withSolidState(state.solids(),state.solidMoments()):state);}
+            catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation){throw violation.at(graph.reservoirs().get(nodeIndex).id());}
         }
         return seeds;
     }
@@ -805,7 +806,8 @@ public final class PassiveStepSolver {
         var restated=new ArrayList<>(seeds);
         for(int j=0;j<nodes;j++)if(mixed[j]) {
             var stored=graph.reservoirs().get(j).state();
-            restated.set(j,model.flashTP(temperature[j],stored.pressure(),amounts[j],checkpoint).withSolidState(stored.solids(),stored.solidMoments()));
+            try{restated.set(j,model.flashTP(temperature[j],stored.pressure(),amounts[j],checkpoint).withSolidState(stored.solids(),stored.solidMoments()));}
+            catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation){throw violation.at(graph.reservoirs().get(j).id());}
         }
         return restated;
     }
@@ -1082,7 +1084,9 @@ public final class PassiveStepSolver {
             boolean hydroComplete=state.liquidProperties()!=null&&state.vaporProperties()!=null||state.liquidProperties()==null&&state.vaporProperties()==null;
             boolean waterComplete=state.waterLiquid()>0&&state.waterVapor()>0||state.waterLiquid()+state.waterVapor()==0;
             if(converged&&hydroComplete&&waterComplete&&(state.vaporProperties()==null||state.vaporProperties().vaporBranch())){corrected.add(state);continue;}
-            var equilibrium=model.flashTP(state.temperature(),state.pressure(),PhaseLayout.totalAmounts(state),checkpoint).withSolidState(state.solids(),state.solidMoments());
+            FluidThermodynamics.State equilibrium;
+            try{equilibrium=model.flashTP(state.temperature(),state.pressure(),PhaseLayout.totalAmounts(state),checkpoint).withSolidState(state.solids(),state.solidMoments());}
+            catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation){throw violation.at(graph.reservoirs().get(i).id());}
             if(phaseCode(state)!=phaseCode(equilibrium)&&!changed){changed=true;corrected.add(equilibrium);}else corrected.add(state);
         }
         return changed?corrected:null;
@@ -1660,7 +1664,10 @@ public final class PassiveStepSolver {
                     double temperature=layout[i].temperature(x,offsets[i]);
                     if(cachedPrepared[i]==null||cachedPrepared[i].temperature()!=temperature)cachedPrepared[i]=model.prepare(temperature);
                 }
-                var state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedPrepared[i]);
+                FluidThermodynamics.State state;
+                // A trial outside the property domain names the node it was refused at; see ThermoDomainViolation.
+                try{state=layout[i]==null?graph.reservoirs().get(i).state():layout[i].decode(x,offsets[i],cachedPrepared[i]);}
+                catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation){throw violation.at(graph.reservoirs().get(i).id());}
                 var transport=new Transport(PhaseLayout.totalAmounts(state),state.mass()/state.volume(),viscosity(state,cachedPrepared[i]),state.enthalpy()/state.mass(),model.velocityLimit(state));
                 cachedStates[i]=state;cachedTransport[i]=transport;
                 if(layout[i]!=null)System.arraycopy(x,offsets[i],cachedVariables[i],0,layout[i].size());

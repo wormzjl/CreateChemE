@@ -105,6 +105,12 @@ public final class IslandClock {
         owned();if(delayTicks<0||outstanding!=null)throw new IllegalStateException("Only a held owner with no outstanding slice defers its retry");
         retryAtTick=Math.max(retryAtTick,Math.addExact(online(),delayTicks));
     }
+    /** A held owner whose failure is deterministic waits for an input change, not for time: no retry deadline at all
+     * ({@link #readyAtTick} reads {@link Long#MAX_VALUE}) until {@link #inputsChanged()}. */
+    public void holdUntilInputsChange() {
+        owned();if(outstanding!=null)throw new IllegalStateException("Only a held owner with no outstanding slice waits for its inputs");
+        retryAtTick=Long.MAX_VALUE;
+    }
     /** A configuration/event change may justify retrying a held owner before its ordinary backoff expires. */
     public void inputsChanged(){owned();retryAtTick=0;}
     /** CPU gating is supplied by measurements; elapsed wall time alone is not evidence of CPU saturation. */

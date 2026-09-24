@@ -220,7 +220,8 @@ public final class ConservativeTransport {
             moles[node]=new double[components];for(int c=0;c<components;c++)moles[node][c]=mass*fractions[node][c]/molecularWeight[c];
             var populations=new ArrayList<SolidInventory.Population>();
             for(int c=0;c<populationKeys.size();c++){var source=populationBasis.get(populationKeys.get(c));populations.add(new SolidInventory.Population(source.material(),source.size(),mass*fractions[node][components+c]));}
-            states.add(repartition(model,candidate.get(node),moles[node]).withSolids(new SolidInventory(populations)));
+            try{states.add(repartition(model,candidate.get(node),moles[node]).withSolids(new SolidInventory(populations)));}
+            catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation){throw violation.at(reservoir.id());}
         }
         double[] energy=new double[nodes];for(int node=0;node<nodes;node++)energy[node]=graph.reservoirs().get(node).inventory().internalEnergy();
         double[] external=new double[components];double externalEnergy=0,pumpWork=0;var boundaries=new ArrayList<BoundaryTransfer>();

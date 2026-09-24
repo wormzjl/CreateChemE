@@ -77,6 +77,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         runtime=moduleHost==null?new MinecraftFluidRuntime(server,this::published,settings,(attempt,command)->command,IslandCoordinator.CommitHook.NO_MATERIAL,topology::onlineTick)
                 :new MinecraftFluidRuntime(server,this::published,settings,moduleHost::command,moduleHost::prepare,topology::onlineTick);
         runtime.coordinator().onReleased(this::released);runtime.coordinator().onReplayed(this::replayed);
+        runtime.coordinator().onDomainHold(this::domainHeld);runtime.coordinator().nodeNames(this::deviceLabel);
         registry=new PhysicalRegistry(topology,model,new InlineFilter(options.solids().filterCapacity(),options.solids().filterResistance(),com.wormzjl.createcheme.science.fluid.state.SolidInventory.EMPTY,0),new RegistryHost());
         if(legacyUnbound) {
             CreateChemE.LOGGER.error("fluid_world status=LEGACY_UNBOUND detail=Core inventories preserved; physical bindings are unavailable in this older checkpoint");return;
@@ -329,6 +330,22 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private static String speed(double value) {
         return String.format(java.util.Locale.ROOT,Math.abs(value)>=.01?"%.2f":"%.2e",value);
     }
+    /** A node as a status line names it: a device by kind and position, anything else as the pipe junction it is. */
+    private String deviceLabel(long id) {
+        var registration=topology.active().get(id);if(registration==null)return "pipe junction "+id;
+        var p=registration.device().position();return registration.device().kind().name().toLowerCase(java.util.Locale.ROOT)+" at "+p.x()+", "+p.y()+", "+p.z();
+    }
+    /**
+     * One WARN per island per thermo-domain hold (the coordinator rate-limits repeats of the same island and violation):
+     * where, which package, component, property, value and range, and what to do about it.
+     */
+    private void domainHeld(long island,com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation,String where,boolean parked) {
+        String dimension="unknown";
+        var members=registry.members(island);if(!members.isEmpty()){var record=topology.active().get(members.getFirst());if(record!=null)dimension=record.device().position().dimension();}
+        CreateChemE.LOGGER.warn("fluid_island={} dimension={} node={} device={} status=THERMO_DOMAIN code={} package={} component={} property={} value={} range={} waits_for_inputs={} detail={} action=Extend the component's validity range in its data file only with data validated for it; see documentation/fluid-followups/THERMO_DOMAIN_ERROR.md and FLUID_PUMP_AND_THERMO_DOMAIN_REVIEW.md",
+                island,dimension,violation.node()==com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.NO_NODE?"unknown":violation.node(),where.isEmpty()?"unknown":where,
+                violation.code(),violation.packageId(),violation.component(),violation.property().label(),violation.value(),violation.range(),parked,violation.getMessage());
+    }
     private String nodeLabel(long id) {
         var registration=topology.active().get(id);if(registration==null)return "Junction "+id;
         var p=registration.device().position();return p.x()+", "+p.y()+", "+p.z();
@@ -390,7 +407,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
             if(rebound||moduleHost.dependsOnAny(changed))advanceModules();
         }
         if(observer!=null){var timings=new HashMap<Long,IslandCoordinator.Metrics>();for(var island:changed)runtime.coordinator().metrics(island.id()).ifPresent(m->timings.put(island.id(),m));observer.accept(changed,Map.copyOf(timings));}
-        data.setDirty();var ids=new HashSet<Long>();for(var snapshot:changed){ids.add(snapshot.id());if(snapshot.status().startsWith("HELD"))CreateChemE.LOGGER.warn("fluid_island={} committed_tick={} status={}",snapshot.id(),snapshot.clock().committedTick(),snapshot.status());}
+        // A thermo-domain hold has its own, rate-limited line with the full detail (domainHeld); every other hold keeps this one.
+        data.setDirty();var ids=new HashSet<Long>();for(var snapshot:changed){ids.add(snapshot.id());if(snapshot.status().startsWith("HELD")&&!snapshot.status().startsWith(com.wormzjl.createcheme.runtime.ProcessSolveServices.THERMO_DOMAIN))CreateChemE.LOGGER.warn("fluid_island={} committed_tick={} status={}",snapshot.id(),snapshot.clock().committedTick(),snapshot.status());}
         // Only loaded devices are marked; their bucket presents them. A publication itself pushes nothing.
         for(long island:ids)for(long physical:registry.members(island))presentation.markIfLoaded(physical);
         if(options.debugChat()&&(lastDebugChat==Long.MIN_VALUE||topology.onlineTick()-lastDebugChat>=20)) {

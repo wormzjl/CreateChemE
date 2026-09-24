@@ -112,6 +112,8 @@ public final class PassiveIntervalSolver {
         // about where the event is, not about what the trajectory can take: handing it to the next
         // segment made every closure cost another twenty accepted substeps climbing back out.
         int transitionRejects=0;double beforeTransition=0;SolidEventIntegrator.Transition declared=null;
+        // Rejections the property domain decided: the last one, how many, and whether the latest rejection was one.
+        com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation lastDomain=null;int domainRejections=0;boolean lastWasDomain=false;
         for(int attempt=0;attempt<settings.maximumAttempts&&elapsed<duration&&declared==null;attempt++) {
             checkpoint.run();double step=Math.min(h,duration-elapsed);
             try {
@@ -163,16 +165,25 @@ public final class PassiveIntervalSolver {
                 h=step*.5;
             }catch(SparseNewton.Nonconvergence|IllegalArgumentException|AccuracyRejection rejected) {
                 lastRejection=String.valueOf(rejected.getMessage());
-                String reason=String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#");
-                if(rejectionReasons.size()<8||rejectionReasons.containsKey(reason))rejectionReasons.merge(reason,1,Integer::sum);else rejectionReasons.merge("Other",1,Integer::sum);
+                // A trial the property domain refused - directly, or a Newton pass whose failing line search it
+                // stopped - is counted under its own key (one per component, property and side, never folded into
+                // "Other"), so a checkpoint, a view and the certificate's transition check all see it.
+                var domain=SparseNewton.domainViolation(rejected);
+                if(domain!=null){rejectionReasons.merge(domain.reasonKey(),1,Integer::sum);lastDomain=domain;domainRejections++;}
+                else {
+                    String reason=String.valueOf(rejected.getMessage()).replaceAll("[-+]?[0-9]+(?:\\.[0-9]+)?(?:[Ee][-+]?[0-9]+)?","#");
+                    if(rejectionReasons.size()<8||rejectionReasons.containsKey(reason))rejectionReasons.merge(reason,1,Integer::sum);else rejectionReasons.merge("Other",1,Integer::sum);
+                }
+                lastWasDomain=domain!=null;
                 rejectedCount++;consecutiveRejects++;h=step*(rejected instanceof AccuracyRejection accuracy?stepFactor(accuracy.error,settings.relativeTolerance,true):.5);
                 // A short pipe can introduce the first liquid phase in less than a millisecond.
                 // Permit bounded refinement through that transition; every accepted step still
                 // meets the same error tolerance, attempt cap, and caller's wall deadline.
-                if(consecutiveRejects>=20||elapsed+h==elapsed)throw new SparseNewton.Nonconvergence("Substep refinement exhausted: "+rejected.getMessage());
+                if(consecutiveRejects>=20||elapsed+h==elapsed)throw new SparseNewton.Nonconvergence("Substep refinement exhausted: "+rejected.getMessage(),null,domainCause(lastWasDomain,lastDomain,domainRejections,rejectedCount));
             }
         }
-        if(declared==null&&elapsed<duration)throw new SparseNewton.Nonconvergence("Interval substep limit; no partial interval may commit: advanced="+elapsed+" of "+duration+" s, accepted="+acceptedCount+", rejected="+rejectedCount+", reasons="+rejectionReasons+", last="+lastRejection);
+        if(declared==null&&elapsed<duration)throw new SparseNewton.Nonconvergence("Interval substep limit; no partial interval may commit: advanced="+elapsed+" of "+duration+" s, accepted="+acceptedCount+", rejected="+rejectedCount+", reasons="+rejectionReasons+", last="+lastRejection,
+                null,domainCause(lastWasDomain,lastDomain,domainRejections,rejectedCount));
         // A segment that ended on a declared transition hands the next one the estimate it held
         // before the search, not the micro-step the search finished on. The error controller still
         // rejects and halves if the post-closure transient needs it, and it does so from a step the
@@ -185,6 +196,15 @@ public final class PassiveIntervalSolver {
         double normalizer=declared==null?duration:elapsed;
         for(int i=0;i<transferred.length;i++)transferred[i]/=normalizer;
         return new Prefix(new Result(accepted,elapsed,transferred,acceptedCount,rejectedCount,work,boundaries,rejectionReasons,last.modes(),last.devicePressureChanges(),acceptance,pipeTransfers.snapshot()),declared);
+    }
+    /**
+     * The domain violation an interval that could not commit failed on, or null: its last rejection was a domain
+     * refusal, or domain refusals were the dominant reason (more than half of the interval's rejections). An interval
+     * that only met the domain on the way, and failed for another reason, is a numerical failure.
+     */
+    static com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation domainCause(boolean lastWasDomain,
+            com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation lastDomain,int domainRejections,int rejected) {
+        return lastWasDomain||2*domainRejections>rejected?lastDomain:null;
     }
     /** An interval boundary truncating an attempt is not evidence about the step size, so growth
      * applies to the controller's own estimate whenever the attempt was the truncated one. */

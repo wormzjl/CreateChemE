@@ -394,7 +394,7 @@ public final class ProcessSolveServices {
             long cpuStart=WorkerAllocation.CpuTime.sample();
             var result=(FluidIslandSolveResult)solve(cancellationToken,System::nanoTime);
             long cpu=WorkerAllocation.CpuTime.elapsed(cpuStart,WorkerAllocation.CpuTime.sample());
-            return new FluidIslandSolveResult(result.candidate(),result.detail(),result.workerNanos(),cpu,result.proposedAllowance(),result.proposedAnchor());
+            return new FluidIslandSolveResult(result.candidate(),result.detail(),result.workerNanos(),cpu,result.proposedAllowance(),result.proposedAnchor(),Optional.empty(),result.domain());
         }
         ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken cancellationToken,java.util.function.LongSupplier nanoClock) {
             Objects.requireNonNull(cancellationToken);Objects.requireNonNull(nanoClock);long start=nanoClock.getAsLong();
@@ -422,12 +422,18 @@ public final class ProcessSolveServices {
                 }
             }catch(FluidWallDeadline deadline){return new FluidIslandSolveResult(Optional.empty(),WALL_DEADLINE,elapsed[0],fallback.allowance(),fallback.anchor());}
             catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected failed) {
-                cancellationToken.throwIfCancellationRequested();return new FluidIslandSolveResult(Optional.empty(),"HELD: "+failed.getMessage(),elapsed[0],fallback.allowance(),fallback.anchor());
+                cancellationToken.throwIfCancellationRequested();
+                // A failure the property domain decided carries the violation itself, so the coordinator can hold the island
+                // with the dedicated status and tell a reproduced violation from a numerical one (IslandCoordinator.hold).
+                var domain=Optional.ofNullable(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.domainViolation(failed));
+                return new FluidIslandSolveResult(Optional.empty(),domain.map(v->THERMO_DOMAIN+v.getMessage()).orElse("HELD: "+failed.getMessage()),elapsed[0],-1,fallback.allowance(),fallback.anchor(),Optional.empty(),domain);
             }
         }
     }
     /** The detail of an island interval the hard wall budget cut. */
     public static final String WALL_DEADLINE="HELD: wall deadline";
+    /** The detail prefix of an island interval the property domain refused; the result carries the violation. */
+    public static final String THERMO_DOMAIN="HELD (thermo domain): ";
     /** The detail prefix of an island interval whose full solve ran out of the soft budget and whose approximate
      * fallback then refused the interval. */
     public static final String SOFT_BUDGET_REFUSED="HELD: soft budget; approximate fallback refused: ";
@@ -435,14 +441,19 @@ public final class ProcessSolveServices {
     private static final class FluidSoftDeadline extends RuntimeException {}
     public record FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,long workerCpuNanos,
                                         FallbackAllowance proposedAllowance,Optional<ApproximationAnchor> proposedAnchor,
-                                        Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> materialTransfers) implements ProcessSolveResult {
+                                        Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> materialTransfers,
+                                        Optional<com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation> domain) implements ProcessSolveResult {
         public FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,long workerCpuNanos,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor) {
             this(candidate,detail,workerNanos,workerCpuNanos,allowance,anchor,Optional.empty());
+        }
+        public FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,long workerCpuNanos,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor,
+                                      Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> materialTransfers) {
+            this(candidate,detail,workerNanos,workerCpuNanos,allowance,anchor,materialTransfers,Optional.empty());
         }
         public FluidIslandSolveResult(Optional<PassiveIntervalSolver.Result> candidate,String detail,long workerNanos,FallbackAllowance allowance,Optional<ApproximationAnchor> anchor) {
             this(candidate,detail,workerNanos,-1,allowance,anchor);
         }
-        public FluidIslandSolveResult {Objects.requireNonNull(candidate);Objects.requireNonNull(detail);Objects.requireNonNull(proposedAllowance);Objects.requireNonNull(proposedAnchor);Objects.requireNonNull(materialTransfers);if(workerNanos<0||workerCpuNanos < -1)throw new IllegalArgumentException("Invalid worker elapsed time");if(materialTransfers.isPresent()&&(candidate.isEmpty()||materialTransfers.orElseThrow().candidate()!=candidate.orElseThrow()))throw new IllegalArgumentException("Material ledger/result mismatch");}
+        public FluidIslandSolveResult {Objects.requireNonNull(domain);if(domain.isPresent()&&candidate.isPresent())throw new IllegalArgumentException("An accepted interval has no domain failure");Objects.requireNonNull(candidate);Objects.requireNonNull(detail);Objects.requireNonNull(proposedAllowance);Objects.requireNonNull(proposedAnchor);Objects.requireNonNull(materialTransfers);if(workerNanos<0||workerCpuNanos < -1)throw new IllegalArgumentException("Invalid worker elapsed time");if(materialTransfers.isPresent()&&(candidate.isEmpty()||materialTransfers.orElseThrow().candidate()!=candidate.orElseThrow()))throw new IllegalArgumentException("Material ledger/result mismatch");}
     }
     /** New material boundaries require full qualification; failed probes never consume pending inputs. */
     public record BufferedIslandCommand(FluidThermodynamics model,PassiveNetwork snapshot,long startTick,int durationTicks,
@@ -465,15 +476,15 @@ public final class ProcessSolveServices {
         @Override public ProcessSolveResult solve(BoundedCpuSolveService.CancellationToken token) {
             long started=System.nanoTime(),cpuStart=WorkerAllocation.CpuTime.sample();
             Runnable checkpoint=()->{token.throwIfCancellationRequested();if(System.nanoTime()-started>=wallBudgetNanos)throw new FluidWallDeadline();};
-            Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> proposal=Optional.empty();String detail;
+            Optional<com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal> proposal=Optional.empty();String detail;Optional<com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation> domain=Optional.empty();
             try {
                 proposal=Optional.of(new com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner(model).prepare(snapshot,startTick,durationTicks,inputs,withdrawals,checkpoint,retained));checkpoint.run();detail="FULL: buffered transfers";
             }catch(FluidWallDeadline cut){proposal=Optional.empty();detail=WALL_DEADLINE+" (buffered interval)";}
-            catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();detail="HELD: buffered interval "+held.getMessage();}
+            catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException held){proposal=Optional.empty();domain=Optional.ofNullable(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.domainViolation(held));detail=domain.map(v->THERMO_DOMAIN+v.getMessage()).orElse("HELD: buffered interval "+held.getMessage());}
             token.throwIfCancellationRequested();long elapsed=System.nanoTime()-started;
             long cpu=WorkerAllocation.CpuTime.elapsed(cpuStart,WorkerAllocation.CpuTime.sample());
             var candidate=proposal.map(com.wormzjl.createcheme.runtime.fluid.ModuleTransferPlanner.Proposal::candidate);
-            return new FluidIslandSolveResult(candidate,detail,elapsed,cpu,candidate.isPresent()?FallbackAllowance.NONE:previousAllowance,candidate.map(r->ApproximationAnchor.fromFull(model,r)).or(()->previousAnchor),proposal);
+            return new FluidIslandSolveResult(candidate,detail,elapsed,cpu,candidate.isPresent()?FallbackAllowance.NONE:previousAllowance,candidate.map(r->ApproximationAnchor.fromFull(model,r)).or(()->previousAnchor),proposal,domain);
         }
     }
 

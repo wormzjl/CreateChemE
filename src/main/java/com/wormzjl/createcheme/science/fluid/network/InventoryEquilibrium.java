@@ -10,7 +10,10 @@ public final class InventoryEquilibrium {
     public static PassiveNetwork refresh(PassiveNetwork graph,FluidThermodynamics model,Runnable checkpoint) {
         var nodes=new ArrayList<PassiveNetwork.Reservoir>();boolean changed=false;
         for(var node:graph.reservoirs()) {
-            checkpoint.run();var state=node.fixed()||node.junction()||node.empty()?node.state():solve(model,node.state(),node.inventory(),false,checkpoint);
+            checkpoint.run();FluidThermodynamics.State state;
+            // A committed inventory the property domain refuses names its node; see ThermoDomainViolation.
+            try{state=node.fixed()||node.junction()||node.empty()?node.state():solve(model,node.state(),node.inventory(),false,checkpoint);}
+            catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation){throw violation.at(node.id());}
             changed|=state!=node.state();nodes.add(new PassiveNetwork.Reservoir(node.id(),node.elevation(),state,node.kind(),node.inventory()));
         }
         return changed?new PassiveNetwork(nodes,graph.pipes(),graph.scheduledTransfers()):graph;

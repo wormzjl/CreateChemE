@@ -288,4 +288,70 @@ class IslandCoordinatorTest {
         assertEquals(before+1,observed.size());assertEquals(1,limit[0],"the shrink applied exactly at its deadline");
         assertEquals(-1,allocator.shrinkTick());assertEquals(Long.MAX_VALUE,shared.nextDue());
     }
+    private static com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation violation(double value,long node) {
+        return new com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation("createcheme:tjl20_methane_nitrogen","Nitrogen",
+                com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.Property.TEMPERATURE,value,63.151,900).at(node);
+    }
+    private void domainHold(IslandCoordinator.Attempt attempt,com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation v) {
+        dispatch.attempts.remove(attempt.slice().requestId());dispatch.commands.remove(attempt.slice().requestId());
+        coordinator.completed(attempt,Optional.of(new ProcessSolveServices.FluidIslandSolveResult(Optional.empty(),ProcessSolveServices.THERMO_DOMAIN+v.getMessage(),10,-1,
+                FallbackAllowance.NONE,Optional.empty(),Optional.empty(),Optional.of(v))));
+        coordinator.pump();
+    }
+    /**
+     * F4, T4: a thermo-domain failure is retried once on a fresh solver (and the halved slice of every hold); when the
+     * retry reproduces the same violation - component, property, side and node - no retry on the back-off ladder can pass
+     * it, so the island waits for an input change and dispatches nothing. The status line is the dedicated one and the
+     * world is told once. A fence (an edit, a module drive, a resolved delivery) wakes it at once.
+     */
+    @Test void aReproducedThermoDomainViolationWaitsForAnInputChangeInsteadOfTheLadder() {
+        var warned=new ArrayList<String>();
+        coordinator.onDomainHold((island,v,where,parked)->warned.add(island+" "+v.reasonKey()+" "+where+" "+parked));
+        coordinator.nodeNames(id->"tank at "+id+", 64, 0");
+        register(1,1_000_000,0);coordinator.pump();
+        FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
+        try {
+            var first=dispatch.attempts.values().iterator().next();var firstSolver=dispatch.commands.get(first.slice().requestId()).retained();
+            domainHold(first,violation(60.12,1));
+            var status=coordinator.snapshot(1).status();
+            assertEquals("HELD (thermo domain): Nitrogen at 60.12 K is below 63.151 K in tank at 1, 64, 0 (valid 63.151..900 K, package createcheme:tjl20_methane_nitrogen)",status);
+            assertFalse(coordinator.waitsForInputs(1),"the first domain failure is retried");
+            var retry=nextAttempt();assertEquals(100,retry.getKey(),"the retry comes a cadence later");
+            assertEquals(50,retry.getValue().slice().endTick()-retry.getValue().slice().startTick(),"on the halved slice every hold gives");
+            assertNotSame(firstSolver,dispatch.commands.get(retry.getValue().slice().requestId()).retained(),"on a fresh solver");
+            domainHold(retry.getValue(),violation(58.4,1));
+            assertTrue(coordinator.waitsForInputs(1),"the retry reproduced it: the island waits for its inputs");
+            assertTrue(coordinator.snapshot(1).status().startsWith("HELD (thermo domain): Nitrogen at 58.40 K is below 63.151 K in tank at 1, 64, 0"),coordinator.snapshot(1).status());
+            assertTrue(coordinator.snapshot(1).status().endsWith("the retry failed the same way, so the island waits for a change to its network"));
+            assertEquals(Long.MAX_VALUE,coordinator.snapshot(1).clock().retryAtTick());
+            for(int tick=0;tick<1000;tick++)coordinator.tick();
+            assertTrue(dispatch.attempts.isEmpty(),"no further dispatch for 1,000 ticks");
+            assertEquals(Long.MAX_VALUE,coordinator.nextDue(),"and no deadline at all");
+            // The wait is the clock's (no retry tick), so a saved island that waits for its inputs still waits after a load.
+            var restored=new IslandCoordinator(dispatch,publications::add,time::get,new IslandCoordinator.Settings(1000,750,64,false));
+            restored.register(coordinator.snapshot(1),model);
+            for(int tick=0;tick<200;tick++)restored.tick();
+            assertTrue(dispatch.attempts.isEmpty(),"a restored waiting island dispatches nothing");restored.stop();
+            assertEquals(1,warned.size(),"one warning for the hold, not one per attempt: "+warned);
+            assertEquals("1 thermo-domain: Nitrogen temperature < 63.151 K tank at 1, 64, 0 false",warned.getFirst());
+            assertEquals(2,FluidRuntimeDiagnostics.sample().get("numericalHolds"));assertEquals(1,FluidRuntimeDiagnostics.sample().get("domainHolds"));
+            assertEquals(0,FluidRuntimeDiagnostics.sample().get("retriesDeferred"));
+        } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+        // An input change (here a fence, which is how an edit or a module drive reaches the island) wakes it at once.
+        long committed=coordinator.snapshot(1).clock().committedTick();
+        coordinator.fence(UUID.randomUUID(),committed+10_000,List.of(1L));coordinator.pump();
+        assertEquals(1,dispatch.attempts.size(),"an input change retries the waiting island at once");
+        assertFalse(coordinator.waitsForInputs(1));
+        // The same violation after the wake is a new episode: retried once again, and logged again only after the rate limit.
+        domainHold(dispatch.attempts.values().iterator().next(),violation(58.4,1));
+        assertFalse(coordinator.waitsForInputs(1));assertEquals(1,warned.size(),"the same island and violation within five minutes is not logged again");
+    }
+    /** A different violation on the retry - another node, another component - is not a reproduction: the ladder goes on. */
+    @Test void aDifferentViolationOnTheRetryKeepsTheLadder() {
+        register(1,1_000_000,0);coordinator.pump();
+        domainHold(dispatch.attempts.values().iterator().next(),violation(60.12,1));
+        domainHold(nextAttempt().getValue(),violation(60.12,2));
+        assertFalse(coordinator.waitsForInputs(1));
+        assertEquals(100,nextAttempt().getKey(),"retried on the ladder");
+    }
 }
