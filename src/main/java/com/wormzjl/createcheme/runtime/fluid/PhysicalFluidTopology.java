@@ -75,7 +75,13 @@ public final class PhysicalFluidTopology {
         for(var d:physical.values())if(d.boundary()&&!included.contains(d.id))groups.add(Set.of(d.id));
         var retained=new HashMap<Long,TopologyCompiler.Node>();for(var node:compiled.retainedNodes())retained.put(node.id(),node);
         var islands=new ArrayList<Island>();var views=new HashMap<Long,List<View>>();var pipeIdentities=new HashSet<Long>();
-        for(var members:groups) {
+        // Each run belongs to the group that holds its first node (groups are disjoint); bucketed once, in run order,
+        // so assembling the islands reads every run once instead of every run for every island.
+        var groupOf=new HashMap<Long,Integer>();for(int g=0;g<groups.size();g++)for(long id:groups.get(g))groupOf.put(id,g);
+        var runsOf=new ArrayList<List<TopologyCompiler.Run>>(groups.size());for(int g=0;g<groups.size();g++)runsOf.add(new ArrayList<>());
+        for(var run:compiled.runs()){Integer g=groupOf.get(run.first());if(g!=null)runsOf.get(g).add(run);}
+        for(int group=0;group<groups.size();group++) {
+            var members=groups.get(group);
             var boundaries=members.stream().filter(boundaryStates::containsKey).sorted().toList();
             if(boundaries.isEmpty()){for(long id:members)if(physical.containsKey(id))diagnostics.put(id,"NO FLOW: no reservoir or boundary");continue;}
             // A zero-holdup junction is minted with the island's first boundary state as a property
@@ -92,7 +98,7 @@ public final class PhysicalFluidTopology {
                 reservoirs.add(boundary!=null?boundary:new PassiveNetwork.Reservoir(id,node.elevation(),seed,PassiveNetwork.NodeKind.JUNCTION));
             }
             var pipes=new ArrayList<PassiveNetwork.Pipe>();int islandIndex=islands.size();var positiveFilterEdges=new HashMap<Long,Set<Long>>();
-            for(var run:compiled.runs())if(members.contains(run.first())) {
+            for(var run:runsOf.get(group)) {
                 // A passive return to the same zero-holdup node has no driving pressure or owned stock.
                 if(run.first()==run.second()){for(var segment:run.segments())diagnostics.put(linkOwner.get(segment.linkId()),"NO FLOW: passive return loop");continue;}
                 var start=physical.get(run.first());var end=physical.get(run.second());
