@@ -136,6 +136,8 @@ public final class IslandCoordinator {
     /** Payload generations are unique in the JVM, so a checkpoint cache can never mistake one island object's
      * payload for another's that happens to share its identity, revision and count of changes. */
     private static final java.util.concurrent.atomic.AtomicLong PAYLOAD_GENERATIONS=new java.util.concurrent.atomic.AtomicLong();
+    /** A new payload generation, for a snapshot decoded from a checkpoint: registered, the island keeps it. */
+    static long freshPayloadGeneration(){return PAYLOAD_GENERATIONS.incrementAndGet();}
     private static final class Island {
         private final long id;
         private long revision;
@@ -179,10 +181,13 @@ public final class IslandCoordinator {
         private Evidence evidence;
         // The certificate's validity signature, made once when it is issued or restored; and the payload generation.
         private IslandCertificate.Signature signature;
-        private long payloadGeneration=PAYLOAD_GENERATIONS.incrementAndGet();
+        private long payloadGeneration;
+        /** An island registered from a snapshot that carries a payload generation (a loaded checkpoint's) keeps it, so
+         * the checkpoint store's unit of that snapshot stays in place until something it records changes. */
         private Island(Snapshot saved,FluidThermodynamics model,LongSupplier epoch) {
             id=saved.id;revision=saved.revision;this.model=Objects.requireNonNull(model);graph=saved.graph;
             clock=new IslandClock(saved.clock,epoch);allowance=saved.allowance;anchor=saved.anchor;lastResult=saved.lastResult;status=saved.status;fences.putAll(saved.fences);
+            payloadGeneration=saved.payloadGeneration!=0?saved.payloadGeneration:PAYLOAD_GENERATIONS.incrementAndGet();
         }
         private Snapshot snapshot(){return new Snapshot(id,revision,graph,clock.snapshot(),allowance,anchor,lastResult,
                 !suspended&&!clock.busy()&&fence()==clock.committedTick()?"WAITING: event alignment":status,fences,
@@ -274,7 +279,8 @@ public final class IslandCoordinator {
             island.certificate=restored.certificate();island.certifiedSince=saved.sinceTick();island.signature=saved.signature();island.retained=null;
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificatesRestored);
         } else {
-            island.status="WAITING: saved "+saved.kind()+" certificate discarded: "+restored.discarded();island.refusal="saved certificate discarded: "+restored.discarded();
+            // Awake now, with a new status: its unit records neither the certificate nor that status, so it is written afresh.
+            island.status="WAITING: saved "+saved.kind()+" certificate discarded: "+restored.discarded();island.refusal="saved certificate discarded: "+restored.discarded();island.touch();
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.certificatesDiscarded);
         }
     }
