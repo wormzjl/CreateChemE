@@ -41,7 +41,9 @@ class TrBdf2Test {
         assertEquals(energy,next.internalEnergy()-old.internalEnergy()+movedMass*2*PassiveStepSolver.GRAVITY,1e-3);
     }
     @Test void pumpWorkIncludesAllStagesAndElevationEnergy() {
-        var graph=graph(gas(1,101325,0),gas(2,200000,10),new FlowControl.Pump(.001,500000,.8));
+        // A pump's setting is its rise for water (F4, P1): the setting that is 500 kPa on this nitrogen, as before.
+        var suction=gas(1,101325,0);
+        var graph=graph(suction,gas(2,200000,10),new FlowControl.Pump(.001,500000*model.pumpReferenceDensity()/(suction.state().mass()/suction.state().volume()),.8));
         var result=new TrBdf2StepSolver(model).solve(graph,.2,()->{});
         assertTrue(result.pumpWorkJoule()>0);double change=0;
         for(int i=0;i<2;i++){var old=graph.reservoirs().get(i).inventory();var next=result.inventories().get(i);double dm=(next.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]-old.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN])*model.hydrocarbon.molecularWeight(com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN);change+=next.internalEnergy()-old.internalEnergy()+dm*graph.reservoirs().get(i).elevation()*PassiveStepSolver.GRAVITY;}

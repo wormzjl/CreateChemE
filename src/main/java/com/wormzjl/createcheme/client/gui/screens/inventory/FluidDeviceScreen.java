@@ -60,7 +60,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         loadParticles(c.solids());if(data.kind()==TopologyCompiler.Kind.FILTER){phase=3;phaseButton.setMessage(Component.literal(phaseName()));}
         labels.clear();
         switch(data.kind()) {
-            case PUMP->{labels.put("volumeFlow","Suction flow (m3/s)");labels.put("maximumAddedPressure","Max pressure rise (Pa)");}
+            case PUMP->{labels.put("volumeFlow","Suction flow (m3/s)");labels.put("maximumAddedPressure","Max pressure rise, water (Pa)");}
             case VALVE->labels.put("pressure","Upstream (Pa abs)");
             case GENERATOR->{labels.put("pressure","Pressure (Pa abs)");labels.put("temperature","Temperature (K)");}
             case VOID->labels.put("pressure","Sink pressure (Pa abs)");

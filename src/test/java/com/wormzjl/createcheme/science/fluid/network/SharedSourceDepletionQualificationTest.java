@@ -277,10 +277,12 @@ class SharedSourceDepletionQualificationTest {
                 21, 2, warmNitrogen(sourceVolume, sourcePressure), PassiveNetwork.NodeKind.RESERVOIR);
         var receiving = new PassiveNetwork.Reservoir(
                 22, 6, nitrogen(1, receivingPressure), PassiveNetwork.NodeKind.RESERVOIR);
+        // A pump's setting is its rise for water (F4, P1): the setting that is 500 kPa on this nitrogen, as before.
+        double setting = 500000 * model.pumpReferenceDensity() / (source.state().mass() / source.state().volume());
         return new PassiveNetwork(List.of(source, receiving), List.of(
                 new PassiveNetwork.Pipe(23, 0, 1,
                         new PipeResistance.Geometry(1, .02, .000045, 0),
-                        new FlowControl.Pump(targetVolumeFlow, 500000, .8))));
+                        new FlowControl.Pump(targetVolumeFlow, setting, .8))));
     }
 
     private FluidThermodynamics.State nitrogen(double volume, double pressure) {

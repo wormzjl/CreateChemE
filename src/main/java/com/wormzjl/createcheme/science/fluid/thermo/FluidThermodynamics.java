@@ -107,10 +107,21 @@ public final class FluidThermodynamics {
         domain=hydrocarbon.domain();
         var reference=waterLiquidRaw(298.15,101325,null);
         waterEnthalpyOffset=V3WaterProperties.liquidMolarEnthalpy(water,298.15)-reference.molarEnthalpy();
+        pumpReferenceDensity=waterMolecularWeight/reference.molarVolume();
     }
     /** Where this model may evaluate a state: the package envelope and every component's range, from the package's data. */
     public FluidDomain domain(){return domain;}
     private final FluidDomain domain;
+    /**
+     * The density a pump's "maximum pressure rise" is stated for: liquid water at 298.15 K and 101,325 Pa, from this
+     * model's own water (IF97 Region 1 at the liquid reference pressure, carried to 1 atm by the global liquid
+     * compressibility), 996.0 kg/m3 (NIST: 997.0; the global 1e-9 1/Pa is about twice water's own compressibility). A
+     * pump's rise limit on another fluid is the setting scaled by the density of
+     * what it withdraws over this one: a head, so a pump that pushes water 500 kPa pushes nitrogen at 1 atm about
+     * 575 Pa. See {@code PassiveStepSolver.riseLimit}.
+     */
+    public double pumpReferenceDensity(){return pumpReferenceDensity;}
+    private final double pumpReferenceDensity;
     /** Conserved component basis: registered hydrocarbon/gas components, followed by water. */
     public int componentCount() { return hydrocarbon.componentCount()+1; }
 

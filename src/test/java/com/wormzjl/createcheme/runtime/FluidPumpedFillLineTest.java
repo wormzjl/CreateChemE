@@ -157,22 +157,21 @@ class FluidPumpedFillLineTest {
     }
 
     /**
-     * A pump moving nitrogen from one closed tank to another expands the suction tank's gas adiabatically: at 76.5 kPa
-     * it reaches 275 K and at 74.6 kPa the fluid model's lowest temperature, 273.16 K, below which no state exists. That
-     * is the model's limit, not a numerical one, and it stays held (an owner decision on the pump model is recorded in
-     * the review). What the hold policy owes it is not burning a worker: the retries back off to one per 64 cadences.
+     * A pump moving nitrogen from one closed tank to another. Its "max pressure rise" is the rise for water; on nitrogen at
+     * 1 atm its limit is that times 1.145/996, about 575 Pa, so it reaches the limit and then its shutoff within a
+     * fraction of a second, the suction tank a quarter of a kelvin cooler, and the island certifies (F4, pump option P1).
+     * Before P1 the pump evacuated the suction tank adiabatically until it reached the model's 273.16 K floor after 21.9 s
+     * and stayed held there (F1 review, section 2.6); the extended nitrogen domain would only have moved that end to 63 K.
      */
-    @Test void aGasTransferStopsAtTheModelsTemperatureFloorAndItsRetriesBackOff() {
+    @Test void aGasTransferClosesAtThePumpsScaledLimitAndCertifies() {
         var rig=new Rig("RUPR");
-        FluidRuntimeDiagnostics.reset();FluidRuntimeDiagnostics.ENABLED=true;
-        try {
-            rig.run(20*1200,s->false);
-            System.out.println("gas transfer: "+rig.describe()+" deferred="+FluidRuntimeDiagnostics.sample().get("retriesDeferred"));
-            var suction=tanks(rig.island().graph()).getFirst().state();
-            assertEquals(273.16,suction.temperature(),.05,"the suction tank stands at the model's temperature floor: "+rig.describe());
-            assertTrue(rig.island().status().startsWith("HELD"),rig.describe());
-            assertTrue(rig.jobs<=45,"twenty minutes of a held transfer cost a few dozen attempts, not one per cadence: "+rig.describe());
-            assertTrue(FluidRuntimeDiagnostics.sample().get("retriesDeferred")>=6,"the one-tick retries back off");
-        } finally {FluidRuntimeDiagnostics.ENABLED=false;FluidRuntimeDiagnostics.reset();}
+        rig.run(20*120,s->s.certificate().isPresent());
+        System.out.println("gas transfer: "+rig.describe());
+        var island=rig.island();var suction=tanks(island.graph()).getFirst().state();var discharge=tanks(island.graph()).getLast().state();
+        assertTrue(island.certificate().isPresent(),"the closed transfer certifies: "+rig.describe());
+        assertEquals(FlowControl.Mode.CLOSED,island.lastResult().orElseThrow().endpointModes().get(1),"the pump is closed at its shutoff");
+        assertTrue(suction.temperature()<298.15&&suction.temperature()>297.5,"a fraction of a kelvin cooler: "+rig.describe());
+        assertEquals(500000*1.145/model.pumpReferenceDensity(),discharge.pressure()-suction.pressure(),3,"the pump holds its scaled limit: "+rig.describe());
+        assertTrue(rig.jobs<=20,"a handful of solves: "+rig.describe());
     }
 }

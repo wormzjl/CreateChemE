@@ -13,8 +13,14 @@ class FlowControlTest {
         for(double p:new double[]{pa,pb}){double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1];n[component]=1;var unit=model.flashTP(350,p,n,()->{});n[component]/=unit.volume();nodes.add(new PassiveNetwork.Reservoir(nodes.size(),0,model.flashTP(350,p,n,()->{})));}
         return new PassiveStepSolver(model).solve(new PassiveNetwork(nodes,List.of(new PassiveNetwork.Pipe(5,0,1,new PipeResistance.Geometry(10,.05,.000045,0),control))),dt,()->{});
     }
+    /** A pump's setting is its rise for water (F4, P1): on methane at 1 atm the same 500 kPa is the setting scaled by the
+     * density ratio, so the pump is given the water setting that is 500 kPa on this gas, as it had before. */
+    private double gasSetting(double rise,double pressure,int component) {
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.CRUDE+1];n[component]=1;var s=model.flashTP(350,pressure,n,()->{});
+        return rise*model.pumpReferenceDensity()/(s.mass()/s.volume());
+    }
     @Test void pumpMeetsItsSuctionFlowTargetAndAccountsForAddedEnergy() {
-        var result=run(101325,200000,0,new FlowControl.Pump(.001,500000,1),.1);var suction=result.states().getFirst();
+        var result=run(101325,200000,0,new FlowControl.Pump(.001,gasSetting(500000,101325,0),1),.1);var suction=result.states().getFirst();
         assertEquals(.001,result.massFlows()[0]/(suction.mass()/suction.volume()),1e-10);
         assertEquals(FlowControl.Mode.PUMP_TARGET,result.modes().getFirst());assertTrue(result.devicePressureChanges()[0]>0);assertTrue(result.pumpWorkJoule()>0);
     }
