@@ -309,7 +309,9 @@ public final class FluidWorldAuthority implements AutoCloseable {
         var view=new FluidView(id,registration.revision(),snapshot.clock().committedTick(),topology.onlineTick(),status,state,flow,history,devicePressureChange,true,
                 seconds,snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes,filter);
         if(registration.device().kind()==TopologyCompiler.Kind.PIPE||registration.device().kind()==TopologyCompiler.Kind.FILTER)
-            view=view.withPipeInfo(PipePresentation.inspect(registration.device(),snapshot.graph(),registry.pipeViews(id),history,seconds,componentNames.size()));
+            view=view.withPipeInfo(PipePresentation.withBulkSpeed(
+                PipePresentation.inspect(registration.device(),snapshot.graph(),registry.pipeViews(id),history,seconds,componentNames.size()),
+                runtime.coordinator().bulkVolumeRates(owner),registration.device().geometry().area()));
         return view;
     }
     /**

@@ -26,7 +26,7 @@ public record FluidView(long identity,long inputRevision,long committedTick,long
         }
         public static PipeInfo empty(int components){return new PipeInfo(new PipeTransfer.Stream(0,new double[3][components],new double[3]),List.of(),false,false);}
     }
-    /** Speed is interval-mean bulk speed at this block's bore; gradient is endpoint pressure difference / path length. */
+    /** Speed is the previous-five-online-seconds bulk speed at this block's bore; gradient is endpoint pressure difference / path length. */
     public record PipeConnection(long pipeId,double massRateKgPerSecond,double velocityMetresPerSecond,double pressureDropPascalPerMetre,boolean reverse){
         public PipeConnection {
             for(double value:new double[]{massRateKgPerSecond,velocityMetresPerSecond,pressureDropPascalPerMetre})

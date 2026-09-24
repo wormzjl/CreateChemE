@@ -37,6 +37,13 @@ public final class PipePresentation {
         }
         return new FluidView.PipeInfo(total.finish(),metrics,junction,reversal);
     }
+    /** Replace the single-interval speed with the server's previous-five-seconds bulk volume rate. */
+    static FluidView.PipeInfo withBulkSpeed(FluidView.PipeInfo info,Map<Long,Double> volumeRates,double area) {
+        var connections=info.connections().stream().map(c->new FluidView.PipeConnection(c.pipeId(),
+            c.massRateKgPerSecond(),volumeRates.getOrDefault(c.pipeId(),0.0)/area,
+            c.pressureDropPascalPerMetre(),c.reverse())).toList();
+        return new FluidView.PipeInfo(info.contents(),connections,info.junction(),info.changedDirection());
+    }
     private static double volume(PipeTransfer.Stream stream){return Arrays.stream(stream.phaseVolumes()).sum()+stream.solids().volume();}
     private static final class Sum {
         private double mass;
