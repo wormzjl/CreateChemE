@@ -19,6 +19,12 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 - Process GUIs: editable scale-3 column drawing and separate solver/tray panels, independent JSON column/mixture presets, linked molar/mass composition and flow tags, full-text connection actions, C/K and integrated dP profiles; terminal-inclusive numbering supports two-tray pots without terminal dP; shared generator relative-composition editor, fuzzy component dropdowns with keyboard selection and text fields that consume inventory shortcuts, tank/pipe present-component tables, Celsius-default units and cursor recovery; fixed pipe roughness; automatic pipe direction/contents with velocity, mean pressure gradient, phase ratios and errors in the operating panel, read-only junction connection metrics; immediate last-published fluid snapshot on requested GUI opening, scheduled updates only for active subscriptions, and matching owner-rule update; engine-owned presentation; column block format 12 / wire schema 15, fluid protocol 6 (fresh worlds); remove mandatory commit attribution (cec64e4, abe151e, bb7a276, b443c74, c8754ec, fa12037; batch documentation/2026-09-24-column-gui/).
 
+## [0.4.1] - 2026-09-24
+
+### Removed
+
+- `AGENTS.md` no longer requires commit messages to end with the session's attribution line (`62df0d3`, `747074d`; batch `repository`).
+
 ## [0.4.0] - 2026-09-24
 
 ### Changed
