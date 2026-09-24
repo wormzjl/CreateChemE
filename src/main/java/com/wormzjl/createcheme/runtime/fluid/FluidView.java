@@ -9,7 +9,30 @@ import com.wormzjl.createcheme.science.fluid.network.InlineFilter;
 /** Read-only presentation of a committed interval; a null state denotes a zero-holdup pipe segment. */
 public record FluidView(long identity,long inputRevision,long committedTick,long onlineTick,String status,State state,
                         double massFlow,List<PipeTransfer> pipeHistory,Double devicePressureChange,
-                        boolean hydraulicOwner,double intervalSeconds,String intervalQuality,List<PipeRoute> pipeRoutes,InlineFilter filter) {
+                        boolean hydraulicOwner,double intervalSeconds,String intervalQuality,List<PipeRoute> pipeRoutes,InlineFilter filter,PipeInfo pipeInfo) {
+    /** Source-side convenience for devices without pipe inspection, not a wire-format fallback. */
+    public FluidView(long identity,long inputRevision,long committedTick,long onlineTick,String status,State state,double massFlow,List<PipeTransfer> pipeHistory,Double devicePressureChange,boolean hydraulicOwner,double intervalSeconds,String intervalQuality,List<PipeRoute> pipeRoutes,InlineFilter filter){
+        this(identity,inputRevision,committedTick,onlineTick,status,state,massFlow,pipeHistory,devicePressureChange,hydraulicOwner,intervalSeconds,intervalQuality,pipeRoutes,filter,null);
+    }
+    public FluidView withPipeInfo(PipeInfo info){
+        return new FluidView(identity,inputRevision,committedTick,onlineTick,status,state,massFlow,pipeHistory,devicePressureChange,hydraulicOwner,intervalSeconds,intervalQuality,pipeRoutes,filter,info);
+    }
+    /** Nonnegative interval transport; a junction counts outgoing material once, not every incident edge. */
+    public record PipeInfo(PipeTransfer.Stream contents,List<PipeConnection> connections,boolean junction,boolean changedDirection){
+        public PipeInfo {
+            Objects.requireNonNull(contents);connections=List.copyOf(connections);
+            if(connections.size()>12||connections.stream().map(PipeConnection::pipeId).distinct().count()!=connections.size())
+                throw new IllegalArgumentException("Invalid pipe inspection connections");
+        }
+        public static PipeInfo empty(int components){return new PipeInfo(new PipeTransfer.Stream(0,new double[3][components],new double[3]),List.of(),false,false);}
+    }
+    /** Speed is interval-mean bulk speed at this block's bore; gradient is endpoint pressure difference / path length. */
+    public record PipeConnection(long pipeId,double massRateKgPerSecond,double velocityMetresPerSecond,double pressureDropPascalPerMetre,boolean reverse){
+        public PipeConnection {
+            for(double value:new double[]{massRateKgPerSecond,velocityMetresPerSecond,pressureDropPascalPerMetre})
+                if(!Double.isFinite(value)||value<0)throw new IllegalArgumentException("Invalid pipe inspection metric");
+        }
+    }
     public FluidView(long identity,long inputRevision,long committedTick,long onlineTick,String status,State state,double massFlow,List<PipeTransfer> pipeHistory,Double devicePressureChange,boolean hydraulicOwner,double intervalSeconds,String intervalQuality,List<PipeRoute> pipeRoutes){this(identity,inputRevision,committedTick,onlineTick,status,state,massFlow,pipeHistory,devicePressureChange,hydraulicOwner,intervalSeconds,intervalQuality,pipeRoutes,null);}
     public record PipeRoute(long pipeId,String first,String second) {}
     public FluidView(long identity,long inputRevision,long committedTick,long onlineTick,String status,State state,double massFlow,List<PipeTransfer> pipeHistory,Double devicePressureChange) {

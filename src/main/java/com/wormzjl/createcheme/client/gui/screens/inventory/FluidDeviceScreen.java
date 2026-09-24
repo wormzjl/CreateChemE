@@ -18,7 +18,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.*;
 import static com.wormzjl.createcheme.client.gui.common.ProcessUi.*;
 
-/** Shared process controls and phase tables. Server state still arrives only in engine buckets. */
+/** Shared process controls and phase tables. Opening replays the last published snapshot; new state follows engine buckets. */
 public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDeviceMenu> {
     private final Map<String,NumericDraft> fields=new LinkedHashMap<>();
     private final Map<String,EditBox> editors=new LinkedHashMap<>();
@@ -29,8 +29,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private TemperatureUnit temperatureUnit=TemperatureUnit.CELSIUS;
     private String[][] particles=new String[64][3];
     private long revision=Long.MIN_VALUE,messageRevision;
-    private int page,phase=2,path;
-    private boolean reverse,mass,templates,rebuildNext;
+    private int page,phase=2;
+    private boolean mass,templates,rebuildNext,hasConnections;
     private String search="",message="",hovered;
     private V3ClientPresets library;
     private V3ClientPresets.Snapshot mixtureSnapshot;
@@ -50,16 +50,21 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         refresh();rebuild();
     }
     private boolean generator(){return menu.clientData()!=null&&menu.clientData().kind()==TopologyCompiler.Kind.GENERATOR;}
+    private boolean pipe(){return menu.clientData()!=null&&menu.clientData().kind()==TopologyCompiler.Kind.PIPE;}
+    private boolean transport(){return menu.clientData()!=null&&menu.clientData().view().pipeInfo()!=null;}
     private boolean canEdit(){return !menu.debug()&&menu.clientData()!=null;}
     private int rail(){return Math.min(210,imageWidth/3);}
     private int tableX(){return rail()+24;}
     private int tableWidth(){return imageWidth-tableX()-22;}
-    private int tableTop(){return page==0?130:page==1?166:142;}
-    private int rowHeight(){return page==0?18:25;}
+    private int tableTop(){return page==0?(pipe()?110:130):page==1?166:page==3?104:142;}
+    private int rowHeight(){return page==0||page==3?18:25;}
     private int visibleRows(){return Math.max(1,(imageHeight-64-tableTop())/rowHeight());}
     private void refresh(){
         if(menu.messageRevision()!=messageRevision){messageRevision=menu.messageRevision();message=menu.message();}
-        var data=menu.clientData();if(data==null||data.view().inputRevision()==revision)return;
+        var data=menu.clientData();if(data==null)return;
+        boolean connected=pipe()&&data.view().pipeInfo().connections().size()>1;
+        if(connected!=hasConnections){hasConnections=connected;if(!connected&&page==3)page=0;rebuildNext=true;}
+        if(data.view().inputRevision()==revision)return;
         boolean first=revision==Long.MIN_VALUE;revision=data.view().inputRevision();var c=data.controls();
         fields.clear();fields.put("temperature",new NumericDraft(temperatureUnit.display(c.temperature())));
         fields.put("pressure",new NumericDraft(c.pressure()));fields.put("diameter",new NumericDraft(c.diameter()));
@@ -69,6 +74,10 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         loadSolids(c.solids());if(data.kind()==TopologyCompiler.Kind.FILTER)phase=3;
         else if(first&&data.view().state()!=null){
             var phases=data.view().state().phaseMoles();double largest=0;
+            for(int i=0;i<phases.length;i++){double amount=Arrays.stream(phases[i]).sum();if(amount>largest){largest=amount;phase=i;}}
+        }
+        if(first&&pipe()&&data.view().pipeInfo()!=null){
+            var phases=data.view().pipeInfo().contents().phaseMoles();double largest=0;
             for(int i=0;i<phases.length;i++){double amount=Arrays.stream(phases[i]).sum();if(amount>largest){largest=amount;phase=i;}}
         }
         templates=false;scroll.reset();rebuildNext=true;
@@ -123,7 +132,9 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         var data=menu.clientData();if(data==null)return;
         if(canEdit()&&data.kind()!=TopologyCompiler.Kind.RESERVOIR&&data.kind()!=TopologyCompiler.Kind.FILTER)
             action("apply",81,imageHeight-27,110,this::apply);
-        int y=90;
+        if(pipe()&&data.view().pipeInfo().connections().size()>1)
+            action("connections",116,29,112,()->changePage(3)).active=page!=3;
+        int y=pipe()?78:90;
         if(canEdit())switch(data.kind()){
             case GENERATOR->{field("pressure",tr("pressure_input"),12,y,rail()-4);field("temperature",tr("temperature_input",temperatureUnit.symbol()),12,y+42,rail()-4);}
             case PUMP->{field("volumeFlow",tr("flow_input"),12,y,rail()-4);field("maximumAddedPressure",tr("head_input"),12,y+42,rail()-4);}
@@ -134,17 +145,13 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         if(data.kind()==TopologyCompiler.Kind.FILTER&&canEdit())
             action("recover",12,90,rail()-4,()->{FluidNetwork.recoverSolids(menu,revision);message=tr("waiting");})
                 .active=data.view().filter()!=null&&!data.view().filter().captured().empty();
-        if(data.kind()==TopologyCompiler.Kind.PIPE||data.kind()==TopologyCompiler.Kind.FILTER)
-            button(tr(reverse?"reverse_path":"forward_path",path+1),12,180,rail()-4,()->{
-                if(reverse){path=(path+1)%Math.max(1,data.view().pipeHistory().size());reverse=false;}else reverse=true;scroll.reset();rebuild();
-            }).setTooltip(Tooltip.create(Component.translatable("gui.createcheme.fluid.path.hint")));
-        if(page==0)buildContents();else if(page==1)buildComposition();else buildSolids();
+        if(page==0)buildContents();else if(page==1)buildComposition();else if(page==2)buildSolids();else configureScroll(data.view().pipeInfo().connections().size());
         if(focused!=null&&editors.containsKey(focused)){setFocused(editors.get(focused));editors.get(focused).setCursorPosition(cursor);}
         if(componentDropdown!=null&&"search".equals(focused))componentDropdown.expanded(dropdownOpen);
     }
     private void buildContents(){
         int w=(tableWidth()-12)/4;
-        for(int i=0;i<4;i++){int selected=i;button(tr("phase."+i),tableX()+i*(w+4),82,w,()->{phase=selected;scroll.reset();rebuild();}).active=phase!=i;}
+        for(int i=0;i<4;i++){int selected=i;button(tr("phase."+i),tableX()+i*(w+4),pipe()?62:82,w,()->{phase=selected;scroll.reset();rebuild();}).active=phase!=i;}
         configureScroll(phase==3?displayedSolids().populations().size():present().size());
     }
     private void configureScroll(int size){scroll.configure(leftPos+imageWidth-16,topPos+tableTop(),imageHeight-64-tableTop(),visibleRows(),size);}
@@ -230,9 +237,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     }
     private double[][] amounts(){
         var data=menu.clientData();var view=data.view();
-        if(data.kind()==TopologyCompiler.Kind.PIPE&&!view.pipeHistory().isEmpty()){
-            var transfer=view.pipeHistory().get(Math.min(path,view.pipeHistory().size()-1));return (reverse?transfer.reverse():transfer.forward()).phaseMoles();
-        }
+        if(view.pipeInfo()!=null)return view.pipeInfo().contents().phaseMoles();
         return view.state()==null?new double[3][data.components().size()]:view.state().phaseMoles();
     }
     private List<Integer> present(){
@@ -241,10 +246,9 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     }
     private double displayedFlow(){
         var data=menu.clientData();var view=data.view();
-        if(data.kind()==TopologyCompiler.Kind.PIPE&&!view.pipeHistory().isEmpty()){
+        if(view.pipeInfo()!=null){
             if(view.intervalSeconds()<=0)return Double.NaN;
-            var transfer=view.pipeHistory().get(Math.min(path,view.pipeHistory().size()-1));
-            var stream=reverse?transfer.reverse():transfer.forward();
+            var stream=view.pipeInfo().contents();
             if(mass)return stream.massKg()*3600/view.intervalSeconds();
             double moles=0;for(var phase:stream.phaseMoles())for(double amount:phase)moles+=amount;
             return moles*3.6/view.intervalSeconds();
@@ -259,9 +263,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private SolidInventory displayedSolids(){
         var data=menu.clientData();if(data==null)return SolidInventory.EMPTY;var view=data.view();
         if(view.filter()!=null)return view.filter().captured();
-        if(data.kind()==TopologyCompiler.Kind.PIPE&&!view.pipeHistory().isEmpty()){
-            var transfer=view.pipeHistory().get(Math.min(path,view.pipeHistory().size()-1));return (reverse?transfer.reverse():transfer.forward()).solids();
-        }
+        if(view.pipeInfo()!=null)return view.pipeInfo().contents().solids();
         return view.state()==null?SolidInventory.EMPTY:view.state().solids();
     }
     private String material(int id){
@@ -284,10 +286,12 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         text(g,title.getString(),10,10,TEXT,imageWidth-20);
         var data=menu.clientData();
         if(data==null){text(g,tr("waiting"),10,62,MUTED,imageWidth-20);return;}
-        var view=data.view();text(g,view.status(),10,59,MUTED,imageWidth-20);
-        g.vLine(rail()+14,78,imageHeight-52,LINE);g.hLine(8,imageWidth-8,imageHeight-49,LINE);
-        text(g,tr("operating"),12,77,ACCENT,rail());
+        var view=data.view();if(!pipe())text(g,view.status(),10,59,MUTED,imageWidth-20);
+        g.vLine(rail()+14,pipe()?60:78,imageHeight-52,LINE);g.hLine(8,imageWidth-8,imageHeight-49,LINE);
+        text(g,tr("operating"),12,pipe()?62:77,ACCENT,rail());
         for(var label:labels)text(g,label.text(),label.x(),label.y(),MUTED,label.width());
+        if(pipe())renderPipeRail(g,mouseX-leftPos,mouseY-topPos);
+        else {
         int y=switch(data.kind()){case RESERVOIR->94;case VALVE,VOID->146;default->218;};
         if(view.state()!=null){
             var state=view.state();
@@ -307,15 +311,10 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             railLine(g,"captured",number(view.filter().captured().massKg())+" kg",y);y+=30;
         }
         if(view.devicePressureChange()!=null&&y+30<imageHeight-55){railLine(g,"pressure_change",number(view.devicePressureChange()/1000)+" kPa",y);y+=30;}
-        if(menu.debug()&&!view.pipeHistory().isEmpty()&&y+30<imageHeight-55){
-            var transfer=view.pipeHistory().get(Math.min(path,view.pipeHistory().size()-1));
-            for(var route:view.pipeRoutes())if(route.pipeId()==transfer.pipeId()){
-                text(g,tr("from",reverse?route.second():route.first()),12,y,MUTED,rail());
-                text(g,tr("to",reverse?route.first():route.second()),12,y+14,MUTED,rail());
-            }
         }
         if(page==0)renderContents(g,mouseX-leftPos,mouseY-topPos);
         else if(page==1)renderComposition(g,mouseX-leftPos,mouseY-topPos);
+        else if(page==3)renderConnections(g,mouseX-leftPos,mouseY-topPos);
         else {
             int w=tableWidth();text(g,tr("solid_col.0"),tableX(),128,TEXT,w/2);
             text(g,tr("solid_col.1"),tableX()+w/2,128,TEXT,w/4);text(g,tr("solid_col.2"),tableX()+3*w/4,128,TEXT,w/4);
@@ -324,6 +323,66 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         text(g,status,10,imageHeight-42,WARN,imageWidth-20);
         // Scrollbar stores screen coordinates because all mouse events arrive there.
         g.pose().pushPose();g.pose().translate(-leftPos,-topPos,0);scroll.draw(g);g.pose().popPose();
+    }
+    private void renderPipeRail(GuiGraphics g,int mx,int my){
+        var view=menu.clientData().view();var info=view.pipeInfo();int y=124;
+        if(info.junction()){text(g,tr("junction",info.connections().size()),12,112,ACCENT,rail());y=136;}
+        double flow=displayedFlow();
+        railLine(g,"throughput",(Double.isFinite(flow)?number(flow):"—")+(mass?" kg/h":" kmol/h"),y);
+        if(mx>=12&&mx<rail()+10&&my>=y&&my<y+27)hovered=tr("throughput.hint");
+        y+=30;
+        railLine(g,"velocity",metricRange(info.connections(),com.wormzjl.createcheme.runtime.fluid.FluidView.PipeConnection::velocityMetresPerSecond," m/s"),y);
+        if(mx>=12&&mx<rail()+10&&my>=y&&my<y+27)hovered=tr("velocity.hint");
+        y+=30;
+        railLine(g,"gradient",metricRange(info.connections(),com.wormzjl.createcheme.runtime.fluid.FluidView.PipeConnection::pressureDropPascalPerMetre," Pa/m"),y);
+        if(mx>=12&&mx<rail()+10&&my>=y&&my<y+27)hovered=tr("gradient.hint");
+        y+=32;text(g,tr("phase_ratio"),12,y,MUTED,rail());y+=14;
+        double[] volumes=Arrays.copyOf(info.contents().phaseVolumes(),4);volumes[3]=info.contents().solids().volume();
+        double total=Arrays.stream(volumes).sum();int at=12;int[] colors={0xffd6a65a,0xff549bd2,0xffb3c0ca,0xffa28565};
+        for(int i=0;i<4;i++){int end=i==3?rail()+8:at+(total>0?(int)Math.round((rail()-4)*volumes[i]/total):0);if(total>0)g.fill(at,y,end,y+5,colors[i]);at=end;}
+        y+=10;
+        for(int i=0;i<4;i++){int col=i%2,row=i/2;text(g,tr("phase."+i)+" "+(total>0?number(100*volumes[i]/total)+"%":"—"),12+col*rail()/2,y+row*13,TEXT,rail()/2-4);}
+        if(mx>=12&&mx<rail()+10&&my>=y-24&&my<y+26)hovered=tr("phase_ratio.hint");
+        y+=34;text(g,tr("pipe_status"),12,y,ACCENT,rail());y+=14;
+        String status=pipeStatus(view.status());
+        if(info.changedDirection())status=tr("reversed_interval")+" "+status;
+        var lines=font.split(Component.literal(status),rail()-4);int available=Math.max(1,(imageHeight-58-y)/10);
+        for(int i=0;i<Math.min(available,lines.size());i++)g.drawString(font,lines.get(i),12,y+i*10,view.status().contains("HELD")||view.status().contains("ERROR")?WARN:MUTED,false);
+        if(mx>=12&&mx<rail()+10&&my>=y-14&&my<imageHeight-52)hovered=view.status();
+    }
+    private String pipeStatus(String status){
+        if(status.contains("HELD")||status.contains("ERROR")||status.contains("WAITING")||status.contains("closed")||status.contains("UNBOUND"))return status;
+        if(status.startsWith("STEADY:"))return tr(status.contains("VELOCITY_LIMIT")?"velocity_limited":"flowing");
+        if(status.startsWith("RESTING:"))return tr("no_flow");
+        if(status.equals("FULL")||status.equals("READY"))return tr("ready");
+        return status;
+    }
+    private String metricRange(List<com.wormzjl.createcheme.runtime.fluid.FluidView.PipeConnection> metrics,
+            java.util.function.ToDoubleFunction<com.wormzjl.createcheme.runtime.fluid.FluidView.PipeConnection> value,String unit){
+        if(metrics.isEmpty())return "—";
+        double min=metrics.stream().mapToDouble(value).min().orElse(0),max=metrics.stream().mapToDouble(value).max().orElse(0);
+        return (Math.abs(max-min)<1e-9?number(max):number(min)+"–"+number(max))+unit;
+    }
+    private void renderConnections(GuiGraphics g,int mx,int my){
+        var view=menu.clientData().view();var metrics=view.pipeInfo().connections();int x=tableX(),w=tableWidth();
+        text(g,tr("connections.hint"),x,64,MUTED,w);
+        ProcessUi.tableRow(g,font,new String[]{tr("connection"),tr(mass?"kg_h":"kmol_h"),tr("speed"),tr("dp_m")},x,tableTop()-16,w,true);
+        configureScroll(metrics.size());
+        for(int i=scroll.value();i<Math.min(metrics.size(),scroll.value()+visibleRows());i++){
+            var metric=metrics.get(i);String name=tr("connection");
+            for(var route:view.pipeRoutes())if(route.pipeId()==metric.pipeId())name=(metric.reverse()?route.second():route.first())+" → "+(metric.reverse()?route.first():route.second());
+            int y=tableTop()+(i-scroll.value())*18;
+            ProcessUi.tableRow(g,font,new String[]{name,number(connectionFlow(view,metric)),number(metric.velocityMetresPerSecond()),number(metric.pressureDropPascalPerMetre())},x,y,w,false);
+            if(mx>=x&&mx<x+w&&my>=y-2&&my<y+16)hovered=name;
+        }
+    }
+    private double connectionFlow(com.wormzjl.createcheme.runtime.fluid.FluidView view,
+            com.wormzjl.createcheme.runtime.fluid.FluidView.PipeConnection metric){
+        if(mass)return metric.massRateKgPerSecond()*3600;
+        if(view.intervalSeconds()<=0)return 0;
+        for(var transfer:view.pipeHistory())if(transfer.pipeId()==metric.pipeId())
+            return (Arrays.stream(transfer.forward().componentMoles()).sum()+Arrays.stream(transfer.reverse().componentMoles()).sum())*3.6/view.intervalSeconds();
+        return 0;
     }
     private void renderContents(GuiGraphics g,int mx,int my){
         int x=tableX(),w=tableWidth();
@@ -335,7 +394,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             }
             if(populations.isEmpty())text(g,tr("absent"),x,tableTop()+8,MUTED,w);return;
         }
-        var data=menu.clientData();boolean rates=data.kind()==TopologyCompiler.Kind.PIPE;double[] values=amounts()[phase];
+        var data=menu.clientData();boolean rates=transport();double[] values=amounts()[phase];
         double[] weights=data.molecularWeights().stream().mapToDouble(Double::doubleValue).toArray();
         double total=0;for(int i=0;i<values.length;i++)total+=values[i]*(mass?weights[i]:1);
         ProcessUi.tableRow(g,font,new String[]{tr("component"),tr(mass?"mass_percent":"mole_percent"),tr(rates?(mass?"kg_h":"kmol_h"):(mass?"kg":"kmol"))},x,tableTop()-16,w,true);

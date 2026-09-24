@@ -56,11 +56,11 @@ class FluidPacketCodecTest {
         double[] amounts=new double[count];Arrays.fill(amounts,1.0/count);var presets=new ArrayList<FluidPresetCatalog.Preset>();
         for(int i=0;i<32;i++)presets.add(new FluidPresetCatalog.Preset("p".repeat(120)+i,"n".repeat(128),amounts));
         var view=new FluidView(1,0,0,0,"READY",new FluidView.State(101325,298.15,1,1,new double[]{1,2,3},n),0,history);
-        var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,view,new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,amounts),ids,presets,"",descriptors,weights(ids.size()));
+        var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,view.withPipeInfo(FluidView.PipeInfo.empty(view.pipeHistory().getFirst().forward().componentMoles().length)),new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,amounts),ids,presets,"",descriptors,weights(ids.size()));
         String json=new Gson().toJson(data);assertTrue(json.length()<FluidNetwork.MAX_JSON);
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
-            // fluid-5: the static part (axis, presets, names) and the live part (view, controls, reply) each fit on their own.
+            // fluid-6: the static part (axis, presets, names) and the live part (view, controls, reply) each fit on their own.
             String fixed=new Gson().toJson(data.staticData(7)),live=new Gson().toJson(data.liveData());
             assertTrue(fixed.length()<FluidNetwork.MAX_JSON&&live.length()<FluidNetwork.MAX_JSON,"static "+fixed.length()+", live "+live.length());
             var s=new FluidNetwork.StaticPayload(1,1,fixed);FluidNetwork.StaticPayload.STREAM_CODEC.encode(buffer,s);var l=new FluidNetwork.LivePayload(1,1,live);FluidNetwork.LivePayload.STREAM_CODEC.encode(buffer,l);
@@ -76,7 +76,7 @@ class FluidPacketCodecTest {
         var view=new FluidView(42,7,200,250,"APPROXIMATE",new FluidView.State(101325,298.15,1,50,new double[]{.1,.2,.7},amounts),.25,history);
         var names=new ArrayList<String>();for(int i=0;i<com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;i++)names.add("component_"+i);
         var controls=new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,FluidDeviceSpec.nitrogen().composition());
-        var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,view,controls,names,List.of(),"",Map.of(),weights(names.size()));var gson=new Gson();String json=gson.toJson(data);assertTrue(json.length()<FluidNetwork.MAX_JSON);
+        var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,view.withPipeInfo(FluidView.PipeInfo.empty(view.pipeHistory().getFirst().forward().componentMoles().length)),controls,names,List.of(),"",Map.of(),weights(names.size()));var gson=new Gson();String json=gson.toJson(data);assertTrue(json.length()<FluidNetwork.MAX_JSON);
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);
         try {
             String live=gson.toJson(data.liveData());assertTrue(live.length()<FluidNetwork.MAX_JSON);
@@ -85,7 +85,7 @@ class FluidPacketCodecTest {
             assertEquals(12,roundTrip.view().pipeHistory().size());assertArrayEquals(amounts[2],roundTrip.view().pipeHistory().get(11).reverse().phaseMoles()[2]);assertEquals(250,roundTrip.view().onlineTick());
         } finally {buffer.release();}
     }
-    // ---------------- fluid-5: static and live payloads ----------------
+    // ---------------- fluid-6: static and live payloads ----------------
 
     private static FluidNetwork.MenuData generatorMenu(String message) {
         int count=com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1;var names=new ArrayList<String>();for(int i=0;i<count;i++)names.add("component_"+i);
@@ -95,9 +95,9 @@ class FluidPacketCodecTest {
         var view=new FluidView(9,4,1200,1300,"RESTING: no flow since 55.0 s",null,0,List.of());
         return new FluidNetwork.MenuData(TopologyCompiler.Kind.GENERATOR,view,new FluidNetwork.Controls(298.15,150000,.05,.000045,.01,500000,amounts),names,presets,message,Map.of("component_0",descriptor),weights(names.size()));
     }
-    /** The protocol is fluid-5 and every payload has its own wire identity. */
-    @Test void theProtocolIsFluidFiveWithDistinctStaticAndLivePayloads() {
-        assertEquals("fluid-5",FluidNetwork.PROTOCOL);
+    /** The protocol is fluid-6 and every payload has its own wire identity. */
+    @Test void theProtocolIsFluidSixWithDistinctStaticAndLivePayloads() {
+        assertEquals("fluid-6",FluidNetwork.PROTOCOL);
         var ids=java.util.Set.of(FluidNetwork.EditPayload.TYPE.id(),FluidNetwork.RecoverPayload.TYPE.id(),FluidNetwork.StaticPayload.TYPE.id(),FluidNetwork.LivePayload.TYPE.id());
         assertEquals(4,ids.size());
     }
@@ -132,6 +132,21 @@ class FluidPacketCodecTest {
         json.add("molecularWeights",new Gson().toJsonTree(Collections.nCopies(data.components().size(),0.0)));
         assertThrows(RuntimeException.class,()->FluidNetwork.decodeStatic(json.toString()));
         json.remove("molecularWeights");assertThrows(RuntimeException.class,()->FluidNetwork.decodeStatic(json.toString()));
+    }
+    @Test void pipeInspectionRoundTripsAndRejectsInvalidMetricValues(){
+        var base=generatorMenu("");int count=base.components().size();double[][] n=new double[3][count];n[2][0]=4;
+        var info=new FluidView.PipeInfo(new PipeTransfer.Stream(2,n,new double[]{0,0,.5}),
+            List.of(new FluidView.PipeConnection(17,1,2,3,true)),true,true);
+        var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,base.view().withPipeInfo(info),base.controls(),
+            base.components(),base.presets(),"",base.materialNames(),base.molecularWeights());
+        var gson=new Gson();var copy=FluidNetwork.MenuData.of(data.staticData(0),FluidNetwork.decodeLive(gson.toJson(data.liveData())));
+        assertEquals(info.connections(),copy.view().pipeInfo().connections());
+        assertTrue(copy.view().pipeInfo().junction());assertTrue(copy.view().pipeInfo().changedDirection());
+        assertArrayEquals(info.contents().componentMoles(),copy.view().pipeInfo().contents().componentMoles());
+        assertThrows(IllegalArgumentException.class,()->new FluidView.PipeConnection(1,-1,2,3,false));
+        assertThrows(IllegalArgumentException.class,()->new FluidView.PipeConnection(1,1,Double.NaN,3,false));
+        assertThrows(IllegalArgumentException.class,()->new FluidNetwork.MenuData(TopologyCompiler.Kind.PIPE,base.view(),base.controls(),
+            base.components(),base.presets(),"",base.materialNames(),base.molecularWeights()));
     }
     /** The client remembers the last delivered state of the 32 most recent devices, so a reopened menu shows it until its bucket; leaving a world forgets it. */
     @Test void theClientRemembersTheLastDeliveredStateOfRecentDevices() {

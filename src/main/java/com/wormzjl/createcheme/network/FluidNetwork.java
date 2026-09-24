@@ -29,7 +29,7 @@ import java.util.*;
  * the next bucket.
  */
 public final class FluidNetwork {
-    public static final String PROTOCOL="fluid-5";
+    public static final String PROTOCOL="fluid-6";
     private static final Gson JSON=new Gson();
     public static final int MAX_JSON=262144;
     public static final int MAX_EDIT_JSON=4096;
@@ -66,6 +66,11 @@ public final class FluidNetwork {
                     ||presets.stream().map(FluidPresetCatalog.Preset::id).distinct().count()!=presets.size()||materialNames.size()>components.size()
                     ||!components.containsAll(materialNames.keySet()))throw new IllegalArgumentException("Invalid bounded fluid menu state");
             if(view.pipeHistory().size()>12||view.pipeRoutes().size()>12||view.status().length()>2048)throw new IllegalArgumentException("Fluid view exceeds display bounds");
+            if((kind==TopologyCompiler.Kind.PIPE||kind==TopologyCompiler.Kind.FILTER)&&view.pipeInfo()==null)
+                throw new IllegalArgumentException("Missing pipe inspection");
+            if(view.pipeInfo()!=null){
+                requirePhaseAxis(view.pipeInfo().contents().phaseMoles(),components.size());
+            }
             if(view.state()!=null)requirePhaseAxis(view.state().phaseMoles(),components.size());
             for(var transfer:view.pipeHistory()){requirePhaseAxis(transfer.forward().phaseMoles(),components.size());requirePhaseAxis(transfer.reverse().phaseMoles(),components.size());}
             for(var p:presets)if(p.moleFractions().length!=components.size())throw new IllegalArgumentException("Fluid preset axis mismatch");

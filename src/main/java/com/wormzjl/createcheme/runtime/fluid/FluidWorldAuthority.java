@@ -305,8 +305,12 @@ public final class FluidWorldAuthority implements AutoCloseable {
         for(var historyEntry:history)for(var pipe:snapshot.graph().pipes())if(pipe.id()==historyEntry.pipeId()) {
             routes.add(new FluidView.PipeRoute(pipe.id(),nodeLabel(snapshot.graph().reservoirs().get(pipe.first()).id()),nodeLabel(snapshot.graph().reservoirs().get(pipe.second()).id())));
         }
-        return new FluidView(id,registration.revision(),snapshot.clock().committedTick(),topology.onlineTick(),status,state,flow,history,devicePressureChange,true,
-                snapshot.lastResult().map(PassiveIntervalSolver.Result::advancedSeconds).orElse(0.0),snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes,filter);
+        double seconds=snapshot.lastResult().map(PassiveIntervalSolver.Result::advancedSeconds).orElse(0.0);
+        var view=new FluidView(id,registration.revision(),snapshot.clock().committedTick(),topology.onlineTick(),status,state,flow,history,devicePressureChange,true,
+                seconds,snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes,filter);
+        if(registration.device().kind()==TopologyCompiler.Kind.PIPE||registration.device().kind()==TopologyCompiler.Kind.FILTER)
+            view=view.withPipeInfo(PipePresentation.inspect(registration.device(),snapshot.graph(),registry.pipeViews(id),history,seconds,componentNames.size()));
+        return view;
     }
     /**
      * Why this connection carries nothing, in the words the solver used, for the device status a
@@ -371,6 +375,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
         public FluidView view(long device,Map<Long,IslandCoordinator.Snapshot> islands){
             var view=FluidWorldAuthority.this.view(device,islands);
             var record=registrations().get(device);
+            if(record!=null&&(record.device().kind()==TopologyCompiler.Kind.PIPE||record.device().kind()==TopologyCompiler.Kind.FILTER)&&view.pipeInfo()==null)
+                view=view.withPipeInfo(FluidView.PipeInfo.empty(componentNames.size()));
             if(record!=null)publishedMenuData.put(device,com.wormzjl.createcheme.network.FluidNetwork.snapshot(FluidWorldAuthority.this,record,view));
             return view;
         }
