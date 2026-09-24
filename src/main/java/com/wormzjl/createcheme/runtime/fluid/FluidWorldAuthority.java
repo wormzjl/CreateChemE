@@ -127,8 +127,9 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public long onlineTick(){owned();return topology.onlineTick();}
     /** Optional read-only diagnostics; all values are immutable and callbacks run on the server thread. */
     public void observe(java.util.function.BiConsumer<List<IslandCoordinator.Snapshot>,Map<Long,IslandCoordinator.Metrics>> observer){owned();this.observer=observer;}
-    /** Every island as stored, without materialising certified ones: a diagnostic read that advances nothing. */
-    public List<IslandCoordinator.Snapshot> diagnosticSnapshots(){owned();return runtime.coordinator().observe();}
+    /** Every island as stored, without materialising certified ones: a diagnostic read that advances no island. The
+     * events queued since the last application are applied first, so the islands they create are among them. */
+    public List<IslandCoordinator.Snapshot> diagnosticSnapshots(){owned();flush();return runtime.coordinator().observe();}
     /** Materialises every certified island to now, as a save does; the observer receives the replayed accounting. */
     public void materialiseAll(){owned();flush();runtime.coordinator().snapshots();}
     /** The rest and steady-flow certificate policy captured at server start. */
@@ -241,7 +242,9 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public List<FluidPresentation.Delivery> deliveries(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu){owned();return presentation.deliveries(menu);}
     public FluidPresentation.Stats presentationStats(){owned();return presentation.stats();}
     /** Diagnostics: a device's bucket key (its island, or itself without one); its buckets fall at ticks congruent to it modulo 100. */
-    public long presentationKey(long device){owned();Long owner=registry.owner(device);return owner!=null?owner:device;}
+    public long presentationKey(long device){owned();flush();return bucketKey(device);}
+    /** The bucket key as the presentation reads it, with no event applied: marking a device never forces a batch. */
+    private long bucketKey(long device){Long owner=registry.owner(device);return owner!=null?owner:device;}
     public boolean viewDirty(long device){owned();return presentation.dirty(device);}
     public FluidSavedData.Capture capture() {
         owned();flush();var islands=new ArrayList<FluidCheckpointCodec.IslandEntry>();var world=topology.snapshot();
@@ -324,7 +327,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
     }
     /** The world side of {@link FluidPresentation}: ownership, views, loaded block entities and menu delivery. */
     private final class PresentationHost implements FluidPresentation.Host<com.wormzjl.createcheme.world.inventory.FluidDeviceMenu> {
-        public long key(long device){return presentationKey(device);}
+        public long key(long device){return bucketKey(device);}
         public long revision(long device){var record=registrations().get(device);return record==null?-1:record.revision();}
         public boolean eventPending(UUID event){for(var queued:topology.events())if(queued.id().equals(event))return true;return false;}
         public String eventRefusal(UUID event){return refusedEvents.remove(event);}
