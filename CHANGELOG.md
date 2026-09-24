@@ -15,6 +15,10 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Column GUI: selectable accepted column/tray/product inspection, profiles and audit evidence, persistent precise drafts, and engine-owned 100-online-tick actions/presentation; strict block format 11 and wire schema 13 (fresh worlds); remove mandatory commit attribution (cec64e4; batch documentation/2026-09-24-column-gui/).
+
 ## [0.4.0] - 2026-09-24
 
 ### Changed
