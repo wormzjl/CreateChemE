@@ -15,6 +15,8 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-24
+
 ### Changed
 
 - Fluid follow-ups F1: `certificateStationaryTolerance` (eps_s) defaults to 1e-7 instead of 1e-9 (same key and range 0 to 1e-6), so through-flow islands whose holdup drifts by a few 1e-7 per interval certify; paced `stress100`: 40 certificates, full solves 1200 to 1028, deviation 6.8e-9 against the 1e-6 budget (`1dac4bd`; batch `2026-09-23-fluid-followups`).
