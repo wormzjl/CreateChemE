@@ -68,9 +68,13 @@ public final class MinecraftFluidRuntime implements AutoCloseable {
         topology(dimension,event,affected,replacements,model,committed,online,additions,removals,Map.of(),metadataCommit);
     }
     public void topology(ResourceKey<Level> dimension,UUID event,Set<Long> affected,List<IslandCoordinator.Replacement> replacements,FluidThermodynamics model,long committed,long online,Map<Long,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.Reservoir> additions,Set<Long> removals,Map<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter> releasedFilters,Runnable metadataCommit) {
+        topology(dimension,Set.of(event),affected,replacements,model,committed,online,additions,removals,releasedFilters,metadataCommit);
+    }
+    /** A batch of events of one tick in one dimension, applied as one change (see {@link IslandCoordinator#topology(Set,Set,List,FluidThermodynamics,long,long,Map,Set,Map,Runnable)}). */
+    public void topology(ResourceKey<Level> dimension,Set<UUID> events,Set<Long> affected,List<IslandCoordinator.Replacement> replacements,FluidThermodynamics model,long committed,long online,Map<Long,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.Reservoir> additions,Set<Long> removals,Map<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter> releasedFilters,Runnable metadataCommit) {
         owned();Objects.requireNonNull(dimension);
         if(affected.stream().anyMatch(id->!dimension.equals(dimensions.get(id))))throw new IllegalStateException("Cross-dimension topology event");
-        coordinator.topology(event,affected,replacements,model,committed,online,additions,removals,releasedFilters,()->{
+        coordinator.topology(events,affected,replacements,model,committed,online,additions,removals,releasedFilters,()->{
             metadataCommit.run();affected.forEach(dimensions::remove);for(var replacement:replacements)dimensions.put(replacement.id(),dimension);
         });
     }

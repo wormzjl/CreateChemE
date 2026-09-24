@@ -215,6 +215,9 @@ public final class IslandCoordinator {
     private final IslandScheduler scheduler=new IslandScheduler();
     /** Event fences by event: which islands hold a fence for it, so an event finds its owners without a scan. */
     private final Map<UUID,Set<Long>> fenceOwners=new HashMap<>();
+    /** Owned finite stock by reservoir identity: which island holds each reservoir, so a topology change can refuse
+     * constructed stock that another island already holds without a scan of every island. */
+    private final Map<Long,Long> stockOwners=new HashMap<>();
     private record Round(long id,List<Pending> entries,long startedNanos) {}
     private final List<Round> rounds=new ArrayList<>();
     private long roundSequence,generations,shrinkTick=Long.MAX_VALUE;
@@ -256,7 +259,7 @@ public final class IslandCoordinator {
         var island=new Island(saved,model,epoch);
         var persisted=saved.certificate.flatMap(Certified::saved);
         if(persisted.isPresent())restore(island,persisted.orElseThrow());
-        islands.put(saved.id,island);ready.register(saved.id,false);index(island);reconsider(island);
+        islands.put(saved.id,island);ready.register(saved.id,false);index(island);indexStock(island);reconsider(island);
     }
     /**
      * A saved certificate (plan section 3.5). The snapshot's graph is already its island at the saved committed tick,
@@ -618,6 +621,17 @@ public final class IslandCoordinator {
         owned();for(long id:affected)materialise(require(id));
         return affected.stream().allMatch(id->{var i=require(id);var tick=i.fences.get(event);return tick!=null&&i.clock.committedTick()==tick&&i.pendingEntries==0;});
     }
+    /** A batch's owners: each affected island holds a fence of at least one of the events, every one of them at its
+     * committed tick, and runs no attempt; certified ones are materialised first, as for one event. */
+    private boolean aligned(Set<UUID> events,Collection<Long> affected) {
+        for(long id:affected)materialise(require(id));
+        for(long id:affected) {
+            var island=require(id);if(island.pendingEntries!=0)return false;boolean fenced=false;
+            for(var event:events){var tick=island.fences.get(event);if(tick==null)continue;if(tick!=island.clock.committedTick())return false;fenced=true;}
+            if(!fenced)return false;
+        }
+        return true;
+    }
     public void releaseFence(UUID event,Collection<Long> affected) {
         owned();if(!aligned(event,affected))throw new IllegalStateException("Event owners have not aligned");
         for(long id:affected){var i=require(id);removeFence(i,event);inputsChanged(i);i.touch();reconsider(i);}
@@ -648,8 +662,15 @@ public final class IslandCoordinator {
         topology(event,affected,replacements,model,committed,online,additions,removals,Map.of(),metadataCommit);
     }
     public void topology(UUID event,Set<Long> affected,List<Replacement> replacements,FluidThermodynamics model,long committed,long online,Map<Long,PassiveNetwork.Reservoir> additions,Set<Long> removals,Map<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter> releasedFilters,Runnable metadataCommit) {
-        owned();Objects.requireNonNull(model);Objects.requireNonNull(metadataCommit);
-        if(stopped||committed<0||online<committed||!aligned(event,affected))throw new IllegalStateException("Topology event is not ready");
+        topology(Set.of(event),affected,replacements,model,committed,online,additions,removals,releasedFilters,metadataCommit);
+    }
+    /**
+     * A batch of events of one tick applied as one change: every affected island holds a fence of at least one of them,
+     * each at its committed tick, and none of them survives into a replacement. The rest is as for one event.
+     */
+    public void topology(Set<UUID> events,Set<Long> affected,List<Replacement> replacements,FluidThermodynamics model,long committed,long online,Map<Long,PassiveNetwork.Reservoir> additions,Set<Long> removals,Map<Long,com.wormzjl.createcheme.science.fluid.network.InlineFilter> releasedFilters,Runnable metadataCommit) {
+        owned();Objects.requireNonNull(model);Objects.requireNonNull(metadataCommit);if(events.isEmpty())throw new IllegalArgumentException("A topology change needs its events");
+        if(stopped||committed<0||online<committed||!aligned(events,affected))throw new IllegalStateException("Topology event is not ready");
         var originals=affected.stream().map(this::require).toList();
         long revision=0;int cadence=originals.isEmpty()?settings.initialCadenceTicks:20;
         var stock=new HashMap<Long,PassiveNetwork.Reservoir>();var fences=new HashMap<UUID,Long>();
@@ -658,7 +679,7 @@ public final class IslandCoordinator {
             if(old.clock.committedTick()!=committed||old.clock.snapshot().onlineTick()!=online||!ApproximationAnchor.revision(old.model).equals(ApproximationAnchor.revision(model)))throw new IllegalStateException("Incompatible clocks or property packages");
             revision=Math.max(revision,old.revision);cadence=Math.max(cadence,old.clock.snapshot().cadenceTicks());
             for(var node:old.graph.reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR&&stock.putIfAbsent(node.id(),node)!=null)throw new IllegalStateException("Duplicate stock ownership");
-            for(var fence:old.fences.entrySet())if(!fence.getKey().equals(event)) {
+            for(var fence:old.fences.entrySet())if(!events.contains(fence.getKey())) {
                 Long prior=fences.putIfAbsent(fence.getKey(),fence.getValue());if(prior!=null&&!prior.equals(fence.getValue()))throw new IllegalStateException("Conflicting event timestamps");
             }
             if(old.allowance.acceptedIntervals()>0) {
@@ -670,7 +691,7 @@ public final class IslandCoordinator {
         for(var entry:additions.entrySet()) {
             var node=entry.getValue();
             if(node.id()!=entry.getKey()||node.kind()!=PassiveNetwork.NodeKind.RESERVOIR||stock.putIfAbsent(node.id(),node)!=null||removals.contains(node.id()))throw new IllegalStateException("Invalid constructed stock identity");
-            for(var other:islands.values())if(!affected.contains(other.id)&&other.graph.reservoirs().stream().anyMatch(n->n.id()==node.id()))throw new IllegalStateException("Constructed stock already exists");
+            Long holder=stockOwners.get(node.id());if(holder!=null&&!affected.contains(holder))throw new IllegalStateException("Constructed stock already exists");
         }
         revision=Math.addExact(revision,1);var seen=new HashSet<Long>();var ids=new HashSet<Long>();var staged=new ArrayList<Island>();
         for(var replacement:replacements) {
@@ -701,8 +722,8 @@ public final class IslandCoordinator {
         }
         for(var removed:oldFilters.entrySet())if(!removed.getValue().captured().empty()&&!releasedFilters.containsKey(removed.getKey()))throw new IllegalStateException("Topology lost captured solids");
         metadataCommit.run();
-        for(long id:affected){var old=islands.remove(id);ready.remove(id);unindex(old);old.deadline=Long.MAX_VALUE;old.generation=++generations;}
-        for(var island:staged){islands.put(island.id,island);ready.register(island.id,false);index(island);reconsider(island);}
+        for(long id:affected){var old=islands.remove(id);ready.remove(id);unindex(old);unindexStock(old);old.deadline=Long.MAX_VALUE;old.generation=++generations;}
+        for(var island:staged){islands.put(island.id,island);ready.register(island.id,false);index(island);indexStock(island);reconsider(island);}
         publisher.published(staged.stream().map(Island::snapshot).toList());
     }
     /** Stops admission; unresolved proposals are held. Actual execution capacity is owned by the shared pool. */
@@ -887,6 +908,8 @@ public final class IslandCoordinator {
         shrinkTick=tick;if(tick!=Long.MAX_VALUE)schedule(tick,IslandScheduler.Kind.ALLOCATOR_SHRINK,0,++generations);
     }
     private void index(Island island){for(var event:island.fences.keySet())fenceOwners.computeIfAbsent(event,ignored->new HashSet<>()).add(island.id);}
+    private void indexStock(Island island){for(var node:island.graph.reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR)stockOwners.put(node.id(),island.id);}
+    private void unindexStock(Island island){for(var node:island.graph.reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR)stockOwners.remove(node.id(),island.id);}
     private void unindex(Island island){for(var event:island.fences.keySet()){var owners=fenceOwners.get(event);if(owners!=null){owners.remove(island.id);if(owners.isEmpty())fenceOwners.remove(event);}}}
     private void removeFence(Island island,UUID event) {
         island.fences.remove(event);var owners=fenceOwners.get(event);
@@ -917,5 +940,7 @@ public final class IslandCoordinator {
         }
         if(ready.readyCount()!=islands.values().stream().filter(i->i.ready).count())throw new IllegalStateException("Ready queue holds unknown owners");
         for(var entry:fenceOwners.entrySet())for(long id:entry.getValue()){var island=islands.get(id);if(island==null||!island.fences.containsKey(entry.getKey()))throw new IllegalStateException("Fence index holds a stale owner "+id);}
+        var stock=new HashMap<Long,Long>();for(var island:islands.values())for(var node:island.graph.reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR)stock.put(node.id(),island.id);
+        if(!stock.equals(stockOwners))throw new IllegalStateException("Stock index diverged from the islands' reservoirs");
     }
 }
