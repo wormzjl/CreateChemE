@@ -1,6 +1,9 @@
 package com.wormzjl.createcheme.client.gui.screens.inventory;
 
 import com.wormzjl.createcheme.client.MaterialNames;
+import com.wormzjl.createcheme.client.gui.common.ProcessUi;
+import com.wormzjl.createcheme.client.gui.common.TemperatureUnit;
+import static com.wormzjl.createcheme.client.gui.common.ProcessUi.*;
 import com.wormzjl.createcheme.network.ColumnV3Network;
 import com.wormzjl.createcheme.science.column.v3.*;
 import com.wormzjl.createcheme.science.material.MaterialName;
@@ -19,8 +22,7 @@ import org.lwjgl.glfw.GLFW;
 
 /** Editable process drawing; accepted results are discarded on any physical draft edit. */
 public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<ColumnCalculatorV3Menu> {
-    private static final int BG=0xFF202A31,PANEL=0xFF28363F,LINE=0xFF536C7A,TEXT=0xFFEAF1F5,
-        MUTED=0xFFA9BCC7,ACCENT=0xFF79D6CE,WARN=0xFFFFCD82,CONTENT=78;
+    private static final int CONTENT=78;
     private static final String[] PAGES={"overview","composition","results","diagnostics"},
         RESULTS={"profiles","streams","heat"},METRICS={"temperature","pressure","pressure_drop","traffic"};
     private static String tr(String key,Object...args){return Component.translatable("gui.createcheme.column."+key,args).getString();}
@@ -37,7 +39,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private V3ClientPresets library;
     private V3ClientPresets.Kind presetKind;
     private V3ClientPresets.Snapshot presetSnapshot;
-    private boolean savingPreset,massRate;
+    private boolean savingPreset,massRate,connectionMenu;
     private long pendingNonce;
     private boolean conflict,rebuilding,invalidated,awaitingResult,kelvin,picker,infoOnly,needsRebuild;
     private int page,results,offset,selectedNode=1,selectedStream,metric,lineCount,pointerX,pointerY,selectedDraw=-1,selectedPA=-1,selectedSteam=-1;
@@ -69,7 +71,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         });
         ColumnV3Network.sendStateRequest(menu.blockPos());rebuild();
     }
-    private V3EditorDraft newDraft(V3ColumnInput input){return new V3EditorDraft(input,state.editorCatalog().weightsFor(input));}
+    private V3EditorDraft newDraft(V3ColumnInput input){var next=new V3EditorDraft(input,state.editorCatalog().weightsFor(input));if(massRate)next.composition().toggleBasis();return next;}
     private void receive(net.minecraft.core.BlockPos pos,V3State incoming){
         if(!menu.blockPos().equals(pos)||state!=null&&incoming.stateRevision()<state.stateRevision())return;
         boolean own=pendingNonce!=0&&incoming.clientNonce()==pendingNonce;
@@ -107,7 +109,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         pendingNonce=ColumnV3Network.sendCalculate(menu.blockPos(),state.inputRevision(),candidate);
         invalidated=true;awaitingResult=true;rejection="";rebuild();
     }
-    private void changePage(int target){page=target;offset=listScroll.value=0;picker=false;presetKind=null;savingPreset=false;rebuild();}
+    private void changePage(int target){page=target;connectionMenu=false;offset=listScroll.value=0;picker=false;presetKind=null;savingPreset=false;rebuild();}
     private int bodyBottom(){return imageHeight-(conflict?73:48);}
     private int rows(){return Math.max(1,(bodyBottom()-CONTENT-10)/15);}
     private boolean narrow(){return imageWidth<710;}
@@ -135,8 +137,12 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         var b=button(tr(key),x,y,w,action);b.setTooltip(Tooltip.create(Component.literal(tr(key+".hint"))));return b;
     }
     private void rateButton(int x,int y,int w){
-        button(tr(massRate?"mass_rate":"molar_rate"),x,y,w,()->{massRate=!massRate;rebuild();})
+        button(tr(massRate?"mass_rate":"molar_rate"),x,y,w,()->{toggleBasis();})
             .setTooltip(Tooltip.create(Component.literal(tr("flow_basis.hint"))));
+    }
+    private void toggleBasis(){
+        try{if(draft!=null){draft.composition().toggleBasis();massRate=draft.composition().mass();}else massRate=!massRate;rejection="";rebuild();}
+        catch(IllegalArgumentException e){rejection=validationMessage(e);}
     }
     private String validationMessage(IllegalArgumentException e){
         String message=Objects.toString(e.getMessage(),"").toLowerCase(Locale.ROOT);
@@ -164,8 +170,10 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         else if(page==0&&draft!=null){
             action("column_templates",10,54,100,()->openPresets(V3ClientPresets.Kind.COLUMN));
             action("save_column",116,54,86,()->openSave(V3ClientPresets.Kind.COLUMN));
-            if(narrow())button(tr(infoOnly?"drawing":"information"),208,54,105,()->{infoOnly=!infoOnly;rebuild();});
-            if(!narrow()||!infoOnly)buildDrawing();
+            if(narrow())button(tr(infoOnly?"drawing":"information"),436,54,105,()->{infoOnly=!infoOnly;rebuild();});
+            action("connections",208,54,112,()->{connectionMenu=!connectionMenu;rebuild();});
+            action("mixture_templates",326,54,104,()->openPresets(V3ClientPresets.Kind.MIXTURE));
+            if(!narrow()||!infoOnly){if(connectionMenu)buildConnections();else buildDrawing();}
         }else if(page==1&&draft!=null)buildComposition();
         else if(page==2){
             int w=(imageWidth-20)/3;
@@ -210,28 +218,29 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         s.x=x;s.y=y;s.length=Math.max(20,length);s.visible=visible;s.total=total;s.horizontal=horizontal;s.value=Math.clamp(s.value,0,s.max());
         if(!scrolls.contains(s))scrolls.add(s);
     }
+    private void buildConnections(){
+        action("add_draw",10,CONTENT+26,240,()->{selectedDraw=draft.addDraw(Math.clamp(selectedNode+1,2,Math.max(2,stageCount()+1)));selectedPA=selectedSteam=-1;connectionMenu=false;edited();rebuild();}).active=editable()&&
+            stageCount()>0&&java.util.stream.IntStream.range(0,3).anyMatch(i->draft.get("d"+i+"stage").isBlank());
+        action("add_pa",10,CONTENT+51,240,()->{selectedPA=draft.addPumparound(Math.clamp(selectedNode+1,3,Math.max(3,stageCount()+1)));selectedDraw=selectedSteam=-1;connectionMenu=false;edited();rebuild();}).active=editable()&&
+            stageCount()>1&&java.util.stream.IntStream.range(0,4).anyMatch(i->draft.get("c"+i+"draw").isBlank());
+        action("add_steam",10,CONTENT+76,240,()->{selectedSteam=draft.addSteam(Math.clamp(selectedNode+1,2,stageCount()+2));selectedDraw=selectedPA=-1;connectionMenu=false;edited();rebuild();}).active=editable()&&
+            draft.canAddSteam();
+    }
     private void buildDrawing(){
         int view=bodyBottom()-CONTENT-12;
         configure(canvasY,10+canvasWidth()+2,CONTENT,view,view,canvasHeight(),false);
         configure(canvasX,10,bodyBottom()-10,canvasWidth(),canvasWidth(),virtualWidth(),true);
-        int left=5,right=cx()+42;
+        int left=5,right=cx()+34;
         canvasField("tray_count","s2",left,0,58);
         canvasField("diameter","s9",left+65,0,72);
-        canvasField("top_temperature","s4",right,0,62);
-        canvasField("reflux","s6",right+68,0,75);
+        canvasField("top_temperature","s4",right,0,82);
+        canvasField("reflux","s6",right+88,0,65);
         canvasField("top_pressure","s7",right,32,62);
         int fy=trayY(feedTray());
         canvasField("feed_flow","s0",left,fy+12,76);
         canvasField("feed_temperature","s1",left,fy+46,65);
         canvasField("feed_tray","s3",left+72,fy+46,50);
-        canvasField("duty","s5",right,columnBottom()+6,75);
-        int y=34;
-        canvasButton("add_draw_short",left,y,35,()->{selectedDraw=draft.addDraw(Math.clamp(selectedNode+1,2,Math.max(2,stageCount()+1)));selectedPA=selectedSteam=-1;edited();rebuild();},
-            stageCount()>0&&java.util.stream.IntStream.range(0,3).anyMatch(i->draft.get("d"+i+"stage").isBlank()));
-        canvasButton("add_pa_short",left+40,y,40,()->{selectedPA=draft.addPumparound(Math.clamp(selectedNode+1,3,Math.max(3,stageCount()+1)));selectedDraw=selectedSteam=-1;edited();rebuild();},
-            stageCount()>1&&java.util.stream.IntStream.range(0,4).anyMatch(i->draft.get("c"+i+"draw").isBlank()));
-        canvasButton("add_steam_short",left+85,y,35,()->{selectedSteam=draft.addSteam(Math.clamp(selectedNode+1,2,stageCount()+2));selectedDraw=selectedPA=-1;edited();rebuild();},
-            draft.canAddSteam());
+        canvasField("duty","s5",right,columnBottom()+6,112);
         int location=selectedDraw>=0?draft.preview("d"+selectedDraw+"stage",2,2,stageCount()+2)-1:
             selectedPA>=0?draft.preview("c"+selectedPA+"draw",3,2,stageCount()+2)-1:
             selectedSteam>=0?draft.preview("t"+selectedSteam+"stage",stageCount()+2,2,stageCount()+2)-1:1;
@@ -253,8 +262,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             canvasButton("remove_steam",right,ey+69,106,()->{draft.removeSteam(i);selectedSteam=-1;edited();rebuild();},true);
         }
     }
-    private String unit(){return kelvin?"K":"C";}
-    private double temperature(double k){return kelvin?k:k-273.15;}
+    private String unit(){return temperatureUnit().symbol();}
+    private TemperatureUnit temperatureUnit(){return kelvin?TemperatureUnit.KELVIN:TemperatureUnit.CELSIUS;}
+    private double temperature(double k){return temperatureUnit().display(k);}
     private void openPresets(V3ClientPresets.Kind kind){
         rejection="";notice="";presetKind=kind;savingPreset=false;presetSnapshot=library.refresh(kind);listScroll.value=0;rebuild();
     }
@@ -297,9 +307,9 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             }else if(preset instanceof V3ClientPresets.Mixture mixture){
                 var source=state.editorCatalog().templates().values().stream().filter(i->i.packageId().equals(mixture.packageId())).findFirst().orElseThrow();
                 var comp=new V3CompositionDraft(source,state.editorCatalog().weightsFor(source));comp.load(mixture.amounts(),mixture.mass());
-                draft.composition(source,state.editorCatalog().weightsFor(source));draft.composition().load(mixture.amounts(),mixture.mass());
+                draft.composition(source,state.editorCatalog().weightsFor(source));draft.composition().load(mixture.amounts(),mixture.mass());massRate=mixture.mass();
             }
-            selectedDraw=selectedPA=selectedSteam=-1;presetKind=null;listScroll.value=0;edited();rebuild();
+            selectedDraw=selectedPA=selectedSteam=-1;connectionMenu=false;presetKind=null;listScroll.value=0;edited();rebuild();
         }catch(IllegalArgumentException|NoSuchElementException e){rejection=tr("preset_incompatible");}
     }
     private void buildComposition(){
@@ -307,9 +317,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         action("save_mixture",124,54,94,()->openSave(V3ClientPresets.Kind.MIXTURE));
         action("clear_mixture",224,54,72,()->{draft.composition().clear();picker=false;edited();rebuild();}).active=editable();
         button(tr(draft.composition().mass()?"mass_percent":"mole_percent"),imageWidth<570?166:302,imageWidth<570?CONTENT:54,85,()->{
-            try{draft.composition().toggleBasis();rejection="";rebuild();}catch(IllegalArgumentException e){rejection=validationMessage(e);}
+            toggleBasis();
         }).setTooltip(Tooltip.create(Component.literal(tr("composition_basis.hint"))));
-        rateButton(imageWidth-145,imageWidth<570?CONTENT:54,130);
         action(picker?"close_search":"add_component",10,CONTENT,150,()->{picker=!picker;search="";offset=listScroll.value=0;rebuild();}).active=editable();
         if(picker){
             var e=new EditBox(font,leftPos+10,topPos+CONTENT+25,imageWidth-38,18,Component.literal(tr("search")));
@@ -351,6 +360,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         return validation;
     }
     @Override public void render(GuiGraphics g,int mouseX,int mouseY,float partialTick){
+        ProcessUi.restoreCursor(minecraft,this);
         hoveredText=null;pointerX=mouseX-leftPos;pointerY=mouseY-topPos;
         super.render(g,mouseX,mouseY,partialTick);
         if(hoveredText!=null)g.renderTooltip(font,Component.literal(hoveredText),mouseX,mouseY);
@@ -390,7 +400,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private void overview(GuiGraphics g){
         if(draft==null){text(g,tr("waiting"),10,CONTENT,MUTED,imageWidth-20);return;}
         selectedNode=Math.clamp(selectedNode,0,stageCount()+1);
-        if(!narrow()||!infoOnly)diagram(g);
+        if(!narrow()||!infoOnly){if(connectionMenu)text(g,tr("connections.hint"),10,CONTENT,MUTED,canvasWidth());else diagram(g);}
         if(!narrow()){solverInfo(g,solverX(),solverWidth());inspect(g,trayX(),trayWidth());}
         else if(infoOnly){int w=(imageWidth-42)/2;solverInfo(g,10,w);inspect(g,w+28,w);}
     }
@@ -517,8 +527,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         if(ids.isEmpty())text(g,tr("empty_mixture"),10,CONTENT+58,MUTED,imageWidth-35);
     }
     private void tableRow(GuiGraphics g,String[] cells,int x,int y,int w,boolean header){
-        g.fill(x,y-2,x+w,y+12,header?LINE:PANEL);int at=x,first=w/2;
-        for(int i=0;i<cells.length;i++){int width=i==0?first:(w-first)/(cells.length-1);text(g,cells[i],at+3,y,header?TEXT:MUTED,width-6);at+=width;}
+        ProcessUi.tableRow(g,font,cells,x,y,w,header);
     }
     private static String percent(double value){return value!=0&&Math.abs(value)<0.05?String.format(Locale.ROOT,"%.2g",value):fmt(value);}
     private void wrap(List<String> lines,String value,int width){
@@ -571,7 +580,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         if(inspection()==null){text(g,tr("solve_products"),10,CONTENT+27,MUTED,imageWidth-25);return;}
         var products=state.displayResult().orElseThrow().streams();if(products.isEmpty())return;
         var stream=products.get(Math.clamp(selectedStream,0,products.size()-1));
-        text(g,tr("product_tp",fmt(stream.molarFlowMolPerSecond()*3.6),fmt(temperature(stream.temperatureKelvin())),unit(),fmt(stream.pressurePascal()/1000)),10,CONTENT+26,MUTED,imageWidth-30);
+        text(g,tr("product_tp",fmt(massRate?stream.massFlowKgPerSecond()*3600:stream.molarFlowMolPerSecond()*3.6),massRate?"kg/h":"kmol/h",fmt(temperature(stream.temperatureKelvin())),unit(),fmt(stream.pressurePascal()/1000)),10,CONTENT+26,MUTED,imageWidth-30);
         List<String[]> data=new ArrayList<>();
         for(var c:stream.moleFractions())data.add(new String[]{material(c.componentId()),percent(c.moleFraction()*100),percent(c.massFraction()*100),percent(massRate?stream.massFlowKgPerSecond()*c.massFraction()*3600:stream.molarFlowMolPerSecond()*c.moleFraction()*3.6)});
         table(g,new String[]{tr("component"),tr("mole_percent"),tr("mass_percent"),tr(massRate?"mass_rate":"molar_rate")},data,CONTENT+46);
