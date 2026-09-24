@@ -47,25 +47,13 @@ class V3TrayHydraulicsCodecTest {
         }
     }
 
-    /**
-     * A persisted input written before the diameter existed is the prescribed-drop column it always was.
-     *
-     * <p>That is why version 9 is still readable rather than retained as an unsupported state: nothing about
-     * such a block's published behaviour changes when this build loads it.</p>
-     */
     @Test
-    void aVersionNineInputWithoutTheKeyLoadsInPrescribedDropMode() throws Exception {
-        assertEquals(10, ColumnCalculatorV3BlockEntity.DATA_VERSION);
-        assertEquals(12, ColumnV3Network.WIRE_SCHEMA_VERSION);
-
+    void currentInputRequiresAnExplicitDiameter() throws Exception {
+        assertEquals(11, ColumnCalculatorV3BlockEntity.DATA_VERSION);
+        assertEquals(13, ColumnV3Network.WIRE_SCHEMA_VERSION);
         CompoundTag tag = writeInputNbt(input(V3ColumnInput.DEFAULT_COLUMN_DIAMETER_METRES));
         tag.remove("ColumnDiameter");
-        assertFalse(tag.contains("ColumnDiameter", Tag.TAG_DOUBLE));
-
-        V3ColumnInput migrated = readInputNbt(tag);
-        assertEquals(V3ColumnInput.PRESCRIBED_DROP_DIAMETER, migrated.columnDiameterMetres());
-        assertFalse(migrated.usesTrayHydraulics());
-        assertEquals(input(V3ColumnInput.PRESCRIBED_DROP_DIAMETER), migrated);
+        assertThrows(Exception.class, () -> readInputNbt(tag));
     }
 
     @Test

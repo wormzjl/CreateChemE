@@ -26,7 +26,6 @@ Standing rules from the project owner. They apply to every agent working in this
 - Every review or audit is written to `documentation/<batch>/<TOPIC>_REVIEW.md`; plans to `documentation/<batch>/<TOPIC>_PLAN.md`, inside the folder of the batch of work they belong to (see the next section).
 - GUI work is verified in the dev client through the langyo/minecraft-mod-mcp bridge (jar in `<worktree>/run/mods`, `.mcp.json` in the worktree root).
 - Large solver campaigns run with 8 to 10 worker threads and never overlap another campaign or a Gradle suite.
-- Commit messages end with the attribution line given for the session.
 
 ## Documentation, research, tools and versions (recorded 2026-09-23)
 

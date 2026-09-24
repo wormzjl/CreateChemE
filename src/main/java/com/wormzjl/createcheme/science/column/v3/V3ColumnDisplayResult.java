@@ -7,7 +7,7 @@ import java.util.Optional;
 /**
  * Compact, immutable presentation certificate for a committed accepted V3 result.
  *
- * <p>This deliberately excludes mutable solver workspaces and stage profiles. It is safe to persist and send as a
+ * <p>This excludes solver workspaces; optional bounded physical profiles are safe to inspect. It is safe to persist and send as a
  * bounded screen summary, but it is not a numerical result and cannot be used as a warm start or success input.</p>
  */
 public record V3ColumnDisplayResult(
@@ -21,7 +21,17 @@ public record V3ColumnDisplayResult(
         List<V3ColumnStreamProperties> streams,
         Optional<V3ColumnDutyLedger> dutyLedger,
         double closureTolerance,
-        Optional<V3TrayHydraulicsSummary> trayHydraulics) {
+        Optional<V3TrayHydraulicsSummary> trayHydraulics,
+        Optional<V3ColumnInspection> inspection) {
+    /** A summary-only certificate for scientific paths without a physical state. */
+    public V3ColumnDisplayResult(String inputDigest, String formulationRevision, String assumptionsRevision,
+            String datasetRevision, int newtonIterations, double maximumScaledResidual, int acceptanceCheckCount,
+            List<V3ColumnStreamProperties> streams, Optional<V3ColumnDutyLedger> dutyLedger,
+            double closureTolerance, Optional<V3TrayHydraulicsSummary> trayHydraulics) {
+        this(inputDigest, formulationRevision, assumptionsRevision, datasetRevision, newtonIterations,
+                maximumScaledResidual, acceptanceCheckCount, streams, dutyLedger, closureTolerance,
+                trayHydraulics, Optional.empty());
+    }
     /** Legacy certificate without a duty ledger; older persisted and wire results decode through here. */
     public V3ColumnDisplayResult(
             String inputDigest, String formulationRevision, String assumptionsRevision, String datasetRevision,
@@ -51,6 +61,9 @@ public record V3ColumnDisplayResult(
     }
 
     public V3ColumnDisplayResult {
+        Objects.requireNonNull(inspection, "inspection");
+        if (inspection.isPresent() && inspection.orElseThrow().audit().checks().size() != acceptanceCheckCount)
+            throw new IllegalArgumentException("Inspection audit differs from certificate");
         Objects.requireNonNull(dutyLedger, "dutyLedger");
         Objects.requireNonNull(trayHydraulics, "trayHydraulics");
         V3ConvergenceEvidence.requireClosure(closureTolerance);
@@ -83,7 +96,7 @@ public record V3ColumnDisplayResult(
                 result.streams(),
                 result.dutyLedger(),
                 result.closureTolerance(),
-                result.trayHydraulics());
+                result.trayHydraulics(), result.inspection());
     }
 
     private static String boundedDigest(String value) {

@@ -41,7 +41,7 @@ class V3SideDrawCodecTest {
     }
 
     @Test
-    void wireAndNbtRoundTripZeroThroughThreeDrawsAndLegacyNbt() throws Exception {
+    void wireAndNbtRoundTripZeroThroughThreeDrawsAndRejectMissingList() throws Exception {
         for (int count = 0; count <= 3; count++) {
             V3ColumnInput input = input(count);
             RegistryFriendlyByteBuf buffer = new RegistryFriendlyByteBuf(Unpooled.buffer(), RegistryAccess.EMPTY);
@@ -56,12 +56,12 @@ class V3SideDrawCodecTest {
                     new Class<?>[] {V3ColumnInput.class}, input);
             assertEquals(input, readNbt(tag));
             tag.remove("SideDraws");
-            assertEquals(input(0), readNbt(tag));
+            assertThrows(InvocationTargetException.class, () -> readNbt(tag));
         }
     }
 
     @Test
-    void wireAndNbtRoundTripSteamFeedsAndMigrateTheAbsentList() throws Exception {
+    void wireAndNbtRoundTripSteamFeedsAndRejectMissingList() throws Exception {
         V3ColumnInput base = input(1);
         V3ColumnInput steam = new V3ColumnInput(base.schemaVersion(), base.packageId(), base.assayId(), base.componentBasis(),
                 base.feedComponentMolarFlowsMolPerSecond(), base.feedTemperatureKelvin(), base.stageCount(), base.feedStageNumber(),
@@ -78,7 +78,7 @@ class V3SideDrawCodecTest {
                 new Class<?>[] {V3ColumnInput.class}, steam);
         assertEquals(steam, readNbt(tag));
         tag.remove("SteamFeeds");
-        assertEquals(input(1), readNbt(tag));
+        assertThrows(InvocationTargetException.class, () -> readNbt(tag));
     }
 
     @Test
