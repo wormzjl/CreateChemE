@@ -17,7 +17,7 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 ### Added
 
-- Column GUI: compact scale-3 three-column layout, editable rounded drawing, independent client JSON column/mixture presets and saves, relative composition and component-flow tables, dynamic draws/PAs/steam, localized controls and C/K, solver/tray inspection and integrated dP profiles; total tray numbering includes condenser/reboiler, supports two-tray pots and gives neither terminal dP; edits discard results; engine-owned 100-online-tick actions/presentation, block format 12 and wire schema 15 (fresh worlds); remove mandatory commit attribution (cec64e4, abe151e, bb7a276; batch documentation/2026-09-24-column-gui/).
+- Process GUIs: editable scale-3 column drawing and separate solver/tray panels, independent JSON column/mixture presets, linked molar/mass composition and flow tags, full-text connection actions, C/K and integrated dP profiles; terminal-inclusive numbering supports two-tray pots without terminal dP; shared generator relative-composition editor, searchable components, tank/pipe present-component tables, Celsius-default units and cursor recovery; fixed pipe roughness; engine-owned presentation; column block format 12 / wire schema 15, fluid protocol 5 (fresh worlds); remove mandatory commit attribution (cec64e4, abe151e, bb7a276, b443c74; batch documentation/2026-09-24-column-gui/).
 
 ## [0.4.0] - 2026-09-24
 
