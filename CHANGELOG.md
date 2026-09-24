@@ -15,6 +15,12 @@ All notable changes to CreateChemE are recorded in this file. The format follows
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-24
+
+### Removed
+
+- `AGENTS.md` no longer requires commit messages to end with the session's attribution line (`62df0d3`, `747074d`; batch `repository`).
+
 ## [0.4.0] - 2026-09-24
 
 ### Changed
