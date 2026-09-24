@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodec;
 import com.wormzjl.createcheme.runtime.fluid.FluidPresetCatalog;
 import com.wormzjl.createcheme.runtime.fluid.FluidSavedData;
+import com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStore;
 import com.wormzjl.createcheme.runtime.fluid.RetainedSolver;
 import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
 import com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics;
@@ -111,7 +112,7 @@ final class SolverRegressionHarness {
     static Map<Long,PassiveNetwork> islands(FluidThermodynamics model,Path path) {
         try {
             var tag=NbtIo.readCompressed(path,NbtAccounter.unlimitedHeap()).getCompound("data");
-            var checkpoint=FluidSavedData.load(tag,key->model).checkpoint();
+            var checkpoint=FluidSavedData.load(tag,key->model,FluidCheckpointStore.directory(path.getParent(),Runnable::run,false)).checkpoint();
             var result=new LinkedHashMap<Long,PassiveNetwork>();
             for(FluidCheckpointCodec.IslandEntry entry:checkpoint.islands())result.put(entry.snapshot().id(),entry.snapshot().graph());
             return result;

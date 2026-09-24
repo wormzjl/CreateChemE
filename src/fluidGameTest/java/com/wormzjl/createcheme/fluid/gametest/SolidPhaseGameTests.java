@@ -51,8 +51,8 @@ public final class SolidPhaseGameTests {
                 first[0]=world.view(filterId).filter();helper.assertTrue(first[0]!=null&&!first[0].captured().empty(),"Disconnected filter lost solids");
                 var capture=world.capture();
                 var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
-                var saved=new FluidSavedData(capture.checkpoint(),capture.world(),key->model).save(new CompoundTag(),level.registryAccess());
-                var loaded=FluidSavedData.load(saved,key->model);
+                var data=new FluidSavedData(capture.checkpoint(),capture.world(),key->model);var saved=data.save(new CompoundTag(),level.registryAccess());
+                var loaded=FluidSavedData.load(saved,key->model,data.store().reopen());
                 var restored=loaded.checkpoint().islands().stream().flatMap(i->i.snapshot().graph().pipes().stream()).filter(p->p.id()==PhysicalFluidTopology.filterIdentity(filterId)).findFirst().orElseThrow().filter();
                 helper.assertTrue(first[0].equals(restored),"Captured solids changed during save/load");
                 var receiver=capture.checkpoint().islands().stream().flatMap(i->i.snapshot().graph().reservoirs().stream()).filter(n->n.id()==tankId).findFirst().orElseThrow();

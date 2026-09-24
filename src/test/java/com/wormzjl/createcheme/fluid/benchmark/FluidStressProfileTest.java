@@ -16,7 +16,7 @@ class FluidStressProfileTest {
         var source=Path.of(System.getProperty("fluid.profile.snapshot"));
         var tag=NbtIo.readCompressed(source,NbtAccounter.unlimitedHeap()).getCompound("data");
         var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
-        var saved=FluidSavedData.load(tag,key->model).checkpoint();
+        var saved=FluidSavedData.load(tag,key->model,FluidCheckpointStore.directory(source.getParent(),Runnable::run,false)).checkpoint();
         var entry=saved.islands().stream().filter(i->i.snapshot().clock().committedTick()==0)
                 .max(Comparator.comparingInt(i->i.snapshot().graph().reservoirs().size())).orElseThrow();
         var graph=entry.snapshot().graph();var rows=new ArrayList<Map<String,Object>>();

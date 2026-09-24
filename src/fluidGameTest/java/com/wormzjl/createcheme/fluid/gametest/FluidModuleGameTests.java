@@ -33,8 +33,8 @@ public final class FluidModuleGameTests {
             helper.assertTrue(runtime.coordinator().snapshot(2).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]>0&&runtime.coordinator().snapshot(3).graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.waterIndex()]>0,"Products were not physically delivered");
             var entries=runtime.coordinator().snapshots().stream().map(s->new FluidCheckpointCodec.IslandEntry("minecraft:overworld",FluidPresetCatalog.NETWORK_PACKAGE,1e-9,s)).toList();
             var checkpoint=new FluidCheckpointCodec.Checkpoint(entries,host.transfers(),host.snapshots(),host.bindings());
-            var data=new FluidSavedData(checkpoint,key->model);var tag=data.save(new net.minecraft.nbt.CompoundTag(),helper.getLevel().registryAccess());
-            var loaded=FluidSavedData.load(tag,key->model).checkpoint();var after=totals(loaded.islands().stream().map(FluidCheckpointCodec.IslandEntry::snapshot).toList(),loaded.transfers(),loaded.modules());
+            var data=new FluidSavedData(checkpoint,key->model);var tag=data.save(new net.minecraft.nbt.CompoundTag(),helper.getLevel().registryAccess());var reopened=data.store().reopen();
+            var loaded=FluidSavedData.load(tag,key->model,reopened).checkpoint();var after=totals(loaded.islands().stream().map(FluidCheckpointCodec.IslandEntry::snapshot).toList(),loaded.transfers(),loaded.modules());
             for(int c=0;c<model.componentCount();c++)helper.assertTrue(Math.abs(before[c]-after[c])<=1e-9*Math.max(1,before[c]),"Module global component balance "+c);
             helper.assertTrue(Math.abs(before[before.length-1]-after[after.length-1])<=1e-6*Math.max(1,Math.abs(before[before.length-1])),"Module global energy balance");
             helper.assertTrue(new HashSet<>(loaded.moduleBindings()).equals(new HashSet<>(bindings))&&loaded.modules().getFirst().committedTick()==900,"Module bindings/clock were not saved");
