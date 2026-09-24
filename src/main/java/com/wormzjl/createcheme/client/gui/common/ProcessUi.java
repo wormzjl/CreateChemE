@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.EditBox;
 import org.lwjgl.glfw.GLFW;
 import java.util.Locale;
 
@@ -22,6 +23,13 @@ public final class ProcessUi {
         long window=client.getWindow().getWindow();
         if(GLFW.glfwGetInputMode(window,GLFW.GLFW_CURSOR)!=GLFW.GLFW_CURSOR_NORMAL)
             GLFW.glfwSetInputMode(window,GLFW.GLFW_CURSOR,GLFW.GLFW_CURSOR_NORMAL);
+    }
+    /** Focused text editors consume gameplay bindings before container-screen shortcuts. */
+    public static boolean textKeyPressed(Screen screen,int key,int scan,int modifiers){
+        if(!(screen.getFocused() instanceof EditBox edit)||!edit.isFocused()||!edit.active||!edit.visible)return false;
+        if(edit.keyPressed(key,scan,modifiers))return true;
+        // Escape closes the screen, and Tab retains ordinary focus traversal.
+        return key!=GLFW.GLFW_KEY_ESCAPE&&key!=GLFW.GLFW_KEY_TAB;
     }
     public static void tableRow(GuiGraphics g,Font font,String[] cells,int x,int y,int width,boolean header){
         g.fill(x,y-2,x+width,y+12,header?LINE:PANEL);int at=x,first=width/2;

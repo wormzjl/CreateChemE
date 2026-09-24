@@ -182,7 +182,7 @@
   "gui.createcheme.column.liquid_percent": "x mol%",
   "gui.createcheme.column.vapor_percent": "y mol%",
   "gui.createcheme.column.no_matches": "No matching components in this package.",
-  "gui.createcheme.column.empty_mixture": "Add components to begin a custom mixture.",
+  "gui.createcheme.column.empty_mixture": "Search for a component above, or load a mixture.",
   "gui.createcheme.column.relative_hint": "Relative amounts need not total 100%.",
   "gui.createcheme.column.drawing_hint": "Click a tray or connection to inspect or edit it.",
   "gui.createcheme.column.feed_icon": "FEED  >",
@@ -344,7 +344,7 @@
   "gui.createcheme.fluid.kmol": "Amount (kmol)",
   "gui.createcheme.fluid.mixture_library": "Select a mixture to fill the composition.",
   "gui.createcheme.fluid.no_matches": "No matching components.",
-  "gui.createcheme.fluid.empty_mixture": "Start with Add component, or load a mixture.",
+  "gui.createcheme.fluid.empty_mixture": "Add a component using the search dropdown, or load a mixture.",
   "gui.createcheme.fluid.overview.hint": "Inspect the most recently delivered process state.",
   "gui.createcheme.fluid.composition.hint": "Define the generator mixture with relative molar or mass amounts.",
   "gui.createcheme.fluid.solids.hint": "Edit suspended solids separately from the fluid composition.",
@@ -358,5 +358,8 @@
   "gui.createcheme.fluid.load_mixture.hint": "Load a server preset or compatible client JSON mixture.",
   "gui.createcheme.fluid.new_mixture.hint": "Clear the fluid composition and add your own components.",
   "gui.createcheme.fluid.add_component.hint": "Search and add one component. Remove rows with the × button.",
-  "gui.createcheme.fluid.relative_hint": "Amounts are relative; the total need not be 100%."
+  "gui.createcheme.fluid.relative_hint": "Amounts are relative; the total need not be 100%.",
+  "gui.createcheme.common.component_search": "Add component: type to search",
+  "gui.createcheme.common.component_search.hint": "Search names or IDs, including partial names and small typos. Use Up/Down and Enter, or click a match. Escape dismisses the list.",
+  "gui.createcheme.common.no_components": "No matching components"
 }

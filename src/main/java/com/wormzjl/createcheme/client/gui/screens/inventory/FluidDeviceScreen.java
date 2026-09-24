@@ -25,11 +25,12 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private final List<Label> labels=new ArrayList<>();
     private final ProcessScroll scroll=new ProcessScroll();
     private RelativeComposition composition;
+    private ComponentDropdown componentDropdown;
     private TemperatureUnit temperatureUnit=TemperatureUnit.CELSIUS;
     private String[][] particles=new String[64][3];
     private long revision=Long.MIN_VALUE,messageRevision;
     private int page,phase=2,path;
-    private boolean reverse,mass,searching,templates,rebuildNext;
+    private boolean reverse,mass,templates,rebuildNext;
     private String search="",message="",hovered;
     private V3ClientPresets library;
     private V3ClientPresets.Snapshot mixtureSnapshot;
@@ -53,7 +54,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private int rail(){return Math.min(210,imageWidth/3);}
     private int tableX(){return rail()+24;}
     private int tableWidth(){return imageWidth-tableX()-22;}
-    private int tableTop(){return page==0?130:142;}
+    private int tableTop(){return page==0?130:page==1?166:142;}
     private int rowHeight(){return page==0?18:25;}
     private int visibleRows(){return Math.max(1,(imageHeight-64-tableTop())/rowHeight());}
     private void refresh(){
@@ -70,7 +71,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             var phases=data.view().state().phaseMoles();double largest=0;
             for(int i=0;i<phases.length;i++){double amount=Arrays.stream(phases[i]).sum();if(amount>largest){largest=amount;phase=i;}}
         }
-        searching=templates=false;scroll.reset();rebuildNext=true;
+        templates=false;scroll.reset();rebuildNext=true;
     }
     private void loadSolids(SlurryFeed solids){
         particles=new String[64][3];int i=0;
@@ -90,7 +91,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         box.setMaxLength(48);box.setValue(fields.get(key).text());box.setResponder(v->fields.get(key).text(v));
         box.setTooltip(Tooltip.create(Component.literal(label)));box.setEditable(canEdit());editors.put(key,addRenderableWidget(box));
     }
-    private void changePage(int target){page=target;searching=templates=false;scroll.reset();rebuild();}
+    private void changePage(int target){page=target;templates=false;scroll.reset();rebuild();}
     private void toggleBasis(){
         try{if(composition!=null){composition.toggleBasis();mass=composition.mass();}else mass=!mass;rebuild();}
         catch(IllegalArgumentException e){message=tr("invalid_composition");}
@@ -107,7 +108,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private void rebuild(){
         rebuildNext=false;String focused=editors.entrySet().stream().filter(e->e.getValue()==getFocused()).map(Map.Entry::getKey).findFirst().orElse(null);
         int cursor=focused==null?0:editors.get(focused).getCursorPosition();
-        clearWidgets();editors.clear();labels.clear();
+        boolean dropdownOpen=componentDropdown!=null&&componentDropdown.expanded();
+        clearWidgets();editors.clear();labels.clear();componentDropdown=null;
         action("overview",10,29,100,()->changePage(0)).active=page!=0;
         if(generator()&&canEdit()){
             action("composition",116,29,112,()->changePage(1)).active=page!=1;
@@ -138,6 +140,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             }).setTooltip(Tooltip.create(Component.translatable("gui.createcheme.fluid.path.hint")));
         if(page==0)buildContents();else if(page==1)buildComposition();else buildSolids();
         if(focused!=null&&editors.containsKey(focused)){setFocused(editors.get(focused));editors.get(focused).setCursorPosition(cursor);}
+        if(componentDropdown!=null&&"search".equals(focused))componentDropdown.expanded(dropdownOpen);
     }
     private void buildContents(){
         int w=(tableWidth()-12)/4;
@@ -146,7 +149,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     }
     private void configureScroll(int size){scroll.configure(leftPos+imageWidth-16,topPos+tableTop(),imageHeight-64-tableTop(),visibleRows(),size);}
     private void openTemplates(){
-        mixtureSnapshot=library.refresh(V3ClientPresets.Kind.MIXTURE);choices=mixtureChoices();templates=true;searching=false;scroll.reset();rebuild();
+        mixtureSnapshot=library.refresh(V3ClientPresets.Kind.MIXTURE);choices=mixtureChoices();templates=true;scroll.reset();rebuild();
     }
     private List<Choice> mixtureChoices(){
         var data=menu.clientData();var list=new ArrayList<Choice>();
@@ -179,19 +182,13 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         }
         int bw=Math.max(60,(w-12)/3);
         action("load_mixture",x,82,bw,this::openTemplates);
-        action("new_mixture",x+bw+6,82,bw,()->{composition.clear();searching=false;scroll.reset();message="";rebuild();});
-        action(searching?"back":"add_component",x+2*(bw+6),82,bw,()->{searching=!searching;search="";scroll.reset();rebuild();});
-        if(searching){
-            var box=new EditBox(font,leftPos+x,topPos+112,w-4,18,Component.translatable("gui.createcheme.fluid.search"));
-            box.setValue(search);box.setHint(Component.translatable("gui.createcheme.fluid.search"));
-            box.setResponder(v->{search=v;scroll.reset();rebuildNext=true;});editors.put("search",addRenderableWidget(box));
-            var available=available();configureScroll(available.size());
-            for(int i=scroll.value();i<Math.min(available.size(),scroll.value()+visibleRows());i++){
-                int id=available.get(i);button(material(id),x,tableTop()+(i-scroll.value())*25,w-4,()->{
-                    composition.add(id);searching=false;scroll.reset();rebuild();
-                });
-            }return;
-        }
+        action("new_mixture",x+bw+6,82,bw,()->{composition.clear();scroll.reset();message="";rebuild();});
+        var options=new ArrayList<ComponentSearch.Option>();var data=menu.clientData();
+        for(int i=0;i<data.components().size();i++)if(!composition.contains(i))
+            options.add(new ComponentSearch.Option(i,material(i),data.components().get(i)));
+        componentDropdown=new ComponentDropdown(font,leftPos+x,topPos+112,Math.min(360,w-4),imageHeight-178,options,search,
+            value->search=value,id->{composition.add(id);search="";rebuild();});
+        editors.put("search",addRenderableWidget(componentDropdown));
         var ids=composition.rows();configureScroll(ids.size());
         int amount=x+w/2,norm=amount+76;
         for(int i=scroll.value();i<Math.min(ids.size(),scroll.value()+visibleRows());i++){
@@ -201,11 +198,6 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             box.setTooltip(Tooltip.create(Component.translatable("gui.createcheme.column.relative_amount.hint")));editors.put("comp"+id,addRenderableWidget(box));
             button("×",x+w-26,y,22,()->{composition.remove(id);rebuild();}).setTooltip(Tooltip.create(Component.translatable("gui.createcheme.column.remove_component.hint")));
         }
-    }
-    private List<Integer> available(){
-        var data=menu.clientData();var ids=new ArrayList<Integer>();
-        for(int i=0;i<data.components().size();i++)if(!composition.contains(i)&&(material(i)+" "+data.components().get(i)).toLowerCase(Locale.ROOT).contains(search.toLowerCase(Locale.ROOT)))ids.add(i);
-        return ids;
     }
     private void buildSolids(){
         field("solidFraction",tr("solid_fraction"),tableX(),82,Math.min(160,tableWidth()));
@@ -281,7 +273,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     @Override public void render(GuiGraphics g,int mouseX,int mouseY,float partialTick){
         ProcessUi.restoreCursor(minecraft,this);refresh();if(rebuildNext)rebuild();hovered=null;
         super.render(g,mouseX,mouseY,partialTick);
-        if(hovered!=null)g.renderTooltip(font,Arrays.stream(hovered.split("\\n")).<Component>map(Component::literal).toList(),Optional.empty(),mouseX,mouseY);
+        if(hovered!=null&&(componentDropdown==null||!componentDropdown.popupContains(mouseX,mouseY)))g.renderTooltip(font,Arrays.stream(hovered.split("\\n")).<Component>map(Component::literal).toList(),Optional.empty(),mouseX,mouseY);
+        if(componentDropdown!=null)componentDropdown.renderSuggestions(g,mouseX,mouseY);
     }
     @Override protected void renderBg(GuiGraphics g,float partialTick,int mouseX,int mouseY){
         g.fill(leftPos,topPos,leftPos+imageWidth,topPos+imageHeight,BG);
@@ -359,10 +352,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
     private void renderComposition(GuiGraphics g,int mx,int my){
         int x=tableX(),w=tableWidth();
         if(templates){text(g,tr("mixture_library"),x,116,ACCENT,w);return;}
-        if(searching){if(available().isEmpty())text(g,tr("no_matches"),x,tableTop()+8,MUTED,w);return;}
-        text(g,tr("relative_hint"),x,112,MUTED,w);
-        text(g,tr("component"),x,126,TEXT,w/2-6);text(g,tr("relative"),x+w/2,126,TEXT,70);
-        text(g,tr(mass?"mass_percent":"mole_percent"),x+w/2+76,126,TEXT,w/2-108);
+        text(g,tr("component"),x,150,TEXT,w/2-6);text(g,tr("relative"),x+w/2,150,TEXT,70);
+        text(g,tr(mass?"mass_percent":"mole_percent"),x+w/2+76,150,TEXT,w/2-108);
         double[] fractions=null;try{fractions=composition.displayFractions();}catch(IllegalArgumentException ignored){}
         var ids=composition.rows();
         for(int i=scroll.value();i<Math.min(ids.size(),scroll.value()+visibleRows());i++){
@@ -373,10 +364,15 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         }
         if(ids.isEmpty())text(g,tr("empty_mixture"),x,tableTop()+8,MUTED,w);
     }
-    @Override public boolean mouseClicked(double x,double y,int button){if(scroll.click(x,y,button)){rebuildNext=true;return true;}return super.mouseClicked(x,y,button);}
-    @Override public boolean mouseDragged(double x,double y,int button,double dx,double dy){if(scroll.drag(y)){rebuildNext=true;return true;}return super.mouseDragged(x,y,button,dx,dy);}
-    @Override public boolean mouseReleased(double x,double y,int button){scroll.release();return super.mouseReleased(x,y,button);}
+    @Override public boolean keyPressed(int key,int scan,int modifiers){
+        if(ProcessUi.textKeyPressed(this,key,scan,modifiers))return true;
+        return super.keyPressed(key,scan,modifiers);
+    }
+    @Override public boolean mouseClicked(double x,double y,int button){if(componentDropdown!=null&&componentDropdown.popupClick(x,y,button))return true;if(scroll.click(x,y,button)){rebuildNext=true;return true;}return super.mouseClicked(x,y,button);}
+    @Override public boolean mouseDragged(double x,double y,int button,double dx,double dy){if(componentDropdown!=null&&componentDropdown.popupDrag(y))return true;if(scroll.drag(y)){rebuildNext=true;return true;}return super.mouseDragged(x,y,button,dx,dy);}
+    @Override public boolean mouseReleased(double x,double y,int button){if(componentDropdown!=null)componentDropdown.popupRelease();scroll.release();return super.mouseReleased(x,y,button);}
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
+        if(componentDropdown!=null&&componentDropdown.popupScroll(x,y,vertical))return true;
         if(x>=leftPos+tableX()&&scroll.wheel(vertical)){rebuildNext=true;return true;}return super.mouseScrolled(x,y,horizontal,vertical);
     }
 }

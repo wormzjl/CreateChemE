@@ -8,6 +8,7 @@ public final class ProcessScroll {
     private boolean dragging;
     public int value(){return value;}
     public void reset(){value=0;}
+    public void reveal(int index){if(index<value)value=index;else if(index>=value+visible)value=index-visible+1;value=Math.clamp(value,0,max());}
     public void configure(int x,int y,int height,int visible,int total){
         this.x=x;this.y=y;this.height=Math.max(20,height);this.visible=Math.max(1,visible);this.total=total;
         value=Math.clamp(value,0,max());

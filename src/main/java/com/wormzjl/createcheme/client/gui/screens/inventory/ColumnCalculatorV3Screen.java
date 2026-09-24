@@ -3,6 +3,8 @@ package com.wormzjl.createcheme.client.gui.screens.inventory;
 import com.wormzjl.createcheme.client.MaterialNames;
 import com.wormzjl.createcheme.client.gui.common.ProcessUi;
 import com.wormzjl.createcheme.client.gui.common.TemperatureUnit;
+import com.wormzjl.createcheme.client.gui.common.ComponentDropdown;
+import com.wormzjl.createcheme.client.gui.common.ComponentSearch;
 import static com.wormzjl.createcheme.client.gui.common.ProcessUi.*;
 import com.wormzjl.createcheme.network.ColumnV3Network;
 import com.wormzjl.createcheme.science.column.v3.*;
@@ -41,9 +43,10 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private V3ClientPresets.Snapshot presetSnapshot;
     private boolean savingPreset,massRate,connectionMenu;
     private long pendingNonce;
-    private boolean conflict,rebuilding,invalidated,awaitingResult,kelvin,picker,infoOnly,needsRebuild;
+    private boolean conflict,rebuilding,invalidated,awaitingResult,kelvin,infoOnly,needsRebuild;
     private int page,results,offset,selectedNode=1,selectedStream,metric,lineCount,pointerX,pointerY,selectedDraw=-1,selectedPA=-1,selectedSteam=-1;
     private Button solve;
+    private ComponentDropdown componentDropdown;
     private record Label(String text,int x,int y,int width){}
     private record Hit(int x,int y,int w,int h,Runnable action,String hint){}
     private static final class Scroll {
@@ -109,7 +112,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         pendingNonce=ColumnV3Network.sendCalculate(menu.blockPos(),state.inputRevision(),candidate);
         invalidated=true;awaitingResult=true;rejection="";rebuild();
     }
-    private void changePage(int target){page=target;connectionMenu=false;offset=listScroll.value=0;picker=false;presetKind=null;savingPreset=false;rebuild();}
+    private void changePage(int target){page=target;connectionMenu=false;offset=listScroll.value=0;presetKind=null;savingPreset=false;rebuild();}
     private int bodyBottom(){return imageHeight-(conflict?73:48);}
     private int rows(){return Math.max(1,(bodyBottom()-CONTENT-10)/15);}
     private boolean narrow(){return imageWidth<710;}
@@ -156,7 +159,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         if(rebuilding)return;rebuilding=true;needsRebuild=false;
         String focus=editors.entrySet().stream().filter(e->e.getValue()==getFocused()).map(Map.Entry::getKey).findFirst().orElse(null);
         int cursor=focus==null?0:editors.get(focus).getCursorPosition();
-        clearWidgets();editors.clear();labels.clear();scrolls.clear();
+        boolean dropdownOpen=componentDropdown!=null&&componentDropdown.expanded();
+        clearWidgets();editors.clear();labels.clear();scrolls.clear();componentDropdown=null;
         int tab=(imageWidth-20)/4;
         for(int i=0;i<4;i++){int t=i;action(PAGES[i],10+i*tab,28,tab-3,()->changePage(t)).active=page!=i;}
         solve=action("solve",10,imageHeight-25,64,this::submit);
@@ -195,6 +199,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
             notice=tr("report_copied");rejection="";
         });
         if(focus!=null&&editors.containsKey(focus)){setFocused(editors.get(focus));editors.get(focus).setCursorPosition(cursor);}
+        if(componentDropdown!=null&&"search".equals(focus))componentDropdown.expanded(dropdownOpen);
         rebuilding=false;updateControls();
     }
     @Override protected void containerTick(){super.containerTick();if(needsRebuild)rebuild();}
@@ -315,22 +320,19 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     private void buildComposition(){
         action("mixture_templates",10,54,108,()->openPresets(V3ClientPresets.Kind.MIXTURE));
         action("save_mixture",124,54,94,()->openSave(V3ClientPresets.Kind.MIXTURE));
-        action("clear_mixture",224,54,72,()->{draft.composition().clear();picker=false;edited();rebuild();}).active=editable();
+        action("clear_mixture",224,54,72,()->{draft.composition().clear();edited();rebuild();}).active=editable();
         button(tr(draft.composition().mass()?"mass_percent":"mole_percent"),imageWidth<570?166:302,imageWidth<570?CONTENT:54,85,()->{
             toggleBasis();
         }).setTooltip(Tooltip.create(Component.literal(tr("composition_basis.hint"))));
-        action(picker?"close_search":"add_component",10,CONTENT,150,()->{picker=!picker;search="";offset=listScroll.value=0;rebuild();}).active=editable();
-        if(picker){
-            var e=new EditBox(font,leftPos+10,topPos+CONTENT+25,imageWidth-38,18,Component.literal(tr("search")));
-            e.setValue(search);e.setHint(Component.literal(tr("search")));e.setResponder(v->{search=v;listScroll.value=0;needsRebuild=true;});editors.put("search",addRenderableWidget(e));
-            var ids=searchComponents();int count=Math.max(1,(bodyBottom()-CONTENT-67)/22);
-            offset=Math.clamp(listScroll.value,0,Math.max(0,ids.size()-count));
-            for(int i=offset;i<Math.min(ids.size(),offset+count);i++){
-                int id=ids.get(i);button(material(draft.composition().source().componentBasis().componentId(id)),10,CONTENT+50+(i-offset)*22,imageWidth-38,
-                    ()->{if(!editable())return;draft.composition().add(id);picker=false;offset=listScroll.value=0;edited();rebuild();}).setTooltip(Tooltip.create(Component.literal(tr("add_component.hint"))));
-            }
-            configure(listScroll,imageWidth-18,CONTENT+50,bodyBottom()-CONTENT-63,count,ids.size(),false);return;
-        }
+        var options=new ArrayList<ComponentSearch.Option>();
+        var basis=draft.composition().source().componentBasis();
+        for(int i=0;i<basis.componentCount();i++)if(!draft.composition().contains(i))
+            options.add(new ComponentSearch.Option(i,material(basis.componentId(i)),basis.componentId(i)));
+        componentDropdown=new ComponentDropdown(font,leftPos+10,topPos+CONTENT,Math.min(360,imageWidth-40),bodyBottom()-CONTENT-12,
+            options,search,value->search=value,id->{
+                if(!editable())return;draft.composition().add(id);search="";edited();rebuild();
+            });
+        editors.put("search",addRenderableWidget(componentDropdown));
         var ids=draft.composition().rows();int count=Math.max(1,(bodyBottom()-CONTENT-66)/25);
         offset=Math.clamp(listScroll.value,0,Math.max(0,ids.size()-count));
         int amount=amountX();
@@ -344,11 +346,6 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         configure(listScroll,imageWidth-18,CONTENT+51,bodyBottom()-CONTENT-63,count,ids.size(),false);
     }
     private int amountX(){return Math.max(120,imageWidth-310);}
-    private List<Integer> searchComponents(){
-        var basis=draft.composition().source().componentBasis();List<Integer> ids=new ArrayList<>();
-        for(int i=0;i<basis.componentCount();i++)if(!draft.composition().contains(i)&&(material(basis.componentId(i))+" "+basis.componentId(i)).toLowerCase(Locale.ROOT).contains(search.toLowerCase(Locale.ROOT)))ids.add(i);
-        return ids;
-    }
     private V3ColumnInspection inspection(){return invalidated||conflict||state==null?null:state.displayResult().flatMap(V3ColumnDisplayResult::inspection).orElse(null);}
     private String freshness(){return inspection()!=null?tr("accepted"):invalidated?tr("draft_cleared"):tr("no_result");}
     private String status(){
@@ -363,7 +360,8 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         ProcessUi.restoreCursor(minecraft,this);
         hoveredText=null;pointerX=mouseX-leftPos;pointerY=mouseY-topPos;
         super.render(g,mouseX,mouseY,partialTick);
-        if(hoveredText!=null)g.renderTooltip(font,Component.literal(hoveredText),mouseX,mouseY);
+        if(hoveredText!=null&&(componentDropdown==null||!componentDropdown.popupContains(mouseX,mouseY)))g.renderTooltip(font,Component.literal(hoveredText),mouseX,mouseY);
+        if(componentDropdown!=null)componentDropdown.renderSuggestions(g,mouseX,mouseY);
     }
     @Override protected void renderBg(GuiGraphics g,float partialTick,int mouseX,int mouseY){
         g.fill(leftPos,topPos,leftPos+imageWidth,topPos+imageHeight,BG);g.renderOutline(leftPos,topPos,imageWidth,imageHeight,LINE);
@@ -510,7 +508,6 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
     }
     private void composition(GuiGraphics g){
         if(draft==null)return;
-        if(picker){if(searchComponents().isEmpty())text(g,tr("no_matches"),10,CONTENT+53,MUTED,imageWidth-30);return;}
         int amount=amountX(),norm=amount+74,flow=amount+156;
         text(g,tr("component"),10,CONTENT+34,TEXT,amount-18);text(g,tr("relative_amount"),amount,CONTENT+34,TEXT,68);
         text(g,tr(draft.composition().mass()?"mass_percent":"mole_percent"),norm,CONTENT+34,TEXT,76);
@@ -665,6 +662,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         for(int i=0;i<=steps;i++){double f=steps==0?0:(double)i/steps;
             int x=(int)Math.round(x0+(x1-x0)*f),y=(int)Math.round(y0+(y1-y0)*f);g.fill(x,y,x+1,y+1,color);}}
     @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
+        if(componentDropdown!=null&&componentDropdown.popupScroll(x,y,vertical))return true;
         int px=(int)x-leftPos,py=(int)y-topPos;
         if(py>=CONTENT&&py<bodyBottom()&&!(page==2&&results==0&&presetKind==null)){
             Scroll target=presetKind!=null||page!=0?listScroll:!narrow()?(px>=trayX()?railScroll:px>=solverX()?solverScroll:canvasY):infoOnly?(px>imageWidth/2?railScroll:solverScroll):canvasY;
@@ -675,6 +673,7 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         return super.mouseScrolled(x,y,horizontal,vertical);
     }
     @Override public boolean mouseClicked(double x,double y,int button){
+        if(componentDropdown!=null&&componentDropdown.popupClick(x,y,button))return true;
         if(button!=0)return super.mouseClicked(x,y,button);
         int px=(int)x-leftPos,py=(int)y-topPos;
         for(var s:scrolls)if(s.max()>0&&s.contains(px,py)){
@@ -686,13 +685,16 @@ public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<Colu
         return super.mouseClicked(x,y,button);
     }
     @Override public boolean mouseDragged(double x,double y,int button,double dx,double dy){
+        if(componentDropdown!=null&&componentDropdown.popupDrag(y))return true;
         if(button==0&&dragging!=null){dragging.seek((int)x-leftPos,(int)y-topPos);offset=listScroll.value;rebuild();return true;}
         return super.mouseDragged(x,y,button,dx,dy);
     }
     @Override public boolean mouseReleased(double x,double y,int button){
+        if(componentDropdown!=null)componentDropdown.popupRelease();
         if(dragging!=null){dragging=null;setDragging(false);return true;}return super.mouseReleased(x,y,button);
     }
     @Override public boolean keyPressed(int key,int scan,int modifiers){
+        if(ProcessUi.textKeyPressed(this,key,scan,modifiers))return true;
         if(page==0&&!(getFocused() instanceof EditBox)){
             if(key==GLFW.GLFW_KEY_UP||key==GLFW.GLFW_KEY_DOWN){
                 selectedNode=Math.clamp(selectedNode+(key==GLFW.GLFW_KEY_UP?-1:1),0,stageCount()+1);railScroll.value=0;rebuild();return true;
