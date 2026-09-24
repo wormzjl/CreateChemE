@@ -30,11 +30,23 @@ public final class WaterRegion1 {
 
     /** The water record is only the saturation domain check's; a caller evaluating in a loop resolves it once. */
     public static State evaluate(MaterialCatalog.Water water,double temperatureKelvin,double pressurePascal) {
-        if (!Double.isFinite(temperatureKelvin) || temperatureKelvin < 273.16 || temperatureKelvin > 623.15
-                || !Double.isFinite(pressurePascal) || pressurePascal <= 0 || pressurePascal > 100e6
-                || pressurePascal < V3WaterProperties.saturationPressurePascal(water,temperatureKelvin)) {
-            throw new IllegalArgumentException("Water state outside stable IF97 Region 1");
-        }
+        return evaluate("water model "+water.revision(),water,temperatureKelvin,pressurePascal);
+    }
+    /** IF97 Region 1's own upper temperature boundary: a boundary of the formulation, not a property-package range. */
+    public static final double REGION_1_MAXIMUM_TEMPERATURE=623.15,REGION_1_MAXIMUM_PRESSURE=100e6;
+    /**
+     * Liquid water outside the stable Region 1 - below the water model's triple point (ice is not modelled), above
+     * the region's 623.15 K boundary, or below its saturation pressure - is a {@link ThermoDomainViolation} naming
+     * water, reported against {@code scope} (the fluid model's package). A non-finite input stays a plain refusal.
+     */
+    public static State evaluate(String scope,MaterialCatalog.Water water,double temperatureKelvin,double pressurePascal) {
+        if (!Double.isFinite(temperatureKelvin) || !Double.isFinite(pressurePascal) || pressurePascal <= 0)
+            throw new IllegalArgumentException("Water state is not finite and positive");
+        if (temperatureKelvin < water.triplePoint() || temperatureKelvin > REGION_1_MAXIMUM_TEMPERATURE)
+            throw new ThermoDomainViolation(scope,"Water",ThermoDomainViolation.Property.TEMPERATURE,temperatureKelvin,water.triplePoint(),REGION_1_MAXIMUM_TEMPERATURE);
+        double saturation=V3WaterProperties.saturationPressurePascal(water,temperatureKelvin);
+        if (pressurePascal < saturation || pressurePascal > REGION_1_MAXIMUM_PRESSURE)
+            throw new ThermoDomainViolation(scope,"Water",ThermoDomainViolation.Property.PRESSURE,pressurePascal,saturation,REGION_1_MAXIMUM_PRESSURE);
         double pi = pressurePascal/P_STAR, tau=T_STAR/temperatureKelvin, x=pi-7.1,y=tau-1.222;
         // The integer powers, built once by multiplication instead of six Math.pow calls per term.
         double[] xp=new double[HIGHEST_X+1];xp[0]=1;

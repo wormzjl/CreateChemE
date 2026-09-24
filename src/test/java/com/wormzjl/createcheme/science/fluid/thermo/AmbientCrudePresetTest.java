@@ -41,18 +41,28 @@ class AmbientCrudePresetTest {
         }
     }
 
+    /**
+     * Colder than a component's declared range is refused, with the thermo-domain error naming it. Since F4 the range is
+     * the record's own data - its fluid_domain block, 293.15 K for the bundled crude records (the ambient continuation) -
+     * rather than a code rule that qualified only the exact bundled record: an author who overrides a fit declares the
+     * range the new fit is valid over, and that range is enforced (documentation/fluid-followups/THERMO_DOMAIN_ERROR.md).
+     */
     @Test void colderStatesAndUnqualifiedPropertyOverridesAreNotSilentlyExtrapolated() {
         var catalog=MaterialCatalog.bundled();
         var original=new HydrocarbonModel(catalog,FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
         double[] n=new double[original.componentCount()];n[10]=1;
-        assertThrows(IllegalArgumentException.class,()->original.phase(293,101325,n,com.wormzjl.createcheme.science.thermo.PhaseRoot.LIQUID));
+        var colder=assertThrows(ThermoDomainViolation.class,()->original.phase(293,101325,n,com.wormzjl.createcheme.science.thermo.PhaseRoot.LIQUID));
+        assertEquals(original.components().get(10),colder.component());assertEquals(293.15,colder.minimum());
         var resources=new java.util.HashMap<>(catalog.resources());
         String path="data/createcheme/materials/properties/crude_pc04.json";
         var p=com.google.gson.JsonParser.parseString(resources.get(path)).getAsJsonObject();
         var cp=p.getAsJsonObject("ideal_gas_cp").getAsJsonArray("coefficients");
-        cp.set(0,new com.google.gson.JsonPrimitive(cp.get(0).getAsDouble()*1.001));resources.put(path,p.toString());
+        cp.set(0,new com.google.gson.JsonPrimitive(cp.get(0).getAsDouble()*1.001));
+        // The override's author qualifies the new fit over its own range only, and says so in its data.
+        p.getAsJsonObject("fluid_domain").addProperty("temperature_min_kelvin",298.15);resources.put(path,p.toString());
         var edited=new HydrocarbonModel(MaterialCatalog.parse(resources),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
-        assertThrows(IllegalArgumentException.class,()->edited.phase(298,101325,n,com.wormzjl.createcheme.science.thermo.PhaseRoot.LIQUID));
+        var refused=assertThrows(ThermoDomainViolation.class,()->edited.phase(298,101325,n,com.wormzjl.createcheme.science.thermo.PhaseRoot.LIQUID));
+        assertEquals("crude_pc04",refused.component());assertEquals(298.15,refused.minimum());
         assertDoesNotThrow(()->edited.phase(300,101325,n,com.wormzjl.createcheme.science.thermo.PhaseRoot.LIQUID));
     }
 }

@@ -10,6 +10,13 @@
   "temperature_max_kelvin": 900.0,
   "pressure_min_pascal": 50000.0,
   "pressure_max_pascal": 2000000.0,
+  "fluid_domain": {
+    "temperature_min_kelvin": 273.16,
+    "temperature_max_kelvin": 900,
+    "pressure_min_pascal": 100,
+    "pressure_max_pascal": 2000000,
+    "evidence": "Fluid network envelope: from the water model triple point (273.16 K; ice is not modelled), the lowest minimum of any component of this package, to the 900 K of the caloric fits; 100 Pa..2 MPa is the span the fluid network evaluates (liquid reference 2 MPa). Every component declares its own range inside it."
+  },
   "aliases": {},
   "advisory_evidence": [
     "SHARED_COMPONENT_SURROGATE: source assay rebinned onto shared regrouped crude basis; properties are not characterized for this crude",

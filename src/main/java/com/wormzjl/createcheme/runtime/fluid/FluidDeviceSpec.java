@@ -10,7 +10,10 @@ public record FluidDeviceSpec(double volume,double temperature,double pressure,d
     public FluidDeviceSpec(double volume,double temperature,double pressure,double[] composition){this(volume,temperature,pressure,composition,SlurryFeed.NONE);}
     public FluidDeviceSpec {
         Objects.requireNonNull(solids);composition=composition.clone();
-        if(!Double.isFinite(volume)||volume<=0||volume>1000||!Double.isFinite(temperature)||temperature<273.16||temperature>600||!Double.isFinite(pressure)||pressure<100||pressure>2e6||(composition.length<1||composition.length>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS))throw new IllegalArgumentException("Device settings outside the fluid model's bounds");
+        // Structural bounds only. Where a temperature and pressure may be evaluated depends on the property package
+        // and on what the device holds, so it is checked against the model (validate, initialize), with the dedicated
+        // thermo-domain error, not against constants here.
+        if(!Double.isFinite(volume)||volume<=0||volume>1000||!Double.isFinite(temperature)||!(temperature>0)||!Double.isFinite(pressure)||!(pressure>0)||(composition.length<1||composition.length>com.wormzjl.createcheme.science.material.MaterialAxis.MAX_CONSERVED_COMPONENTS))throw new IllegalArgumentException("Device settings outside the fluid model's bounds");
         double sum=0;for(double amount:composition){if(!Double.isFinite(amount)||amount<0)throw new IllegalArgumentException("Invalid composition");sum+=amount;}
         if(!Double.isFinite(sum)||sum<=0)throw new IllegalArgumentException("Empty composition");
         if(Math.abs(sum-1)>1e-12)for(int i=0;i<composition.length;i++)composition[i]/=sum;
@@ -25,9 +28,26 @@ public record FluidDeviceSpec(double volume,double temperature,double pressure,d
         var axis=new com.wormzjl.createcheme.science.material.MaterialAxis(ids);double[] n=new double[axis.size()];n[axis.requireIndex(id)]=1;
         return new FluidDeviceSpec(1,298.15,101325,n);
     }
+    /**
+     * Refuses settings the model cannot evaluate, with the dedicated {@link com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation}:
+     * the fluid a device of this kind would hold at this temperature and pressure - a nitrogen charge for a reservoir or
+     * a void, this composition for a generator - against the package's domain. Pipes and actuators hold nothing.
+     */
+    public void validate(FluidThermodynamics model,TopologyCompiler.Kind kind) {
+        if(composition.length!=model.components().size())throw new IllegalArgumentException("Device composition differs from captured fluid axis");
+        switch(kind) {
+            case RESERVOIR,VOID->{
+                int nitrogen=model.hydrocarbon.components().indexOf(com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.NITROGEN);
+                double[] charge=new double[composition.length];charge[nitrogen]=1;model.domain().checkTotals(temperature,pressure,charge);
+            }
+            case GENERATOR->model.domain().checkTotals(temperature,pressure,composition);
+            default->{}
+        }
+    }
     /** Called for first activation, never to reconcile an already owned finite reservoir. */
     public PassiveNetwork.Reservoir initialize(PhysicalFluidTopology.Device device,FluidThermodynamics model,Runnable checkpoint) {
         if(composition.length!=model.components().size())throw new IllegalArgumentException("Device composition differs from captured fluid axis");
+        validate(model,device.kind());
         var kind=switch(device.kind()) {case RESERVOIR->PassiveNetwork.NodeKind.RESERVOIR;case GENERATOR->PassiveNetwork.NodeKind.GENERATOR;case VOID->PassiveNetwork.NodeKind.VOID;default->throw new IllegalArgumentException("Pipes and actuators have no owned reservoir");};
         FluidThermodynamics.State state;
         if(kind==PassiveNetwork.NodeKind.RESERVOIR||kind==PassiveNetwork.NodeKind.VOID)state=model.initialNitrogenCharge(volume,temperature,pressure,checkpoint);

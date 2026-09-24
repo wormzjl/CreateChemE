@@ -104,9 +104,13 @@ public final class FluidThermodynamics {
         // The same resolution the context form performs, including its fallback package.
         water=com.wormzjl.createcheme.science.material.MaterialRuntime.with(catalog,packageId,
                 com.wormzjl.createcheme.science.material.MaterialRuntime::water);
+        domain=hydrocarbon.domain();
         var reference=waterLiquidRaw(298.15,101325,null);
         waterEnthalpyOffset=V3WaterProperties.liquidMolarEnthalpy(water,298.15)-reference.molarEnthalpy();
     }
+    /** Where this model may evaluate a state: the package envelope and every component's range, from the package's data. */
+    public FluidDomain domain(){return domain;}
+    private final FluidDomain domain;
     /** Conserved component basis: registered hydrocarbon/gas components, followed by water. */
     public int componentCount() { return hydrocarbon.componentCount()+1; }
 
@@ -128,12 +132,20 @@ public final class FluidThermodynamics {
         for(int c=0;c<weights.length;c++)weights[c]=molecularWeight(c);
         return weights;
     }
+    /** Below the water model's triple point there is no liquid-vapour saturation (ice is not modelled): a
+     * thermo-domain violation naming water, before the column's correlation is reached. */
     public double saturationPressure(double t) {
-        return t>=647.096?Double.POSITIVE_INFINITY:V3WaterProperties.saturationPressurePascal(water,t);
+        if(!Double.isFinite(t))throw new IllegalArgumentException("Non-finite water temperature");
+        if(t<water.triplePoint())domain.checkWaterTemperature(t);
+        return t>=water.criticalTemperature()?Double.POSITIVE_INFINITY:V3WaterProperties.saturationPressurePascal(water,t);
     }
     /** The saturation pressure of a prepared node temperature, evaluated once for that temperature. */
     public double saturationPressure(Prepared prepared) { return own(prepared).saturationPressure(); }
-    public double vaporWaterEnthalpy(double t) { return V3WaterProperties.vaporMolarEnthalpy(water,t); }
+    public double vaporWaterEnthalpy(double t) {
+        if(!Double.isFinite(t))throw new IllegalArgumentException("Non-finite water temperature");
+        domain.checkWaterTemperature(t);
+        return V3WaterProperties.vaporMolarEnthalpy(water,t);
+    }
     public double maximumVelocityMetresPerSecond(){return maximumVelocity;}
     /** The per-node phase support the step solver freezes its Newton unknowns with. */
     public TraceTruncationPolicy traceTruncation(){return tracePolicy;}
@@ -156,7 +168,7 @@ public final class FluidThermodynamics {
         if(t>=500)return .4e6;if(t>=450)return .25e6;if(t>=400)return .15e6;return .125e6;
     }
     private GlobalLiquidResponse.State waterLiquidRaw(double t,double p,Prepared prepared) {
-        var ref=prepared==null?WaterRegion1.evaluate(water,t,HydrocarbonModel.REFERENCE_PRESSURE):prepared.referenceWater();
+        var ref=prepared==null?WaterRegion1.evaluate(domain.packageId(),water,t,HydrocarbonModel.REFERENCE_PRESSURE):prepared.referenceWater();
         return liquidResponse.evaluate(t,p,HydrocarbonModel.REFERENCE_PRESSURE,
                 ref.specificVolume()*waterMolecularWeight,ref.volumeTemperatureDerivative()*waterMolecularWeight,
                 ref.volumeSecondTemperatureDerivative()*waterMolecularWeight,ref.specificEnthalpy()*waterMolecularWeight,
@@ -194,7 +206,11 @@ public final class FluidThermodynamics {
             if(SolverDiagnostics.inJacobian())SolverDiagnostics.stateCallsInJacobian.increment();
         }
         int n=hydrocarbon.componentCount();
-        if(liquid.length!=n||vapor.length!=n||!Double.isFinite(t)||!Double.isFinite(p)||t<273.16||t>600||p<100||p>2e6)throw new IllegalArgumentException("Fluid state outside domain");
+        if(liquid.length!=n||vapor.length!=n)throw new IllegalArgumentException("Fluid state basis mismatch");
+        if(!Double.isFinite(t)||!Double.isFinite(p)||!Double.isFinite(waterLiquid)||!Double.isFinite(waterVapor))throw new IllegalArgumentException("Fluid state is not finite");
+        // The package's domain, from its data: a ThermoDomainViolation names the carried component whose range the
+        // state leaves, or the package envelope. Malformed input above stays a plain IllegalArgumentException.
+        domain.check(t,p,liquid,vapor,waterLiquid+waterVapor);
         double nl=sum(liquid),nv=sum(vapor),volume=0,h=0,mass=0,gasVolume=0,vl=0,vw=0;
         if(terms==null&&(nl>0||nv>0))terms=prepared==null?hydrocarbon.prepare(t):prepared.pengRobinson();
         HydrocarbonModel.Phase lp=null,vp=null;
@@ -215,8 +231,8 @@ public final class FluidThermodynamics {
 
     /** Stationary dry inventory. Pressure is retained as an initialization hint, not a gas pressure. */
     public State solidState(double temperature,double pressure,com.wormzjl.createcheme.science.fluid.state.SolidInventory solids) {
-        if(solids.empty()||!Double.isFinite(temperature)||temperature<273.16||temperature>600
-                ||!Double.isFinite(pressure)||pressure<100||pressure>2e6)throw new IllegalArgumentException("Dry solid state outside domain");
+        if(solids.empty()||!Double.isFinite(temperature)||!Double.isFinite(pressure))throw new IllegalArgumentException("Dry solid state needs solids and a finite temperature and pressure");
+        domain.checkEnvelope(temperature,pressure);
         var moments=solids.moments();var empty=new double[hydrocarbon.componentCount()];
         return new State(temperature,pressure,empty,empty,0,0,0,0,moments.volume(),
                 moments.enthalpy(temperature,pressure),moments.internalEnergy(temperature),moments.mass(),0,0,0,null,null,solids,moments);
@@ -228,6 +244,10 @@ public final class FluidThermodynamics {
         int n=hydrocarbon.componentCount();if(overall.length!=n+1)throw new IllegalArgumentException("Fluid basis mismatch");
         double[] hc=Arrays.copyOf(overall,n);double nh=sum(hc),w=overall[n];
         if(!Double.isFinite(w)||w<0||nh+w<=0)throw new IllegalArgumentException("Empty fluid initialization");
+        if(!Double.isFinite(t)||!Double.isFinite(p))throw new IllegalArgumentException("Fluid initialization is not finite");
+        // Refused before any equilibrium ratio is formed: outside a component's range the flash's numbers mean nothing,
+        // and the violation says which component, not which intermediate overflowed.
+        domain.checkTotals(t,p,overall);
         if(nh==0)return state(t,p,hc,hc,p>=saturationPressure(t)?w:0,p>=saturationPressure(t)?0:w,0);
         if(w==0) {var terms=hydrocarbon.prepare(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
         double ps=saturationPressure(t);
@@ -271,6 +291,11 @@ public final class FluidThermodynamics {
             var pv=hydrocarbon.phase(t,vaporPressure,y,PhaseRoot.VAPOR,terms);
             double error=0;double[] fl=pl.logFugacityView(),fv=pv.logFugacityView();
             for(int i=0;i<n;i++) {double target=fl[i]-fv[i]+Math.log(liquidPressure/vaporPressure);
+                // A component the mixture does not hold takes no part in the split (its x and y are zero whatever its
+                // ratio), so its ratio is only kept finite: at cryogenic temperatures the heaviest absent fractions'
+                // ratios pass e^600 in liquid nitrogen, and a pure nitrogen flash at 63 K used to be refused for them.
+                // A ratio inside the range is updated exactly as before.
+                if(z[i]==0){if(Double.isFinite(target))k[i]=Math.exp(.5*Math.log(k[i])+.5*Math.clamp(target,-600,600));continue;}
                 if(!Double.isFinite(target)||Math.abs(target)>600)throw new IllegalArgumentException("Equilibrium ratio outside numerical range");
                 if(z[i]>0)error=Math.max(error,Math.abs(target-Math.log(k[i])));k[i]=Math.exp(.5*Math.log(k[i])+.5*target);}
             if(error<1e-8) {
@@ -347,7 +372,7 @@ public final class FluidThermodynamics {
             return terms==null?terms=owner.hydrocarbon.prepare(temperature):terms;
         }
         WaterRegion1.State referenceWater() {
-            return referenceWater==null?referenceWater=WaterRegion1.evaluate(owner.water,temperature,HydrocarbonModel.REFERENCE_PRESSURE):referenceWater;
+            return referenceWater==null?referenceWater=WaterRegion1.evaluate(owner.domain.packageId(),owner.water,temperature,HydrocarbonModel.REFERENCE_PRESSURE):referenceWater;
         }
         double saturationPressure() {
             return Double.isNaN(saturationPressure)?saturationPressure=owner.saturationPressure(temperature):saturationPressure;

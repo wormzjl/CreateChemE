@@ -60,6 +60,12 @@ public final class FluidWorldAuthority implements AutoCloseable {
         model=model(new FluidCheckpointCodec.PackageKey(com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog),compressibility));
         propertyReload=new FluidPropertyReloadGuard(catalog,com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog.networkPackage(catalog),compressibility,model);
         presetCache=FluidPresetCatalog.resolve(catalog);componentNames=model.components();
+        // The configured charge of a newly placed reservoir must be a state the network package can evaluate; the config
+        // range itself is only physical (it is fixed before any data pack loads), so the domain is checked here, once.
+        try{new FluidDeviceSpec(options.volume(),options.temperature(),options.pressure(),FluidDeviceSpec.nitrogen(catalog).composition()).validate(model,TopologyCompiler.Kind.RESERVOIR);}
+        catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation invalid){
+            throw new IllegalStateException("Fluid config initialNitrogenTemperatureKelvin/initialNitrogenPressurePascal: "+invalid.getMessage(),invalid);
+        }
         legacyUnbound=data.world().isEmpty()&&!data.checkpoint().islands().isEmpty();
         var savedTopology=data.world().orElseGet(()->WorldTopologyLedger.Snapshot.empty(catalog));savedTopology.basis().requireCurrent(catalog);
         SolidCompatibility.validate(catalog.solids(),data.checkpoint(),savedTopology);observedSolidData=catalog;
@@ -123,6 +129,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private static ResourceKey<Level> dimension(String name){return ResourceKey.create(Registries.DIMENSION,ResourceLocation.parse(name));}
     public List<FluidPresetCatalog.Preset> presets(){owned();return presetCache;}
     public List<String> components(){owned();return componentNames;}
+    /** The world's network property model; its {@code domain()} is where a state may be evaluated. */
+    public FluidThermodynamics model(){owned();return model;}
     public Map<String,MaterialName> materialNames(){owned();var result=new LinkedHashMap<String,MaterialName>();for(String id:componentNames)result.put(id,catalog.name(id));return Map.copyOf(result);}
     public long onlineTick(){owned();return topology.onlineTick();}
     /** Optional read-only diagnostics; all values are immutable and callbacks run on the server thread. */

@@ -26,14 +26,49 @@ public final class TranslatedPengRobinson {
     private final double[][] heatCapacityCoefficients;
     private final double[] translations;
     private final PengRobinsonKernel kernel;
+    /**
+     * Optional low-temperature ideal-gas segments: below {@code joints[i]} component {@code i} takes the heat capacity
+     * {@code lowCoefficients[i]} and an enthalpy continued from the main fit's value at the joint,
+     * {@code H(T) = jointEnthalpies[i] + G(T) - jointAntiderivatives[i]} with {@code G} the segment's antiderivative, so
+     * the enthalpy is continuous there by construction (at the joint the continuation adds {@code G(Tj) - G(Tj)}, an
+     * exact zero). A component without a segment has the joint at minus infinity and is evaluated exactly as before.
+     */
+    private final double[] joints,jointEnthalpies,jointAntiderivatives;
+    private final double[][] lowCoefficients;
 
     /** Cp coefficients are powers of (T - 298.15 K); each component has exactly six coefficients. */
     public TranslatedPengRobinson(List<ThermoComponent> components, double[][] interactions,
                                  double[][] heatCapacityCoefficients, double[] translations) {
+        this(components,interactions,heatCapacityCoefficients,translations,null,null);
+    }
+    /**
+     * {@code joints} and {@code lowCoefficients} give each component an optional second heat-capacity segment below
+     * its joint (six coefficients in powers of (T - 298.15 K), like the main fit); a joint of minus infinity, or
+     * {@code null} arrays, is none.
+     */
+    public TranslatedPengRobinson(List<ThermoComponent> components, double[][] interactions,
+                                 double[][] heatCapacityCoefficients, double[] translations,
+                                 double[] joints, double[][] lowCoefficients) {
         this.components = List.copyOf(components);
         int count = components.size();
         if (count == 0 || interactions.length != count || heatCapacityCoefficients.length != count
                 || translations.length != count) throw new IllegalArgumentException("Inconsistent property basis");
+        if ((joints == null) != (lowCoefficients == null) || joints != null && (joints.length != count || lowCoefficients.length != count))
+            throw new IllegalArgumentException("Inconsistent low-temperature heat-capacity segments");
+        this.joints = new double[count]; jointEnthalpies = new double[count]; jointAntiderivatives = new double[count];
+        this.lowCoefficients = new double[count][];
+        for (int i = 0; i < count; i++) {
+            this.joints[i] = joints == null ? Double.NEGATIVE_INFINITY : joints[i];
+            if (this.joints[i] == Double.NEGATIVE_INFINITY) continue;
+            if (!Double.isFinite(this.joints[i]) || this.joints[i] <= 0 || lowCoefficients[i] == null || lowCoefficients[i].length != 6
+                    || heatCapacityCoefficients[i].length != 6)
+                throw new IllegalArgumentException("Invalid low-temperature heat-capacity segment");
+            this.lowCoefficients[i] = lowCoefficients[i].clone();
+            for (double value : this.lowCoefficients[i]) finite(value);
+            double delta = this.joints[i] - REFERENCE_T, h = 0, g = 0;
+            for (int term = 5; term >= 0; term--) { h = h*delta + heatCapacityCoefficients[i][term]/(term+1); g = g*delta + this.lowCoefficients[i][term]/(term+1); }
+            jointEnthalpies[i] = h*delta; jointAntiderivatives[i] = g*delta;
+        }
         this.heatCapacityCoefficients = new double[count][];
         this.translations = translations.clone();
         double[] criticalTemperatures=new double[count],criticalPressures=new double[count],acentricFactors=new double[count];
@@ -186,6 +221,12 @@ public final class TranslatedPengRobinson {
         int count=components.size();double delta=temperature-REFERENCE_T;
         for(int i=0;i<count;i++) {
             double cp=0,h=0;
+            if(temperature<joints[i]) {
+                double[] low=lowCoefficients[i];
+                for(int term=5;term>=0;term--){cp=cp*delta+low[term];h=h*delta+low[term]/(term+1);}
+                workspace.heatCapacity[i]=cp;workspace.enthalpy[i]=jointEnthalpies[i]+(h*delta-jointAntiderivatives[i]);
+                continue;
+            }
             for(int term=5;term>=0;term--){cp=cp*delta+heatCapacityCoefficients[i][term];h=h*delta+heatCapacityCoefficients[i][term]/(term+1);}
             workspace.heatCapacity[i]=cp;workspace.enthalpy[i]=h*delta;
         }

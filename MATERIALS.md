@@ -72,11 +72,23 @@ Physical fields:
 Coefficient n has units J/(mol·K^(n+1)). Ideal-gas enthalpy is its analytic integral from 298.15 K, in J/mol,
 with zero enthalpy at that datum. Existing cubic fits retain their original evaluation order when E and F are zero.
 
+An optional `below` object gives a second segment for temperatures below its `temperature_kelvin` (which must lie
+above `temperature_min_kelvin` and at most 298.15 K): six `coefficients` in the same form and a `source`. The fluid
+network continues the enthalpy from the main fit's value at the joint, so it is continuous there by construction; fit
+the segment so its heat capacity equals the main fit's at the joint. Nitrogen uses one below 273.16 K (NIST
+zero-pressure Cp to its 63.151 K triple point). The column evaluates the main fit only.
+
 `models` may contain `pr78`, with `critical_temperature_kelvin`, `critical_pressure_pascal`, and dimensionless
 `acentric_factor`. A PR78 package requires those fields for each selected property dataset. NRTL is a mixture
 activity model: its binary parameters belong in an interaction set, not in this pure-component record.
 
 Separate datasets may reference the same component. The bundled crude packages share their selected property records; the methane-free package omits Methane and the network package adds Nitrogen.
+
+`fluid_domain` (fluid network only) states where the fluid network may evaluate the component: `temperature_min_kelvin`,
+`temperature_max_kelvin`, `pressure_min_pascal`, `pressure_max_pascal` and `evidence`. It is separate from the record's
+own range, which is the column's, and it is not part of the physics fingerprints the column and its neural registry pin.
+Its temperature range must be covered by the record's vapor viscosity table. The bundled crude and light records declare
+293.15..900 K (the qualified ambient continuation of their 298.15 K fits) and nitrogen 63.151..900 K.
 
 ### `interactions`
 
@@ -107,6 +119,11 @@ Required: `id`, `revision`, `model`, ordered `components`, parallel ordered `pro
 `missing_interactions`, `water_model`, `aliases`, `advisory_evidence`, `temperature_min_kelvin`,
 `temperature_max_kelvin`, `pressure_min_pascal`, and `pressure_max_pascal`. There must be 1–64 unique components.
 Each property record must describe the component at the same index. Package ranges must fit selected property ranges.
+
+A package the fluid network is built on also declares a `fluid_domain` (same fields): its envelope. Every component's
+`fluid_domain`, and the water model's range from its `triple_point` to its `max_enthalpy_temperature`, must lie inside
+it. A fluid state is valid only inside the envelope and inside the range of every component it carries; otherwise the
+network refuses it with the thermo-domain error (`ThermoDomainViolation`), naming the component, value and range.
 
 `missing_interactions` is explicitly `zero` or `error`. The migrated PR packages use `zero`, preserving their original
 assumptions. NRTL requires `error` and a complete pair set; absent pair data never means ideal behavior.

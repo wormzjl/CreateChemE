@@ -8,35 +8,35 @@ import java.util.List;
 
 /** Fluid-specific property snapshot. Does not replace or modify the column's property model. */
 public final class HydrocarbonModel {
+    /** The pressure the liquid equation of state is evaluated at before the global compressibility response carries
+     * it to the state's own; a formulation constant, not a domain bound. */
     public static final double REFERENCE_PRESSURE = 2e6;
-    public static final double MINIMUM_PRESSURE = 100;
-    /** Fluid-only continuation of the bundled 25 C caloric fits down to 20 C. */
-    public static final double AMBIENT_MINIMUM_TEMPERATURE = 293.15;
+    /** A numerical guard on the hydrocarbon <em>partial</em> pressure a vapour is evaluated at, which in a gas that is
+     * nearly all steam can be arbitrarily small; the state's own pressure is bounded by the package's domain. */
+    public static final double VAPOR_PARTIAL_PRESSURE_FLOOR = 1e-6;
     private final MaterialCatalog.Package propertyPackage;
     private final TranslatedPengRobinson translated;
     private final GlobalLiquidResponse liquidResponse;
     private final String revision;
-    private final double[] minimumTemperatures;
+    /** Every temperature and pressure range comes from the package's data; see {@link FluidDomain}. */
+    private final FluidDomain domain;
 
     public HydrocarbonModel(MaterialCatalog catalog,String packageId,double compressibility) {
         propertyPackage=catalog.requirePackage(packageId);
         liquidResponse=new GlobalLiquidResponse(compressibility);
+        domain=FluidDomain.of(catalog,packageId);
         List<ThermoComponent> components=propertyPackage.properties().stream().map(p->new ThermoComponent(
                 p.component(),p.pr().criticalTemperature(),p.pr().criticalPressure(),p.pr().acentricFactor(),p.molecularWeight())).toList();
         int count=components.size();
-        minimumTemperatures=new double[count];
-        var bundled=MaterialCatalog.bundled().packages().get(packageId);
-        for(int i=0;i<count;i++) {
-            var property=propertyPackage.properties().get(i);
-            minimumTemperatures[i]=property.minimumTemperature();
-            // Qualify only the exact bundled property record. Author-specified overrides keep their domain.
-            if(property.minimumTemperature()==298.15 && bundled!=null
-                    && bundled.properties().contains(property)) minimumTemperatures[i]=AMBIENT_MINIMUM_TEMPERATURE;
-        }
-        double[][] interactions=new double[count][count], cp=new double[count][6];
+        double[][] interactions=new double[count][count], cp=new double[count][6], low=new double[count][];
+        double[] joints=new double[count];
         for(int i=0;i<count;i++) {
             for(int j=0;j<count;j++) interactions[i][j]=propertyPackage.interactions().get(i).get(j);
-            for(int j=0;j<6;j++) cp[i][j]=propertyPackage.properties().get(i).cp().get(j);
+            var property=propertyPackage.properties().get(i);
+            for(int j=0;j<6;j++) cp[i][j]=property.cp().get(j);
+            var segment=property.lowTemperatureCp();
+            joints[i]=segment==null?Double.NEGATIVE_INFINITY:segment.belowKelvin();
+            if(segment!=null){low[i]=new double[6];for(int j=0;j<6;j++)low[i][j]=segment.coefficients().get(j);}
         }
         var raw=new PengRobinson78(components,interactions);
         var calibrations=catalog.fluidData().volumeReferences();
@@ -52,11 +52,13 @@ public final class HydrocarbonModel {
                     *PengRobinson78.GAS_CONSTANT*t/REFERENCE_PRESSURE;
             shifts[i]=targetVolume*Math.exp(compressibility*(referenceP-REFERENCE_PRESSURE))-rawVolume;
         }
-        translated=new TranslatedPengRobinson(components,interactions,cp,shifts);
-        revision=catalog.fluidThermoFingerprint(packageId)+":fluid-shared-k-v1:ambient-293.15-v1:catalog-volume-reference-v1:k="+Double.toHexString(compressibility);
+        translated=new TranslatedPengRobinson(components,interactions,cp,shifts,joints,low);
+        revision=catalog.fluidThermoFingerprint(packageId)+":fluid-shared-k-v1:fluid-domain-data-v1:cp-segments-v1:catalog-volume-reference-v1:k="+Double.toHexString(compressibility);
     }
 
     public String revision() { return revision; }
+    /** The package's fluid domain: the envelope and every component's range. */
+    public FluidDomain domain() { return domain; }
     public int componentCount() { return propertyPackage.components().size(); }
     public List<String> components() { return propertyPackage.components(); }
     public double molecularWeight(int i) { return propertyPackage.properties().get(i).molecularWeight(); }
@@ -85,13 +87,16 @@ public final class HydrocarbonModel {
     }
     public Phase phase(double t,double p,double[] amounts,PhaseRoot root,TranslatedPengRobinson.Workspace terms) {
         if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
-        double minimumTemperature=0;
-        for(int i=0;i<amounts.length;i++)if(amounts[i]>0)minimumTemperature=Math.max(minimumTemperature,minimumTemperatures[i]);
-        if(!Double.isFinite(t) || t<minimumTemperature || t>propertyPackage.maximumTemperature()
-                || !Double.isFinite(p) || p<(root==PhaseRoot.VAPOR?1e-6:MINIMUM_PRESSURE)
-                || p>Math.min(REFERENCE_PRESSURE,propertyPackage.maximumPressure())) {
-            throw new IllegalArgumentException("Fluid hydrocarbon state outside model domain");
-        }
+        if(!Double.isFinite(t)||!Double.isFinite(p))throw new IllegalArgumentException("Fluid hydrocarbon state is not finite");
+        // Every carried component within its own temperature range (a thermo-domain violation otherwise). A liquid is
+        // evaluated at the state pressure, which must lie in the range of every component it carries; a vapour at its
+        // hydrocarbon partial pressure, which is only guarded numerically here and capped by the envelope, since the
+        // state that carries it checks the total pressure.
+        domain.checkPhaseTemperature(t,amounts);
+        if(root==PhaseRoot.VAPOR) {
+            if(p<VAPOR_PARTIAL_PRESSURE_FLOOR)throw new IllegalArgumentException("Hydrocarbon vapour partial pressure below the numerical floor");
+            if(p>domain.envelope().maximumPressure())domain.checkEnvelope(t,p);
+        } else domain.check(t,p,amounts,null,0);
         if(root==PhaseRoot.VAPOR) {
             var gas=translated.evaluate(t,p,amounts,root,terms);
             return new Phase(gas.molarVolume(),gas.molarEnthalpy(),gas.molarInternalEnergy(),

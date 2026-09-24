@@ -44,7 +44,10 @@ class ViscosityTest {
         var fits = new JsonObject();
         fits.add("liquid", fit("andrade", 1e-6, 1500));
         fits.add("vapor", fit("sutherland", 1.1e-5, 110));
-        property.add("viscosity", fits); resources.put(path, property.toString());
+        property.add("viscosity", fits);
+        // The fluid network's range for the record may not exceed its vapour viscosity data (F4): the fit ends at 700 K.
+        property.getAsJsonObject("fluid_domain").addProperty("temperature_max_kelvin", 700);
+        resources.put(path, property.toString());
         var catalog = MaterialCatalog.parse(resources);
         var liquid = catalog.viscosity(PACKAGE, "Methane", ViscosityCorrelation.Phase.LIQUID).orElseThrow();
         var vapor = catalog.viscosity(PACKAGE, "Methane", ViscosityCorrelation.Phase.VAPOR).orElseThrow();

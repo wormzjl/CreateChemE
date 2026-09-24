@@ -11,10 +11,43 @@ public final class MaterialCatalog {
     public record Pr78(double criticalTemperature, double criticalPressure, double acentricFactor) {}
     public record NrtlPair(String first, String second, double a12, double b12, double a21,
             double b21, double alpha, double minimumTemperature, double maximumTemperature) {}
+    /**
+     * {@code lowTemperatureCp} is an optional second ideal-gas heat-capacity segment, used below
+     * {@link CpSegment#belowKelvin()} with the enthalpy continued from the main fit's value there; {@code null} for a
+     * record with one fit (every record but nitrogen), which keeps their serialized form, and so every physics
+     * fingerprint that hashes it, exactly what it was.
+     */
     public record Property(String id, String component, double molecularWeight, double normalBoilingPoint,
             double density, double standardTemperature, double standardPressure, double minimumTemperature,
-            double maximumTemperature, double referenceTemperature, List<Double> cp, Pr78 pr, boolean estimated) {
+            double maximumTemperature, double referenceTemperature, List<Double> cp, Pr78 pr, boolean estimated,
+            CpSegment lowTemperatureCp) {
         public Property { cp = List.copyOf(cp); }
+    }
+    /** Six coefficients in powers of {@code (T - 298.15 K)}, the main fit's form, valid below {@code belowKelvin}. */
+    public record CpSegment(double belowKelvin, List<Double> coefficients) {
+        public CpSegment { coefficients = List.copyOf(coefficients); }
+    }
+    /**
+     * A temperature and pressure range the fluid network may evaluate a component (or, for a package, any state) in,
+     * with the evidence it rests on. Read from the {@code fluid_domain} object of a property or package record. It is
+     * kept beside the records rather than in them: the records' own ranges are the column's, and they and every other
+     * numeric field are hashed into the physics fingerprints the column's neural initializer and the fluid presets
+     * pin, which this must not move. The fluid network's thermodynamic revision hashes it instead
+     * ({@link #fluidThermoFingerprint}).
+     */
+    public record Validity(double minimumTemperature, double maximumTemperature, double minimumPressure, double maximumPressure,
+            String evidence) {
+        public Validity {
+            if (!(minimumTemperature > 0) || !(maximumTemperature > minimumTemperature) || !Double.isFinite(maximumTemperature)
+                    || !(minimumPressure > 0) || !(maximumPressure > minimumPressure) || !Double.isFinite(maximumPressure))
+                throw new IllegalArgumentException("fluid_domain: invalid temperature or pressure range");
+            Objects.requireNonNull(evidence);
+        }
+        public boolean within(Validity envelope) {
+            return minimumTemperature >= envelope.minimumTemperature && maximumTemperature <= envelope.maximumTemperature
+                    && minimumPressure >= envelope.minimumPressure && maximumPressure <= envelope.maximumPressure;
+        }
+        List<Double> numbers() { return List.of(minimumTemperature, maximumTemperature, minimumPressure, maximumPressure); }
     }
     public record Water(String revision, double molarMass, double triplePoint, double criticalTemperature,
             double criticalPressure, double maximumTemperature, double boilingTemperature,
@@ -50,9 +83,13 @@ public final class MaterialCatalog {
     private final MaterialPresets presets;
     private final Map<String, FluidAppearance> assayAppearances;
     private final Map<String, FluidAppearance> componentAppearances;
+    /** Fluid-network validity by property record id and by package id; see {@link Validity}. */
+    private final Map<String, Validity> propertyValidity, packageValidity;
     private MaterialCatalog(Map<String, MaterialName> names, Map<String, Package> packages, Map<String, String> resources,
             Map<String, Map<ViscosityCorrelation.Phase, ViscosityCorrelation>> viscosities, Map<String, String> waterModels,
-            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, MaterialPresets presets, MaterialFluidData fluidData) {
+            Map<String, FluidAppearance> assayAppearances, Map<String, FluidAppearance> componentAppearances, Map<String, LiquidMixtureCorrection> liquidMixtures, MaterialPresets presets, MaterialFluidData fluidData,
+            Map<String, Validity> propertyValidity, Map<String, Validity> packageValidity) {
+        this.propertyValidity = Map.copyOf(propertyValidity); this.packageValidity = Map.copyOf(packageValidity);
         this.solids=SolidMaterialCatalog.parse(resources);
         this.fluidData=Objects.requireNonNull(fluidData);
         this.liquidMixtures = Map.copyOf(liquidMixtures);
@@ -70,10 +107,28 @@ public final class MaterialCatalog {
     public MaterialName name(String id) { MaterialName n=names.get(id); return n==null?MaterialName.chemical(id):n; }
     public Map<String, Package> packages() { return packages; }
     public MaterialFluidData fluidData(){return fluidData;}
+    /**
+     * The fluid network's thermodynamic identity of a package: its physics fingerprint, the liquid volume references,
+     * and the fluid-network validity of the package and of every component ({@link Validity}), so a changed domain is a
+     * changed thermodynamic revision (a fresh world, like any other property change).
+     */
     public String fluidThermoFingerprint(String packageId) {
         var p=requirePackage(packageId);var points=new TreeMap<String,MaterialFluidData.VolumeReference>();
         for(String id:p.components())if(fluidData.volumeReferences().containsKey(id))points.put(id,fluidData.volumeReferences().get(id));
-        return hash(new Gson().toJson(List.of(physicsFingerprint(packageId,p.components()),points)));
+        var domains=new ArrayList<Object>();
+        domains.add(fluidValidity(packageId).map(Validity::numbers).orElse(List.of()));
+        for(String id:p.components())domains.add(fluidValidity(packageId,id).map(Validity::numbers).orElse(List.of()));
+        return hash(new Gson().toJson(List.of(physicsFingerprint(packageId,p.components()),points,domains)));
+    }
+    /** The fluid network's envelope for a package: its {@code fluid_domain}, absent for a package the network cannot be built on. */
+    public Optional<Validity> fluidValidity(String packageId) {
+        requirePackage(packageId);return Optional.ofNullable(packageValidity.get(packageId));
+    }
+    /** A component's own fluid-network range in a package: its property record's {@code fluid_domain}, if it declares one. */
+    public Optional<Validity> fluidValidity(String packageId,String componentId) {
+        var p=requirePackage(packageId);int i=p.components().indexOf(p.canonicalId(componentId));
+        if(i<0)throw new IllegalArgumentException("Component outside package: "+componentId);
+        return Optional.ofNullable(propertyValidity.get(p.properties().get(i).id()));
     }
     public MaterialPresets presets(){return presets;}
     /** Convenience for the unique authored preset of a package; multiple choices require an explicit preset ID. */
@@ -181,7 +236,7 @@ public final class MaterialCatalog {
                 source.maximumTemperature(),source.minimumPressure(),source.maximumPressure(),source.evidence());
         var projected=new HashMap<>(packages);projected.put(packageId,view);
         return new MaterialCatalog(names,projected,resources,viscosities,waterModels,assayAppearances,
-                componentAppearances,liquidMixtures,presets,fluidData);
+                componentAppearances,liquidMixtures,presets,fluidData,propertyValidity,packageValidity);
     }
 
     /** Presets may share a network only when the selected sub-basis has the same physics and transport. */
@@ -197,6 +252,8 @@ public final class MaterialCatalog {
             if(!a.descriptors().get(i).equals(b.descriptors().get(j))
                     ||!viscosityScience("properties/"+source.properties().get(i).id()).equals(viscosityScience("properties/"+target.properties().get(j).id())))
                 throw new IllegalArgumentException("Fluid preset transport differs from network: "+sourceId+"/"+axis.get(i));
+            if(!Objects.equals(fluidValidity(sourceId,axis.get(i)).map(Validity::numbers),fluidValidity(targetId,axis.get(i)).map(Validity::numbers)))
+                throw new IllegalArgumentException("Fluid preset fluid_domain differs from network: "+sourceId+"/"+axis.get(i));
         }
         if(!viscosityScience("water/"+waterModels.get(sourceId)).equals(viscosityScience("water/"+waterModels.get(targetId))))
             throw new IllegalArgumentException("Fluid preset water transport differs from network: "+sourceId);
@@ -263,6 +320,8 @@ public final class MaterialCatalog {
         var descriptors = new HashMap<String, LiquidMixtureCorrection.Descriptor>();
         var assayAppearances = new HashMap<String, FluidAppearance>();
         var componentAppearances = new HashMap<String, FluidAppearance>();
+        var propertyValidity = new HashMap<String, Validity>();
+        var packageValidity = new HashMap<String, Validity>();
         for (var o : group(groups,"components").values()) checked(origins,o,() -> {
             JsonObject cut = o.has("cut") ? object(o,"cut") : null;
             String id=string(o,"id"), kind=string(o,"kind");
@@ -292,9 +351,27 @@ public final class MaterialCatalog {
                 pr=new Pr78(positive(p,"critical_temperature_kelvin"),positive(p,"critical_pressure_pascal"),number(p,"acentric_factor"));
             }
             double min=positive(o,"temperature_min_kelvin"), max=positive(o,"temperature_max_kelvin"); range(min,max,"temperature");
+            CpSegment low=null;
+            if (cp.has("below")) {
+                JsonObject segment=object(cp,"below"); string(segment,"source");
+                double joint=positive(segment,"temperature_kelvin");
+                if (joint<=min || joint>max || joint>reference) throw new IllegalArgumentException("ideal_gas_cp.below.temperature_kelvin must lie in (temperature_min_kelvin, 298.15]");
+                low=new CpSegment(joint,numbers(segment,"coefficients",6));
+            }
             properties.put(id,new Property(id,component,positive(o,"molecular_weight_kg_per_mol"),positive(o,"normal_boiling_point_kelvin"),
                     positive(o,"standard_liquid_density_kg_per_m3"),positive(o,"standard_temperature_kelvin"),positive(o,"standard_pressure_pascal"),
-                    min,max,reference,coefficients,pr,bool(o,"estimated_heavy_residue")));
+                    min,max,reference,coefficients,pr,bool(o,"estimated_heavy_residue"),low));
+            if (o.has("fluid_domain")) {
+                var domain=validity(object(o,"fluid_domain"));
+                // The vapour viscosity the network evaluates for every vapour it carries must cover the range the
+                // component claims, or a state inside it would still fail on a property it has no data for.
+                var vapor=viscosities.get("properties/"+id).get(ViscosityCorrelation.Phase.VAPOR);
+                if (vapor!=null && (vapor.minimumTemperatureKelvin()>domain.minimumTemperature() || vapor.maximumTemperatureKelvin()<domain.maximumTemperature()))
+                    throw new IllegalArgumentException("fluid_domain: temperature range exceeds the vapor viscosity data ("+vapor.minimumTemperatureKelvin()+".."+vapor.maximumTemperatureKelvin()+" K)");
+                if (low!=null && domain.minimumTemperature()<min)
+                    throw new IllegalArgumentException("fluid_domain: below temperature_min_kelvin of a record with its own low-temperature fit");
+                propertyValidity.put(id,domain);
+            }
         });
         for (var o : group(groups,"water").values()) checked(origins,o,() -> {
             viscosities.put("water/" + string(o,"id"), readViscosities(o));
@@ -351,6 +428,20 @@ public final class MaterialCatalog {
             }
             Water water=require(waters,string(o,"water_model"),"water_model");
             waterModels.put(id, string(o,"water_model"));
+            if(o.has("fluid_domain")) {
+                // The fluid network's rule: the package range is the outer envelope, every component's own range - and
+                // the water model's, from its triple point to its enthalpy limit - lies inside it, and a state is valid
+                // only inside the range of every component it carries (science.fluid.thermo.FluidDomain).
+                var envelope=validity(object(o,"fluid_domain"));
+                for(var p:ps) {
+                    var own=propertyValidity.get(p.id());
+                    if(own==null)throw new IllegalArgumentException("fluid_domain: component "+p.component()+" ("+p.id()+") declares no fluid_domain");
+                    if(!own.within(envelope))throw new IllegalArgumentException("fluid_domain: component "+p.component()+" range lies outside the package envelope");
+                }
+                if(water.triplePoint()<envelope.minimumTemperature()||water.maximumTemperature()>envelope.maximumTemperature())
+                    throw new IllegalArgumentException("fluid_domain: the water model's range "+water.triplePoint()+".."+water.maximumTemperature()+" K lies outside the package envelope");
+                packageValidity.put(id,envelope);
+            }
             var assays=new HashMap<String,Assay>();
             for(var a:group(groups,"assays").values()) if(string(a,"package").equals(id)) checked(origins,a,() -> {
                 assayAppearances.put(id + "/" + string(a,"id"), readAppearance(a));
@@ -378,7 +469,8 @@ public final class MaterialCatalog {
         });
         for(var a:group(groups,"assays").values()) checked(origins,a,() -> require(packages,string(a,"package"),"assay package"));
         if(packages.isEmpty()) throw new IllegalArgumentException("Material catalog has no packages");
-        var result=new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,MaterialPresets.read(group(groups,"presets"),group(groups,"networks"),origins,packages,names.keySet()),MaterialFluidData.read(group(groups,"transport"),origins,names.keySet()));
+        var result=new MaterialCatalog(names,packages,resources,viscosities,waterModels,assayAppearances,componentAppearances,liquidMixtures,MaterialPresets.read(group(groups,"presets"),group(groups,"networks"),origins,packages,names.keySet()),MaterialFluidData.read(group(groups,"transport"),origins,names.keySet()),
+                propertyValidity,packageValidity);
         for(var row:group(groups,"presets").values())if(string(row,"kind").equals("column"))checked(origins,row,()->
                 MaterialRuntime.with(result,string(row,"package"),()->{com.wormzjl.createcheme.science.column.v3.V3ColumnProblemResolver.validateInput(result.presets().column(string(row,"id")).input(result));return null;}));
         for(var row:group(groups,"networks").values())checked(origins,row,()->{
@@ -390,6 +482,7 @@ public final class MaterialCatalog {
                 } else result.requireSharedFluidPhysics(preset.packageId(),network.id());
             }
             for(var phase:ViscosityCorrelation.Phase.values())if(result.viscosity(network.id(),"Nitrogen",phase).isEmpty())throw new IllegalArgumentException("package: nitrogen transport is required");
+            if(result.fluidValidity(network.id()).isEmpty())throw new IllegalArgumentException("package: the network package needs a fluid_domain envelope");
         });
         return result;
     }
@@ -450,6 +543,14 @@ public final class MaterialCatalog {
             if(a.equals(b) || !seen.add(pairKey(a,b))) throw new IllegalArgumentException("Duplicate/self interaction pair");
             if(model.equals("pr78")) number(p,"kij"); else nrtl(p);
         }
+    }
+    private static Validity validity(JsonObject o) {
+        try {
+            String evidence=string(o,"evidence");
+            double tmin=positive(o,"temperature_min_kelvin"),tmax=positive(o,"temperature_max_kelvin");range(tmin,tmax,"temperature");
+            double pmin=positive(o,"pressure_min_pascal"),pmax=positive(o,"pressure_max_pascal");range(pmin,pmax,"pressure");
+            return new Validity(tmin,tmax,pmin,pmax,evidence);
+        } catch (RuntimeException invalid) { throw new IllegalArgumentException("fluid_domain: "+invalid.getMessage(),invalid); }
     }
     private static NrtlPair nrtl(JsonObject p) {
         double min=positive(p,"temperature_min_kelvin"),max=positive(p,"temperature_max_kelvin"); range(min,max,"NRTL temperature");

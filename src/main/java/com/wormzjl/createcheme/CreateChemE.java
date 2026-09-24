@@ -95,8 +95,8 @@ public final class CreateChemE {
         FLUID_LIQUID_COMPRESSIBILITY=builder.comment("One liquid compressibility for every liquid, in 1/Pa, for a new fluid world. Existing saves retain their recorded model until explicit migration.").defineInRange("liquidCompressibility",1e-9,1e-12,5e-7);
         FLUID_MAXIMUM_VELOCITY=builder.comment("Maximum bulk pipe velocity in m/s, also limited by the current fluid's acoustic bound. Caps mass transfer inside the coupled equations; does not set temperature. Captured on server start.").defineInRange("maximumVelocityMetresPerSecond",100.0,.01,100000.0);
         FLUID_INITIAL_VOLUME=builder.comment("Volume of newly placed reservoirs in cubic metres. Applied on server start.").defineInRange("reservoirVolumeCubicMetres",1.0,.001,1000.0);
-        FLUID_INITIAL_TEMPERATURE=builder.comment("One-time nitrogen charge temperature in kelvin for newly placed reservoirs.").defineInRange("initialNitrogenTemperatureKelvin",298.15,273.16,600.0);
-        FLUID_INITIAL_PRESSURE=builder.comment("One-time nitrogen charge absolute pressure in pascals for newly placed reservoirs.").defineInRange("initialNitrogenPressurePascal",101325.0,100.0,2000000.0);
+        FLUID_INITIAL_TEMPERATURE=builder.comment("One-time nitrogen charge temperature in kelvin for newly placed reservoirs.","Checked at world start against the network property package's fluid_domain (nitrogen: 63.151..900 K); a value outside it stops the world with the thermo-domain error.").defineInRange("initialNitrogenTemperatureKelvin",298.15,1.0,10000.0);
+        FLUID_INITIAL_PRESSURE=builder.comment("One-time nitrogen charge absolute pressure in pascals for newly placed reservoirs.","Checked at world start against the network property package's fluid_domain (100 Pa..2 MPa).").defineInRange("initialNitrogenPressurePascal",101325.0,1.0,1.0e9);
         FLUID_TRACE_CUTOFF=builder
                 .comment("Trace cutoff as a mole fraction for the hydraulic network's Newton unknowns, not a feed filter.",
                         "A component whose seed mole fraction is below this in one hydrocarbon phase and at or above it",

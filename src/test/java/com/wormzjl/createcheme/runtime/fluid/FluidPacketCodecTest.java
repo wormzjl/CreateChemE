@@ -24,7 +24,13 @@ class FluidPacketCodecTest {
         double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
         assertThrows(IllegalArgumentException.class,()->new FluidNetwork.Controls(Double.NaN,101325,.05,.000045,.01,500000,n));
         assertThrows(IllegalArgumentException.class,()->new FluidNetwork.Controls(298.15,Double.POSITIVE_INFINITY,.05,.000045,.01,500000,n));
-        assertThrows(IllegalArgumentException.class,()->new FluidNetwork.Controls(298.15,3000000,.05,.000045,.01,500000,n));
+        assertThrows(IllegalArgumentException.class,()->new FluidNetwork.Controls(298.15,-1,.05,.000045,.01,500000,n));
+        // Where a pressure may be evaluated is the property package's (F4): a structurally valid 3 MPa reaches the server,
+        // whose edit handler refuses it against the model's domain before anything is queued.
+        var model=com.wormzjl.createcheme.fluid.support.FluidTestSupport.networkModel();
+        var outside=new FluidNetwork.Controls(298.15,3000000,.05,.000045,.01,500000,n);
+        assertThrows(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.class,()->new FluidDeviceSpec(1,outside.temperature(),outside.pressure(),outside.composition()).validate(model,TopologyCompiler.Kind.GENERATOR));
+        assertThrows(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.class,()->model.domain().checkPressure(outside.pressure()));
         assertThrows(IllegalArgumentException.class,()->new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,new double[23]));
         var accepted=new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,n);n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=0;assertEquals(1,accepted.composition()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]);
     }
@@ -136,9 +142,13 @@ class FluidPacketCodecTest {
     /** A refused control reaches the handler wrapped by the JSON reader; the player reads the control's own reason, not the wrapper. */
     @Test void aRefusedControlIsRepliedWithItsOwnReason() {
         double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
-        var gson=new Gson();var object=com.google.gson.JsonParser.parseString(gson.toJson(new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,n))).getAsJsonObject();object.addProperty("pressure",3e6);
+        var gson=new Gson();var object=com.google.gson.JsonParser.parseString(gson.toJson(new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,n))).getAsJsonObject();object.addProperty("pressure",-3e6);
         var refused=assertThrows(RuntimeException.class,()->gson.fromJson(object.toString(),FluidNetwork.Controls.class));
         assertEquals("Controls are outside the supported range",FluidNetwork.reason(refused));
+        // A setting the property package cannot evaluate is replied with the thermo-domain error's own text.
+        var domain=assertThrows(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.class,
+                ()->new FluidDeviceSpec(1,298.15,3e6,n).validate(com.wormzjl.createcheme.fluid.support.FluidTestSupport.networkModel(),TopologyCompiler.Kind.GENERATOR));
+        assertEquals("Thermo domain: Nitrogen at 3000000 Pa is above its valid range 100..2000000 Pa (package createcheme:tjl20_methane_nitrogen); the state cannot be evaluated",FluidNetwork.reason(domain));
         assertEquals("Stale fluid controls",FluidNetwork.reason(new IllegalStateException("Stale fluid controls")));
         assertEquals("null",FluidNetwork.reason(new RuntimeException()));
     }
