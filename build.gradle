@@ -135,7 +135,7 @@ neoForge {
             client()
             sourceSet = sourceSets.mcpCompat
             gameDirectory = layout.projectDirectory.dir('run/mcp-client')
-            programArguments.addAll('--username', 'FluidMcpTester', '--width', '854', '--height', '480')
+            programArguments.addAll('--username', 'FluidMcpTester', '--width', '1280', '--height', '900')
             systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
         }
 

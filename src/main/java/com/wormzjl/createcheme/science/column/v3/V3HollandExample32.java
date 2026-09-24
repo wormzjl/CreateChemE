@@ -29,6 +29,9 @@ public final class V3HollandExample32 {
 
     private V3HollandExample32() {}
 
+    /** Defensive copy of this fixed benchmark's public component masses. */
+    public static double[] molecularWeights() { return MOLECULAR_WEIGHTS_KG_PER_MOL.clone(); }
+
     /** The immutable literature input exposed by the in-game V3 benchmark preset. */
     public static V3ColumnInput input() {
         HollandExample32Data data = HollandExample32Data.INSTANCE;

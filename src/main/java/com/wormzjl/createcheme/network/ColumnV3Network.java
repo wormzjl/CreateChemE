@@ -55,11 +55,11 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    // Version 13 carries bounded accepted inspection snapshots.
-    public static final int WIRE_SCHEMA_VERSION = 13;
+    // Version 14 carries the bounded server-authored composition editor catalogue.
+    public static final int WIRE_SCHEMA_VERSION = 14;
 
     // Both peers must use the same engine-scheduled inspection protocol.
-    private static final String PROTOCOL_VERSION = "9";
+    private static final String PROTOCOL_VERSION = "10";
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -552,6 +552,7 @@ public final class ColumnV3Network {
     }
 
     private static void writeState(RegistryFriendlyByteBuf buffer, V3State state) {
+        buffer.writeByteArray(V3EditorCatalogCodec.encode(state.editorCatalog()));
         buffer.writeVarLong(state.clientNonce());
         buffer.writeVarLong(state.stateRevision());
         buffer.writeVarLong(state.operationId());
@@ -581,6 +582,7 @@ public final class ColumnV3Network {
     }
 
     private static V3State readState(RegistryFriendlyByteBuf buffer) {
+        var editorCatalog = V3EditorCatalogCodec.decode(buffer.readByteArray(V3EditorCatalogCodec.MAX_BYTES));
         long clientNonce = nonNegative(buffer.readVarLong(), "client nonce");
         long stateRevision = nonNegative(buffer.readVarLong(), "state revision");
         long operationId = nonNegative(buffer.readVarLong(), "operation id");
@@ -613,7 +615,7 @@ public final class ColumnV3Network {
             for(int i=0;i<presetCount;i++)presets.add(new com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor(
                     buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128)));
             return new V3State(clientNonce, stateRevision, operationId, inputRevision, resultRevision, status, input,
-                    result, diagnostics,names,presets);
+                    result, diagnostics,names,presets,editorCatalog);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 state", invalid);
         }

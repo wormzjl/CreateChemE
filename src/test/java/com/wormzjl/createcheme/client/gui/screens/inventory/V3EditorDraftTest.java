@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class V3EditorDraftTest {
-    private static V3ColumnInput input() {
+    static V3ColumnInput input() {
         return new V3ColumnInput(1,"test:package","test:case",new V3ComponentBasis(List.of("a","b")),
                 new double[]{12.123456789123, 3.987654321987}, 531.123456789, 8, 4, 201234.567891,
                 712.123456789, List.of(new V3ColumnSpecification.CondenserOutletTemperature(350.123456789),
@@ -45,4 +45,57 @@ class V3EditorDraftTest {
         assertEquals(steam.temperatureKelvin(),changed.temperatureKelvin());
     }
 
+
+    @Test void massAndMolarRelativeAmountsDescribeTheSameMixture(){
+        var comp=new V3CompositionDraft(input(),List.of(0.02,0.2));comp.clear();
+        comp.add(0);comp.add(1);comp.set(0,"2");comp.set(1,"3");
+        assertArrayEquals(new double[]{0.4,0.6},comp.moleFractions(),1e-14);
+        comp.toggleBasis();
+        assertArrayEquals(new double[]{0.4,0.6},comp.moleFractions(),1e-14);
+        comp.set(0,"4");comp.set(1,"60");
+        assertArrayEquals(new double[]{0.4,0.6},comp.moleFractions(),1e-14);
+        comp.remove(0);assertArrayEquals(new double[]{0,1},comp.moleFractions());
+        comp.clear();assertThrows(IllegalArgumentException.class,comp::moleFractions);
+    }
+    @Test void invalidRelativeWeightsCannotReachTheSolver(){
+        var c=new V3CompositionDraft(input(),List.of(0.02,0.2));
+        for(String invalid:List.of("-1","NaN","Infinity","")){
+            c.set(0,invalid);assertThrows(IllegalArgumentException.class,c::moleFractions);
+        }
+    }
+    @Test void customFeedScalesRelativeValuesByTheRequestedTotal(){
+        var d=new V3EditorDraft(input(),List.of(0.02,0.2));d.composition().clear();
+        d.composition().add(1);d.composition().set(1,"17");
+        d.set("s0","36.0");assertArrayEquals(new double[]{0,10},d.assemble().feedComponentMolarFlowsMolPerSecond());
+    }
+    @Test void unitSwitchIsOnlyPresentationAndKelvinEditsConvertOnce(){
+        var d=new V3EditorDraft(input());String display=d.display("s1",true);
+        assertEquals("531.1",display);assertFalse(d.dirty());assertSame(d.base(),d.assemble());
+        d.setDisplay("s1","600.0",true);assertEquals(600,d.assemble().feedTemperatureKelvin());
+    }
+    @Test void liveGeometryWorksEvenWhenAnotherFieldIsIncomplete(){
+        var d=new V3EditorDraft(input());d.set("s0","");d.set("s2","32");d.set("s3","22");
+        assertEquals(32,d.preview("s2",8,2,64));assertEquals(22,d.preview("s3",4,1,32));
+        assertThrows(IllegalArgumentException.class,d::assemble);
+    }
+    @Test void connectionsCanBeAddedConfiguredAndRemoved(){
+        var d=new V3EditorDraft(input());int draw=d.addDraw(3),pa=d.addPumparound(6);
+        assertEquals(3,d.assemble().sideDraws().getFirst().trayNumber());
+        assertEquals(6,d.assemble().pumparounds().getFirst().drawTray());
+        d.removeDraw(draw);d.removePumparound(pa);assertTrue(d.assemble().sideDraws().isEmpty());assertTrue(d.assemble().pumparounds().isEmpty());
+    }
+
+    @Test void blankCustomMixtureCanChooseMassBasisBeforeAddingComponents(){
+        var c=new V3CompositionDraft(input(),List.of(0.02,0.2));c.clear();c.toggleBasis();assertTrue(c.mass());
+        c.add(0);c.add(1);c.set(0,"4");c.set(1,"60");assertArrayEquals(new double[]{0.4,0.6},c.moleFractions(),1e-14);
+    }
+    @Test void compositionOnlyPresetKeepsOperatingConfiguration(){
+        var base=input();var replacement=new V3ColumnInput(1,"new:package","new:case",new V3ComponentBasis(List.of("c")),
+            new double[]{50},500,10,3,300000,0,base.specifications(),List.of(),List.of(),List.of(),9);
+        var d=new V3EditorDraft(base,List.of(0.02,0.2));d.composition(replacement,List.of(0.1));
+        var result=d.assemble();
+        assertEquals("new:package",result.packageId());assertEquals(8,result.stageCount());assertEquals(base.feedTemperatureKelvin(),result.feedTemperatureKelvin());
+        assertEquals(java.util.Arrays.stream(base.feedComponentMolarFlowsMolPerSecond()).sum(),result.feedComponentMolarFlowsMolPerSecond()[0],1e-12);
+        assertEquals(replacement,new V3EditorDraft(replacement,List.of(0.1)).assemble());
+    }
 }

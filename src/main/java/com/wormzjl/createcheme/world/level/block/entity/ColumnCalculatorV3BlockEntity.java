@@ -68,6 +68,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     private V3ColumnInput currentInput = freshInput();
     private V3ColumnDisplayResult displayResult;
     private V3Operation activeOperation;
+    private List<String> attemptDetails = List.of();
     /** Unsupported development state is retained verbatim until the player explicitly loads a preset. */
     private CompoundTag incompatibleState;
 
@@ -97,6 +98,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             return Optional.empty();
         }
         currentInput = input;
+        displayResult = null;
+        attemptDetails = List.of();
         inputRevision = nextInputRevision;
         activeOperation = new V3Operation(operationId, nextInputRevision, input);
         status = V3Status.CALCULATING;
@@ -119,7 +122,16 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             refreshMaterialFreshness();
         } else if (outcome instanceof V3ColumnOutcome.Failure failure) {
             status = V3Status.FAILED;
-            detail = bounded(failure.code().name() + ": " + failure.summary());
+            String failureText = failure.code().name() + ": " + failure.summary();
+            detail = bounded(failureText);
+            var evidence = new java.util.ArrayList<String>();
+            for(int at=256;at<failureText.length();at+=256)
+                evidence.add(failureText.substring(at,Math.min(at+256,failureText.length())));
+            failure.diagnostics().events().stream().filter(event -> {
+                String lower=event.toLowerCase(java.util.Locale.ROOT);
+                return lower.contains("liquid")||lower.contains("draw")||lower.contains("pressure")||lower.contains("wet");
+            }).limit(20).map(ColumnCalculatorV3BlockEntity::bounded).forEach(evidence::add);
+            attemptDetails=List.copyOf(evidence);
         } else {
             status = V3Status.FAILED;
             detail = bounded(terminalDetail);
@@ -138,7 +150,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         return "Success: " + residual;
     }
 
-    /** Records a terminal service failure while preserving any prior accepted display certificate. */
+    /** Records a terminal service failure; starting the attempt already cleared its prior result. */
     public boolean failOperation(V3Operation operation, String failureDetail) {
         if (!Objects.equals(activeOperation, operation)) return false;
         activeOperation = null;
@@ -167,13 +179,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         incompatibleState = null;
         currentInput = preset;
         displayResult = null;
+        attemptDetails = List.of();
         status = V3Status.DIRTY;
         detail = bounded(presetDetail);
         setChanged();
         return true;
     }
 
-    /** Immutable view for a requester or broadcast viewer; it intentionally excludes workspaces and profiles. */
+    /** Immutable view for a requester or broadcast viewer; it excludes numerical workspaces and carries only accepted inspection data. */
     public V3State state(long clientNonce) {
         refreshMaterialFreshness();
         java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> names = new java.util.LinkedHashMap<>();
@@ -181,6 +194,11 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 com.wormzjl.createcheme.science.material.MaterialRuntime.name(currentInput.packageId(), id));
         if (displayResult != null) for (var stream : displayResult.streams()) for (var fraction : stream.moleFractions())
             names.put(fraction.componentId(), com.wormzjl.createcheme.science.material.MaterialRuntime.name(currentInput.packageId(), fraction.componentId()));
+        var catalog = com.wormzjl.createcheme.science.material.MaterialRuntime.current();
+        var editorCatalog = com.wormzjl.createcheme.science.column.v3.V3EditorCatalog.from(catalog,currentInput);
+        for(var template:editorCatalog.templates().values())for(String id:template.componentBasis().componentIds())
+            if(names.size()<2*V3ColumnStreamProperties.MAX_COMPONENTS)names.putIfAbsent(id,com.wormzjl.createcheme.science.material.MaterialRuntime.name(template.packageId(),id));
+        var diagnostics = new java.util.ArrayList<String>();diagnostics.add(detail);diagnostics.addAll(attemptDetails);
         return new V3State(
                 clientNonce,
                 stateRevision,
@@ -190,7 +208,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 status,
                 currentInput,
                 Optional.ofNullable(displayResult),
-                List.of(detail), names,ColumnInputPreset.descriptors(com.wormzjl.createcheme.science.material.MaterialRuntime.current()));
+                diagnostics, names,ColumnInputPreset.descriptors(catalog),editorCatalog);
     }
 
     private void refreshMaterialFreshness() {
@@ -240,6 +258,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         activeOperation = null;
+        attemptDetails = List.of();
         incompatibleState = null;
         displayResult = null;
         inputRevision = 0L;
@@ -326,7 +345,15 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             Optional<V3ColumnDisplayResult> displayResult,
             List<String> diagnostics,
             java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> materialNames,
-            List<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor> presets) {
+            List<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor> presets,
+            com.wormzjl.createcheme.science.column.v3.V3EditorCatalog editorCatalog) {
+        public V3State(long clientNonce,long stateRevision,long operationId,long inputRevision,long resultRevision,
+                V3Status status,V3ColumnInput input,Optional<V3ColumnDisplayResult> displayResult,List<String> diagnostics,
+                java.util.Map<String,com.wormzjl.createcheme.science.material.MaterialName> names,
+                List<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor> presets) {
+            this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,
+                    names,presets,com.wormzjl.createcheme.science.column.v3.V3EditorCatalog.EMPTY);
+        }
         public V3State(long clientNonce, long stateRevision, long operationId, long inputRevision, long resultRevision,
                 V3Status status, V3ColumnInput input, Optional<V3ColumnDisplayResult> displayResult, List<String> diagnostics) {
             this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,java.util.Map.of(),List.of());
@@ -337,6 +364,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,materialNames,List.of());
         }
         public V3State {
+            Objects.requireNonNull(editorCatalog,"editorCatalog");
             presets=List.copyOf(presets);
             if(presets.size()>com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS||presets.stream().map(p->p.id()).distinct().count()!=presets.size())
                 throw new IllegalArgumentException("Invalid column preset descriptor list");
