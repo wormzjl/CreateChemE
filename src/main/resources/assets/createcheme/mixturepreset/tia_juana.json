@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "kind": "mixture",
+  "name": "Tia Juana Light (default)",
+  "translation_key": "gui.createcheme.column_preset.tia_juana",
+  "package": "createcheme:tjl20_methane",
+  "basis": "mole",
+  "components": [
+    {
+      "id": "Methane",
+      "amount": 0.5000000000000001
+    },
+    {
+      "id": "Ethane",
+      "amount": 0.11908995509034748
+    },
+    {
+      "id": "Propane",
+      "amount": 1.0591918105298617
+    },
+    {
+      "id": "Isobutane",
+      "amount": 0.6510980717557732
+    },
+    {
+      "id": "N-butane",
+      "amount": 2.22592523684086
+    },
+    {
+      "id": "Isopentane",
+      "amount": 1.663176428669243
+    },
+    {
+      "id": "N-pentane",
+      "amount": 2.455531495713115
+    },
+    {
+      "id": "crude_pc01",
+      "amount": 16.62936276997043
+    },
+    {
+      "id": "crude_pc02",
+      "amount": 12.314847499525975
+    },
+    {
+      "id": "crude_pc03",
+      "amount": 11.774907568688318
+    },
+    {
+      "id": "crude_pc04",
+      "amount": 10.469103210175803
+    },
+    {
+      "id": "crude_pc05",
+      "amount": 8.701659237073239
+    },
+    {
+      "id": "crude_pc06",
+      "amount": 7.336455325619681
+    },
+    {
+      "id": "crude_pc07",
+      "amount": 6.154184102834705
+    },
+    {
+      "id": "crude_pc08",
+      "amount": 6.057002423058548
+    },
+    {
+      "id": "crude_pc09",
+      "amount": 6.607465545777229
+    },
+    {
+      "id": "crude_pc10",
+      "amount": 2.9676312755272436
+    },
+    {
+      "id": "crude_pc11",
+      "amount": 1.500134240248526
+    },
+    {
+      "id": "crude_pc12",
+      "amount": 0.8132338029011051
+    }
+  ]
+}

@@ -184,11 +184,11 @@ final class V3FreeWaterContinuation {
 
             String detail(int tray, String note) {
                 return switch (this) {
-                    case CLOSED -> "tray " + tray + " closed";
-                    case UNCONTROLLABLE -> "tray " + tray + " cannot be saturated by any free-water flow, "
+                    case CLOSED -> "tray " + (tray + 1) + " closed";
+                    case UNCONTROLLABLE -> "tray " + (tray + 1) + " cannot be saturated by any free-water flow, "
                             + note;
-                    case UNSOLVABLE -> "the parametric solve failed while bracketing tray " + tray;
-                    case BUDGET -> "tray " + tray + " used its " + MAXIMUM_SOLVES_PER_TRAY
+                    case UNSOLVABLE -> "the parametric solve failed while bracketing tray " + (tray + 1);
+                    case BUDGET -> "tray " + (tray + 1) + " used its " + MAXIMUM_SOLVES_PER_TRAY
                             + " parametric solves without closing, " + note;
                 };
             }

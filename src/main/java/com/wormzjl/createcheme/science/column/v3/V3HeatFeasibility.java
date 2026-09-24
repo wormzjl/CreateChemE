@@ -119,7 +119,7 @@ final class V3HeatFeasibility {
         return String.format(Locale.ROOT,
                 "V3 pumparound cooling of %.4g MW on tray %d exceeds the %.4g MW its arriving vapor can release "
                         + "even at the smallest permitted continuation increment",
-                Math.abs(dutyWatts) / 1.0e6, tray, capacityWatts / 1.0e6);
+                Math.abs(dutyWatts) / 1.0e6, tray + 1, capacityWatts / 1.0e6);
     }
 
     static String condenserBoundDetail(

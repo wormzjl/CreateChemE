@@ -2,6 +2,8 @@ package com.wormzjl.createcheme.science.fluid.network;
 
 /** Homogeneous Darcy-Weisbach loss with a C1 laminar/turbulent blend over Reynolds 2000..4000. */
 public final class PipeResistance {
+    /** Fixed steel-wall roughness for player-built piping. */
+    public static final double DEFAULT_ROUGHNESS_METRES=0.000045;
     private PipeResistance() {}
     public record Geometry(double length,double diameter,double roughness,double minorLoss) {
         public Geometry {

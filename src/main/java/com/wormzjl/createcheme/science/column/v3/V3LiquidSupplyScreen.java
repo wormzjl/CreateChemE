@@ -159,7 +159,7 @@ final class V3LiquidSupplyScreen {
         return String.format(Locale.ROOT,
                 "V3 authored side draws withdraw %s the liquid that reflux, feed and authored pumparound "
                         + "condensation can deliver to tray %d; %s",
-                withdrawn, verdict.limitingTray(), bound);
+                withdrawn, verdict.limitingTray() + 1, bound);
     }
 
     /**

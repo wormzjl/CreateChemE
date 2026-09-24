@@ -18,8 +18,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import java.util.*;
 
 /**
- * Engine-owned presentation in the real server (plan R2, section 3.4, section 5 item 2): a menu receives nothing
- * when it opens and everything on its island's bucket; a queued edit is answered on the following bucket, tick
+ * Engine-owned presentation in the real server: opening replays the last published snapshot when available,
+ * and new state arrives on the island bucket; a queued edit is answered on the following bucket, tick
  * for tick; a certified island's status line arrives the same way; and identity binding on a chunk load carries
  * no view. The observations are the engine's own delivery log for each menu and the block entity's view.
  */
@@ -42,17 +42,17 @@ public final class FluidPresentationGameTests {
     private static long nextBucket(long tick,long key){return tick+1+Math.floorMod(key-(tick+1),(long)FluidPresentation.BUCKET_TICKS);}
 
     /**
-     * A menu opened between two buckets receives nothing at its opening and nothing until its island's next bucket,
-     * which brings the static and live payloads together; the view it gets is built at that bucket. The client
-     * shows the last view delivered for the device until then (FluidNetwork's remembered views).
+     * A never-published device waits for its first bucket. A second opening between buckets replays
+     * that cached snapshot immediately, then receives live-only updates at the unchanged deadlines.
      */
     @GameTest(template="empty",timeoutTicks=2000,batch="fluid-presentation-open")
-    public static void aMenuOpenedBetweenBucketsReceivesNothingUntilItsIslandsBucket(GameTestHelper helper) {
+    public static void aMenuOpeningReplaysCachedDataThenFollowsItsIslandsBucket(GameTestHelper helper) {
         var level=helper.getLevel();var world=FluidWorldAuthority.find(level.getServer()).orElseThrow();
         var pos=helper.absolutePos(new BlockPos(0,1,0));level.setBlock(pos,ModBlocks.FLUID_RESERVOIR.get().defaultBlockState(),3);long id=identity(helper,pos);
         var first=player(helper,"PresentationOpenA",pos);var second=player(helper,"PresentationOpenB",pos);
         var a=open(first,pos,id,61);long openedA=world.onlineTick();
-        helper.assertTrue(world.deliveries(a).isEmpty(),"Opening a menu delivered something");
+        helper.assertTrue(!world.replayOnOpen(a),"A new device has no published snapshot yet");
+        helper.assertTrue(world.deliveries(a).isEmpty(),"New state arrived before its first bucket");
         FluidDeviceMenu[] b={null};long[] at={-1,-1};String[] failure={null};
         helper.onEachTick(()->{
             if(failure[0]!=null)helper.fail(failure[0]);
@@ -67,14 +67,15 @@ public final class FluidPresentationGameTests {
                 if(now<at[0]+30)return;
                 close(first,a);helper.assertTrue(world.deliveries(a).isEmpty(),"A closed menu stays subscribed");
                 b[0]=open(second,pos,id,62);at[1]=now;
-                if(!world.deliveries(b[0]).isEmpty())failure[0]="Opening the second menu delivered at once";
+                if(!world.replayOnOpen(b[0]))failure[0]="The second menu did not replay its published snapshot";
+                if(!world.deliveries(b[0]).isEmpty())failure[0]="Cached replay was logged as new scheduled state";
                 return;
             }
             var delivered=world.deliveries(b[0]);long bucket=nextBucket(at[1],key);
             if(now<bucket&&!delivered.isEmpty())failure[0]="Delivered at "+delivered.getFirst().tick()+" before the bucket "+bucket;
             if(now>=bucket&&!delivered.isEmpty()) {
                 var d=delivered.getFirst();
-                if(d.tick()!=bucket||!d.withStatic()||d.viewOnlineTick()!=bucket)failure[0]="The second menu's first delivery "+d+" is not the bucket "+bucket;
+                if(d.tick()!=bucket||d.withStatic()||d.viewOnlineTick()!=bucket)failure[0]="The second menu's first delivery "+d+" is not the bucket "+bucket;
             }
         });
         boolean[] removed={false};

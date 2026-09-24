@@ -40,7 +40,7 @@ class V3LiquidSupplyScreenTest {
 
         assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, failure.code());
         assertTrue(failure.summary().contains("0.5000 of"), failure::summary);
-        assertTrue(failure.summary().contains("tray " + DRAW_TRAY), failure::summary);
+        assertTrue(failure.summary().contains("tray " + (DRAW_TRAY + 1)), failure::summary);
         assertTrue(failure.summary().contains("0.3000"), failure::summary);
         assertTrue(failure.summary().contains("demonstrated liquid-supply envelope"), failure::summary);
         assertFalse(failure.summary().contains("no liquid balance closes"),

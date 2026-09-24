@@ -34,7 +34,8 @@ public record V3ColumnInput(
         List<V3PumparoundSpec> pumparounds,
         double columnDiameterMetres) {
     public static final int SCHEMA_VERSION = 1;
-    public static final int MIN_STAGE_COUNT = 2;
+    /** Internal interior-tray count. Public total tray count is stageCount + 2. */
+    public static final int MIN_STAGE_COUNT = 0;
     public static final int MAX_STAGE_COUNT = 64;
     public static final int MAX_SIDE_DRAWS = 3;
     public static final int MAX_STEAM_FEEDS = 2;
@@ -120,7 +121,7 @@ public record V3ColumnInput(
 
     /** Whether the pressure profile is marched from the solved traffic rather than prescribed uniformly. */
     public boolean usesTrayHydraulics() {
-        return columnDiameterMetres > 0.0;
+        return columnDiameterMetres > 0.0 && stageCount > 0;
     }
 
     /** The same request in prescribed-drop mode; the seam tests and legacy pins author their inputs through. */

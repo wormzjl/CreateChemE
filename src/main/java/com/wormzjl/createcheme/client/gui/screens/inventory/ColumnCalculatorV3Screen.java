@@ -1,1248 +1,705 @@
 package com.wormzjl.createcheme.client.gui.screens.inventory;
 
+import com.wormzjl.createcheme.client.MaterialNames;
+import com.wormzjl.createcheme.client.gui.common.ProcessUi;
+import com.wormzjl.createcheme.client.gui.common.TemperatureUnit;
+import com.wormzjl.createcheme.client.gui.common.ComponentDropdown;
+import com.wormzjl.createcheme.client.gui.common.ComponentSearch;
+import static com.wormzjl.createcheme.client.gui.common.ProcessUi.*;
 import com.wormzjl.createcheme.network.ColumnV3Network;
-import com.wormzjl.createcheme.science.column.v3.V3ColumnDisplayResult;
-import com.wormzjl.createcheme.science.column.v3.V3ColumnDutyLedger;
-import com.wormzjl.createcheme.science.column.v3.V3ColumnInput;
-import com.wormzjl.createcheme.science.column.v3.V3PumparoundSpec;
-import com.wormzjl.createcheme.science.column.v3.V3SideDrawSpec;
-import com.wormzjl.createcheme.science.column.v3.V3SteamFeedSpec;
-import com.wormzjl.createcheme.science.column.v3.V3ColumnSpecification;
-import com.wormzjl.createcheme.science.column.v3.V3ColumnStreamProperties;
-import com.wormzjl.createcheme.science.column.v3.V3ControlledQuantity;
-import com.wormzjl.createcheme.science.column.v3.V3HollandExample32;
+import com.wormzjl.createcheme.science.column.v3.*;
+import com.wormzjl.createcheme.science.material.MaterialName;
 import com.wormzjl.createcheme.world.inventory.ColumnCalculatorV3Menu;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3State;
 import com.wormzjl.createcheme.world.level.block.entity.ColumnCalculatorV3BlockEntity.V3Status;
-import com.wormzjl.createcheme.world.level.block.entity.ColumnInputPreset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import org.lwjgl.glfw.GLFW;
 
-/**
- * Revisioned V3 editor and accepted-stream viewer.
- *
- * <p>The editor uses gameplay-friendly units while preserving the immutable, server-authoritative V3 scientific
- * input. Every displayed stream row originates from an accepted MESH state, never from an in-progress candidate.</p>
- */
+/** Editable process drawing; accepted results are discarded on any physical draft edit. */
 public final class ColumnCalculatorV3Screen extends AbstractContainerScreen<ColumnCalculatorV3Menu> {
-    private int materialMouseX, materialMouseY;
-    private com.wormzjl.createcheme.science.material.MaterialName hoveredMaterial;
-
-    @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        hoveredMaterial=null;
-        materialMouseX=mouseX-leftPos; materialMouseY=mouseY-topPos;
-        super.render(graphics,mouseX,mouseY,partialTick);
-        if(hoveredMaterial!=null) graphics.renderTooltip(font,java.util.List.of(
-                net.minecraft.network.chat.Component.literal(com.wormzjl.createcheme.client.MaterialNames.localized(hoveredMaterial)),
-                net.minecraft.network.chat.Component.literal(hoveredMaterial.id())),java.util.Optional.empty(),mouseX,mouseY);
+    private static final int CONTENT=78;
+    private static final String[] PAGES={"overview","composition","results","diagnostics"},
+        RESULTS={"profiles","streams","heat"},METRICS={"temperature","pressure","pressure_drop","traffic"};
+    private static String tr(String key,Object...args){return Component.translatable("gui.createcheme.column."+key,args).getString();}
+    private final List<Label> labels=new ArrayList<>();
+    private final List<Hit> hits=new ArrayList<>();
+    private final Map<String,EditBox> editors=new LinkedHashMap<>();
+    private final List<Scroll> scrolls=new ArrayList<>();
+    private final Scroll canvasY=new Scroll(),canvasX=new Scroll(),listScroll=new Scroll(),railScroll=new Scroll(),solverScroll=new Scroll();
+    private Scroll dragging;
+    private V3State state;
+    private V3EditorDraft draft;
+    private V3ColumnInput candidate;
+    private String validation=tr("waiting"),rejection="",notice="",hoveredText,search="",presetName="";
+    private V3ClientPresets library;
+    private V3ClientPresets.Kind presetKind;
+    private V3ClientPresets.Snapshot presetSnapshot;
+    private boolean savingPreset,massRate,connectionMenu;
+    private long pendingNonce;
+    private boolean conflict,rebuilding,invalidated,awaitingResult,kelvin,infoOnly,needsRebuild;
+    private int page,results,offset,selectedNode=1,selectedStream,metric,lineCount,pointerX,pointerY,selectedDraw=-1,selectedPA=-1,selectedSteam=-1;
+    private Button solve;
+    private ComponentDropdown componentDropdown;
+    private record Label(String text,int x,int y,int width){}
+    private record Hit(int x,int y,int w,int h,Runnable action,String hint){}
+    private static final class Scroll {
+        int x,y,length,visible,total,value;boolean horizontal;
+        int max(){return Math.max(0,total-visible);}
+        int thumb(){return Math.min(length,Math.max(18,total==0?length:length*visible/total));}
+        int position(){return max()==0?0:(length-thumb())*value/max();}
+        boolean contains(int px,int py){return horizontal?px>=x&&px<x+length&&py>=y&&py<y+8:px>=x&&px<x+8&&py>=y&&py<y+length;}
+        void seek(int px,int py){int at=(horizontal?px-x:py-y)-thumb()/2;value=Math.clamp((int)Math.round((double)at*max()/Math.max(1,length-thumb())),0,max());}
     }
-
-    private static final int CORE_EDITOR_COUNT = 10;
-    /**
-     * The scalar grid is four wide so the column diameter sits beside the pressures it belongs with, and the
-     * side-draw and steam blocks below it keep the three-column pitch and the vertical positions they had.
-     */
-    private static final int CORE_EDITOR_COLUMNS = 4;
-    private static final int SIDE_DRAW_COUNT = 3;
-    private static final int COOLER_COUNT = V3ColumnInput.MAX_PUMPAROUNDS;
-    private static final int MAX_PANEL_WIDTH = 620;
-    private static final int MAX_PANEL_HEIGHT = 360;
-    private static final int PANEL_MARGIN = 10;
-    private static final int CONTENT_TOP = 58;
-    private static final double KMOL_PER_HOUR_TO_MOL_PER_SECOND = 1_000.0 / 3_600.0;
-    private static final double MOL_PER_SECOND_TO_KMOL_PER_HOUR = 3.6;
-    private static final double CELSIUS_TO_KELVIN = 273.15;
-    private static final double PASCAL_TO_BAR = 1.0e-5;
-    private static final int BACKGROUND = 0xFF20252B;
-    private static final int BORDER = 0xFF59636E;
-    private static final int TABLE_HEADER = 0xFF343C45;
-    private static final int TABLE_ROW = 0xFF252C33;
-    private static final int TABLE_ALT_ROW = 0xFF2A323A;
-    private static final int TABLE_GRID = 0xFF46515C;
-    private static final int TEXT = 0xFFE6EDF3;
-    private static final int MUTED = 0xFF9AA6B2;
-    private static final int NOTICE = 0xFFFFCC66;
-    private static final int SUCCESS = 0xFF77DD88;
-    private static final int FAILURE = 0xFFFF7777;
-    private static final int COOLER_MARK = 0xFF378ADD;
-    private static final int DRAW_MARK = 0xFF1D9E75;
-    private static final int FEED_MARK = 0xFFD85A30;
-    private static final int STEAM_MARK = 0xFFEF9F27;
-    private static final int HEAT_NUMBER_X = 12;
-    private static final int HEAT_DRAW_X = 26;
-    private static final int HEAT_RETURN_X = 92;
-    private static final int HEAT_COOLING_X = 158;
-    private static final int HEAT_SPLIT_X = 240;
-    private static final int HEAT_ROW_TOP = CONTENT_TOP + 30;
-    private static final int HEAT_ROW_PITCH = 22;
-    private static final int HEAT_HELP_Y = HEAT_ROW_TOP + COOLER_COUNT * HEAT_ROW_PITCH + 2;
-    private static final int HEAT_DUTIES_Y = HEAT_HELP_Y + 30;
-    private static final int TRAY_MAP_X = 400;
-    private static final int TRAY_MAP_MINIMUM_PANEL_WIDTH = 560;
-
-    private final List<EditBox> coreEditors = new ArrayList<>();
-    private final List<SideDrawFields> sideDrawFields = new ArrayList<>();
-    private final List<CoolerFields> coolerFields = new ArrayList<>();
-    private final V3PumparoundSpec.Split[] coolerSplits = new V3PumparoundSpec.Split[COOLER_COUNT];
-    private SteamFields steamFields;
-    private Page page = Page.INPUTS;
-    private V3State serverState;
-    private long latestStateRevision = -1L;
-    private boolean calculationRequested;
-    private boolean loadingInput;
-    private boolean draftEditedSinceState;
-    private String[][] stashedCoolerDrafts;
-    private V3PumparoundSpec.Split[] stashedCoolerSplits;
-    private String validation = "Waiting for server-owned V3 state...";
-    private String draftValidationDetail = "Enter all scalar inputs.";
-    private Button inputsTab;
-    private Button streamsTab;
-    private Button heatTab;
-    private Button convergenceTab;
-    private Button preset;
-    private int presetPage,presetSlots,componentScroll;
-    private Button previousComponents,nextComponents;
-    private Button previousPresetPage,nextPresetPage;
-    private final List<Button> presetChoices = new ArrayList<>();
-    private Button run;
-    private Button previousStreamPage;
-    private Button nextStreamPage;
-    private int streamPage;
-
-    public ColumnCalculatorV3Screen(ColumnCalculatorV3Menu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
-        Arrays.fill(coolerSplits, V3PumparoundSpec.Split.UNIFORM);
-        imageWidth = MAX_PANEL_WIDTH;
-        imageHeight = MAX_PANEL_HEIGHT;
-        inventoryLabelY = imageHeight + 10;
+    public ColumnCalculatorV3Screen(ColumnCalculatorV3Menu menu,Inventory inventory,Component title){
+        super(menu,inventory,title);imageWidth=840;imageHeight=460;
     }
-
-    @Override
-    protected void init() {
-        String[] scalarDraft = editorDraft();
-        String[] sideStageDrafts = {"13", "17", "22"};
-        String[] sideRateDrafts = {"92.3", "131.85", "32.96"};
-        String[] steamDrafts = steamFields == null ? new String[] {"", "", "", "", ""}
-                : new String[] {steamFields.sumpRate().getValue(), steamFields.sumpTemperature().getValue(),
-                        steamFields.trayStage().getValue(), steamFields.trayRate().getValue(),
-                        steamFields.trayTemperature().getValue()};
-        for (int index = 0; index < Math.min(sideDrawFields.size(), SIDE_DRAW_COUNT); index++) {
-            sideStageDrafts[index] = sideDrawFields.get(index).stage().getValue();
-            sideRateDrafts[index] = sideDrawFields.get(index).rate().getValue();
-        }
-        String[][] coolerDrafts = coolerDrafts();
-
-        imageWidth = Math.min(MAX_PANEL_WIDTH, Math.max(1, width - PANEL_MARGIN * 2));
-        imageHeight = Math.min(MAX_PANEL_HEIGHT, Math.max(1, height - PANEL_MARGIN * 2));
-        inventoryLabelY = imageHeight + 10;
-        super.init();
-        titleLabelY = -1_000;
-        coreEditors.clear();
-        sideDrawFields.clear();
-        coolerFields.clear();
-        presetChoices.clear();
-        steamFields = null;
-
-        int tabY = topPos + 28;
-        inputsTab = addRenderableWidget(Button.builder(Component.literal("Inputs"), button -> selectPage(Page.INPUTS))
-                .bounds(leftPos + 10, tabY, 72, 20).build());
-        streamsTab = addRenderableWidget(Button.builder(Component.literal("Streams"), button -> selectPage(Page.STREAMS))
-                .bounds(leftPos + 86, tabY, 72, 20).build());
-        heatTab = addRenderableWidget(Button.builder(Component.literal("Heat"), button -> selectPage(Page.HEAT))
-                .bounds(leftPos + 162, tabY, 72, 20).build());
-        convergenceTab = addRenderableWidget(Button.builder(Component.literal("Convergence"), button -> selectPage(Page.CONVERGENCE))
-                .bounds(leftPos + 238, tabY, 96, 20).build());
-        preset = addRenderableWidget(Button.builder(Component.translatableWithFallback("gui.createcheme.column_presets", "Input presets"), button -> selectPage(Page.PRESETS))
-                .bounds(leftPos + 340, tabY, 128, 20).build());
-        int presetWidth = Math.max(1, (imageWidth - 30) / 2);
-        presetSlots=2*Math.clamp((imageHeight-CONTENT_TOP-84)/30,1,4);
-        for (int index=0; index<presetSlots; index++) {
-            final int slot=index;
-            presetChoices.add(addRenderableWidget(Button.builder(Component.empty(),button->{
-                int selected=presetPage*presetSlots+slot;
-                if(serverState!=null&&selected<serverState.presets().size())requestPreset(serverState.presets().get(selected));
-            }).bounds(leftPos+10+(index%2)*(presetWidth+10),topPos+CONTENT_TOP+44+(index/2)*30,presetWidth,20).build()));
-        }
-        previousPresetPage=addRenderableWidget(Button.builder(Component.literal("Previous presets"),button->{presetPage--;refreshControls();})
-                .bounds(leftPos+10,topPos+imageHeight-29,125,20).build());
-        nextPresetPage=addRenderableWidget(Button.builder(Component.literal("Next presets"),button->{presetPage++;refreshControls();})
-                .bounds(leftPos+145,topPos+imageHeight-29,125,20).build());
-        previousComponents=addRenderableWidget(Button.builder(Component.literal("↑"),button->{componentScroll--;refreshControls();})
-                .bounds(leftPos+246,topPos+imageHeight-29,22,20).build());
-        nextComponents=addRenderableWidget(Button.builder(Component.literal("↓"),button->{componentScroll++;refreshControls();})
-                .bounds(leftPos+270,topPos+imageHeight-29,22,20).build());
-        run = addRenderableWidget(Button.builder(Component.literal("Run V3"), button -> requestCalculation())
-                .bounds(leftPos + 10, topPos + imageHeight - 29, 82, 20).build());
-        previousStreamPage = addRenderableWidget(Button.builder(Component.literal("Previous streams"), button -> {
-            streamPage = Math.max(0, streamPage - 1);
-            refreshControls();
-        }).bounds(leftPos + 10, topPos + imageHeight - 29, 112, 20).build());
-        nextStreamPage = addRenderableWidget(Button.builder(Component.literal("Next streams"), button -> {
-            streamPage++;
-            refreshControls();
-        }).bounds(leftPos + 128, topPos + imageHeight - 29, 100, 20).build());
-
-        buildEditors(scalarDraft, sideStageDrafts, sideRateDrafts, steamDrafts);
-        buildHeatEditors(coolerDrafts);
-        if (serverState != null) loadInput(serverState.input());
-        restoreCoolerDrafts(coolerDrafts);
-        ColumnV3Network.setClientStateConsumer(this::applyServerState);
-        ColumnV3Network.setClientRejectionConsumer(this::applyRejection);
-        ColumnV3Network.sendStateRequest(menu.blockPos());
-        validateDraft();
-        refreshControls();
+    @Override protected void init(){
+        imageWidth=Math.max(180,width-16);imageHeight=Math.max(140,height-16);
+        super.init();titleLabelY=inventoryLabelY=-1000;
+        if(library==null)library=new V3ClientPresets(minecraft.gameDirectory.toPath(),name->{
+            try{return minecraft.getResourceManager().getResource(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("createcheme",name.substring("assets/createcheme/".length()))).orElseThrow().open();}
+            catch(java.io.IOException|NoSuchElementException e){return null;}
+        });
+        ColumnV3Network.setClientStateConsumer(this::receive);
+        ColumnV3Network.setClientRejectionConsumer((pos,nonce,reason)->{
+            if(!menu.blockPos().equals(pos)||nonce!=pendingNonce)return;
+            pendingNonce=0;awaitingResult=false;rejection=tr("request_rejected");validate();rebuild();
+        });
+        ColumnV3Network.sendStateRequest(menu.blockPos());rebuild();
     }
-
-    @Override
-    public void onClose() {
-        ColumnV3Network.setClientStateConsumer((blockPos, state) -> {});
-        ColumnV3Network.setClientRejectionConsumer((blockPos, nonce, reason) -> {});
-        super.onClose();
+    private V3EditorDraft newDraft(V3ColumnInput input){var next=new V3EditorDraft(input,state.editorCatalog().weightsFor(input));if(massRate)next.composition().toggleBasis();return next;}
+    private void receive(net.minecraft.core.BlockPos pos,V3State incoming){
+        if(!menu.blockPos().equals(pos)||state!=null&&incoming.stateRevision()<state.stateRevision())return;
+        boolean own=pendingNonce!=0&&incoming.clientNonce()==pendingNonce;
+        boolean replace=draft==null||own||!draft.dirty()&&!invalidated;
+        boolean changed=draft==null||!draft.base().equals(incoming.input());
+        if(!replace&&state!=null&&!state.input().equals(incoming.input()))conflict=true;
+        state=incoming;
+        if(own){pendingNonce=0;rejection="";conflict=false;}
+        if(replace&&(changed||own))draft=newDraft(incoming.input());
+        if(awaitingResult&&pendingNonce==0&&incoming.status()!=V3Status.CALCULATING){
+            awaitingResult=false;invalidated=false;
+        }
+        validate();rebuild();
     }
-
-    private void buildEditors(
-            String[] scalarDraft, String[] sideStageDrafts, String[] sideRateDrafts, String[] steamDrafts) {
-        int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
-        int coreColumnWidth = Math.max(1, (imageWidth - 20) / CORE_EDITOR_COLUMNS);
-        String[] defaults = {"2610.7", "365", "29", "24", "126.85", "8", "2", "1.5", "0.75", "0"};
-        for (int index = 0; index < CORE_EDITOR_COUNT; index++) {
-            int column = index % CORE_EDITOR_COLUMNS;
-            int row = index / CORE_EDITOR_COLUMNS;
-            EditBox editor = new EditBox(font, leftPos + 10 + column * coreColumnWidth,
-                    topPos + CONTENT_TOP + 13 + row * 38,
-                    Math.max(30, Math.min(104, coreColumnWidth - 8)), 20, Component.literal("V3 input"));
-            editor.setMaxLength(20);
-            editor.setValue(scalarDraft == null ? defaults[index] : scalarDraft[index]);
-            editor.setResponder(value -> onDraftEdited());
-            coreEditors.add(addRenderableWidget(editor));
-        }
-        int sideY = topPos + CONTENT_TOP + 128;
-        for (int index = 0; index < SIDE_DRAW_COUNT; index++) {
-            int groupX = leftPos + 10 + index * scalarColumnWidth;
-            int stageWidth = Math.max(28, Math.min(44, scalarColumnWidth / 3));
-            int rateWidth = Math.max(42, Math.min(78, scalarColumnWidth - stageWidth - 14));
-            EditBox stage = new EditBox(font, groupX, sideY, stageWidth, 20, Component.literal("Side draw tray"));
-            EditBox rate = new EditBox(font, groupX + stageWidth + 6, sideY, rateWidth, 20,
-                    Component.literal("Side draw rate (kmol/h)"));
-            stage.setValue(sideStageDrafts[index]);
-            rate.setValue(sideRateDrafts[index]);
-            stage.setMaxLength(3);
-            rate.setMaxLength(20);
-            stage.setResponder(value -> onDraftEdited());
-            rate.setResponder(value -> onDraftEdited());
-            sideDrawFields.add(new SideDrawFields(addRenderableWidget(stage), addRenderableWidget(rate)));
-        }
-        int steamY = topPos + CONTENT_TOP + 178;
-        int sumpRateWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
-        int temperatureWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
-        EditBox sumpRate = steamEditor(leftPos + 10, steamY, sumpRateWidth, "Sump steam rate", steamDrafts[0], 20);
-        EditBox sumpTemperature = steamEditor(leftPos + 16 + sumpRateWidth, steamY, temperatureWidth,
-                "Sump steam temperature", steamDrafts[1], 20);
-        int trayX = leftPos + 10 + scalarColumnWidth;
-        EditBox trayStage = steamEditor(trayX, steamY, 42, "Tray steam stage", steamDrafts[2], 3);
-        EditBox trayRate = steamEditor(trayX + 48, steamY, 72, "Tray steam rate", steamDrafts[3], 20);
-        EditBox trayTemperature = steamEditor(trayX + 126, steamY, 72, "Tray steam temperature", steamDrafts[4], 20);
-        steamFields = new SteamFields(sumpRate, sumpTemperature, trayStage, trayRate, trayTemperature);
+    @Override public void onClose(){
+        ColumnV3Network.setClientStateConsumer((pos,view)->{});
+        ColumnV3Network.setClientRejectionConsumer((pos,nonce,reason)->{});super.onClose();
     }
-
-    private EditBox steamEditor(int x, int y, int width, String description, String value, int maximumLength) {
-        EditBox editor = new EditBox(font, x, y, width, 20, Component.literal(description));
-        editor.setMaxLength(maximumLength);
-        editor.setValue(value);
-        editor.setResponder(ignored -> onDraftEdited());
-        return addRenderableWidget(editor);
+    private boolean busy(){return pendingNonce!=0||state!=null&&state.status()==V3Status.CALCULATING;}
+    private boolean editable(){return !busy()&&draft!=null;}
+    private void edited(){invalidated=true;rejection="";notice="";validate();}
+    private void validate(){
+        candidate=null;
+        if(draft==null){validation=tr("waiting");return;}
+        try{candidate=draft.assemble();validation=invalidated?tr("draft_changed"):tr("ready");}
+        catch(IllegalArgumentException e){validation=validationMessage(e);}
+        updateControls();
     }
-
-    /**
-     * Builds the Heat page rows.
-     *
-     * <p>Order is draw before return because that is the physical direction of the circulating liquid; the
-     * duty itself is authored as positive cooling and negated on the way into the science contract.</p>
-     */
-    private void buildHeatEditors(String[][] coolerDrafts) {
-        int splitWidth = Math.max(56, Math.min(92, imageWidth - 10 - HEAT_SPLIT_X));
-        for (int index = 0; index < COOLER_COUNT; index++) {
-            int rowY = topPos + HEAT_ROW_TOP + index * HEAT_ROW_PITCH;
-            EditBox drawTray = heatEditor(leftPos + HEAT_DRAW_X, rowY, 60, "Cooler draw tray", coolerDrafts[index][0], 3);
-            EditBox returnTray = heatEditor(leftPos + HEAT_RETURN_X, rowY, 60, "Cooler return tray", coolerDrafts[index][1], 3);
-            EditBox cooling = heatEditor(leftPos + HEAT_COOLING_X, rowY, 76, "Cooler duty (MW removed)", coolerDrafts[index][2], 12);
-            int row = index;
-            Button split = addRenderableWidget(Button.builder(Component.literal(splitLabel(coolerSplits[index])),
-                    button -> cycleSplit(row)).bounds(leftPos + HEAT_SPLIT_X, rowY, splitWidth, 20).build());
-            coolerFields.add(new CoolerFields(drawTray, returnTray, cooling, split));
-        }
+    private void updateControls(){
+        if(solve!=null)solve.active=candidate!=null&&!busy()&&!conflict&&state!=null;
+        editors.forEach((key,e)->e.active=key.equals("search")||key.equals("presetName")||editable());
     }
-
-    private EditBox heatEditor(int x, int y, int width, String description, String value, int maximumLength) {
-        EditBox editor = new EditBox(font, x, y, width, 20, Component.literal(description));
-        editor.setMaxLength(maximumLength);
-        editor.setValue(value);
-        editor.setResponder(ignored -> onDraftEdited());
-        return addRenderableWidget(editor);
+    private void submit(){
+        validate();if(candidate==null||busy()||conflict||state==null)return;
+        pendingNonce=ColumnV3Network.sendCalculate(menu.blockPos(),state.inputRevision(),candidate);
+        invalidated=true;awaitingResult=true;rejection="";rebuild();
     }
-
-    private void cycleSplit(int index) {
-        V3PumparoundSpec.Split[] splits = V3PumparoundSpec.Split.values();
-        coolerSplits[index] = splits[(coolerSplits[index].ordinal() + 1) % splits.length];
-        coolerFields.get(index).split().setMessage(Component.literal(splitLabel(coolerSplits[index])));
-        onDraftEdited();
+    private void changePage(int target){page=target;connectionMenu=false;offset=listScroll.value=0;presetKind=null;savingPreset=false;rebuild();}
+    private int bodyBottom(){return imageHeight-(conflict?73:48);}
+    private int rows(){return Math.max(1,(bodyBottom()-CONTENT-10)/15);}
+    private boolean narrow(){return imageWidth<710;}
+    private int solverWidth(){return 152;}
+    private int trayWidth(){return Math.max(185,Math.min(260,imageWidth/3));}
+    private int canvasWidth(){return narrow()?imageWidth-30:imageWidth-solverWidth()-trayWidth()-38;}
+    private int solverX(){return canvasWidth()+22;}
+    private int trayX(){return solverX()+solverWidth()+12;}
+    private int virtualWidth(){return Math.max(330,canvasWidth());}
+    private int cx(){return virtualWidth()/2;}
+    private int pitch(){return V3DiagramLayout.trayPitch(stageCount(),bodyBottom()-CONTENT-12);}
+    private int trayY(int tray){return 52+tray*pitch();}
+    private int columnBottom(){return trayY(stageCount()+1)+12;}
+    private int canvasHeight(){return Math.max(columnBottom()+67,trayY(feedTray())+78);}
+    private int stageCount(){return draft==null?2:draft.preview("s2",draft.base().stageCount()+2,2,66)-2;}
+    private int feedTray(){return draft.preview("s3",draft.base().feedStageNumber()+1,2,stageCount()+2)-1;}
+    private int sx(int x){return 10+x-canvasX.value;}
+    private int sy(int y){return CONTENT+y-canvasY.value;}
+    private Button button(String text,int x,int y,int w,Runnable action){
+        var b=addRenderableWidget(Button.builder(Component.literal(text),v->action.run())
+            .bounds(leftPos+x,topPos+y,Math.max(20,w),18).build());
+        b.setTooltip(Tooltip.create(Component.literal(text)));return b;
     }
-
-    private static String splitLabel(V3PumparoundSpec.Split split) {
-        return split == V3PumparoundSpec.Split.UNIFORM ? "Uniform" : "Return tray";
+    private Button action(String key,int x,int y,int w,Runnable action){
+        var b=button(tr(key),x,y,w,action);b.setTooltip(Tooltip.create(Component.literal(tr(key+".hint"))));return b;
     }
-
-    /** Snapshot of every cooler row, used to survive a resize and a Holland preset round trip. */
-    private String[][] coolerDrafts() {
-        String[][] drafts = new String[COOLER_COUNT][];
-        for (int index = 0; index < COOLER_COUNT; index++) {
-            drafts[index] = index < coolerFields.size()
-                    ? new String[] {coolerFields.get(index).drawTray().getValue(),
-                            coolerFields.get(index).returnTray().getValue(),
-                            coolerFields.get(index).cooling().getValue()}
-                    : new String[] {"", "", ""};
-        }
-        return drafts;
+    private void rateButton(int x,int y,int w){
+        button(tr(massRate?"mass_rate":"molar_rate"),x,y,w,()->{toggleBasis();})
+            .setTooltip(Tooltip.create(Component.literal(tr("flow_basis.hint"))));
     }
-
-    private void restoreCoolerDrafts(String[][] drafts) {
-        boolean authored = false;
-        for (String[] row : drafts) {
-            for (String value : row) authored |= !value.isBlank();
-        }
-        if (!authored) return;
-        applyCoolerDrafts(drafts);
+    private void toggleBasis(){
+        try{if(draft!=null){draft.composition().toggleBasis();massRate=draft.composition().mass();}else massRate=!massRate;rejection="";rebuild();}
+        catch(IllegalArgumentException e){rejection=validationMessage(e);}
     }
-
-    private void applyCoolerDrafts(String[][] drafts) {
-        boolean previous = loadingInput;
-        loadingInput = true;
-        try {
-            for (int index = 0; index < coolerFields.size(); index++) {
-                coolerFields.get(index).drawTray().setValue(drafts[index][0]);
-                coolerFields.get(index).returnTray().setValue(drafts[index][1]);
-                coolerFields.get(index).cooling().setValue(drafts[index][2]);
-            }
-        } finally {
-            loadingInput = previous;
-        }
+    private String validationMessage(IllegalArgumentException e){
+        String message=Objects.toString(e.getMessage(),"").toLowerCase(Locale.ROOT);
+        if(message.contains("steam"))return tr("invalid_steam");
+        if(message.contains("draw"))return tr("invalid_draw");
+        if(message.contains("component")||message.contains("mixture"))return tr("invalid_mixture");
+        if(message.contains("heat")||message.contains("cool")||message.contains("pumparound"))return tr("invalid_pa");
+        return tr("invalid_input");
     }
-
-    private void onDraftEdited() {
-        if (!loadingInput) {
-            draftEditedSinceState = true;
-            stashedCoolerDrafts = null;
-            stashedCoolerSplits = null;
+    private void rebuild(){
+        if(rebuilding)return;rebuilding=true;needsRebuild=false;
+        String focus=editors.entrySet().stream().filter(e->e.getValue()==getFocused()).map(Map.Entry::getKey).findFirst().orElse(null);
+        int cursor=focus==null?0:editors.get(focus).getCursorPosition();
+        boolean dropdownOpen=componentDropdown!=null&&componentDropdown.expanded();
+        clearWidgets();editors.clear();labels.clear();scrolls.clear();componentDropdown=null;
+        int tab=(imageWidth-20)/4;
+        for(int i=0;i<4;i++){int t=i;action(PAGES[i],10+i*tab,28,tab-3,()->changePage(t)).active=page!=i;}
+        solve=action("solve",10,imageHeight-25,64,this::submit);
+        button(tr("temperature_unit",unit()),imageWidth-130,imageHeight-25,120,()->{kelvin=!kelvin;rebuild();})
+            .setTooltip(Tooltip.create(Component.literal(tr("temperature_unit.hint"))));
+        if(conflict){
+            action("use_server",10,imageHeight-69,120,()->{draft=newDraft(state.input());conflict=false;invalidated=false;validate();rebuild();});
+            action("keep_draft",136,imageHeight-69,115,()->{conflict=false;validate();rebuild();});
         }
-        validateDraft();
-    }
-
-    private void applyServerState(net.minecraft.core.BlockPos blockPos, V3State state) {
-        if (!menu.blockPos().equals(blockPos) || state.stateRevision() < latestStateRevision) return;
-        latestStateRevision = state.stateRevision();
-        serverState = state;
-        calculationRequested = false;
-        loadInput(state.input());
-        draftEditedSinceState = false;
-        validateDraft();
-        refreshControls();
-    }
-
-    private void applyRejection(net.minecraft.core.BlockPos blockPos, long clientNonce, String reason) {
-        if (!menu.blockPos().equals(blockPos)) return;
-        calculationRequested = false;
-        validation = "Calculation request was not accepted. Check the calculator and try again.";
-        refreshControls();
-    }
-
-    private String[] editorDraft() {
-        if (coreEditors.size() != CORE_EDITOR_COUNT) return null;
-        String[] draft = new String[CORE_EDITOR_COUNT];
-        for (int index = 0; index < draft.length; index++) draft[index] = coreEditors.get(index).getValue();
-        return draft;
-    }
-
-    private void loadInput(V3ColumnInput input) {
-        boolean previous = loadingInput;
-        loadingInput = true;
-        try {
-            loadInputFields(input);
-        } finally {
-            loadingInput = previous;
-        }
-    }
-
-    private void loadInputFields(V3ColumnInput input) {
-        double total = 0.0;
-        for (double flow : input.feedComponentMolarFlowsMolPerSecond()) total += flow;
-        String[] values = {
-                compactDraft(total * MOL_PER_SECOND_TO_KMOL_PER_HOUR, 1),
-                compactDraft(input.feedTemperatureKelvin() - CELSIUS_TO_KELVIN, 1),
-                Integer.toString(input.stageCount()),
-                Integer.toString(input.feedStageNumber()),
-                compactDraft(specificationValue(input, V3ControlledQuantity.CONDENSER_OUTLET_TEMPERATURE)
-                        - CELSIUS_TO_KELVIN, 1),
-                compactDraft(specificationValue(input, V3ControlledQuantity.REBOILER_DUTY) / 1_000_000.0, 1),
-                compactDraft(specificationValue(input, V3ControlledQuantity.ORGANIC_REFLUX_RATIO), 2),
-                compactDraft(input.topPressurePascal() * PASCAL_TO_BAR, 2),
-                compactDraft(input.stagePressureDropPascal() / 1_000.0, 2),
-                compactDraft(input.columnDiameterMetres(), 2)
-        };
-        if (coreEditors.size() == CORE_EDITOR_COUNT) {
-            for (int index = 0; index < values.length; index++) coreEditors.get(index).setValue(values[index]);
-        }
-        for (int index = 0; index < sideDrawFields.size(); index++) {
-            V3SideDrawSpec draw = index < input.sideDraws().size() ? input.sideDraws().get(index) : null;
-            sideDrawFields.get(index).stage().setValue(draw == null ? "" : Integer.toString(draw.trayNumber()));
-            sideDrawFields.get(index).rate().setValue(
-                    draw == null ? "" : compactDraft(draw.molarFlowMolPerSecond() * 3.6, 1));
-        }
-        V3SteamFeedSpec sump = input.steamFeeds().stream()
-                .filter(feed -> feed.stageNumber() == input.stageCount() + 1).findFirst().orElse(null);
-        V3SteamFeedSpec traySteam = input.steamFeeds().stream()
-                .filter(feed -> feed.stageNumber() <= input.stageCount()).findFirst().orElse(null);
-        if (steamFields != null) {
-            steamFields.sumpRate().setValue(sump == null ? ""
-                    : compactDraft(sump.molarFlowMolPerSecond() * 3.6, 1));
-            steamFields.sumpTemperature().setValue(sump == null ? ""
-                    : compactDraft(sump.temperatureKelvin() - CELSIUS_TO_KELVIN, 1));
-            steamFields.trayStage().setValue(traySteam == null ? ""
-                    : Integer.toString(traySteam.stageNumber()));
-            steamFields.trayRate().setValue(traySteam == null ? ""
-                    : compactDraft(traySteam.molarFlowMolPerSecond() * 3.6, 1));
-            steamFields.trayTemperature().setValue(traySteam == null ? ""
-                    : compactDraft(traySteam.temperatureKelvin() - CELSIUS_TO_KELVIN, 1));
-        }
-        loadCoolers(input);
-    }
-
-    /**
-     * Mirrors the server-owned pumparound list into the Heat rows.
-     *
-     * <p>A stash taken when the Holland preset was requested is restored instead whenever the server comes
-     * back with a production input that carries no pumparounds, so the round trip does not lose the rows.</p>
-     */
-    private void loadCoolers(V3ColumnInput input) {
-        if (coolerFields.isEmpty()) return;
-        if (input.pumparounds().isEmpty() && stashedCoolerDrafts != null
-                && !V3HollandExample32.isPackage(input.packageId())) {
-            // The server answers one preset with both a reply and a viewer broadcast, so this restore must be
-            // idempotent; the stash is dropped by the next authored edit or pumparound-bearing input instead.
-            applyCoolerDrafts(stashedCoolerDrafts);
-            System.arraycopy(stashedCoolerSplits, 0, coolerSplits, 0, coolerSplits.length);
-            refreshSplitLabels();
-            return;
-        }
-        if (!input.pumparounds().isEmpty()) {
-            stashedCoolerDrafts = null;
-            stashedCoolerSplits = null;
-        }
-        for (int index = 0; index < coolerFields.size(); index++) {
-            V3PumparoundSpec cooler = index < input.pumparounds().size() ? input.pumparounds().get(index) : null;
-            coolerFields.get(index).drawTray().setValue(cooler == null ? "" : Integer.toString(cooler.drawTray()));
-            coolerFields.get(index).returnTray().setValue(cooler == null ? "" : Integer.toString(cooler.returnTray()));
-            coolerFields.get(index).cooling().setValue(cooler == null ? ""
-                    : compactDraft(V3PumparoundDraft.dutyWattsToCoolingMegawatts(cooler.dutyWatts()), 3));
-            if (cooler != null) coolerSplits[index] = cooler.split();
-        }
-        refreshSplitLabels();
-    }
-
-    private void refreshSplitLabels() {
-        for (int index = 0; index < coolerFields.size(); index++) {
-            coolerFields.get(index).split().setMessage(Component.literal(splitLabel(coolerSplits[index])));
-        }
-    }
-
-    private void selectPage(Page target) {
-        page = target;
-        refreshControls();
-    }
-
-    private void refreshControls() {
-        boolean showInputs = page == Page.INPUTS;
-        boolean showHeat = page == Page.HEAT;
-        boolean calculating = calculationRequested
-                || serverState != null && serverState.status() == V3Status.CALCULATING;
-        boolean holland = isHolland();
-        for (EditBox editor : coreEditors) {
-            editor.visible = showInputs;
-            editor.active = showInputs && !calculating && serverState != null && !holland;
-        }
-        for (SideDrawFields side : sideDrawFields) {
-            side.stage().visible = showInputs;
-            side.rate().visible = showInputs;
-            side.stage().active = showInputs && !calculating && serverState != null && !holland;
-            side.rate().active = showInputs && !calculating && serverState != null && !holland;
-        }
-        if (steamFields != null) {
-            for (EditBox editor : steamFields.editors()) {
-                editor.visible = showInputs;
-                editor.active = showInputs && !calculating && serverState != null && !holland;
-            }
-        }
-        for (CoolerFields cooler : coolerFields) {
-            boolean editable = showHeat && !calculating && serverState != null && !holland;
-            for (EditBox editor : cooler.editors()) {
-                editor.visible = showHeat;
-                editor.active = editable;
-            }
-            cooler.split().visible = showHeat;
-            cooler.split().active = editable;
-        }
-        inputsTab.active = !showInputs;
-        streamsTab.active = page != Page.STREAMS;
-        heatTab.active = !showHeat;
-        convergenceTab.active = page != Page.CONVERGENCE;
-        preset.visible = showInputs || page == Page.PRESETS;
-        preset.active = showInputs && !calculating && serverState != null;
-        int presetCount=serverState==null?0:serverState.presets().size();
-        presetPage=Math.clamp(presetPage,0,Math.max(0,(presetCount-1)/presetSlots));
-        for(int i=0;i<presetChoices.size();i++) {
-            var button=presetChoices.get(i);int index=presetPage*presetSlots+i;
-            button.visible=page==Page.PRESETS&&index<presetCount;
-            button.active=button.visible&&!calculating;
-            if(index<presetCount){var choice=serverState.presets().get(index);button.setMessage(Component.translatableWithFallback(choice.translationKey(),choice.label()));}
-        }
-        previousPresetPage.visible=nextPresetPage.visible=page==Page.PRESETS&&presetCount>presetSlots;
-        previousPresetPage.active=presetPage>0;nextPresetPage.active=(presetPage+1)*presetSlots<presetCount;
-        run.setMessage(Component.literal(holland ? "Run Holland" : "Run V3"));
-        run.visible = showInputs || showHeat;
-        run.active = run.visible && !calculating && draftInput() != null;
-        int count = serverState == null || serverState.displayResult().isEmpty() ? 0
-                : serverState.displayResult().orElseThrow().streams().size();
-        int perPage = streamsPerPage();
-        streamPage = Math.clamp(streamPage, 0, Math.max(0, (count - 1) / perPage));
-        previousStreamPage.visible = nextStreamPage.visible = page == Page.STREAMS && count > perPage;
-        previousStreamPage.active = streamPage > 0;
-        nextStreamPage.active = (streamPage + 1) * perPage < count;
-        componentScroll=Math.clamp(componentScroll,0,maximumComponentScroll());
-        previousComponents.visible=nextComponents.visible=page==Page.STREAMS&&maximumComponentScroll()>0;
-        previousComponents.active=componentScroll>0;nextComponents.active=componentScroll<maximumComponentScroll();
-    }
-
-    private void requestCalculation() {
-        V3ColumnInput input = draftInput();
-        if (serverState == null || input == null) return;
-        ColumnV3Network.sendCalculate(menu.blockPos(), serverState.inputRevision(), input);
-        calculationRequested = true;
-        validation = "Calculating...";
-        refreshControls();
-    }
-
-    private void requestPreset(com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor choice) {
-        if (serverState == null || calculationRequested || serverState.status() == V3Status.CALCULATING) return;
-        if (choice.id().equals("holland_3_2") && !isHolland()) {
-            String[][] drafts = coolerDrafts();
-            boolean authored = false;
-            for (String[] row : drafts) {
-                for (String value : row) authored |= !value.isBlank();
-            }
-            stashedCoolerDrafts = authored ? drafts : null;
-            stashedCoolerSplits = authored ? coolerSplits.clone() : null;
-        } else {
-            stashedCoolerDrafts = null;
-            stashedCoolerSplits = null;
-        }
-        ColumnV3Network.sendPreset(menu.blockPos(), serverState.inputRevision(), choice.id());
-        page = Page.INPUTS;
-        calculationRequested = true;
-        validation = "Loading server-owned V3 preset...";
-        refreshControls();
-    }
-
-    private void validateDraft() {
-        if (serverState == null) {
-            validation = "Waiting for server-owned V3 state...";
-        } else if (calculationRequested || serverState.status() == V3Status.CALCULATING) {
-            validation = "Calculating...";
-        } else if (draftInput() == null) {
-            validation = draftValidationDetail;
-        } else {
-            validation = switch (serverState.status()) {
-                case SUCCESS -> "Calculation complete — see Streams.";
-                case FAILED -> "Last calculation failed — see Convergence.";
-                default -> "Ready to calculate.";
-            };
-        }
-        if (run != null && previousStreamPage != null && nextStreamPage != null) refreshControls();
-    }
-
-    private V3ColumnInput draftInput() {
-        if (serverState == null || coreEditors.size() != CORE_EDITOR_COUNT) return null;
-        if (isHolland()) return serverState.input();
-        try {
-            return V3ColumnInputDraft.assemble(serverState.input(),
-                    coreEditors.stream().map(EditBox::getValue).toList(),
-                    sideDrawFields.stream()
-                            .map(fields -> new V3SideDrawDraft.Row(fields.stage().getValue(), fields.rate().getValue()))
-                            .toList(),
-                    new V3SteamFeedDraft.Row("", steamFields.sumpRate().getValue(),
-                            steamFields.sumpTemperature().getValue()),
-                    new V3SteamFeedDraft.Row(steamFields.trayStage().getValue(), steamFields.trayRate().getValue(),
-                            steamFields.trayTemperature().getValue()),
-                    coolerRows());
-        } catch (IllegalArgumentException invalid) {
-            draftValidationDetail = invalid.getMessage() == null || invalid.getMessage().isBlank()
-                    ? "Invalid scientific draft." : invalid.getMessage();
-            return null;
-        }
-    }
-
-    private List<V3PumparoundDraft.Row> coolerRows() {
-        List<V3PumparoundDraft.Row> rows = new ArrayList<>(coolerFields.size());
-        for (int index = 0; index < coolerFields.size(); index++) {
-            CoolerFields fields = coolerFields.get(index);
-            rows.add(new V3PumparoundDraft.Row(fields.drawTray().getValue(), fields.returnTray().getValue(),
-                    fields.cooling().getValue(), coolerSplits[index]));
-        }
-        return rows;
-    }
-
-    @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, BORDER);
-        graphics.fill(leftPos + 1, topPos + 1, leftPos + imageWidth - 1, topPos + imageHeight - 1, BACKGROUND);
-    }
-
-    @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, "Column Calculator V3 (Experimental)", 10, 8, TEXT, false);
-        graphics.drawString(font, isHolland()
-                ? "Holland (1981) Example 3-2 | independent-oracle-seeded V3 benchmark"
-                : abbreviateToWidth(currentPresetLabel() + " | Peng–Robinson", imageWidth-20), 10, 20, MUTED, false);
-        switch (page) {
-            case INPUTS -> renderInputs(graphics);
-            case STREAMS -> renderStreams(graphics);
-            case HEAT -> renderHeat(graphics);
-            case CONVERGENCE -> renderConvergence(graphics);
-            case PRESETS -> renderPresets(graphics);
-        }
-    }
-
-    private String currentPresetLabel() {
-        if (serverState == null) return "Waiting for input";
-        for (var choice : serverState.presets()) {
-            if (choice.matches(serverState.input()))
-                return Component.translatableWithFallback(choice.translationKey(),choice.label()).getString();
-        }
-        return serverState.input().assayId();
-    }
-
-    private void renderPresets(GuiGraphics graphics) {
-        graphics.drawString(font, Component.translatableWithFallback("gui.createcheme.preset_choose",
-                "Choose an input preset"), 10, CONTENT_TOP, TEXT, false);
-        graphics.drawString(font, Component.translatableWithFallback("gui.createcheme.preset_replaces",
-                "Loading replaces the draft and clears its previous result."), 10, CONTENT_TOP+16, NOTICE, false);
-        if(imageHeight>=320)graphics.drawWordWrap(font,Component.literal(
-                "Presets provide editable starting conditions. Loading does not run the column."),
-                10,CONTENT_TOP+174,imageWidth-20,MUTED);
-    }
-
-    private void renderInputs(GuiGraphics graphics) {
-        String[] labels = {
-                "Feed (kmol/h)", "Feed temp (C)", "Theor. stages", "Feed stage",
-                "Condenser (C)", "Reboiler (MW)", "Reflux L/D", "Top P (bar)",
-                "Drop (kPa/stage)",
-                Component.translatableWithFallback("gui.createcheme.column_diameter", "Diameter (m)").getString()
-        };
-        int scalarColumnWidth = Math.max(1, (imageWidth - 20) / 3);
-        int coreColumnWidth = Math.max(1, (imageWidth - 20) / CORE_EDITOR_COLUMNS);
-        for (int index = 0; index < labels.length; index++) {
-            int column = index % CORE_EDITOR_COLUMNS;
-            int row = index / CORE_EDITOR_COLUMNS;
-            graphics.drawString(font, abbreviateToWidth(labels[index], Math.max(1, coreColumnWidth - 6)),
-                    10 + column * coreColumnWidth, CONTENT_TOP + row * 38, MUTED, false);
-        }
-        for (int index = 0; index < SIDE_DRAW_COUNT; index++) {
-            graphics.drawString(font, "Side " + (index + 1) + "  stage / kmol/h", 10 + index * scalarColumnWidth,
-                    CONTENT_TOP + 114, MUTED, false);
-        }
-        int sumpRateWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
-        int temperatureWidth = Math.max(42, Math.min(72, scalarColumnWidth / 3));
-        int sumpTemperatureX = 16 + sumpRateWidth;
-        int trayX = 10 + scalarColumnWidth;
-        graphics.drawString(font, "Sump steam: below bottom tray", 10, CONTENT_TOP + 152, NOTICE, false);
-        graphics.drawString(font, "Rate (kmol/h)", 10, CONTENT_TOP + 166, MUTED, false);
-        graphics.drawString(font, "Temp (°C)", sumpTemperatureX, CONTENT_TOP + 166, MUTED, false);
-        graphics.drawString(font, "Tray steam: optional stage injection", trayX, CONTENT_TOP + 152, NOTICE, false);
-        graphics.drawString(font, "Stage", trayX, CONTENT_TOP + 166, MUTED, false);
-        graphics.drawString(font, "Rate (kmol/h)", trayX + 48, CONTENT_TOP + 166, MUTED, false);
-        graphics.drawString(font, "Temp (°C)", trayX + 126, CONTENT_TOP + 166, MUTED, false);
-        if (serverState == null) {
-            graphics.drawString(font, "Waiting for server V3 calculator state.", 10, CONTENT_TOP + 209, NOTICE, false);
-            return;
-        }
-        V3ColumnInput input = serverState.input();
-        graphics.drawString(font, isHolland()
-                        ? "Fixed scan-verified input: 11 plates, bubble-point feed, and one 25 lbmol/h liquid draw."
-                : "Optional steam: leave rate blank or 0 to keep this dry. Suggested sump: 28.8 kmol/h at 176.9°C.",
-                10, CONTENT_TOP + 209, NOTICE, false);
-        graphics.drawString(font, isHolland()
-                        ? "Uses the independent near-root initializer; the known V3 cold-start failure remains reported."
-                : "Tray steam is disabled at 0 kmol/h. Stage 1 is the top tray; stage N is the bottom tray.",
-                10, CONTENT_TOP + 223, MUTED, false);
-        graphics.drawString(font, "Input revision " + serverState.inputRevision() + " • state " + serverState.stateRevision()
-                        + " • V3 assay " + input.assayId(),
-                10, CONTENT_TOP + 237, MUTED, false);
-        if (imageHeight >= 340) {
-            graphics.drawString(font, Component.translatableWithFallback("gui.createcheme.column_diameter_hint",
-                            "Diameter 0 m keeps the authored uniform drop; a positive one computes the tray "
-                                    + "pressure drop and warns about flooding."),
-                    10, CONTENT_TOP + 251, MUTED, false);
-        }
-        boolean calculating = calculationRequested || serverState.status() == V3Status.CALCULATING;
-        int statusColor = calculating ? NOTICE : serverState.status() == V3Status.FAILED ? FAILURE
-                : run != null && run.active ? SUCCESS : NOTICE;
-        graphics.drawString(font, abbreviate(validation, 82), 101, imageHeight - 24, statusColor, false);
-    }
-
-    private void renderStreams(GuiGraphics graphics) {
-        graphics.drawString(font, "Accepted phase stream properties and compositions", 10, CONTENT_TOP, TEXT, false);
-        if (serverState == null || serverState.displayResult().isEmpty() || serverState.displayResult().orElseThrow().streams().isEmpty()) {
-            graphics.drawString(font, "No accepted V3 stream properties are available.", 10, CONTENT_TOP + 29, NOTICE, false);
-            graphics.drawString(font, "Failed, calculating, and legacy presentation results never fabricate product streams.",
-                    10, CONTENT_TOP + 44, MUTED, false);
-            return;
-        }
-        V3ColumnDisplayResult result = serverState.displayResult().orElseThrow();
-        String resultState = serverState.status() == V3Status.SUCCESS ? "current accepted result"
-                : "retained accepted result (current draft is " + serverState.status().serializedName() + ")";
-        graphics.drawString(font, "Result revision " + serverState.resultRevision() + " • " + resultState,
-                10, CONTENT_TOP + 14, serverState.status() == V3Status.SUCCESS ? SUCCESS : NOTICE, false);
-        List<V3ColumnStreamProperties> streams = result.streams();
-        int first = streamPage * streamsPerPage();
-        int visible = Math.min(streamsPerPage(), streams.size() - first);
-        int streamWidth = Math.max(1, (imageWidth - 20) / visible);
-        for (int index = 0; index < visible; index++) {
-            renderStreamReport(graphics, 10 + index * streamWidth, streamWidth, CONTENT_TOP + 29, streams.get(first + index));
-        }
-    }
-
-    private int streamsPerPage() {
-        return Math.clamp((imageWidth - 20) / 200, 1, 3);
-    }
-
-    private int visibleComponentRows(){return Math.max(1,(imageHeight-CONTENT_TOP-110)/12);}
-    private int maximumComponentScroll() {
-        if(serverState==null||serverState.displayResult().isEmpty())return 0;
-        return Math.max(0,serverState.displayResult().orElseThrow().streams().stream()
-                .mapToInt(stream->stream.moleFractions().size()).max().orElse(0)-visibleComponentRows());
-    }
-    @Override public boolean mouseScrolled(double mouseX,double mouseY,double horizontal,double vertical) {
-        if(page==Page.STREAMS&&mouseX>=leftPos&&mouseX<leftPos+imageWidth
-                &&mouseY>=topPos+CONTENT_TOP+64&&mouseY<topPos+imageHeight-32&&vertical!=0) {
-            componentScroll+=vertical>0?-3:3;refreshControls();return true;
-        }
-        return super.mouseScrolled(mouseX,mouseY,horizontal,vertical);
-    }
-
-    private void renderStreamReport(
-            GuiGraphics graphics, int x, int width, int y, V3ColumnStreamProperties stream) {
-        graphics.drawString(font, abbreviateToWidth(stream.displayName() + " • " + stream.phase(), width - 2), x, y, TEXT, false);
-        graphics.drawString(font, abbreviateToWidth("F " + compact(stream.molarFlowMolPerSecond() * MOL_PER_SECOND_TO_KMOL_PER_HOUR)
-                        + " kmol/h | " + compact(stream.massFlowKgPerSecond() * 3_600.0) + " kg/h", width - 4),
-                x, y + 12, MUTED, false);
-        graphics.drawString(font, abbreviateToWidth("T " + compact(stream.temperatureKelvin() - CELSIUS_TO_KELVIN) + " C | P "
-                        + compact(stream.pressurePascal() * PASCAL_TO_BAR) + " bar | V/F "
-                        + compact(stream.vaporMoleFraction()), width - 4),
-                x, y + 23, MUTED, false);
-        int[] widths = distributedWidths(width, new double[] {0.42, 0.29, 0.29});
-        int tableY = y + 35;
-        drawTableRow(graphics, x, tableY, 12, widths, new String[] {"Component", "mol %", "wt %"}, true);
-        List<V3ColumnStreamProperties.ComponentFraction> fractions = stream.moleFractions();
-        int start=Math.min(componentScroll,Math.max(0,fractions.size()-visibleComponentRows()));
-        int end=Math.min(fractions.size(),start+visibleComponentRows());
-        for (int index = start; index < end; index++) {
-            V3ColumnStreamProperties.ComponentFraction fraction = fractions.get(index);
-            var material=serverState.materialNames().getOrDefault(fraction.componentId(),
-                    com.wormzjl.createcheme.science.material.MaterialName.chemical(fraction.componentId()));
-            int rowY=tableY+12*(index-start+1);
-            if(materialMouseX>=x && materialMouseX<x+widths[0] && materialMouseY>=rowY && materialMouseY<rowY+12)
-                hoveredMaterial=material;
-            drawTableRow(graphics, x, tableY + 12 * (index - start + 1), 12, widths, new String[] {
-                    com.wormzjl.createcheme.client.MaterialNames.localized(material), formatPercentage(fraction.moleFraction()), formatPercentage(fraction.massFraction())
-            }, false);
-        }
-    }
-
-    private void renderHeat(GuiGraphics graphics) {
-        boolean trayMap = imageWidth >= TRAY_MAP_MINIMUM_PANEL_WIDTH;
-        int leftWidth = (trayMap ? TRAY_MAP_X - 10 : imageWidth - 10) - 10;
-        List<DraftCooler> coolers = draftCoolers();
-        graphics.drawString(font, "Pumparound coolers (duty removed from the column)", 10, CONTENT_TOP, TEXT, false);
-        graphics.drawString(font, "#", HEAT_NUMBER_X, CONTENT_TOP + 18, MUTED, false);
-        graphics.drawString(font, "Draw tray", HEAT_DRAW_X, CONTENT_TOP + 18, MUTED, false);
-        graphics.drawString(font, "Return tray", HEAT_RETURN_X, CONTENT_TOP + 18, MUTED, false);
-        graphics.drawString(font, "Cooling (MW)", HEAT_COOLING_X, CONTENT_TOP + 18, MUTED, false);
-        graphics.drawString(font, "Split", HEAT_SPLIT_X, CONTENT_TOP + 18, MUTED, false);
-        for (int index = 0; index < COOLER_COUNT; index++) {
-            graphics.drawString(font, Integer.toString(index + 1), HEAT_NUMBER_X,
-                    HEAT_ROW_TOP + index * HEAT_ROW_PITCH + 6, MUTED, false);
-        }
-        graphics.drawString(font, "Empty draw and return trays disable the row. Cooling is entered positive.",
-                10, HEAT_HELP_Y, MUTED, false);
-        List<String> advisories = heatAdvisories(coolers);
-        if (!advisories.isEmpty()) {
-            String advisory = advisories.size() == 1 ? advisories.getFirst()
-                    : advisories.getFirst() + " (+" + (advisories.size() - 1) + " more)";
-            graphics.drawString(font, abbreviateToWidth(advisory, leftWidth), 10, HEAT_HELP_Y + 14, NOTICE, false);
-        }
-        renderColumnDuties(graphics, leftWidth);
-        if (trayMap) renderTrayMap(graphics, coolers);
-        renderHeatStatus(graphics, coolers);
-    }
-
-    private void renderColumnDuties(GuiGraphics graphics, int leftWidth) {
-        int dutiesY = HEAT_DUTIES_Y;
-        graphics.drawString(font, "Column duties", 10, dutiesY, TEXT, false);
-        V3ColumnDisplayResult result = serverState == null ? null : serverState.displayResult().orElse(null);
-        // A present result is not evidence that it belongs to the draft on screen: the block entity keeps the
-        // last accepted one through a calculating or failed rerun, and the local edit flag is cleared by the
-        // very state that acknowledges that rerun.
-        String provenance = result == null ? null
-                : V3ResultProvenance.provenancePill(serverState.status(), true, draftEditedSinceState);
-        if (provenance != null) {
-            int pillX = 10 + font.width("Column duties") + 10;
-            String pill = abbreviateToWidth(provenance, Math.max(1, leftWidth + 10 - pillX - 8));
-            graphics.fill(pillX, dutiesY - 2, pillX + font.width(pill) + 8, dutiesY + 10, TABLE_HEADER);
-            graphics.drawString(font, pill, pillX + 4, dutiesY, NOTICE, false);
-        }
-        if (result == null) {
-            graphics.drawString(font, "Run the column to see condenser, reboiler and cooler duties.",
-                    10, dutiesY + 16, NOTICE, false);
-            return;
-        }
-        if (result.dutyLedger().isEmpty()) {
-            graphics.drawString(font, "Duty ledger not available for this result", 10, dutiesY + 16, NOTICE, false);
-            return;
-        }
-        V3ColumnDutyLedger ledger = result.dutyLedger().orElseThrow();
-        int boxY = HEAT_DUTIES_Y + 16;
-        renderDutyBox(graphics, 10, boxY, 118, "Condenser", ledger.condenserWatts());
-        renderDutyBox(graphics, 134, boxY, 118, "Reboiler", ledger.reboilerWatts());
-        renderDutyBox(graphics, 258, boxY, 118, "Coolers total", ledger.stageHeatTotalWatts());
-        graphics.drawString(font, abbreviateToWidth("Feed enthalpy " + megawatts(ledger.feedEnthalpyWatts())
-                        + " · steam enthalpy " + megawatts(ledger.steamEnthalpyWatts()), leftWidth),
-                10, HEAT_DUTIES_Y + 64, MUTED, false);
-        renderStageDuties(graphics, ledger.stageDuties(), leftWidth);
-    }
-
-    private void renderDutyBox(GuiGraphics graphics, int x, int y, int width, String title, double watts) {
-        graphics.fill(x, y, x + width, y + 44, TABLE_ROW);
-        graphics.fill(x, y, x + width, y + 1, TABLE_GRID);
-        graphics.fill(x, y + 43, x + width, y + 44, TABLE_GRID);
-        graphics.drawString(font, title, x + 6, y + 6, MUTED, false);
-        graphics.drawString(font, abbreviateToWidth(megawatts(watts), width - 12), x + 6, y + 19, TEXT, false);
-        graphics.drawString(font, watts < 0.0 ? "heat removed" : watts > 0.0 ? "heat added" : "no duty",
-                x + 6, y + 31, MUTED, false);
-    }
-
-    private void renderStageDuties(GuiGraphics graphics, List<V3ColumnDutyLedger.StageDuty> duties, int leftWidth) {
-        graphics.drawString(font, "Per tray", 10, HEAT_DUTIES_Y + 78, MUTED, false);
-        if (duties.isEmpty()) {
-            graphics.drawString(font, "No prescribed stage heat in this result", 62, HEAT_DUTIES_Y + 78, MUTED, false);
-            return;
-        }
-        int labelWidth = 34;
-        int cellWidth = 44;
-        int capacity = Math.max(1, (leftWidth - labelWidth) / cellWidth);
-        boolean truncated = duties.size() > capacity;
-        int shown = truncated ? Math.max(1, capacity - 1) : duties.size();
-        int columns = shown + (truncated ? 1 : 0) + 1;
-        int[] widths = new int[columns];
-        widths[0] = labelWidth;
-        for (int index = 1; index < columns; index++) widths[index] = cellWidth;
-        String[] trays = new String[columns];
-        String[] values = new String[columns];
-        trays[0] = "Tray";
-        values[0] = "MW";
-        for (int index = 0; index < shown; index++) {
-            trays[index + 1] = Integer.toString(duties.get(index).trayNumber());
-            values[index + 1] = compactDraft(duties.get(index).dutyWatts() / 1_000_000.0, 2);
-        }
-        if (truncated) {
-            trays[columns - 1] = "…";
-            values[columns - 1] = "…";
-        }
-        drawTableRow(graphics, 10, HEAT_DUTIES_Y + 90, 12, widths, trays, true);
-        drawTableRow(graphics, 10, HEAT_DUTIES_Y + 102, 12, widths, values, false);
-    }
-
-    private void renderHeatStatus(GuiGraphics graphics, List<DraftCooler> coolers) {
-        boolean calculating = calculationRequested
-                || serverState != null && serverState.status() == V3Status.CALCULATING;
-        boolean valid = !calculating && run != null && run.active;
-        String text = valid ? "Draft valid · " + coolers.size() + " coolers active" : validation;
-        int color = calculating ? NOTICE : valid ? SUCCESS
-                : serverState != null && serverState.status() == V3Status.FAILED ? FAILURE : NOTICE;
-        graphics.drawString(font, abbreviate(text, 82), 101, imageHeight - 24, color, false);
-    }
-
-    /**
-     * Draft-derived column sketch.
-     *
-     * <p>Every marker comes from the editor text, never from the server result, so the ladder always shows what
-     * the Run button would send.</p>
-     */
-    private void renderTrayMap(GuiGraphics graphics, List<DraftCooler> coolers) {
-        int x = TRAY_MAP_X;
-        int width = imageWidth - 10 - x;
-        graphics.drawString(font, "Tray map", x, CONTENT_TOP, TEXT, false);
-        int stages = draftStageCount();
-        if (stages < V3ColumnInput.MIN_STAGE_COUNT || stages > V3ColumnInput.MAX_STAGE_COUNT) {
-            graphics.drawString(font, abbreviateToWidth("Enter a valid stage count to draw the map", width),
-                    x, CONTENT_TOP + 26, MUTED, false);
-            return;
-        }
-        int ladderX = x + 30;
-        int top = CONTENT_TOP + 26;
-        int bottom = imageHeight - 58;
-        int labelX = ladderX + 12 + coolers.size() * 8;
-        graphics.fill(ladderX, top, ladderX + 1, bottom + 1, BORDER);
-        for (int tray = 5; tray <= stages; tray += 5) {
-            int y = trayY(tray, stages, top, bottom);
-            graphics.fill(ladderX - 3, y, ladderX + 4, y + 1, TABLE_GRID);
-        }
-        graphics.drawString(font, "1", x + 14, top - 4, MUTED, false);
-        graphics.drawString(font, Integer.toString(stages), x + 14 - font.width(Integer.toString(stages)) + 6,
-                bottom - 4, MUTED, false);
-        int feedStage = draftFeedStage();
-        if (feedStage >= 1 && feedStage <= stages) {
-            int y = trayY(feedStage, stages, top, bottom);
-            for (int step = 0; step < 4; step++) {
-                graphics.fill(ladderX - 12 + step, y - 3 + step, ladderX - 11 + step, y + 4 - step, FEED_MARK);
-            }
-            graphics.drawString(font, abbreviateToWidth("Feed " + feedStage, x + width - labelX), labelX, y - 4,
-                    FEED_MARK, false);
-        }
-        int[] drawTrays = draftSideDrawTrays();
-        for (int index = 0; index < drawTrays.length; index++) {
-            if (drawTrays[index] < 1 || drawTrays[index] > stages) continue;
-            int y = trayY(drawTrays[index], stages, top, bottom);
-            graphics.fill(ladderX - 9, y - 1, ladderX + 1, y + 2, DRAW_MARK);
-            graphics.drawString(font, abbreviateToWidth("Draw " + (index + 1) + "  " + drawTrays[index],
-                    x + width - labelX), labelX, y - 4, DRAW_MARK, false);
-        }
-        renderCoolerBars(graphics, coolers, stages, ladderX, top, bottom, labelX, x + width - labelX);
-        renderSteamMarks(graphics, stages, ladderX, top, bottom, labelX, x + width - labelX);
-        graphics.drawString(font, abbreviateToWidth("Blue = cooler span, teal = draw,", width), x,
-                imageHeight - 44, MUTED, false);
-        graphics.drawString(font, abbreviateToWidth("coral = feed, amber = steam", width), x,
-                imageHeight - 32, MUTED, false);
-    }
-
-    private void renderCoolerBars(
-            GuiGraphics graphics, List<DraftCooler> coolers, int stages, int ladderX, int top, int bottom,
-            int labelX, int labelWidth) {
-        // Only a ledger that belongs to the draft on screen may label a cooler with its megawatts; a retained
-        // one would put an earlier input's summary beside the current draft's authored duties.
-        boolean ledger = serverState != null && serverState.displayResult().isPresent()
-                && serverState.displayResult().orElseThrow().dutyLedger().isPresent()
-                && V3ResultProvenance.retainedResultMatchesInput(serverState.status(), true, draftEditedSinceState);
-        for (int index = 0; index < coolers.size(); index++) {
-            DraftCooler cooler = coolers.get(index);
-            if (cooler.returnTray() > stages || cooler.drawTray() > stages) continue;
-            int laneX = ladderX + 6 + index * 8;
-            int thickness = 2 + dutyRank(coolers, cooler);
-            int fromY = trayY(Math.min(cooler.returnTray(), cooler.drawTray()), stages, top, bottom);
-            int toY = trayY(Math.max(cooler.returnTray(), cooler.drawTray()), stages, top, bottom);
-            graphics.fill(laneX, fromY, laneX + thickness, toY + 1, COOLER_MARK);
-            graphics.fill(laneX - 2, fromY, laneX + thickness + 2, fromY + 1, COOLER_MARK);
-            graphics.fill(laneX - 2, toY, laneX + thickness + 2, toY + 1, COOLER_MARK);
-            String label = ledger
-                    ? "PA" + cooler.number() + "  " + megawatts(cooler.dutyWatts())
-                    : "PA" + cooler.number() + "  " + cooler.drawTray() + "–" + cooler.returnTray();
-            graphics.drawString(font, abbreviateToWidth(label, labelWidth), labelX, (fromY + toY) / 2 - 4,
-                    COOLER_MARK, false);
-        }
-    }
-
-    private void renderSteamMarks(
-            GuiGraphics graphics, int stages, int ladderX, int top, int bottom, int labelX, int labelWidth) {
-        if (steamFields == null) return;
-        if (optionalNumber(steamFields.sumpRate().getValue()) > 0.0) {
-            graphics.fill(ladderX - 9, bottom + 7, ladderX + 10, bottom + 9, STEAM_MARK);
-            graphics.drawString(font, abbreviateToWidth("Steam  sump", labelWidth), labelX, bottom + 4,
-                    STEAM_MARK, false);
-        }
-        int traySteamStage = optionalInteger(steamFields.trayStage().getValue());
-        if (optionalNumber(steamFields.trayRate().getValue()) > 0.0
-                && traySteamStage >= 1 && traySteamStage <= stages) {
-            int y = trayY(traySteamStage, stages, top, bottom);
-            graphics.fill(ladderX - 9, y - 1, ladderX + 1, y + 2, STEAM_MARK);
-            graphics.drawString(font, abbreviateToWidth("Steam  " + traySteamStage, labelWidth), labelX, y - 4,
-                    STEAM_MARK, false);
-        }
-    }
-
-    /** Zero for the smallest authored duty, two for the largest; ties keep row order. */
-    private static int dutyRank(List<DraftCooler> coolers, DraftCooler cooler) {
-        int rank = 0;
-        for (DraftCooler other : coolers) {
-            double magnitude = Math.abs(other.dutyWatts());
-            double reference = Math.abs(cooler.dutyWatts());
-            if (magnitude < reference || magnitude == reference && other.number() < cooler.number()) rank++;
-        }
-        return Math.min(2, rank);
-    }
-
-    private static int trayY(int tray, int stages, int top, int bottom) {
-        if (stages <= 1) return top;
-        return top + (int) Math.round((tray - 1) * (double) (bottom - top) / (stages - 1));
-    }
-
-    private List<String> heatAdvisories(List<DraftCooler> coolers) {
-        List<String> advisories = new ArrayList<>();
-        int feedStage = draftFeedStage();
-        int[] drawTrays = draftSideDrawTrays();
-        for (DraftCooler cooler : coolers) {
-            if (cooler.dutyWatts() > 0.0) {
-                advisories.add("Pumparound " + cooler.number() + " carries a heater duty (set on server)");
-            }
-            for (int index = 0; index < drawTrays.length; index++) {
-                if (drawTrays[index] == cooler.drawTray()) {
-                    advisories.add("Pumparound " + cooler.number() + " draws tray " + cooler.drawTray()
-                            + " which also carries side draw " + (index + 1));
-                }
-                if (drawTrays[index] == cooler.returnTray()) {
-                    advisories.add("Pumparound " + cooler.number() + " returns to tray " + cooler.returnTray()
-                            + " which also carries side draw " + (index + 1));
+        if(presetKind!=null&&draft!=null)buildPresets();
+        else if(page==0&&draft!=null){
+            action("column_templates",10,54,100,()->openPresets(V3ClientPresets.Kind.COLUMN));
+            action("save_column",116,54,86,()->openSave(V3ClientPresets.Kind.COLUMN));
+            if(narrow())button(tr(infoOnly?"drawing":"information"),436,54,105,()->{infoOnly=!infoOnly;rebuild();});
+            action("connections",208,54,112,()->{connectionMenu=!connectionMenu;rebuild();});
+            action("mixture_templates",326,54,104,()->openPresets(V3ClientPresets.Kind.MIXTURE));
+            if(!narrow()||!infoOnly){if(connectionMenu)buildConnections();else buildDrawing();}
+        }else if(page==1&&draft!=null)buildComposition();
+        else if(page==2){
+            int w=(imageWidth-20)/3;
+            for(int i=0;i<3;i++){int t=i;action(RESULTS[i],10+i*w,54,w-3,()->{results=t;offset=listScroll.value=0;rebuild();}).active=results!=i;}
+            if(results==0)button(tr(METRICS[metric],unit()),10,CONTENT,175,()->{metric=(metric+1)%4;rebuild();})
+                .setTooltip(Tooltip.create(Component.literal(tr("profile_metric.hint"))));
+            if(results==1&&inspection()!=null){
+                var streams=state.displayResult().orElseThrow().streams();
+                if(!streams.isEmpty()){
+                    selectedStream=Math.clamp(selectedStream,0,streams.size()-1);
+                    button(streamName(streams.get(selectedStream)),10,CONTENT,imageWidth-160,()->{selectedStream=(selectedStream+1)%streams.size();offset=listScroll.value=0;rebuild();})
+                        .setTooltip(Tooltip.create(Component.literal(tr("next_product.hint"))));
+                    rateButton(imageWidth-142,CONTENT,128);
                 }
             }
-            if (cooler.drawTray() == feedStage) {
-                advisories.add("Pumparound " + cooler.number() + " draws tray " + feedStage + " which is the feed stage");
-            }
-            if (cooler.returnTray() == feedStage) {
-                advisories.add("Pumparound " + cooler.number() + " returns to tray " + feedStage
-                        + " which is the feed stage");
-            }
         }
-        return advisories;
+        if(page==3&&presetKind==null)action("copy_report",10,54,130,()->{
+            if(state!=null)minecraft.keyboardHandler.setClipboard(String.join("\n",state.diagnostics())+"\n"+state.displayResult().map(Object::toString).orElse(""));
+            notice=tr("report_copied");rejection="";
+        });
+        if(focus!=null&&editors.containsKey(focus)){setFocused(editors.get(focus));editors.get(focus).setCursorPosition(cursor);}
+        if(componentDropdown!=null&&"search".equals(focus))componentDropdown.expanded(dropdownOpen);
+        rebuilding=false;updateControls();
     }
-
-    /** Leniently parsed rows for drawing and advisories; a negative cooling stays as a positive heater duty. */
-    private List<DraftCooler> draftCoolers() {
-        List<DraftCooler> coolers = new ArrayList<>(coolerFields.size());
-        for (int index = 0; index < coolerFields.size(); index++) {
-            CoolerFields fields = coolerFields.get(index);
-            int drawTray = optionalInteger(fields.drawTray().getValue());
-            int returnTray = optionalInteger(fields.returnTray().getValue());
-            double cooling = optionalNumber(fields.cooling().getValue());
-            if (drawTray < 1 || returnTray < 1 || !Double.isFinite(cooling) || cooling == 0.0) continue;
-            coolers.add(new DraftCooler(index + 1, drawTray, returnTray,
-                    V3PumparoundDraft.coolingMegawattsToDutyWatts(cooling), coolerSplits[index]));
+    @Override protected void containerTick(){super.containerTick();if(needsRebuild)rebuild();}
+    private void field(String name,String key,int x,int y,int w){
+        labels.add(new Label(name,x,y,w));
+        var e=new EditBox(font,leftPos+x,topPos+y+11,w,18,Component.literal(name));
+        e.setMaxLength(32);e.setValue(draft.display(key,kelvin));
+        e.setResponder(v->{draft.setDisplay(key,v,kelvin);edited();if(key.equals("s2")||key.equals("s3")||key.endsWith("stage")||key.endsWith("draw")||key.endsWith("return"))needsRebuild=true;});
+        e.setTooltip(Tooltip.create(Component.literal(name)));editors.put(key,addRenderableWidget(e));
+    }
+    private void canvasField(String label,String key,int x,int y,int w){
+        int px=sx(x),py=sy(y);
+        if(px>=10&&px+w<=10+canvasWidth()&&py>=CONTENT&&py+30<bodyBottom()-12){field(tr(label,unit()),key,px,py,w);editors.get(key).setTooltip(Tooltip.create(Component.literal(tr(label+".hint"))));}
+    }
+    private void canvasButton(String key,int x,int y,int w,Runnable run,boolean enabled){
+        int px=sx(x),py=sy(y);
+        if(px>=10&&px+w<=10+canvasWidth()&&py>=CONTENT&&py+18<bodyBottom()-12)
+            action(key,px,py,w,run).active=editable()&&enabled;
+    }
+    private void configure(Scroll s,int x,int y,int length,int visible,int total,boolean horizontal){
+        s.x=x;s.y=y;s.length=Math.max(20,length);s.visible=visible;s.total=total;s.horizontal=horizontal;s.value=Math.clamp(s.value,0,s.max());
+        if(!scrolls.contains(s))scrolls.add(s);
+    }
+    private void buildConnections(){
+        action("add_draw",10,CONTENT+26,240,()->{selectedDraw=draft.addDraw(Math.clamp(selectedNode+1,2,Math.max(2,stageCount()+1)));selectedPA=selectedSteam=-1;connectionMenu=false;edited();rebuild();}).active=editable()&&
+            stageCount()>0&&java.util.stream.IntStream.range(0,3).anyMatch(i->draft.get("d"+i+"stage").isBlank());
+        action("add_pa",10,CONTENT+51,240,()->{selectedPA=draft.addPumparound(Math.clamp(selectedNode+1,3,Math.max(3,stageCount()+1)));selectedDraw=selectedSteam=-1;connectionMenu=false;edited();rebuild();}).active=editable()&&
+            stageCount()>1&&java.util.stream.IntStream.range(0,4).anyMatch(i->draft.get("c"+i+"draw").isBlank());
+        action("add_steam",10,CONTENT+76,240,()->{selectedSteam=draft.addSteam(Math.clamp(selectedNode+1,2,stageCount()+2));selectedDraw=selectedPA=-1;connectionMenu=false;edited();rebuild();}).active=editable()&&
+            draft.canAddSteam();
+    }
+    private void buildDrawing(){
+        int view=bodyBottom()-CONTENT-12;
+        configure(canvasY,10+canvasWidth()+2,CONTENT,view,view,canvasHeight(),false);
+        configure(canvasX,10,bodyBottom()-10,canvasWidth(),canvasWidth(),virtualWidth(),true);
+        int left=5,right=cx()+34;
+        canvasField("tray_count","s2",left,0,58);
+        canvasField("diameter","s9",left+65,0,72);
+        canvasField("top_temperature","s4",right,0,82);
+        canvasField("reflux","s6",right+88,0,65);
+        canvasField("top_pressure","s7",right,32,62);
+        int fy=trayY(feedTray());
+        canvasField("feed_flow","s0",left,fy+12,76);
+        canvasField("feed_temperature","s1",left,fy+46,65);
+        canvasField("feed_tray","s3",left+72,fy+46,50);
+        canvasField("duty","s5",right,columnBottom()+6,112);
+        int location=selectedDraw>=0?draft.preview("d"+selectedDraw+"stage",2,2,stageCount()+2)-1:
+            selectedPA>=0?draft.preview("c"+selectedPA+"draw",3,2,stageCount()+2)-1:
+            selectedSteam>=0?draft.preview("t"+selectedSteam+"stage",stageCount()+2,2,stageCount()+2)-1:1;
+        int ey=Math.max(69,Math.min(trayY(location)-12,columnBottom()-100));
+        if(selectedDraw>=0){
+            int i=selectedDraw;String k="d"+i;
+            canvasField("draw_flow",k+"rate",right,ey,70);canvasField("draw_tray",k+"stage",right+76,ey,50);
+            canvasButton("remove_draw",right,ey+34,90,()->{draft.removeDraw(i);selectedDraw=-1;edited();rebuild();},true);
+        }else if(selectedPA>=0){
+            int i=selectedPA;String k="c"+i;
+            canvasField("cooling",k+"duty",right,ey,72);
+            canvasField("draw_tray",k+"draw",right,ey+34,58);canvasField("return_tray",k+"return",right+65,ey+34,75);
+            canvasButton(draft.get(k+"split").equals("UNIFORM")?"uniform_heat":"return_heat",right,ey+70,124,()->{draft.set(k+"split",draft.get(k+"split").equals("UNIFORM")?"RETURN_TRAY":"UNIFORM");edited();rebuild();},true);
+            canvasButton("remove_pa",right,ey+91,90,()->{draft.removePumparound(i);selectedPA=-1;edited();rebuild();},true);
+        }else if(selectedSteam>=0){
+            int i=selectedSteam;String k="t"+i;
+            canvasField("steam_flow",k+"rate",right,ey,82);canvasField("injection_tray",k+"stage",right+88,ey,38);
+            canvasField("steam_temperature",k+"T",right,ey+34,70);
+            canvasButton("remove_steam",right,ey+69,106,()->{draft.removeSteam(i);selectedSteam=-1;edited();rebuild();},true);
         }
-        return coolers;
     }
-
-    private int draftStageCount() {
-        return coreEditors.size() == CORE_EDITOR_COUNT ? optionalInteger(coreEditors.get(2).getValue()) : -1;
+    private String unit(){return temperatureUnit().symbol();}
+    private TemperatureUnit temperatureUnit(){return kelvin?TemperatureUnit.KELVIN:TemperatureUnit.CELSIUS;}
+    private double temperature(double k){return temperatureUnit().display(k);}
+    private void openPresets(V3ClientPresets.Kind kind){
+        rejection="";notice="";presetKind=kind;savingPreset=false;presetSnapshot=library.refresh(kind);listScroll.value=0;rebuild();
     }
-
-    private int draftFeedStage() {
-        return coreEditors.size() == CORE_EDITOR_COUNT ? optionalInteger(coreEditors.get(3).getValue()) : -1;
-    }
-
-    private int[] draftSideDrawTrays() {
-        int[] trays = new int[sideDrawFields.size()];
-        for (int index = 0; index < trays.length; index++) {
-            double rate = optionalNumber(sideDrawFields.get(index).rate().getValue());
-            trays[index] = !Double.isFinite(rate) || rate == 0.0 ? -1
-                    : optionalInteger(sideDrawFields.get(index).stage().getValue());
-        }
-        return trays;
-    }
-
-    private static int optionalInteger(String value) {
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException | NullPointerException invalid) {
-            return -1;
-        }
-    }
-
-    private static double optionalNumber(String value) {
-        try {
-            return Double.parseDouble(value.trim());
-        } catch (NumberFormatException | NullPointerException invalid) {
-            return Double.NaN;
-        }
-    }
-
-    private static String megawatts(double watts) {
-        return Double.isFinite(watts) ? compactDraft(watts / 1_000_000.0, 2) + " MW" : "-- MW";
-    }
-
-    private void renderConvergence(GuiGraphics graphics) {
-        graphics.drawString(font, "Convergence & provenance", 10, CONTENT_TOP, TEXT, false);
-        if (serverState == null) {
-            graphics.drawString(font, "Waiting for server state...", 10, CONTENT_TOP + 27, NOTICE, false);
-            return;
-        }
-        V3Status status = serverState.status();
-        int statusColor = status == V3Status.SUCCESS ? SUCCESS : status == V3Status.FAILED ? FAILURE : MUTED;
-        graphics.drawString(font, "Status: " + status.serializedName(), 10, CONTENT_TOP + 27, statusColor, false);
-        String detail = serverState.diagnostics().isEmpty() ? "No server detail" : serverState.diagnostics().getFirst();
-        graphics.drawString(font, abbreviate(detail, 87), 10, CONTENT_TOP + 42, MUTED, false);
-        if (serverState.displayResult().isPresent()) {
-            V3ColumnDisplayResult result = serverState.displayResult().orElseThrow();
-            graphics.drawString(font, "Accepted audit checks: " + result.acceptanceCheckCount(), 10, CONTENT_TOP + 68, MUTED, false);
-            graphics.drawString(font, "Newton iterations: " + result.newtonIterations(), 10, CONTENT_TOP + 83, MUTED, false);
-            graphics.drawString(font, "Maximum scaled residual: " + compact(result.maximumScaledResidual()), 10, CONTENT_TOP + 98, MUTED, false);
-            graphics.drawString(font, "Published streams: " + result.streams().size(), 10, CONTENT_TOP + 113, MUTED, false);
-            graphics.drawString(font, "Coolers: " + serverState.input().pumparounds().size() + " requested · stage heat total "
-                            + megawatts(result.dutyLedger().map(V3ColumnDutyLedger::stageHeatTotalWatts)
-                                    .orElseGet(() -> serverState.input().pumparounds().stream()
-                                            .mapToDouble(V3PumparoundSpec::dutyWatts).sum())),
-                    10, CONTENT_TOP + 128, MUTED, false);
-            graphics.drawString(font, "Input digest: " + result.inputDigest().substring(0, 16) + "…", 10, CONTENT_TOP + 139, MUTED, false);
-            graphics.drawString(font, "Formulation: " + result.formulationRevision(), 10, CONTENT_TOP + 154, MUTED, false);
-            graphics.drawString(font, "Dataset: " + result.datasetRevision(), 10, CONTENT_TOP + 169, MUTED, false);
-            result.trayHydraulics().ifPresent(hydraulics -> {
-                graphics.drawString(font, String.format(Locale.ROOT,
-                                "Tray pressure drop: %.1f kPa total · %.0f Pa/tray · %.0f%% of flood at tray %d (D %.1f m)",
-                                hydraulics.totalPressureDropPascal() / 1_000.0,
-                                hydraulics.meanTrayPressureDropPascal(), 100.0 * hydraulics.maximumFloodFraction(),
-                                hydraulics.maximumFloodTray(), hydraulics.columnDiameterMetres()),
-                        10, CONTENT_TOP + 184, hydraulics.floods() ? NOTICE : MUTED, false);
-                // The cause and the remedy are on the result page in their own right, so a flooded column says
-                // both even when another advisory leads the one-line status detail. Two fixed single lines
-                // rather than a wrapped block: the page below them is laid out at fixed offsets.
-                if (hydraulics.floods()) {
-                    graphics.drawString(font, abbreviateToWidth(String.format(Locale.ROOT,
-                                    "Tray %d floods: %.2f kPa (dry %.2f, froth %.2f); the %s load is too high for "
-                                            + "this diameter",
-                                    hydraulics.maximumFloodTray(),
-                                    (hydraulics.worstTrayDryPascal() + hydraulics.worstTrayLiquidPascal()) / 1_000.0,
-                                    hydraulics.worstTrayDryPascal() / 1_000.0,
-                                    hydraulics.worstTrayLiquidPascal() / 1_000.0,
-                                    hydraulics.vaporLimited() ? "vapor" : "liquid"), imageWidth - 20),
-                            10, CONTENT_TOP + 196, NOTICE, false);
-                    graphics.drawString(font, abbreviateToWidth(
-                                    "Widen the column, or cut feed, steam, reboiler duty or reflux", imageWidth - 20),
-                            10, CONTENT_TOP + 208, NOTICE, false);
-                }
+    private void openSave(V3ClientPresets.Kind kind){presetKind=kind;savingPreset=true;presetName="";rebuild();}
+    private void buildPresets(){
+        action("back",10,54,65,()->{presetKind=null;savingPreset=false;rebuild();});
+        if(savingPreset){
+            labels.add(new Label(tr("preset_filename"),10,CONTENT,imageWidth-30));
+            var box=new EditBox(font,leftPos+10,topPos+CONTENT+18,Math.min(230,imageWidth-35),18,Component.literal(tr("preset_filename")));
+            box.setMaxLength(64);box.setValue(presetName);box.setResponder(v->presetName=v);editors.put("presetName",addRenderableWidget(box));
+            action("save_json",10,CONTENT+43,100,()->{
+                try{
+                    String json=presetKind==V3ClientPresets.Kind.COLUMN?V3ClientPresets.columnJson(presetName,draft.assembleOperating()):V3ClientPresets.mixtureJson(presetName,draft.composition());
+                    var path=library.save(presetKind,presetName,json);notice=tr("saved",path.getFileName().toString());rejection="";presetKind=null;savingPreset=false;rebuild();
+                }catch(java.io.IOException|IllegalArgumentException e){rejection=tr("save_failed");}
             });
-        } else {
-            graphics.drawString(font, "A successful fresh audit will publish provenance and physical stream properties.",
-                    10, CONTENT_TOP + 68, MUTED, false);
+            labels.add(new Label(tr("preset_filename_hint"),10,CONTENT+70,imageWidth-30));return;
         }
-        graphics.drawString(font, "Success requires fresh audit and convergence evidence; this page does not assert convergence.",
-                10, CONTENT_TOP + 223, NOTICE, false);
-        graphics.drawString(font, "Block: " + menu.blockPos().toShortString(), 10, CONTENT_TOP + 247, MUTED, false);
-    }
-
-    private void drawTableRow(
-            GuiGraphics graphics, int x, int y, int rowHeight, int[] widths, String[] cells, boolean header) {
-        int color = header ? TABLE_HEADER : ((y / rowHeight) & 1) == 0 ? TABLE_ROW : TABLE_ALT_ROW;
-        graphics.fill(x, y, x + sum(widths), y + rowHeight, color);
-        int cellX = x;
-        for (int index = 0; index < widths.length; index++) {
-            graphics.fill(cellX, y, cellX + 1, y + rowHeight, TABLE_GRID);
-            graphics.drawString(font, abbreviateToWidth(cells[index], Math.max(1, widths[index] - 6)), cellX + 3,
-                    y + Math.max(1, (rowHeight - 9) / 2),
-                    header ? TEXT : MUTED, false);
-            cellX += widths[index];
+        action("refresh",82,54,84,()->{rejection="";notice="";presetSnapshot=library.refresh(presetKind);listScroll.value=0;rebuild();});
+        labels.add(new Label(tr(presetKind==V3ClientPresets.Kind.COLUMN?"column_library":"mixture_library"),10,CONTENT,imageWidth-25));
+        action("open_folder",172,54,92,()->net.minecraft.Util.getPlatform().openPath(library.directory(presetKind)));
+        if(presetSnapshot==null)return;
+        int count=Math.max(1,(bodyBottom()-CONTENT-35)/23);
+        configure(listScroll,imageWidth-18,CONTENT+20,bodyBottom()-CONTENT-32,count,presetSnapshot.entries().size(),false);
+        offset=listScroll.value;
+        for(int i=offset;i<Math.min(presetSnapshot.entries().size(),offset+count);i++){
+            var entry=presetSnapshot.entries().get(i);var preset=entry.preset();
+            String name=preset.translationKey().isBlank()?preset.name():Component.translatable(preset.translationKey()).getString();
+            button(name+"  "+tr(entry.bundled()?"bundled":"custom"),10,CONTENT+20+(i-offset)*23,imageWidth-40,()->loadPreset(preset))
+                .setTooltip(Tooltip.create(Component.literal(tr(entry.file().equals("holland_3_2.json")?"benchmark_hint":presetKind==V3ClientPresets.Kind.COLUMN?"column_templates.hint":"mixture_templates.hint"))));
         }
-        graphics.fill(x + sum(widths) - 1, y, x + sum(widths), y + rowHeight, TABLE_GRID);
-        graphics.fill(x, y + rowHeight - 1, x + sum(widths), y + rowHeight, TABLE_GRID);
+        if(!presetSnapshot.problems().isEmpty())rejection=tr("preset_errors",presetSnapshot.problems().size(),presetSnapshot.problems().getFirst().file());
     }
-
-    private static int[] distributedWidths(int totalWidth, double[] shares) {
-        int[] widths = new int[shares.length];
-        int used = 0;
-        for (int index = 0; index < shares.length - 1; index++) {
-            widths[index] = Math.max(1, (int) Math.floor(totalWidth * shares[index]));
-            used += widths[index];
+    private void loadPreset(V3ClientPresets.Preset preset){
+        if(busy())return;
+        try{
+            if(preset instanceof V3ClientPresets.Column column){
+                var replacement=newDraft(draft.base());replacement.loadColumn(column.fields());replacement.assembleOperating();
+                draft.loadColumn(column.fields());
+            }else if(preset instanceof V3ClientPresets.Mixture mixture){
+                var source=state.editorCatalog().templates().values().stream().filter(i->i.packageId().equals(mixture.packageId())).findFirst().orElseThrow();
+                var comp=new V3CompositionDraft(source,state.editorCatalog().weightsFor(source));comp.load(mixture.amounts(),mixture.mass());
+                draft.composition(source,state.editorCatalog().weightsFor(source));draft.composition().load(mixture.amounts(),mixture.mass());massRate=mixture.mass();
+            }
+            selectedDraw=selectedPA=selectedSteam=-1;connectionMenu=false;presetKind=null;listScroll.value=0;edited();rebuild();
+        }catch(IllegalArgumentException|NoSuchElementException e){rejection=tr("preset_incompatible");}
+    }
+    private void buildComposition(){
+        action("mixture_templates",10,54,108,()->openPresets(V3ClientPresets.Kind.MIXTURE));
+        action("save_mixture",124,54,94,()->openSave(V3ClientPresets.Kind.MIXTURE));
+        action("clear_mixture",224,54,72,()->{draft.composition().clear();edited();rebuild();}).active=editable();
+        button(tr(draft.composition().mass()?"mass_percent":"mole_percent"),imageWidth<570?166:302,imageWidth<570?CONTENT:54,85,()->{
+            toggleBasis();
+        }).setTooltip(Tooltip.create(Component.literal(tr("composition_basis.hint"))));
+        var options=new ArrayList<ComponentSearch.Option>();
+        var basis=draft.composition().source().componentBasis();
+        for(int i=0;i<basis.componentCount();i++)if(!draft.composition().contains(i))
+            options.add(new ComponentSearch.Option(i,material(basis.componentId(i)),basis.componentId(i)));
+        componentDropdown=new ComponentDropdown(font,leftPos+10,topPos+CONTENT,Math.min(360,imageWidth-40),bodyBottom()-CONTENT-12,
+            options,search,value->search=value,id->{
+                if(!editable())return;draft.composition().add(id);search="";edited();rebuild();
+            });
+        editors.put("search",addRenderableWidget(componentDropdown));
+        var ids=draft.composition().rows();int count=Math.max(1,(bodyBottom()-CONTENT-66)/25);
+        offset=Math.clamp(listScroll.value,0,Math.max(0,ids.size()-count));
+        int amount=amountX();
+        for(int i=offset;i<Math.min(ids.size(),offset+count);i++){
+            int id=ids.get(i),y=CONTENT+51+(i-offset)*25;
+            var e=new EditBox(font,leftPos+amount,topPos+y,58,18,Component.literal(tr("relative_amount")));
+            e.setMaxLength(24);e.setValue(draft.composition().get(id));e.setTooltip(Tooltip.create(Component.literal(tr("relative_amount.hint"))));
+            e.setResponder(v->{draft.composition().set(id,v);edited();});editors.put("comp"+id,addRenderableWidget(e));
+            button("x",imageWidth-47,y,22,()->{if(!editable())return;draft.composition().remove(id);edited();rebuild();}).setTooltip(Tooltip.create(Component.literal(tr("remove_component.hint"))));
         }
-        widths[widths.length - 1] = Math.max(1, totalWidth - used);
-        return widths;
+        configure(listScroll,imageWidth-18,CONTENT+51,bodyBottom()-CONTENT-63,count,ids.size(),false);
     }
-
-    private static int sum(int[] values) {
-        int sum = 0;
-        for (int value : values) sum += value;
-        return sum;
+    private int amountX(){return Math.max(120,imageWidth-310);}
+    private V3ColumnInspection inspection(){return invalidated||conflict||state==null?null:state.displayResult().flatMap(V3ColumnDisplayResult::inspection).orElse(null);}
+    private String freshness(){return inspection()!=null?tr("accepted"):invalidated?tr("draft_cleared"):tr("no_result");}
+    private String status(){
+        if(conflict)return tr("conflict");
+        if(!rejection.isBlank())return rejection;
+        if(!notice.isBlank())return notice;
+        if(busy())return tr("solving");
+        if(!invalidated&&state!=null&&state.status()==V3Status.FAILED)return tr("failed");
+        return validation;
     }
-
-    private static double specificationValue(V3ColumnInput input, V3ControlledQuantity wanted) {
-        for (V3ColumnSpecification specification : input.specifications()) {
-            if (specification.controlledQuantity() != wanted) continue;
-            return switch (specification) {
-                case V3ColumnSpecification.CondenserOutletTemperature temperature -> temperature.kelvin();
-                case V3ColumnSpecification.OrganicRefluxRatio reflux -> reflux.ratio();
-                case V3ColumnSpecification.ReboilerDuty duty -> duty.watts();
-            };
+    @Override public void render(GuiGraphics g,int mouseX,int mouseY,float partialTick){
+        ProcessUi.restoreCursor(minecraft,this);
+        hoveredText=null;pointerX=mouseX-leftPos;pointerY=mouseY-topPos;
+        super.render(g,mouseX,mouseY,partialTick);
+        if(hoveredText!=null&&(componentDropdown==null||!componentDropdown.popupContains(mouseX,mouseY)))g.renderTooltip(font,Component.literal(hoveredText),mouseX,mouseY);
+        if(componentDropdown!=null)componentDropdown.renderSuggestions(g,mouseX,mouseY);
+    }
+    @Override protected void renderBg(GuiGraphics g,float partialTick,int mouseX,int mouseY){
+        g.fill(leftPos,topPos,leftPos+imageWidth,topPos+imageHeight,BG);g.renderOutline(leftPos,topPos,imageWidth,imageHeight,LINE);
+    }
+    @Override protected void renderLabels(GuiGraphics g,int mouseX,int mouseY){
+        hits.clear();text(g,tr("title",tr(PAGES[page])),10,10,TEXT,imageWidth/2);
+        text(g,freshness(),imageWidth/2,10,inspection()!=null?ACCENT:WARN,imageWidth/2-60);
+        g.hLine(8,imageWidth-8,CONTENT-3,LINE);
+        g.enableScissor(leftPos+8,topPos+CONTENT-2,leftPos+imageWidth-8,topPos+Math.max(CONTENT,bodyBottom()-12));
+        if(presetKind!=null){ /* Preset widgets and labels render below. */ }
+        else if(page==0)overview(g);
+        else if(page==1)composition(g);
+        else if(page==2){if(results==0)profile(g);else if(results==1)streams(g);else heat(g);}
+        else diagnostics(g);
+        for(var l:labels)text(g,l.text,l.x,l.y,MUTED,l.width);
+        g.disableScissor();
+        for(var s:scrolls)drawScroll(g,s);
+        for(var hit:hits)if(pointerX>=hit.x&&pointerX<hit.x+hit.w&&pointerY>=hit.y&&pointerY<hit.y+hit.h){
+            g.renderOutline(hit.x,hit.y,hit.w,hit.h,ACCENT);hoveredText=hit.hint;
         }
-        throw new IllegalArgumentException("Missing V3 specification " + wanted);
+        g.hLine(8,imageWidth-8,imageHeight-47,LINE);
+        text(g,status(),10,imageHeight-40,candidate==null||!rejection.isBlank()?WARN:notice.isBlank()?MUTED:ACCENT,imageWidth-20);
+        text(g,tr(page==1?"relative_hint":"drawing_hint"),85,imageHeight-20,MUTED,imageWidth-225);
     }
-
-    private boolean isHolland() {
-        return serverState != null && V3HollandExample32.isPackage(serverState.input().packageId());
+    private void drawScroll(GuiGraphics g,Scroll s){
+        if(s.max()==0)return;
+        g.fill(s.x,s.y,s.x+(s.horizontal?s.length:8),s.y+(s.horizontal?8:s.length),PANEL);
+        int p=s.position();g.fill(s.x+(s.horizontal?p:1),s.y+(s.horizontal?1:p),
+            s.x+(s.horizontal?p+s.thumb():7),s.y+(s.horizontal?7:p+s.thumb()),dragging==s?ACCENT:LINE);
     }
-
-    private static String compactDraft(double value, int decimalPlaces) {
-        if (decimalPlaces < 0 || decimalPlaces > 3) throw new IllegalArgumentException("Invalid V3 GUI decimal precision");
-        return String.format(Locale.ROOT, "%." + decimalPlaces + "f", value)
-                .replaceFirst("0+$", "").replaceFirst("\\.$", "");
+    private void hit(int x,int y,int w,int h,Runnable action,String hint){
+        if(y>=CONTENT&&y+h<=bodyBottom()-12&&x>=10&&x+w<=imageWidth-20)hits.add(new Hit(x,y,w,h,action,hint));
     }
-
-    private static String compact(double value) {
-        return Double.isFinite(value) ? String.format(Locale.ROOT, "%.4g", value) : "--";
+    private void overview(GuiGraphics g){
+        if(draft==null){text(g,tr("waiting"),10,CONTENT,MUTED,imageWidth-20);return;}
+        selectedNode=Math.clamp(selectedNode,0,stageCount()+1);
+        if(!narrow()||!infoOnly){if(connectionMenu)text(g,tr("connections.hint"),10,CONTENT,MUTED,canvasWidth());else diagram(g);}
+        if(!narrow()){solverInfo(g,solverX(),solverWidth());inspect(g,trayX(),trayWidth());}
+        else if(infoOnly){int w=(imageWidth-42)/2;solverInfo(g,10,w);inspect(g,w+28,w);}
     }
-
-    /** Fixed-width composition cells deliberately avoid exponent notation and clipped trailing digits. */
-    private static String formatPercentage(double fraction) {
-        return Double.isFinite(fraction) ? String.format(Locale.ROOT, "%.3f", 100.0 * fraction) : "--";
+    private void diagram(GuiGraphics g){
+        int x=sx(cx()),top=sy(trayY(0)-12),bottom=sy(columnBottom()),n=stageCount();
+        g.enableScissor(leftPos+10,topPos+CONTENT,leftPos+10+canvasWidth(),topPos+bodyBottom()-12);
+        g.fill(x-24,top+10,x+25,bottom-10,PANEL);
+        for(int dy=0;dy<10;dy++){int inset=10-(int)Math.sqrt(100-(10-dy)*(10-dy));
+            g.hLine(x-24+inset,x+24-inset,top+dy,LINE);g.hLine(x-24+inset,x+24-inset,bottom-dy,LINE);}
+        g.vLine(x-25,top+10,bottom-10,LINE);g.vLine(x+25,top+10,bottom-10,LINE);
+        var view=inspection();double min=view==null?0:view.nodes().stream().mapToDouble(V3ColumnInspection.Node::temperatureKelvin).min().orElse(0);
+        double max=view==null?1:view.nodes().stream().mapToDouble(V3ColumnInspection.Node::temperatureKelvin).max().orElse(1);
+        for(int node=0;node<n+2;node++){
+            int y=sy(trayY(node)),at=node;
+            int color=view==null?MUTED:temperatureColor((view.nodes().get(node).temperatureKelvin()-min)/Math.max(1e-9,max-min));
+            g.hLine(x-20,x+20,y,color);
+            if(node==selectedNode)g.renderOutline(x-23,y-2,47,5,TEXT);
+            if(node==0||node==n+1||(node+1)%5==0&&node<=n-2){
+                int labelY=node==0?y-9:node==n+1?y+2:y-4;
+                g.fill(x-8,labelY-1,x+14,labelY+9,PANEL);text(g,Integer.toString(node+1),x-7,labelY,MUTED,20);
+            }
+            int hitY=node==0?top:y-Math.max(1,pitch()/2);
+            int hitHeight=node==0?y+Math.max(1,pitch()/2)-top:node==n+1?bottom-hitY:Math.max(3,pitch());
+            hit(x-24,hitY,49,hitHeight,()->{selectedNode=at;railScroll.value=0;rebuild();},tr(node==0?"inspect_top":node==n+1?"inspect_bottom":"inspect_tray",node+1));
+        }
+        int fy=sy(trayY(feedTray()));
+        g.hLine(sx(5),x-26,fy,ACCENT);text(g,tr("feed_icon"),sx(5),fy-11,ACCENT,125);
+        hit(sx(5),fy-13,Math.min(125,font.width(tr("feed_icon"))+8),13,()->changePage(1),tr("feed_icon.hint"));
+        for(int i=0;i<3;i++)if(!draft.get("d"+i+"stage").isBlank()){
+            int at=draft.preview("d"+i+"stage",2,2,n+2)-1,y=sy(trayY(at)),id=i;
+            g.hLine(x+26,x+39,y,ACCENT);text(g,tr("draw_icon",i+1),x+27,y-9,ACCENT,26);
+            hit(x+26,y-11,28,13,()->{selectedDraw=id;selectedPA=selectedSteam=-1;rebuild();},tr("draw_icon.hint",i+1,at+1));
+        }
+        for(int i=0;i<4;i++)if(!draft.get("c"+i+"draw").isBlank()){
+            int a=sy(trayY(draft.preview("c"+i+"draw",3,2,n+2)-1)),b=sy(trayY(draft.preview("c"+i+"return",2,2,n+2)-1));
+            int lane=x-34-i*7,mid=(a+b)/2,id=i;
+            g.vLine(lane,Math.min(a,b),Math.max(a,b),WARN);g.hLine(lane,x-26,a,WARN);g.hLine(lane,x-26,b,WARN);
+            text(g,tr("pa_icon",i+1),lane-24,mid-4,WARN,24);
+            hit(lane-25,mid-6,29,13,()->{selectedPA=id;selectedDraw=selectedSteam=-1;rebuild();},tr("pa_icon.hint",i+1));
+        }
+        for(int i=0;i<2;i++)if(!draft.get("t"+i+"stage").isBlank()){
+            int at=draft.preview("t"+i+"stage",n+2,2,n+2)-1,y=sy(trayY(at)),id=i;
+            int start=x-82-i*8;
+            for(int dx=start;dx<x-26;dx+=5)g.hLine(dx,Math.min(dx+2,x-26),y,WARN);
+            text(g,tr("steam_icon",i+1),start-22,y-10,WARN,26);
+            hit(start-24,y-12,32,14,()->{selectedSteam=id;selectedDraw=selectedPA=-1;rebuild();},tr("steam_icon.hint",i+1,at+1));
+        }
+        g.disableScissor();
     }
-
-    private static String abbreviate(String value, int maximumCharacters) {
-        return value.length() <= maximumCharacters ? value : value.substring(0, Math.max(1, maximumCharacters - 1)) + "…";
+    private void solverInfo(GuiGraphics g,int x,int w){
+        List<String> lines=new ArrayList<>();lines.add(tr("solver_info"));var view=inspection();
+        if(view==null){
+            lines.add(tr(invalidated?"not_solved":busy()?"solving_short":state!=null&&state.status()==V3Status.FAILED?"failure_short":"no_result"));
+            if(!invalidated&&state!=null&&state.status()==V3Status.FAILED){
+                String raw=String.join(" ",state.diagnostics()).toLowerCase(Locale.ROOT);
+                var draw=java.util.regex.Pattern.compile("side draw on authored tray ([0-9]+) requests ([0-9.eE+-]+) kmol/h; final internal liquid ([0-9.eE+-]+)").matcher(raw);
+                if(draw.find()){
+                    wrap(lines,tr("draw_balance",Integer.parseInt(draw.group(1)),draw.group(2),draw.group(3)),w);
+                    if(Double.parseDouble(draw.group(2))>=Double.parseDouble(draw.group(3)))wrap(lines,tr("liquid_depletion"),w);
+                }else if(raw.contains("exhaust")||raw.contains("deplet"))wrap(lines,tr("liquid_depletion"),w);
+                else if(raw.contains("pressure"))wrap(lines,tr("pressure_failure"),w);
+                else wrap(lines,tr("solver_failed_hint"),w);
+            }
+        }else{
+            List<String> wet=new ArrayList<>();
+            for(int i=1;i<=view.input().stageCount();i++)if(view.nodes().get(i).freeWaterMolPerSecond()>0)wet.add(Integer.toString(i+1));
+            wrap(lines,tr("wet_trays",wet.isEmpty()?tr("none"):String.join(", ",wet)),w);
+            lines.add(tr("column_dp",fmt(totalDrop(view))));
+            state.displayResult().orElseThrow().trayHydraulics().ifPresent(h->{
+                wrap(lines,tr(h.floods()?"flooding":"below_flood",h.maximumFloodTray()+1),w);
+                lines.add(tr("worst_flood",fmt(h.maximumFloodFraction()*100)));
+                if(!h.correctionApplied()&&h.residualMismatchFraction()>0.01)wrap(lines,tr("uncorrected_pressure"),w);
+            });
+            boolean dew=view.audit().advisoryEvidence().stream().anyMatch(a->a.contains("dew point")||a.contains("dew-point"));
+            if(dew)wrap(lines,tr("dew_warning"),w);
+            lines.add(tr("iterations",state.displayResult().orElseThrow().newtonIterations()));
+        }
+        panelLines(g,lines,x,w,solverScroll);
     }
-
-    private String abbreviateToWidth(String value, int maximumWidth) {
-        if (font.width(value) <= maximumWidth) return value;
-        String ellipsis = "…";
-        int end = value.length();
-        while (end > 1 && font.width(value.substring(0, end) + ellipsis) > maximumWidth) end--;
-        return value.substring(0, end) + ellipsis;
+    private void panelLines(GuiGraphics g,List<String> lines,int x,int w,Scroll scroll){
+        int visible=Math.max(1,(bodyBottom()-CONTENT-12)/14);
+        configure(scroll,x+w+2,CONTENT,bodyBottom()-CONTENT-12,visible,lines.size(),false);
+        for(int i=scroll.value;i<Math.min(lines.size(),scroll.value+visible);i++)text(g,lines.get(i),x,CONTENT+(i-scroll.value)*14,i==0?ACCENT:MUTED,w);
     }
-
-    private enum Page {
-        PRESETS,
-        INPUTS,
-        STREAMS,
-        HEAT,
-        CONVERGENCE
-    }
-
-    private record SideDrawFields(EditBox stage, EditBox rate) {
-    }
-
-    private record CoolerFields(EditBox drawTray, EditBox returnTray, EditBox cooling, Button split) {
-        List<EditBox> editors() {
-            return List.of(drawTray, returnTray, cooling);
+    private void inspect(GuiGraphics g,int x,int w){
+        List<String> lines=new ArrayList<>();lines.add(tr("tray_info"));lines.add(nodeName(selectedNode,stageCount()));var view=inspection();
+        if(view!=null){
+            var node=view.nodes().get(selectedNode);
+            lines.add(tr("tray_tp",fmt(temperature(node.temperatureKelvin())),unit(),fmt(node.pressurePascal()/1000)));
+            lines.add(tr("tray_dp",selectedNode>0&&selectedNode<=stageCount()?fmt(drop(view,selectedNode)):"—"));
+            lines.add(tr("hc_liquid",fmt(node.liquidMolPerSecond()*3.6)));
+            lines.add(tr("hc_vapor",fmt(node.vaporMolPerSecond()*3.6)));
+            lines.add(tr("water_vapor",fmt(node.waterVaporMolPerSecond()*3.6)));
+            lines.add(tr("free_water",fmt(node.freeWaterMolPerSecond()*3.6)));
+        }else lines.add(tr("solve_to_inspect"));
+        int visible=Math.max(1,(bodyBottom()-CONTENT-12)/14);
+        configure(railScroll,x+w+2,CONTENT,bodyBottom()-CONTENT-12,visible,lines.size()+(view==null?0:view.input().componentBasis().componentCount()+1),false);
+        for(int i=railScroll.value;i<Math.min(lines.size(),railScroll.value+visible);i++)text(g,lines.get(i),x,CONTENT+(i-railScroll.value)*14,i==0?ACCENT:MUTED,w);
+        if(view!=null){
+            var node=view.nodes().get(selectedNode);
+            List<String[]> data=new ArrayList<>();data.add(new String[]{tr("component"),tr("liquid_percent"),tr("vapor_percent")});
+            for(int c=0;c<view.input().componentBasis().componentCount();c++)data.add(new String[]{
+                material(view.input().componentBasis().componentId(c)),node.liquidMolPerSecond()==0?"—":percent(node.liquidFractions().get(c)*100),
+                node.vaporMolPerSecond()==0?"—":percent(node.vaporFractions().get(c)*100)});
+            for(int i=0;i<data.size();i++){int y=CONTENT+(lines.size()+i-railScroll.value)*14;if(y>=CONTENT&&y+14<bodyBottom()-12)tableRow(g,data.get(i),x,y,w,i==0);}
         }
     }
-
-    /** One leniently parsed Heat row; the duty is already signed, so a heater is positive. */
-    private record DraftCooler(
-            int number, int drawTray, int returnTray, double dutyWatts, V3PumparoundSpec.Split split) {
-    }
-
-    private record SteamFields(
-            EditBox sumpRate, EditBox sumpTemperature, EditBox trayStage, EditBox trayRate, EditBox trayTemperature) {
-        List<EditBox> editors() {
-            return List.of(sumpRate, sumpTemperature, trayStage, trayRate, trayTemperature);
+    private void composition(GuiGraphics g){
+        if(draft==null)return;
+        int amount=amountX(),norm=amount+74,flow=amount+156;
+        text(g,tr("component"),10,CONTENT+34,TEXT,amount-18);text(g,tr("relative_amount"),amount,CONTENT+34,TEXT,68);
+        text(g,tr(draft.composition().mass()?"mass_percent":"mole_percent"),norm,CONTENT+34,TEXT,76);
+        text(g,tr(massRate?"mass_rate":"molar_rate"),flow,CONTENT+34,TEXT,95);
+        double[] fractions=null;double total=Double.NaN;
+        try{fractions=draft.composition().displayFractions();total=Arrays.stream(draft.assembleOperating().feedComponentMolarFlowsMolPerSecond()).sum();}catch(IllegalArgumentException ignored){}
+        var ids=draft.composition().rows();int count=Math.max(1,(bodyBottom()-CONTENT-66)/25);
+        for(int i=offset;i<Math.min(ids.size(),offset+count);i++){
+            int id=ids.get(i),y=CONTENT+51+(i-offset)*25;g.hLine(10,imageWidth-25,y+22,LINE);
+            text(g,material(draft.composition().source().componentBasis().componentId(id)),12,y+5,MUTED,amount-20);
+            text(g,fractions==null?"—":percent(fractions[id]*100),norm,y+5,TEXT,74);
+            text(g,fractions==null||!Double.isFinite(total)?"—":percent(draft.composition().componentFlow(id,total,massRate)),flow,y+5,TEXT,90);
         }
+        if(ids.isEmpty())text(g,tr("empty_mixture"),10,CONTENT+58,MUTED,imageWidth-35);
+    }
+    private void tableRow(GuiGraphics g,String[] cells,int x,int y,int w,boolean header){
+        ProcessUi.tableRow(g,font,cells,x,y,w,header);
+    }
+    private static String percent(double value){return value!=0&&Math.abs(value)<0.05?String.format(Locale.ROOT,"%.2g",value):fmt(value);}
+    private void wrap(List<String> lines,String value,int width){
+        while(font.width(value)>width){String s=font.plainSubstrByWidth(value,width);if(s.isEmpty())break;int space=s.lastIndexOf(32);if(space>s.length()/2)s=s.substring(0,space);lines.add(s);value=value.substring(s.length()).stripLeading();}
+        lines.add(value);
+    }
+    private void profile(GuiGraphics g){
+        if(metric==2){pressureDrop(g);return;}
+        var view=inspection();
+        if(view==null){text(g,tr("solve_profiles"),10,CONTENT+27,MUTED,imageWidth-20);return;}
+        int x=53,y=CONTENT+39,w=imageWidth-76,h=bodyBottom()-y-42;
+        if(h<12)return;
+        int series=metric==3?4:1;double min=Double.POSITIVE_INFINITY,max=Double.NEGATIVE_INFINITY;
+        for(var node:view.nodes())for(int s=0;s<series;s++){
+            double v=profileValue(node,s);if(Double.isFinite(v)){min=Math.min(min,v);max=Math.max(max,v);}}
+        if(!Double.isFinite(min)){text(g,tr("absent_phase"),10,y,WARN,w);return;}
+        if (max-min < Math.max(1,Math.abs(max))*1e-9) {
+            double padding=Math.max(0.01,Math.abs(max)*0.01);
+            min-=padding;max+=padding;
+        }
+        double span=max-min;
+        g.fill(x,y,x+w,y+h,PANEL);g.renderOutline(x,y,w+1,h+1,LINE);
+        int[] colors={ACCENT,WARN,0xFF91B5FF,0xFFD5AFF1};
+        for(int n=0;n<view.nodes().size();n++){
+            int py=y+n*h/(view.nodes().size()-1);
+            if(n==0||n==view.nodes().size()-1||n%5==0&&n<view.nodes().size()-2){
+                text(g,Integer.toString(n+1),22,py-4,MUTED,25);g.hLine(x,x+w,py,LINE);}}
+        for(int s=0;s<series;s++){
+            int px0=0,py0=0;boolean previous=false;
+            for(int n=0;n<view.nodes().size();n++){
+                double value=profileValue(view.nodes().get(n),s);
+                if(!Double.isFinite(value)){previous=false;continue;}
+                int px=x+(int)Math.round((value-min)/span*w),py=y+n*h/(view.nodes().size()-1);
+                if(previous)line(g,px0,py0,px,py,colors[s]);px0=px;py0=py;previous=true;}}
+        text(g,fmt(min),x,y+h+5,MUTED,w/3);
+        text(g,fmt((min+max)/2),x+w/2-font.width(fmt((min+max)/2))/2,y+h+5,MUTED,w/3);
+        text(g,fmt(max),x+w-font.width(fmt(max)),y+h+5,MUTED,w/3);
+        if(metric==3)text(g,tr("traffic_legend"),10,CONTENT+25,MUTED,imageWidth-20);
+        hit(x,y,w,h,()->{selectedNode=Math.clamp((pointerY-y)*(stageCount()+1)/h,0,stageCount()+1);page=0;infoOnly=true;railScroll.value=0;rebuild();},tr("profile_click.hint"));
+    }
+    private double profileValue(V3ColumnInspection.Node node,int series){
+        return switch(metric){
+            case 0->temperature(node.temperatureKelvin());
+            case 1->node.pressurePascal()/1000;
+            case 3->switch(series){case 0->node.liquidMolPerSecond()*3.6;case 1->node.vaporMolPerSecond()*3.6;
+                case 2->node.waterVaporMolPerSecond()*3.6;default->node.freeWaterMolPerSecond()*3.6;};
+            default->throw new IllegalStateException("Unknown profile");};
+    }
+    private void streams(GuiGraphics g){
+        if(inspection()==null){text(g,tr("solve_products"),10,CONTENT+27,MUTED,imageWidth-25);return;}
+        var products=state.displayResult().orElseThrow().streams();if(products.isEmpty())return;
+        var stream=products.get(Math.clamp(selectedStream,0,products.size()-1));
+        text(g,tr("product_tp",fmt(massRate?stream.massFlowKgPerSecond()*3600:stream.molarFlowMolPerSecond()*3.6),massRate?"kg/h":"kmol/h",fmt(temperature(stream.temperatureKelvin())),unit(),fmt(stream.pressurePascal()/1000)),10,CONTENT+26,MUTED,imageWidth-30);
+        List<String[]> data=new ArrayList<>();
+        for(var c:stream.moleFractions())data.add(new String[]{material(c.componentId()),percent(c.moleFraction()*100),percent(c.massFraction()*100),percent(massRate?stream.massFlowKgPerSecond()*c.massFraction()*3600:stream.molarFlowMolPerSecond()*c.moleFraction()*3.6)});
+        table(g,new String[]{tr("component"),tr("mole_percent"),tr("mass_percent"),tr(massRate?"mass_rate":"molar_rate")},data,CONTENT+46);
+    }
+    private void table(GuiGraphics g,String[] headers,List<String[]> data,int y){
+        int visible=Math.max(1,(bodyBottom()-y-32)/17);
+        configure(listScroll,imageWidth-18,y+18,bodyBottom()-y-30,visible,data.size(),false);
+        offset=listScroll.value;tableRow(g,headers,10,y,imageWidth-36,true);
+        for(int i=offset;i<Math.min(data.size(),offset+visible);i++)tableRow(g,data.get(i),10,y+18+(i-offset)*17,imageWidth-36,false);
+    }
+    private static double drop(V3ColumnInspection view,int tray){
+        if(tray<=1||tray>view.input().stageCount())return 0;
+        return (view.nodes().get(tray).pressurePascal()-view.nodes().get(tray-1).pressurePascal())/1000;
+    }
+    private static double totalDrop(V3ColumnInspection view){int n=view.input().stageCount();return n<2?0:(view.nodes().get(n).pressurePascal()-view.nodes().get(1).pressurePascal())/1000;}
+    private String streamName(V3ColumnStreamProperties stream){
+        if(stream.streamId().startsWith("side_liquid_tray_"))return tr("stream.side_draw",Integer.parseInt(stream.streamId().substring("side_liquid_tray_".length()))+1);
+        return tr("stream."+stream.streamId());
+    }
+    private void pressureDrop(GuiGraphics g){
+        var view=inspection();
+        if(view==null){text(g,tr("solve_profiles"),10,CONTENT,MUTED,imageWidth-30);return;}
+        int n=view.input().stageCount(),x=60,y=CONTENT+58,w=imageWidth-92,h=bodyBottom()-y-48;
+        double total=totalDrop(view),max=0;
+        for(int i=2;i<=n;i++)max=Math.max(max,drop(view,i));max=Math.max(max,0.001);
+        text(g,tr("column_dp",fmt(total)),10,CONTENT+25,TEXT,imageWidth-30);
+        text(g,tr("terminal_no_dp"),10,CONTENT+40,MUTED,imageWidth-30);
+        if(h<16)return;
+        g.fill(x,y,x+w,y+h,PANEL);
+        for(int i=2;i<=n;i++){
+            int py=y+(i-2)*h/(n-1),next=y+(i-1)*h/(n-1),tray=i;
+            int bar=(int)Math.round(drop(view,i)/max*w);
+            g.fill(x,py,x+bar,Math.max(py+1,next-1),ACCENT);
+            if(i==2||i==n||i%5==0)text(g,Integer.toString(i+1),20,py,MUTED,35);
+            hit(x,py,w,Math.max(1,next-py),()->{selectedNode=tray;page=0;infoOnly=true;railScroll.value=0;rebuild();},tr("dp_click.hint",i+1,fmt(drop(view,i))));
+        }
+        text(g,"0",x,y+h+5,MUTED,30);text(g,fmt(max)+" kPa",x+w-85,y+h+5,MUTED,85);
+    }
+    private void heat(GuiGraphics g){
+        List<String> lines=new ArrayList<>();lines.add(tr("signed_heat"));
+        if(inspection()!=null)state.displayResult().ifPresent(result->result.dutyLedger().ifPresent(d->{
+            lines.add(tr("tray_duty",1,fmt(d.condenserWatts()/1e6)));lines.add(tr("tray_duty",stageCount()+2,fmt(d.reboilerWatts()/1e6)));
+            lines.add(tr("stage_heat",fmt(d.stageHeatTotalWatts()/1e6)));
+            lines.add(tr("feed_enthalpy",fmt(d.feedEnthalpyWatts()/1e6)));lines.add(tr("steam_enthalpy",fmt(d.steamEnthalpyWatts()/1e6)));
+            for(var stage:d.stageDuties())lines.add(tr("tray_duty",stage.trayNumber()+1,fmt(stage.dutyWatts()/1e6)));
+        }));
+        drawLines(g,lines,10,CONTENT,imageWidth-20);
+    }
+    private void diagnostics(GuiGraphics g){
+        List<String> lines=new ArrayList<>();lines.add(tr("diagnostic_status",state==null?tr("waiting"):tr("status."+state.status().serializedName().toLowerCase(Locale.ROOT))));
+        if(!rejection.isBlank())wrap(lines,rejection,imageWidth-35);
+        if(!invalidated&&state!=null)state.displayResult().ifPresent(r->{
+            lines.add(tr("iterations",r.newtonIterations()));lines.add(tr("residual",fraction(r.maximumScaledResidual())));
+            lines.add(tr("closure",fraction(r.closureTolerance())));
+            r.inspection().ifPresent(v->{for(var check:v.audit().checks())lines.add(tr("audit_value",check.family(),fraction(check.value()),fraction(check.limit())));});
+            lines.add(tr("dataset",r.datasetRevision()));lines.add(tr("formulation",r.formulationRevision()));lines.add(tr("digest",r.inputDigest()));
+        });
+        if(state!=null&&state.status()==V3Status.FAILED)wrap(lines,tr("solver_failed_hint"),imageWidth-35);
+        drawLines(g,lines,10,CONTENT,imageWidth-20);
+    }
+    private void drawLines(GuiGraphics g,List<String> lines,int x,int y,int w){
+        lineCount=lines.size();
+        configure(listScroll,imageWidth-18,CONTENT,bodyBottom()-CONTENT-12,rows(),lines.size(),false);
+        offset=listScroll.value;
+        for(int i=offset;i<Math.min(lines.size(),offset+rows());i++)text(g,lines.get(i),x,y+(i-offset)*15,i==0?TEXT:MUTED,w-12);
+    }
+    private String material(String id){return state==null?id:MaterialNames.localized(state.materialNames().getOrDefault(id,MaterialName.chemical(id)));}
+    private void text(GuiGraphics g,String value,int x,int y,int color,int max){
+        if(max<=0)return;
+        String shown=font.width(value)>max?font.plainSubstrByWidth(value,Math.max(1,max-8))+"...":value;
+        g.drawString(font,shown,x,y,color,false);
+        if (!shown.equals(value) && pointerX >= x && pointerX < x + max && pointerY >= y && pointerY < y + 10)
+            hoveredText = value;
+    }
+    private static String fmt(double value){return String.format(Locale.ROOT,"%.1f",value);}
+    private static String fraction(double value){return String.format(Locale.ROOT,"%.5g",value);}
+    private static String nodeName(int node,int stages){return tr(node==0?"top_tray":node==stages+1?"bottom_tray":"tray",node+1);}
+    private static int temperatureColor(double t){
+        t=Math.clamp(t,0,1);return 0xFF000000|((int)(77+173*t)<<16)|((int)(161+30*t)<<8)|(int)(211-123*t);}
+    private static void line(GuiGraphics g,int x0,int y0,int x1,int y1,int color){
+        int steps=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));
+        for(int i=0;i<=steps;i++){double f=steps==0?0:(double)i/steps;
+            int x=(int)Math.round(x0+(x1-x0)*f),y=(int)Math.round(y0+(y1-y0)*f);g.fill(x,y,x+1,y+1,color);}}
+    @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){
+        if(componentDropdown!=null&&componentDropdown.popupScroll(x,y,vertical))return true;
+        int px=(int)x-leftPos,py=(int)y-topPos;
+        if(py>=CONTENT&&py<bodyBottom()&&!(page==2&&results==0&&presetKind==null)){
+            Scroll target=presetKind!=null||page!=0?listScroll:!narrow()?(px>=trayX()?railScroll:px>=solverX()?solverScroll:canvasY):infoOnly?(px>imageWidth/2?railScroll:solverScroll):canvasY;
+            if(page==0&&!infoOnly&&horizontal!=0)target=canvasX;
+            target.value=Math.clamp(target.value+(int)Math.signum(horizontal!=0?horizontal:-vertical)*(target==canvasY||target==canvasX?30:3),0,target.max());
+            offset=listScroll.value;rebuild();return true;
+        }
+        return super.mouseScrolled(x,y,horizontal,vertical);
+    }
+    @Override public boolean mouseClicked(double x,double y,int button){
+        if(componentDropdown!=null&&componentDropdown.popupClick(x,y,button))return true;
+        if(button!=0)return super.mouseClicked(x,y,button);
+        int px=(int)x-leftPos,py=(int)y-topPos;
+        for(var s:scrolls)if(s.max()>0&&s.contains(px,py)){
+            dragging=s;setDragging(true);s.seek(px,py);offset=listScroll.value;rebuild();return true;
+        }
+        // Native fields win where a connection label and a widget share the viewport.
+        for(var e:editors.values())if(e.isMouseOver(x,y))return super.mouseClicked(x,y,button);
+        for(var h:hits)if(px>=h.x&&px<h.x+h.w&&py>=h.y&&py<h.y+h.h){h.action.run();return true;}
+        return super.mouseClicked(x,y,button);
+    }
+    @Override public boolean mouseDragged(double x,double y,int button,double dx,double dy){
+        if(componentDropdown!=null&&componentDropdown.popupDrag(y))return true;
+        if(button==0&&dragging!=null){dragging.seek((int)x-leftPos,(int)y-topPos);offset=listScroll.value;rebuild();return true;}
+        return super.mouseDragged(x,y,button,dx,dy);
+    }
+    @Override public boolean mouseReleased(double x,double y,int button){
+        if(componentDropdown!=null)componentDropdown.popupRelease();
+        if(dragging!=null){dragging=null;setDragging(false);return true;}return super.mouseReleased(x,y,button);
+    }
+    @Override public boolean keyPressed(int key,int scan,int modifiers){
+        if(ProcessUi.textKeyPressed(this,key,scan,modifiers))return true;
+        if(page==0&&!(getFocused() instanceof EditBox)){
+            if(key==GLFW.GLFW_KEY_UP||key==GLFW.GLFW_KEY_DOWN){
+                selectedNode=Math.clamp(selectedNode+(key==GLFW.GLFW_KEY_UP?-1:1),0,stageCount()+1);railScroll.value=0;rebuild();return true;
+            }
+        }
+        return super.keyPressed(key,scan,modifiers);
     }
 }

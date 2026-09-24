@@ -77,3 +77,6 @@ CLAUDE.md
 /src/test/java/**/V3MemoryProfileSummary.java
 /src/test/java/**/V3VerificationDiagnosticProbe.java
 /src/test/java/**/V3FlashOptimizationProbe.java
+
+# Local Minecraft MCP bridge connection
+/.mcp.json

@@ -629,7 +629,7 @@ public final class V3ColumnCalculator {
                         + "residual mismatch %.2f %%",
                 summary.columnDiameterMetres(), summary.meanTrayPressureDropPascal(),
                 summary.totalPressureDropPascal() / 1000.0, summary.maximumFloodFraction(),
-                summary.maximumFloodTray(), correctionApplied ? "applied" : "not needed",
+                summary.maximumFloodTray() + 1, correctionApplied ? "applied" : "not needed",
                 100.0 * summary.residualMismatchFraction());
         HydraulicPublication summarised = new HydraulicPublication(publication.pass(), publication.audit(),
                 publication.solvePath(), mergedEvents(List.of(boundedEvent(event)), publication.solverEvents()),
@@ -2034,7 +2034,7 @@ public final class V3ColumnCalculator {
                     if (midpoint != null && subdivisions.allows(rampStep.heatFraction())) {
                         subdivisions.record(rampStep.heatFraction());
                         rampEvents.add(boundedEvent("stage-heat ramp subdivided at " + rampStep.heatFraction()
-                                + ": tray " + cappedTray + " condensation cap"));
+                                + ": tray " + (cappedTray + 1) + " condensation cap"));
                         rampSteps.add(index, midpoint);
                         index--;
                         continue;
@@ -2042,7 +2042,7 @@ public final class V3ColumnCalculator {
                     throw new PathDependentHeatBound(V3HeatFeasibility.condensationCapDetail(cappedTray,
                             condensationCapacityWatts(previous, thermo, cappedTray),
                             rampStep.heatFraction() * trayDutyWatts(input, cappedTray)),
-                            "condensation-capped at tray " + cappedTray + " on the continuation path",
+                            "condensation-capped at tray " + (cappedTray + 1) + " on the continuation path",
                             "cold/heat-cap/heat-" + input.pumparounds().size());
                 }
             }
@@ -2683,9 +2683,9 @@ public final class V3ColumnCalculator {
         }
         if (worst == null) return "";
         String geometry = problem.topology().trayCount() == requestedStageCount
-                ? "authored tray " + worst.trayNumber()
-                : "tray " + worst.trayNumber() + " at the " + problem.topology().trayCount()
-                        + "-tray continuation grid (requested " + requestedStageCount + " trays)";
+                ? "authored tray " + (worst.trayNumber() + 1)
+                : "tray " + (worst.trayNumber() + 1) + " at the " + (problem.topology().trayCount() + 2)
+                        + "-tray continuation grid (requested " + (requestedStageCount + 2) + " trays)";
         return String.format(Locale.ROOT,
                 "; side draw on %s requests %.6g kmol/h; final internal liquid %.6g kmol/h (withdrawal %.5g)",
                 geometry, worst.molarFlowMolPerSecond() * 3.6, worstLiquid * 3.6, largestFraction);
@@ -3126,8 +3126,8 @@ public final class V3ColumnCalculator {
     }
 
     static V3ColumnInput withStageGeometry(V3ColumnInput input, int stageCount) {
-        int feedStage = Math.clamp((int) Math.round(
-                stageCount * input.feedStageNumber() / (double) input.stageCount()), 1, stageCount);
+        int feedStage = input.feedStageNumber() == input.stageCount()+1 ? stageCount+1 : Math.clamp((int) Math.round(
+                stageCount * input.feedStageNumber() / (double) input.stageCount()), 1, Math.max(1,stageCount));
         return new V3ColumnInput(input.schemaVersion(), input.packageId(), input.assayId(), input.componentBasis(),
                 input.feedComponentMolarFlowsMolPerSecond(), input.feedTemperatureKelvin(), stageCount, feedStage,
                 input.topPressurePascal(), input.stagePressureDropPascal(), input.specifications(), List.of(),

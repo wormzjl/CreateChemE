@@ -20,15 +20,16 @@ import java.util.*;
 
 /**
  * Menu protocol {@value #PROTOCOL}: position/identity/revision-bound controls; clients never send inventory or
- * solver results. The server answers nothing directly. A menu receives a static payload (kind, components,
- * presets, material names) and a live payload (view, controls, the engine's reply) only on its island's
+ * solver results. Opening a GUI immediately receives the last published server snapshot, when available.
+ * Subsequent menu updates receive a static payload (kind, components,
+ * presets, material names) and a live payload (view, controls, the engine's reply) on its island's
  * presentation bucket ({@link FluidPresentation}); the static payload again only when the device's registration
  * revision changed. An edit or recovery packet is validated as before, queued as a ledger event, and its reply -
  * {@code Queued for simulation event at tick N}, {@code Applied} or {@code Not applied: <reason>} - arrives with
  * the next bucket.
  */
 public final class FluidNetwork {
-    public static final String PROTOCOL="fluid-4";
+    public static final String PROTOCOL="fluid-6";
     private static final Gson JSON=new Gson();
     public static final int MAX_JSON=262144;
     public static final int MAX_EDIT_JSON=4096;
@@ -57,31 +58,33 @@ public final class FluidNetwork {
      * and splits it for the wire; the client joins the two parts it received and validates the whole again.
      */
     public record MenuData(TopologyCompiler.Kind kind,FluidView view,Controls controls,List<String> components,List<FluidPresetCatalog.Preset> presets,String message,
-            Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
-        public MenuData(TopologyCompiler.Kind kind,FluidView view,Controls controls,List<String> components,List<FluidPresetCatalog.Preset> presets,String message) {
-            this(kind,view,controls,components,presets,message,Map.of());
-        }
+            Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames,List<Double> molecularWeights) {
         public MenuData {
             Objects.requireNonNull(kind);Objects.requireNonNull(view);Objects.requireNonNull(controls);Objects.requireNonNull(message);
-            components=new com.wormzjl.createcheme.science.material.MaterialAxis(components).ids();presets=List.copyOf(presets);materialNames=Map.copyOf(materialNames);
+            components=new com.wormzjl.createcheme.science.material.MaterialAxis(components).ids();presets=List.copyOf(presets);materialNames=Map.copyOf(materialNames);molecularWeights=validatedWeights(molecularWeights,components.size());
             if(message.length()>1024||controls.composition().length!=components.size()||presets.size()>com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS
                     ||presets.stream().map(FluidPresetCatalog.Preset::id).distinct().count()!=presets.size()||materialNames.size()>components.size()
                     ||!components.containsAll(materialNames.keySet()))throw new IllegalArgumentException("Invalid bounded fluid menu state");
             if(view.pipeHistory().size()>12||view.pipeRoutes().size()>12||view.status().length()>2048)throw new IllegalArgumentException("Fluid view exceeds display bounds");
+            if((kind==TopologyCompiler.Kind.PIPE||kind==TopologyCompiler.Kind.FILTER)&&view.pipeInfo()==null)
+                throw new IllegalArgumentException("Missing pipe inspection");
+            if(view.pipeInfo()!=null){
+                requirePhaseAxis(view.pipeInfo().contents().phaseMoles(),components.size());
+            }
             if(view.state()!=null)requirePhaseAxis(view.state().phaseMoles(),components.size());
             for(var transfer:view.pipeHistory()){requirePhaseAxis(transfer.forward().phaseMoles(),components.size());requirePhaseAxis(transfer.reverse().phaseMoles(),components.size());}
             for(var p:presets)if(p.moleFractions().length!=components.size())throw new IllegalArgumentException("Fluid preset axis mismatch");
             for(var e:materialNames.entrySet())if(!e.getKey().equals(e.getValue().id()))throw new IllegalArgumentException("Fluid name identity mismatch");
         }
         /** Joins what a menu received: its last static payload and the live payload just delivered. */
-        public static MenuData of(StaticData fixed,LiveData live){return new MenuData(fixed.kind(),live.view(),live.controls(),fixed.components(),fixed.presets(),live.message(),fixed.materialNames());}
-        public StaticData staticData(long revision){return new StaticData(kind,revision,components,presets,materialNames);}
+        public static MenuData of(StaticData fixed,LiveData live){return new MenuData(fixed.kind(),live.view(),live.controls(),fixed.components(),fixed.presets(),live.message(),fixed.materialNames(),fixed.molecularWeights());}
+        public StaticData staticData(long revision){return new StaticData(kind,revision,components,presets,materialNames,molecularWeights);}
         public LiveData liveData(){return new LiveData(view,controls,message);}
     }
     /** The static payload: what changes only with the device's registration revision (and never within one server run otherwise). */
-    public record StaticData(TopologyCompiler.Kind kind,long revision,List<String> components,List<FluidPresetCatalog.Preset> presets,Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames) {
+    public record StaticData(TopologyCompiler.Kind kind,long revision,List<String> components,List<FluidPresetCatalog.Preset> presets,Map<String,com.wormzjl.createcheme.science.material.MaterialName> materialNames,List<Double> molecularWeights) {
         public StaticData {
-            Objects.requireNonNull(kind);components=new com.wormzjl.createcheme.science.material.MaterialAxis(components).ids();presets=List.copyOf(presets);materialNames=Map.copyOf(materialNames);
+            Objects.requireNonNull(kind);components=new com.wormzjl.createcheme.science.material.MaterialAxis(components).ids();presets=List.copyOf(presets);materialNames=Map.copyOf(materialNames);molecularWeights=validatedWeights(molecularWeights,components.size());
             if(revision<0||presets.size()>com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS||materialNames.size()>components.size()||!components.containsAll(materialNames.keySet()))
                 throw new IllegalArgumentException("Invalid bounded fluid static state");
             for(var p:presets)if(p.moleFractions().length!=components.size())throw new IllegalArgumentException("Fluid preset axis mismatch");
@@ -93,6 +96,12 @@ public final class FluidNetwork {
             Objects.requireNonNull(view);Objects.requireNonNull(controls);Objects.requireNonNull(message);
             if(message.length()>1024||view.pipeHistory().size()>12||view.pipeRoutes().size()>12||view.status().length()>2048)throw new IllegalArgumentException("Fluid view exceeds display bounds");
         }
+    }
+    private static List<Double> validatedWeights(List<Double> values,int count){
+        Objects.requireNonNull(values,"Missing molecular weights");var copy=List.copyOf(values);
+        if(copy.size()!=count||copy.stream().anyMatch(w->!Double.isFinite(w)||w<=0))
+            throw new IllegalArgumentException("Invalid molecular weights");
+        return copy;
     }
     private static void requirePhaseAxis(double[][] phases,int components) {
         if(phases.length!=3)throw new IllegalArgumentException("Fluid phase count mismatch");
@@ -146,21 +155,24 @@ public final class FluidNetwork {
     public static StaticData decodeStatic(String json){return Objects.requireNonNull(JSON.fromJson(json,StaticData.class));}
     public static LiveData decodeLive(String json){return Objects.requireNonNull(JSON.fromJson(json,LiveData.class));}
 
-    // ---- server: delivery at a bucket only ----
+    // ---- server: scheduled snapshots and requested cached opening delivery ----
 
-    /**
-     * Delivers one presentation bucket to an open menu. Called only by the engine's flush ({@link FluidPresentation}):
-     * the static payload when the menu has not yet received the device's current registration revision, then the
-     * live payload with the view built for this bucket and the reply the engine composed.
-     */
-    public static void deliver(FluidWorldAuthority world,FluidDeviceMenu menu,WorldTopologyLedger.Registration record,boolean withStatic,FluidView view,String reply) {
-        var player=menu.serverPlayer();if(player==null)return;
-        var data=new MenuData(record.device().kind(),view,Controls.from(record),world.components(),world.presets(),reply,world.materialNames());
+    /** Captures one coherent GUI snapshot at a presentation bucket; no viewer-specific reply is cached. */
+    public static MenuData snapshot(FluidWorldAuthority world,WorldTopologyLedger.Registration record,FluidView view){
+        if(view.identity()!=record.device().id()||view.inputRevision()!=record.revision())
+            throw new IllegalArgumentException("Presentation snapshot registration mismatch");
+        return new MenuData(record.device().kind(),view,Controls.from(record),world.components(),world.presets(),"",
+            world.materialNames(),Arrays.stream(world.model().molecularWeights()).boxed().toList());
+    }
+    /** Sends a published snapshot to an installed, requested menu; replay uses an empty reply. */
+    public static void deliver(FluidDeviceMenu menu,boolean withStatic,MenuData data,String reply) {
+        var player=menu.serverPlayer();
+        if(player==null||player.containerMenu!=menu||menu.identity()!=data.view().identity()||!menu.stillValid(player))return;
         if(withStatic) {
-            PacketDistributor.sendToPlayer(player,new StaticPayload(menu.containerId,menu.identity(),JSON.toJson(data.staticData(record.revision()))));
+            PacketDistributor.sendToPlayer(player,new StaticPayload(menu.containerId,menu.identity(),JSON.toJson(data.staticData(data.view().inputRevision()))));
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.menuPackets);FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.staticPayloads);
         }
-        PacketDistributor.sendToPlayer(player,new LivePayload(menu.containerId,menu.identity(),JSON.toJson(data.liveData())));
+        PacketDistributor.sendToPlayer(player,new LivePayload(menu.containerId,menu.identity(),JSON.toJson(new LiveData(data.view(),data.controls(),reply))));
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.menuPackets);
     }
 
@@ -197,7 +209,7 @@ public final class FluidNetwork {
                 var old=Objects.requireNonNull(world.registrations().get(payload.identity));var d=old.device();
                 var geometry=d.geometry();var control=d.control();var spec=old.spec();
                 switch(d.kind()) {
-                    case PIPE,FILTER->geometry=new PipeResistance.Geometry(geometry.length(),controls.diameter,controls.roughness,geometry.minorLoss());
+                    case PIPE,FILTER->geometry=new PipeResistance.Geometry(geometry.length(),controls.diameter,PipeResistance.DEFAULT_ROUGHNESS_METRES,geometry.minorLoss());
                     case PUMP->control=new FlowControl.Pump(controls.volumeFlow,controls.maximumAddedPressure,1);
                     case VALVE->control=new FlowControl.PressureValve(controls.pressure);
                     case GENERATOR->spec=new FluidDeviceSpec(spec.volume(),controls.temperature,controls.pressure,controls.composition,controls.solids);
@@ -236,7 +248,7 @@ public final class FluidNetwork {
     };
     /** Client: remembers the last state delivered for a device, so a menu reopened on it shows that view until its next bucket. */
     public static synchronized void remember(long identity,MenuData data){DELIVERED.put(identity,Objects.requireNonNull(data));}
-    /** Client: the last state delivered for a device in this session, or null. Opening a menu never asks the server. */
+    /** Client: the last state delivered in this session, or null, shown until the requested server snapshot arrives. */
     public static synchronized MenuData lastDelivered(long identity){return DELIVERED.get(identity);}
     /** Client: forgets every delivered state (leaving a world; identities belong to a world). */
     public static synchronized void forgetDelivered(){DELIVERED.clear();}

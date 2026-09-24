@@ -59,10 +59,10 @@ class V3LiteraturePresetTest {
                 .filter(check -> check.family().equals("WATER_DEW_POINT")).findFirst().orElseThrow();
         assertTrue(dewPoint.passed(), dewPoint.detail());
         assertEquals(1.162, dewPoint.value(), 0.02, dewPoint.detail());
-        assertTrue(dewPoint.detail().startsWith("warning: tray 1 "), dewPoint.detail());
+        assertTrue(dewPoint.detail().startsWith("warning: tray 2 "), dewPoint.detail());
         List<String> warnings = audit.advisoryEvidence().stream().filter(advisory -> advisory.startsWith("Warning: ")).toList();
         assertEquals(1, warnings.size(), () -> String.join(" | ", audit.advisoryEvidence()));
-        assertTrue(warnings.getFirst().contains("tray 1") && warnings.getFirst().contains("below the water dew point"), warnings.getFirst());
+        assertTrue(warnings.getFirst().contains("tray 2") && warnings.getFirst().contains("below the water dew point"), warnings.getFirst());
         assertTrue(audit.advisoryEvidence().stream().noneMatch(advisory -> advisory.startsWith("wet trays:")),
                 "no wet tray can be admitted for the top of the column");
         assertTrue(outcome.diagnostics().events().stream()

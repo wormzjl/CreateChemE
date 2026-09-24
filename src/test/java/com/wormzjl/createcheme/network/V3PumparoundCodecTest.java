@@ -53,21 +53,14 @@ class V3PumparoundCodecTest {
     }
 
     @Test
-    void versionSixStateMigratesWithNoPumparoundsAndKeepsItsLedgerlessResult() throws Exception {
+    void currentInputRequiresExplicitPumparoundListAndResultCanBeLedgerless() throws Exception {
         CompoundTag inputTag = writeNbt(input(3));
         inputTag.remove("Pumparounds");
-        V3ColumnInput migrated = (V3ColumnInput) readNbt(inputTag);
-        assertEquals(List.of(), migrated.pumparounds());
-        assertEquals(input(0), migrated);
-
-        V3ColumnDisplayResult ledgered = result(Optional.of(ledger(2)));
+        assertThrows(InvocationTargetException.class, () -> readNbt(inputTag));
+        var withoutLedger = result(Optional.empty());
         CompoundTag resultTag = (CompoundTag) invoke(ColumnCalculatorV3BlockEntity.class, "writeDisplayResult",
-                new Class<?>[] {V3ColumnDisplayResult.class}, ledgered);
-        resultTag.remove("DutyLedger");
-        V3ColumnDisplayResult legacy = readNbtResult(resultTag);
-        assertEquals(Optional.empty(), legacy.dutyLedger());
-        assertEquals(result(Optional.empty()), legacy);
-        assertEquals(ledgered.streams(), legacy.streams());
+                new Class<?>[] {V3ColumnDisplayResult.class}, withoutLedger);
+        assertEquals(withoutLedger, readNbtResult(resultTag));
     }
 
     @Test

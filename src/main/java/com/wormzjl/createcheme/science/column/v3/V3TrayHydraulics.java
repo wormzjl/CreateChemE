@@ -293,7 +293,7 @@ public final class V3TrayHydraulics {
 
     /** Total drop across the N-1 tray intervals of a profile. */
     public static double totalDropPascal(V3ColumnTopology topology, double[] pressures) {
-        return pressures[topology.trayCount()] - pressures[1];
+        return topology.trayCount() < 2 ? 0.0 : pressures[topology.trayCount()] - pressures[1];
     }
 
     /**
@@ -346,6 +346,7 @@ public final class V3TrayHydraulics {
         double worstFlood = 0.0;
         int worstTray = 1;
         Terms worstTerms = terms(trays[1], pressures[1]);
+        worstFlood = worstTerms.floodFraction();
         for (int tray = 2; tray <= topology.trayCount(); tray++) {
             Terms candidate = terms(trays[tray], pressures[tray]);
             if (candidate.floodFraction() > worstFlood) {
@@ -373,7 +374,7 @@ public final class V3TrayHydraulics {
                 "tray pressure drop is too high: tray %d is at %.0f%% of flood (drop %.2f kPa: dry %.2f, liquid %.2f kPa); "
                         + "the %s load is too high "
                         + "for a %.1f m column; widen the column, or cut feed, steam, reboiler duty or reflux",
-                summary.maximumFloodTray(), 100.0 * summary.maximumFloodFraction(),
+                summary.maximumFloodTray() + 1, 100.0 * summary.maximumFloodFraction(),
                 (summary.worstTrayDryPascal() + summary.worstTrayLiquidPascal()) / 1000.0,
                 summary.worstTrayDryPascal() / 1000.0, summary.worstTrayLiquidPascal() / 1000.0,
                 summary.vaporLimited() ? "vapor" : "liquid", summary.columnDiameterMetres());

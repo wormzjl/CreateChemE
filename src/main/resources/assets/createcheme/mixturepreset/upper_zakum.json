@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "kind": "mixture",
+  "name": "Upper Zakum",
+  "translation_key": "gui.createcheme.column_preset.upper_zakum",
+  "package": "createcheme:upper_zakum_tjl20",
+  "basis": "mole",
+  "components": [
+    {
+      "id": "Propane",
+      "amount": 1.8057437352908243
+    },
+    {
+      "id": "Isobutane",
+      "amount": 1.333913454413513
+    },
+    {
+      "id": "N-butane",
+      "amount": 4.542516088002773
+    },
+    {
+      "id": "Isopentane",
+      "amount": 2.817154827832368
+    },
+    {
+      "id": "N-pentane",
+      "amount": 3.9788681588972614
+    },
+    {
+      "id": "crude_pc01",
+      "amount": 10.053559034764028
+    },
+    {
+      "id": "crude_pc02",
+      "amount": 12.54934489673536
+    },
+    {
+      "id": "crude_pc03",
+      "amount": 12.448021510285503
+    },
+    {
+      "id": "crude_pc04",
+      "amount": 10.522100937896488
+    },
+    {
+      "id": "crude_pc05",
+      "amount": 8.833154509458058
+    },
+    {
+      "id": "crude_pc06",
+      "amount": 7.270326707839615
+    },
+    {
+      "id": "crude_pc07",
+      "amount": 6.011801628934869
+    },
+    {
+      "id": "crude_pc08",
+      "amount": 6.694457359351971
+    },
+    {
+      "id": "crude_pc09",
+      "amount": 5.899151256533869
+    },
+    {
+      "id": "crude_pc10",
+      "amount": 3.6832667319866985
+    },
+    {
+      "id": "crude_pc11",
+      "amount": 1.1719177531146616
+    },
+    {
+      "id": "crude_pc12",
+      "amount": 0.384701408662134
+    }
+  ]
+}

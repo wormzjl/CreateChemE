@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.List;
 import java.util.Optional;
 
-/** Minimal immutable accepted-result envelope; physical profiles are added with the MESH solver. */
+/** Immutable accepted scientific result with bounded physical inspection extracted at publication. */
 public final class V3ColumnResult {
     private final V3ColumnProblem problem;
     private final V3InputDigest inputDigest;
@@ -16,6 +16,9 @@ public final class V3ColumnResult {
     private final V3ColumnDutyLedger dutyLedger;
     private final String datasetRevision;
     private final V3TrayHydraulicsSummary trayHydraulics;
+    private final V3ColumnInspection inspection;
+
+    public Optional<V3ColumnInspection> inspection() { return Optional.ofNullable(inspection); }
 
     /** Scientific identity captured during the solve; never reconstructed from a later live catalog. */
     public String datasetRevision() { return datasetRevision; }
@@ -37,6 +40,14 @@ public final class V3ColumnResult {
             V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
             V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision,
             V3ColumnDutyLedger dutyLedger, V3TrayHydraulicsSummary trayHydraulics) {
+        this(problem, inputDigest, acceptanceAudit, convergenceEvidence, streams, formulationRevision,
+                dutyLedger, trayHydraulics, null);
+    }
+
+    private V3ColumnResult(V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision,
+            V3ColumnDutyLedger dutyLedger, V3TrayHydraulicsSummary trayHydraulics, V3ColumnInspection inspection) {
+        this.inspection = inspection;
         this.trayHydraulics = trayHydraulics;
         this.dutyLedger = dutyLedger;
         this.problem = Objects.requireNonNull(problem, "problem");
@@ -81,7 +92,8 @@ public final class V3ColumnResult {
             V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
             String formulationRevision) {
         return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
-                V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision);
+                V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision, null, null,
+                V3ColumnInspection.fromAccepted(problem, state, acceptanceAudit));
     }
 
     /** Publication path that also carries the recomputed boundary duties of the accepted state. */
@@ -100,7 +112,8 @@ public final class V3ColumnResult {
             String formulationRevision, V3ColumnDutyLedger dutyLedger, V3TrayHydraulicsSummary trayHydraulics) {
         return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
                 V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision,
-                Objects.requireNonNull(dutyLedger, "dutyLedger"), trayHydraulics);
+                Objects.requireNonNull(dutyLedger, "dutyLedger"), trayHydraulics,
+                V3ColumnInspection.fromAccepted(problem, state, acceptanceAudit));
     }
 
     static V3ColumnResult accepted(
@@ -109,7 +122,7 @@ public final class V3ColumnResult {
             double[] molecularWeightsKgPerMol, String formulationRevision) {
         return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
                 V3ColumnStreamProperties.fromAccepted(problem, state, molecularWeightsKgPerMol),
-                formulationRevision);
+                formulationRevision, null, null, V3ColumnInspection.fromAccepted(problem, state, acceptanceAudit));
     }
 
     public V3ColumnProblem problem() {

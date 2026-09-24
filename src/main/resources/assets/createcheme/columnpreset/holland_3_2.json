@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "kind": "column",
+  "name": "Holland Example 3-2",
+  "translation_key": "gui.createcheme.column_preset.holland_3_2",
+  "tray_count": 13,
+  "feed_tray": 5,
+  "feed_flow_kmol_h": 45.359237,
+  "feed_temperature_kelvin": 346.9121416636966,
+  "top_temperature_kelvin": 318.77777777777777,
+  "reboiler_duty_mw": 0.45481699380027163,
+  "reflux_ratio": 10000.0,
+  "top_pressure_bar": 20.684271879504,
+  "diameter_m": 0.0,
+  "draws": [
+    {
+      "tray": 10,
+      "flow_kmol_h": 11.33980925
+    }
+  ],
+  "steam": [],
+  "pumparounds": []
+}

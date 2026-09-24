@@ -96,7 +96,8 @@ final class V3ColumnInitializer {
                 previousLiquid = liquid[tray][component] - Math.min(0.95 * liquid[tray][component],
                         problem.nodeSideDrawMolPerSecond(tray) * feed / totalFeed);
             }
-            liquid[topology.reboilerNode()][component] = previousLiquid
+            liquid[topology.reboilerNode()][component] = (topology.trayCount() == 0 ? reflux : previousLiquid)
+                    + (topology.feedTrayNumber() == topology.reboilerNode() ? feed : 0.0)
                     - vapor[topology.reboilerNode()][component];
             if (!Double.isFinite(liquid[topology.reboilerNode()][component])
                     || liquid[topology.reboilerNode()][component] <= 0.0) {
@@ -834,7 +835,8 @@ final class V3ColumnInitializer {
             rightHandSide[tray] = tray == topology.feedTrayNumber()
                     ? -problem.activeComponentBasis().feedFlowMolPerSecond(component) : 0.0;
         }
-        lower[reboiler] = 1.0 - withdrawals[reboiler - 1];
+        lower[reboiler] = reboiler == 1 ? refluxFraction : 1.0 - withdrawals[reboiler - 1];
+        rightHandSide[reboiler] = reboiler == topology.feedTrayNumber() ? -problem.activeComponentBasis().feedFlowMolPerSecond(component) : 0.0;
         diagonal[reboiler] = -(1.0 + phaseRatios[reboiler]);
         return solveTridiagonal(lower, diagonal, upper, rightHandSide);
     }
@@ -857,7 +859,8 @@ final class V3ColumnInitializer {
                     ? -problem.activeComponentBasis().feedFlowMolPerSecond(component) : 0.0;
         }
         int reboilerRow = reboiler - 1;
-        lower[reboilerRow] = 1.0 - withdrawals[reboiler - 1];
+        lower[reboilerRow] = reboiler == 1 ? 0.0 : 1.0 - withdrawals[reboiler - 1];
+        rightHandSide[reboilerRow] = reboiler == topology.feedTrayNumber() ? -problem.activeComponentBasis().feedFlowMolPerSecond(component) : 0.0;
         diagonal[reboilerRow] = -(1.0 + phaseRatios[reboiler]);
         double[] reducedSolution = solveTridiagonal(lower, diagonal, upper, rightHandSide);
         double[] liquid = new double[reboiler + 1];

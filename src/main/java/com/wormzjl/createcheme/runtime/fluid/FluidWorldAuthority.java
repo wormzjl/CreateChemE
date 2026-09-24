@@ -47,6 +47,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private final Set<Long> unboundBindings=new HashSet<>();
     /** Engine-owned presentation: loaded devices and open menus, updated on their island's bucket only. */
     private final FluidPresentation<com.wormzjl.createcheme.world.inventory.FluidDeviceMenu> presentation;
+    /** Complete immutable snapshots from the last bucket; bounded by loaded/open devices, never player replies. */
+    private final Map<Long,com.wormzjl.createcheme.network.FluidNetwork.MenuData> publishedMenuData=new HashMap<>();
     private boolean closed;
     private long lastDebugChat=Long.MIN_VALUE;
     private MaterialCatalog observedSolidData;
@@ -121,7 +123,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         data.setDirty();
     }
     public static void stop(MinecraftServer server){find(server).ifPresent(FluidWorldAuthority::close);}
-    public static void forget(MinecraftServer server){var world=SERVERS.remove(server);if(world!=null)world.close();}
+    public static void forget(MinecraftServer server){com.wormzjl.createcheme.network.ColumnV3Network.forgetPresentation(server);var world=SERVERS.remove(server);if(world!=null)world.close();}
     private void owned(){if(!server.isSameThread())throw new IllegalStateException("Fluid authority requires the logical server thread");}
     /** Every island of this world solves on a model built from the same captured options, so the
      * configured trace cutoff is one value for every worker and every retained solver: a retained
@@ -156,7 +158,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
     public WorldTopologyLedger.Registration place(PhysicalFluidTopology.Position position,TopologyCompiler.Kind kind,PhysicalFluidTopology.Direction facing) {
         owned();if(at(position).isPresent())throw new IllegalStateException("A fluid identity already occupies this position");
         long id=topology.nextIdentity();var control=switch(kind){case PUMP->new FlowControl.Pump(.01,500000,1);case VALVE->new FlowControl.PressureValve(200000);default->new FlowControl.Passive();};
-        var device=new PhysicalFluidTopology.Device(id,position,kind,facing,new PipeResistance.Geometry(1,.05,.000045,0),control);
+        var device=new PhysicalFluidTopology.Device(id,position,kind,facing,new PipeResistance.Geometry(1,.05,PipeResistance.DEFAULT_ROUGHNESS_METRES,0),control);
         var spec=kind==TopologyCompiler.Kind.GENERATOR?FluidDeviceSpec.water(catalog):FluidDeviceSpec.nitrogen(catalog);
         if(kind==TopologyCompiler.Kind.RESERVOIR)spec=new FluidDeviceSpec(options.volume(),options.temperature(),options.pressure(),spec.composition());
         var record=new WorldTopologyLedger.Registration(device,spec,0);
@@ -203,6 +205,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         runtime.tick();
         if(topology.hasPendingEvents()){applyPending();runtime.coordinator().pumpIfUseful();}
         presentation.tick(topology.onlineTick());
+        com.wormzjl.createcheme.network.ColumnV3Network.presentationTick(server, topology.onlineTick());
         data.setDirty();
     }
     /** Attempted when a recovery is queued and on its retry deadline, never polled; delivery stays exactly-once. */
@@ -233,11 +236,15 @@ public final class FluidWorldAuthority implements AutoCloseable {
     /** A device's block entity loaded or was bound: marked for its bucket, never presented at once. */
     public void deviceLoaded(long id){owned();if(!closed)presentation.deviceLoaded(id);}
     /** A device's block entity unloaded or was removed: publications stop marking it. */
-    public void deviceUnloaded(long id){owned();presentation.deviceUnloaded(id);}
+    public void deviceUnloaded(long id){owned();presentation.deviceUnloaded(id);publishedMenuData.remove(id);}
     /** Marks a device for its next bucket (a test or tool asking for a refresh gets it on the engine's schedule). */
     public void markViewDirty(long id){owned();presentation.markDirty(id);}
     /** An open menu becomes a consumer of its device's bucket. The first delivery comes with that bucket. */
     public void subscribe(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu){owned();if(!closed)presentation.subscribe(menu,menu.identity());}
+    /** Called after openMenu has installed the requested menu and queued its opening packet. */
+    public boolean replayOnOpen(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu){
+        owned();return !closed&&presentation.replayOnOpen(menu);
+    }
     public void unsubscribe(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu){owned();presentation.unsubscribe(menu);}
     /**
      * A player input from a menu, already validated and queued as a ledger event (or refused): recorded for the
@@ -298,8 +305,14 @@ public final class FluidWorldAuthority implements AutoCloseable {
         for(var historyEntry:history)for(var pipe:snapshot.graph().pipes())if(pipe.id()==historyEntry.pipeId()) {
             routes.add(new FluidView.PipeRoute(pipe.id(),nodeLabel(snapshot.graph().reservoirs().get(pipe.first()).id()),nodeLabel(snapshot.graph().reservoirs().get(pipe.second()).id())));
         }
-        return new FluidView(id,registration.revision(),snapshot.clock().committedTick(),topology.onlineTick(),status,state,flow,history,devicePressureChange,true,
-                snapshot.lastResult().map(PassiveIntervalSolver.Result::advancedSeconds).orElse(0.0),snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes,filter);
+        double seconds=snapshot.lastResult().map(PassiveIntervalSolver.Result::advancedSeconds).orElse(0.0);
+        var view=new FluidView(id,registration.revision(),snapshot.clock().committedTick(),topology.onlineTick(),status,state,flow,history,devicePressureChange,true,
+                seconds,snapshot.lastResult().map(r->r.acceptance().name()).orElse(""),routes,filter);
+        if(registration.device().kind()==TopologyCompiler.Kind.PIPE||registration.device().kind()==TopologyCompiler.Kind.FILTER)
+            view=view.withPipeInfo(PipePresentation.withBulkSpeed(
+                PipePresentation.inspect(registration.device(),snapshot.graph(),registry.pipeViews(id),history,seconds,componentNames.size()),
+                runtime.coordinator().bulkVolumeRates(owner),registration.device().geometry().area()));
+        return view;
     }
     /**
      * Why this connection carries nothing, in the words the solver used, for the device status a
@@ -361,7 +374,19 @@ public final class FluidWorldAuthority implements AutoCloseable {
         public boolean open(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu) {
             var player=menu.serverPlayer();return player!=null&&!player.hasDisconnected()&&player.containerMenu==menu&&menu.stillValid(player);
         }
-        public FluidView view(long device,Map<Long,IslandCoordinator.Snapshot> islands){return FluidWorldAuthority.this.view(device,islands);}
+        public FluidView view(long device,Map<Long,IslandCoordinator.Snapshot> islands){
+            var view=FluidWorldAuthority.this.view(device,islands);
+            var record=registrations().get(device);
+            if(record!=null&&(record.device().kind()==TopologyCompiler.Kind.PIPE||record.device().kind()==TopologyCompiler.Kind.FILTER)&&view.pipeInfo()==null)
+                view=view.withPipeInfo(FluidView.PipeInfo.empty(componentNames.size()));
+            if(record!=null)publishedMenuData.put(device,com.wormzjl.createcheme.network.FluidNetwork.snapshot(FluidWorldAuthority.this,record,view));
+            return view;
+        }
+        public long replay(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu,long device){
+            var data=publishedMenuData.get(device);if(data==null)return -1;
+            com.wormzjl.createcheme.network.FluidNetwork.deliver(menu,true,data,"");
+            return data.view().inputRevision();
+        }
         /** Binds a loaded block entity that does not yet carry its identity, then hands it the view. Never loads a chunk. */
         public boolean present(long id,java.util.function.Supplier<FluidView> view) {
             var record=registrations().get(id);if(record==null)return false;var p=record.device().position();var level=server.getLevel(dimension(p.dimension()));if(level==null)return false;
@@ -377,7 +402,8 @@ public final class FluidWorldAuthority implements AutoCloseable {
         }
         public void failed(long device,RuntimeException failure){CreateChemE.LOGGER.error("fluid_presentation device={} status=FAILED detail=The view could not be presented at its bucket",device,failure);}
         public void deliver(com.wormzjl.createcheme.world.inventory.FluidDeviceMenu menu,long device,boolean withStatic,FluidView view,String reply) {
-            var record=registrations().get(device);if(record!=null)com.wormzjl.createcheme.network.FluidNetwork.deliver(FluidWorldAuthority.this,menu,record,withStatic,view,reply);
+            var data=publishedMenuData.get(device);
+            if(data!=null)com.wormzjl.createcheme.network.FluidNetwork.deliver(menu,withStatic,data,reply);
         }
     }
     /** The world side of {@link PhysicalRegistry}: the runtime's islands, players for recoveries, and what a commit changes here. */
@@ -390,7 +416,7 @@ public final class FluidWorldAuthority implements AutoCloseable {
         public boolean acceptsRecovery(UUID player){var online=server.getPlayerList().getPlayer(player);return online!=null&&online.getInventory().getFreeSlot()>=0;}
         public void refused(UUID event,String reason){refuseEvent(event,reason);}
         public void committed(Set<Long> removed) {
-            unboundBindings.removeAll(removed);
+            unboundBindings.removeAll(removed);publishedMenuData.keySet().removeAll(removed);
             // Open menus follow their devices to the replacement islands' buckets.
             presentation.rekey();
         }
@@ -431,5 +457,5 @@ public final class FluidWorldAuthority implements AutoCloseable {
     private void released(long island) {
         if(moduleHost!=null&&moduleHost.dependsOn(island)){var coordinator=runtime.coordinator();coordinator.schedule(IslandScheduler.Kind.MODULE_HORIZON,coordinator.now(),this::moduleDeadline);}
     }
-    @Override public void close(){owned();if(closed)return;closed=true;runtime.close();data.setDirty();}
+    @Override public void close(){owned();if(closed)return;closed=true;publishedMenuData.clear();runtime.close();data.setDirty();}
 }

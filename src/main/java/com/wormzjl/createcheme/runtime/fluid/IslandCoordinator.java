@@ -147,6 +147,7 @@ public final class IslandCoordinator {
         private FallbackAllowance allowance;
         private Optional<ApproximationAnchor> anchor;
         private Optional<PassiveIntervalSolver.Result> lastResult;
+        private final PipeSpeedWindow pipeSpeed = new PipeSpeedWindow();
         private String status;
         private Metrics metrics;
         private boolean suspended;
@@ -316,6 +317,12 @@ public final class IslandCoordinator {
      * before it: presentation cadence never drives scientific progress.
      */
     public Snapshot presentation(long id){owned();var island=require(id);materialise(island,true);return island.snapshot();}
+    /** Reads only transport already accepted/materialised by the engine; never wakes or advances an island. */
+    public Map<Long,Double> bulkVolumeRates(long id) {
+        owned();var island=require(id);
+        return island.pipeSpeed.volumeRates(island.clock.onlineTick());
+    }
+
     /** Every island, certified ones materialised first; see {@link #snapshot(long)}. */
     public List<Snapshot> snapshots(){owned();for(var island:List.copyOf(islands.values()))materialise(island);return islands.values().stream().map(Island::snapshot).toList();}
     /** Every island as it is stored, without materialising a certified one: a diagnostic read that must not
@@ -545,6 +552,7 @@ public final class IslandCoordinator {
                 if(accept) {
                     materialCommit.orElseThrow().run();
                     island.graph=candidate.graph();island.lastResult=Optional.of(candidate);
+                    island.pipeSpeed.accepted(attempt.slice.startTick(),attempt.slice.endTick(),candidate.pipeTransfers());
                     island.allowance=outcome.proposedAllowance();island.anchor=outcome.proposedAnchor();island.status=outcome.detail();
                 }
             }
@@ -870,6 +878,7 @@ public final class IslandCoordinator {
             // rates replay repeats); the replayed span with its scaled accounting goes to the replay listener only.
             var replay=certificate.replay(committed,target);
             island.clock.rest(target,island.fence());island.graph=replay.graph();
+            island.pipeSpeed.accepted(committed,target,replay.pipeTransfers());
             var advance=certificate.kind()==IslandCertificate.Kind.REST?Advance.RESTED:Advance.REPLAYED;
             island.metrics=new Metrics(island.metrics==null?1:Math.addExact(island.metrics.sequence(),1),committed,target,online,online,-1,-1,0,true,advance);
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.materialisations);

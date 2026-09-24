@@ -54,16 +54,13 @@ class V3ClosureCodecTest {
     }
 
     @Test
-    void aVersionSevenResultWithoutTheKeyReadsAsTheDefaultClosure() throws Exception {
-        assertEquals(10, ColumnCalculatorV3BlockEntity.DATA_VERSION);
-        assertEquals(12, ColumnV3Network.WIRE_SCHEMA_VERSION);
-
+    void currentResultRequiresItsRecordedClosure() throws Exception {
+        assertEquals(12, ColumnCalculatorV3BlockEntity.DATA_VERSION);
+        assertEquals(15, ColumnV3Network.WIRE_SCHEMA_VERSION);
         CompoundTag tag = writeNbt(result(Optional.of(ledger()), 1.0e-3));
         tag.remove("ClosureTolerance");
-        assertFalse(tag.contains("ClosureTolerance", Tag.TAG_DOUBLE));
-        V3ColumnDisplayResult migrated = readNbt(tag);
-        assertEquals(V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE, migrated.closureTolerance(), 0.0);
-        assertEquals(result(Optional.of(ledger()), V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE), migrated);
+        assertInstanceOf(IllegalArgumentException.class,
+                assertThrows(InvocationTargetException.class, () -> readNbt(tag)).getCause());
     }
 
     @Test

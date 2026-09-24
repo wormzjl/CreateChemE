@@ -111,8 +111,8 @@ public final class V3ColumnProblemResolver {
         if (input.stageCount() < V3ColumnInput.MIN_STAGE_COUNT || input.stageCount() > V3ColumnInput.MAX_STAGE_COUNT) {
             throw new IllegalArgumentException("V3 tray count is outside the schema range");
         }
-        if (input.feedStageNumber() < 1 || input.feedStageNumber() > input.stageCount()) {
-            throw new IllegalArgumentException("V3 feed tray is outside the equilibrium-tray range");
+        if (input.feedStageNumber() < 1 || input.feedStageNumber() > input.stageCount() + 1) {
+            throw new IllegalArgumentException("V3 feed must enter below tray 1 and no lower than the last tray");
         }
         if (nodePressuresPascal != null) requireProfileShape(nodePressuresPascal, input);
         double totalDraw = 0.0;
@@ -132,7 +132,7 @@ public final class V3ColumnProblemResolver {
             }
         }
         double bottomPressure = nodePressuresPascal == null
-                ? input.topPressurePascal() + (input.stageCount() - 1) * input.stagePressureDropPascal()
+                ? input.topPressurePascal() + Math.max(0, input.stageCount() - 1) * input.stagePressureDropPascal()
                 : nodePressuresPascal[input.stageCount()];
         if (!Double.isFinite(bottomPressure) || bottomPressure <= 0.0) {
             throw new IllegalArgumentException("V3 generated pressure profile is not finite and positive");
@@ -148,7 +148,7 @@ public final class V3ColumnProblemResolver {
             }
             int injectionTray = Math.min(feed.stageNumber(), input.stageCount());
             double injectionPressure = nodePressuresPascal == null
-                    ? input.topPressurePascal() + (injectionTray - 1) * input.stagePressureDropPascal()
+                    ? input.topPressurePascal() + Math.max(0, injectionTray - 1) * input.stagePressureDropPascal()
                     : nodePressuresPascal[injectionTray];
             double saturationTemperature = V3WaterProperties.saturationTemperatureKelvin(injectionPressure);
             if (feed.temperatureKelvin() < saturationTemperature + 5.0) {
@@ -163,7 +163,7 @@ public final class V3ColumnProblemResolver {
                 .map(V3ColumnSpecification.ReboilerDuty.class::cast).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("V3 input is missing a reboiler-duty specification")).watts();
         if (!input.steamFeeds().isEmpty() && reboilerDuty == 0.0 && !V3SteamFeeds.hasSumpFeed(input)) {
-            throw new IllegalArgumentException("V3 zero reboiler duty requires sump steam (stage N+1) or positive duty");
+            throw new IllegalArgumentException("V3 zero reboiler duty requires steam injection at the last tray or positive duty");
         }
         if (!input.steamFeeds().isEmpty()) {
             double condenserTemperature = input.specifications().stream()

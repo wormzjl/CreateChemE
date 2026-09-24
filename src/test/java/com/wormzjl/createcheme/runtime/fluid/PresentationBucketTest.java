@@ -105,6 +105,7 @@ class PresentationBucketTest {
         final Set<Long> loadedBlocks=new HashSet<>();final Map<Long,Long> revisions=new HashMap<>();final Set<UUID> pending=new HashSet<>();
         final Map<Long,List<Long>> presentedAt=new TreeMap<>();final Map<Long,Integer> viewsOf=new TreeMap<>();
         int islandReads;
+        final Map<Long,FluidView> cached=new HashMap<>();
         World(Rig rig) {
             this.rig=rig;presentation=new FluidPresentation<>(this,rig.epoch[0]);
             // As FluidWorldAuthority.published: a publication marks the island's loaded devices, nothing more.
@@ -124,13 +125,56 @@ class PresentationBucketTest {
         public FluidView view(long device,Map<Long,IslandCoordinator.Snapshot> islands) {
             viewsOf.merge(device,1,Integer::sum);
             var island=islands.computeIfAbsent(owners.get(device),id->{islandReads++;return rig.coordinator.presentation(id);});
-            return new FluidView(device,revision(device),island.clock().committedTick(),island.clock().onlineTick(),island.status(),null,0,List.of());
+            var view=new FluidView(device,revision(device),island.clock().committedTick(),island.clock().onlineTick(),island.status(),null,0,List.of());
+            cached.put(device,view);return view;
         }
         public boolean present(long device,Supplier<FluidView> view) {
             if(!loadedBlocks.contains(device))return false;
             var built=view.get();assertEquals(device,built.identity());presentedAt.computeIfAbsent(device,ignored->new ArrayList<>()).add(rig.epoch[0]);return true;
         }
         public void deliver(Menu menu,long device,boolean withStatic,FluidView view,String reply){menu.received.add(new Received(rig.epoch[0],withStatic,reply,view));}
+        public long replay(Menu menu,long device){
+            var view=cached.get(device);if(view==null)return -1;
+            deliver(menu,device,true,view,"");return view.inputRevision();
+        }
+    }
+
+    @Test void firstRequestedOpeningReplaysLastBucketWithoutAnyScienceWorkOrDeadlineShift(){
+        var rig=new Rig(CertificatePolicy.defaults());rig.register(1,deadHeadedLine());
+        var world=new World(rig).device(101,1);world.loadedBlocks.add(101L);world.presentation.deviceLoaded(101);
+        world.run(150);var snapshot=world.cached.get(101L);assertNotNull(snapshot);
+        int reads=world.islandReads,solves=rig.solves,builds=world.viewsOf.get(101L);
+        var menu=world.open(101);long due=world.presentation.nextDue();
+        assertTrue(menu.received.isEmpty(),"a closed GUI never received background contents");
+        assertTrue(world.presentation.replayOnOpen(menu));
+        assertEquals(1,menu.received.size());var opening=menu.received.getFirst();
+        assertSame(snapshot,opening.view());assertTrue(opening.withStatic());assertEquals("",opening.reply());
+        assertEquals(150,opening.tick());assertTrue(opening.view().onlineTick()<opening.tick());
+        assertEquals(reads,world.islandReads);assertEquals(solves,rig.solves);assertEquals(builds,world.viewsOf.get(101L));
+        assertEquals(due,world.presentation.nextDue());
+        world.run((int)(due-rig.epoch[0]));
+        assertEquals(2,menu.received.size());assertEquals(due,menu.received.getLast().tick());
+        assertFalse(menu.received.getLast().withStatic(),"the opening snapshot already included its metadata");
+    }
+    @Test void cachedReplayDoesNotConsumePendingInputRepliesOrUseANewerUnpublishedRevision(){
+        var rig=new Rig(CertificatePolicy.defaults());rig.register(1,deadHeadedLine());
+        var world=new World(rig).device(101,1);world.loadedBlocks.add(101L);world.presentation.deviceLoaded(101);
+        world.run(150);var snapshot=world.cached.get(101L);var menu=world.open(101);
+        world.revisions.put(101L,9L);
+        world.presentation.input(menu,101,FluidPresentation.Input.refused(rig.epoch[0],"Stale controls"));
+        assertTrue(world.presentation.replayOnOpen(menu));assertSame(snapshot,menu.received.getFirst().view());
+        assertEquals(0,menu.received.getFirst().view().inputRevision());assertTrue(menu.replies().isEmpty());
+        world.run(51);var next=menu.received.getLast();
+        assertEquals(9,next.view().inputRevision());assertTrue(next.withStatic());
+        assertEquals("Not applied: Stale controls",next.reply());
+    }
+    @Test void noPublishedSnapshotOrNoActiveRequestCannotTriggerAReplayOrNewView(){
+        var rig=new Rig(CertificatePolicy.defaults());rig.register(1,deadHeadedLine());
+        var world=new World(rig).device(101,1);var menu=world.open(101);
+        assertFalse(world.presentation.replayOnOpen(menu));assertTrue(menu.received.isEmpty());assertTrue(world.viewsOf.isEmpty());
+        world.run(101);int count=menu.received.size();menu.open=false;
+        assertFalse(world.presentation.replayOnOpen(menu));assertEquals(count,menu.received.size());
+        world.presentation.unsubscribe(menu);assertFalse(world.presentation.replayOnOpen(menu));
     }
 
     // ---------------- menus: one live payload per bucket, static only on a revision change ----------------

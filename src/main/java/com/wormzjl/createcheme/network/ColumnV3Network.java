@@ -55,11 +55,11 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    // Version 12 carries the authored column diameter and the tray hydraulics of an accepted result.
-    public static final int WIRE_SCHEMA_VERSION = 12;
+    // Version 15 supports two-terminal-stage pots and total-tray presentation.
+    public static final int WIRE_SCHEMA_VERSION = 15;
 
-    // Version 5 removes the legacy calculator packet family; both peers must use the V3-only protocol.
-    private static final String PROTOCOL_VERSION = "8";
+    // Both peers must use the same engine-scheduled inspection protocol.
+    private static final String PROTOCOL_VERSION = "11";
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -126,6 +126,10 @@ public final class ColumnV3Network {
     }
 
     private static void handleCalculate(CalculatePayload payload, IPayloadContext context) {
+        ColumnPresentation.queue(context, payload.blockPos(), payload.clientNonce(), () -> applyCalculate(payload, context));
+    }
+
+    private static void applyCalculate(CalculatePayload payload, IPayloadContext context) {
         if (!(context.player() instanceof ServerPlayer player)) {
             reject(context, payload.blockPos(), payload.clientNonce(), "REJECTED_CONTEXT");
             return;
@@ -163,24 +167,17 @@ public final class ColumnV3Network {
             CreateChemE.LOGGER.error("column_v3 request={} status=INTERNAL_ERROR phase=ADMISSION", requestId, unexpected);
         }
         reply(context, payload.blockPos(), calculator.state(payload.clientNonce()));
-        pushToViewers(player.getServer(), target, calculator.state(0L));
     }
 
     private static void handleStateRequest(StateRequestPayload payload, IPayloadContext context) {
-        if (!(context.player() instanceof ServerPlayer player)) {
-            reject(context, payload.blockPos(), payload.clientNonce(), "REJECTED_CONTEXT");
-            return;
-        }
-        ColumnCalculatorV3BlockEntity calculator = resolveCalculator(player, payload.blockPos());
-        if (calculator == null || !(player.containerMenu instanceof ColumnCalculatorV3Menu menu)
-                || !menu.blockPos().equals(payload.blockPos()) || !menu.stillValid(player)) {
-            reject(context, payload.blockPos(), payload.clientNonce(), "REJECTED_CONTEXT");
-            return;
-        }
-        reply(context, payload.blockPos(), calculator.state(payload.clientNonce()));
+        ColumnPresentation.queue(context, payload.blockPos(), payload.clientNonce(), null);
     }
 
     private static void handlePreset(PresetPayload payload, IPayloadContext context) {
+        ColumnPresentation.queue(context, payload.blockPos(), payload.clientNonce(), () -> applyPreset(payload, context));
+    }
+
+    private static void applyPreset(PresetPayload payload, IPayloadContext context) {
         if (!(context.player() instanceof ServerPlayer player)) {
             reject(context, payload.blockPos(), payload.clientNonce(), "REJECTED_CONTEXT");
             return;
@@ -207,7 +204,6 @@ public final class ColumnV3Network {
         }
         ColumnTarget target = new ColumnTarget(player.serverLevel().dimension(), payload.blockPos());
         reply(context, payload.blockPos(), calculator.state(payload.clientNonce()));
-        pushToViewers(player.getServer(), target, calculator.state(0L));
     }
 
     /** Called solely by {@link ProcessSolveCoordinator} on the server thread when a worker completion drains. */
@@ -240,14 +236,13 @@ public final class ColumnV3Network {
             return;
         }
         logTerminal(job, terminalStatus, terminalDetail);
-        pushToViewers(server, job.request().target(), calculator.state(0L));
     }
 
     /** Called by the central shutdown router only for a request without a terminal worker completion. */
     static void handleRoutedAbandoned(MinecraftServer server, V3ColumnRequest request) {
         ColumnCalculatorV3BlockEntity calculator = resolveCalculator(server, request.target());
         if (calculator != null && calculator.failOperation(request.operation(), "SERVER_SHUTDOWN")) {
-            pushToViewers(server, request.target(), calculator.state(0L));
+            // Terminal state is observed at the next engine presentation bucket.
         }
     }
 
@@ -285,32 +280,30 @@ public final class ColumnV3Network {
                 ? calculator : null;
     }
 
-    private static void pushToViewers(MinecraftServer server, ColumnTarget target, V3State state) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (player.serverLevel().dimension().equals(target.dimension())
-                    && player.containerMenu instanceof ColumnCalculatorV3Menu menu
-                    && menu.blockPos().equals(target.blockPos()) && menu.stillValid(player)) {
-                PacketDistributor.sendToPlayer(player, new StatePayload(target.blockPos(), state));
-            }
-        }
+    /** Called only by the engine after applying the current online tick's due events. */
+    public static void presentationTick(MinecraftServer server, long onlineTick) {
+        ColumnPresentation.tick(server, onlineTick);
     }
 
-    /** Refresh open calculators once after catalog publication, including naming-only changes. */
-    public static void refreshMaterialViewers(MinecraftServer server) {
-        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            if (player.containerMenu instanceof ColumnCalculatorV3Menu menu && menu.stillValid(player)) {
-                var calculator=resolveCalculator(player,menu.blockPos());
-                if(calculator!=null)PacketDistributor.sendToPlayer(player,new StatePayload(menu.blockPos(),calculator.state(0)));
-            }
-        }
-    }
+    public static void forgetPresentation(MinecraftServer server) { ColumnPresentation.forget(server); }
+
+    /** Catalog refresh is observed by state() at the next bucket; no packet is sent here. */
+    public static void refreshMaterialViewers(MinecraftServer server) { ColumnPresentation.refresh(server); }
 
     private static void reply(IPayloadContext context, BlockPos blockPos, V3State state) {
-        context.reply(new StatePayload(blockPos, state));
+        ColumnPresentation.acknowledged(context, state);
     }
 
     private static void reject(IPayloadContext context, BlockPos blockPos, long clientNonce, String reason) {
-        context.reply(new ActionRejectedPayload(blockPos, clientNonce, bounded(reason)));
+        ColumnPresentation.rejected(context, blockPos, clientNonce, bounded(reason));
+    }
+
+    static void deliverState(ServerPlayer player, BlockPos pos, V3State state) {
+        PacketDistributor.sendToPlayer(player, new StatePayload(pos, state));
+    }
+
+    static void deliverRejection(ServerPlayer player, BlockPos pos, long nonce, String reason) {
+        PacketDistributor.sendToPlayer(player, new ActionRejectedPayload(pos, nonce, bounded(reason)));
     }
 
     private static void handleState(StatePayload payload, IPayloadContext context) {
@@ -340,13 +333,13 @@ public final class ColumnV3Network {
         if (!CreateChemE.calculationLoggingEnabled() && !"FAILED".equals(status) && !"STALE_TARGET".equals(status)) return;
         V3ColumnInput input = job.request().operation().input();
         CreateChemE.LOGGER.info(
-                "column_v3 request={} status={} input_revision={} stages={} feed_stage={} feed_mol_s={} feed_k={} "
+                "column_v3 request={} status={} input_revision={} total_trays={} feed_tray={} feed_mol_s={} feed_k={} "
                         + "steam_kmol_h={} top_kpa={} drop_kpa={} condenser_k={} reflux={} reboiler_mw={} detail={}",
                 job.request().requestId(),
                 status,
                 job.request().inputRevision(),
-                input.stageCount(),
-                input.feedStageNumber(),
+                input.stageCount() + 2,
+                input.feedStageNumber() + 1,
                 totalFeedFlow(input),
                 input.feedTemperatureKelvin(),
                 totalSteamFlow(input) * 3.6,
@@ -559,6 +552,7 @@ public final class ColumnV3Network {
     }
 
     private static void writeState(RegistryFriendlyByteBuf buffer, V3State state) {
+        buffer.writeByteArray(V3EditorCatalogCodec.encode(state.editorCatalog()));
         buffer.writeVarLong(state.clientNonce());
         buffer.writeVarLong(state.stateRevision());
         buffer.writeVarLong(state.operationId());
@@ -588,6 +582,7 @@ public final class ColumnV3Network {
     }
 
     private static V3State readState(RegistryFriendlyByteBuf buffer) {
+        var editorCatalog = V3EditorCatalogCodec.decode(buffer.readByteArray(V3EditorCatalogCodec.MAX_BYTES));
         long clientNonce = nonNegative(buffer.readVarLong(), "client nonce");
         long stateRevision = nonNegative(buffer.readVarLong(), "state revision");
         long operationId = nonNegative(buffer.readVarLong(), "operation id");
@@ -620,13 +615,13 @@ public final class ColumnV3Network {
             for(int i=0;i<presetCount;i++)presets.add(new com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor(
                     buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128),buffer.readUtf(128)));
             return new V3State(clientNonce, stateRevision, operationId, inputRevision, resultRevision, status, input,
-                    result, diagnostics,names,presets);
+                    result, diagnostics,names,presets,editorCatalog);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 state", invalid);
         }
     }
 
-    private static void writeInput(RegistryFriendlyByteBuf buffer, V3ColumnInput input) {
+    static void writeInput(RegistryFriendlyByteBuf buffer, V3ColumnInput input) {
         buffer.writeVarInt(input.schemaVersion());
         buffer.writeUtf(input.packageId(), MAX_IDENTIFIER_LENGTH);
         buffer.writeUtf(input.assayId(), MAX_IDENTIFIER_LENGTH);
@@ -669,7 +664,7 @@ public final class ColumnV3Network {
         }
     }
 
-    private static V3ColumnInput readInput(RegistryFriendlyByteBuf buffer) {
+    static V3ColumnInput readInput(RegistryFriendlyByteBuf buffer) {
         try {
             int schemaVersion = buffer.readVarInt();
             if (schemaVersion != V3ColumnInput.SCHEMA_VERSION) throw new DecoderException("Unsupported V3 input schema");
@@ -732,6 +727,7 @@ public final class ColumnV3Network {
     }
 
     private static void writeDisplayResult(RegistryFriendlyByteBuf buffer, V3ColumnDisplayResult result) {
+        buffer.writeByteArray(V3InspectionCodec.encode(result.inspection()));
         buffer.writeUtf(result.inputDigest(), 64);
         buffer.writeUtf(result.formulationRevision(), MAX_REVISION_LENGTH);
         buffer.writeUtf(result.assumptionsRevision(), MAX_REVISION_LENGTH);
@@ -811,6 +807,7 @@ public final class ColumnV3Network {
 
     private static V3ColumnDisplayResult readDisplayResult(RegistryFriendlyByteBuf buffer) {
         try {
+            var inspection = V3InspectionCodec.decode(buffer.readByteArray(V3InspectionCodec.MAX_BYTES));
             String digest = buffer.readUtf(64);
             String formulation = buffer.readUtf(MAX_REVISION_LENGTH);
             String assumptions = buffer.readUtf(MAX_REVISION_LENGTH);
@@ -858,7 +855,7 @@ public final class ColumnV3Network {
                             : Optional.empty();
             return new V3ColumnDisplayResult(
                     digest, formulation, assumptions, dataset, iterations, residual, acceptanceChecks, streams, ledger,
-                    closure, hydraulics);
+                    closure, hydraulics, inspection);
         } catch (IllegalArgumentException invalid) {
             throw new DecoderException("Invalid V3 display result", invalid);
         }

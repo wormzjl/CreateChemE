@@ -300,11 +300,13 @@ final class V3MeshResidualEvaluator {
             balance[1] = largest(liquidIn, vaporIn, feed, liquidOut, vaporOut);
             return;
         }
-        double liquidIn = (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * state.liquidFlow(node - 1, component);
+        double liquidIn = (node == 1 ? organicRefluxFraction() : 1.0 - problem.liquidWithdrawalFraction(state, node - 1))
+                * state.liquidFlow(node - 1, component);
+        double feed = node == topology.feedTrayNumber() ? activeComponentBasis.feedFlowMolPerSecond(component) : 0.0;
         double liquidOut = state.liquidFlow(node, component);
         double vaporOut = state.vaporFlow(node, component);
-        balance[0] = liquidIn - liquidOut - vaporOut;
-        balance[1] = largest(liquidIn, liquidOut, vaporOut, 0.0, 0.0);
+        balance[0] = liquidIn + feed - liquidOut - vaporOut;
+        balance[1] = largest(liquidIn, liquidOut, vaporOut, feed, 0.0);
     }
 
     private static double largest(double first, double second, double third, double fourth, double fifth) {
@@ -349,7 +351,8 @@ final class V3MeshResidualEvaluator {
                     - phaseEnergy(state, node, false, properties) - freeWaterEnergy(state, node);
         }
         // The sump is never wet, so free water arriving there leaves it entirely as vapour in W_R.
-        return (1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
+        return (node == 1 ? organicRefluxFraction() : 1.0 - problem.liquidWithdrawalFraction(state, node - 1)) * phaseEnergy(state, node - 1, true, properties) + reboilerDutyWatts
+                + (node == topology.feedTrayNumber() ? totalFeedFlow * feedMolarEnthalpyJoulesPerMol : 0.0)
                 + problem.steamFeedEnthalpyWatts(node) + freeWaterIn
                 - phaseEnergy(state, node, true, properties) - phaseEnergy(state, node, false, properties);
     }

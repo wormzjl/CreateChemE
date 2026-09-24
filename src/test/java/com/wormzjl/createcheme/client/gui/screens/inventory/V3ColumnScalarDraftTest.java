@@ -28,7 +28,7 @@ class V3ColumnScalarDraftTest {
     void identifiesTheInvalidScalarInsteadOfBlamingDraws() {
         assertInvalid(1, "-274", "Feed temperature");
         assertInvalid(2, "30.5", "Stage count");
-        assertInvalid(3, "31", "Feed stage");
+        assertInvalid(3, "32", "Feed stage");
         assertInvalid(6, "NaN", "Reflux ratio");
         assertInvalid(6, "-0.01", "Reflux ratio");
         assertInvalid(7, "0", "Top pressure");

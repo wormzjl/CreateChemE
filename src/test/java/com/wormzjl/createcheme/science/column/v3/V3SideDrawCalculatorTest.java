@@ -55,7 +55,7 @@ class V3SideDrawCalculatorTest {
         double lastTemperature = 0.0;
         for (V3SideDrawSpec draw : input.sideDraws()) {
             V3ColumnStreamProperties stream = streams.stream().filter(s -> s.displayName().equals(
-                    "Side draw (tray " + draw.trayNumber() + ")")).findFirst().orElseThrow();
+                    "Side draw (tray " + (draw.trayNumber()+1) + ")")).findFirst().orElseThrow();
             assertEquals(draw.molarFlowMolPerSecond(), stream.molarFlowMolPerSecond(), 1e-8);
             assertTrue(stream.temperatureKelvin() > lastTemperature);
             lastTemperature = stream.temperatureKelvin();
@@ -100,7 +100,7 @@ class V3SideDrawCalculatorTest {
             assertTrue(failure.diagnostics().solvePath().contains("stage-30"), failure.diagnostics()::solvePath);
             assertTrue(failure.summary().contains("authored tray"), failure::summary);
             assertTrue(List.of(8, 15, 22).stream().anyMatch(
-                    tray -> failure.summary().contains("authored tray " + tray)), failure::summary);
+                    tray -> failure.summary().contains("authored tray " + (tray+1))), failure::summary);
             assertFalse(failure.summary().contains("continuation grid"), failure::summary);
             assertTrue(failure.diagnostics().events().stream().anyMatch(
                     event -> event.contains("side-draw ramp reached the requested input")),
@@ -155,7 +155,7 @@ class V3SideDrawCalculatorTest {
                 () -> "every draw must leave most of its tray's liquid behind; largest withdrawal " + split.value());
         for (V3SideDrawSpec draw : draws) {
             V3ColumnStreamProperties stream = success.result().streams().stream()
-                    .filter(candidate -> candidate.displayName().equals("Side draw (tray " + draw.trayNumber() + ")"))
+                    .filter(candidate -> candidate.displayName().equals("Side draw (tray " + (draw.trayNumber()+1) + ")"))
                     .findFirst().orElseThrow();
             assertEquals(draw.molarFlowMolPerSecond(), stream.molarFlowMolPerSecond(), 1e-8);
         }
@@ -185,12 +185,12 @@ class V3SideDrawCalculatorTest {
                 V3ColumnCalculator.calculate(input));
         assertNotEquals(V3SolverFailureCode.INVALID_INPUT, screened.code());
         assertEquals(V3SolverFailureCode.INFEASIBLE_SPECIFICATION, screened.code());
-        assertTrue(screened.summary().contains("tray 1"), screened::summary);
+        assertTrue(screened.summary().contains("tray 2"), screened::summary);
 
         V3ColumnOutcome outcome = V3ColumnCalculator.calculate(input, V3SolveControl.UNBOUNDED, 0.0, 0.0, 0.0);
         if (outcome instanceof V3ColumnOutcome.Failure failure) {
             assertNotEquals(V3SolverFailureCode.INVALID_INPUT, failure.code());
-            assertTrue(failure.summary().contains("authored tray 1"), failure::summary);
+            assertTrue(failure.summary().contains("authored tray 2"), failure::summary);
         } else {
             assertTrue(((V3ColumnOutcome.Success) outcome).result().acceptanceAudit().accepted());
         }

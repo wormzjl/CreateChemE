@@ -13,7 +13,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * One bounded subscription, owned by the player's existing open-container lifetime. On the server the menu is a
- * consumer of its device's presentation bucket: opening it registers it and delivers nothing; the engine delivers
+ * consumer of its device's presentation bucket: construction registers it, then openMenu replays the cached
+ * server snapshot after the opening packet. The engine delivers
  * its static and live payloads with the bucket. On the client it shows the last state delivered for the device
  * (from an earlier menu, if any) until its first bucket arrives.
  */
@@ -35,7 +36,7 @@ public final class FluidDeviceMenu extends AbstractContainerMenu {
     }
     public FluidDeviceMenu(int id,Inventory inventory,BlockPos position,long identity,boolean debug) {
         super(ModMenus.FLUID_DEVICE.get(),id);this.position=position.immutable();this.identity=identity;this.debug=debug;serverPlayer=inventory.player instanceof ServerPlayer p?p:null;
-        // Opening subscribes to the device's bucket; nothing is sent until that bucket.
+        // Subscribe first; the block sends cached data after openMenu finishes installing this menu.
         if(serverPlayer!=null&&serverPlayer.server.isSameThread())FluidWorldAuthority.find(serverPlayer.server).ifPresent(world->world.subscribe(this));
     }
     public BlockPos position(){return position;}

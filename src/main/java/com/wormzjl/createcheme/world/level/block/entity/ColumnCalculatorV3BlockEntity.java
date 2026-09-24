@@ -49,15 +49,9 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 10;
-    /**
-     * Persisted versions this build can still read.
-     *
-     * <p>Version 10 added the column diameter. A version 9 input simply does not carry one and loads in the
-     * prescribed-drop mode it was authored in, which is bit-for-bit the behaviour it had, so it is migrated
-     * rather than retained as an unsupported state.</p>
-     */
-    private static final int MINIMUM_READABLE_DATA_VERSION = 9;
+    public static final int DATA_VERSION = 12;
+    /** Only the current development format is readable; no save migration. */
+    private static final int MINIMUM_READABLE_DATA_VERSION = DATA_VERSION;
     public static final String LITERATURE_PACKAGE = "createcheme:tjl19_dwsim";
     private static final String TAG_DATA_VERSION = "V3DataVersion";
     private static final String TAG_INPUT_REVISION = "InputRevision";
@@ -74,6 +68,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     private V3ColumnInput currentInput = freshInput();
     private V3ColumnDisplayResult displayResult;
     private V3Operation activeOperation;
+    private List<String> attemptDetails = List.of();
     /** Unsupported development state is retained verbatim until the player explicitly loads a preset. */
     private CompoundTag incompatibleState;
 
@@ -103,6 +98,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             return Optional.empty();
         }
         currentInput = input;
+        displayResult = null;
+        attemptDetails = List.of();
         inputRevision = nextInputRevision;
         activeOperation = new V3Operation(operationId, nextInputRevision, input);
         status = V3Status.CALCULATING;
@@ -125,7 +122,16 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             refreshMaterialFreshness();
         } else if (outcome instanceof V3ColumnOutcome.Failure failure) {
             status = V3Status.FAILED;
-            detail = bounded(failure.code().name() + ": " + failure.summary());
+            String failureText = failure.code().name() + ": " + failure.summary();
+            detail = bounded(failureText);
+            var evidence = new java.util.ArrayList<String>();
+            for(int at=256;at<failureText.length();at+=256)
+                evidence.add(failureText.substring(at,Math.min(at+256,failureText.length())));
+            failure.diagnostics().events().stream().filter(event -> {
+                String lower=event.toLowerCase(java.util.Locale.ROOT);
+                return lower.contains("liquid")||lower.contains("draw")||lower.contains("pressure")||lower.contains("wet");
+            }).limit(20).map(ColumnCalculatorV3BlockEntity::bounded).forEach(evidence::add);
+            attemptDetails=List.copyOf(evidence);
         } else {
             status = V3Status.FAILED;
             detail = bounded(terminalDetail);
@@ -144,7 +150,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         return "Success: " + residual;
     }
 
-    /** Records a terminal service failure while preserving any prior accepted display certificate. */
+    /** Records a terminal service failure; starting the attempt already cleared its prior result. */
     public boolean failOperation(V3Operation operation, String failureDetail) {
         if (!Objects.equals(activeOperation, operation)) return false;
         activeOperation = null;
@@ -173,13 +179,14 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         incompatibleState = null;
         currentInput = preset;
         displayResult = null;
+        attemptDetails = List.of();
         status = V3Status.DIRTY;
         detail = bounded(presetDetail);
         setChanged();
         return true;
     }
 
-    /** Immutable view for a requester or broadcast viewer; it intentionally excludes workspaces and profiles. */
+    /** Immutable view for a requester or broadcast viewer; it excludes numerical workspaces and carries only accepted inspection data. */
     public V3State state(long clientNonce) {
         refreshMaterialFreshness();
         java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> names = new java.util.LinkedHashMap<>();
@@ -187,6 +194,11 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 com.wormzjl.createcheme.science.material.MaterialRuntime.name(currentInput.packageId(), id));
         if (displayResult != null) for (var stream : displayResult.streams()) for (var fraction : stream.moleFractions())
             names.put(fraction.componentId(), com.wormzjl.createcheme.science.material.MaterialRuntime.name(currentInput.packageId(), fraction.componentId()));
+        var catalog = com.wormzjl.createcheme.science.material.MaterialRuntime.current();
+        var editorCatalog = com.wormzjl.createcheme.science.column.v3.V3EditorCatalog.from(catalog,currentInput);
+        for(var template:editorCatalog.templates().values())for(String id:template.componentBasis().componentIds())
+            if(names.size()<2*V3ColumnStreamProperties.MAX_COMPONENTS)names.putIfAbsent(id,com.wormzjl.createcheme.science.material.MaterialRuntime.name(template.packageId(),id));
+        var diagnostics = new java.util.ArrayList<String>();diagnostics.add(detail);diagnostics.addAll(attemptDetails);
         return new V3State(
                 clientNonce,
                 stateRevision,
@@ -196,7 +208,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 status,
                 currentInput,
                 Optional.ofNullable(displayResult),
-                List.of(detail), names,ColumnInputPreset.descriptors(com.wormzjl.createcheme.science.material.MaterialRuntime.current()));
+                diagnostics, names,ColumnInputPreset.descriptors(catalog),editorCatalog);
     }
 
     private void refreshMaterialFreshness() {
@@ -246,6 +258,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         activeOperation = null;
+        attemptDetails = List.of();
         incompatibleState = null;
         displayResult = null;
         inputRevision = 0L;
@@ -332,7 +345,15 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             Optional<V3ColumnDisplayResult> displayResult,
             List<String> diagnostics,
             java.util.Map<String, com.wormzjl.createcheme.science.material.MaterialName> materialNames,
-            List<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor> presets) {
+            List<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor> presets,
+            com.wormzjl.createcheme.science.column.v3.V3EditorCatalog editorCatalog) {
+        public V3State(long clientNonce,long stateRevision,long operationId,long inputRevision,long resultRevision,
+                V3Status status,V3ColumnInput input,Optional<V3ColumnDisplayResult> displayResult,List<String> diagnostics,
+                java.util.Map<String,com.wormzjl.createcheme.science.material.MaterialName> names,
+                List<com.wormzjl.createcheme.science.material.MaterialPresets.Descriptor> presets) {
+            this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,
+                    names,presets,com.wormzjl.createcheme.science.column.v3.V3EditorCatalog.EMPTY);
+        }
         public V3State(long clientNonce, long stateRevision, long operationId, long inputRevision, long resultRevision,
                 V3Status status, V3ColumnInput input, Optional<V3ColumnDisplayResult> displayResult, List<String> diagnostics) {
             this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,java.util.Map.of(),List.of());
@@ -343,6 +364,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             this(clientNonce,stateRevision,operationId,inputRevision,resultRevision,status,input,displayResult,diagnostics,materialNames,List.of());
         }
         public V3State {
+            Objects.requireNonNull(editorCatalog,"editorCatalog");
             presets=List.copyOf(presets);
             if(presets.size()>com.wormzjl.createcheme.science.material.MaterialPresets.MAX_PRESETS||presets.stream().map(p->p.id()).distinct().count()!=presets.size())
                 throw new IllegalArgumentException("Invalid column preset descriptor list");
@@ -485,6 +507,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     }
 
     private static V3ColumnInput readInput(CompoundTag tag) {
+        if (!tag.contains("ColumnDiameter", Tag.TAG_DOUBLE)) throw new IllegalArgumentException("Missing column diameter");
         if (tag.getInt("Schema") != V3ColumnInput.SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported V3 input schema");
         }
@@ -506,7 +529,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         if (flowTags.size() != axis.size()) throw new IllegalArgumentException("Invalid V3 feed-flow axis");
         double[] feedFlows = new double[flowTags.size()];
         for (int index = 0; index < feedFlows.length; index++) feedFlows[index] = flowTags.getDouble(index);
-        if (tag.contains("SideDraws") && !tag.contains("SideDraws", Tag.TAG_LIST)) {
+        if (!tag.contains("SideDraws", Tag.TAG_LIST)) {
             throw new IllegalArgumentException("Invalid V3 side draw list");
         }
         ListTag drawTags = tag.getList("SideDraws", Tag.TAG_COMPOUND);
@@ -519,7 +542,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             CompoundTag draw = drawTags.getCompound(index);
             draws.add(new V3SideDrawSpec(draw.getInt("Stage"), draw.getDouble("Rate")));
         }
-        if (tag.contains("SteamFeeds") && !tag.contains("SteamFeeds", Tag.TAG_LIST)) {
+        if (!tag.contains("SteamFeeds", Tag.TAG_LIST)) {
             throw new IllegalArgumentException("Invalid V3 steam feed list");
         }
         ListTag steamTags = tag.getList("SteamFeeds", Tag.TAG_COMPOUND);
@@ -534,7 +557,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
             steamFeeds.add(new V3SteamFeedSpec(steam.getInt("Stage"), steam.getDouble("Rate"),
                     steam.getDouble("Temperature")));
         }
-        if (tag.contains("Pumparounds") && !tag.contains("Pumparounds", Tag.TAG_LIST)) {
+        if (!tag.contains("Pumparounds", Tag.TAG_LIST)) {
             throw new IllegalArgumentException("Invalid V3 pumparound list");
         }
         ListTag pumparoundTags = tag.getList("Pumparounds", Tag.TAG_COMPOUND);
@@ -556,9 +579,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
                 feedFlows, tag.getDouble("FeedTemperature"), tag.getInt("StageCount"),
                 tag.getInt("FeedStage"), tag.getDouble("TopPressure"), tag.getDouble("PressureDrop"), specifications, draws,
                 steamFeeds, pumparounds,
-                // Absent before version 10; a persisted input without one keeps the prescribed uniform drop.
-                tag.contains("ColumnDiameter", Tag.TAG_DOUBLE) ? tag.getDouble("ColumnDiameter")
-                        : V3ColumnInput.PRESCRIBED_DROP_DIAMETER);
+                tag.getDouble("ColumnDiameter"));
         if(com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().containsKey(input.packageId())) {
             var current=com.wormzjl.createcheme.science.material.MaterialRuntime.current().requirePackage(input.packageId());
             if(!current.components().equals(input.componentBasis().componentIds()))throw new IllegalArgumentException("Unsupported persisted component axis");
@@ -569,6 +590,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
 
     private static CompoundTag writeDisplayResult(V3ColumnDisplayResult result) {
         CompoundTag tag = new CompoundTag();
+        tag.putByteArray("Inspection", com.wormzjl.createcheme.network.V3InspectionCodec.encode(result.inspection()));
         tag.putString("Digest", result.inputDigest());
         tag.putString("Formulation", result.formulationRevision());
         tag.putString("Assumptions", result.assumptionsRevision());
@@ -669,6 +691,10 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
     }
 
     private static V3ColumnDisplayResult readDisplayResult(CompoundTag tag) {
+        if (!tag.contains("Inspection", Tag.TAG_BYTE_ARRAY)) throw new IllegalArgumentException("Missing inspection");
+        java.util.Optional<com.wormzjl.createcheme.science.column.v3.V3ColumnInspection> inspection;
+        try { inspection = com.wormzjl.createcheme.network.V3InspectionCodec.decode(tag.getByteArray("Inspection")); }
+        catch (io.netty.handler.codec.DecoderException invalid) { throw new IllegalArgumentException("Invalid saved inspection", invalid); }
         ListTag streamTags = tag.getList("Streams", Tag.TAG_COMPOUND);
         if (streamTags.size() > V3ColumnStreamProperties.MAX_STREAMS) {
             throw new IllegalArgumentException("Persisted V3 stream count exceeds the display contract");
@@ -697,8 +723,8 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         }
         Optional<V3ColumnDutyLedger> ledger = tag.contains("DutyLedger", Tag.TAG_COMPOUND)
                 ? Optional.of(readDutyLedger(tag.getCompound("DutyLedger"))) : Optional.empty();
-        double closure = tag.contains("ClosureTolerance", Tag.TAG_DOUBLE)
-                ? tag.getDouble("ClosureTolerance") : V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE;
+        if (!tag.contains("ClosureTolerance", Tag.TAG_DOUBLE)) throw new IllegalArgumentException("Missing closure tolerance");
+        double closure = tag.getDouble("ClosureTolerance");
         if (tag.contains("Hydraulics") && !tag.contains("Hydraulics", Tag.TAG_COMPOUND)) {
             throw new IllegalArgumentException("Invalid V3 tray hydraulics summary");
         }
@@ -707,7 +733,7 @@ public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements 
         return new V3ColumnDisplayResult(
                 tag.getString("Digest"), tag.getString("Formulation"), tag.getString("Assumptions"),
                 tag.getString("Dataset"), tag.getInt("NewtonIterations"), tag.getDouble("MaximumResidual"),
-                tag.getInt("AcceptanceChecks"), streams, ledger, closure, hydraulics);
+                tag.getInt("AcceptanceChecks"), streams, ledger, closure, hydraulics, inspection);
     }
 
     private static V3ColumnSpecification specification(V3ControlledQuantity quantity, double value) {

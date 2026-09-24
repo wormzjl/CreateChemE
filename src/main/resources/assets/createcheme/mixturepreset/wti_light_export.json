@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "kind": "mixture",
+  "name": "WTI Light - Export",
+  "translation_key": "gui.createcheme.column_preset.wti_light_export",
+  "package": "createcheme:wti_light_export_tjl20",
+  "basis": "mole",
+  "components": [
+    {
+      "id": "Ethane",
+      "amount": 0.10093302616791375
+    },
+    {
+      "id": "Propane",
+      "amount": 1.5141889925940266
+    },
+    {
+      "id": "Isobutane",
+      "amount": 0.8354698758585313
+    },
+    {
+      "id": "N-butane",
+      "amount": 3.6290722732604954
+    },
+    {
+      "id": "Isopentane",
+      "amount": 2.8183742882137586
+    },
+    {
+      "id": "N-pentane",
+      "amount": 4.248594076262531
+    },
+    {
+      "id": "crude_pc01",
+      "amount": 14.636322376195512
+    },
+    {
+      "id": "crude_pc02",
+      "amount": 23.593668055490223
+    },
+    {
+      "id": "crude_pc03",
+      "amount": 14.896089803337723
+    },
+    {
+      "id": "crude_pc04",
+      "amount": 9.655024419621572
+    },
+    {
+      "id": "crude_pc05",
+      "amount": 7.437321650603969
+    },
+    {
+      "id": "crude_pc06",
+      "amount": 5.544413816553138
+    },
+    {
+      "id": "crude_pc07",
+      "amount": 3.9018391634266085
+    },
+    {
+      "id": "crude_pc08",
+      "amount": 3.7224247173013367
+    },
+    {
+      "id": "crude_pc09",
+      "amount": 2.4930525370601235
+    },
+    {
+      "id": "crude_pc10",
+      "amount": 0.8105596029584241
+    },
+    {
+      "id": "crude_pc11",
+      "amount": 0.14069991856147696
+    },
+    {
+      "id": "crude_pc12",
+      "amount": 0.021951406532636653
+    }
+  ]
+}
