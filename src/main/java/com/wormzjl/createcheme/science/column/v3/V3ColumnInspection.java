@@ -81,4 +81,3 @@ public record V3ColumnInspection(V3ColumnInput input, List<Node> nodes, V3Accept
         }
     }
 }
-
