@@ -27,8 +27,8 @@ class V3EditorDraftTest {
         assertEquals(V3EditorDraft.value(input,V3ControlledQuantity.REBOILER_DUTY),V3EditorDraft.value(edited,V3ControlledQuantity.REBOILER_DUTY));
     }
     @Test void invalidDraftRemainsEditableAndCanReturnToItsOriginalValue() {
-        var draft=new V3EditorDraft(input());var old=draft.get("s2");draft.set("s2","65");
-        assertThrows(IllegalArgumentException.class,draft::assemble);assertEquals("65",draft.get("s2"));
+        var draft=new V3EditorDraft(input());var old=draft.get("s2");draft.set("s2","67");
+        assertThrows(IllegalArgumentException.class,draft::assemble);assertEquals("67",draft.get("s2"));
         draft.set("s2",old);assertFalse(draft.dirty());assertSame(draft.base(),draft.assemble());
     }
     @Test void changingTrayCountMovesSumpSteamWithoutRoundingItsRateOrTemperature() {
@@ -40,7 +40,7 @@ class V3EditorDraftTest {
                 base.sideDraws(),List.of(steam),base.pumparounds(),base.columnDiameterMetres());
         var draft=new V3EditorDraft(wet);draft.set("s2","64");
         var changed=draft.assemble().steamFeeds().getFirst();
-        assertEquals(65,changed.stageNumber());
+        assertEquals(63,changed.stageNumber());
         assertEquals(steam.molarFlowMolPerSecond(),changed.molarFlowMolPerSecond());
         assertEquals(steam.temperatureKelvin(),changed.temperatureKelvin());
     }
@@ -80,8 +80,8 @@ class V3EditorDraftTest {
     }
     @Test void connectionsCanBeAddedConfiguredAndRemoved(){
         var d=new V3EditorDraft(input());int draw=d.addDraw(3),pa=d.addPumparound(6);
-        assertEquals(3,d.assemble().sideDraws().getFirst().trayNumber());
-        assertEquals(6,d.assemble().pumparounds().getFirst().drawTray());
+        assertEquals(2,d.assemble().sideDraws().getFirst().trayNumber());
+        assertEquals(5,d.assemble().pumparounds().getFirst().drawTray());
         d.removeDraw(draw);d.removePumparound(pa);assertTrue(d.assemble().sideDraws().isEmpty());assertTrue(d.assemble().pumparounds().isEmpty());
     }
 
@@ -97,5 +97,23 @@ class V3EditorDraftTest {
         assertEquals("new:package",result.packageId());assertEquals(8,result.stageCount());assertEquals(base.feedTemperatureKelvin(),result.feedTemperatureKelvin());
         assertEquals(java.util.Arrays.stream(base.feedComponentMolarFlowsMolPerSecond()).sum(),result.feedComponentMolarFlowsMolPerSecond()[0],1e-12);
         assertEquals(replacement,new V3EditorDraft(replacement,List.of(0.1)).assemble());
+    }
+
+    @Test void intermediateTrayCountTypingDoesNotDeleteConnections(){
+        var d=new V3EditorDraft(input());d.addDraw(6);d.addPumparound(8);
+        d.set("s2","4");d.set("s2","42");
+        assertEquals("6",d.get("d0stage"));assertEquals("8",d.get("c0draw"));
+    }
+    @Test void bottomSteamFollowsTotalTrayCountButInteriorSteamStaysOnItsTray(){
+        var d=new V3EditorDraft(input());int a=d.addSteam(10),b=d.addSteam(4);
+        d.set("s2","22");
+        assertEquals("22",d.get("t"+a+"stage"));assertEquals("4",d.get("t"+b+"stage"));
+        assertTrue(d.assemble().steamFeeds().stream().anyMatch(t->t.stageNumber()==21));
+    }
+
+    @Test void potHasOnlyOneDistinctSteamLocation(){
+        var d=new V3EditorDraft(input());d.set("s2","2");d.set("s3","2");
+        assertTrue(d.canAddSteam());assertEquals(0,d.addSteam(2));assertFalse(d.canAddSteam());assertEquals(-1,d.addSteam(2));
+        d.removeSteam(0);assertTrue(d.canAddSteam());
     }
 }

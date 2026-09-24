@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "kind": "mixture",
+  "name": "Holland Example 3-2",
+  "translation_key": "gui.createcheme.column_preset.holland_3_2",
+  "package": "createcheme:holland_b12",
+  "basis": "mole",
+  "components": [
+    {
+      "id": "nC6H14",
+      "amount": 11.300000000000002
+    },
+    {
+      "id": "C3H8",
+      "amount": 12.5
+    },
+    {
+      "id": "C3H6",
+      "amount": 6.0
+    },
+    {
+      "id": "nC5H12",
+      "amount": 15.2
+    },
+    {
+      "id": "CH4",
+      "amount": 2.0
+    },
+    {
+      "id": "nC4H10",
+      "amount": 15.0
+    },
+    {
+      "id": "nC8H18",
+      "amount": 8.5
+    },
+    {
+      "id": "heavy400",
+      "amount": 7.000000000000001
+    },
+    {
+      "id": "iC4H10",
+      "amount": 3.5000000000000004
+    },
+    {
+      "id": "nC7H16",
+      "amount": 9.0
+    },
+    {
+      "id": "C2H6",
+      "amount": 10.0
+    }
+  ]
+}

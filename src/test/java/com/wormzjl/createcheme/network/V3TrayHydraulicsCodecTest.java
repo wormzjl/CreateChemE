@@ -49,8 +49,8 @@ class V3TrayHydraulicsCodecTest {
 
     @Test
     void currentInputRequiresAnExplicitDiameter() throws Exception {
-        assertEquals(11, ColumnCalculatorV3BlockEntity.DATA_VERSION);
-        assertEquals(14, ColumnV3Network.WIRE_SCHEMA_VERSION);
+        assertEquals(12, ColumnCalculatorV3BlockEntity.DATA_VERSION);
+        assertEquals(15, ColumnV3Network.WIRE_SCHEMA_VERSION);
         CompoundTag tag = writeInputNbt(input(V3ColumnInput.DEFAULT_COLUMN_DIAMETER_METRES));
         tag.remove("ColumnDiameter");
         assertThrows(Exception.class, () -> readInputNbt(tag));

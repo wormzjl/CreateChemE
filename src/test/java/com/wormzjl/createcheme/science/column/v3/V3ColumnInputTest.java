@@ -45,11 +45,11 @@ class V3ColumnInputTest {
     }
 
     @Test
-    void resolverRejectsUnsupportedSchemaAndFeedOutsideTheEquilibriumTrayRange() {
+    void resolverRejectsUnsupportedSchemaAndFeedBelowTheLastTray() {
         V3ColumnInput unsupportedSchema = new V3ColumnInput(2, "test:ideal_binary", "test:baseline", basis(),
                 new double[] {40.0, 60.0}, 450.0, 4, 2, 250_000.0, 750.0, specifications(4.17));
         V3ColumnInput invalidFeedTray = new V3ColumnInput(V3ColumnInput.SCHEMA_VERSION, "test:ideal_binary",
-                "test:baseline", basis(), new double[] {40.0, 60.0}, 450.0, 4, 5, 250_000.0, 750.0,
+                "test:baseline", basis(), new double[] {40.0, 60.0}, 450.0, 4, 6, 250_000.0, 750.0,
                 specifications(4.17));
 
         assertThrows(IllegalArgumentException.class,

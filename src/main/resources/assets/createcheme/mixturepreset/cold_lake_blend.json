@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "kind": "mixture",
+  "name": "Cold Lake Blend",
+  "translation_key": "gui.createcheme.column_preset.cold_lake_blend",
+  "package": "createcheme:cold_lake_blend_tjl20",
+  "basis": "mole",
+  "components": [
+    {
+      "id": "Propane",
+      "amount": 0.06297615187084747
+    },
+    {
+      "id": "Isobutane",
+      "amount": 1.9589050473025165
+    },
+    {
+      "id": "N-butane",
+      "amount": 5.01670804796986
+    },
+    {
+      "id": "Isopentane",
+      "amount": 5.427023397155769
+    },
+    {
+      "id": "N-pentane",
+      "amount": 7.082073085650081
+    },
+    {
+      "id": "crude_pc01",
+      "amount": 8.836350045178264
+    },
+    {
+      "id": "crude_pc02",
+      "amount": 7.794593810637926
+    },
+    {
+      "id": "crude_pc03",
+      "amount": 5.40146688732608
+    },
+    {
+      "id": "crude_pc04",
+      "amount": 5.07918966061518
+    },
+    {
+      "id": "crude_pc05",
+      "amount": 6.506607215397989
+    },
+    {
+      "id": "crude_pc06",
+      "amount": 7.735099845594655
+    },
+    {
+      "id": "crude_pc07",
+      "amount": 7.474942508712299
+    },
+    {
+      "id": "crude_pc08",
+      "amount": 9.719245059239288
+    },
+    {
+      "id": "crude_pc09",
+      "amount": 9.640691912468007
+    },
+    {
+      "id": "crude_pc10",
+      "amount": 8.028309522864784
+    },
+    {
+      "id": "crude_pc11",
+      "amount": 3.049311574582367
+    },
+    {
+      "id": "crude_pc12",
+      "amount": 1.1865062274340878
+    }
+  ]
+}

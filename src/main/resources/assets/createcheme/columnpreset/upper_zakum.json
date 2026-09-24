@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "kind": "column",
+  "name": "Upper Zakum",
+  "translation_key": "gui.createcheme.column_preset.upper_zakum",
+  "tray_count": 42,
+  "feed_tray": 38,
+  "feed_flow_kmol_h": 2652.56299175624,
+  "feed_temperature_kelvin": 638.15,
+  "top_temperature_kelvin": 332.15,
+  "reboiler_duty_mw": 0.0,
+  "reflux_ratio": 4.17,
+  "top_pressure_bar": 2.5,
+  "diameter_m": 8.0,
+  "draws": [
+    {
+      "tray": 11,
+      "flow_kmol_h": 491.3046314106595
+    },
+    {
+      "tray": 19,
+      "flow_kmol_h": 515.4514098073793
+    },
+    {
+      "tray": 29,
+      "flow_kmol_h": 165.1932374343198
+    }
+  ],
+  "steam": [
+    {
+      "tray": 42,
+      "flow_kmol_h": 1200.0,
+      "temperature_kelvin": 533.15
+    }
+  ],
+  "pumparounds": [
+    {
+      "draw_tray": 11,
+      "return_tray": 9,
+      "cooling_mw": 12.84,
+      "split": "UNIFORM"
+    },
+    {
+      "draw_tray": 19,
+      "return_tray": 17,
+      "cooling_mw": 17.89,
+      "split": "UNIFORM"
+    },
+    {
+      "draw_tray": 29,
+      "return_tray": 27,
+      "cooling_mw": 11.2,
+      "split": "UNIFORM"
+    }
+  ]
+}

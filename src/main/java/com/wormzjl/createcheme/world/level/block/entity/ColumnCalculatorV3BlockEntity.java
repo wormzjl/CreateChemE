@@ -49,7 +49,7 @@ import org.jetbrains.annotations.Nullable;
  * exactly matches.</p>
  */
 public final class ColumnCalculatorV3BlockEntity extends BlockEntity implements MenuProvider {
-    public static final int DATA_VERSION = 11;
+    public static final int DATA_VERSION = 12;
     /** Only the current development format is readable; no save migration. */
     private static final int MINIMUM_READABLE_DATA_VERSION = DATA_VERSION;
     public static final String LITERATURE_PACKAGE = "createcheme:tjl19_dwsim";

@@ -196,7 +196,7 @@ class V3TrayHydraulicsTest {
 
         String warning = V3TrayHydraulics.floodingWarning(summary);
 
-        assertTrue(warning.contains("tray 7"), warning);
+        assertTrue(warning.contains("tray 8"), warning);
         assertTrue(warning.contains("% of flood"), warning);
         assertTrue(warning.contains("dry") && warning.contains("liquid"), warning);
         assertTrue(warning.contains("vapor load is too high"), warning);

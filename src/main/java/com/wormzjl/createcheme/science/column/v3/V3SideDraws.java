@@ -10,11 +10,11 @@ final class V3SideDraws {
         }
         double total = liquidTotal(state, node);
         if (!(total > 0.0) || !Double.isFinite(total)) {
-            throw new IllegalArgumentException("V3 side draw on tray " + node + " has no finite positive liquid flow");
+            throw new IllegalArgumentException("V3 side draw on tray " + (node + 1) + " has no finite positive liquid flow");
         }
         double fraction = rateMolPerSecond / total;
         if (!Double.isFinite(fraction)) {
-            throw new IllegalArgumentException("V3 side draw on tray " + node + " has a nonfinite withdrawal fraction");
+            throw new IllegalArgumentException("V3 side draw on tray " + (node + 1) + " has a nonfinite withdrawal fraction");
         }
         return new Withdrawal(total, fraction);
     }

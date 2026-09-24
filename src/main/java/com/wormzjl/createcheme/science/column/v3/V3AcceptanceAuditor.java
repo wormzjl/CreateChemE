@@ -267,7 +267,7 @@ final class V3AcceptanceAuditor {
         evidence.add(String.format(Locale.ROOT, smallestRatio < 1.0e-3
                         ? "cooled tray %d is condensation-capped: vapor leaving/entering %.4g"
                         : "smallest cooled-tray vapor leaving/entering ratio: tray %d at %.4g",
-                cappedTray, smallestRatio));
+                cappedTray + 1, smallestRatio));
         return List.copyOf(evidence);
     }
 
@@ -368,7 +368,7 @@ final class V3AcceptanceAuditor {
         }
         if (emptyWetTray >= 0) {
             return V3AcceptanceAudit.Check.fail("WATER_DEW_POINT", maximum, 1.0,
-                    "tray " + emptyWetTray + " is in the free-water set but sheds no free water");
+                    "tray " + (emptyWetTray + 1) + " is in the free-water set but sheds no free water");
         }
         // A wet tray that is not on the saturation line is a claim the state does not support, whatever any dry
         // stage reports; its own normalized error is what the check publishes.
@@ -392,7 +392,7 @@ final class V3AcceptanceAuditor {
     /** Names the stage, its temperature and the water dew point it sits below, in the units the operator authors. */
     private String waterDewPointDetail(V3DryMeshState state, int node, double partialPressurePascal) {
         if (node < 0) return "water would condense on a stage that carries no free-water phase";
-        String stage = node == problem.topology().reboilerNode() ? "the bottom stage" : "tray " + node;
+        String stage = "tray " + (node + 1) + (node == problem.topology().reboilerNode() ? " (reboiler)" : "");
         if (problem.isWetTray(node)) {
             return String.format(Locale.ROOT,
                     "%s carries free water but its vapor is not on the water saturation line", stage);

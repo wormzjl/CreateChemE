@@ -116,7 +116,7 @@ public record V3ColumnStreamProperties(
             streams.add(stream(problem, state, molecularWeight, draw.trayNumber(), true,
                     problem.liquidWithdrawalFraction(state, draw.trayNumber()),
                     String.format(java.util.Locale.ROOT, "side_liquid_tray_%02d", draw.trayNumber()),
-                    "Side draw (tray " + draw.trayNumber() + ")", "LIQUID"));
+                    "Side draw (tray " + (draw.trayNumber()+1) + ")", "LIQUID"));
         }
         streams.add(stream(problem, state, molecularWeight, topology.reboilerNode(), true, 1.0,
                 "bottoms_liquid", "Bottoms liquid", "LIQUID"));

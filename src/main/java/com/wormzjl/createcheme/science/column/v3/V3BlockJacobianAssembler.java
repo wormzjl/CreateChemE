@@ -329,7 +329,7 @@ final class V3BlockJacobianAssembler {
                             lower, diagonal, upper, row,
                             new V3DegreeOfFreedomLedger.UnknownId(
                                     V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component),
-                            1.0 - problem.liquidWithdrawalFraction(state, node - 1));
+                            node == 1 ? organicRefluxFraction(problem) : 1.0 - problem.liquidWithdrawalFraction(state, node - 1));
                 }
                 addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                         lower, diagonal, upper, row,
@@ -349,7 +349,7 @@ final class V3BlockJacobianAssembler {
                     lower, diagonal, upper, row,
                     new V3DegreeOfFreedomLedger.UnknownId(
                             V3DegreeOfFreedomLedger.UnknownFamily.LIQUID_COMPONENT_FLOW, node - 1, component),
-                    1.0 - problem.liquidWithdrawalFraction(state, node - 1));
+                    node == 1 ? organicRefluxFraction(problem) : 1.0 - problem.liquidWithdrawalFraction(state, node - 1));
             addLogFlowDerivative(problem, state, rows.get(row), coordinateIndexes, layout,
                     lower, diagonal, upper, row,
                     new V3DegreeOfFreedomLedger.UnknownId(

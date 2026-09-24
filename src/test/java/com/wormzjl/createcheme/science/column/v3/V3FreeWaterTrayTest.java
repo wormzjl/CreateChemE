@@ -266,7 +266,7 @@ class V3FreeWaterTrayTest {
         V3AcceptanceAudit.Check check = auditor.waterDewPoint(mixed);
 
         assertFalse(check.passed(), check::toString);
-        assertTrue(check.detail().contains("tray 1"), check::detail);
+        assertTrue(check.detail().contains("tray 2"), check::detail);
         assertFalse(check.detail().startsWith("warning: "), check::detail);
         assertEquals(1.5, check.value(), 1.0e-9, check::detail);
         // The dry advisory that used to win the ranking is still the larger number on the shared scale.
@@ -284,7 +284,7 @@ class V3FreeWaterTrayTest {
         V3AcceptanceAudit.Check check = auditor.waterDewPoint(mixed);
 
         assertTrue(check.passed(), check::toString);
-        assertTrue(check.detail().startsWith("warning: tray 2 "), check::detail);
+        assertTrue(check.detail().startsWith("warning: tray 3 "), check::detail);
         assertEquals(saturationRatio(problem, mixed, 2), check.value(), 1.0e-9, check::detail);
         assertTrue(check.value() > 1.0, check::detail);
     }

@@ -53,7 +53,7 @@ public final class V3InspectionCodec {
                 var input = ColumnV3Network.readInput(buffer);
                 int components = input.componentBasis().componentCount(), count = input.stageCount() + 2;
                 long required = 8L * count * (6 + 2 * components);
-                if (count < 4 || count > 66 || required > buffer.readableBytes())
+                if (count < V3ColumnInput.MIN_STAGE_COUNT + 2 || count > V3ColumnInput.MAX_STAGE_COUNT + 2 || required > buffer.readableBytes())
                     throw new DecoderException("Invalid inspection dimensions");
                 List<V3ColumnInspection.Node> nodes = new ArrayList<>(count);
                 for (int n = 0; n < count; n++) {

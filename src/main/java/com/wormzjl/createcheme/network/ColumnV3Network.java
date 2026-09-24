@@ -55,11 +55,11 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  * payload delivery observes the most recent screen registration.</p>
  */
 public final class ColumnV3Network {
-    // Version 14 carries the bounded server-authored composition editor catalogue.
-    public static final int WIRE_SCHEMA_VERSION = 14;
+    // Version 15 supports two-terminal-stage pots and total-tray presentation.
+    public static final int WIRE_SCHEMA_VERSION = 15;
 
     // Both peers must use the same engine-scheduled inspection protocol.
-    private static final String PROTOCOL_VERSION = "10";
+    private static final String PROTOCOL_VERSION = "11";
 
     private static final int MAX_IDENTIFIER_LENGTH = 128;
     private static final int MAX_COMPONENT_IDENTIFIER_LENGTH = 64;
@@ -333,13 +333,13 @@ public final class ColumnV3Network {
         if (!CreateChemE.calculationLoggingEnabled() && !"FAILED".equals(status) && !"STALE_TARGET".equals(status)) return;
         V3ColumnInput input = job.request().operation().input();
         CreateChemE.LOGGER.info(
-                "column_v3 request={} status={} input_revision={} stages={} feed_stage={} feed_mol_s={} feed_k={} "
+                "column_v3 request={} status={} input_revision={} total_trays={} feed_tray={} feed_mol_s={} feed_k={} "
                         + "steam_kmol_h={} top_kpa={} drop_kpa={} condenser_k={} reflux={} reboiler_mw={} detail={}",
                 job.request().requestId(),
                 status,
                 job.request().inputRevision(),
-                input.stageCount(),
-                input.feedStageNumber(),
+                input.stageCount() + 2,
+                input.feedStageNumber() + 1,
                 totalFeedFlow(input),
                 input.feedTemperatureKelvin(),
                 totalSteamFlow(input) * 3.6,

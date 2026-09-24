@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "kind": "mixture",
+  "name": "Bonga",
+  "translation_key": "gui.createcheme.column_preset.bonga",
+  "package": "createcheme:bonga_tjl20",
+  "basis": "mole",
+  "components": [
+    {
+      "id": "Ethane",
+      "amount": 0.0726587999431837
+    },
+    {
+      "id": "Propane",
+      "amount": 0.8422892376009455
+    },
+    {
+      "id": "Isobutane",
+      "amount": 0.6390203080981278
+    },
+    {
+      "id": "N-butane",
+      "amount": 1.578756055301257
+    },
+    {
+      "id": "Isopentane",
+      "amount": 1.2112639253739776
+    },
+    {
+      "id": "N-pentane",
+      "amount": 1.2718271216426764
+    },
+    {
+      "id": "crude_pc01",
+      "amount": 6.71272523551175
+    },
+    {
+      "id": "crude_pc02",
+      "amount": 11.82268225252733
+    },
+    {
+      "id": "crude_pc03",
+      "amount": 10.368170139571923
+    },
+    {
+      "id": "crude_pc04",
+      "amount": 12.180593745596148
+    },
+    {
+      "id": "crude_pc05",
+      "amount": 14.0245880522242
+    },
+    {
+      "id": "crude_pc06",
+      "amount": 12.438445394322576
+    },
+    {
+      "id": "crude_pc07",
+      "amount": 9.489802871954035
+    },
+    {
+      "id": "crude_pc08",
+      "amount": 8.978488885332906
+    },
+    {
+      "id": "crude_pc09",
+      "amount": 5.826098801691705
+    },
+    {
+      "id": "crude_pc10",
+      "amount": 1.9525942096038245
+    },
+    {
+      "id": "crude_pc11",
+      "amount": 0.4723315411448907
+    },
+    {
+      "id": "crude_pc12",
+      "amount": 0.11766342255855003
+    }
+  ]
+}

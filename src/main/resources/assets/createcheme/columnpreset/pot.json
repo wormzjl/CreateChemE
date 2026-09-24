@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "column",
+  "name": "Two-tray pot",
+  "translation_key": "gui.createcheme.column_preset.pot",
+  "tray_count": 2,
+  "feed_tray": 2,
+  "feed_flow_kmol_h": 360.0,
+  "feed_temperature_kelvin": 550.0,
+  "top_temperature_kelvin": 300.0,
+  "reboiler_duty_mw": 0.0,
+  "reflux_ratio": 2.0,
+  "top_pressure_bar": 2.5,
+  "diameter_m": 8.0,
+  "draws": [],
+  "steam": [],
+  "pumparounds": []
+}

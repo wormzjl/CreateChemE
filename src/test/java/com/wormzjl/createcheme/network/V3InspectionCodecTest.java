@@ -27,7 +27,7 @@ class V3InspectionCodecTest {
                 List.of("Example advisory")));
     }
     @Test void minimumAndMaximumProfilesRoundTripExactly() {
-        for(int n:new int[]{2,64})for(int c:new int[]{1,64}){
+        for(int n:new int[]{0,1,2,64})for(int c:new int[]{1,64}){
             var profile=Optional.of(inspection(n,c));byte[] bytes=V3InspectionCodec.encode(profile);
             assertTrue(bytes.length<V3InspectionCodec.MAX_BYTES);
             assertEquals(profile,V3InspectionCodec.decode(bytes));
@@ -49,7 +49,7 @@ class V3InspectionCodecTest {
         assertThrows(IllegalArgumentException.class,()->new V3ColumnInspection(profile.input(),List.of(profile.nodes().getFirst()),profile.audit()));
     }
     @Test void acceptedDisplayRoundTripsThroughRealWireAndNbt() throws Exception {
-        var profile=inspection(2,1);
+        var profile=inspection(0,1);
         var result=new V3ColumnDisplayResult("0".repeat(64),"mesh","assumptions","data",3,1e-12,1,
                 List.of(),Optional.empty(),V3ConvergenceEvidence.MAXIMUM_LOG_FLOW_CHANGE,Optional.empty(),Optional.of(profile));
         var buffer=new RegistryFriendlyByteBuf(Unpooled.buffer(),RegistryAccess.EMPTY);

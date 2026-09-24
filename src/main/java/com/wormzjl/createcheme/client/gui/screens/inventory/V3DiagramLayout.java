@@ -1,12 +1,11 @@
 package com.wormzjl.createcheme.client.gui.screens.inventory;
 
-/** Uses the available height without shrinking physical tray targets below six pixels. */
+/** Compact geometry in GUI units; three-pixel tray targets are nine physical pixels at scale 3. */
 final class V3DiagramLayout {
     private V3DiagramLayout(){}
-    static int trayPitch(int trays,int viewportHeight){
-        if(trays<2||trays>64)throw new IllegalArgumentException("Tray count outside diagram bounds");
-        // 92 px above tray 1, 24 px bottom cap, and 175 px for feed/steam/reboiler controls.
-        return Math.max(6,Math.max(240,viewportHeight-291)/(trays-1));
+    static int trayPitch(int interiorTrays,int viewportHeight){
+        if(interiorTrays<0||interiorTrays>64)throw new IllegalArgumentException("Tray count outside diagram bounds");
+        return Math.max(3,Math.max(96,viewportHeight-131)/(interiorTrays+1));
     }
-    static int contentHeight(int trays,int viewportHeight){return 291+(trays-1)*trayPitch(trays,viewportHeight);}
+    static int contentHeight(int interiorTrays,int viewportHeight){return 131+(interiorTrays+1)*trayPitch(interiorTrays,viewportHeight);}
 }

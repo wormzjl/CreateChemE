@@ -55,8 +55,8 @@ class V3ClosureCodecTest {
 
     @Test
     void currentResultRequiresItsRecordedClosure() throws Exception {
-        assertEquals(11, ColumnCalculatorV3BlockEntity.DATA_VERSION);
-        assertEquals(14, ColumnV3Network.WIRE_SCHEMA_VERSION);
+        assertEquals(12, ColumnCalculatorV3BlockEntity.DATA_VERSION);
+        assertEquals(15, ColumnV3Network.WIRE_SCHEMA_VERSION);
         CompoundTag tag = writeNbt(result(Optional.of(ledger()), 1.0e-3));
         tag.remove("ClosureTolerance");
         assertInstanceOf(IllegalArgumentException.class,

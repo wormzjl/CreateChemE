@@ -10,11 +10,11 @@ public final class V3ColumnTopology {
 
     private V3ColumnTopology(int trayCount, int feedTrayNumber, V3CondenserPhaseBranch condenserPhaseBranch) {
         if (trayCount < V3ColumnInput.MIN_STAGE_COUNT || trayCount > V3ColumnInput.MAX_STAGE_COUNT) {
-            throw new IllegalArgumentException("V3 tray count must be in " + V3ColumnInput.MIN_STAGE_COUNT + ".."
+            throw new IllegalArgumentException("V3 interior tray count must be in " + V3ColumnInput.MIN_STAGE_COUNT + ".."
                     + V3ColumnInput.MAX_STAGE_COUNT);
         }
-        if (feedTrayNumber < 1 || feedTrayNumber > trayCount) {
-            throw new IllegalArgumentException("V3 feed tray must be an equilibrium tray");
+        if (feedTrayNumber < 1 || feedTrayNumber > trayCount + 1) {
+            throw new IllegalArgumentException("V3 feed must enter below tray 1");
         }
         this.trayCount = trayCount;
         this.feedTrayNumber = feedTrayNumber;
@@ -33,6 +33,7 @@ public final class V3ColumnTopology {
         return new V3ColumnTopology(trayCount, feedTrayNumber, V3CondenserPhaseBranch.LIQUID_ONLY);
     }
 
+    /** Interior solver trays only; displayed numbering includes both terminal stages. */
     public int trayCount() {
         return trayCount;
     }

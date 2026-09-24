@@ -16,7 +16,7 @@ class V3DegreeOfFreedomLedgerTest {
                 V3DegreeOfFreedomLedger twoPhase = V3DegreeOfFreedomLedger.create(
                         V3ColumnTopology.twoPhase(trayCount, 1), componentCount, standardSpecifications(0.0));
                 V3DegreeOfFreedomLedger vaporOnly = V3DegreeOfFreedomLedger.create(
-                        V3ColumnTopology.vaporOnly(trayCount, trayCount), componentCount, standardSpecifications(0.0));
+                        V3ColumnTopology.vaporOnly(trayCount, Math.max(1,trayCount)), componentCount, standardSpecifications(0.0));
                 V3DegreeOfFreedomLedger liquidOnly = V3DegreeOfFreedomLedger.create(
                         V3ColumnTopology.liquidOnly(trayCount, 1), componentCount, standardSpecifications(4.17));
 

@@ -28,7 +28,7 @@ final class V3ColumnScalarDraft {
         if (stages < V3ColumnInput.MIN_STAGE_COUNT || stages > V3ColumnInput.MAX_STAGE_COUNT) {
             throw invalid("Stage count", "is outside " + V3ColumnInput.MIN_STAGE_COUNT + ".." + V3ColumnInput.MAX_STAGE_COUNT);
         }
-        if (feedStage < 1 || feedStage > stages) throw invalid("Feed stage", "must be within the column");
+        if (feedStage < 1 || feedStage > stages + 1) throw invalid("Feed stage", "must be within the column");
         if (!(condenserTemperature > 0.0)) throw invalid("Condenser temperature", "must be above absolute zero");
         if (duty < 0.0) throw invalid("Reboiler duty", "must be nonnegative");
         if (reflux < 0.0) throw invalid("Reflux ratio", "must be nonnegative");

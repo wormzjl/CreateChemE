@@ -38,7 +38,7 @@ class V3Sotelo2019SideDrawCaseTest {
         assertEquals(6, success.result().streams().size());
         for (V3SideDrawSpec draw : input.sideDraws()) {
             V3ColumnStreamProperties stream = success.result().streams().stream()
-                    .filter(candidate -> candidate.displayName().equals("Side draw (tray " + draw.trayNumber() + ")"))
+                    .filter(candidate -> candidate.displayName().equals("Side draw (tray " + (draw.trayNumber()+1) + ")"))
                     .findFirst().orElseThrow();
             assertEquals(draw.molarFlowMolPerSecond(), stream.molarFlowMolPerSecond(), 1.0e-8);
         }

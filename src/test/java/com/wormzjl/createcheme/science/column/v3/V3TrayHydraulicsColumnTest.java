@@ -83,7 +83,7 @@ class V3TrayHydraulicsColumnTest {
                 .orElseThrow(() -> new AssertionError(String.join(" | ",
                         success.diagnostics().acceptanceAudit().advisoryEvidence())));
         assertTrue(warning.startsWith("Warning: "), warning);
-        assertTrue(warning.contains("tray " + hydraulics.maximumFloodTray()), warning);
+        assertTrue(warning.contains("tray " + (hydraulics.maximumFloodTray()+1)), warning);
         assertTrue(warning.contains("dry") && warning.contains("liquid"), warning);
         assertTrue(warning.contains("load is too high"), warning);
         assertTrue(warning.contains("5.0 m"), warning);

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "kind": "mixture",
+  "name": "Dalia",
+  "translation_key": "gui.createcheme.column_preset.dalia",
+  "package": "createcheme:dalia_tjl20",
+  "basis": "mole",
+  "components": [
+    {
+      "id": "Isobutane",
+      "amount": 0.2086076570730247
+    },
+    {
+      "id": "N-butane",
+      "amount": 0.7301267997555866
+    },
+    {
+      "id": "Isopentane",
+      "amount": 0.5461685130264394
+    },
+    {
+      "id": "N-pentane",
+      "amount": 0.63019443810743
+    },
+    {
+      "id": "crude_pc01",
+      "amount": 1.6454490428534503
+    },
+    {
+      "id": "crude_pc02",
+      "amount": 6.900020055913164
+    },
+    {
+      "id": "crude_pc03",
+      "amount": 8.507051524898678
+    },
+    {
+      "id": "crude_pc04",
+      "amount": 10.467827756900007
+    },
+    {
+      "id": "crude_pc05",
+      "amount": 12.147522854913671
+    },
+    {
+      "id": "crude_pc06",
+      "amount": 12.434821662767561
+    },
+    {
+      "id": "crude_pc07",
+      "amount": 11.241113828595324
+    },
+    {
+      "id": "crude_pc08",
+      "amount": 13.173553826406447
+    },
+    {
+      "id": "crude_pc09",
+      "amount": 11.681623073523822
+    },
+    {
+      "id": "crude_pc10",
+      "amount": 6.895859836245403
+    },
+    {
+      "id": "crude_pc11",
+      "amount": 2.132298666372117
+    },
+    {
+      "id": "crude_pc12",
+      "amount": 0.657760462647875
+    }
+  ]
+}
