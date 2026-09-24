@@ -8,10 +8,12 @@ Standing rules from the project owner. They apply to every agent working in this
 - Never test against an old world, never write a migration, absent-field normalisation, or legacy-save test gate for such a change.
 - New formats must still validate what they read and round-trip clocks, material, pending events and any optimisation state they carry.
 
-## Player-facing updates (recorded 2026-09-23, the project's gold standard)
+## Player-facing updates (recorded 2026-09-23; amended 2026-09-24)
 
-- The simulation engine decides when presentation updates happen. Block-entity views, menu data, acknowledgements and status changes are delivered on the engine's own schedule, roughly every five seconds of online time.
-- Player inputs and changes to a network are queued as engine events. Nothing is pushed to a client immediately from a packet handler, a block-entity load, a menu open, or a tick hook.
+- The simulation engine produces process presentation snapshots, acknowledgements and status changes on its own schedule, roughly every five seconds of online time.
+- Send GUI/process presentation data only in response to a client request. Opening a GUI requests the last published snapshot immediately and subscribes that client to scheduled updates while the GUI remains open; closing it ends that subscription. Do not broadcast contents to clients with no active request.
+- Opening a GUI or an explicit read request may immediately replay the server's last published snapshot. This is a read of cached data: it must not run a solver, materialise new process state, apply pending input, or advance simulation time. If no snapshot exists, wait for the engine's first scheduled publication.
+- Player inputs and changes to a network remain queued engine events. Their acknowledgements and newly calculated state are delivered on the engine schedule; a packet handler, block-entity load or menu open must not force a new process update.
 
 ## Process work and the tick loop (recorded 2026-09-23)
 

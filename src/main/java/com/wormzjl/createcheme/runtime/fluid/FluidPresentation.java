@@ -5,8 +5,9 @@ import java.util.function.Supplier;
 
 /**
  * The engine-owned presentation schedule (plan R2 and section 3.4). Loaded devices and open menus receive
- * coalesced updates on staggered presentation buckets, about every {@value #BUCKET_TICKS} online ticks, and at
- * no other time: nothing is pushed from a packet handler, a block-entity load, a menu open or a tick hook.
+ * coalesced updates on staggered presentation buckets, about every {@value #BUCKET_TICKS} online ticks,
+ * with one opening exception: an explicitly opened menu may replay its last published snapshot immediately.
+ * No process state is calculated by that replay, and no GUI contents are broadcast to unrequested clients.
  *
  * <p>A device or a menu belongs to bucket {@code key % 100}, where the key is the island that owns the device, or
  * the device itself when it has no hydraulic owner. An island's loaded devices and its menus are therefore
@@ -34,7 +35,7 @@ public final class FluidPresentation<C> {
     /** Bounds on per-menu memory: queued inputs awaiting a reply, and the diagnostic delivery log. */
     private static final int MAXIMUM_INPUTS=64,MAXIMUM_LOG=256,MAXIMUM_REPLY=1024;
 
-    /** What presentation needs from its world. Called on the owning thread, only from {@link #tick} and the marking calls. */
+    /** What presentation needs from its world. Called on the owning thread, from scheduled flushes, marking calls and explicit cached opening delivery. */
     public interface Host<C> {
         /** The bucket key of a device: the island that owns it, or the device itself when it has none. */
         long key(long device);
@@ -46,6 +47,8 @@ public final class FluidPresentation<C> {
         default String eventRefusal(UUID event){return null;}
         /** Whether a menu is still open and valid for its player; a closed one is forgotten. */
         boolean open(C consumer);
+        /** Replays the last published complete snapshot, without rebuilding it; returns its revision or -1 if absent. */
+        default long replay(C consumer,long device){return -1;}
         /** Builds a device's view. {@code islands} caches the island reads of one flush, so an island is read once. */
         FluidView view(long device,Map<Long,IslandCoordinator.Snapshot> islands);
         /** Presents a dirty device if it is loaded and bound, handing it {@code view.get()}; false when it is not loaded. */
@@ -123,10 +126,21 @@ public final class FluidPresentation<C> {
 
     // ---- menus and inputs ----
 
-    /** Registers an open menu as a consumer of its device's bucket. Nothing is delivered before that bucket. */
+    /** Registers an open menu as a consumer of its device's bucket. Registration sends nothing; cached replay is separate. */
     public void subscribe(C consumer,long device) {
         owned();Objects.requireNonNull(consumer);if(subscriptions.containsKey(consumer))return;
         var subscription=new Subscription<>(consumer,device);subscriptions.put(consumer,subscription);place(subscription);
+    }
+    /**
+     * Opening-only delivery after the client menu has been installed. Leaves the bucket deadline and
+     * pending input replies untouched. The host must send only its cached snapshot, with no old reply.
+     */
+    public boolean replayOnOpen(C consumer){
+        owned();var subscription=subscriptions.get(consumer);
+        if(subscription==null||!host.open(consumer))return false;
+        long revision=host.replay(consumer,subscription.device);
+        if(revision<0)return false;
+        subscription.staticRevision=revision;return true;
     }
     public void unsubscribe(C consumer) {
         owned();var subscription=subscriptions.remove(consumer);if(subscription==null)return;

@@ -20,8 +20,9 @@ import java.util.*;
 
 /**
  * Menu protocol {@value #PROTOCOL}: position/identity/revision-bound controls; clients never send inventory or
- * solver results. The server answers nothing directly. A menu receives a static payload (kind, components,
- * presets, material names) and a live payload (view, controls, the engine's reply) only on its island's
+ * solver results. Opening a GUI immediately receives the last published server snapshot, when available.
+ * Subsequent menu updates receive a static payload (kind, components,
+ * presets, material names) and a live payload (view, controls, the engine's reply) on its island's
  * presentation bucket ({@link FluidPresentation}); the static payload again only when the device's registration
  * revision changed. An edit or recovery packet is validated as before, queued as a ledger event, and its reply -
  * {@code Queued for simulation event at tick N}, {@code Applied} or {@code Not applied: <reason>} - arrives with
@@ -149,21 +150,24 @@ public final class FluidNetwork {
     public static StaticData decodeStatic(String json){return Objects.requireNonNull(JSON.fromJson(json,StaticData.class));}
     public static LiveData decodeLive(String json){return Objects.requireNonNull(JSON.fromJson(json,LiveData.class));}
 
-    // ---- server: delivery at a bucket only ----
+    // ---- server: scheduled snapshots and requested cached opening delivery ----
 
-    /**
-     * Delivers one presentation bucket to an open menu. Called only by the engine's flush ({@link FluidPresentation}):
-     * the static payload when the menu has not yet received the device's current registration revision, then the
-     * live payload with the view built for this bucket and the reply the engine composed.
-     */
-    public static void deliver(FluidWorldAuthority world,FluidDeviceMenu menu,WorldTopologyLedger.Registration record,boolean withStatic,FluidView view,String reply) {
-        var player=menu.serverPlayer();if(player==null)return;
-        var data=new MenuData(record.device().kind(),view,Controls.from(record),world.components(),world.presets(),reply,world.materialNames(),Arrays.stream(world.model().molecularWeights()).boxed().toList());
+    /** Captures one coherent GUI snapshot at a presentation bucket; no viewer-specific reply is cached. */
+    public static MenuData snapshot(FluidWorldAuthority world,WorldTopologyLedger.Registration record,FluidView view){
+        if(view.identity()!=record.device().id()||view.inputRevision()!=record.revision())
+            throw new IllegalArgumentException("Presentation snapshot registration mismatch");
+        return new MenuData(record.device().kind(),view,Controls.from(record),world.components(),world.presets(),"",
+            world.materialNames(),Arrays.stream(world.model().molecularWeights()).boxed().toList());
+    }
+    /** Sends a published snapshot to an installed, requested menu; replay uses an empty reply. */
+    public static void deliver(FluidDeviceMenu menu,boolean withStatic,MenuData data,String reply) {
+        var player=menu.serverPlayer();
+        if(player==null||player.containerMenu!=menu||menu.identity()!=data.view().identity()||!menu.stillValid(player))return;
         if(withStatic) {
-            PacketDistributor.sendToPlayer(player,new StaticPayload(menu.containerId,menu.identity(),JSON.toJson(data.staticData(record.revision()))));
+            PacketDistributor.sendToPlayer(player,new StaticPayload(menu.containerId,menu.identity(),JSON.toJson(data.staticData(data.view().inputRevision()))));
             FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.menuPackets);FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.staticPayloads);
         }
-        PacketDistributor.sendToPlayer(player,new LivePayload(menu.containerId,menu.identity(),JSON.toJson(data.liveData())));
+        PacketDistributor.sendToPlayer(player,new LivePayload(menu.containerId,menu.identity(),JSON.toJson(new LiveData(data.view(),data.controls(),reply))));
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.menuPackets);
     }
 
@@ -239,7 +243,7 @@ public final class FluidNetwork {
     };
     /** Client: remembers the last state delivered for a device, so a menu reopened on it shows that view until its next bucket. */
     public static synchronized void remember(long identity,MenuData data){DELIVERED.put(identity,Objects.requireNonNull(data));}
-    /** Client: the last state delivered for a device in this session, or null. Opening a menu never asks the server. */
+    /** Client: the last state delivered in this session, or null, shown until the requested server snapshot arrives. */
     public static synchronized MenuData lastDelivered(long identity){return DELIVERED.get(identity);}
     /** Client: forgets every delivered state (leaving a world; identities belong to a world). */
     public static synchronized void forgetDelivered(){DELIVERED.clear();}

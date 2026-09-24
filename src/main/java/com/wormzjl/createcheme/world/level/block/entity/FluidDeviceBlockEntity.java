@@ -56,6 +56,9 @@ public final class FluidDeviceBlockEntity extends BlockEntity implements FluidVi
             public Component getDisplayName(){return Component.translatable(getBlockState().getBlock().getDescriptionId());}
             public AbstractContainerMenu createMenu(int containerId,Inventory inventory,Player player){return new FluidDeviceMenu(containerId,inventory,worldPosition,identity,debug);}
         },buffer->{buffer.writeBlockPos(worldPosition);buffer.writeLong(identity);buffer.writeBoolean(debug);});
+        // Replay only after the opening packet and server menu exist, preserving packet order.
+        if(player.containerMenu instanceof FluidDeviceMenu menu&&menu.identity()==identity)
+            FluidWorldAuthority.find(player.server).ifPresent(world->world.replayOnOpen(menu));
     }
     @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);tag.putLong("FluidIdentity",identity);}
     @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);identity=tag.getLong("FluidIdentity");lastView=null;}
