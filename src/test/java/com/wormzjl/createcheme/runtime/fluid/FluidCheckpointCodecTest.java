@@ -83,6 +83,45 @@ class FluidCheckpointCodecTest {
         var components=copy(image);((ListTag)((ListTag)components.core().get("Packages")).getCompound(0).get("EnergyComponents")).remove(0);FluidCheckpointCodec.reseal(components.core());
         assertTrue(assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decode(components,key->model)).getMessage().contains("fresh development world"));
     }
+    /** The topology unit: every field of the world ledger comes back exactly and re-encodes to the same bytes. */
+    @Test void aTopologyRoundTripsEveryFieldExactlyAndRefusesAMalformedUnit() {
+        var empty=com.wormzjl.createcheme.runtime.fluid.WorldTopologyLedger.Snapshot.empty(MaterialCatalog.bundled());int count=empty.basis().components().size();
+        var nitrogen=new double[count];nitrogen[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
+        var mixed=new double[count];for(int c=0;c<count;c++)mixed[c]=c+1;
+        var slurry=new SlurryFeed(.1,List.of(new SlurryFeed.Grade("createcheme:demo_particle",com.wormzjl.createcheme.science.fluid.state.ParticleSize.micrometres("100"),1)));
+        var block=new PipeResistance.Geometry(1,.05,.000045,0);var wide=new PipeResistance.Geometry(2,.1,.0001,.5);
+        java.util.function.Function<Object[],WorldTopologyLedger.Registration> device=a->new WorldTopologyLedger.Registration(new PhysicalFluidTopology.Device((long)a[0],
+                new PhysicalFluidTopology.Position((String)a[1],(int)a[2],64,-3),(com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind)a[3],PhysicalFluidTopology.Direction.EAST,(PipeResistance.Geometry)a[4],(FlowControl)a[5]),
+                (FluidDeviceSpec)a[6],(long)a[7]);
+        var kinds=com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.class.getEnumConstants();
+        var reservoir=device.apply(new Object[]{1L,"minecraft:overworld",0,kinds[0],block,new FlowControl.Passive(),new FluidDeviceSpec(2,300,150000,nitrogen),0L});
+        var pump=device.apply(new Object[]{2L,"minecraft:overworld",1,com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.PUMP,block,new FlowControl.Pump(.01,500000,.75),new FluidDeviceSpec(1,298.15,101325,nitrogen),0L});
+        var valve=device.apply(new Object[]{3L,"minecraft:overworld",2,com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.VALVE,wide,new FlowControl.PressureValve(120000),new FluidDeviceSpec(1,298.15,101325,nitrogen),0L});
+        var pipe=device.apply(new Object[]{4L,"minecraft:the_nether",5,com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.PIPE,wide,new FlowControl.Passive(),new FluidDeviceSpec(1,298.15,101325,mixed),0L});
+        var generator=device.apply(new Object[]{5L,"minecraft:overworld",7,com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.GENERATOR,block,new FlowControl.Passive(),new FluidDeviceSpec(1,320,180000,mixed,slurry),0L});
+        var retuned=device.apply(new Object[]{3L,"minecraft:overworld",2,com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.VALVE,wide,new FlowControl.PressureValve(130000),new FluidDeviceSpec(1,298.15,101325,nitrogen),1L});
+        var player=UUID.randomUUID();
+        var events=List.of(new WorldTopologyLedger.Event(UUID.randomUUID(),10,List.of(new WorldTopologyLedger.Edit(3,retuned),new WorldTopologyLedger.Edit(4,null)),Set.of(2L,3L,4L)),
+                new WorldTopologyLedger.Event(UUID.randomUUID(),12,List.of(new WorldTopologyLedger.Edit(2,null)),Set.of(2L),new WorldTopologyLedger.Recovery(2,player)));
+        var particle=new com.wormzjl.createcheme.science.material.SolidMaterial("createcheme:demo_particle","r1",2500,800);
+        var solids=new com.wormzjl.createcheme.science.fluid.state.SolidInventory(List.of(new com.wormzjl.createcheme.science.fluid.state.SolidInventory.Population(particle,com.wormzjl.createcheme.science.fluid.state.ParticleSize.micrometres("100"),.25)));
+        var recoveries=Map.of(UUID.randomUUID(),new RecoveredSolid(new PhysicalFluidTopology.Position("minecraft:overworld",3,65,-3),player,solids,12.5),
+                UUID.randomUUID(),new RecoveredSolid(new PhysicalFluidTopology.Position("minecraft:the_nether",9,70,1),null,solids,-4));
+        var moles=new double[count];moles[0]=3.5;moles[count-1]=-0.0+1e-9;
+        var constructed=new WorldTopologyLedger.MaterialTotal(moles,4.25e6,Map.of("createcheme:demo_particle",.75));
+        var world=new WorldTopologyLedger.Snapshot(12,9,Map.of(1L,reservoir,2L,pump,3L,valve,4L,pipe,5L,generator),events,constructed,WorldTopologyLedger.MaterialTotal.empty(count),empty.basis(),recoveries);
+        var bytes=FluidCheckpointCodec.encodeTopology(world);var decoded=FluidCheckpointCodec.decodeTopology(bytes,77);
+        assertEquals(77,decoded.onlineTick());assertEquals(9,decoded.nextIdentity());
+        assertEquals(world.active(),decoded.active(),"devices, positions, kinds, geometries, controls, specs, slurries, revisions");
+        assertEquals(world.events(),decoded.events(),"events: edits, removals, touched sets, recovery");
+        assertArrayEquals(world.constructed().moles(),decoded.constructed().moles());assertEquals(world.constructed().totalEnergy(),decoded.constructed().totalEnergy());
+        assertEquals(world.constructed().solidMasses(),decoded.constructed().solidMasses());assertArrayEquals(world.destroyed().moles(),decoded.destroyed().moles());
+        assertEquals(world.basis(),decoded.basis());assertEquals(world.recoveries(),decoded.recoveries());
+        assertArrayEquals(bytes,FluidCheckpointCodec.encodeTopology(decoded),"a decoded topology re-encodes to the same bytes");
+        assertTrue(bytes.length<2_000,"binary topology of five devices: "+bytes.length+" bytes");
+        assertTrue(assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decodeTopology(Arrays.copyOf(bytes,bytes.length+1),0)).getMessage().contains("trailing bytes"));
+        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decodeTopology(Arrays.copyOf(bytes,bytes.length/2),0));
+    }
     @Test void changingVelocityLimitPreservesSavedStockClocksAndAllowanceButInvalidatesTheOldAnchor() {
         var before=fixture();var image=FluidCheckpointCodec.encode(before,key->model);
         var loaded=FluidCheckpointCodec.decode(image,key->FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),PACKAGE,1e-9,10));

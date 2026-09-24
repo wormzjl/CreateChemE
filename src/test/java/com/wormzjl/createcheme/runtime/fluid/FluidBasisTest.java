@@ -18,11 +18,12 @@ class FluidBasisTest {
     }
     @Test void topologyWithoutAnyIslandStillRejectsAChangedIdentityAxis() {
         var original=MaterialCatalog.bundled();var saved=WorldTopologyLedger.Snapshot.empty(original);
-        var decoded=FluidCheckpointCodec.decodeWorld(FluidCheckpointCodec.encodeWorld(saved));assertEquals(saved.basis(),decoded.basis());
+        var decoded=FluidCheckpointCodec.decodeTopology(FluidCheckpointCodec.encodeTopology(saved),saved.onlineTick());assertEquals(saved.basis(),decoded.basis());
         decoded.basis().requireCurrent(original);
         assertThrows(IllegalArgumentException.class,()->decoded.basis().requireCurrent(reordered()));
-        var raw=JsonParser.parseString(FluidCheckpointCodec.encodeWorld(saved)).getAsJsonObject();raw.remove("basis");
-        assertThrows(RuntimeException.class,()->FluidCheckpointCodec.decodeWorld(raw.toString()));
+        // The basis lies near the end of the topology: one cut short of it is refused, never read without it.
+        var bytes=FluidCheckpointCodec.encodeTopology(saved);
+        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decodeTopology(Arrays.copyOf(bytes,bytes.length-2),0));
     }
     @Test void capturedAccountingAndSerializationNeverReadTheReloadedGlobalAxis() {
         var basis=new FluidBasis("test:nitrogen",List.of("Nitrogen","Water"),"0".repeat(64)+":"+"0".repeat(64));
@@ -31,6 +32,6 @@ class FluidBasisTest {
         var saved=ledger.snapshot();assertEquals(basis,saved.basis());assertEquals(2,saved.constructed().moles().length);
         var next=saved.constructed().plus(List.of(),new double[saved.basis().components().size()]);
         assertArrayEquals(saved.constructed().moles(),next.moles());
-        var decoded=FluidCheckpointCodec.decodeWorld(FluidCheckpointCodec.encodeWorld(saved));assertEquals(saved.basis(),decoded.basis());
+        var decoded=FluidCheckpointCodec.decodeTopology(FluidCheckpointCodec.encodeTopology(saved),saved.onlineTick());assertEquals(saved.basis(),decoded.basis());
     }
 }

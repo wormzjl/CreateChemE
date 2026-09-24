@@ -6,6 +6,7 @@ import com.wormzjl.createcheme.science.fluid.state.EnergyReference;
 import com.wormzjl.createcheme.science.fluid.state.ParticleSize;
 import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler;
 import com.wormzjl.createcheme.science.material.SolidMaterial;
 import net.minecraft.nbt.*;
 import java.lang.reflect.*;
@@ -61,7 +62,7 @@ public final class FluidCheckpointCodec {
     /** Tests and GameTests (the scheduler's self-verification switch) also re-encode every reused unit and fail if
      * the stored one differs. */
     private static final boolean VERIFY=Boolean.getBoolean("createcheme.fluid.scheduler.verify");
-    private static final Gson GSON=new GsonBuilder().serializeNulls().disableHtmlEscaping().registerTypeAdapter(FlowControl.class,new ControlAdapter()).create();
+    private static final Gson GSON=new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
     private static final PassiveStepSolver.Acceptance[] ACCEPTANCES=PassiveStepSolver.Acceptance.values();
     private static final FlowControl.Mode[] MODES=FlowControl.Mode.values();
     private static final PassiveNetwork.NodeKind[] NODE_KINDS=PassiveNetwork.NodeKind.values();
@@ -135,26 +136,122 @@ public final class FluidCheckpointCodec {
         return new LedgerState(new BufferedTransfers.Snapshot(core.transfers.revision,buffers,pending,planned),modules,core.modules.bindings);
     }
 
-    // ---------------- the world topology ledger (JSON, in its own unit) ----------------
+    // ---------------- the world topology ledger (binary, in its own unit) ----------------
 
-    public static String encodeWorld(WorldTopologyLedger.Snapshot world){return GSON.toJson(world);}
-    public static WorldTopologyLedger.Snapshot decodeWorld(String json) {
-        var tree=JsonParser.parseString(json);strictShape(tree,WorldTopologyLedger.Snapshot.class,0,new int[]{0},Integer.MAX_VALUE);
-        var snapshot=GSON.fromJson(tree,WorldTopologyLedger.Snapshot.class);new WorldTopologyLedger(snapshot);return snapshot;
+    private static final TopologyCompiler.Kind[] DEVICE_KINDS=TopologyCompiler.Kind.values();
+    private static final PhysicalFluidTopology.Direction[] DIRECTIONS=PhysicalFluidTopology.Direction.values();
+    /** A value compared by the exact bits of its doubles, for the tables a topology unit shares among its devices. */
+    private record Bits(long[] bits) {
+        static Bits of(double... values){var bits=new long[values.length];for(int i=0;i<values.length;i++)bits[i]=Double.doubleToRawLongBits(values[i]);return new Bits(bits);}
+        @Override public boolean equals(Object other){return other instanceof Bits b&&Arrays.equals(bits,b.bits);}
+        @Override public int hashCode(){return Arrays.hashCode(bits);}
     }
-    /** The world topology ledger without its online tick, which a checkpoint keeps as its epoch: what a save writes.
-     * It changes only when the ledger commits, so a save keeps the unit of an unchanged ledger. */
-    private record WorldBody(long nextIdentity,Map<Long,WorldTopologyLedger.Registration> active,List<WorldTopologyLedger.Event> events,
-                             WorldTopologyLedger.MaterialTotal constructed,WorldTopologyLedger.MaterialTotal destroyed,FluidBasis basis,Map<UUID,RecoveredSolid> recoveries) {}
-    public static String encodeWorldBody(WorldTopologyLedger.Snapshot world) {
-        return GSON.toJson(new WorldBody(world.nextIdentity(),world.active(),world.events(),world.constructed(),world.destroyed(),world.basis(),world.recoveries()));
+    /** The tables a topology unit writes once and its entries refer to by index: texts, pipe geometries, compositions. */
+    private static final class Tables {
+        final Map<String,Integer> texts=new LinkedHashMap<>();final Map<Bits,Integer> geometries=new LinkedHashMap<>();final Map<Bits,Integer> compositions=new LinkedHashMap<>();
+        final List<PipeResistance.Geometry> geometryValues=new ArrayList<>();final List<double[]> compositionValues=new ArrayList<>();
+        int text(String value){return texts.computeIfAbsent(Objects.requireNonNull(value),ignored->texts.size());}
+        int geometry(PipeResistance.Geometry g){return geometries.computeIfAbsent(Bits.of(g.length(),g.diameter(),g.roughness(),g.minorLoss()),ignored->{geometryValues.add(g);return geometryValues.size()-1;});}
+        int composition(double[] c){return compositions.computeIfAbsent(Bits.of(c),ignored->{compositionValues.add(c);return compositionValues.size()-1;});}
     }
-    /** The ledger a checkpoint saved, at the checkpoint's epoch, validated as the ledger itself validates it. */
-    public static WorldTopologyLedger.Snapshot decodeWorldBody(String json,long onlineTick) {
-        var tree=JsonParser.parseString(json);strictShape(tree,WorldBody.class,0,new int[]{0},Integer.MAX_VALUE);var body=GSON.fromJson(tree,WorldBody.class);
-        var snapshot=new WorldTopologyLedger.Snapshot(onlineTick,body.nextIdentity,body.active,body.events,body.constructed,body.destroyed,body.basis,body.recoveries);
+    /**
+     * The world topology ledger without its online tick, which a checkpoint keeps as its epoch: what a save writes.
+     * Binary, in a fixed order (devices by identity, touched sets and totals sorted), with the texts, pipe geometries
+     * and compositions its devices share written once. It changes only when the ledger commits, so a save keeps the
+     * unit of an unchanged ledger.
+     */
+    public static byte[] encodeTopology(WorldTopologyLedger.Snapshot world) {
+        var tables=new Tables();var body=new FluidUnitIO.Writer();
+        var active=new ArrayList<>(world.active().values());active.sort(Comparator.comparingLong(r->r.device().id()));
+        body.varint(active.size());for(var r:active)registration(body,r,tables);
+        body.varint(world.events().size());
+        for(var event:world.events()) {
+            uuid(body,event.id());body.varlong(event.tick());body.varint(event.edits().size());
+            for(var edit:event.edits()){body.varlong(edit.id());body.bool(edit.replacement()!=null);if(edit.replacement()!=null)registration(body,edit.replacement(),tables);}
+            var touched=new ArrayList<>(event.touched());Collections.sort(touched);body.varint(touched.size());for(long id:touched)body.varlong(id);
+            var recovery=event.recovery();body.bool(recovery!=null);
+            if(recovery!=null){body.varlong(recovery.filterId());body.bool(recovery.player()!=null);if(recovery.player()!=null)uuid(body,recovery.player());}
+        }
+        total(body,world.constructed(),tables);total(body,world.destroyed(),tables);
+        var basis=world.basis();body.varint(tables.text(basis.packageId()));body.varint(basis.components().size());for(var c:basis.components())body.varint(tables.text(c));body.varint(tables.text(basis.scientificFingerprint()));
+        var recoveries=new TreeMap<>(world.recoveries());body.varint(recoveries.size());
+        for(var e:recoveries.entrySet()) {
+            var r=e.getValue();uuid(body,e.getKey());position(body,r.position(),tables);body.bool(r.player()!=null);if(r.player()!=null)uuid(body,r.player());solids(body,r.solids());body.f64(r.energyJoule());
+        }
+        var w=new FluidUnitIO.Writer();w.varlong(world.nextIdentity());
+        w.varint(tables.texts.size());for(var text:tables.texts.keySet())w.text(text);
+        w.varint(tables.geometryValues.size());for(var g:tables.geometryValues){w.f64(g.length());w.f64(g.diameter());w.f64(g.roughness());w.f64(g.minorLoss());}
+        w.varint(tables.compositionValues.size());for(var c:tables.compositionValues)w.sparse(c);
+        w.append(body,0,body.size());return w.toByteArray();
+    }
+    /** A topology {@link #encodeTopology} wrote, at {@code onlineTick}, validated as the ledger itself validates it. */
+    public static WorldTopologyLedger.Snapshot decodeTopology(byte[] bytes,long onlineTick){return topologyBody(new FluidUnitIO.Reader(bytes,0,bytes.length,"topology unit"),onlineTick);}
+    private static WorldTopologyLedger.Snapshot topologyBody(FluidUnitIO.Reader r,long onlineTick) {
+        long nextIdentity=r.varlong();
+        int textCount=r.varint(MAXIMUM_STRINGS);var texts=new String[textCount];for(int i=0;i<textCount;i++)texts[i]=r.text(MAXIMUM_TEXT);
+        int geometryCount=r.varint(MAXIMUM_PIPES);var geometries=new PipeResistance.Geometry[geometryCount];for(int i=0;i<geometryCount;i++)geometries[i]=new PipeResistance.Geometry(r.f64(),r.f64(),r.f64(),r.f64());
+        int compositionCount=r.varint(MAXIMUM_PIPES);var compositions=new double[compositionCount][];for(int i=0;i<compositionCount;i++)compositions[i]=r.sparse(MAXIMUM_ARRAY);
+        var tables=new Object[][]{texts,geometries,compositions};
+        int activeCount=r.varint(Integer.MAX_VALUE);var active=new HashMap<Long,WorldTopologyLedger.Registration>();
+        for(int i=0;i<activeCount;i++){var registration=registration(r,tables);if(active.put(registration.device().id(),registration)!=null)throw r.invalid("duplicate device "+registration.device().id());}
+        int eventCount=r.varint(WorldTopologyLedger.MAXIMUM_EVENTS);var events=new ArrayList<WorldTopologyLedger.Event>(eventCount);
+        for(int i=0;i<eventCount;i++) {
+            var id=uuid(r);long tick=r.varlong();int editCount=r.varint(Integer.MAX_VALUE);var edits=new ArrayList<WorldTopologyLedger.Edit>(editCount);
+            for(int e=0;e<editCount;e++){long device=r.varlong();edits.add(new WorldTopologyLedger.Edit(device,r.bool()?registration(r,tables):null));}
+            int touchedCount=r.varint(Integer.MAX_VALUE);var touched=new HashSet<Long>();for(int t=0;t<touchedCount;t++)if(!touched.add(r.varlong()))throw r.invalid("duplicate touched device");
+            WorldTopologyLedger.Recovery recovery=null;
+            if(r.bool()){long filter=r.varlong();recovery=new WorldTopologyLedger.Recovery(filter,r.bool()?uuid(r):null);}
+            events.add(new WorldTopologyLedger.Event(id,tick,edits,touched,recovery));
+        }
+        var constructed=total(r,texts);var destroyed=total(r,texts);
+        String packageId=text(r,texts);int componentCount=r.varint(MAXIMUM_ARRAY);var components=new ArrayList<String>(componentCount);for(int i=0;i<componentCount;i++)components.add(text(r,texts));
+        var basis=new FluidBasis(packageId,components,text(r,texts));
+        int recoveryCount=r.varint(WorldTopologyLedger.MAXIMUM_EVENTS);var recoveries=new HashMap<UUID,RecoveredSolid>();
+        for(int i=0;i<recoveryCount;i++) {
+            var id=uuid(r);var position=position(r,texts);var player=r.bool()?uuid(r):null;
+            if(recoveries.put(id,new RecoveredSolid(position,player,solids(r,null),r.f64()))!=null)throw r.invalid("duplicate recovery "+id);
+        }
+        r.end();
+        var snapshot=new WorldTopologyLedger.Snapshot(onlineTick,nextIdentity,active,events,constructed,destroyed,basis,recoveries);
         new WorldTopologyLedger(snapshot);return snapshot;
     }
+    private static void registration(FluidUnitIO.Writer w,WorldTopologyLedger.Registration r,Tables tables) {
+        var d=r.device();w.varlong(d.id());position(w,d.position(),tables);w.u8(d.kind().ordinal());w.u8(d.facing().ordinal());w.varint(tables.geometry(d.geometry()));
+        switch(d.control()) {
+            case FlowControl.Passive ignored->w.u8(0);
+            case FlowControl.Pump pump->{w.u8(1);w.f64(pump.targetVolumeFlow());w.f64(pump.maximumAddedPressure());w.f64(pump.efficiency());}
+            case FlowControl.PressureValve valve->{w.u8(2);w.f64(valve.targetPressure());}
+        }
+        var s=r.spec();w.f64(s.volume());w.f64(s.temperature());w.f64(s.pressure());w.varint(tables.composition(s.composition()));
+        w.f64(s.solids().volumeFraction());w.varint(s.solids().grades().size());
+        for(var g:s.solids().grades()){w.varint(tables.text(g.material()));w.varint(tables.text(g.size().metres()));w.f64(g.massShare());}
+        w.varlong(r.revision());
+    }
+    private static WorldTopologyLedger.Registration registration(FluidUnitIO.Reader r,Object[][] tables) {
+        var texts=(String[])tables[0];var geometries=(PipeResistance.Geometry[])tables[1];var compositions=(double[][])tables[2];
+        long id=r.varlong();var position=position(r,texts);int kind=r.u8();if(kind>=DEVICE_KINDS.length)throw r.invalid("unknown device kind "+kind);
+        int facing=r.u8();if(facing>=DIRECTIONS.length)throw r.invalid("unknown facing "+facing);
+        var geometry=geometries[r.varint(geometries.length-1)];
+        FlowControl control=switch(r.u8()){case 0->new FlowControl.Passive();case 1->new FlowControl.Pump(r.f64(),r.f64(),r.f64());case 2->new FlowControl.PressureValve(r.f64());default->throw r.invalid("unknown control");};
+        var device=new PhysicalFluidTopology.Device(id,position,DEVICE_KINDS[kind],DIRECTIONS[facing],geometry,control);
+        double volume=r.f64(),temperature=r.f64(),pressure=r.f64();var composition=compositions[r.varint(compositions.length-1)];
+        double fraction=r.f64();int gradeCount=r.varint(64);var grades=new ArrayList<SlurryFeed.Grade>(gradeCount);
+        for(int i=0;i<gradeCount;i++)grades.add(new SlurryFeed.Grade(text(r,texts),new ParticleSize(text(r,texts)),r.f64()));
+        return new WorldTopologyLedger.Registration(device,new FluidDeviceSpec(volume,temperature,pressure,composition,new SlurryFeed(fraction,grades)),r.varlong());
+    }
+    private static void position(FluidUnitIO.Writer w,PhysicalFluidTopology.Position p,Tables tables){w.varint(tables.text(p.dimension()));w.i32(p.x());w.i32(p.y());w.i32(p.z());}
+    private static PhysicalFluidTopology.Position position(FluidUnitIO.Reader r,String[] texts){return new PhysicalFluidTopology.Position(text(r,texts),r.i32(),r.i32(),r.i32());}
+    private static void total(FluidUnitIO.Writer w,WorldTopologyLedger.MaterialTotal total,Tables tables) {
+        w.sparse(total.moles());w.f64(total.totalEnergy());var solids=new TreeMap<>(total.solidMasses());w.varint(solids.size());for(var e:solids.entrySet()){w.varint(tables.text(e.getKey()));w.f64(e.getValue());}
+    }
+    private static WorldTopologyLedger.MaterialTotal total(FluidUnitIO.Reader r,String[] texts) {
+        var moles=r.sparse(MAXIMUM_ARRAY);double energy=r.f64();int count=r.varint(MAXIMUM_STRINGS);var solids=new HashMap<String,Double>();
+        for(int i=0;i<count;i++)if(solids.put(text(r,texts),r.f64())!=null)throw r.invalid("duplicate solid total");
+        return new WorldTopologyLedger.MaterialTotal(moles,energy,solids);
+    }
+    private static String text(FluidUnitIO.Reader r,String[] texts){return texts[r.varint(texts.length-1)];}
+    private static void uuid(FluidUnitIO.Writer w,UUID id){w.i64(id.getMostSignificantBits());w.i64(id.getLeastSignificantBits());}
+    private static UUID uuid(FluidUnitIO.Reader r){return new UUID(r.i64(),r.i64());}
     /** Whether two ledger snapshots hold the same ledger, whatever their online ticks: a snapshot shares the ledger's
      * immutable parts with the state it was taken from, so an unchanged ledger is the same objects. */
     public static boolean sameWorldBody(WorldTopologyLedger.Snapshot a,WorldTopologyLedger.Snapshot b) {
@@ -162,30 +259,14 @@ public final class FluidCheckpointCodec {
                 &&a.destroyed()==b.destroyed()&&a.basis()==b.basis()&&a.recoveries()==b.recoveries();
     }
     static byte[] topologyUnit(WorldTopologyLedger.Snapshot world,long generation) {
-        var w=new FluidUnitIO.Writer();header(w,TOPOLOGY,0,0,generation);w.raw(encodeWorldBody(world).getBytes(StandardCharsets.UTF_8));return w.toByteArray();
+        var w=new FluidUnitIO.Writer();header(w,TOPOLOGY,0,0,generation);w.raw(encodeTopology(world));return w.toByteArray();
     }
     static WorldTopologyLedger.Snapshot topology(byte[] data,int offset,int length,long generation,long epoch) {
         var r=new FluidUnitIO.Reader(data,offset,length,"topology unit");
         requireHeader(r,TOPOLOGY,0,0,generation,"the topology");
-        String json;
-        try{json=StandardCharsets.UTF_8.newDecoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT).decode(ByteBuffer.wrap(data,offset+UNIT_HEADER,length-UNIT_HEADER)).toString();}
-        catch(java.nio.charset.CharacterCodingException malformed){throw new IllegalArgumentException("Invalid saved topology unit: malformed text");}
-        return decodeWorldBody(json,epoch);
+        return topologyBody(r,epoch);
     }
     static boolean verifying(){return VERIFY;}
-    private static final class ControlAdapter implements JsonSerializer<FlowControl>,JsonDeserializer<FlowControl> {
-        @Override public JsonElement serialize(FlowControl control,Type type,JsonSerializationContext context) {
-            return context.serialize(switch(control) {
-                case FlowControl.Passive ignored->new Control("passive",0,0,0);
-                case FlowControl.Pump pump->new Control("pump",pump.targetVolumeFlow(),pump.maximumAddedPressure(),pump.efficiency());
-                case FlowControl.PressureValve valve->new Control("valve",valve.targetPressure(),0,0);
-            });
-        }
-        @Override public FlowControl deserialize(JsonElement json,Type type,JsonDeserializationContext context) {
-            strictShape(json,Control.class,0,new int[]{0},LEDGER_ELEMENTS);Control c=context.deserialize(json,Control.class);
-            return switch(c.kind){case "passive"->new FlowControl.Passive();case "pump"->new FlowControl.Pump(c.target,c.limit,c.efficiency);case "valve"->new FlowControl.PressureValve(c.target);default->throw new IllegalArgumentException("Unknown world control");};
-        }
-    }
 
     // ---------------- the string table ----------------
 
@@ -466,7 +547,8 @@ public final class FluidCheckpointCodec {
         }
         var solids=new SolidInventory(populations);
         if(solids.populations().size()!=count)throw r.invalid("solid populations not in canonical form");
-        model.solids.validate(solids);return solids;
+        // A topology unit's recoveries are validated against the solid catalog when the world starts (SolidCompatibility).
+        if(model!=null)model.solids.validate(solids);return solids;
     }
     private static List<FlowControl.Mode> modes(FluidUnitIO.Reader r,int maximum) {
         int count=r.varint(maximum);var modes=new ArrayList<FlowControl.Mode>(count);

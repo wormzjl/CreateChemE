@@ -19,7 +19,7 @@ class WorldTopologyLedgerTest {
         assertEquals(List.of(first.event(),second.event()),ledger.readyEvents());
         var applied=ledger.applyReady(second.event().id(),List.of(),List.of(),new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],3);ledger.commit(applied);
         assertEquals(Set.of(2L),ledger.active().keySet());assertEquals(List.of(first.event()),ledger.snapshot().events());assertEquals(1,ledger.snapshot().events().getFirst().tick());
-        var restored=new WorldTopologyLedger(FluidCheckpointCodec.decodeWorld(FluidCheckpointCodec.encodeWorld(ledger.snapshot())));
+        var saved=ledger.snapshot();var restored=new WorldTopologyLedger(FluidCheckpointCodec.decodeTopology(FluidCheckpointCodec.encodeTopology(saved),saved.onlineTick()));
         assertEquals(Set.of(1L,2L),restored.latest().keySet());restored.commit(restored.applyFirst(List.of(),List.of(),new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],3));assertEquals(Set.of(1L,2L),restored.active().keySet());
         assertThrows(IllegalStateException.class,()->ledger.commit(applied));
     }
@@ -40,7 +40,7 @@ class WorldTopologyLedgerTest {
     @Test void pendingPhysicalEventsRoundTripWithControlSettingsAndTheirOriginalTimestamps() {
         var ledger=new WorldTopologyLedger(WorldTopologyLedger.Snapshot.empty());for(int i=0;i<40;i++)ledger.tick();
         var registration=record(1,Kind.PUMP);var edit=ledger.queue(List.of(new WorldTopologyLedger.Edit(1,registration)),Set.of(1L),2);ledger.commit(edit);
-        for(int i=0;i<10;i++)ledger.tick();var restored=new WorldTopologyLedger(FluidCheckpointCodec.decodeWorld(FluidCheckpointCodec.encodeWorld(ledger.snapshot())));
+        for(int i=0;i<10;i++)ledger.tick();var saved=ledger.snapshot();var restored=new WorldTopologyLedger(FluidCheckpointCodec.decodeTopology(FluidCheckpointCodec.encodeTopology(saved),saved.onlineTick()));
         assertEquals(50,restored.onlineTick());assertEquals(40,restored.snapshot().events().getFirst().tick());assertEquals(registration,restored.latest().get(1L));assertTrue(restored.snapshot().active().isEmpty());
     }
     @Test void constructionAndDestructionCountOnceAndNeverReuseTheOldIdentity() {
