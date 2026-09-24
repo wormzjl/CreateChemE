@@ -410,7 +410,7 @@ public final class FluidServerBenchmark {
             var block=switch(device.kind()){case RESERVOIR->ModBlocks.FLUID_RESERVOIR.get();case GENERATOR->ModBlocks.FLUID_GENERATOR.get();case VOID->ModBlocks.FLUID_VOID.get();default->ModBlocks.FLUID_PIPE.get();};
             level.setBlock(pos,block.defaultBlockState(),3);
         }
-        savedData=new FluidSavedData(checkpoint,topology,key->model);level.getDataStorage().set(FluidSavedData.DATA_NAME,savedData);
+        savedData=new FluidSavedData(checkpoint,topology,key->model,FluidCheckpointStore.directory(server.getWorldPath(LevelResource.ROOT).resolve("data"),net.neoforged.neoforge.common.IOUtilities::withIOWorker,true));level.getDataStorage().set(FluidSavedData.DATA_NAME,savedData);
         var viewers=new ArrayList<ViewerTarget>();
         if(profile.equals("viewers"))for(int network=0;network<16;network++) {
             var first=builder.firstOf.get(network);boolean closed=network%4==3;
@@ -469,21 +469,27 @@ public final class FluidServerBenchmark {
         long deadline=r.nextTick;server.managedBlock(()->System.nanoTime()>=deadline);
     }
     /**
-     * One save of the whole fixture through the world's saved data, as an autosave makes it: the capture (which
-     * materialises certified islands) and the encoding, timed on the server thread, with the bytes each part wrote
-     * and the size the tag compresses to on disk (the compression is not timed: it is the file writer's).
-     * {@code cold} forgets the cached payloads first.
+     * One save of the whole fixture through the world's saved data, as an autosave makes it, but committed on the
+     * server thread so its write is timed too: the capture (which materialises certified islands) and the preparation
+     * (the changed units encoded, the core record built), then the write (the new pack and the core record, each
+     * written atomically and flushed to disk; an autosave does this on the IO worker). {@code cold} forgets where the
+     * units are stored first, so every unit is written afresh.
      */
     private static Map<String,Object> save(Run r,boolean cold) {
         if(cold)savedData.clearPayloadCache();
-        var tag=savedData.save(new net.minecraft.nbt.CompoundTag(),r.server.registryAccess());var timing=savedData.lastSave();
+        savedData.save(new net.minecraft.nbt.CompoundTag(),r.server.registryAccess());var timing=savedData.lastSave();var stats=timing.stats();
         var result=new LinkedHashMap<String,Object>();
         result.put("onlineTick",r.world.onlineTick());result.put("cacheClearedFirst",cold);
         result.put("totalMilliseconds",timing.totalNanos()/1e6);result.put("captureMilliseconds",timing.captureNanos()/1e6);result.put("encodeMilliseconds",timing.encodeNanos()/1e6);
-        result.put("islands",timing.islands());result.put("payloadsEncoded",timing.payloadsEncoded());result.put("payloadsReused",timing.payloadsReused());
-        result.put("payloadBytes",timing.payloadBytes());result.put("ledgerBytes",timing.ledgerBytes());result.put("topologyBytes",timing.topologyBytes());result.put("topologyEncoded",timing.topologyEncoded());result.put("bytes",timing.bytes());
-        try{var out=new java.io.ByteArrayOutputStream();var root=new net.minecraft.nbt.CompoundTag();root.put("data",tag);net.minecraft.nbt.NbtIo.writeCompressed(root,out);result.put("compressedBytes",out.size());}
-        catch(java.io.IOException impossible){throw new IllegalStateException(impossible);}
+        result.put("writeMilliseconds",timing.writeNanos()/1e6);
+        result.put("islands",timing.islands());result.put("payloadsEncoded",timing.payloadsEncoded());result.put("payloadsReused",timing.payloadsReused());result.put("unitsCopied",timing.unitsCopied());
+        result.put("payloadBytes",timing.payloadBytes());result.put("encodedBytes",stats.encodedBytes());result.put("ledgerBytes",timing.ledgerBytes());result.put("topologyBytes",timing.topologyBytes());result.put("topologyEncoded",timing.topologyEncoded());
+        result.put("packBytesWritten",stats.packBytes());result.put("coreBytes",stats.coreBytes());result.put("packsReferenced",stats.packs());result.put("bytes",timing.bytes());
+        try {
+            var data=r.server.getWorldPath(LevelResource.ROOT).resolve("data");result.put("coreFileBytes",Files.size(data.resolve(FluidCheckpointStore.CORE_NAME)));
+            long packs=0;try(var files=Files.list(data.resolve(FluidCheckpointStore.UNIT_DIRECTORY))){for(var file:(Iterable<Path>)files::iterator)packs+=Files.size(file);}
+            result.put("packFileBytes",packs);
+        }catch(java.io.IOException failure){throw new IllegalStateException("Could not size the saved checkpoint",failure);}
         return result;
     }
     private static void finish(Run r) {
@@ -612,7 +618,7 @@ public final class FluidServerBenchmark {
     /** Writes the report once the post-window save was taken, and releases the fixture. */
     private static void complete(Run r) {
         var saveTime=new LinkedHashMap<String,Object>();
-        saveTime.put("note","Checkpoint format 3 saves of the whole fixture through the world's saved data, timed on the server thread: capture (materialises certified islands) plus encoding; the topology ledger is encoded again only when it changed (topologyEncoded). cold: payload cache cleared first, at the end of the window; warm: the second consecutive save, same tick; nextCadence: one save 100 paced ticks later, after awake islands solved again. compressedBytes is the gzip NBT size a file write would produce, not timed.");
+        saveTime.put("note","Checkpoint format 4 saves of the whole fixture through the world's saved data, committed on the server thread so the write is timed (an autosave commits on the IO worker): capture (materialises certified islands) plus preparation (only the units of changed islands encoded, the topology unit only when the ledger changed, the core record built) on the server thread, then write (the new pack and the core record, each written atomically and flushed). cold: every unit written afresh, at the end of the window; warm: the second consecutive save, same tick; nextCadence: one save 100 paced ticks later, after awake islands solved again. coreFileBytes and packFileBytes are the files on disk after the save.");
         saveTime.putAll(r.saves);r.report.put("saveTime",saveTime);
         try {var path=Path.of(System.getProperty("createcheme.fluid.benchmark.output"));Files.createDirectories(path.getParent());Files.writeString(path,new GsonBuilder().setPrettyPrinting().create().toJson(r.report));
             if(recording!=null){recording.stop();recording.dump(path.resolveSibling("stress.jfr"));recording.close();recording=null;}}
