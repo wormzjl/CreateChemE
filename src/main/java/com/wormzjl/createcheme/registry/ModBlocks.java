@@ -19,7 +19,11 @@ public final class ModBlocks {
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_VOID=fluid("fluid_void",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.VOID);
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> INLINE_FILTER=fluid("inline_filter",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.FILTER);
     private static DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> fluid(String name,com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind kind) {
-        return BLOCKS.registerBlock(name,p->new com.wormzjl.createcheme.world.level.block.FluidDeviceBlock(kind,p),BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5F).sound(SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK));
+        var properties=BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5F).sound(SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK);
+        // All device models except the full-cube inline filter leave part of their block space open.
+        // They must not occlude the neighbouring block's faces in the chunk renderer.
+        if(kind!=com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.FILTER)properties.noOcclusion();
+        return BLOCKS.registerBlock(name,p->new com.wormzjl.createcheme.world.level.block.FluidDeviceBlock(kind,p),properties);
     }
 
     public static final DeferredBlock<ColumnCalculatorV3Block> COLUMN_CALCULATOR_V3 = BLOCKS.registerBlock(
