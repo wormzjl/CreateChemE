@@ -1,0 +1,573 @@
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=38659 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+> Task :createMinecraftArtifacts UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :generateModMetadata UP-TO-DATE
+> Task :verifyMaterialIndex
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :compileFluidGameTestJava UP-TO-DATE
+> Task :processFluidGameTestResources
+> Task :fluidGameTestClasses
+
+> Task :downloadAssets
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=38659 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+Loaded 131 artifacts from /home/user/CreateChemE/build/tmp/downloadAssets/nfrt_artifact_manifest.properties
+Downloading asset index 17
+Using Minecraft asset root: /root/.gradle/caches/neoformruntime/assets
+  ↓ https://piston-meta.mojang.com/v1/packages/de573f83da62843433ec9951c66feec7ed0a60a1/17.json
+100/3888 downloads
+200/3888 downloads
+300/3888 downloads
+400/3888 downloads
+500/3888 downloads
+600/3888 downloads
+700/3888 downloads
+800/3888 downloads
+900/3888 downloads
+1000/3888 downloads
+1100/3888 downloads
+1200/3888 downloads
+1300/3888 downloads
+1400/3888 downloads
+1500/3888 downloads
+1600/3888 downloads
+1700/3888 downloads
+1800/3888 downloads
+1900/3888 downloads
+2000/3888 downloads
+2100/3888 downloads
+2200/3888 downloads
+2300/3888 downloads
+2400/3888 downloads
+2500/3888 downloads
+2600/3888 downloads
+2700/3888 downloads
+2800/3888 downloads
+2900/3888 downloads
+3000/3888 downloads
+3100/3888 downloads
+3200/3888 downloads
+3300/3888 downloads
+3400/3888 downloads
+3500/3888 downloads
+3600/3888 downloads
+3700/3888 downloads
+3800/3888 downloads
+Downloaded 3888 files with a total size of 786 MiB
+
+> Task :writeFluidGameTestServerLegacyClasspath
+> Task :prepareFluidGameTestServerRun
+
+> Task :runFluidGameTestServer
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=38659 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+WARN StatusConsoleListener Advanced terminal features are not available in this environment
+[15:38:16] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserverdev, --gameDir, ., --fml.fmlVersion, 4.0.42, --fml.mcVersion, 1.21.1, --fml.neoForgeVersion, 21.1.219, --fml.neoFormVersion, 20240808.144430]
+[15:38:16] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: JVM identified as Ubuntu OpenJDK 64-Bit Server VM 21.0.10+7-Ubuntu-124.04
+[15:38:16] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 11.0.5+main.901c6ea8 starting: java version 21.0.10 by Ubuntu; OS Linux arch amd64 version 6.18.44-fc-v37
+[15:38:16] [main/INFO] [ne.ne.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserverdev
+[15:38:16] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/root/.gradle/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/2af2f021d8e02a0220dc27a7a72b4666d66d44ca/sponge-mixin-0.15.2+mixin.0.8.7.jar%2397!/ Service=ModLauncher Env=SERVER
+[15:38:17] [main/WARN] [ne.ne.ja.se.JarSelector/]: Attempted to select a dependency jar for JarJar which was passed in as source: betteradvancedtooltips. Using Mod File: /root/.gradle/caches/modules-2/files-2.1/dev.latvian.mods/better-advanced-tooltips/2101.1.0-build.1/4f9175f55758c06edba610cc8a32d317b15e8726/better-advanced-tooltips-2101.1.0-build.1.jar
+[15:38:17] [main/INFO] [ne.ne.fm.lo.mo.lo.JarInJarDependencyLocator/]: Found 4 dependencies adding them to mods collection
+[15:38:17] [main/INFO] [ne.ne.fm.lo.mo.ModDiscoverer/]: 
+     Mod List:
+		Name Version (Mod Id)
+
+		Better Advanced Tooltips 2101.1.0-build.1 (betteradvancedtooltips)
+		Create 6.0.10 (create)
+		CreateChemE 0.6.0 (createcheme)
+		CreateChemE Fluid GameTests 1.0.0 (createcheme_fluid_test)
+		Flywheel 1.0.6 (flywheel)
+		KubeJS 2101.7.2-build.368 (kubejs)
+		Minecraft 1.21.1 (minecraft)
+		NeoForge 21.1.219 (neoforge)
+		Ponder 1.0.82+mc1.21.1 (ponder)
+		Rhino 2101.2.7-build.81 (rhino)
+[15:38:17] [main/INFO] [mixin/]: Compatibility level set to JAVA_21
+[15:38:17] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserverdev' with arguments [--gameDir, .]
+[15:38:18] [main/WARN] [mixin/]: Reference map 'ponder.refmap.json' for ponder-common.mixins.json could not be read. If this is a development environment you can ignore this message
+[15:38:19] [main/WARN] [mixin/]: Error loading class: org/jetbrains/annotations/ApiStatus$ScheduledForRemoval (java.lang.ClassNotFoundException: org.jetbrains.annotations.ApiStatus$ScheduledForRemoval)
+[15:38:19] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.0).
+[15:38:26] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[15:38:26] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[15:38:26] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[15:38:26] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[15:38:26] [main/WARN] [minecraft/Commands]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[15:38:26] [modloading-worker-0/INFO] [ne.ne.ne.co.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.219, for MC 1.21.1
+[15:38:26] [modloading-worker-0/INFO] [co.si.cr.Create/]: Create 6.0.10 initializing! Commit hash: ac0c444d9828da3453ae8cc65338e8de063286fb
+[15:38:26] [modloading-worker-0/INFO] [KubeJS Startup/]: Capturing errors for startup scripts enabled
+[15:38:26] [modloading-worker-0/INFO] [KubeJS Client/]: Capturing errors for client scripts enabled
+[15:38:26] [modloading-worker-0/INFO] [KubeJS/]: Loading vanilla registries...
+[15:38:26] [modloading-worker-0/INFO] [KubeJS/]: Looking for KubeJS plugins...
+[15:38:26] [modloading-worker-0/INFO] [KubeJS/]: Found plugin source kubejs
+[15:38:26] [modloading-worker-0/WARN] [KubeJS/]: Plugin dev.latvian.mods.kubejs.plugin.builtin.BuiltinKubeJSClientPlugin does not load on server side, skipping
+[15:38:26] [modloading-worker-0/WARN] [KubeJS/]: Plugin dev.latvian.mods.kubejs.integration.architectury.ArchitecturyIntegration does not have required mod 'architectury' loaded, skipping
+[15:38:26] [modloading-worker-0/INFO] [KubeJS/]: Done in 13.87 ms
+[15:38:27] [modloading-worker-0/INFO] [KubeJS Startup/]: startup_scripts:main.js#2: Hello, World! (Loaded startup example script)
+[15:38:27] [modloading-worker-0/INFO] [KubeJS Startup/]: Loaded script startup_scripts:main.js in 0.063 s
+[15:38:27] [modloading-worker-0/INFO] [KubeJS Startup/]: Loaded 1/1 KubeJS startup scripts in 0.42 s with 0 errors and 0 warnings
+[15:38:27] [modloading-worker-0/INFO] [KubeJS Startup/]: Validated 0 files in kubejs/data/ in 0ms
+[15:38:31] [modloading-sync-worker/INFO] [KubeJS Startup/]: Capturing errors for startup scripts disabled
+[15:38:31] [modloading-sync-worker/INFO] [KubeJS Client/]: Capturing errors for client scripts disabled
+[15:38:31] [main/ERROR] [minecraft/Settings]: Failed to load properties from file: server.properties
+java.nio.file.NoSuchFileException: server.properties
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92) ~[?:?] {}
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106) ~[?:?] {}
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111) ~[?:?] {}
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261) ~[?:?] {}
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380) ~[?:?] {}
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432) ~[?:?] {}
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420) ~[?:?] {}
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160) ~[?:?] {}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.server.dedicated.Settings.loadFromFile(Settings.java:38) ~[neoforge-21.1.219.jar%23132!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.server.dedicated.DedicatedServerProperties.fromFile(DedicatedServerProperties.java:132) ~[neoforge-21.1.219.jar%23132!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.server.dedicated.DedicatedServerSettings.<init>(DedicatedServerSettings.java:12) ~[neoforge-21.1.219.jar%23132!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.server.Main.main(Main.java:125) ~[neoforge-21.1.219.jar%23132!/:?] {re:classloading}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:136) ~[loader-4.0.42.jar%23105!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.loading.targets.CommonLaunchHandler.serverService(CommonLaunchHandler.java:128) ~[loader-4.0.42.jar%23105!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.loading.targets.NeoForgeServerDevLaunchHandler.runService(NeoForgeServerDevLaunchHandler.java:23) ~[loader-4.0.42.jar%23105!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.42/net.neoforged.fml.loading.targets.CommonLaunchHandler.lambda$launchService$4(CommonLaunchHandler.java:118) ~[loader-4.0.42.jar%23105!/:4.0] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) [modlauncher-11.0.5.jar%2385!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) [modlauncher-11.0.5.jar%2385!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) [modlauncher-11.0.5.jar%2385!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.run(Launcher.java:103) [modlauncher-11.0.5.jar%2385!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.main(Launcher.java:74) [modlauncher-11.0.5.jar%2385!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) [modlauncher-11.0.5.jar%2385!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) [modlauncher-11.0.5.jar%2385!/:?] {}
+	at cpw.mods.bootstraplauncher@2.0.2/cpw.mods.bootstraplauncher.BootstrapLauncher.run(BootstrapLauncher.java:210) [bootstraplauncher-2.0.2.jar:?] {}
+	at cpw.mods.bootstraplauncher@2.0.2/cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:69) [bootstraplauncher-2.0.2.jar:?] {}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?] {}
+	at net.neoforged.devlaunch.Main.main(Main.java:57) [DevLaunch-1.0.2.jar:?] {}
+[15:38:31] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[15:38:31] [NeoForge Version Check/INFO] [ne.ne.fm.VersionChecker/]: [create] Starting version check at https://api.modrinth.com/updates/create/forge_updates.json?neoforge=only
+[15:38:31] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/user/CreateChemE/build/moddev/artifacts/neoforge-21.1.219.jar%23132!/assets/.mcassetsroot' uses unexpected schema
+[15:38:31] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/home/user/CreateChemE/build/moddev/artifacts/neoforge-21.1.219.jar%23132!/data/.mcassetsroot' uses unexpected schema
+[15:38:31] [main/INFO] [co.si.cr.Create/]: Created 157 recipes which will be injected into the game
+[15:38:31] [main/INFO] [co.si.cr.Create/]: Created 0 tags which will be injected into the game
+[15:38:31] [main/INFO] [ne.ne.ne.ga.GameTestHooks/]: Enabled Gametest Namespaces: [createcheme_fluid_test]
+[15:38:31] [Yggdrasil Key Fetcher/ERROR] [mojang/YggdrasilServicesKeyInfo]: Failed to request yggdrasil public key
+com.mojang.authlib.exceptions.MinecraftClientException: Failed to read value Host not in allowlist: api.minecraftservices.com. Add this host to your network egress settings to allow access.
+	at MC-BOOTSTRAP/authlib@6.0.54/com.mojang.authlib.minecraft.client.ObjectMapper.readValue(ObjectMapper.java:32) ~[authlib-6.0.54.jar%2380!/:?] {}
+	at MC-BOOTSTRAP/authlib@6.0.54/com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:99) ~[authlib-6.0.54.jar%2380!/:?] {}
+	at MC-BOOTSTRAP/authlib@6.0.54/com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:57) ~[authlib-6.0.54.jar%2380!/:?] {}
+	at MC-BOOTSTRAP/authlib@6.0.54/com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo.fetch(YggdrasilServicesKeyInfo.java:114) ~[authlib-6.0.54.jar%2380!/:?] {}
+	at MC-BOOTSTRAP/authlib@6.0.54/com.mojang.authlib.yggdrasil.YggdrasilServicesKeyInfo$1.run(YggdrasilServicesKeyInfo.java:89) ~[authlib-6.0.54.jar%2380!/:?] {}
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572) ~[?:?] {}
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[?:?] {}
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?] {}
+	at java.base/java.lang.Thread.run(Thread.java:1583) [?:?] {}
+Caused by: com.google.gson.JsonSyntaxException: java.lang.IllegalStateException: Expected BEGIN_OBJECT but was STRING at line 1 column 1 path $
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:397) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:1227) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:1137) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:1047) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:982) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/authlib@6.0.54/com.mojang.authlib.minecraft.client.ObjectMapper.readValue(ObjectMapper.java:30) ~[authlib-6.0.54.jar%2380!/:?] {}
+	... 10 more
+Caused by: java.lang.IllegalStateException: Expected BEGIN_OBJECT but was STRING at line 1 column 1 path $
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.stream.JsonReader.beginObject(JsonReader.java:393) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:386) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:1227) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:1137) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:1047) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/com.google.gson@2.10.1/com.google.gson.Gson.fromJson(Gson.java:982) ~[gson-2.10.1.jar%2373!/:?] {}
+	at MC-BOOTSTRAP/authlib@6.0.54/com.mojang.authlib.minecraft.client.ObjectMapper.readValue(ObjectMapper.java:30) ~[authlib-6.0.54.jar%2380!/:?] {}
+	... 10 more
+[15:38:31] [main/INFO] [KubeJS Server/]: Capturing errors for server scripts enabled
+[15:38:31] [main/INFO] [KubeJS Server/]: server_scripts:main.js#2: Hello, World! (Loaded server example script)
+[15:38:31] [main/INFO] [KubeJS Server/]: Loaded script server_scripts:main.js in 0.001 s
+[15:38:31] [main/INFO] [KubeJS Server/]: Loaded 1/1 KubeJS server scripts in 0.042 s with 0 errors and 0 warnings
+[15:38:31] [main/INFO] [KubeJS/]: Loaded 20 data packs: bundle, trade_rebalance, vanilla, KubeJS Virtual Resource Pack [Before Mods, data], mod_data, mod/rhino, mod/flywheel, mod/ponder, mod/create, mod/neoforge, mod/kubejs, mod/betteradvancedtooltips, mod/createcheme, mod/createcheme_fluid_test, KubeJS Virtual Resource Pack [Internal, data], KubeJS Virtual Resource Pack [Registries, data], KubeJS Virtual Resource Pack [After Mods, data], KubeJS File Resource Pack [data], create:dynamic_data, KubeJS Virtual Resource Pack [Last, data]
+[15:38:32] [NeoForge Version Check/INFO] [ne.ne.fm.VersionChecker/]: [create] Found status: OUTDATED Current: 6.0.10 Target: 6.0.10+mc1.21.1
+[15:38:33] [main/INFO] [minecraft/RecipeManager]: Loaded 2818 recipes
+[15:38:34] [main/INFO] [minecraft/AdvancementTree]: Loaded 2507 advancements
+[15:38:36] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[15:38:36] [Server thread/INFO] [KubeJS Server/]: Capturing errors for server scripts disabled
+[15:38:36] [Server thread/INFO] [KubeJS Server/]: Server resource reload complete!
+[15:38:36] [worldgen/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 2%
+[15:38:36] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 270 ms
+[15:38:36] [Server thread/INFO] [minecraft/GameTestServer]: Started game test server
+[15:38:36] [Server thread/INFO] [ne.ne.ne.se.pe.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[15:38:37] [Server thread/INFO] [co.wo.cr.CreateChemE/]: fluid_world status=LOADED format=6 online_tick=0 islands=0 certificates_saved=0 certificates_restored=0 awake=0
+[15:38:37] [Server thread/INFO] [co.wo.cr.CreateChemE/]: process_solver lifecycle=STARTED epoch=1 workers=1 ready_capacity=8 deadline_ms=45000 graceful_shutdown_ms=1000 forced_shutdown_ms=1000
+[15:38:37] [Server thread/INFO] [minecraft/GameTestServer]: 33 tests are now running at position -2893692, -59, -4531848!
+[15:38:37] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-modules:0' (1 tests)...
+[15:38:37] [Server thread/INFO] [minecraft/GameTestServer]: [                                 ]
+[15:38:37] [Server thread/INFO] [minecraft/GameTestServer]: [                                 ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [_                                ]
+[15:38:38] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-menu-unload:0' (1 tests)...
+[15:38:38] [Server thread/INFO] [minecraft/GameTestServer]: [+                                ]
+[15:38:39] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'material-resource-reload:0' (1 tests)...
+[15:38:39] [Server thread/INFO] [minecraft/GameTestServer]: [++                               ]
+[15:38:39] [Server thread/INFO] [KubeJS Server/]: Capturing errors for server scripts enabled
+[15:38:39] [Server thread/INFO] [KubeJS Server/]: server_scripts:main.js#2: Hello, World! (Loaded server example script)
+[15:38:39] [Server thread/INFO] [KubeJS Server/]: Loaded script server_scripts:main.js in 0.002 s
+[15:38:39] [Server thread/INFO] [KubeJS Server/]: Loaded 1/1 KubeJS server scripts in 0.017 s with 0 errors and 0 warnings
+[15:38:39] [Server thread/INFO] [KubeJS/]: Loaded 21 data packs: bundle, trade_rebalance, vanilla, KubeJS Virtual Resource Pack [Before Mods, data], mod_data, mod/rhino, mod/flywheel, mod/ponder, mod/create, mod/neoforge, mod/kubejs, mod/betteradvancedtooltips, mod/createcheme, mod/createcheme_fluid_test, create:dynamic_data, KubeJS Virtual Resource Pack [Internal, data], KubeJS Virtual Resource Pack [Registries, data], KubeJS Virtual Resource Pack [After Mods, data], KubeJS File Resource Pack [data], file/material-reload-test, KubeJS Virtual Resource Pack [Last, data]
+[15:38:39] [Server thread/INFO] [KubeJS Server/]: server_scripts:main.js#2: Hello, World! (Loaded server example script)
+[15:38:39] [Server thread/INFO] [KubeJS Server/]: Loaded script server_scripts:main.js in 0.001 s
+[15:38:39] [Server thread/INFO] [KubeJS Server/]: Loaded 1/1 KubeJS server scripts in 0.008 s with 0 errors and 0 warnings
+[15:38:40] [Server thread/INFO] [minecraft/RecipeManager]: Loaded 2818 recipes
+[15:38:40] [Server thread/INFO] [minecraft/AdvancementTree]: Loaded 2507 advancements
+[15:38:40] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Before Mods, data]
+[15:38:40] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Internal, data]
+[15:38:40] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Registries, data]
+[15:38:40] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [After Mods, data]
+[15:38:40] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Last, data]
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: Capturing errors for server scripts disabled
+[15:38:41] [Server thread/INFO] [minecraft/MinecraftServer]: Reloaded with no KubeJS errors!
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: Server resource reload complete!
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: Capturing errors for server scripts enabled
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: server_scripts:main.js#2: Hello, World! (Loaded server example script)
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: Loaded script server_scripts:main.js in 0.001 s
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: Loaded 1/1 KubeJS server scripts in 0.008 s with 0 errors and 0 warnings
+[15:38:41] [Server thread/INFO] [KubeJS/]: Loaded 21 data packs: bundle, trade_rebalance, vanilla, KubeJS Virtual Resource Pack [Before Mods, data], mod_data, mod/rhino, mod/flywheel, mod/ponder, mod/create, mod/neoforge, mod/kubejs, mod/betteradvancedtooltips, mod/createcheme, mod/createcheme_fluid_test, create:dynamic_data, KubeJS Virtual Resource Pack [Internal, data], KubeJS Virtual Resource Pack [Registries, data], KubeJS Virtual Resource Pack [After Mods, data], KubeJS File Resource Pack [data], file/material-reload-test, KubeJS Virtual Resource Pack [Last, data]
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: server_scripts:main.js#2: Hello, World! (Loaded server example script)
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: Loaded script server_scripts:main.js in 0.001 s
+[15:38:41] [Server thread/INFO] [KubeJS Server/]: Loaded 1/1 KubeJS server scripts in 0.006 s with 0 errors and 0 warnings
+[15:38:42] [Worker-Main-2/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Before Mods, data]
+[15:38:42] [Worker-Main-2/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Internal, data]
+[15:38:42] [Worker-Main-2/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Registries, data]
+[15:38:42] [Worker-Main-2/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [After Mods, data]
+[15:38:42] [Worker-Main-2/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Last, data]
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: Capturing errors for server scripts disabled
+[15:38:42] [Server thread/INFO] [minecraft/MinecraftServer]: Reloaded with no KubeJS errors!
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: Server resource reload complete!
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: Capturing errors for server scripts enabled
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: server_scripts:main.js#2: Hello, World! (Loaded server example script)
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: Loaded script server_scripts:main.js in 0.001 s
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: Loaded 1/1 KubeJS server scripts in 0.008 s with 0 errors and 0 warnings
+[15:38:42] [Server thread/INFO] [KubeJS/]: Loaded 20 data packs: bundle, trade_rebalance, vanilla, KubeJS Virtual Resource Pack [Before Mods, data], mod_data, mod/rhino, mod/flywheel, mod/ponder, mod/create, mod/neoforge, mod/kubejs, mod/betteradvancedtooltips, mod/createcheme, mod/createcheme_fluid_test, KubeJS Virtual Resource Pack [Internal, data], KubeJS Virtual Resource Pack [Registries, data], KubeJS Virtual Resource Pack [After Mods, data], KubeJS File Resource Pack [data], create:dynamic_data, KubeJS Virtual Resource Pack [Last, data]
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: server_scripts:main.js#2: Hello, World! (Loaded server example script)
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: Loaded script server_scripts:main.js in 0.001 s
+[15:38:42] [Server thread/INFO] [KubeJS Server/]: Loaded 1/1 KubeJS server scripts in 0.005 s with 0 errors and 0 warnings
+[15:38:42] [Server thread/INFO] [minecraft/RecipeManager]: Loaded 2818 recipes
+[15:38:42] [Server thread/INFO] [minecraft/AdvancementTree]: Loaded 2507 advancements
+[15:38:42] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Before Mods, data]
+[15:38:42] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Internal, data]
+[15:38:42] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Registries, data]
+[15:38:42] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [After Mods, data]
+[15:38:42] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Last, data]
+[15:38:44] [Server thread/INFO] [KubeJS Server/]: Capturing errors for server scripts disabled
+[15:38:44] [Server thread/INFO] [minecraft/MinecraftServer]: Reloaded with no KubeJS errors!
+[15:38:44] [Server thread/INFO] [KubeJS Server/]: Server resource reload complete!
+[15:38:44] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-presentation-load:0' (1 tests)...
+[15:38:44] [Server thread/INFO] [minecraft/GameTestServer]: [+++                              ]
+[15:38:44] [Server thread/INFO] [minecraft/GameTestServer]: [+++                              ]
+[15:38:45] [Server thread/INFO] [minecraft/GameTestServer]: [+++_                             ]
+[15:38:45] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-property-reload-modules:0' (1 tests)...
+[15:38:46] [Server thread/INFO] [minecraft/GameTestServer]: [++++                             ]
+[15:38:46] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:46] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++_                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-completion-continuation:0' (1 tests)...
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++                            ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-wakeup:0' (1 tests)...
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++                           ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++_                          ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++_                          ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++_                          ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [++++++_                          ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-pumped-fill:0' (1 tests)...
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++                          ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:47] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++_                         ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-independent-events:0' (1 tests)...
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++                         ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++_                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-pump-refused:0' (1 tests)...
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++                        ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-solids:0' (1 tests)...
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++                       ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++_                      ]
+[15:38:48] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++_                      ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-property-reload:0' (2 tests)...
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++                      ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++__                    ]
+[15:38:49] [Server thread/WARN] [co.wo.cr.CreateChemE/]: fluid_island=44 committed_tick=1754 status=HELD: property data changed; restore the qualified data or use a fresh development world after an explicit data reset
+[15:38:49] [Server thread/WARN] [co.wo.cr.CreateChemE/]: fluid_island=46 committed_tick=1754 status=HELD: property data changed; restore the qualified data or use a fresh development world after an explicit data reset
+[15:38:49] [Server thread/WARN] [co.wo.cr.CreateChemE/]: fluid_island=44 committed_tick=1754 status=HELD: property data changed; restore the qualified data or use a fresh development world after an explicit data reset
+[15:38:49] [Server thread/WARN] [co.wo.cr.CreateChemE/]: fluid_island=46 committed_tick=1754 status=HELD: property data changed; restore the qualified data or use a fresh development world after an explicit data reset
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++__                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/WARN] [co.wo.cr.CreateChemE/]: fluid_island=44 committed_tick=2080 status=HELD: property data changed; restore the qualified data or use a fresh development world after an explicit data reset
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++_+                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-ambient-generator:0' (1 tests)...
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++                    ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-water-pump-startup:0' (1 tests)...
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++                   ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-persistence:0' (1 tests)...
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++                  ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++_                 ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++_                 ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++_                 ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-crude-pump-startup:0' (1 tests)...
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++                 ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++_                ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-coordinator:0' (1 tests)...
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++                ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++_               ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++_               ]
+[15:38:49] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-large-world:0' (1 tests)...
+[15:38:49] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++               ]
+[15:38:50] [Server thread/INFO] [co.wo.cr.CreateChemE/]: fluid_placement_gametest devices=5000 place_ms=979.4 one_more_pipe_median_ms=1.217
+[15:38:51] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'defaultBatch:0' (2 tests)...
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++              ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++_            ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-presentation-open:0' (1 tests)...
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++            ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++_           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'column-presets:0' (1 tests)...
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++           ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-packets:0' (1 tests)...
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++          ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-presentation-status:0' (1 tests)...
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++         ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++_        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-phase-port-outlets:0' (1 tests)...
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++        ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:51] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++_       ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-compressor-transfer:0' (1 tests)...
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++       ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++_      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-presentation-edit:0' (1 tests)...
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++      ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++_     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-persistence-certified:0' (1 tests)...
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++     ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:52] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++_    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-world:0' (1 tests)...
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++    ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++_   ]
+[15:38:53] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-world-unloaded:0' (1 tests)...
+[15:38:53] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++   ]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++_  ]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++_  ]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-movement:0' (1 tests)...
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++  ]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestRunner]: Running test batch 'fluid-completion-budget:0' (1 tests)...
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++ ]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++ ]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: [++++++++++++++++++++++++++++++++_]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: [+++++++++++++++++++++++++++++++++]
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: ========= 33 GAME TESTS COMPLETE IN 17.27 s ======================
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: All 33 required tests passed :)
+[15:38:54] [Server thread/INFO] [minecraft/GameTestServer]: ====================================================
+[15:38:54] [Server thread/INFO] [co.wo.cr.CreateChemE/]: process_solver lifecycle=STOPPING terminated=true forced=false never_started=0 terminal_completions=0
+[15:38:54] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[15:38:54] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[15:38:54] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[15:38:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:overworld
+[15:38:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:the_nether
+[15:38:56] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[Test Level]'/minecraft:the_end
+[15:38:56] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[15:38:56] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[15:38:56] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[15:38:56] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+[15:38:56] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Before Mods, data]
+[15:38:56] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Internal, data]
+[15:38:56] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Registries, data]
+[15:38:56] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [After Mods, data]
+[15:38:56] [Server thread/INFO] [KubeJS/]: Closed KubeJS Virtual Resource Pack [Last, data]
+[15:38:56] [Server thread/INFO] [co.wo.cr.CreateChemE/]: process_solver lifecycle=STOPPED
+[15:38:56] [Server thread/INFO] [minecraft/GameTestServer]: Game test server shutting down
+
+BUILD SUCCESSFUL in 1m
+11 actionable tasks: 6 executed, 5 up-to-date
+EXIT=0

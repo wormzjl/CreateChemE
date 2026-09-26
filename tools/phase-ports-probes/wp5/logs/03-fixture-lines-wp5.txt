@@ -1,0 +1,48 @@
+=== com.wormzjl.createcheme.runtime.fluid.DeadHeadedLineIslandTest.xml
+(reopened at 400 kPa) OK intervals=40 accepted=1 rejected=0 tank P=353969.4046289821 mass=709.7428590748111 level head=6948.902208445034 bottom=360918.30683742714
+(lowered back to 101.325 kPa) OK intervals=40 accepted=1 rejected=0 tank P=353969.4046289821
+(flat filter)   OK intervals=40 accepted=1 rejected=0
+(rising filter) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 101326 Pa, adverse 1 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 110000 Pa, adverse 8675 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 140395 Pa, adverse 39070 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 200000 Pa, adverse 98675 Pa) OK intervals=40 accepted=1 rejected=0
+(rising, 101325 Pa against 39070.02218088346 Pa of column) OK intervals=40 accepted=1 rejected=0
+
+=== com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest.xml
+
+(balanced) generator at 400000 Pa, tank charged at 360918.3068374132 Pa: OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068374132 mass=4.082632911146436
+
+=== dead-headed at 101325 Pa, adverse column 39070.02218088346 Pa ===
+(rising plain)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  plain)   OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(rising filter) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  filter)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(falling plain) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=140395.02217856614 mass=261.82467420693274
+rising line:
+  node[0] id=1 GENERATOR y=-59.0 P=101325.0 rho=996.0083764813535 liquid=1.0 vapour=0.0
+  node[1] id=5 RESERVOIR y=-55.0 P=101325.0 rho=1.145353086183201 liquid=0.0 vapour=1.0
+  pipe id=1032387407353448371 0->1 Passive filter=false blocked=0
+
+=== generator at 400000 Pa, water column over 4 m = 39081.6931625868 Pa ===
+(flat control)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=400000.0016998491 mass=743.1612564860314
+(rising  generator->3 pipes up->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=353969.4046289821 mass=709.7428590748058 offset vs flat=-46030.59707086696 Pa level head=6948.902208444982 liquid=708.5908244349479 T=298.2307261912815 bottom=360918.3068374271
+(falling generator->3 pipes down->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=439081.69755246036 mass=766.0002796852082 offset vs flat=39081.69585261127 Pa level head=7500.611779203041 liquid=764.8495438506566 T=298.2524544056487 bottom=446582.3093316634
+(rising  generator->pipe->filter->pipe->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=353969.725476129 mass=709.7429525640947 offset vs flat=-46030.27622372011 Pa level head=6948.903124811458 liquid=708.5909178783232 T=298.2308556320758 bottom=360918.62860094046
+(rising  generator->pump->2 pipes->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=852452.8285078077 mass=879.1451750244463 offset vs flat=452452.8268079586 Pa level head=8610.209886452141 liquid=877.9970618358095 T=298.2533397735389 bottom=861063.0383942599
+
+=== com.wormzjl.createcheme.runtime.fluid.PhysicalFluidTopologyTest.xml
+STACK_HEAD head=2867.947248155132 column=19535.01109044173 void=122293.98471451929 firstFlow=1.8882869607890829 drained=9.725307697405862 kg restP=99986.4209847015 restHead=2772.5723651790913 imbalance=-2.168235369026661E-8 lastFlow=0.0 lastMode=CLOSED
+STACK_PASS upperP=104648.25700445412 lowerP=104671.21622719601 upperLiquidKg=0.0 lowerLiquidKg=292.4259234867903
+
+=== com.wormzjl.createcheme.runtime.fluid.TankOutletsTest.xml
+TANK_OUTLET port=LIQUID massFlow=17.941107663212126 moleFlow=995.8828096600288 drawn=1 head=3912.6476911867876
+TANK_OUTLET port=VAPOR massFlow=0.017497512874168238 moleFlow=0.6311749915151451 drawn=2 head=0.0
+TANK_OUTLET port=BULK massFlow=0.5967274442748657 moleFlow=33.108278002104264 drawn=1 head=0.0

@@ -944,3 +944,157 @@ Fixture lines of G1: `06-fixture-lines-wp34.txt`. The harness runs of the migrat
 ### 13. Material
 
 `tools/phase-ports-probes/wp3-wp4/`: `src/CrudeFlashProbe.java` (the crude's vapour share and bubble point, `results/crude-flash.txt`), `src/Wp34Probe.java` (fixture 8 fill rates, `results/fixture8-fill-rates.txt`; fixture 4 against the line alone, a passive closed line and a closed compressor, `results/fixture4-bitwise-variants-0.1s.txt`), `src/MigrationValueProbe.java` (section 9's old/new values; the HEAD variant is the same file with `NEW?new FlowControl.Compressor(...):` removed, `sed -E 's/NEW\?new FlowControl\.Compressor\([^)]*\):/ /g'`), `results/` (values, the P24/M3/M4 reports old and new), `logs/` (gates 01-05 and 07, fixture lines 06, harness runs 08-09).
+
+## WP5: runtime mapping - faces to ports, compressor block, format 6, GUI (2026-09-26)
+
+- Author: Claude (Opus 5.5), `/home/user/CreateChemE` (cloud container), branch `claude/phase-ports-compressor`, base `5a375ea` (WP3+WP4 and their tools commit). Code commit `9744a45` (`WIP phase-ports WP5: faces to ports, compressor block, format 6, GUI`); tools and documents in the commit after it. Not merged, not pushed.
+- Scope: plan section 4 (4.1-4.4) as amended by D11 and WP3/WP4 (the "WP5 items" of section "WP3 + WP4", 12), the three GameTests of plan section 6, the four physical-topology re-baselines of Appendix C.5 item 5, the level-head review's fixture 6.
+- Science not touched, except one visibility change: `PassiveStepSolver.LEVEL_HEAD_HEIGHT` is `public` (was package-private) so the tank page and the re-baselined runtime tests state the D9 head with the solver's constant. The tank lines need no new result field: the committed result already exposes what each connection drew, phase by phase, in its pipe transfers (`PipeTransfer.sample` samples every drawn phase since D11), computed by the solver.
+
+### 1. What changed, per file
+
+| file | change |
+|---|---|
+| `runtime/fluid/PhysicalFluidTopology.java` | `compile` records, for every link with a RESERVOIR end, the face as the direction from the tank to its neighbour (`tankFaces`, keyed by link id); `port(device, face)` maps UP -> VAPOR, DOWN -> LIQUID, any horizontal face -> BULK, and every non-tank end to BULK; each run's first and last segment links give its two ends' ports, carried through the `fromEnd ? b : a` swap (`withPorts(fromEnd ? endPort : startPort, fromEnd ? startPort : endPort)`); the two halves of a doubly actuated run get their outer end's port and a BULK middle; the filter's positive-side remap rebuilds a pipe with its ports (it used the 7-argument constructor, which would have reset them to BULK). |
+| `runtime/fluid/FluidWorldAuthority.java` | `place`: `COMPRESSOR -> Compressor(0.05, 3.0, 1)` (plan Appendix B). `view`: a mover's status line gains, when its endpoint mode is `INLET_WRONG_PHASE`, the typed reason of `InletPhase` with the walk's end node named as a device (`inletReason`, below), and otherwise its limit on the suction stream through `Mover.riseLimit` (pump: unchanged text and value; compressor: "(limit N Pa at this suction)" = `(r_max - 1) P_s`); a tank's view carries its outlet lines (`TankOutlets.of`). |
+| `runtime/fluid/TankOutlets.java` | new: a tank's outlets from the committed graph and the last interval's result (section 3). |
+| `runtime/fluid/FluidView.java` | new component `outlets` (a list of `Outlet(pipeId, port, massFlow, moleFlow, drawn, head)`, at most 6, validated), `withOutlets`; every existing constructor passes an empty list. |
+| `network/FluidNetwork.java` | `PROTOCOL` fluid-6 -> **fluid-7**; `Controls` gains `maximumPressureRatio` as its last component (bounds 1.01-10, `MINIMUM/MAXIMUM/DEFAULT_PRESSURE_RATIO`; the 8- and 7-argument constructors pass the default 3.0); `Controls.from` reads a mover's target (pump or compressor) and a compressor's ratio; the edit switch builds `Compressor(volumeFlow, ratio, 1)` for a COMPRESSOR (efficiency 1, as the pump's edit sets it); `MenuData` refuses outlets on a device that is not a tank. |
+| `client/gui/screens/inventory/FluidDeviceScreen.java` | COMPRESSOR case beside PUMP: "Suction flow (m3/s)" (`flow_input`) and "Max pressure ratio (out/in)" (`ratio_input`); `apply` sends the ratio; the compressor's rail shows last flow, pressure change and "Discharge / suction pressure" (the suction junction's pressure plus the head, over it: the quantity the ratio limits); a status containing "ERROR" or "HELD" is drawn in the warning colour (the pipe rail's existing rule, now on every device's status line); the tank rail lists its connections by face (section 3). |
+| `runtime/fluid/FluidCheckpointCodec.java` | `VERSION` 5 -> **6**; control tag 3 for `Compressor` (target, ratio, efficiency) in the registration and topology writers and readers; two port bytes per pipe after its control; JSON graph: pipes require `firstPort`/`secondPort`, a `"compressor"` control reads `target`, `limit` (the ratio) and `efficiency`; javadoc. `FluidCheckpointStore`, `FluidSavedData`: javadoc "format 6". |
+| `world/level/block/FluidDeviceBlock.java` | `face`: a COMPRESSOR connects along its facing axis only, like the pump (`:56`). |
+| `registry/ModBlocks.java`, `ModItems.java`, `ModBlockEntities.java`, `CreateChemE.java` | `fluid_compressor` block (the `fluid` factory: metal, no occlusion, piston-proof), its block item, the device block entity's valid blocks, the creative tab entry after the pump. |
+| resources | `blockstates/fluid_compressor.json` (the pump's six facings), `models/block/fluid_compressor.json` (parent `createcheme:block/fluid_pump`, textures overridden with vanilla `light_gray_concrete` body and particle and `oxidized_copper` motor: no mod texture exists, the pump itself uses vanilla textures), `models/item/fluid_compressor.json`, `loot_table/blocks/fluid_compressor.json`, the pickaxe and Create `non_movable` tags, lang (block name "Process Gas Compressor" and the GUI keys of section 3). |
+| tests | `PhysicalFluidTopologyTest` +6 (section 7), new `TankOutletsTest` (2), `FluidCheckpointCodecTest` +3, `FluidPacketCodecTest` +2 (protocol assertion fluid-7, test name kept), `FluidCheckpointFormatTest` (format 6 expectation), `McpGameplayRegressionTest` (the archived capture predates ports: the test adds BULK ports as it already adds blocked masks and filters), the four re-baselines (section 6). GameTests: new `FluidPhasePortGameTests` (3), `FluidPacketGameTests` block list gains the compressor. |
+
+The cloud harness needed no stub or exclusion-list change: its `FluidNetwork` and `FluidDeviceBlock` stand-ins only carry what `FluidWorldAuthority` names (`MenuData(view)`, `snapshot`, `deliver`; `kind()`), which did not change, and every new test is Minecraft-free except the two `FluidPacketCodecTest` methods, whose class is already excluded.
+
+### 2. The face rule as compiled (plan 4.1, A1)
+
+- Only a tank (RESERVOIR) end carries a port; generators, voids, junctions, actuator and filter nodes stay BULK whatever face they are reached by (asserted: a generator above a tank's top pipe, voids below and beside).
+- The face is the direction from the tank to its neighbour on the link the compiler creates at `:60-61` (a boundary link, so an actuator or filter directly on a tank face takes the same rule: asserted for a pump on the DOWN face in both orientations and both identity orders, and a filter on the UP face in both orientations).
+- A pipe's ports are its run's end ports, swapped with the ends when the run is stated from its end (an actuator driving into the tank from the run's second end): the pump facing UP into a tank's bottom compiles to `pump junction -> tank` with the LIQUID port at the second end, whether the tank's identity is lower (swap branch) or higher (no swap).
+- Two tanks touching never connect (unchanged); a pipe block between two stacked tanks joins the upper tank's LIQUID port to the lower tank's VAPOR port.
+- The rate-solve PORT copy keeps the ports (WP1 rule, `PassiveIntervalSolver.portRate`/`coldRateSeed` reuse `graph.pipes()`); the certificate digest carries them (section 5).
+
+### 3. GUI (plan 4.3, engine-owned presentation)
+
+Everything below is built in `FluidWorldAuthority.view()` from the island's cached committed snapshot (graph and last result) on the engine's presentation schedule and sent only to subscribed menus; no solver, no flash: `InletPhase.supply` and `TankOutlets` read stored phase amounts (masses, volumes, molecular weights) and the solver's pipe transfers. Nothing is computed in a packet handler or on a menu open (an open replays the last published snapshot, unchanged).
+
+**Mover status.** `... / INLET_WRONG_PHASE / ERROR: pump inlet not liquid (vapour 100.0 % by volume, from reservoir at -1015848, -59, -3401253)` (measured, GameTest 2); the compressor's text `ERROR: compressor inlet not gas (condensed ... % by mass | solids ... by volume, from <device>)`. The reason is `InletPhase.reason` on the committed graph (the state the next slice decides on) with the last interval's `advancedSeconds()` as the slice, and its "node N" replaced by the device label the status lines already use (`deviceLabel`: "<kind> at x, y, z", "pipe junction N" for a compiled junction). A refused mover shows no limit. Otherwise: pump `(limit N Pa on this fluid)` (the same value as before WP5: its setting scaled by the suction junction's density), compressor `(limit N Pa at this suction)` (measured `FULL / CLOSED (limit 105318 Pa at this suction)` at a 52659 Pa suction, ratio 3). Warning colour for any status containing "ERROR" or "HELD".
+
+**Compressor page.** Fields "Suction flow (m³/s)" (`flow_input`, existing) and "Max pressure ratio (out/in)" (`ratio_input`, new; 1.01-10: outside it the screen's own `Controls` construction fails and it shows its existing "Check numeric inputs ..." message; a hand-made packet is refused by the server with "The pressure ratio must lie between 1.01 and 10.0"); rail: temperature and pressure of its suction junction, "Last flow", "Pressure change" (the head), "Discharge / suction pressure" (new key `pressure_ratio`).
+
+**Tank page, "Connections by face"** (rail, below volume and mass; hint on hover). One entry per connection with an end at the tank, two lines each:
+
+| port | first line | second line (last interval) |
+|---|---|---|
+| VAPOR (UP) | "Top: gas outlet" | "drawing gas · N kg/h" or "drawing liquid (overflow) · N kg/h" |
+| BULK (sides) | "Side: mixed outlet" | "drawing all phases together · N kg/h" |
+| LIQUID (DOWN) | "Bottom: liquid outlet (head X kPa)" (the head when the tank holds condensed mass, else "Bottom: liquid outlet") | "drawing water · N kg/h", "drawing oil · N kg/h" or "drawing gas · N kg/h" |
+| any, net inflow | as above | "receiving · N kg/h" |
+| any, no flow | as above | "no flow" |
+
+Flows follow the screen's mass/mole toggle (kg/h or kmol/h). "The phase drawn" is the phase that carried the most mass in what the connection moved out of the tank over the last interval (`TankOutlets.leading`, on the solver's pipe transfer: phase moles times molecular weights); the flows are the transfer's net out of the tank over `advancedSeconds` (equal to the result's mean mass flow with the tank end's sign, asserted to 1e-9); the head is `g m_c H / V` on the committed state (D9). The hint (`outlets.hint`) carries the D11 rule and the plan's wording: "Top outlets draw gas first, then the lighter and the heavier liquid. Bottom outlets draw the heaviest liquid first, then the lighter liquid, then gas. Side outlets draw all phases together. Inflow through any face is not distinguished." No player-facing string said "bulk withdrawal" before WP5 (grep of `src/main`, lang included), so nothing was renamed; the phrase exists only in this hint.
+
+New lang keys: `block.createcheme.fluid_compressor`, `gui.createcheme.fluid.ratio_input`, `.pressure_ratio`, `.outlets`, `.outlets.hint`, `.outlet.top`, `.outlet.side`, `.outlet.bottom`, `.outlet.bottom_head`, `.outlet.drawing_gas`, `.outlet.drawing_overflow`, `.outlet.drawing_water`, `.outlet.drawing_oil`, `.outlet.drawing_all`, `.outlet.receiving`, `.outlet.idle`, `.outlet.more`.
+
+### 4. Checkpoint format 6 and wire fluid-7 (plan 4.4)
+
+- Core record `FluidFormat = 6`; any other format is refused with the existing "Fluid checkpoint format N cannot be read ... Create a fresh world for this development build." No migration, no absent-field default, no legacy test.
+- Controls, in the world ledger's registration and in an island unit's topology: tag 0 passive, 1 pump (target, max added pressure, efficiency), 2 valve (target pressure), **3 compressor (target suction volume flow, max pressure ratio, efficiency)**, each `f64`; an unknown tag is refused ("unknown control" / "Unknown saved control").
+- Island topology, per pipe: id `i64`, first and second node `varint`, section count and sections, the control, then **the first end's and the second end's `PhasePort` ordinal, one `u8` each** (0 BULK, 1 VAPOR, 2 LIQUID; out of range refused "unknown pipe port"). A port on a node that is not a tank is refused by the `PassiveNetwork` constructor. The new endpoint mode (`INLET_WRONG_PHASE`, ordinal 9) and `Kind.COMPRESSOR` (ordinal 7) persist through the existing ordinals (A43).
+- JSON graph (archived captures): each pipe requires `"firstPort"` and `"secondPort"` (names); `"compressor"` reads `target`, `limit` (= the ratio) and `efficiency`.
+- Wire: protocol `fluid-7`. `Controls` carries `maximumPressureRatio` (required: a payload without it deserialises to 0 and is refused); the live view carries `outlets` (required: a live payload without the list is refused).
+- Measured round trips: an island with every port kind and a refused compressor after one interval (graph pipes, ports, controls, endpoint modes, flows, anchor; re-encoded byte for byte); a world-ledger compressor registration; the JSON shape with ports and a compressor, a pipe without ports refused, a LIQUID port on a generator end refused.
+
+### 5. Certificate digest (A12, WP4): verified, no change
+
+`IslandCertificate.graphIdentity` digests, per pipe, the control (`"compressor"`, target, ratio, efficiency, since WP4) and one integer per end for the port ordinal (since WP1) under the header `createcheme-certificate-graph-identity-2`. Compiled islands with a vertical tank link now digest non-BULK ports, so their certificates differ from a 0.6.x world's; no compatibility work (a stale certificate is discarded on load, A12).
+
+### 6. Physical-topology re-baselines (Appendix C.5 item 5) and the moves classified
+
+The four assertions now state the tank's **bottom-port** pressure, `P + g m_c H / V`, against the same expectation and tolerance (forced by D9 with A1: the line enters through the tank's DOWN face):
+
+| assertion | old headspace (5a375ea) | new headspace | level head | new bottom `P + h` | expectation |
+|---|---|---|---|---|---|
+| `ElevatedBlockLineIslandTest` rising line (`:234`, was `:216`) | 360918.3081 Pa | 353969.4046 Pa | 6948.90 Pa (708.59 kg) | 360918.3068 Pa | 400000 - rho g 4 = 360918.3068 Pa, 1e-5 P |
+| rising filter line (`:240`, was `:220`) | 360918.3787 Pa | 353969.7255 Pa | 6948.90 Pa | 360918.6286 Pa | same |
+| rising pump line (`:251`, was `:229`) | 861062.9819 Pa | 852452.8285 Pa | 8610.21 Pa (878.0 kg) | 861063.0384 Pa | P + 500 kPa rho_s/rho_ref - rho g 4, 1e-4 (P + head) |
+| `DeadHeadedLineIslandTest` raised generator (`:252`, was `:243`) | 360918.3081 Pa | 353969.4046 Pa | 6948.90 Pa | 360918.3068 Pa | 400000 - rho g 4, 1e-5 P |
+
+The headspace rests 6.95 kPa (8.61 kPa pumped) lower: `LEVEL_HEAD_REVIEW.md` estimated about 7 kPa; the D9 review's code-built equivalent (charged at 150 kPa) measured -5.61 kPa. The lowered generator's rest (`DeadHeadedLineIslandTest`, not asserted on pressure) moves with it (353969.4046 Pa).
+
+**Other moves (classified before touching anything).** A full diff of every printed line of the cloud harness on `5a375ea` against WP5 (`logs/00` against `logs/01`) shows, besides the four lines above, the new tests' lines, timings and one reordered `HashMap` print: the two **falling lines** (tank reached through its UP face, a VAPOR port, inflow only) land at 439081.69755 Pa instead of 439081.69316 Pa (`ElevatedBlockLineIslandTest`, +4.4 mPa, 1.0e-8 relative) and 140395.02218 Pa instead of 140395.02229 Pa (`DeadHeadedLineIslandTest` "falling plain", -0.11 mPa). Their assertions (1e-5 P) pass unchanged. Cause measured with a one-line probe (`src/up-face-bulk-probe.patch`, `-Dprobe.upBulk=true` compiles UP faces to BULK): both return to the old doubles exactly (`logs/04`). So it is the VAPOR port, not another WP5 change: at the tank end the static readers (column choice, the sign tests of the start closures) read the port's leading phase, the gas, where a BULK end read the bulk (A28, D11), and the rest the line lands on moves at the Newton's landing resolution. WP0's "inflow only, nothing changes" held for the outcome, not to the last digits. Not touched.
+
+### 7. New unit fixtures (measured; Gradle G1)
+
+| test | fixture | measured |
+|---|---|---|
+| `PhysicalFluidTopologyTest.everyFaceOfATankCompilesToItsPortAndOnlyTheTankEndCarriesOne` | a tank with a pipe on each of its six faces to a void (a generator above) | UP VAPOR, DOWN LIQUID, four BULK; every far end BULK; the island solves 0.05 s |
+| `.aStackOfTwoTanksJoinsTheUpperTanksBottomToTheLowerTanksTop` | tank - pipe - tank vertically, both identity orders; two touching tanks | LIQUID at the upper end, VAPOR at the lower; touching tanks: no pipe |
+| `.aPumpOnATanksBottomFaceTakesTheBottomPortInEitherOrientationAndIdentityOrder` | pump under a tank facing DOWN (suction) and UP (discharge), tank id below and above the pump's | suction run LIQUID at the tank; the discharge connection `pump junction -> tank` with LIQUID second port in both identity orders |
+| `.aFilterOnATanksTopFaceKeepsTheTopPortInBothOrientations` | tank - filter (UP / DOWN) - pipe - void | VAPOR at the tank in both (the DOWN-facing filter's remapped pipe keeps it), filter edge BULK, the tank vents |
+| `.aCompiledStackPassesTheUpperTanksWaterDownAndItsGasUp` | 0.3 m3 water under N2 at 1 atm over a N2 tank at 1 atm, one pipe block, 40 x 5 s | first slice: the bottom outlet draws water only (vapour and oil moles exactly 0), the lower top receives, tank lines "drawing water" / "receiving" with flows equal to the result's; every component conserved to 1e-10; end: all 292.43 kg of water in the lower tank, headspaces 104648.26 / 104671.22 Pa (one gas column apart). The water goes down and the gas up the same pipe (the lower tank's top outlet draws gas back into the upper tank's bottom, inflow undistinguished, D3), so a head-only stack of two tanks does not exist: the gas path opens first |
+| `.aTankOverAVoidDrainsOnItsLevelHeadAloneAndRests` (level-head review fixture 6) | the same tank on a pipe block over a void held at `P + rho g 2 + h/2` = 122293.98 Pa (column 19535.01 Pa, head 2867.95 Pa), 40 x 5 s | the column alone cannot lift the headspace to the void; the head drains 9.73 kg (first slice 1.888 kg/s, water only); rest CLOSED with the tank still holding water (head 2772.57 Pa, headspace 99986.42 Pa) at `P + h + rho g 2 - P_void` = -2.2e-8 Pa |
+| `TankOutletsTest.aTankWithTopSideAndBottomOutletsListsWhatEachDrew` | plan section 6 scenario 1 from blocks: 0.5 m3 water under N2 at 120 kPa, top / east / bottom pipes to 1 atm voids, one 5 s slice | top VAPOR 0.0175 kg/s drawing gas (no condensed moles), side BULK 0.597 kg/s (both phases), bottom LIQUID 17.94 kg/s drawing water (no vapour moles), head 3912.65 Pa = `g m_c H/V` exactly; flows = the result's mean flows to 1e-9; no interval: all "no flow" |
+| `TankOutletsTest.theLeadingPhaseIsTheOneThatCarriedTheMostMass` | synthetic transfers | 0.028 kg gas + 0.18 kg water -> water; + 0.018 kg water -> gas; nothing -> none |
+| `FluidCheckpointCodecTest` (3), `FluidPacketCodecTest` (2) | section 4 | as stated there; ratio 1.009, 10.01, NaN, 0 refused, 1.01/3/10 accepted |
+
+### 8. GameTests (plan section 6; `FluidPhasePortGameTests`, run here)
+
+`./gradlew --no-configuration-cache runFluidGameTestServer -PfluidGameTestRunId=wp5-20260926 --console=plain` (fresh world, `logs/06`) and, after adding the measurement prints, again with `-PfluidGameTestRunId=wp5-20260926-final` (fresh world, `logs/10`, summary `logs/12`): **All 33 required tests passed** both times (the 30 existing plus the 3 new; BUILD SUCCESSFUL, 41 s the second time). The NeoForge server runtime set up with the container's network; the only environment messages are the usual missing `server.properties` and the refused Yggdrasil key fetch (`api.minecraftservices.com` not on the allowlist), neither of which a GameTest needs.
+
+| GameTest | measured (final run) |
+|---|---|
+| `aTanksTopSideAndBottomOutletsEachCarryTheirPhase` | tank filled from a 130 kPa water generator on its west side, generator removed, top/east/bottom outlets placed; first interval with flow: tank 124302.5 Pa, 176.1 kg; top VAPOR 0.273 kg/s drawing gas (pipe carries gas only), side BULK 8.95 kg/s (both phases), bottom LIQUID 29.41 kg/s drawing water (pipe carries water only), head 1715.3 Pa; the menu snapshot carries the same lines |
+| `aPumpOnAGasTankIsRefusedWithItsReasonOnItsStatusLine` | `SOLVING / INLET_WRONG_PHASE / ERROR: pump inlet not liquid (vapour 100.0 % by volume, from reservoir at -1015848, -59, -3401253)`, flow 0, no limit shown, the menu snapshot carries it |
+| `aCompressorMovesNitrogenToItsRatioLimitAndCloses` | default `Compressor(0.05, 3, 1)` placed; modes seen `PUMP_TARGET` then `CLOSED`; closed at suction 52659.0 Pa / 247.85 K, discharge 157976.3 Pa / 338.04 K, ratio 2.99999 (asserted within 3e-3); status `FULL / CLOSED (limit 105318 Pa at this suction)` |
+| `FluidPacketGameTests.createAndVanillaMovementRejectEveryFluidBlock` | the compressor block is refused by Create's movement checks and by pistons (tags and `pushReaction` hold) |
+
+The in-game MCP client check cannot run in this container (no display): it is the owner's item (section 11). Client-only resources (blockstate, block and item models, lang) are not parsed by a server; `build -x test` validated the resource pipeline (`processResources`, `jar`, `jarJar`, `verifyMaterialIndex`), and every new JSON file parses.
+
+### 9. Gates
+
+JDK OpenJDK 21.0.10 (container); `JAVA_TOOL_OPTIONS` as set; one Gradle invocation at a time; no dev client. Logs `tools/phase-ports-probes/wp5/logs/`.
+
+| # | command (from `/home/user/CreateChemE`) | result |
+|---|---|---|
+| (pre) | `LIB=<jars> OUT=<dir> REPO=/home/user/CreateChemE bash tools/cloud-science-harness/harness.sh all` on `5a375ea` (`00-...`) | science 223/223, runtime 238/238 with the 33 junction lines identical, adjacent 39/39, chain-100 0.000e+00 |
+| (a) | the same on the WP5 tree (`01-...`) | science 223/223, runtime **249/249** (238 + 11 new), adjacent 45/45, chain-100 0.000e+00, the 33 junction lines identical; no stub or exclusion change |
+| G1 | `./gradlew --no-configuration-cache --no-build-cache test --rerun --tests com.wormzjl.createcheme.science.fluid.* --tests com.wormzjl.createcheme.runtime.fluid.* --console=plain --continue` (`02-...`, 78 s) | **472/472** in 103 classes, 0 skipped: all 459 names of WP3/WP4 plus 13 new, none missing (`02-test-names-wp5.txt`), the four re-baselined assertions green; the 33 junction lines (`02-junction-lines-wp5.txt`) identical to `d10/logs/02-junction-lines-d10.txt` apart from ms/bytes/allocatedMB; **MIXED_GAS_COST 286**; the codec and packet classes of gate (2) (`FluidCheckpointCodecTest`, `FluidCheckpointFormatTest`, `FluidCheckpointStoreTest`, `FluidPacketCodecTest`, `FluidDeviceSpecDomainTest`) are in this selection and green |
+| G1' | `./gradlew ... test --rerun --tests com.wormzjl.createcheme.runtime.Fluid*` (`05-...`) | 17/17 in 4 classes |
+| G2 | `./gradlew --no-configuration-cache fluidSolverRegression -PfluidRegressionMode=exact --console=plain` (`07-...`) | **0.000e+00** on state/moles, temperature, phase fraction and flow |
+| G3 | the adjacent selection (WP1 G3 command; `08-...`) | **45/45** in 7 classes: the 39 plus the 6 new `PhysicalFluidTopologyTest` methods, which the adjacent patterns select |
+| G4 | `./gradlew --no-configuration-cache compileFluidGameTestJava compileMcpCompatJava --rerun --console=plain` (`09-...`) | BUILD SUCCESSFUL, both tasks executed |
+| G5 | the GameTest runs of section 8 (`06-...`, `10-...`, `12-...`) | **33/33** twice on fresh worlds |
+| G6 | `./gradlew --no-configuration-cache build -x test --console=plain` (`11-...`) | BUILD SUCCESSFUL (`verifyMaterialIndex`, `processResources`, `jar`, `jarJar`, `sourcesJar`, `assemble`, `check`) |
+
+Printed fixture lines of G1: `03-fixture-lines-wp5.txt`. The falling-line probe: `04-up-face-bulk-probe.txt`.
+
+### 10. Decisions recorded, findings, options
+
+`DECISION_LOG.md` "WP5 defaults": A46-A54. For the owner:
+
+1. **What "drawing X" means** (A47): the phase that carried the most mass over the last interval. A top vent's overflow slice (fixture 3 of D11: 0.0047 kg gas with 7.83 kg water) reads "drawing liquid (overflow)". Alternatives: the first phase of the port's order that the draw contains (that slice would read "drawing gas"), or every drawn phase listed ("drawing gas and water"), which needs a second line or a longer one.
+2. **The reason is stated on the committed state** (A48), which is the input of the next slice, not the state the last slice decided on (the snapshot does not keep the slice's start graph): its percentage can differ from the solver's own text by the slice's change; the refusal itself is the committed endpoint mode. Option: carry the refusal text in the interval result (a solver-side presentation field).
+3. **Compressor efficiency** is reset to 1 by a GUI edit, as the pump's is (A50); a player cannot set it. Option: an efficiency field on both pages.
+4. **A head-only stack of two tanks does not exist** (section 7): the lower tank's top outlet sends its gas up the same pipe the water comes down. Fixture 6 is therefore a tank over a void. The two-tank stack drains completely (water down, gas up), which is physical for a single connection (a bottle glugging), with no slug or counter-current limit in the model.
+5. **Falling lines** move at the landing resolution (section 6); nothing to decide, recorded.
+
+### 11. The owner's in-game check (plan section 6; langyo/minecraft-mod-mcp bridge, jar in `run/mods`, `.mcp.json` in the worktree root, fresh world)
+
+Not runnable here (no display). On a fresh world:
+1. **Tank outlets.** A tank filled with water from a generator (it is placed as a nitrogen charge), then a pipe on its top, one side and its bottom, each to a void: the tank page's "Connections by face" shows "Top: gas outlet / drawing gas", "Side: mixed outlet / drawing all phases together", "Bottom: liquid outlet (head X kPa) / drawing water", with flows; each pipe's inspection shows the phase ratio of what it carried (gas only at the top, water only at the bottom while water remains). Check the hint tooltip, the kg/h and kmol/h toggle, and that the compressor block and item render (light-grey body, oxidised-copper motor) with the name "Process Gas Compressor".
+2. **Pump.** A pump on a tank's side facing away from it, into a pipe and a void: status in the warning colour, "INLET_WRONG_PHASE / ERROR: pump inlet not liquid (vapour 100.0 % by volume, from reservoir at x, y, z)". Move it to the tank's bottom face (the pump below the tank facing down) with water in the tank: it runs ("PUMP_TARGET (limit N Pa on this fluid)"), and when the water runs out it is refused with "vapour ... %" (D11: a dry bottom port feeds it gas).
+3. **Compressor.** Two nitrogen tanks with a compressor between them facing the second: the page shows the two fields (0.05 m³/s, ratio 3); it runs on PUMP_TARGET, the rail's "Discharge / suction pressure" rises to 3.00 and it closes (CLOSED, "(limit N Pa at this suction)"); set the ratio to 1.5, then to 10.5 (not sent: "Check numeric inputs and composition; ..."). Then feed it water (a water generator on its suction side): refused, "ERROR: compressor inlet not gas (condensed ... % by mass, from ...)".
+
+### 12. Open items for WP6
+
+- The owner's in-game check (section 11) and the MCP screenshots; the Windows lane for the gates and GameTests.
+- Options of section 10.
+- WP6's own list: tooling cleanup per AGENTS.md (the probe patch here is a measurement tool, stored under `tools/phase-ports-probes/wp5/src/`, never committed to `src/`), `CHANGELOG.md` `[Unreleased]` line, INDEX rows, the D11 open items (humid venting below the water domain D14, recovered rejections at phase boundaries, WP1 condensed-stream builders no longer read), WP3/WP4 items 1-7.
+
+### 13. Material
+
+`tools/phase-ports-probes/wp5/`: `src/up-face-bulk-probe.patch` (against `9744a45`: `-Dprobe.upBulk=true` compiles UP faces to BULK; apply with `git apply`, run the harness `select` on `ElevatedBlockLineIslandTest` and `DeadHeadedLineIslandTest` with `HARNESS_JVM_OPTS="-Xmx2g -Dprobe.upBulk=true"`, `git checkout` the file; never commit it), `logs/` (gates `00`-`02`, `05`, `07`-`11`; fixture lines `03`; probe `04`; GameTest runs `06`, `10` and summary `12`).

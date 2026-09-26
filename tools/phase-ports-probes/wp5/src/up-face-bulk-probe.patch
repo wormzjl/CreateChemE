@@ -1,0 +1,13 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalFluidTopology.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalFluidTopology.java
+index 3bdbbd9..189b0c1 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalFluidTopology.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalFluidTopology.java
+@@ -161,7 +161,7 @@ public final class PhysicalFluidTopology {
+      */
+     static PassiveNetwork.PhasePort port(Device device,Direction face) {
+         if(device==null||device.kind!=TopologyCompiler.Kind.RESERVOIR||face==null)return PassiveNetwork.PhasePort.BULK;
+-        return face==Direction.UP?PassiveNetwork.PhasePort.VAPOR:face==Direction.DOWN?PassiveNetwork.PhasePort.LIQUID:PassiveNetwork.PhasePort.BULK;
++        return face==Direction.UP&&!Boolean.getBoolean("probe.upBulk")?PassiveNetwork.PhasePort.VAPOR:face==Direction.DOWN?PassiveNetwork.PhasePort.LIQUID:PassiveNetwork.PhasePort.BULK;
+     }
+     /** Independent edits must not renumber a different island's last-interval debug history. */
+     private static long runIdentity(TopologyCompiler.Run run,Map<Long,Long> owners,int part) {
