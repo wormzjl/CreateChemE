@@ -422,3 +422,104 @@ Code commit `fdf3574` (`WIP phase-ports D9: level head at the bottom port (optio
 ### 11. Re-run after the last edit
 
 The javadoc of `PassiveNetwork.PhasePort` and `PassiveStepSolver.endPressure` was re-wrapped after G1-G4 (comment only). Re-run on the final tree: G1 (log `10-gradle-fluid-suite-final-d9.log`) 448/448 in 99 classes, the same test names, the 33 junction lines again identical to D10's (`10-junction-lines-final-d9.txt`); G2 (log `11-gradle-regression-exact-final-d9.log`) 0.000e+00.
+
+## D12: one-way generators from the cold start (2026-09-26)
+
+- Author: Claude (Opus 5.5), worktree `wt-coldstart` (session scratchpad), branch `claude/cold-start-generators-wip`. Base: `7051391` (D9 `fdf3574`, its tools commit, the decision-log commit with D11/D12). Code commit: `WIP phase-ports D12: one-way generators from the cold start` (hash recorded in section 9); not merged, not pushed.
+- Decision: D12 (owner, 2026-09-26): a generator only pushes when its pressure allows and never receives, from the cold start's first pass; fix order O2, then O1, O3-O5 only as options (`EXTREME_TOPOLOGY_TESTS.md` section 6). D11 is not implemented here.
+- **Gates: the Minecraft-free harness only. The Gradle gates were not run in this worktree (another agent held the single Gradle lane) and must be run after the merge** (the fluid suites with the junction lines, the exact regression, the 38 adjacent, GameTest and mcpCompat compile).
+
+### 1. The mechanism, confirmed by numbers
+
+`EXTREME_TOPOLOGY_TESTS.md` section 5 read the defect from the solver. Measured here with scratch drivers (`tools/phase-ports-probes/d12/src/`):
+
+- **The cold rate seed fails first.** `PassiveIntervalSolver.coldRateSeed` solves the port graph once at a cold start; on the three full fixtures that rate solve fails in pass 0 (GRID "Newton iteration limit at residual 0.5402; active-set pass=0", ALTERNATING and BOTH_SIDES 2.5263), so `coldRateSeed` returns the graph unchanged and the first steps start from the compiler's junction guess (every junction at 110 kPa, the first boundary's state) with no accepted structure, so neither `closeDeadHeads` (runs ending at a junction) nor `closeIllegalStarts` (no accepted solve) reaches a generator edge: pass 0 of every step has ten two-way generators, and 20 halvings exhaust the interval (21 Newton solves = the failed rate solve + 20 steps).
+- **One-way generators are necessary but, from the guess, not sufficient.** Rate solves of the GRID port graph with generator edges blocked below a threshold: from the 110 kPa guess, closing below 135, 145, 155, 165 or 175 kPa all fail in pass 0; from a uniform junction pressure of 150/170/180 kPa, closing below 165 kPa (exactly the generators the converged solution closes, 110-160 kPa) converges at every seed, closing below 145 kPa converges only from 170 kPa, below 175 kPa only from 170 kPa; with the generators two-way no seed converges. So the defect is the active set (any receiving generator in pass 0 is fatal here) and pass 0 also needs junction pressures near the solution.
+- **The physical active set** (the converged D12 rate seed, tanks held): GRID junctions 164.8-170.2 kPa, generators 170, 180, 190, 200 kPa supply (190, 200, 180 on the cap), the six at 110-160 kPa closed; ALTERNATING junctions 140.1-188.2 kPa, generators 190, 200, 180 supply, seven closed; BOTH_SIDES the same by symmetry.
+
+### 2. What changed
+
+| file | method | change |
+|---|---|---|
+| `science/fluid/network/PassiveStepSolver.java` | `solve` | one line after `closeIllegalStarts`: `graph=closeColdReceivingGenerators(graph,boundaryClosed,keep,closedPorts,checkpoint)` |
+| | `closeColdReceivingGenerators` (new) | acts only on a **rate solve with no accepted solve of its structure** (the cold rate seed); skips an island with no generator, with solids, or with any actuator or filter; collects every open passive generator run (through degree-two junctions) that ends at a junction of degree three or more; asks `oneWayPressures`; closes (`boundaryClosed`, for this solve) each run whose far junction the estimate puts above the generator's end pressure (with its column) by more than `reopenBand`; if any run closed, returns the graph with every estimated junction re-flashed at the estimate's pressure, its own temperature and composition (inventory untouched; a domain refusal keeps the guess); otherwise returns the graph unchanged |
+| | `oneWayPressures` (new), class `OneWay` (new: `residual`, `sweep`, `flow`, `scale`, `runFlow`), `maximum`, `oneWayResult`, `solveBanded` (new) | the one-way pressure estimate: unknowns = junctions a held node reaches through open connections, numbered breadth-first from the held nodes; each connection carries `initialMassFlow`'s law in the column of the donor end the direction draws from (the run's loss inverted by a safeguarded Newton, capped at the donor's velocity limit), nothing in a direction `boundaryAllowed` refuses (so a generator below its junction carries nothing) or between the two columns; a gas-only junction donor has its density and cap scaled with its pressure (ideal gas); a damped Newton on the junction pressures (per-connection difference derivatives, banded elimination, steps held to half the held-pressure hull widened by the largest static column, Armijo on the squared residual), with one Gauss-Seidel sweep (60-step bisection per junction) wherever the Newton step does not descend; converged at max net inflow <= 1e-9 x max(1, largest cap) kg/s; null (nothing closed) if not converged in 200 iterations or 100 sweeps |
+| `src/test/.../runtime/fluid/ExtremeTopologyIslandTest.java` | class javadoc, `FULL_CASES_OPEN_DEFECT`, `theFullCasesHoldOnTheirFirstIntervalOpenDefect` javadoc | `FULL_CASES_OPEN_DEFECT = false`, so the flagged test runs `assertIntegrates` (every oracle of the passing cases) on the three full fixtures at the default cap: it is now the D12 regression; the defect section and the method javadoc keep the history (the reproduction branch is kept; set true on this tree it fails "expected to hold on its first interval ... it now integrates 40 intervals", measured). No assertion changed. |
+
+`PassiveIntervalSolver`, `ConservativeTransport`, the reconstruction, `closeDeadHeads`, `closeIllegalStarts`, `startPoint`, `initialMassFlows`, the balanced seed and the pass loop are untouched.
+
+### 3. O2, and why O1 was not needed
+
+- **O2 is the fix**: the cold-start rate seed now starts with one-way generators. Its closures bind the rate solve only; the rate seed converges (all three fixtures), its structure then counts as accepted, and the first step's existing `closeIllegalStarts` closes the generators the seed shows receiving (start flow zero, `initialMassFlows` on the seeded states illegal, `illegalWithEitherDensity`) before that step's pass 0, with the seed's junction states and flows as the start. So the first pass of every step starts from admissible directions, which is what D12 asks, without a new rule in the step solve.
+- **O1 not needed, and alone not sufficient.** Measured with the closure applied to any first solve and the cold rate seed disabled (a variant, not kept; `logs/05-o1-first-step-only.txt`): GRID and ALTERNATING at 0.1 s integrate, the three 5 s runs and BOTH_SIDES at 0.1 s still fail interval 1 in pass 0 (4 of 6; the interval solver reopened a closed run in 3 of them, "Backward-Euler boundary reopened=1", after which pass 0 fails as before). The final code therefore gives the closure to the rate seed only (A20). O3-O5 were not needed.
+- **Design steps measured on the way** (drivers kept): a Gauss-Seidel estimate alone needs 80-488 sweeps to 1 Pa (0.4-5 s on the grid) and, cut to 5-40 sweeps, misses closures and the rate solve fails (`D12Estimate.java`); a pure Newton estimate with the start densities put the grid junctions about 10 kPa high (the guessed junction state is at 110 kPa) and wrongly closed the 170 kPa generator, whence the gas scaling; a pure Newton stalls at the cap and one-way kinks (grid: no descent at iteration 10), whence the Gauss-Seidel fallback (one sweep on the grid, none on the rows). The final estimate matches the converged rate seed to a few Pa (grid junction 11: 164792 against 164796 Pa) in 24 iterations on the grid (one of them a Gauss-Seidel sweep) and 27 on the rows.
+
+### 4. Per-fixture numbers, before (`7051391`) and after
+
+Full fixtures at the default 100 m/s cap (`theFullCasesHoldOnTheirFirstIntervalOpenDefect`):
+
+| Fixture | Slice | Before | After: intervals | Newton solves | Accepted / rejected | Worst moles | Worst energy | Monotone tanks |
+|---|---|---|---|---|---|---|---|---|
+| GRID | 5 s | fails interval 1 (21 solves, residual 0.5274) | 40/40 | 149 | 140 / 4 | 3.93e-16 | 1.24e-15 | 10/10 |
+| GRID | 0.1 s | fails interval 1 (21, 0.6011) | 400/400 | 404 | 400 / 0 | 1.96e-14 | 2.18e-15 | 6/10 |
+| ALTERNATING | 5 s | fails interval 1 (21, 2.5106) | 40/40 | 153 | 141 / 6 | 2.87e-15 | 5.55e-16 | 10/10 |
+| ALTERNATING | 0.1 s | fails interval 1 (21, 2.5247) | 400/400 | 405 | 400 / 1 | 1.58e-14 | 6.87e-15 | 8/10 |
+| BOTH_SIDES | 5 s | fails interval 1 (21, 2.4947) | 40/40 | 162 | 144 / 7 | 4.44e-15 | 1.47e-15 | 10/10 |
+| BOTH_SIDES | 0.1 s | fails interval 1 (21, 2.5231) | 400/400 | 430 | 409 / 10 | 5.28e-15 | 1.62e-15 | 8/10 |
+
+Every oracle passes: no generator receives, ledgers < 1e-12 / 1e-10, no tank above `P_max`, the lowest tank nondecreasing, directions from interval 2 on (351/3746, 351/3780, 702/7342 statements judged), the highest generator supplies and the lowest tank receives in the first 0.1 s, rest at `P_max` within 1e-6 with every other generator CLOSED. 5 s against 0.1 s (largest relative differences at t = 5..40 s): GRID pressure 3.71e-3, temperature 0.346 K, moles 3.08e-3, supplied 1.16e-2, generator split 1.2 %; ALTERNATING 2.88e-3, 0.298 K, 2.33e-3, 9.77e-3, 0.9 %; BOTH_SIDES 2.50e-5, 0.017 K, 5.24e-5, 4.97e-5, 0.5 % (bound 2 % and 0.5 K).
+
+Reduced cases (spread 0.2, default cap) and the uncapped full cases (100000 m/s) moved because their cold rate seeds also see receiving generators; every oracle still passes, the cadence lines are unchanged except the printed generator split (ALTERNATING 0.0199 to 0.0198 reduced, 0.00385 to 0.00386 uncapped):
+
+| Case | Slice | Newton solves before -> after | Accepted / rejected before -> after | Worst moles before -> after | Worst energy before -> after |
+|---|---|---|---|---|---|
+| GRID @0.2 | 5 s | 142 -> 139 | 127/3 -> 127/3 | 2.53e-15 -> 2.69e-15 | 1.55e-15 -> 1.74e-15 |
+| GRID @0.2 | 0.1 s | 410 -> 407 | 400/0 -> 400/0 | 4.35e-15 -> 4.10e-15 | 3.50e-15 -> 4.28e-15 |
+| ALTERNATING @0.2 | 5 s | 141 -> 142 | 127/3 -> 127/3 | 8.55e-16 -> 8.83e-16 | 1.89e-15 -> 1.67e-15 |
+| ALTERNATING @0.2 | 0.1 s | 413 -> 409 | 401/1 -> 400/0 | 3.88e-15 -> 7.33e-15 | 7.61e-15 -> 1.78e-15 |
+| BOTH_SIDES @0.2 | 5 s | 153 -> 155 | 128/4 -> 128/4 | 2.80e-15 -> 2.88e-15 | 4.70e-15 -> 4.86e-15 |
+| BOTH_SIDES @0.2 | 0.1 s | 433 -> 425 | 402/2 -> 402/2 | 7.57e-16 -> 1.63e-15 | 3.37e-15 -> 3.17e-15 |
+| GRID uncapped | 5 s | 160 -> 154 | 143/5 -> 143/5 | 4.90e-16 -> 1.03e-15 | 2.22e-16 -> 8.88e-17 |
+| GRID uncapped | 0.1 s | 434 -> 430 | 412/8 -> 412/8 | 4.68e-15 -> 6.75e-15 | 1.91e-15 -> 1.73e-15 |
+| ALTERNATING uncapped | 5 s | 182 -> 158 | 144/5 -> 144/5 | 1.86e-15 -> 1.59e-15 | 2.25e-15 -> 1.28e-15 |
+| ALTERNATING uncapped | 0.1 s | 443 -> 426 | 413/9 -> 412/8 | 3.06e-15 -> 2.62e-15 | 2.96e-15 -> 1.37e-15 |
+| BOTH_SIDES uncapped | 5 s | 216 -> 165 | 145/6 -> 145/6 | 1.37e-15 -> 9.98e-16 | 2.42e-15 -> 2.00e-15 |
+| BOTH_SIDES uncapped | 0.1 s | 463 -> 433 | 414/8 -> 414/8 | 1.40e-14 -> 3.83e-15 | 3.07e-15 -> 3.34e-15 |
+
+The pass/fail scan of `EXTREME_TOPOLOGY_TESTS.md` 4.4 (`D12Scan.java`: grid columns and pairs 1-10 at full spread, spreads 0.01-0.75 at ten, 60 cases x 2 slices): base `7051391` fails the first interval in 71 of 120 runs; D12 integrates all 120 runs over 40 x 5 s and 400 x 0.1 s, no generator receipt, worst component ledger 2.42e-14 (`logs/06-scan-*.txt`).
+
+### 5. Where the new path runs in the existing suites (bitwise)
+
+Temporary print in `closeColdReceivingGenerators` over the harness science, runtime, adjacent and regression runs (`src/sites-instrumentation.patch`, `logs/04-sites.txt`): it closes something only in `ExtremeTopologyIslandTest` (18 cold rate seeds) and in 2 of the 32 `MixedGasJunctionStaticTest` cases; it runs and closes nothing in the other 30 static cases, `PipePresentationTest` (6), `LiquidJunctionTransientTest` (4), `PhasePortClosureTest` (3) and `PhysicalRegistryTest` (1), and returns before the estimate everywhere else (no generator, an actuator, a filter or solids, or no generator run onto a junction: the mixed-gas transients have tanks and voids only; the pumped cold start has a pump; chain-100 has no junction). Where it closes nothing it changes no state, so those runs are bitwise:
+
+- the 33 MIXED_GAS/LIQUID_JUNCTION lines of `harness.sh runtime` identical to the reference (the LIQUID_JUNCTION generator cases run the estimate and close nothing);
+- the WP1/D9 bitwise probe (`tools/phase-ports-probes/d9/src/BitwiseProbe.java`: chain-100, 14 all-BULK scenarios, 8 gas phase-port scenarios, 2 liquid-port scenarios) on `7051391` and on D12: `chain-100.json`, `scenarios.txt`, `gas-ports.txt`, `liquid-ports.txt` byte-identical (`logs/07-bitwise-probe-sha256.txt`);
+- the 32 static cases, every result double printed (`D12StaticCompare.java`, `logs/08-static-*.txt`): 30 byte-identical; the two that close (swap=false and swap=true, unequal, 150 kPa, 3 ports: the 145 kPa generator below the junction at about 148-149 kPa) end in the same modes (the low generator CLOSED) with flows equal to 1.6e-11 kg/s and junction pressures to 1.3e-7 Pa, in 2 Newton solves instead of 3 and 5 (the second: 1 accepted / 0 rejected instead of 2 / 1). The test's assertions pass unchanged.
+
+Cost: the estimate took 20.7 / 8.8 / 16.4 ms on the GRID / ALTERNATING / BOTH_SIDES cold seeds (first call in a fresh JVM) and 0.07-0.09 ms on the static cases' 4-7 node islands; it runs once per cold structure with a generator run onto a junction.
+
+### 6. Gates (harness; Gradle not run)
+
+JDK OpenJDK 21.0.10 (container). Log `tools/phase-ports-probes/d12/logs/01-harness-all-d12.log`.
+
+| # | command | result |
+|---|---|---|
+| H1 | `REPO=<worktree> LIB=<jars> bash tools/cloud-science-harness/harness.sh all` on the final tree | science 213/213, runtime 237/237 (incl. the 10 `ExtremeTopologyIslandTest` cases, the flagged test now running every oracle) with **the 33 junction lines identical to the reference**, adjacent 38/38, regression 1/1 with **chain-100 0.000e+00** |
+| H2 | WP1/D9 bitwise probe, base against D12 | 4 outputs byte-identical |
+| H3 | `ExtremeTopologyIslandTest` with `FULL_CASES_OPEN_DEFECT = true` on the D12 tree | the reproduction fails as designed (3 of 10: "it now integrates 40 intervals") |
+
+**Not run: the Gradle gates (G1 fluid suites and junction lines, G2 exact regression, G3 38 adjacent, G4 GameTest and mcpCompat compile). They must be run after the merge.** No GameTest or in-game scenario (no runtime path changed).
+
+### 7. Decisions recorded
+
+`DECISION_LOG.md`, "D12 defaults": A20 (the closure belongs to the cold rate seed, not the step), A21 (islands with an actuator, a filter or solids are left to the pass loop), A22 (the closure margin is the reopen band), A23 (the estimate's law and when it reseeds the junctions).
+
+### 8. For the merge
+
+- Touched: `PassiveStepSolver.solve` (one added line after `closeIllegalStarts`) and new private members inserted between `closeIllegalStarts` and `illegalWithEitherDensity` (`closeColdReceivingGenerators`, `oneWayPressures`, `maximum`, `oneWayResult`, `OneWay`, `solveBanded`); the test file's javadoc and flag. No change in `ConservativeTransport`, the reconstruction booking, `PassiveIntervalSolver` or the step path.
+- D11 (priority streams) removes the availability mask: `closeColdReceivingGenerators` and `oneWayPressures` read `closedPorts` only through `boundaryAllowed`, so they follow whatever `boundaryAllowed` becomes.
+- `CHANGELOG.md` `[Unreleased]` is still empty on this branch; the batch's line is written at its close (WP6).
+
+### 9. Commits and material
+
+Code commit: see the tools commit, which records its hash here. Material: `tools/phase-ports-probes/d12/`.

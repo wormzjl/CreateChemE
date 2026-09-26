@@ -5,6 +5,12 @@ phase-ports WP1 and WP2). Test class `src/test/java/com/wormzjl/createcheme/runt
 Measured with the Minecraft-free harness (`tools/cloud-science-harness`), OpenJDK 21.0.10, 4 cores, with another agent's
 Gradle daemon running on the machine (wall ms are indicative only).
 
+**Status (2026-09-26, later): the open defect of section 4.1 is fixed by owner decision D12** (one-way generators from the
+cold start, option O2 of section 6) on branch `claude/cold-start-generators-wip`, not merged: the three full fixtures
+integrate at the default cap with every oracle, and the flagged test is now their regression (`FULL_CASES_OPEN_DEFECT =
+false`). Numbers, mechanism check and gates: `PHASE_PORTS_REVIEW.md`, section "D12". Sections 4.1, 4.4, 5 and 6 below are
+the record of the defect as found.
+
 ## 1. The owner's cases and how they were read
 
 1. "10 generator in one line with 10 pipe block, connected to another 10 pipe blocks and 10 tanks, each with different
@@ -78,10 +84,10 @@ cadence comparison is decided at t = 5 s and is trivially met after it.
 
 ## 4. Results
 
-### 4.1 Full cases at the default cap: open defect
+### 4.1 Full cases at the default cap: formerly an open defect (fixed by D12)
 
-All three full fixtures hold on their first interval at both slice lengths (`theFullCasesHoldOnTheirFirstIntervalOpenDefect`
-asserts exactly this while `FULL_CASES_OPEN_DEFECT = true`):
+Before D12, all three full fixtures held on their first interval at both slice lengths (`theFullCasesHoldOnTheirFirstIntervalOpenDefect`
+asserted exactly this while `FULL_CASES_OPEN_DEFECT = true`):
 
 | Fixture | Slice | Result |
 |---|---|---|
@@ -93,6 +99,20 @@ asserts exactly this while `FULL_CASES_OPEN_DEFECT = true`):
 | BOTH_SIDES | 0.1 s | interval 1: line search stalled at residual 2.5231; active-set pass=0; reasons: singular Jacobian x2, < 100 Pa x2, > 2 MPa x16 |
 
 Each spends 21 Newton solves (20 halvings of the first step) in about 0.4 s.
+
+After D12 (the flag false, the same test running every oracle; `PHASE_PORTS_REVIEW.md` D12 section 4):
+
+| Fixture | Slice | Intervals | Newton solves | Accepted / rejected | Worst moles | Worst energy | ms | Monotone tanks |
+|---|---|---|---|---|---|---|---|---|
+| GRID | 5 s | 40/40 | 149 | 140 / 4 | 3.93e-16 | 1.24e-15 | 526 | 10/10 |
+| GRID | 0.1 s | 400/400 | 404 | 400 / 0 | 1.96e-14 | 2.18e-15 | 1622 | 6/10 |
+| ALTERNATING | 5 s | 40/40 | 153 | 141 / 6 | 2.87e-15 | 5.55e-16 | 541 | 10/10 |
+| ALTERNATING | 0.1 s | 400/400 | 405 | 400 / 1 | 1.58e-14 | 6.87e-15 | 1455 | 8/10 |
+| BOTH_SIDES | 5 s | 40/40 | 162 | 144 / 7 | 4.44e-15 | 1.47e-15 | 1075 | 10/10 |
+| BOTH_SIDES | 0.1 s | 400/400 | 430 | 409 / 10 | 5.28e-15 | 1.62e-15 | 3284 | 8/10 |
+
+5 s against 0.1 s: GRID pressure 3.71e-3, temperature 0.346 K, moles 3.08e-3, supplied 1.16e-2, generator split 1.2 %;
+ALTERNATING 2.88e-3, 0.298 K, 2.33e-3, 9.77e-3, 0.9 %; BOTH_SIDES 2.50e-5, 0.017 K, 5.24e-5, 4.97e-5, 0.5 %.
 
 ### 4.2 Full cases with the cap at the configuration's largest value (100000 m/s)
 
@@ -147,7 +167,16 @@ the first second depends on the step sequence; the tank states and the total del
 The boundary is irregular, as a Newton basin is, not a physical threshold. Once the first interval is accepted every later
 interval was accepted in every run measured.
 
+After D12 the same scan (columns and pairs 1-10 at full spread, spreads 0.01-0.75 at ten, both slices; the base fails 71 of
+these 120 first intervals) integrates all 120 runs over 40 x 5 s and 400 x 0.1 s with no generator receipt
+(`tools/phase-ports-probes/d12/`, `D12Scan.java`).
+
 ## 5. Mechanism of the open defect (read from the solver; `src/main` not modified)
+
+Confirmed by measurement under D12 (`PHASE_PORTS_REVIEW.md` D12 section 1): the cold rate seed fails in pass 0 the same
+way, so the steps start from the compiler's junction guess (every junction at the first boundary's 110 kPa); closing the
+receiving generators alone from that guess does not converge, while the physical closures with junction pressures near the
+solution do.
 
 1. On a first solve of a structure no start-of-solve closure reaches a generator edge: `PassiveStepSolver.closeDeadHeads`
    skips any run that ends at a junction, and `closeIllegalStarts` returns until a solve on the same structure has been
@@ -168,7 +197,12 @@ interval was accepted in every run measured.
 Evidence: equal generator pressures pass whatever the tanks hold (no through-flow); raising the cap tenfold (to the
 acoustic bound) integrates all three full fixtures; reducing the spread to 0.2 integrates them at the default cap.
 
-## 6. Options (not implemented)
+## 6. Options
+
+Status after D12: **O2 implemented** (the cold rate seed closes the generator runs a one-way pressure estimate shows
+receiving and starts its junctions from the estimate; the first step's `closeIllegalStarts` then closes them from the
+converged seed); **O1 not needed** (and, measured alone on the first step with the rate seed disabled, insufficient);
+O3-O5 not implemented.
 
 - **O1. Close one-way boundaries before the first pass by a physical bound.** A generator edge whose run ends at a junction
   cannot supply if the generator is below the lowest pressure the junction can take. The discrete minimum principle gives
@@ -209,7 +243,9 @@ REPO=<worktree> LIB=<jar folder> bash tools/cloud-science-harness/harness.sh sel
 
 (10 tests, about 22 s; `harness.sh runtime` includes them: 237 tests passed at this commit, junction lines identical to
 the reference.) Output lines: `EXTREME_TOPOLOGY` (one per case and slice), `EXTREME_TOPOLOGY_CADENCE`,
-`EXTREME_TOPOLOGY_STRUCTURE`, `EXTREME_TOPOLOGY_CAP`, `OPEN DEFECT EXTREME_TOPOLOGY`. Under Gradle the class is part of
+`EXTREME_TOPOLOGY_STRUCTURE`, and, only with `FULL_CASES_OPEN_DEFECT = true` (before D12), `EXTREME_TOPOLOGY_CAP` and
+`OPEN DEFECT EXTREME_TOPOLOGY`. Since D12 the full cases print unlabelled `EXTREME_TOPOLOGY` and `EXTREME_TOPOLOGY_CADENCE`
+lines like the reduced cases. Under Gradle the class is part of
 `fluidRuntimeTest` (package `runtime.fluid`).
 
 The scan that located the boundary (sections 4.4 and 7) was a temporary test method, not committed; its source was kept

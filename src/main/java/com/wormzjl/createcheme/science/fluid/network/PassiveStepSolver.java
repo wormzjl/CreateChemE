@@ -397,6 +397,8 @@ public final class PassiveStepSolver {
         if(!keepOpen.isEmpty()&&!rateOnly){var ids=identities(graph);keep=new boolean[ids.size()];for(int i=0;i<keep.length;i++)keep[i]=keepOpen.contains(ids.get(i));keepOpen=Set.of();}
         closeDeadHeads(graph,boundaryClosed,keep,closedPorts);
         closeIllegalStarts(graph,modes,boundaryClosed,keep,closedPorts);
+        // Decision D12: in the cold start's rate seed, the generators the one-way estimate shows receiving start closed.
+        graph=closeColdReceivingGenerators(graph,boundaryClosed,keep,closedPorts,checkpoint);
         // The species this island can carry, and the trial states built from them, are read off the
         // connections this pass leaves open - so they are stated after the closure above and not
         // before it. A connection the closure has taken carries exactly zero by a row of its own,
@@ -1499,6 +1501,267 @@ public final class PassiveStepSolver {
                 if(illegalWithEitherDensity(graph,pipe,q))boundaryClosed[i]=true;
             }
         }
+    }
+    /**
+     * Decision D12 (phase-ports batch): a generator never receives, from the cold start's first pass on. On a rate solve
+     * with no accepted solve of its structure behind it - the cold start's rate seed ({@code PassiveIntervalSolver}'s
+     * {@code coldRateSeed}), whose converged junction states and flows the first steps start from - a passive generator
+     * run (the generator's connection and the degree-two junctions after it, the run {@link #closeDeadHeads} decides on)
+     * that ends at a junction of degree three or more is closed for this solve when the island's one-way pressure
+     * estimate ({@link #oneWayPressures}) puts that junction above the generator by more than {@link #reopenBand}; if any
+     * run is closed, the island's junctions start from the estimate's pressures (their own temperature and composition; a
+     * Newton starting guess only, the owned inventories are untouched).
+     *
+     * <p>Why: {@link #closeDeadHeads} skips a run that ends at a junction, and {@link #closeIllegalStarts} waits for an
+     * accepted solve because a first solve's junction pressures are the compiler's property guess, not a state. So pass 0
+     * of the cold rate seed treated every generator as a two-way fixed-pressure boundary: between generators tens of kPa
+     * apart, a through-flow network whose low generators are sinks, most of it on the velocity cap's branch (a row that
+     * does not depend on the end pressures), with junction pressure columns near empty. The rate seed failed, the steps
+     * started from the compiler's guess with the same two-way generators, and every step was refused at "active-set
+     * pass=0" at every step size. Measured on the extreme-topology fixtures: closing the receiving generators from the
+     * compiler's junction guess does not converge, a uniform junction pressure with them closed converges only near the
+     * solution; the estimate supplies both the closures and the start. Once the rate seed has converged its structure
+     * counts as accepted, so the first step's {@link #closeIllegalStarts} closes the generators that seed shows receiving
+     * before that step's pass 0 (documentation/2026-09-26-phase-ports-and-compressor/PHASE_PORTS_REVIEW.md, D12).
+     *
+     * <p>The estimate is a steady state with every held node (vessel as a port, generator, void) at its start pressure; a
+     * closure it decides binds this rate solve only, and the step solves decide afresh on the seeded states
+     * ({@link #closeIllegalStarts}, the interval solver's {@link #reopenable}). A step solve is not given the closure: on a
+     * first step solve without a converged rate seed it was measured insufficient (4 of the 6 full-fixture runs still failed
+     * in pass 0). An island in which no generator would receive is solved exactly as before (the estimate changes no state
+     * and closes nothing). Islands with an actuator, a filter or solids are left to the pass loop, as the start closures
+     * leave actuated runs (the device-first rule).
+     */
+    private PassiveNetwork closeColdReceivingGenerators(PassiveNetwork graph,boolean[] boundaryClosed,boolean[] keep,byte[] closedPorts,Runnable checkpoint) {
+        if(!rateOnly||acceptedPipes.equals(identities(graph))&&Arrays.equals(acceptedNodeIds,nodeIds(graph)))return graph;
+        if(graph.reservoirs().stream().noneMatch(node->node.kind()==PassiveNetwork.NodeKind.GENERATOR)||hasSolids(graph))return graph;
+        for(var pipe:graph.pipes())if(!(pipe.control() instanceof FlowControl.Passive)||pipe.filter()!=null)return graph;
+        int edges=graph.pipes().size(),nodes=graph.reservoirs().size();
+        int[] degree=new int[nodes];
+        for(var pipe:graph.pipes()){degree[pipe.first()]++;degree[pipe.second()]++;}
+        int[][] nodeEdges=new int[nodes][];
+        for(int i=0;i<nodes;i++)nodeEdges[i]=new int[degree[i]];
+        int[] filled=new int[nodes];
+        for(int edge=0;edge<edges;edge++){var pipe=graph.pipes().get(edge);nodeEdges[pipe.first()][filled[pipe.first()]++]=edge;nodeEdges[pipe.second()][filled[pipe.second()]++]=edge;}
+        // Each open generator run onto a junction of degree three or more: its links from the generator on, and its far end.
+        var runs=new ArrayList<List<Integer>>();var ends=new ArrayList<int[]>();
+        for(int g=0;g<nodes;g++)if(graph.reservoirs().get(g).kind()==PassiveNetwork.NodeKind.GENERATOR)for(int first:nodeEdges[g]) {
+            var chain=new ArrayList<Integer>();int at=g,from=first;boolean usable=true;
+            while(true) {
+                if(boundaryClosed[from]||keep!=null&&keep[from]){usable=false;break;}
+                chain.add(from);var link=graph.pipes().get(from);at=link.first()==at?link.second():link.first();
+                if(!graph.reservoirs().get(at).junction()||degree[at]!=2)break;
+                from=nodeEdges[at][0]==from?nodeEdges[at][1]:nodeEdges[at][0];
+            }
+            if(usable&&at!=g&&graph.reservoirs().get(at).junction()){runs.add(chain);ends.add(new int[]{g,at});}
+        }
+        if(runs.isEmpty())return graph;
+        double[] pressures=oneWayPressures(graph,boundaryClosed,closedPorts,nodeEdges,checkpoint);
+        if(pressures==null)return graph;
+        boolean closed=false;
+        for(int r=0;r<runs.size();r++) {
+            var chain=runs.get(r);int g=ends.get(r)[0],far=ends.get(r)[1];
+            var generator=graph.reservoirs().get(g);var port=graph.pipes().get(chain.getFirst()).portAt(g);
+            double pg=endPressure(generator,port,generator.state()),pf=pressures[far];
+            double drive=pg-pf-endDensity(generator.state(),port)*GRAVITY*(graph.reservoirs().get(far).elevation()-generator.elevation());
+            if(drive<-reopenBand(pg,pf)){for(int link:chain)boundaryClosed[link]=true;closed=true;}
+        }
+        if(!closed)return graph;
+        var seeded=new ArrayList<>(graph.reservoirs());
+        for(int i=0;i<nodes;i++) {
+            var node=graph.reservoirs().get(i);
+            if(!node.junction()||Double.isNaN(pressures[i]))continue;
+            var state=node.state();
+            try{seeded.set(i,new PassiveNetwork.Reservoir(node.id(),node.elevation(),model.flashTP(state.temperature(),pressures[i],PhaseLayout.totalAmounts(state),checkpoint),node.kind(),node.inventory()));}
+            catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation outside){/* keeps its guess */}
+        }
+        return new PassiveNetwork(seeded,graph.pipes(),graph.scheduledTransfers());
+    }
+    /**
+     * The one-way pressure estimate of {@link #closeColdReceivingGenerators}: every junction's pressure at which the
+     * island's open connections balance with every held node (a non-junction) at its start end pressure, each connection
+     * carrying the flow of {@link #initialMassFlow}'s law in the column of its donor end (the run's loss inverted, capped
+     * at the donor's velocity limit) and nothing in a direction {@link #boundaryAllowed} refuses - so a generator below
+     * its junction carries nothing. A junction donor holding gas only has its density, and so its cap, scaled with its
+     * pressure (ideal gas at its own temperature): the junctions start from the compiler's guess, not a state, and a cap
+     * read at the guessed density put the grid's junctions 10 kPa too high; it is also the one pressure dependence a
+     * capped junction outflow has, so a junction whose connections are all capped keeps a pressure column. Solved by a
+     * damped Newton on the junction pressures alone (per-connection difference derivatives), the iterate held within the
+     * held pressures' hull widened by the island's largest static column. Returns per node the estimated pressure of a
+     * junction some held node reaches, NaN elsewhere, or null if the Newton does not converge (nothing is then closed).
+     */
+    private double[] oneWayPressures(PassiveNetwork graph,boolean[] boundaryClosed,byte[] closedPorts,int[][] nodeEdges,Runnable checkpoint) {
+        int edges=graph.pipes().size(),nodes=graph.reservoirs().size();
+        boolean[] open=new boolean[edges];
+        for(int e=0;e<edges;e++)open[e]=!boundaryClosed[e]&&graph.pipes().get(e).blockedDirections()!=3;
+        // The unknowns: junctions a held node reaches through open connections.
+        int[] unknown=new int[nodes];Arrays.fill(unknown,-1);int n=0;
+        var queue=new ArrayDeque<Integer>();boolean[] seen=new boolean[nodes];
+        for(int i=0;i<nodes;i++)if(!graph.reservoirs().get(i).junction()){seen[i]=true;queue.add(i);}
+        while(!queue.isEmpty()){int at=queue.remove();
+            for(int e:nodeEdges[at])if(open[e]){var pipe=graph.pipes().get(e);int other=pipe.first()==at?pipe.second():pipe.first();
+                if(!seen[other]){seen[other]=true;unknown[other]=n++;queue.add(other);}}}
+        if(n==0)return null;
+        // The unknowns are numbered in breadth-first order from the held nodes, so a connection joins two unknowns at most
+        // a front's width apart: the Jacobian is banded and its elimination costs n b^2, not n^3.
+        int band=0;
+        for(int e=0;e<edges;e++){var pipe=graph.pipes().get(e);if(open[e]&&unknown[pipe.first()]>=0&&unknown[pipe.second()]>=0)band=Math.max(band,Math.abs(unknown[pipe.first()]-unknown[pipe.second()]));}
+        var estimate=new OneWay(graph,open,unknown);
+        double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY,zLow=Double.POSITIVE_INFINITY,zHigh=Double.NEGATIVE_INFINITY,rhoMax=0,scale=0;
+        double[] p=new double[nodes];
+        for(int i=0;i<nodes;i++){var node=graph.reservoirs().get(i);p[i]=node.state().pressure();zLow=Math.min(zLow,node.elevation());zHigh=Math.max(zHigh,node.elevation());
+            estimate.gas[i]=node.junction()&&node.state().liquidVolume()==0&&node.state().waterVolume()==0&&node.state().pressure()>0;estimate.reference[i]=node.state().pressure();}
+        for(int e=0;e<edges;e++) {
+            if(!open[e])continue;var pipe=graph.pipes().get(e);
+            for(int dir=0;dir<2;dir++) {
+                int donor=dir==0?pipe.first():pipe.second();var node=graph.reservoirs().get(donor);var port=pipe.portAt(donor);
+                estimate.rho[e][dir]=endDensity(node.state(),port);estimate.mu[e][dir]=endViscosity(node.state(),port);estimate.cap[e][dir]=massFlowLimit(pipe,node.state(),port);
+                estimate.allowed[e][dir]=boundaryAllowed(graph,pipe,dir==0?1:-1,closedPorts);
+                rhoMax=Math.max(rhoMax,estimate.rho[e][dir]);scale=Math.max(scale,estimate.cap[e][dir]);
+                estimate.endPressures[e][dir]=endPressure(graph,pipe,donor);
+                if(!node.junction()){low=Math.min(low,estimate.endPressures[e][dir]);high=Math.max(high,estimate.endPressures[e][dir]);}
+            }
+        }
+        if(!(high>=low))return null;
+        double margin=rhoMax*GRAVITY*(zHigh-zLow)+1;low=Math.max(low-margin,1e-3*high);high+=margin;
+        for(int i=0;i<nodes;i++)if(unknown[i]>=0)p[i]=Math.clamp(p[i],low,high);
+        double[] residual=new double[n];
+        double merit=estimate.residual(p,residual,null,band);
+        double tolerance=1e-9*Math.max(1,scale);
+        int sweeps=0;
+        for(int iteration=0;iteration<200;iteration++) {
+            checkpoint.run();
+            if(maximum(residual)<=tolerance)return oneWayResult(graph,unknown,p);
+            double[][] jacobian=new double[n][2*band+1];estimate.residual(p,new double[n],jacobian,band);
+            double floor=0;for(int i=0;i<n;i++)floor=Math.max(floor,Math.abs(jacobian[i][band]));floor=Math.max(floor*1e-12,Double.MIN_NORMAL);
+            for(int i=0;i<n;i++)if(Math.abs(jacobian[i][band])<floor)jacobian[i][band]=-floor;
+            double[] step=solveBanded(jacobian,band,residual);
+            boolean accepted=false;
+            if(step!=null) {
+                // A step at most half the hull, then halved until the squared residual falls.
+                double largest=0;for(double s:step)largest=Math.max(largest,Math.abs(s));
+                double limit=Math.min(1,.5*(high-low)/Math.max(largest,Double.MIN_NORMAL));
+                double[] trial=p.clone(),trialResidual=new double[n];
+                for(double fraction=limit;fraction>1e-6*limit;fraction*=.5) {
+                    for(int i=0;i<nodes;i++)if(unknown[i]>=0)trial[i]=Math.clamp(p[i]-fraction*step[unknown[i]],low,high);
+                    double trialMerit=estimate.residual(trial,trialResidual,null,band);
+                    if(trialMerit<(1-1e-4*fraction)*merit){System.arraycopy(trial,0,p,0,nodes);System.arraycopy(trialResidual,0,residual,0,n);merit=trialMerit;accepted=true;break;}
+                }
+            }
+            // Where the Newton step does not descend (a cap or a one-way kink), one Gauss-Seidel sweep: each junction in turn
+            // to the pressure at which its own net inflow vanishes, its neighbours held. The net inflow is nonincreasing in
+            // the junction's pressure, so a sweep never moves away from the solution.
+            if(!accepted) {
+                if(++sweeps>100)return null;
+                estimate.sweep(p,low,high);merit=estimate.residual(p,residual,null,band);
+            }
+        }
+        return maximum(residual)<=tolerance?oneWayResult(graph,unknown,p):null;
+    }
+    private static double maximum(double[] values){double m=0;for(double v:values)m=Math.max(m,Math.abs(v));return m;}
+    private static double[] oneWayResult(PassiveNetwork graph,int[] unknown,double[] p) {
+        double[] result=new double[p.length];
+        for(int i=0;i<p.length;i++)result[i]=unknown[i]>=0?p[i]:graph.reservoirs().get(i).junction()?Double.NaN:p[i];
+        return result;
+    }
+    /** The connection law and the held data of {@link #oneWayPressures}. */
+    private static final class OneWay {
+        final PassiveNetwork graph;final boolean[] open;final int[] unknown;
+        final double[][] rho,mu,cap,endPressures;final boolean[][] allowed;final boolean[] gas;final double[] reference;
+        OneWay(PassiveNetwork graph,boolean[] open,int[] unknown) {
+            this.graph=graph;this.open=open;this.unknown=unknown;int edges=open.length,nodes=unknown.length;
+            rho=new double[edges][2];mu=new double[edges][2];cap=new double[edges][2];endPressures=new double[edges][2];allowed=new boolean[edges][2];
+            gas=new boolean[nodes];reference=new double[nodes];
+        }
+        /** Half the squared net inflows of the unknown junctions at {@code p} (into {@code residual}); with {@code jacobian},
+         * their derivatives in the junction pressures by per-connection differences, in band storage (row i, column j at
+         * {@code [i][j - i + band]}). */
+        double residual(double[] p,double[] residual,double[][] jacobian,int band) {
+            Arrays.fill(residual,0);
+            for(int e=0;e<open.length;e++) {
+                if(!open[e])continue;var pipe=graph.pipes().get(e);int a=pipe.first(),b=pipe.second();
+                double pa=unknown[a]>=0?p[a]:endPressures[e][0],pb=unknown[b]>=0?p[b]:endPressures[e][1];
+                double q=flow(e,pa,pb);
+                if(unknown[a]>=0)residual[unknown[a]]-=q;
+                if(unknown[b]>=0)residual[unknown[b]]+=q;
+                if(jacobian==null)continue;
+                for(int end=0;end<2;end++) {
+                    int node=end==0?a:b,column=unknown[node];if(column<0)continue;
+                    double at=end==0?pa:pb,delta=1e-7*Math.max(1,Math.abs(at));
+                    double dq=((end==0?flow(e,pa+delta,pb):flow(e,pa,pb+delta))-q)/delta;
+                    if(unknown[a]>=0)jacobian[unknown[a]][column-unknown[a]+band]-=dq;
+                    if(unknown[b]>=0)jacobian[unknown[b]][column-unknown[b]+band]+=dq;
+                }
+            }
+            double merit=0;for(double r:residual)merit+=r*r;
+            return .5*merit;
+        }
+        /** One Gauss-Seidel sweep over the unknown junctions in index order (a 60-step bisection each within the hull). */
+        void sweep(double[] p,double low,double high) {
+            for(int node=0;node<unknown.length;node++) {
+                if(unknown[node]<0)continue;
+                double lo=low,hi=high;
+                for(int k=0;k<60&&hi-lo>1e-9*high;k++) {
+                    double mid=.5*(lo+hi),net=0;p[node]=mid;
+                    for(int e=0;e<open.length;e++) {
+                        if(!open[e])continue;var pipe=graph.pipes().get(e);if(pipe.first()!=node&&pipe.second()!=node)continue;
+                        int a=pipe.first(),b=pipe.second();
+                        double q=flow(e,unknown[a]>=0?p[a]:endPressures[e][0],unknown[b]>=0?p[b]:endPressures[e][1]);
+                        net+=b==node?q:-q;
+                    }
+                    if(net>0)lo=mid;else hi=mid;
+                }
+                p[node]=.5*(lo+hi);
+            }
+        }
+        /** The connection's flow at end pressures {@code pa}, {@code pb}: in the column of the donor the direction draws
+         * from, nothing in a refused direction or between the two columns. */
+        double flow(int e,double pa,double pb) {
+            var pipe=graph.pipes().get(e);
+            double dz=graph.reservoirs().get(pipe.second()).elevation()-graph.reservoirs().get(pipe.first()).elevation();
+            double forwardScale=scale(pipe.first(),pa),reverseScale=scale(pipe.second(),pb);
+            double forward=pa-pb-rho[e][0]*forwardScale*GRAVITY*dz;
+            if(forward>0)return allowed[e][0]?runFlow(pipe,forward,rho[e][0]*forwardScale,mu[e][0],cap[e][0]*forwardScale):0;
+            double reverse=pa-pb-rho[e][1]*reverseScale*GRAVITY*dz;
+            if(reverse<0)return allowed[e][1]?-runFlow(pipe,-reverse,rho[e][1]*reverseScale,mu[e][1],cap[e][1]*reverseScale):0;
+            return 0;
+        }
+        /** The density ratio of a gas-only junction donor at pressure {@code pressure}; 1 for any other donor. */
+        private double scale(int node,double pressure){return unknown[node]>=0&&gas[node]?pressure/reference[node]:1;}
+        /** The flow a run passes at a positive driving pressure: its loss inverted, capped at {@code cap}. */
+        private static double runFlow(PassiveNetwork.Pipe pipe,double driving,double rho,double mu,double cap) {
+            if(!(cap>0))return 0;
+            double capLoss=pipe.pressureDrop(cap,rho,mu);
+            if(capLoss<=driving)return cap;
+            double lo=0,hi=cap,q=cap*Math.sqrt(driving/capLoss);
+            for(int k=0;k<100;k++) {
+                var loss=pipe.loss(q,rho,mu);double f=loss.pressureDrop()-driving;
+                if(Math.abs(f)<=1e-14*driving)break;
+                if(f>0)hi=q;else lo=q;
+                double next=q-f/loss.massFlowDerivative();q=next>lo&&next<hi?next:.5*(lo+hi);
+                if(hi-lo<=1e-15*cap)break;
+            }
+            return q;
+        }
+    }
+    /** Banded Gaussian elimination without pivoting ({@code a} in band storage of half-width {@code band}, overwritten):
+     * the solution of {@code a x = b}, or null at a pivot that vanishes against its row. The estimate's Jacobian is a
+     * weighted graph Laplacian (diagonally dominant up to the gas scaling), which needs no pivoting. */
+    private static double[] solveBanded(double[][] a,int band,double[] rightHandSide) {
+        int n=rightHandSide.length;double[] b=rightHandSide.clone();
+        for(int column=0;column<n;column++) {
+            double pivot=a[column][band],size=0;
+            for(int k=0;k<=2*band;k++)size=Math.max(size,Math.abs(a[column][k]));
+            if(!(Math.abs(pivot)>1e-14*size))return null;
+            for(int row=column+1;row<=Math.min(n-1,column+band);row++) {
+                double factor=a[row][column-row+band]/pivot;if(factor==0)continue;
+                for(int k=column;k<=Math.min(n-1,column+band);k++)a[row][k-row+band]-=factor*a[column][k-column+band];
+                b[row]-=factor*b[column];
+            }
+        }
+        double[] x=new double[n];
+        for(int row=n-1;row>=0;row--){double sum=b[row];for(int k=row+1;k<=Math.min(n-1,row+band);k++)sum-=a[row][k-row+band]*x[k];x[row]=sum/a[row][band];}
+        return x;
     }
     /**
      * Whether the static driving pressure {@code P_a - P_b - rho g (z_b - z_a)} has the sign of {@code flow} with rho = either endpoint's density.
