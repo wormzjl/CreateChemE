@@ -51,9 +51,10 @@ class PhasePortClosureTest {
     private FluidThermodynamics.State nitrogenSink(){return model.initialNitrogenCharge(1,298.15,101325,NOOP);}
 
     /** One committed slice as the fixtures read it; {@code modes} are the slice's endpoint modes, {@code pressures} every
-     * node's pressure at the slice end. */
+     * node's pressure at the slice end; {@code headEnd} the watched vessel's level head at the slice end, the offset of a
+     * LIQUID port's driving pressure over the vessel's (decision D9: {@code g * condensed mass * 1 m / V}). */
     private record Slice(int index,double phiStart,double phiEnd,double pressureStart,double pressureEnd,double out,double in,
-                         int accepted,int rejected,int reopens,Map<String,Integer> reasons,List<FlowControl.Mode> modes,double[] pressures) {
+                         int accepted,int rejected,int reopens,Map<String,Integer> reasons,List<FlowControl.Mode> modes,double[] pressures,double headEnd) {
         boolean openAtStart(){return phiStart>=OPEN;}
     }
     /** {@code count} slices of {@code interval}; before slice {@code changeAt} the graph is passed through {@code change}.
@@ -82,7 +83,8 @@ class PhasePortClosureTest {
             var end=graph.reservoirs().get(vessel).state();
             double[] pressures=graph.reservoirs().stream().mapToDouble(n->n.state().pressure()).toArray();
             slices.add(new Slice(slice,PassiveStepSolver.portPhaseShare(start,port),PassiveStepSolver.portPhaseShare(end,port),start.pressure(),end.pressure(),out,in,
-                    result.acceptedSubsteps(),result.rejectedSubsteps(),result.rejectionReasons().getOrDefault(REOPEN,0),result.rejectionReasons(),result.endpointModes(),pressures));
+                    result.acceptedSubsteps(),result.rejectedSubsteps(),result.rejectionReasons().getOrDefault(REOPEN,0),result.rejectionReasons(),result.endpointModes(),pressures,
+                    PassiveStepSolver.GRAVITY*model.liquidMass(end)*PassiveStepSolver.LEVEL_HEAD_HEIGHT/graph.reservoirs().get(vessel).inventory().volume()));
         }
         int rejected=0,reopens=0,worst=0;var reasons=new TreeMap<String,Integer>();
         for(var s:slices) {
@@ -166,20 +168,22 @@ class PhasePortClosureTest {
     /**
      * Water fills the vessel and pushes its nitrogen out of the top port until a step starts with the gas below
      * {@code phi_open}; the port then stays closed, the vessel has no outflow left, and the generator compresses the gas
-     * cushion that stays (nitrogen does not dissolve in free water) until the vessel stands at the generator's pressure:
-     * the liquid-full vessel's pressure rise of plan 3.4. At 0.1 s the gas at the closing step start is at or above the
+     * cushion that stays (nitrogen does not dissolve in free water) until the vessel's bottom port, where the generator
+     * feeds it, stands at the generator's pressure: the headspace at that pressure less the level head (decision D9;
+     * before the head, the headspace itself, 300000.00004 Pa at 5 s and 300000.0009 Pa at 0.1 s): the liquid-full vessel's
+     * pressure rise of plan 3.4. At 0.1 s the gas at the closing step start is at or above the
      * reserve; at 5 s the closing slice already compresses it below (compression, not a draw).
      */
     private void vaporSqueezed(double interval,int count) {
         String label="squeeze-"+interval;
         var slices=drive(label,vaporSqueeze(),interval,count,32,-1,null);
         int closed=closure(label,slices,1);
-        double landed=slices.get(closed).phiStart(),finalPressure=slices.getLast().pressureEnd();
+        double landed=slices.get(closed).phiStart(),finalPressure=slices.getLast().pressureEnd(),finalHead=slices.getLast().headEnd();
         System.out.println("PHASE_PORT_SQUEEZE interval="+interval+" closedAtSlice="+closed+" gasAtClosingStart="+landed+" pressureAtClosingStart="+slices.get(closed).pressureStart()
-                +" finalGas="+slices.getLast().phiEnd()+" finalPressure="+finalPressure);
+                +" finalGas="+slices.getLast().phiEnd()+" finalPressure="+finalPressure+" finalHead="+finalHead);
         assertTrue(landed<OPEN&&landed>0,label+": closed with gas left, "+landed);
         if(interval<1)assertTrue(landed>=RESERVE-FLASH_DRIFT,label+": the vent never drew the gas below its reserve, "+landed);
-        assertEquals(300000,finalPressure,1,label+": the closed vessel rises to the generator's pressure");
+        assertEquals(300000,finalPressure+finalHead,1,label+": the closed vessel's bottom port rises to the generator's pressure");
         assertTrue(slices.getLast().phiEnd()>0&&slices.getLast().phiEnd()<landed,label+": the cushion is compressed, not vented");
     }
 
@@ -385,14 +389,15 @@ class PhasePortClosureTest {
     }
     @Test void aDissolvingCapIntegratesAtFiveSecondSlices(){dissolvingCap(5,24);}
     @Test void aDissolvingCapIntegratesAtTenthSecondSlices(){dissolvingCap(.1,300);}
-    /** The same vessel through the interval solver: the cap goes, the port closes once and stays closed, and the vessel
-     * rises to the pentane generator's pressure. */
+    /** The same vessel through the interval solver: the cap goes, the port closes once and stays closed, and the vessel's
+     * bottom port, where the generator feeds it, rises to the pentane generator's pressure: the headspace at that pressure
+     * less the level head (decision D9; before the head, the headspace itself, 1000000.2 Pa at 5 s). */
     private void dissolvingCap(double interval,int count) {
         String label="vanish-"+interval;
         var slices=drive(label,dissolvingCap(),interval,count,81,-1,null);
         int closed=closure(label,slices,1);
         assertEquals(0,slices.getLast().phiEnd(),label+": no vapour left");
-        assertEquals(1000000,slices.getLast().pressureEnd(),1,label+": the liquid-full vessel stands at the generator's pressure");
-        System.out.println("PHASE_PORT_VANISH_RUN interval="+interval+" closedAtSlice="+closed+" finalPressure="+slices.getLast().pressureEnd());
+        assertEquals(1000000,slices.getLast().pressureEnd()+slices.getLast().headEnd(),1,label+": the liquid-full vessel's bottom port stands at the generator's pressure");
+        System.out.println("PHASE_PORT_VANISH_RUN interval="+interval+" closedAtSlice="+closed+" finalPressure="+slices.getLast().pressureEnd()+" finalHead="+slices.getLast().headEnd());
     }
 }

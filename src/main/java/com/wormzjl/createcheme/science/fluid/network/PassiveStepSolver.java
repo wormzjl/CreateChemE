@@ -1159,32 +1159,54 @@ public final class PassiveStepSolver {
     }
     /**
      * The driving pressure of one end of a connection: the node's pressure plus the static offset of the port at that
-     * end ({@link #portHead}). Every static driving pressure the solver states - the hydraulic row ({@code edgeRows}),
-     * the pass's column choice ({@code headDensities}), the start-of-solve closures ({@link #closeDeadHeads},
-     * {@link #illegalWithEitherDensity}), the start flows ({@link #initialMassFlows}, {@link #initialMassFlow}, the
-     * balanced junction seed), the valve start head, the pump's head-limit start ({@link #headLimitMassFlow}, which the
-     * reopen start calls), its carry offer and shutoff margin ({@link #demand}) and the boundary-reopen test
-     * ({@link #reopenable}) - reads an end's pressure through here and nowhere else, because they must agree: a closure
-     * decided on one pressure and reopened on another bottles a line for good (review 8.8 (c) of the mixed-gas batch;
+     * end ({@link #portHead}: the level head at a vessel's LIQUID port, zero elsewhere). Every static driving pressure
+     * the solver states - the hydraulic row ({@code edgeRows}), the pass's column choice ({@code headDensities}), the
+     * start-of-solve closures ({@link #closeDeadHeads}, {@link #illegalWithEitherDensity}), the start flows
+     * ({@link #initialMassFlows}, {@link #initialMassFlow}, the balanced junction seed), the valve start head, the pump's
+     * head-limit start ({@link #headLimitMassFlow}, which the reopen start calls), its carry offer and shutoff margin
+     * ({@link #demand}) and the boundary-reopen test ({@link #reopenable}) - reads an end's pressure through here and
+     * nowhere else, because they must agree: a closure decided on one pressure and reopened on another bottles a line
+     * for good (review 8.8 (c) of the mixed-gas batch;
      * documentation/2026-09-26-phase-ports-and-compressor/LEVEL_HEAD_REVIEW.md 2.3). The offset applies in both
      * directions: it is a pressure, not a withdrawal rule.
      */
-    static double endPressure(PassiveNetwork.Reservoir node,PassiveNetwork.PhasePort port,FluidThermodynamics.State state) {
+    double endPressure(PassiveNetwork.Reservoir node,PassiveNetwork.PhasePort port,FluidThermodynamics.State state) {
         return state.pressure()+portHead(node,port,state);
     }
     /** {@link #endPressure} of the end of {@code pipe} at {@code node}, on that node's own state in {@code graph}. */
-    static double endPressure(PassiveNetwork graph,PassiveNetwork.Pipe pipe,int node) {
+    double endPressure(PassiveNetwork graph,PassiveNetwork.Pipe pipe,int node) {
         var reservoir=graph.reservoirs().get(node);
         return endPressure(reservoir,pipe.portAt(node),reservoir.state());
     }
     /**
-     * The static head of a port over its node's pressure: none in this version, at every port. The level head of a
-     * bottom outlet (decision D9, option B of LEVEL_HEAD_REVIEW.md: {@code g * condensed mass * 1 m / V} at a LIQUID port
-     * of a vessel) is this one term. A zero offset leaves every driving pressure the double it was: {@code P + 0.0} is
-     * {@code P} for every positive P.
+     * The height every vessel's level head is stated over (decision D9, option B of
+     * documentation/2026-09-26-phase-ports-and-compressor/LEVEL_HEAD_REVIEW.md): one metre, the one-block tank's own
+     * height at the default 1 m3 volume. A constant, not a setting: a prismatic tank of this height over the footprint
+     * {@code V/H}. Multi-block tanks, when they exist, state their structure's height here instead.
      */
-    static double portHead(PassiveNetwork.Reservoir node,PassiveNetwork.PhasePort port,FluidThermodynamics.State state) {
-        return 0;
+    static final double LEVEL_HEAD_HEIGHT=1;
+    /**
+     * The static head of a port over its node's pressure: the level head of a bottom outlet (decision D9, option B), zero
+     * everywhere else. At a LIQUID port of a vessel (RESERVOIR, or its rate-solve copy PORT) the node's pressure is the
+     * headspace's, and the bottom stands below the weight of the condensed phases over the tank's footprint
+     * {@code A = V/H}:
+     *
+     * <p>{@code h = g * m_c * H / V}, with {@code m_c} the condensed mass of {@code state} (hydrocarbon liquid, free water
+     * and every solid, {@link FluidThermodynamics#liquidMass}), {@code H} = {@link #LEVEL_HEAD_HEIGHT} and {@code V} the
+     * vessel's inventory volume (its identity, not the trial state's EOS volume).
+     *
+     * <p>Linear in the decoded condensed amounts and independent of T and P except through the phase split; every caller
+     * evaluates it on the state it is stating a pressure for (the hydraulic row on the Newton's trial state, so the block
+     * Jacobian's re-decoded node carries its derivative with no new structural entry). It is a pressure, so it applies in
+     * both directions: inflow through a bottom port works against it. It does not enter the port's availability or
+     * throttle (those read the phase's volume share) nor the step controller. A VAPOR or BULK port, a node of any other
+     * kind, and a state with no condensed mass get exactly {@code 0.0}, so {@code P + 0.0} is {@code P} to the bit:
+     * gas-only and all-BULK islands are the doubles they were.
+     */
+    double portHead(PassiveNetwork.Reservoir node,PassiveNetwork.PhasePort port,FluidThermodynamics.State state) {
+        if(port!=PassiveNetwork.PhasePort.LIQUID||node.kind()!=PassiveNetwork.NodeKind.RESERVOIR&&node.kind()!=PassiveNetwork.NodeKind.PORT)return 0;
+        double condensed=model.liquidMass(state);
+        return condensed>0?GRAVITY*condensed*LEVEL_HEAD_HEIGHT/node.inventory().volume():0;
     }
     /**
      * The density of what leaves a node through {@code port}: the bulk {@code mass/volume} at a BULK end, the drawn
@@ -1268,7 +1290,7 @@ public final class PassiveStepSolver {
      * hand. Reading one quantity in both modes is what makes the pair a threshold on a line rather
      * than two one-sided tests of two different unknowns.
      */
-    private static double demand(PassiveNetwork graph,PassiveNetwork.Pipe pipe,List<FluidThermodynamics.State> states,double density) {
+    private double demand(PassiveNetwork graph,PassiveNetwork.Pipe pipe,List<FluidThermodynamics.State> states,double density) {
         return endPressure(graph.reservoirs().get(pipe.second()),pipe.secondPort(),states.get(pipe.second()))
                 -endPressure(graph.reservoirs().get(pipe.first()),pipe.firstPort(),states.get(pipe.first()))
                 +density*GRAVITY*(graph.reservoirs().get(pipe.second()).elevation()-graph.reservoirs().get(pipe.first()).elevation());

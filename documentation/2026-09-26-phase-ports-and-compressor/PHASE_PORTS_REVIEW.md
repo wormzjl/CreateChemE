@@ -288,3 +288,137 @@ The brief allowed a recorded re-baseline where a junction gains the trace. Measu
 ### 5. Not run
 
 GameTests and in-game scenarios (no runtime change; runtime graphs carry no phase port until WP5); the Windows lane.
+
+## D9: level head at the bottom port (option B, H = 1 m) (2026-09-26)
+
+- Author: Claude (Opus 5.5), same worktree and branch. Base: `3338663` (D10 `07e7426`, its tools commits, and the merge of the extreme-topology test branch, which adds `ExtremeTopologyIslandTest` and touches no `src/main`). Commit: see section 10; not merged, not pushed.
+- Decision: D9 (owner, 2026-09-26), option B of `LEVEL_HEAD_REVIEW.md`: a level head at the LIQUID (bottom) port only, fixed H = 1 m, no setting. Design: that review, sections 2-5 and 8.
+
+### 1. What changed, per file
+
+| file | change |
+|---|---|
+| `science/fluid/network/PassiveStepSolver.java` | `LEVEL_HEAD_HEIGHT = 1` (m). `portHead(node, port, state)` (the WP1 helper, zero until now) returns `GRAVITY * model.liquidMass(state) * LEVEL_HEAD_HEIGHT / node.inventory().volume()` at a LIQUID port of a RESERVOIR or PORT node when that condensed mass is positive, and `0` everywhere else. `endPressure` (both overloads), `portHead` and `demand` became instance methods (they need the model for the condensed mass); no other line changed. Javadoc of `endPressure`/`portHead` restated. |
+| `science/fluid/network/PassiveNetwork.java` | `PhasePort` javadoc: the port's driving pressure is the node's plus the level head at a LIQUID port (comment only). |
+| `src/test/.../science/fluid/network/LevelHeadTest.java` | new, 8 tests (section 5). |
+| `src/test/.../science/fluid/network/PhasePortClosureTest.java` | four assertions re-baselined to the bottom port's pressure (section 4): `Slice` gains `headEnd`, the watched vessel's level head at the slice end; the squeeze and dissolving-cap endings assert `P + h = P_generator` instead of `P = P_generator`, same tolerance (1 Pa); javadoc records the old values. |
+
+`IslandCertificate` is unchanged: under option B, H is a constant and V is already the vessel's identity in `graphIdentity`, and the LIQUID port is in the digest since WP1 (A12), so a saved certificate cannot outlive anything the head depends on. No runtime, codec, wire or GUI change.
+
+### 2. The formula and where it enters
+
+`h = g * m_c * H / V`, `g` = `GRAVITY` (9.80665), `m_c` = `FluidThermodynamics.liquidMass(state)` = hydrocarbon liquid + free water + every solid of the state the caller is stating a pressure for, `H` = 1 m, `V` = the vessel's inventory volume. `endPressure(node, port, state) = state.pressure() + portHead(node, port, state)`, so every site the WP1 helper routed (section "WP1", 2; current line numbers of `PassiveStepSolver` at this commit) states the head on its own state, in both directions:
+
+| # | site | state the head is read on |
+|---|---|---|
+| 1 | `reopenable` :222 | the step's end states (the band `reopenBand(pa, pb)` on the end pressures) |
+| 2 | carry offer :379 | the step's start graph |
+| 3 | `demand` :1293 (pass loop :499) | the pass's converged states |
+| 4 | `initialMassFlows` :982 | the graph the solve starts from |
+| 5 | valve start head :1054 (`startPoint`) | the start graph |
+| 6 | `initialMassFlow` :1097 and the balanced junction seed :845, :873, :882 | the start graph / the seed trial graph |
+| 7 | `headLimitMassFlow` :1129 | the start graph |
+| 8 | `closeDeadHeads` :1455 | the start graph |
+| 9 | `illegalWithEitherDensity` :1515 | the start graph |
+| 10 | `headDensities` :1892 | the pass seeds |
+| 11 | `edgeRows` :2259 | the Newton's trial state `st[node]` |
+
+Nothing else states a driving pressure: `grep` of `.pressure()` in the solver leaves the valve's own set-point tests (a vessel pressure, not a driving pressure), pressure scales and retained pressures; `GRAVITY` elsewhere in `src/main` books potential energy only. The head does not enter the WP2 availability mask or the throttle (they read `portPhaseShare`, a volume share), nor the state-change controller (`PassiveIntervalSolver.stateChange`, vessel pressure and mass): WP2's rules are unchanged.
+
+**Jacobian (review 2.2, verified by reading, no entry added).** `buildSparsity` (:1970) declares every column of both end nodes in every edge row, and the structural-zero drop removes columns only from material rows (`columns[c].andNot(materialRows)`), never from an edge row. The block sweep `differentiateEntries` (:2355) re-decodes the perturbed node into `st[node]` and re-evaluates every incident `edgeRows` on it, so the head's derivative (with respect to the node's amount, phase-split, T and P columns) is written into entries that already exist; the flow and actuator columns re-evaluate `edgeRows` with the node states unchanged, where the head is constant, as it should be. The coloured fallback evaluates the whole residual and needs nothing either. **No structural entry was added and `differentiateEntries` is unchanged.**
+
+**Bitwise where it must be.** A VAPOR or BULK end, a non-vessel node and a state with no condensed mass return the integer `0`, so `P + 0.0` is `P`: gas-only and all-BULK islands are the doubles they were (section 6, G0b/G1/G2).
+
+### 3. Checks of the eleven sites (mutation runs, measured)
+
+Each site is covered by a fixture that fails when that site alone omits the head (scratch mutations, `tools/phase-ports-probes/d9/src/mutations/*.patch`, logs `09-*`; applied to a copy of the tree, never committed):
+
+| mutation (the head removed from one site) | `LevelHeadTest` result |
+|---|---|
+| `closeDeadHeads` | 3 of 8 fail: the drain is dead-headed at every step start and opened by the reopen retry every step (479 reopens at 0.1 s, 84 at 5 s, where the correct tree has 0); the generator held off by the head is opened at the start and moves the tank (`against-5.0`) |
+| `reopenable` | 1 of 8 fails: the reopen retry opens the dead-headed generator line against the head (`against-5.0`: the tank moves by 7e-5 Pa) |
+| `edgeRows` (residual only) | 7 of 8 fail: bottoms not level (407 Pa, 5860 Pa), the pump closes at the headspace, a bottled drain at a 5 s slice end (bottom 101430 Pa above the void with the drain shut), two nonconvergences |
+
+### 4. Existing tests that moved, and why (classification)
+
+The brief expected nothing to move because "code-built graphs are all BULK". That is not so since WP1/WP2: `PhasePortTest`, `PhasePortClosureTest` and `JunctionWaterTraceTest` build code graphs with phase ports. Measured on the harness science run before any test edit: 205 found, **4 failed**, all in `PhasePortClosureTest`, all the same assertion kind:
+
+| test | assertion | before (WP2 + D10) | with the head | classification |
+|---|---|---|---|---|
+| `aVaporPortIsSqueezedShutByLiquidAtFiveSecondSlices` | the closed vessel rises to the generator's 300000 Pa (+-1) | 300000.00004 | headspace 290254.82 + head 9745.19 = 300000.01 | forced by D9: the vessel is fed through its LIQUID port, so its bottom, not its headspace, stands at the generator's pressure |
+| `...AtTenthSecondSlices` | same | 300000.00085 | 290264.05 + 9735.95 = 300000.00 | same |
+| `aDissolvingCapIntegratesAtFiveSecondSlices` | the liquid-full vessel stands at the generator's 1000000 Pa (+-1) | 1000000.21 | 993908.25 + 6091.75 = 1000000.00 | same (a liquid-full 1 m3 pentane vessel: 621 kg over 1 m2) |
+| `...AtTenthSecondSlices` | same | 1000000.00000003 | 993908.27 + 6091.73 = 1000000.00 | same |
+
+Re-baselined in place to `P + h = P_generator` with the same tolerance (the javadoc keeps the old values). This is a change of four existing assertions, recorded here and in `DECISION_LOG.md` (A19) for the owner; the alternative that leaves the assertions literal is to feed those two fixtures through a BULK end, which would change what they test (filling through the bottom port). Every other assertion of the three classes passed unchanged; their printed numbers moved where a LIQUID port sees liquid (`logs/07-*` WP2 tree against `logs/06-*`): the WP1 fixture-1 LIQUID line 0.1903 -> 0.1951 kg/s (water) and 0.2235 -> 0.2256 kg/s (pentane); the drained water tank closes at 0.9747 % (5 s, was 0.9934 %) and 0.9854 % (0.1 s, was 0.9901 %); the squeezed vent closes at slice 13 with 0.44 % gas at 162.8 kPa (5 s, was 0.19 % at 299.1 kPa) and at slice 631 (0.1 s, was 617); the vanishing-cap step ends at 882.1 kPa (was 888.1 kPa) with the vent's zero-capped flow reported VELOCITY_LIMITED instead of PASSIVE (the test asserts only "not CLOSED"); the squeeze at 5 s loses its two equation-gate rejections (8 -> 10 rejections, now all state change). The throttle and refusal fixtures print identical numbers. The gas-only `inflow`/`refusal` fixtures differ only where water has entered.
+
+**What waits for WP5.** `PhysicalFluidTopology` still compiles every face to BULK (WP5 is the face-to-port compile), so the four physical-topology assertions of plan Appendix C.5 item 5 do **not** move yet and were not edited: `ElevatedBlockLineIslandTest` :216, :220, :229 (rising, rising filter, rising pump lines, fed through the tank's DOWN face) and `DeadHeadedLineIslandTest` :243 (was :234 in C.2; the raised generator's rest). They come due with WP5, re-baselined to `P_tank + g m_w H/V = P_generator - rho g LIFT`: about 7 kPa lower headspace by the level-head review's estimate (0.72 m of water for a tank charged at 1 atm). For scale, the D9 bitwise probe's rising line (the same line code-built with a LIQUID tank end, tank charged at 150 kPa, 0.574 m3 of water at rest) rests at 355309.09 Pa against 360918.31 Pa without the head: -5.61 kPa, the head of its water (`results/probe/out-d9/liquid-ports.txt`). The review's fixture 6 (face-to-port plus head on a compiled stack) is WP5's too. A note is in the plan's WP5 row.
+
+### 5. Fixtures (`LevelHeadTest`, measured; Gradle run G1)
+
+Every slice commits whole and closes the component ledger to 1e-12 and the energy ledger to 1e-10 (pump work included). Vessels are 1 m3 at 298.15 K, water under nitrogen; lines level unless stated.
+
+| test | fixture | measured |
+|---|---|---|
+| `aTankAtTheVoidsPressureDrainsOnItsHeadAlone...` (5 s, 40 slices; 0.1 s, 1500) | 0.1 m3 of water, headspace 101275 Pa (50 Pa below the 1 atm void), vented through its VAPOR port from a 1 atm N2 generator, LIQUID drain 2 m 50 mm to the void | drains from the first slice on the head alone (950 Pa at the start; 13.56 kg in the first 5 s slice, 0.283 kg in the first 0.1 s slice); **0 reopens**; closes as WP2 closes a port, at the first step start below 1 %: slice 10 (50 s) at 0.99300 % (5 s) and slice 479 (47.9 s) at 0.99716 % (0.1 s); one transition; the closed vessel keeps its water to 3.4e-12 of the vessel volume. BULK control (no head): 3.3e-6 / 1.7e-6 kg out in total (the vent lifts the headspace to 1 atm, roundoff) |
+| `aGeneratorBelowTheBottomPressureStaysDeadHeadedWithoutReopens` (5 s, 12; 0.1 s, 100) | closed tank, 0.3 m3 of water, headspace 100000 Pa, bottom 102867 Pa; water generator at 101325 Pa on its LIQUID port | dead-headed (CLOSED) every slice, flow exactly 0, the tank's pressure bitwise constant, **0 reopens** (`closeDeadHeads` and `reopenable` read the same bottom pressure) |
+| `aDrainTheHeadLiftsAboveTheVoidInsideAStepIsReopenedAndNeverBottled` (5 s, 24; 0.1 s, 600) | closed tank, 0.3 m3 of water at 98 kPa (bottom 100.9 kPa, below the void), LIQUID drain to a 1 atm void, filled through a BULK end from a 200 kPa water generator (10 m, 10 mm) | drain closed until the bottom passes the void, opened inside slice 3 by 1 reopen (5 s) and at the start of slice 163 with no reopen (0.1 s); no slice ends bottled (drain shut with the bottom above the void by more than the band); steady state with the headspace below the void (98435.26 Pa) and the bottom above it (101332.43 Pa): only the head drains it |
+| `twoTanksAtOnePressureEqualiseTheirBottomsMonotonically` (5 s, 60) | two closed tanks at 101325 Pa, 0.8 and 0.2 m3 of water, LIQUID to LIQUID 10 m 20 mm | bottom difference 5859.8 Pa at the start, monotone (0 increases, no sign change beyond -3.6e-6 Pa), 0.042 Pa after 20 slices, **-3.6e-6 Pa at rest** (Newton tolerance x scale = 1e-4 Pa); 9.73 kg moved (the cushions take most of the imbalance: 96862.28 / 102531.26 Pa at rest); flow exactly 0 from slice 30, states repeating. Certification itself is runtime-package code (`IslandCertificate`, `IslandCoordinator` package-private) and not reachable from this package, so stationarity is asserted instead. BULK control: never moves (flow 0) |
+| `cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG` (5 s, 60) | A and B, 0.3 m3 of water each, LIQUID to LIQUID 2 m 50 mm; A held at 104325 Pa by a N2 generator on a BULK end, B closed at 101325 Pa | rest: P_A 104325.00001, P_B 103965.46, dP 359.54 Pa (< rho g H); level difference 0.0368098 m against dP/(rho g) 0.0368094 m (1e-5 relative); bottoms level to 8.9e-7 Pa. BULK control: headspaces equal (104325.00001 both) with 11.9 kg more water in B, a level difference nothing holds |
+| `aPumpIntoABottomPortClosesTheLevelHeadEarlier` (5 s, 30) | water generator 1 atm, junction, pump 0.01 m3/s 300 kPa, N2 tank 1 atm; pump discharge on the tank's BULK or LIQUID end | both pumps CLOSED at the end; side-fed headspace 401324.09 Pa, bottom-fed 394085.62 Pa + head 7239.19 Pa = 401324.81 Pa: the bottom-fed tank closes 7.24 kPa (its water's head, 738 kg) earlier |
+| `aFreshSolverReplaysASlowHeadDrainBitwise` (5 s, 12) | the drain fixture through 10 m of 10 mm line | 1.15 kg drained over 60 s (head 950 -> 939 Pa); a fresh solver resumed from the committed interval at slices 1, 4 and 8 reproduces every flow, mode, state pressure and temperature, inventory and boundary of the continuous run bit for bit |
+
+Plan fixture 3's wording ("with the head off all the liquid moves until the source port closes") assumed B vented. Measured: a VAPOR vent on a tank filled through its LIQUID port fails the reconstruction's equation gate at every step size (1.008e-8, interval substep limit exhausted in the first or second 5 s slice), **on the WP2 + D10 tree as on this one** (`logs/08-vapor-vent-gate-classification.txt`, scratch `src/ManometerProbe.java`: `base LIQUID VAPOR VAPOR` fails at slice 3 without any head; a BULK vent integrates but carries B's water out). It is the WP2 open item "gate rejections with a VAPOR vent" (WP2 section 4, option 3), here severe enough to exhaust the substep limit. Not a D9 defect; the fixture closes B instead. Recommended: take it into WP6's gate investigation (WP2 option 3 (ii)) with this fixture as the reproduction.
+
+### 6. Counters (review section 8, measured; no timing claim)
+
+Gas-only guard: the 33 MIXED_GAS_STATIC/TRANSIENT/COST and LIQUID_JUNCTION lines of G1 are character-identical to `d10/logs/02-junction-lines-d10.txt` with ms/bytes/allocatedMB masked, so `MixedGasJunctionTransientTest`'s ledgers and Newton solve counts are unchanged (MIXED_GAS_COST 286 Newton solves). The WP1 bitwise probe extended with gas-only phase-port islands (G0b) is byte-identical.
+
+Liquid fixtures (`LEVEL_HEAD_RUN` lines, `logs/06-*`; SolverDiagnostics over each run):
+
+| fixture | cadence | accepted / rejected | rejections by reason | Newton solves | iterations per solve | Jacobian builds |
+|---|---|---|---|---|---|---|
+| drain | 5 s | 168 / 21 | 18 equation gate, 3 state change | 190 | 3.48 | 70 |
+| drain | 0.1 s | 1500 / 0 | - | 1501 | 0.65 | 485 |
+| against the head | 5 s / 0.1 s | 36 / 0, 100 / 0 | - | 36, 100 | 0 | 0 |
+| reopen by the head | 5 s | 72 / 1 | 1 boundary reopen | 73 | 1.52 | 28 |
+| reopen by the head | 0.1 s | 600 / 0 | - | 600 | 1.06 | 601 |
+| equalisation | 5 s | 180 / 0 | - | 180 | 2.21 | 47 |
+| manometer (head) / BULK control | 5 s | 182 / 3, 180 / 1 | 1 reopen + 2 equation gate; 1 reopen | 185, 181 | 0.88, 0.45 | 62, 36 |
+| pump into bottom / side port | 5 s | 238 / 13, 238 / 13 | 13 state change each | 297, 297 | **5.29 / 5.60** | 159 / 146 |
+| slow drain (replay) | 5 s | 48 / 12 | 12 equation gate | 60 | 1.68 | 16 |
+
+- The one head-on/head-off pair with the same work (the pump into a bottom against a side port) has the same solve count and rejections and 5.5 % fewer iterations per solve with the head: no cost measured.
+- No new rejection reason. The equation-gate rejections on the drain and the slow drain are the VAPOR-port class above (the vent's inflow into the draining tank): the same drain on the WP2 tree, the head emulated by a void 950 Pa lower, has 8 in 6 draining slices (`logs/08-drain-gate-classification.txt`). The reopens are the expected ones (a vent line at rest at the start; the head's reopen in the reopen fixture).
+- Zero nonconvergence; reopen retries 0 in the drain fixture (`LEVEL_HEAD_REVIEW.md` section 8, item 4).
+
+### 7. Gates
+
+JDK OpenJDK 21.0.10 (container); `JAVA_TOOL_OPTIONS` as the environment sets it; one Gradle invocation at a time; no dev client. Logs `tools/phase-ports-probes/d9/logs/`.
+
+| # | command (from `/home/user/CreateChemE`) | result |
+|---|---|---|
+| G0a | `REPO=/home/user/CreateChemE bash tools/cloud-science-harness/harness.sh all` (log `01-harness-all-d9.log`, 94 s) | science 213/213 (205 + 8), runtime 237/237 (227 + the 10 `ExtremeTopologyIslandTest` cases) with the 33 junction lines identical to its reference, adjacent 38/38, chain-100 0.000e+00 |
+| G0b | WP1 bitwise probe extended (`src/BitwiseProbe.java`: chain-100, the 14 all-BULK scenarios, and 8 gas-only phase-port scenarios: a N2 generator into a LIQUID port at 5 s and 0.1 s, a VAPOR-to-LIQUID tank pair at 5 s and 0.1 s, a methane/nitrogen junction fed through VAPOR and LIQUID ports at 5 s and 0.1 s, a dead-headed rising LIQUID port, a dry LIQUID drain), on `0cf4ec9` (before the edit) and on this tree | `chain-100.json`, `scenarios.txt`, `gas-ports.txt` **byte-identical** (sha256 in `results/probe/sha256.txt`), `chain-100.json` identical to `src/test/resources/fluid/regression/chain-100.json`; `liquid-ports.txt` (a rising line and a drain whose LIQUID port sees water) differs, as intended |
+| G1 | `./gradlew --no-configuration-cache --no-build-cache test --rerun --tests com.wormzjl.createcheme.science.fluid.* --tests com.wormzjl.createcheme.runtime.fluid.* --console=plain --continue` (log `02-gradle-fluid-suite-d9.log`, XML `02-xml-d9/`, 70 s) | **448/448** in 99 classes, 0 skipped: D10's 430 names plus the 8 of `LevelHeadTest` plus the 10 of `ExtremeTopologyIslandTest` (merged before this package; names `02-test-names-d9.txt`, no name of the 430 missing); the 33 junction lines (`02-junction-lines-d9.txt`) character-identical to `d10/logs/02-junction-lines-d10.txt` with ms/bytes/allocatedMB masked; MIXED_GAS_COST 286 Newton solves (555 ms, 135.1 MB, single run, no cost claim) |
+| G2 | `./gradlew --no-configuration-cache fluidSolverRegression -PfluidRegressionMode=exact --console=plain` (log `03-...`) | **0.000e+00** on state/moles, temperature, phase fraction and flow; 3 accepted / 0 rejected, 4 Newton solves, 29 iterations |
+| G3 | the 38 adjacent (WP1 G3 command; log `04-...`) | **38/38** in 7 classes |
+| G4 | `./gradlew --no-configuration-cache compileFluidGameTestJava compileMcpCompatJava --console=plain`, then with `--rerun` (log `05-...`) | **BUILD SUCCESSFUL**, both tasks executed |
+
+Section 11 records the re-run after the last (comment-only) edit.
+
+### 8. Decisions recorded
+
+`DECISION_LOG.md`, "D9 defaults": A17 (what `m_c` and `V` are; solids count without a liquid), A18 (no digest change), A19 (the four `PhasePortClosureTest` re-baselines).
+
+### 9. Not run
+
+GameTests and in-game scenarios (no runtime path changes; runtime graphs carry no phase port until WP5); the Windows lane; no timing claim.
+
+### 10. Commits and material
+
+Code commit `WIP phase-ports D9: level head at the bottom port (option B, H = 1 m)`; tools commit after it. Material: `tools/phase-ports-probes/d9/` (`src/BitwiseProbe.java` the extended probe, `src/DrainProbe.java` and `src/ManometerProbe.java` the gate-classification drivers, `src/mutations/` the three single-site mutation patches, `results/probe/` the probe outputs on both trees, `logs/` the gate logs and captures).
+
+### 11. Re-run after the last edit
+
+The javadoc of `PassiveNetwork.PhasePort` and `PassiveStepSolver.endPressure` was re-wrapped after G1-G4 (comment only). Re-run on the final tree: G1 (log `10-gradle-fluid-suite-final-d9.log`) 448/448 in 99 classes, the same test names, the 33 junction lines again identical to D10's (`10-junction-lines-final-d9.txt`); G2 (log `11-gradle-regression-exact-final-d9.log`) 0.000e+00.
