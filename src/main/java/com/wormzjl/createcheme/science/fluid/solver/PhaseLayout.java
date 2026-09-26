@@ -303,16 +303,27 @@ public final class PhaseLayout {
      */
     public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                             double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables) {
+        return junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,1);
+    }
+    /** {@code weight} multiplies the mixing and enthalpy rows: an owned junction states them in amount form over its
+     * holdup, {@code (dt/m)(m/dt + Q)} times the difference (see {@code PassiveStepSolver.Equations.junctionInflow}). */
+    public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
+                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared,double weight) {
+        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,weight);
+        equilibriumResidual(state,state.liquidView(),state.vaporView(),result,row,offset,variables,prepared);
+    }
+    public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
+                            double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,double weight) {
         var n=totalAmounts(state,state.liquidView(),state.vaporView());
         int row=offset;
         for(int index=0;index<junctionBasis.length-1;index++) {
             int i=junctionBasis[index];double mw=i==n.length-1?model.waterMolecularWeight:model.hydrocarbon.molecularWeight(i);
-            result[row++]=n[i]*mw/state.mass()-incomingMassFractions[i];
+            result[row++]=weight*(n[i]*mw/state.mass()-incomingMassFractions[i]);
         }
         // 1 kg/s reference scale, or the retained pressure of an isolated junction, in the
         // logarithmic variable the pressure unknown already is.
         result[row++]=retainedPressure>0?variables[offset+pressureIndex]-Math.log(retainedPressure/1e5):netMassFlow;
-        result[row++]=(state.enthalpy()/state.mass()-incomingSpecificEnthalpy)/Math.max(1,energyScale/state.mass());
+        result[row++]=weight*(state.enthalpy()/state.mass()-incomingSpecificEnthalpy)/Math.max(1,energyScale/state.mass());
         result[row++]=sum(n)/amountScale-1;
         if(solidIndex>=0){var target=solidReference.clone();for(int i=0;i<3;i++)target[i]/=state.mass();solidRows(state,variables,offset,target,true,result);row+=3;}
         return row;

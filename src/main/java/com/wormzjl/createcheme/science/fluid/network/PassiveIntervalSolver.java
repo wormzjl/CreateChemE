@@ -47,10 +47,12 @@ public final class PassiveIntervalSolver {
      * criteria and the pipe term are unchanged.
      */
     public Result solve(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,double startingStep) {
+        initial=PassiveNetwork.sizeJunctionHoldups(initial,model);
         if(com.wormzjl.createcheme.science.fluid.transport.SolidMobility.monitored(initial)||model.solidSettings.immobileViscosity()<.002&&initial.reservoirs().stream().anyMatch(n->n.state().waterVolume()>0))return new SolidEventIntegrator(model,this).solve(initial,duration,settings,checkpoint,startingStep);
         return integrate(initial,duration,settings,checkpoint,PassiveStepSolver.Acceptance.FULL,TrBdf2StepSolver.StageGuard.NONE,startingStep);
     }
     public Result solveApproximate(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
+        initial=PassiveNetwork.sizeJunctionHoldups(initial,model);
         if(com.wormzjl.createcheme.science.fluid.transport.SolidMobility.requiresFull(model,initial))throw new ApproximationRejected("Solid/filter intervals require a full solve");
         TrBdf2StepSolver.StageGuard checked=(states,modes)->{
             for(var state:states)if(state.solidMoments().mass()>0||com.wormzjl.createcheme.science.fluid.transport.SolidMobility.immobileLiquid(model,state))throw new ApproximationRejected("Solid transition requires a full solve");
@@ -94,6 +96,7 @@ public final class PassiveIntervalSolver {
     private Prefix run(PassiveNetwork initial,double duration,Settings settings,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance,
                              TrBdf2StepSolver.StageGuard guard,double startingStep) {
         if(!Double.isFinite(duration)||duration<=0)throw new IllegalArgumentException("Positive finite interval required");
+        initial=PassiveNetwork.sizeJunctionHoldups(initial,model);
         if(!Double.isFinite(startingStep)||startingStep<=0)throw new IllegalArgumentException("Positive finite starting step required");
         PassiveNetwork accepted=acceptance==PassiveStepSolver.Acceptance.FULL?InventoryEquilibrium.refresh(initial,model,checkpoint):initial;
         // h is the controller's estimate; each attempt uses it truncated to the rest of the interval,

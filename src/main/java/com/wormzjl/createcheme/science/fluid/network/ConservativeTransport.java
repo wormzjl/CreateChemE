@@ -11,11 +11,6 @@ import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 /** Conservative reconstruction for a candidate's already-solved flows; it does not solve hydraulics or flash. */
 public final class ConservativeTransport {
     private ConservativeTransport() {}
-    /** The delivered mass rate a zero-holdup junction has to receive before what arrives, rather
-     * than what it stored, decides its contents. It is the floor
-     * {@code PassiveStepSolver.Equations.junctionInflow} and {@code nodeSolidRows} already apply,
-     * repeated here so that the reconstruction mixes exactly the junctions the equations mixed. */
-    static final double JUNCTION_INFLOW_FLOOR=1e-14;
     /**
      * One island's transport linear algebra, retained across its reconstructions the way
      * {@code SparseNewton.Workspace.Shared} is retained across a fork family: one EJML storage that
@@ -90,9 +85,23 @@ public final class ConservativeTransport {
     }
     public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
                                          double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace) {
-        if(!SolverDiagnostics.ENABLED)return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace);
+        return reconstruct(graph,candidate,flows,heads,dt,model,checkpoint,workspace,false);
+    }
+    /** {@code frozenJunctions} (rate evaluations only): every junction is held at its owned inventory's composition,
+     * as the rate-only rows of {@code PassiveStepSolver.Equations.junctionInflow} hold it, and its accumulation over
+     * dt is booked as a pseudo-boundary at the junction. */
+    public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
+                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozenJunctions) {
+        return reconstruct(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions,0);
+    }
+    /** {@code relax} (frozen junctions only; TR-BDF2's stage-one booking): when positive, a junction's outflows over dt
+     * carry its stock advanced by backward Euler over {@code relax} seconds from its inventory with its booked inflow,
+     * instead of its inventory composition; 0 is the frozen booking above. */
+    public static Projection reconstruct(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
+                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozenJunctions,double relax) {
+        if(!SolverDiagnostics.ENABLED)return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions,relax);
         long started=System.nanoTime();boolean previous=SolverDiagnostics.enterReconstruct();
-        try{return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace);}
+        try{return reconstruct0(graph,candidate,flows,heads,dt,model,checkpoint,workspace,frozenJunctions,relax);}
         finally {
             SolverDiagnostics.leaveReconstruct(previous);
             SolverDiagnostics.reconstructNanos.add(System.nanoTime()-started);SolverDiagnostics.reconstructCalls.increment();
@@ -100,8 +109,7 @@ public final class ConservativeTransport {
     }
     /**
      * The mass fractions of a node whose composition this reconstruction does not solve for: a
-     * prescribed boundary, or a zero-holdup junction nothing is delivering into. Both are a
-     * <em>composition</em> and not a conserved amount, so every entry is read off one state - the
+     * prescribed boundary. It is a <em>composition</em> and not a conserved amount, so every entry is read off one state - the
      * candidate - and the stored inventory supplies nothing but the split of the candidate's
      * aggregate solid mass across its populations.
      *
@@ -126,10 +134,14 @@ public final class ConservativeTransport {
         double scale=storedMass>0?state.solidMoments().mass()/storedMass:0;
         for(int c=0;c<populationKeys.size();c++)result[components+c]=scale*stored.mass(populationKeys.get(c))/state.mass();
     }
-    private static Projection reconstruct0(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,double[] heads,
-                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace) {
+    private static Projection reconstruct0(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] solvedFlows,double[] heads,
+                                         double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozenJunctions,double relax) {
         int nodes=graph.reservoirs().size(),components=model.hydrocarbon.componentCount()+1;
-        if(candidate.size()!=nodes||flows.length!=graph.pipes().size()||heads.length!=flows.length||!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Invalid transport reconstruction");
+        boolean frozen=frozenJunctions;
+        if(candidate.size()!=nodes||solvedFlows.length!=graph.pipes().size()||heads.length!=solvedFlows.length||!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Invalid transport reconstruction");
+        for(double q:solvedFlows)if(!Double.isFinite(q))throw new IllegalArgumentException("Nonfinite candidate flow/head");
+        // The flows this reconstruction books: the solved flows with every junction's mass held; see pinnedFlows.
+        final double[] flows=pinnedFlows(graph,candidate,solvedFlows);
         var populationBasis=new TreeMap<SolidInventory.Key,SolidInventory.Population>();
         for(var node:graph.reservoirs())for(var population:node.inventory().solids().populations())populationBasis.merge(population.key(),population,(a,b)->{if(!a.material().equals(b.material()))throw new IllegalArgumentException("Conflicting solid material definitions");return a;});
         for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection in)for(var population:in.solidsPerSecond().populations())populationBasis.merge(population.key(),population,(a,b)->{if(!a.material().equals(b.material()))throw new IllegalArgumentException("Conflicting solid material definitions");return a;});
@@ -142,7 +154,13 @@ public final class ConservativeTransport {
             var reservoir=graph.reservoirs().get(node);old[node]=reservoir.inventory().moles();
             for(int c=0;c<components;c++)endMass[node]+=old[node][c]*molecularWeight[c];
             endMass[node]+=reservoir.inventory().solids().massKg();
-            if(!reservoir.fixed())index[node]=count++;
+            if(frozen&&reservoir.junction()) {
+                // Frozen rate: a known composition, the owned inventory's (fluid and solid mass fractions).
+                var solids=reservoir.inventory().solids();
+                for(int c=0;c<components;c++)fractions[node][c]=old[node][c]*molecularWeight[c]/endMass[node];
+                for(int c=0;c<populationKeys.size();c++)fractions[node][components+c]=solids.mass(populationKeys.get(c))/endMass[node];
+            }
+            else if(!reservoir.fixed())index[node]=count++;
             else storedFractions(fractions[node],candidate.get(node),reservoir,populationKeys,molecularWeight,components);
         }
         for(int edge=0;edge<flows.length;edge++) {
@@ -156,39 +174,23 @@ public final class ConservativeTransport {
             if(transfer instanceof ScheduledTransfer.Withdrawal out){outgoing[node]+=out.massKgPerSecond();endMass[node]-=dt*out.massKgPerSecond();}
             else if(transfer instanceof ScheduledTransfer.Injection in){var n=in.molesPerSecond();for(int c=0;c<components;c++)endMass[node]+=dt*n[c]*molecularWeight[c];endMass[node]+=dt*in.solidsPerSecond().massKg();}
         }
-        // Whether a zero-holdup junction is fed, decided exactly as the equations decide it. The
-        // junction rows of PassiveStepSolver take a junction's mass fractions, its specific
-        // enthalpy and its aggregate solid moments from what arrives only while the arriving mass
-        // rate exceeds this same floor, and retain the stored guess below it; both accumulate the
-        // identical delivered rate over the same edges in the same order, so the two agree bit for
-        // bit. Asking here only whether a flow is exactly zero did not: an island at rest carries
-        // flows of order 1e-14 kg/s, which is nonzero and below the floor, so the reconstruction
-        // mixed a junction the equations had retained - and on the far side of a filter, where the
-        // arriving stream carries no solids at all, that disagreement is the junction's whole
-        // solid fraction. A clear island never noticed, because what arrives and what was stored
-        // are the same fluid.
-        boolean[] fed=new boolean[nodes];
-        for(int node=0;node<nodes;node++)fed[node]=!graph.reservoirs().get(node).junction()||incoming[node]>JUNCTION_INFLOW_FLOOR;
+        // Every vessel and every junction (it owns stock) takes the vessel row below. A junction's diagonal
+        // endMass+dt*outgoing = m_old+dt*incoming, so its row is (m_old/dt+Q) w = (m_old/dt) w_old + sum q w_e,
+        // exactly the Newton junction row, and the booked inventory is endMass*w (exact ledger).
         var columns=new ArrayList<TreeMap<Integer,Double>>();for(int c=0;c<count;c++)columns.add(new TreeMap<>());
         double[][] rhs=new double[conserved][count];
         for(int node=0;node<nodes;node++)if(index[node]>=0) {
             checkpoint.run();int row=index[node];var reservoir=graph.reservoirs().get(node);
-            if(reservoir.junction()) {
-                add(columns,row,row,1);
-                if(!fed[node]){var held=new double[conserved];storedFractions(held,candidate.get(node),reservoir,populationKeys,molecularWeight,components);
-                    for(int c=0;c<conserved;c++)rhs[c][row]=held[c];}
-            }else {
-                if(!(endMass[node]>0)||!Double.isFinite(endMass[node]))throw new SparseNewton.Nonconvergence("Candidate overdraws a reservoir");
-                add(columns,row,row,endMass[node]+dt*outgoing[node]);
-                for(int c=0;c<components;c++)rhs[c][row]=old[node][c]*molecularWeight[c];
-                for(int c=0;c<populationKeys.size();c++)rhs[components+c][row]=reservoir.inventory().solids().mass(populationKeys.get(c));
-            }
+            if(!(endMass[node]>0)||!Double.isFinite(endMass[node]))throw new SparseNewton.Nonconvergence("Candidate overdraws a reservoir");
+            add(columns,row,row,endMass[node]+dt*outgoing[node]);
+            for(int c=0;c<components;c++)rhs[c][row]=old[node][c]*molecularWeight[c];
+            for(int c=0;c<populationKeys.size();c++)rhs[components+c][row]=reservoir.inventory().solids().mass(populationKeys.get(c));
         }
         var solidColumns=new ArrayList<TreeMap<Integer,Double>>();for(var column:columns)solidColumns.add(new TreeMap<>(column));
         for(int edge=0;edge<flows.length;edge++) {
             var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
-            if(index[receiver]<0||flows[edge]==0||!fed[receiver])continue;
-            double weight=graph.reservoirs().get(receiver).junction()?Math.abs(flows[edge])/incoming[receiver]:dt*Math.abs(flows[edge]);
+            if(index[receiver]<0||flows[edge]==0)continue;
+            double weight=dt*Math.abs(flows[edge]);
             if(index[donor]>=0){add(columns,index[donor],index[receiver],-weight);if(pipe.filter()==null)add(solidColumns,index[donor],index[receiver],-weight);}
             else for(int c=0;c<conserved;c++)if(c<components||pipe.filter()==null)rhs[c][index[receiver]]+=weight*fractions[donor][c];
         }
@@ -210,12 +212,21 @@ public final class ConservativeTransport {
             }}
         catch(SparseLuSolver.SolveFailure failure){throw new SparseNewton.Nonconvergence("Transport reconstruction failed: "+failure.getMessage());}
         double[][] moles=new double[nodes][];var states=new ArrayList<FluidThermodynamics.State>();
+        // A junction's owned inventory (endMass*w) and its solid stock; its state keeps the Newton's free amount scale,
+        // which the junction's amount row pins.
+        double[][] ownedMoles=new double[nodes][];var ownedSolids=new SolidInventory[nodes];
         for(int node=0;node<nodes;node++) {
             var reservoir=graph.reservoirs().get(node);if(index[node]<0){moles[node]=old[node];states.add(candidate.get(node));continue;}
             double total=0,molesPerKg=0;
             for(int c=0;c<components;c++){double w=solved[c][index[node]];if(w<0||!Double.isFinite(w))throw new SparseNewton.Nonconvergence("Negative transport reconstruction");fractions[node][c]=w;total+=w;molesPerKg+=w/molecularWeight[c];}
             for(int c=components;c<conserved;c++){double w=solved[c][index[node]];if(w<0||!Double.isFinite(w))throw new SparseNewton.Nonconvergence("Negative solid reconstruction");fractions[node][c]=w;total+=w;}
             if(Math.abs(total-1)>1e-8)throw new SparseNewton.Nonconvergence("Junction mass continuity does not close");
+            if(reservoir.junction()) {
+                ownedMoles[node]=new double[components];for(int c=0;c<components;c++)ownedMoles[node][c]=endMass[node]*fractions[node][c]/molecularWeight[c];
+                var owned=new ArrayList<SolidInventory.Population>();
+                for(int c=0;c<populationKeys.size();c++){var source=populationBasis.get(populationKeys.get(c));owned.add(new SolidInventory.Population(source.material(),source.size(),endMass[node]*fractions[node][components+c]));}
+                ownedSolids[node]=new SolidInventory(owned);
+            }
             double mass=reservoir.junction()?PhaseLayout.sum(PhaseLayout.totalAmounts(candidate.get(node)))/molesPerKg:endMass[node];
             moles[node]=new double[components];for(int c=0;c<components;c++)moles[node][c]=mass*fractions[node][c]/molecularWeight[c];
             var populations=new ArrayList<SolidInventory.Population>();
@@ -244,29 +255,192 @@ public final class ConservativeTransport {
             boundaries.add(new BoundaryTransfer(transfer.id(),moved,movedEnergy,movedSolids,solidDirection));
         }
         var filters=new HashMap<Long,InlineFilter>();
-        for(int edge=0;edge<flows.length;edge++) {
+        // Relaxed booking of a frozen rate (TR-BDF2's stage one, review 7.9).
+        // Every junction with no scheduled transfer and not on a junction cycle (in flow direction) books each
+        // outflow e as its share |q_e|/Q_out of dt*Q_out*S1/m, where S1 is its owned stock advanced by backward
+        // Euler over relax seconds with everything its inflows delivered (species, solid populations, energy
+        // field, pump work). relax -> 0 is the frozen booking (the rate at the stock's own value); relax -> infinity
+        // is a pass-through (outflow = inflow). With relax = alpha*dt, TR-BDF2's stage-one base S0 + relax*(In - Out)
+        // is exactly S1 >= 0. Edges are visited donor-rank first so a junction's inflow is complete before its
+        // first outflow. The flows and states are not changed. Every frozen booking, relaxed or not (relax = 0 in a
+        // rate solve itself), forms the junction pseudo-boundary from these tallies, solids included.
+        boolean tally=frozen,pass=tally&&relax>0;
+        boolean[] through=new boolean[nodes];int[] order=null;double[][] inMoles=null,accMoles=null;double[] inField=null,inMass=null;
+        SignedSolids[] inSolids=null,accSolids=null;SolidInventory[] outSolidStock=null;double[][] outMoles=null;double[] outField=null,outMass=null;
+        if(tally) {
+            if(pass) {
+            for(int node=0;node<nodes;node++)through[node]=graph.reservoirs().get(node).junction();
+            for(var transfer:graph.scheduledTransfers())through[transfer.node()]=false;
+            int[] indegree=new int[nodes],rank=new int[nodes];
+            for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();if(through[donor]&&through[receiver])indegree[receiver]++;}
+            var queue=new ArrayDeque<Integer>();for(int node=0;node<nodes;node++)if(through[node]&&indegree[node]==0)queue.add(node);
+            int next=1;
+            while(!queue.isEmpty()) {
+                int node=queue.poll();rank[node]=next++;
+                for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();if(donor==node&&through[receiver]&&--indegree[receiver]==0)queue.add(receiver);}
+            }
+            for(int node=0;node<nodes;node++)if(through[node]&&rank[node]==0)through[node]=false;
+            var sorted=new ArrayList<Integer>();for(int edge=0;edge<flows.length;edge++)sorted.add(edge);
+            sorted.sort(Comparator.comparingInt(edge->{var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second();return through[donor]?rank[donor]:0;}));
+            order=new int[flows.length];for(int k=0;k<order.length;k++)order[k]=sorted.get(k);
+            }
+            inMoles=new double[nodes][components];accMoles=new double[nodes][components];inField=new double[nodes];inMass=new double[nodes];
+            inSolids=new SignedSolids[nodes];accSolids=new SignedSolids[nodes];outSolidStock=new SolidInventory[nodes];outMoles=new double[nodes][];outField=new double[nodes];outMass=new double[nodes];
+            for(int node=0;node<nodes;node++){inSolids[node]=new SignedSolids();accSolids[node]=new SignedSolids();}
+        }
+        // What each edge books, recorded for TR-BDF2's stage-two clip.
+        var recorded=BOOKINGS.get()!=null?new EdgeBooking[flows.length]:null;
+        for(int k=0;k<flows.length;k++) {
+            int edge=order==null?k:order[k];
             checkpoint.run();var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
             var upstream=states.get(donor);double moved=dt*Math.abs(flows[edge]),upstreamZ=graph.reservoirs().get(donor).elevation();
-            double movedEnergy=moved*(upstream.enthalpy()/upstream.mass()+PassiveStepSolver.GRAVITY*upstreamZ);
-            energy[donor]-=movedEnergy-moved*PassiveStepSolver.GRAVITY*upstreamZ;
-            double deliveredEnergy=movedEnergy,deliveredMass=moved;SolidInventory movedSolids=upstream.solids().scale(moved/upstream.mass());
-            if(pipe.filter()!=null){double capturedEnergy=moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+upstream.solidMoments().mass()/upstream.mass()*PassiveStepSolver.GRAVITY*upstreamZ);
+            double fieldBefore=energy[donor];
+            double[] carried=null;double movedEnergy,movedMass=moved;SolidInventory movedSolids;
+            if(pass&&through[donor]&&moved>0) {
+                if(outMoles[donor]==null) {
+                    // Backward Euler over relax from the owned stock S0 (mass m) with the booked inflow In (over dt):
+                    // S1 = (S0 + relax*In/dt)/(1 + relax*Q/m); the outflows over dt carry dt*Q*S1/m in total.
+                    var inventory=graph.reservoirs().get(donor).inventory();var held=inventory.moles();double m=inventory.solids().massKg();
+                    for(int c=0;c<components;c++)m+=held[c]*molecularWeight[c];
+                    double q=outgoing[donor],f=dt*q/(m+relax*q);
+                    outMoles[donor]=new double[components];for(int c=0;c<components;c++)outMoles[donor][c]=f*(held[c]+relax*inMoles[donor][c]/dt);
+                    outField[donor]=f*(inventory.internalEnergy()+relax*inField[donor]/dt);outMass[donor]=f*(m+relax*inMass[donor]/dt);
+                    var predicted=new SignedSolids();predicted.add(inventory.solids(),f);predicted.add(inSolids[donor].part(1),f*relax/dt);outSolidStock[donor]=predicted.part(1);
+                }
+                double share=moved/(dt*outgoing[donor]);
+                carried=new double[components];for(int c=0;c<components;c++)carried[c]=outMoles[donor][c]*share;
+                movedSolids=outSolidStock[donor].scale(share);movedMass=outMass[donor]*share;double field=outField[donor]*share;
+                movedEnergy=field+movedMass*PassiveStepSolver.GRAVITY*upstreamZ;energy[donor]-=field;
+            }else {
+                movedEnergy=moved*(upstream.enthalpy()/upstream.mass()+PassiveStepSolver.GRAVITY*upstreamZ);
+                energy[donor]-=movedEnergy-moved*PassiveStepSolver.GRAVITY*upstreamZ;
+                movedSolids=upstream.solids().scale(moved/upstream.mass());
+            }
+            double deliveredEnergy=movedEnergy,deliveredMass=movedMass;
+            if(recorded!=null) {
+                var species=new double[components];for(int c=0;c<components;c++)species[c]=carried!=null?carried[c]:moved*fractions[donor][c]/molecularWeight[c];
+                recorded[edge]=new EdgeBooking(donor,receiver,species,movedMass,fieldBefore-energy[donor],movedSolids,pipe.filter()!=null);
+            }
+            if(pipe.filter()!=null){double capturedEnergy=carried!=null?movedSolids.moments().enthalpy(upstream.temperature(),upstream.pressure())+movedSolids.massKg()*PassiveStepSolver.GRAVITY*upstreamZ
+                    :moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+upstream.solidMoments().mass()/upstream.mass()*PassiveStepSolver.GRAVITY*upstreamZ);
                 filters.put(pipe.id(),pipe.filter().add(movedSolids,capturedEnergy));deliveredEnergy-=capturedEnergy;deliveredMass-=movedSolids.massKg();}
-            energy[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*graph.reservoirs().get(receiver).elevation();
+            double receiverZ=graph.reservoirs().get(receiver).elevation();
+            energy[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*receiverZ;
             double work=0;
             if(pipe.control() instanceof FlowControl.Pump pump&&flows[edge]>0){var suction=states.get(pipe.first());work=dt*flows[edge]*suction.volume()/suction.mass()*Math.max(0,heads[edge])/pump.efficiency();energy[receiver]+=work;pumpWork+=work;}
+            if(tally) {
+                double[] species=carried;
+                if(species==null){species=new double[components];for(int c=0;c<components;c++)species[c]=moved*fractions[donor][c]/molecularWeight[c];}
+                var delivered=pipe.filter()==null?movedSolids:SolidInventory.EMPTY;
+                if(through[receiver]){for(int c=0;c<components;c++)inMoles[receiver][c]+=species[c];inSolids[receiver].add(delivered,1);
+                    inField[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*receiverZ+work;inMass[receiver]+=deliveredMass;}
+                if(graph.reservoirs().get(receiver).junction()){for(int c=0;c<components;c++)accMoles[receiver][c]+=species[c];accSolids[receiver].add(delivered,1);}
+                if(graph.reservoirs().get(donor).junction()){for(int c=0;c<components;c++)accMoles[donor][c]-=species[c];accSolids[donor].add(movedSolids,-1);}
+            }
             if(graph.reservoirs().get(donor).fixed()||graph.reservoirs().get(receiver).fixed()) {
-                var transferred=new double[components];for(int c=0;c<components;c++)transferred[c]=moved*fractions[donor][c]/molecularWeight[c];
+                var transferred=new double[components];for(int c=0;c<components;c++)transferred[c]=carried!=null?carried[c]:moved*fractions[donor][c]/molecularWeight[c];
                 if(graph.reservoirs().get(donor).fixed()){boundaries.add(new BoundaryTransfer(graph.reservoirs().get(donor).id(),transferred,movedEnergy,upstream.solids().scale(moved/upstream.mass()),1));for(int c=0;c<components;c++)external[c]+=transferred[c];externalEnergy+=movedEnergy;}
                 if(graph.reservoirs().get(receiver).fixed()){var removed=transferred.clone();for(int c=0;c<components;c++){removed[c]=-removed[c];external[c]+=removed[c];}boundaries.add(new BoundaryTransfer(graph.reservoirs().get(receiver).id(),removed,-deliveredEnergy-work,pipe.filter()==null?movedSolids:SolidInventory.EMPTY,-1));externalEnergy-=deliveredEnergy+work;}
             }
         }
+        // Frozen rate: each junction keeps its inventory and books its accumulation over dt as a pseudo-boundary at
+        // itself, signed like a port's (positive = into the network), formed from the amounts the pipe loop actually
+        // booked, with solids: populations the junction gained leave the network into it (direction -1), any it lost
+        // enter from it (a second transfer, direction +1, no moles, no energy). The energy of the pair is
+        // -(field change + accumulated mass g z), so the ledger reads exactly the field change.
+        if(tally)for(int node=0;node<nodes;node++)if(graph.reservoirs().get(node).junction()) {
+            checkpoint.run();double accumulatedMass=0;var booked=accMoles[node].clone();
+            for(int c=0;c<components;c++){accumulatedMass+=booked[c]*molecularWeight[c];booked[c]=-booked[c];external[c]+=booked[c];}
+            var gained=accSolids[node].part(1);var lost=accSolids[node].part(-1);accumulatedMass+=gained.massKg()-lost.massKg();
+            double energyChange=energy[node]-graph.reservoirs().get(node).inventory().internalEnergy(),z=graph.reservoirs().get(node).elevation();
+            double bookedEnergy=-(energyChange+accumulatedMass*PassiveStepSolver.GRAVITY*z);externalEnergy+=bookedEnergy;
+            long id=graph.reservoirs().get(node).id();
+            boundaries.add(new BoundaryTransfer(id,booked,bookedEnergy,gained,-1));
+            if(!lost.empty())boundaries.add(new BoundaryTransfer(id,new double[components],0,lost,1));
+        }
         var inventories=new ArrayList<PassiveNetwork.Inventory>();
         for(int node=0;node<nodes;node++) {
             var oldNode=graph.reservoirs().get(node);var state=states.get(node);
-            inventories.add(oldNode.fixed()?oldNode.inventory():oldNode.junction()?new PassiveNetwork.Inventory(state.volume(),moles[node],state.internalEnergy(),state.solids()):new PassiveNetwork.Inventory(oldNode.inventory().volume(),moles[node],energy[node],state.solids()));
+            if(frozen&&oldNode.junction()){inventories.add(oldNode.inventory());continue;}
+            // A junction books endMass*w and its energy ledger, whose field is in enthalpy form (m*h, potential energy
+            // excluded, as for a vessel's internal energy).
+            if(oldNode.junction()){inventories.add(new PassiveNetwork.Inventory(oldNode.inventory().volume(),ownedMoles[node],energy[node],ownedSolids[node]));continue;}
+            inventories.add(oldNode.fixed()?oldNode.inventory():new PassiveNetwork.Inventory(oldNode.inventory().volume(),moles[node],energy[node],state.solids()));
         }
+        if(recorded!=null)BOOKINGS.set(recorded);
         return new Projection(inventories,states,boundaries,external,externalEnergy,pumpWork,filters);
+    }
+    /**
+     * One edge of a reconstruction as it was booked, for TR-BDF2's stage-two clip: donor and receiver node, the species moles leaving the donor (the receiver's vessel row and a fixed
+     * receiver's boundary read the same amounts), the booked mass and field (enthalpy form, potential energy
+     * excluded) leaving the donor, and the solids leaving the donor (on a filter edge they go to the cake, not the
+     * receiver). Amounts are over the reconstruction's own dt.
+     */
+    record EdgeBooking(int donor,int receiver,double[] species,double mass,double field,SolidInventory solids,boolean filter) {}
+    /** Non-null while a caller records: then every reconstruction on this thread replaces it with its own bookings. */
+    private static final ThreadLocal<EdgeBooking[]> BOOKINGS=new ThreadLocal<>();
+    /** Start recording on this thread; {@link #takeBookings()} returns the last reconstruction's edges and stops. */
+    static void recordBookings(){BOOKINGS.set(new EdgeBooking[0]);}
+    static EdgeBooking[] takeBookings(){var last=BOOKINGS.get();BOOKINGS.remove();return last;}
+    /**
+     * The flows a reconstruction books so that every junction keeps exactly the mass it owns, m_J (the mass of its
+     * inventory; {@link PassiveNetwork#sizeJunctionHoldups}). The Newton's net-mass row at a junction closes only to its
+     * tolerance, so {@code dt (In - Out) != 0} by that residual, and an owned stock with no restoring term integrates it
+     * (review 7.9 (d)). Here the residual is booked onto the junction's own connections, per junction J in flow order:
+     * <ul>
+     * <li>with a positive outflow, its outflows are booked scaled by {@code f_J = In'/Out}, where In' is what its
+     * inflows deliver as booked (an upstream junction's factor applied, filter capture removed): the excess leaves
+     * with the junction's own composition;</li>
+     * <li>with no outflow, its inflows from non-junction donors are booked scaled by
+     * {@code g_J = (Out - In'_junction)/In'_other} when that lies in [0, 1], i.e. to zero (an inflow is only ever
+     * reduced: amplifying one moves the junction's composition off the Newton's, and the equation gate refused exactly
+     * that, review 7.10 run 69b);</li>
+     * <li>otherwise (a junction cycle, or nothing to scale) it stays unpinned.</li>
+     * </ul>
+     * Pinned, {@code dt (In' - Out') = 0}. It applies to every reconstruction: the step solves (the junction's booked
+     * inventory is then m_J w) and the frozen rate booking (the junction's pseudo-boundary then carries no mass).
+     *
+     * <p>Exact: every edge still books one amount at both ends (a receiver's vessel row, a fixed node's boundary,
+     * the pipe loop and the pseudo-boundary tallies all read the same booked rate), so sum_i (N_i - N_i,old) = sum of
+     * boundaries per component, solid population and energy holds as before. Only the booking moves: the flows,
+     * states and pipe histories the Newton produced are unchanged. The total mass (fluid and solids, as minted) is
+     * pinned.
+     */
+    private static double[] pinnedFlows(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows) {
+        int nodes=graph.reservoirs().size();boolean[] junction=new boolean[nodes];boolean any=false;
+        for(int node=0;node<nodes;node++)any|=junction[node]=graph.reservoirs().get(node).junction();
+        if(!any)return flows;
+        int[] indegree=new int[nodes];
+        for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();if(junction[donor]&&junction[receiver])indegree[receiver]++;}
+        var queue=new ArrayDeque<Integer>();for(int node=0;node<nodes;node++)if(junction[node]&&indegree[node]==0)queue.add(node);
+        double[] factor=new double[flows.length];Arrays.fill(factor,1);
+        while(!queue.isEmpty()) {
+            int node=queue.poll();double fromJunctions=0,fromOthers=0,out=0;
+            for(int edge=0;edge<flows.length;edge++) {
+                if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();
+                double rate=Math.abs(flows[edge]);
+                if(receiver==node){double delivered=rate*factor[edge];if(pipe.filter()!=null)delivered*=1-candidate.get(donor).solidMoments().mass()/candidate.get(donor).mass();if(junction[donor])fromJunctions+=delivered;else fromOthers+=delivered;}
+                if(donor==node)out+=rate;
+            }
+            double outflow=fromJunctions+fromOthers,inflow=out-fromJunctions;
+            if(out>0&&Double.isFinite(outflow)){double f=outflow/out;for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);if((flows[edge]>0?pipe.first():pipe.second())==node)factor[edge]=f;}}
+            else if(fromOthers>0&&inflow>=0&&inflow<=fromOthers){double g=inflow/fromOthers;for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();if(receiver==node&&!junction[donor])factor[edge]=g;}}
+            for(int edge=0;edge<flows.length;edge++){if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();if(donor==node&&junction[receiver]&&--indegree[receiver]==0)queue.add(receiver);}
+        }
+        var booked=flows.clone();for(int edge=0;edge<flows.length;edge++)booked[edge]*=factor[edge];
+        return booked;
+    }
+    /** A signed per-population solid tally of a junction's booked flows. */
+    private static final class SignedSolids {
+        private final TreeMap<SolidInventory.Key,SolidInventory.Population> basis=new TreeMap<>();
+        private final TreeMap<SolidInventory.Key,Double> mass=new TreeMap<>();
+        void add(SolidInventory stock,double factor){for(var p:stock.populations()){basis.putIfAbsent(p.key(),p);mass.merge(p.key(),factor*p.massKg(),Double::sum);}}
+        /** The positive part of sign * tally, as a stock. */
+        SolidInventory part(int sign) {
+            var result=new ArrayList<SolidInventory.Population>();
+            for(var entry:mass.entrySet()){double m=sign*entry.getValue();if(m>0){var p=basis.get(entry.getKey());result.add(new SolidInventory.Population(p.material(),p.size(),m));}}
+            return new SolidInventory(result);
+        }
     }
     static FluidThermodynamics.State repartition(FluidThermodynamics model,FluidThermodynamics.State state,double[] moles) {
         double[] oldL=state.liquidView(),oldV=state.vaporView(),l=new double[oldL.length],v=new double[l.length];

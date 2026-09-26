@@ -251,6 +251,14 @@ public final class FluidThermodynamics {
 
     /** Initializer/boundary flash only. The time-step solver must not call this in residual evaluation. */
     public State flashTP(double t,double p,double[] overall,Runnable checkpoint) {
+        return flashTP(t,p,overall,checkpoint,null);
+    }
+    /** {@link #flashTP} that uses {@code prepared}'s Peng-Robinson workspace when it is for exactly {@code t}, instead of
+     * preparing a new one (the arithmetic is the same). The equilibrium iteration writes its log fugacity coefficients
+     * into two buffers rather than building two phase records per iteration (review 8.7 (c) E1: the phase-check flashes
+     * were half of a flowing island's allocation). */
+    public State flashTP(double t,double p,double[] overall,Runnable checkpoint,Prepared prepared) {
+        TranslatedPengRobinson.Workspace given=prepared!=null&&prepared.temperature()==t?prepared.pengRobinson():null;
         SolverDiagnostics.count(SolverDiagnostics.flashCalls);
         int n=hydrocarbon.componentCount();if(overall.length!=n+1)throw new IllegalArgumentException("Fluid basis mismatch");
         double[] hc=Arrays.copyOf(overall,n);double nh=sum(hc),w=overall[n];
@@ -260,11 +268,11 @@ public final class FluidThermodynamics {
         // and the violation says which component, not which intermediate overflowed.
         domain.checkTotals(t,p,overall);
         if(nh==0)return state(t,p,hc,hc,p>=saturationPressure(t)?w:0,p>=saturationPressure(t)?0:w,0);
-        if(w==0) {var terms=hydrocarbon.prepare(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
+        if(w==0) {var terms=given!=null?given:hydrocarbon.prepare(t);var split=splitHydrocarbon(t,p,p,hc,checkpoint,terms);return state(t,p,split[0],split[1],0,0,p,terms);}
         double ps=saturationPressure(t);
         TranslatedPengRobinson.Workspace terms=null;
         if(p>ps+1e-6) {
-            terms=hydrocarbon.prepare(t);
+            terms=given!=null?given:hydrocarbon.prepare(t);
             double pc=p-ps;var split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
             double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
             double required=ps*vg/(R*t);
@@ -272,7 +280,7 @@ public final class FluidThermodynamics {
         }
         double low=1e-6,high=p;double[][] split=null;double pc=high;
         for(int iteration=0;iteration<70;iteration++) {
-            checkpoint.run();pc=(low+high)*.5;if(terms==null)terms=hydrocarbon.prepare(t);split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
+            checkpoint.run();pc=(low+high)*.5;if(terms==null)terms=given!=null?given:hydrocarbon.prepare(t);split=splitHydrocarbon(t,p,pc,hc,checkpoint,terms);
             double nv=sum(split[1]);double vg=nv>0?nv*hydrocarbon.phase(t,pc,split[1],PhaseRoot.VAPOR,terms).molarVolume():0;
             double residual=vg>0?pc+w*R*t/vg-p:Double.POSITIVE_INFINITY;
             if(Math.abs(residual)<1e-8*p)break;
@@ -287,7 +295,7 @@ public final class FluidThermodynamics {
         int n=amounts.length;double total=sum(amounts);double[] z=amounts.clone(),k=new double[n],x=new double[n],y=new double[n];
         for(int i=0;i<n;i++) {z[i]/=total;var c=hydrocarbon.propertyPackage().properties().get(i).pr();
             k[i]=Math.exp(Math.clamp(Math.log(c.criticalPressure()/vaporPressure)+5.373*(1+c.acentricFactor())*(1-c.criticalTemperature()/t),-600,600));}
-        double beta=0;
+        double beta=0;double[] liquidLogPhi=new double[n],vaporLogPhi=new double[n];
         for(int iteration=0;iteration<200;iteration++) {
             checkpoint.run();double f0=0,f1=0;for(int i=0;i<n;i++){f0+=z[i]*(k[i]-1);f1+=z[i]*(1-1/k[i]);}
             if(f0<=0)beta=0;else if(f1>=0)beta=1;else {
@@ -298,9 +306,10 @@ public final class FluidThermodynamics {
             double xs=0,ys=0;
             for(int i=0;i<n;i++){x[i]=z[i]/((1-beta)+beta*k[i]);y[i]=k[i]*x[i];xs+=x[i];ys+=y[i];}
             for(int i=0;i<n;i++){x[i]/=xs;y[i]/=ys;}
-            var pl=hydrocarbon.phase(t,liquidPressure,x,PhaseRoot.LIQUID,terms);
-            var pv=hydrocarbon.phase(t,vaporPressure,y,PhaseRoot.VAPOR,terms);
-            double error=0;double[] fl=pl.logFugacityView(),fv=pv.logFugacityView();
+            hydrocarbon.logFugacityInto(t,liquidPressure,x,PhaseRoot.LIQUID,terms,liquidLogPhi);
+            boolean vaporBranch=hydrocarbon.logFugacityInto(t,vaporPressure,y,PhaseRoot.VAPOR,terms,vaporLogPhi);
+            double[] fl=liquidLogPhi,fv=vaporLogPhi;
+            double error=0;
             for(int i=0;i<n;i++) {double target=fl[i]-fv[i]+Math.log(liquidPressure/vaporPressure);
                 // A component the mixture does not hold takes no part in the split (its x and y are zero whatever its
                 // ratio), so its ratio is only kept finite: at cryogenic temperatures the heaviest absent fractions'
@@ -310,7 +319,7 @@ public final class FluidThermodynamics {
                 if(!Double.isFinite(target)||Math.abs(target)>600)throw new IllegalArgumentException("Equilibrium ratio outside numerical range");
                 if(z[i]>0)error=Math.max(error,Math.abs(target-Math.log(k[i])));k[i]=Math.exp(.5*Math.log(k[i])+.5*target);}
             if(error<1e-8) {
-                if(!pv.vaporBranch())return new double[][] {amounts.clone(),new double[n]};
+                if(!vaporBranch)return new double[][] {amounts.clone(),new double[n]};
                 double[] l=new double[n],v=new double[n];
                 // Allocate each component by its phase ratio, so no negative-inventory clamp is needed.
                 for(int i=0;i<n;i++) {

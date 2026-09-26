@@ -53,6 +53,19 @@ public final class GlobalLiquidResponse {
         }
         return result;
     }
+    /** {@link #logFugacity} into {@code out}, same arithmetic; for the flash's equilibrium iteration. */
+    public void logFugacityInto(double temperature,double pressure,double referencePressure,
+                                double integral,double[] referenceLogPhi,double[] partialReferenceVolumes,double[] out) {
+        if (referenceLogPhi.length != partialReferenceVolumes.length || !(temperature > 0) || !(pressure > 0)
+                || !(referencePressure > 0) || !Double.isFinite(temperature) || !Double.isFinite(pressure)
+                || !Double.isFinite(referencePressure) || !Double.isFinite(integral)) throw new IllegalArgumentException("Invalid liquid fugacity inputs");
+        for (int i=0;i<out.length;i++) {
+            double value = referenceLogPhi[i];
+            value += Math.log(referencePressure/pressure) + partialReferenceVolumes[i]*integral/(R*temperature);
+            if (!Double.isFinite(value)) throw new IllegalArgumentException("Nonfinite liquid fugacity");
+            out[i] = value;
+        }
+    }
     public record State(double molarVolume,double molarEnthalpy,double molarInternalEnergy,
                         double volumeTemperatureDerivative,double volumePressureDerivative,
                         double heatCapacity,double enthalpyPressureDerivative,double pressureIntegral) {}

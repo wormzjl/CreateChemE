@@ -202,8 +202,13 @@ public final class PhysicalRegistry {
         var coordinator=host.coordinator();var events=batch.events();var affected=batch.affected();var active=topology.active();
         // What the affected islands hold - boundary stock and filter cakes - read once each, already aligned.
         var stock=new HashMap<Long,PassiveNetwork.Reservoir>();var cakes=new HashMap<Long,InlineFilter>();
+        // Every junction owns a holdup: every junction of an island the batch replaces is discarded by the recompile,
+        // so its owned inventory is booked as destroyed (and the recompile's new junctions as constructed, below). A
+        // junction's composition therefore resets at a topology edit.
+        var discardedJunctions=new ArrayList<PassiveNetwork.Reservoir>();
         for(long island:affected) {
             var graph=coordinator.snapshot(island).graph();
+            for(var node:graph.reservoirs())if(node.junction())discardedJunctions.add(node);
             for(var node:graph.reservoirs())if(!node.junction()&&node.id()>0)stock.put(node.id(),node);
             for(var pipe:graph.pipes())if(pipe.filter()!=null)cakes.put(pipe.id()-Long.MIN_VALUE,pipe.filter());
         }
@@ -265,9 +270,15 @@ public final class PhysicalRegistry {
         FluidRuntimeDiagnostics.count(FluidRuntimeDiagnostics.compiledDevices,component.size());
         var replacements=new ArrayList<IslandCoordinator.Replacement>();var replacementMembers=new LinkedHashMap<Long,List<Long>>();long nextId=topology.nextIdentity();
         for(var island:compiled.islands())if(island.physicalIds().stream().anyMatch(selected::contains)) {
-            long id=nextId++;replacements.add(new IslandCoordinator.Replacement(id,island.graph()));replacementMembers.put(id,island.physicalIds().stream().sorted().toList());
+            // The recompile's junctions are sized here, before the constructed booking below.
+            long id=nextId++;replacements.add(new IslandCoordinator.Replacement(id,PassiveNetwork.sizeJunctionHoldups(island.graph(),model)));replacementMembers.put(id,island.physicalIds().stream().sorted().toList());
         }
         var eventIds=new LinkedHashSet<UUID>();for(var event:events)eventIds.add(event.id());
+        // Every junction the recompile mints for a replacement island is booked as constructed - a boundary transfer at
+        // the junction at compile, in the world ledger's own terms (moles, energy field + m g z, the sum
+        // checkConservation keeps for an owned junction).
+        destroyed.addAll(discardedJunctions);
+        for(var replacement:replacements)for(var node:replacement.graph().reservoirs())if(node.junction())constructed.add(node);
         var preparation=topology.applyBatch(List.copyOf(eventIds),constructed,destroyed,weights,nextId);
         var prepared=recovered==null?preparation:topology.withRecovery(preparation,recovered);
         var removedDevices=new HashSet<Long>();var removedRecords=new ArrayList<WorldTopologyLedger.Registration>();var addedRecords=new ArrayList<WorldTopologyLedger.Registration>();

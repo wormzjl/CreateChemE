@@ -85,6 +85,32 @@ public final class HydrocarbonModel {
         if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
         translated.differentiate(t,p,amounts,root,terms,output);
     }
+    /**
+     * The log fugacity coefficients {@link #phase} would return, written into {@code out} with the same arithmetic and
+     * the same domain checks, and the vapor-branch flag; no {@link Phase} record and no coefficient copies. For the
+     * flash's equilibrium iteration.
+     */
+    public boolean logFugacityInto(double t,double p,double[] amounts,PhaseRoot root,TranslatedPengRobinson.Workspace terms,double[] out) {
+        if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
+        if(!Double.isFinite(t)||!Double.isFinite(p))throw new IllegalArgumentException("Fluid hydrocarbon state is not finite");
+        domain.checkPhaseTemperature(t,amounts);
+        if(root==PhaseRoot.VAPOR) {
+            if(p<VAPOR_PARTIAL_PRESSURE_FLOOR)throw new IllegalArgumentException("Hydrocarbon vapour partial pressure below the numerical floor");
+            if(p>domain.envelope().maximumPressure())domain.checkEnvelope(t,p);
+        } else domain.check(t,p,amounts,null,0);
+        if(root==PhaseRoot.VAPOR) {
+            var gas=translated.evaluateValues(t,p,amounts,root,terms);
+            System.arraycopy(gas.logFugacityCoefficientsView(),0,out,0,out.length);
+            return gas.vaporBranch();
+        }
+        var reference=translated.evaluateValues(t,REFERENCE_PRESSURE,amounts,PhaseRoot.LIQUID,terms);
+        var liquid=liquidResponse.evaluate(t,p,REFERENCE_PRESSURE,reference.molarVolume(),
+                reference.volumeTemperatureDerivative(),reference.volumeSecondTemperatureDerivative(),
+                reference.molarEnthalpy(),reference.heatCapacity());
+        liquidResponse.logFugacityInto(t,p,REFERENCE_PRESSURE,liquid.pressureIntegral(),
+                reference.logFugacityCoefficientsView(),reference.partialMolarVolumesView(),out);
+        return false;
+    }
     public Phase phase(double t,double p,double[] amounts,PhaseRoot root,TranslatedPengRobinson.Workspace terms) {
         if(amounts.length!=componentCount())throw new IllegalArgumentException("Hydrocarbon basis mismatch");
         if(!Double.isFinite(t)||!Double.isFinite(p))throw new IllegalArgumentException("Fluid hydrocarbon state is not finite");
@@ -97,12 +123,14 @@ public final class HydrocarbonModel {
             if(p<VAPOR_PARTIAL_PRESSURE_FLOOR)throw new IllegalArgumentException("Hydrocarbon vapour partial pressure below the numerical floor");
             if(p>domain.envelope().maximumPressure())domain.checkEnvelope(t,p);
         } else domain.check(t,p,amounts,null,0);
+        // The same numbers from the workspace's own buffer, copying only the coefficients the returned record keeps (the
+        // vapor's ln phi; the liquid's is the response's own array).
         if(root==PhaseRoot.VAPOR) {
-            var gas=translated.evaluate(t,p,amounts,root,terms);
+            var gas=translated.evaluateValues(t,p,amounts,root,terms);
             return new Phase(gas.molarVolume(),gas.molarEnthalpy(),gas.molarInternalEnergy(),
-                    gas.volumePressureDerivative(),gas.logFugacityCoefficientsView(),gas.vaporBranch());
+                    gas.volumePressureDerivative(),gas.logFugacityCoefficientsView().clone(),gas.vaporBranch());
         }
-        var reference=translated.evaluate(t,REFERENCE_PRESSURE,amounts,PhaseRoot.LIQUID,terms);
+        var reference=translated.evaluateValues(t,REFERENCE_PRESSURE,amounts,PhaseRoot.LIQUID,terms);
         var liquid=liquidResponse.evaluate(t,p,REFERENCE_PRESSURE,reference.molarVolume(),
                 reference.volumeTemperatureDerivative(),reference.volumeSecondTemperatureDerivative(),
                 reference.molarEnthalpy(),reference.heatCapacity());

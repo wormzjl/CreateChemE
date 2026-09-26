@@ -25,11 +25,62 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
             if(transfer instanceof ScheduledTransfer.Injection input&&input.molesPerSecond().length!=node.inventory().moles().length)throw new IllegalArgumentException("Injection basis mismatch");
         }
     }
-    /** A junction stores a normalized property guess only, with zero material/energy ownership. */
+    /**
+     * The inventory a junction is built with from a property state: nothing yet. A junction owns a holdup sized to its
+     * connections ({@link #sizeJunctionHoldups}), which its constructor does not know, so it is minted empty and sized
+     * once its island's pipes are known: by {@code PhysicalRegistry} before the new island is booked into the world
+     * ledger, and otherwise at the entry of every solve. An empty junction inventory means exactly "not sized yet": a
+     * sized one always owns positive mass.
+     */
+    static Inventory unsizedJunction(FluidThermodynamics.State state) {
+        return new Inventory(state.volume(),new double[state.componentCount()],0,SolidInventory.EMPTY);
+    }
+    /** Whether a junction still carries the empty inventory of {@link #unsizedJunction}. */
+    static boolean unsized(Reservoir node) {
+        if(!node.junction()||!node.inventory().solids().empty()||node.inventory().internalEnergy()!=0)return false;
+        for(double n:node.inventory().moles)if(n!=0)return false;
+        return true;
+    }
+    /** An owned junction inventory of {@code holdup} kg of the property state's composition (fluid and solids scaled
+     * alike), energy field in enthalpy form ({@code m_J h}), which is the form the junction rows
+     * ({@code PassiveStepSolver.Equations.junctionInflow}), the reconstruction and the conservation audit read. The
+     * volume field is the state's; nothing reads it for a junction. */
+    static Inventory mintedJunction(FluidThermodynamics.State state,double holdup) {
+        var moles=com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(state);double scale=holdup/state.mass();
+        for(int c=0;c<moles.length;c++)moles[c]*=scale;
+        return new Inventory(state.volume(),moles,holdup*state.enthalpy()/state.mass(),state.solids().empty()?SolidInventory.EMPTY:state.solids().scale(scale));
+    }
+    /**
+     * Sizes every junction that is not sized yet ({@link #unsized}), once, from its seed state and its connections:
+     * {@code m_J = PassiveStepSolver.HOLDUP_TAU * max over its connections of rho_seed * minimumArea * velocityLimit(seed)},
+     * the velocity cap's mass flow evaluated on the junction's seed state (a filter connection uses the same formula; its
+     * cake limit is a step quantity). An unconnected junction, which carries nothing, is given 1 kg so its stock is
+     * positive. A graph with no unsized junction is returned unchanged.
+     *
+     * <p>The mint is once, at the seed state: a later lower density lowers the cap flow and only shortens the mixing lag;
+     * a higher one (liquid arriving in a gas fitting) lengthens it. The owned mass then stays exactly m_J (the mass pin of
+     * {@code ConservativeTransport.reconstruct}); a topology edit recompiles the island and mints its junctions again.
+     */
+    public static PassiveNetwork sizeJunctionHoldups(PassiveNetwork graph,FluidThermodynamics model) {
+        List<Reservoir> sized=null;
+        for(int i=0;i<graph.reservoirs.size();i++) {
+            var node=graph.reservoirs.get(i);
+            if(!unsized(node))continue;
+            var state=node.state();double rho=state.mass()/state.volume(),velocity=model.velocityLimit(state),capacity=0;
+            for(var pipe:graph.pipes)if(pipe.first==i||pipe.second==i)capacity=Math.max(capacity,rho*pipe.minimumArea()*velocity);
+            double mass=PassiveStepSolver.HOLDUP_TAU*capacity;
+            if(!(mass>0))mass=1;
+            if(sized==null)sized=new ArrayList<>(graph.reservoirs);
+            sized.set(i,new Reservoir(node.id(),node.elevation(),state,node.kind(),mintedJunction(state,mass)));
+        }
+        return sized==null?graph:new PassiveNetwork(sized,graph.pipes,graph.scheduledTransfers);
+    }
+    /** A vessel stores its inventory; a junction owns a small holdup (see {@link #sizeJunctionHoldups}); a generator, a
+     * void and a port hold a prescribed state. */
     public record Reservoir(long id,double elevation,FluidThermodynamics.State state,NodeKind kind,Inventory inventory) {
         public Reservoir(long id,double elevation,FluidThermodynamics.State state){this(id,elevation,state,NodeKind.RESERVOIR);}
         public Reservoir(long id,double elevation,FluidThermodynamics.State state,boolean junction){this(id,elevation,state,junction?NodeKind.JUNCTION:NodeKind.RESERVOIR);}
-        public Reservoir(long id,double elevation,FluidThermodynamics.State state,NodeKind kind){this(id,elevation,state,kind,new Inventory(state.volume(),com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(state),state.internalEnergy(),state.solids()));}
+        public Reservoir(long id,double elevation,FluidThermodynamics.State state,NodeKind kind){this(id,elevation,state,kind,kind==NodeKind.JUNCTION?unsizedJunction(state):new Inventory(state.volume(),com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(state),state.internalEnergy(),state.solids()));}
         public Reservoir {Objects.requireNonNull(state);Objects.requireNonNull(kind);Objects.requireNonNull(inventory);if(!Double.isFinite(elevation)||inventory.moles.length!=state.componentCount())throw new IllegalArgumentException("Invalid reservoir snapshot");}
         public boolean junction(){return kind==NodeKind.JUNCTION;}
         public boolean fixed(){return kind==NodeKind.GENERATOR||kind==NodeKind.VOID||kind==NodeKind.PORT;}

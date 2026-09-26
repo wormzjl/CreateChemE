@@ -241,6 +241,14 @@ public final class TranslatedPengRobinson {
         workspace.temperature=temperature;
     }
 
+    /** {@link #evaluate} without the record and its two
+     * array copies; the returned buffer is the workspace's own and is refilled by the next evaluation. */
+    public Values evaluateValues(double temperature,double pressure,double[] amounts,PhaseRoot root,Workspace workspace) {
+        requireState(temperature,pressure,amounts,workspace);
+        kernel.evaluate(temperature,pressure,amounts,kernelRoot(root),workspace.mixture,workspace.evaluation);
+        fill(temperature,pressure,workspace,workspace.evaluation,workspace.values);
+        return workspace.values;
+    }
     public Phase evaluate(double temperature,double pressure,double[] amounts,PhaseRoot root,Workspace workspace) {
         requireState(temperature,pressure,amounts,workspace);
         kernel.evaluate(temperature,pressure,amounts,kernelRoot(root),workspace.mixture,workspace.evaluation);
