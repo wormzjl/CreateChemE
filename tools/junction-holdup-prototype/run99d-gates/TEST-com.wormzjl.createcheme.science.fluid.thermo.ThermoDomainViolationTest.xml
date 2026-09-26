@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-26T00:49:54.646Z" hostname="WORMZ-PC" time="0.041">
+  <properties/>
+  <testcase name="aNitrogenStateAt200KelvinIsAcceptedAndOnePercentOfACrudeFractionIsRefusedNamingIt()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.001"/>
+  <testcase name="pressureAndTheEnvelopeAreCheckedAndMalformedInputStaysAPlainRefusal()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.0"/>
+  <testcase name="theViolationCarriesItsFieldsAndReadsAsTheErrorItIs()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.0"/>
+  <testcase name="aValueJustPastItsBoundIsPrintedWithTheDigitsThatShowIt()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.0"/>
+  <testcase name="theLargestCarriedComponentOutOfItsRangeIsNamed()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.001"/>
+  <testcase name="theRejectionKeyIsOnePerComponentPropertyAndSide()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.0"/>
+  <testcase name="theDomainIsReadFromDataAndValidatedWhenTheCatalogLoads()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.022"/>
+  <testcase name="freeWaterBelowItsTriplePointIsRefusedNamingWater()" classname="com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolationTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

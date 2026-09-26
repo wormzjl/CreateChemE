@@ -1,0 +1,26 @@
+[
+  {
+    "massError": 1.0253505744883817E-4,
+    "simulatedSeconds": 20,
+    "referenceRefinementMassError": 1.0015333085855449E-4,
+    "freeWaterMoles": 2.0020739481824545,
+    "pressureError": 4.137381514657257E-5,
+    "temperatureErrorKelvin": 0.0018448226839495874
+  },
+  {
+    "massError": 9.138399654506912E-5,
+    "simulatedSeconds": 40,
+    "referenceRefinementMassError": 1.085300665837341E-4,
+    "freeWaterMoles": 0.0,
+    "pressureError": 7.521719186343034E-5,
+    "temperatureErrorKelvin": 0.01302699809252772
+  },
+  {
+    "massError": 1.0814776032264106E-4,
+    "simulatedSeconds": 60,
+    "referenceRefinementMassError": 1.0561807537756707E-4,
+    "freeWaterMoles": 0.0,
+    "pressureError": 9.290224870817099E-5,
+    "temperatureErrorKelvin": 0.01571773772565166
+  }
+]

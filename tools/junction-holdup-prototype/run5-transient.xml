@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T02:16:43.858Z" hostname="WORMZ-PC" time="0.205">
+  <properties/>
+  <testcase name="finiteTanksThroughRestAndRestart()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe" time="0.205"/>
+  <system-out><![CDATA[HOLDUP_METRICS case=0.05:4:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.05:4:false FAIL step=0 ms=19 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.013108629608592668; active-set pass=0
+HOLDUP_METRICS case=0.05:4:true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.05:4:true FAIL step=0 ms=20 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.04250561989128815; active-set pass=0
+HOLDUP_METRICS case=0.05:5:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.05:5:false FAIL step=0 ms=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.07455088400882896; active-set pass=0
+HOLDUP_METRICS case=0.05:5:true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.05:5:true FAIL step=0 ms=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.07949123466626262; active-set pass=0
+HOLDUP_METRICS case=0.05:6:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.05:6:false FAIL step=0 ms=13 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.10826182548307714; active-set pass=0
+HOLDUP_METRICS case=0.05:6:true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.05:6:true FAIL step=0 ms=21 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.12694225560424907; active-set pass=0
+HOLDUP_METRICS case=0.02:4:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.02:4:false FAIL step=0 ms=10 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.004099402421693003; active-set pass=0
+HOLDUP_METRICS case=0.02:4:true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.02:4:true FAIL step=0 ms=14 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.03276529143011895; active-set pass=0
+HOLDUP_METRICS case=0.02:5:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.02:5:false FAIL step=0 ms=16 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.03854617408898445; active-set pass=0
+HOLDUP_METRICS case=0.02:5:true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.02:5:true FAIL step=0 ms=17 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.06109694845526638; active-set pass=0
+HOLDUP_METRICS case=0.02:6:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.02:6:false FAIL step=0 ms=18 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.0327364559568967; active-set pass=0
+HOLDUP_METRICS case=0.02:6:true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=0.005 case=0.02:6:true FAIL step=0 ms=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.09810167134633772; active-set pass=0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

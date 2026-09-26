@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-26T08:19:53.299Z" hostname="WORMZ-PC" time="0.191">
+  <properties/>
+  <testcase name="junctionHoldupsAreBookedAsConstructedAndRemintedAtATopologyEdit()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.191"/>
+  <system-out><![CDATA[junction 3: m_J 0.009559865965626475 kg, 0.05 s x cap flow 0.19119731931252948 kg/s
+remint: old junction methane fractions up to 0.9999999964953259; fresh junctions at their seed composition
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

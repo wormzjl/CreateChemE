@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.VelocityClampTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-26T05:06:38.372Z" hostname="WORMZ-PC" time="0.043">
+  <properties/>
+  <testcase name="invalidConfigurationIsRejectedAndDifferentLimitsInvalidateFallbackAnchors()" classname="com.wormzjl.createcheme.science.fluid.network.VelocityClampTest" time="0.012"/>
+  <testcase name="configuredAndAcousticLimitsCapBothDirectionsAndPreserveExternalLedgers()" classname="com.wormzjl.createcheme.science.fluid.network.VelocityClampTest" time="0.014"/>
+  <testcase name="threePhaseClampingTransfersAllPhasesAndDevicesRespectTheRateLimit()" classname="com.wormzjl.createcheme.science.fluid.network.VelocityClampTest" time="0.008"/>
+  <testcase name="aWarmWorkspaceReleasesTheClampWhenThePressureDriveFalls()" classname="com.wormzjl.createcheme.science.fluid.network.VelocityClampTest" time="0.005"/>
+  <testcase name="finiteReservoirTemperatureComesFromConservedEnergyAndEosAtTheClampedRate()" classname="com.wormzjl.createcheme.science.fluid.network.VelocityClampTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

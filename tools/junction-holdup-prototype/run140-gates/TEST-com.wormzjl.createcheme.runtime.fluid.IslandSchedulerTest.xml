@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandSchedulerTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-26T08:08:32.052Z" hostname="WORMZ-PC" time="3.215">
+  <properties/>
+  <testcase name="deadlinesComeOutByTickThenInSchedulingOrderAndNextDueIsAPeek()" classname="com.wormzjl.createcheme.runtime.fluid.IslandSchedulerTest" time="0.016"/>
+  <testcase name="idleIslandsCostNothingPerTickAtOneHundredOrAThousand()" classname="com.wormzjl.createcheme.runtime.fluid.IslandSchedulerTest" time="1.657"/>
+  <testcase name="aRevisionBumpLeavesOnlyStaleEntriesThatFireNothingUntilTheResumeReschedules()" classname="com.wormzjl.createcheme.runtime.fluid.IslandSchedulerTest" time="0.0"/>
+  <testcase name="repartitionAndRemovalInvalidateTheReplacedIslandsDeadlines()" classname="com.wormzjl.createcheme.runtime.fluid.IslandSchedulerTest" time="0.001"/>
+  <testcase name="certifiedIslandsCostNothingPerTickAtOneHundredOrAThousand()" classname="com.wormzjl.createcheme.runtime.fluid.IslandSchedulerTest" time="1.539"/>
+  <testcase name="stopClearsEveryDeadlineAndLaterTicksDoNothing()" classname="com.wormzjl.createcheme.runtime.fluid.IslandSchedulerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

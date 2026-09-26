@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" tests="9" skipped="0" failures="2" errors="0" timestamp="2026-09-25T05:57:43.250Z" hostname="WORMZ-PC" time="0.474">
+  <properties/>
+  <testcase name="twoDifferentFeedsMixAtAZeroHoldupJunction()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.091">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;0.6396198572911722&gt; but was: &lt;0.6656649859035046&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;0.6396198572911722&gt; but was: &lt;0.6656649859035046&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:81)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1014)
+	at app//com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.twoDifferentFeedsMixAtAZeroHoldupJunction(NetworkRegimeTest.java:34)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="cancellationCannotLeavePartialTransfersAndExcessVelocityIsConservativelyLimited()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.066"/>
+  <testcase name="pumpShutoffUsesAddedPressureAndTankRecycleIsAllowed()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.026"/>
+  <testcase name="hydrocarbonLiquidCanDisappearIntoTheSharedGasPhase()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.046"/>
+  <testcase name="reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.004">
+    <failure message="java.lang.IllegalArgumentException: Negative/nonfinite inventory" type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: Negative/nonfinite inventory
+	at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.&lt;init&gt;(PassiveNetwork.java:61)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:160)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:58)
+	at com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable(NetworkRegimeTest.java:42)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="serialSectionsPreserveIndependentLaminarAndFittingLosses()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.004"/>
+  <testcase name="bypassCanPreventAValveFromMaintainingItsUpstreamSetpoint()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.099"/>
+  <testcase name="aRejectedTrialRestartsFromTheSameConservedStateAtTheSmallerStep()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.008"/>
+  <testcase name="hotNitrogenCanEvaporateTheLastFreeWaterWithoutDiscardingIt()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.075"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

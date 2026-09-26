@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionTransientTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-26T07:51:47.069Z" hostname="WORMZ-PC" time="1.478">
+  <properties/>
+  <testcase name="everyCaseConvergesAndClosesItsLedgerAtTenthSecondIntervals()" classname="com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionTransientTest" time="1.149"/>
+  <testcase name="everyCaseConvergesAtTheFiveSecondCycleWithinTwiceTheMeasuredCost()" classname="com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionTransientTest" time="0.324"/>
+  <system-out><![CDATA[MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:4:false, worstMoles=5.10099316571176E-15, worstEnergy=5.4395265571948675E-15, newtonSolves=0, ms=69, bytes=38828648]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:4:true, worstMoles=1.8286551733222133E-15, worstEnergy=4.607488907237493E-15, newtonSolves=0, ms=63, bytes=36320800]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:5:false, worstMoles=3.0662160794169303E-15, worstEnergy=5.731974221560183E-15, newtonSolves=0, ms=82, bytes=51421328]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:5:true, worstMoles=1.2841621953470297E-15, worstEnergy=1.8311814887738755E-15, newtonSolves=0, ms=73, bytes=37155088]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:6:false, worstMoles=1.3627627019630802E-15, worstEnergy=7.603639273498202E-16, newtonSolves=0, ms=124, bytes=96564544]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:6:true, worstMoles=7.835885536287712E-16, worstEnergy=2.864912974372031E-15, newtonSolves=0, ms=227, bytes=127932544]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:4:false, worstMoles=5.514587206174876E-16, worstEnergy=1.2785353309169641E-15, newtonSolves=0, ms=65, bytes=45310760]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:4:true, worstMoles=1.2013212947883937E-15, worstEnergy=2.9155899314157096E-15, newtonSolves=0, ms=66, bytes=43623864]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:5:false, worstMoles=8.616542509648244E-16, worstEnergy=2.5280130406767248E-15, newtonSolves=0, ms=75, bytes=50309552]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:5:true, worstMoles=7.556908400314501E-16, worstEnergy=2.886434032101552E-15, newtonSolves=0, ms=72, bytes=46610320]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:6:false, worstMoles=9.61788341858209E-16, worstEnergy=8.71728634716112E-16, newtonSolves=0, ms=95, bytes=74763616]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:6:true, worstMoles=8.915014561666219E-16, worstEnergy=2.769810434844924E-15, newtonSolves=0, ms=93, bytes=66282312]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:4:false, worstMoles=2.4126319027015086E-16, worstEnergy=3.21692430801847E-16, newtonSolves=28, ms=32, bytes=12359544]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:4:true, worstMoles=5.968135467490589E-16, worstEnergy=5.611685207532844E-16, newtonSolves=26, ms=25, bytes=11117128]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:5:false, worstMoles=2.72552540392616E-16, worstEnergy=2.924476643653155E-16, newtonSolves=33, ms=32, bytes=15660568]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:5:true, worstMoles=5.780909902760545E-16, worstEnergy=1.7721111181682666E-16, newtonSolves=27, ms=25, bytes=12713856]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:6:false, worstMoles=2.38483472843539E-16, worstEnergy=2.339581314922524E-16, newtonSolves=35, ms=33, bytes=16903936]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:6:true, worstMoles=1.6350177741836058E-16, worstEnergy=5.611685207532844E-16, newtonSolves=29, ms=30, bytes=13918896]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:4:false, worstMoles=2.060975018267591E-16, worstEnergy=2.324609692576299E-16, newtonSolves=16, ms=21, bytes=7991744]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:4:true, worstMoles=3.2632104455903524E-16, worstEnergy=7.288974828539274E-16, newtonSolves=16, ms=21, bytes=7985248]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:5:false, worstMoles=4.825263805403017E-16, worstEnergy=6.392676654584821E-16, newtonSolves=20, ms=25, bytes=11552888]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:5:true, worstMoles=4.121950036535182E-16, worstEnergy=4.081825903981993E-16, newtonSolves=17, ms=21, bytes=9597224]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:6:false, worstMoles=4.1359404046311573E-16, worstEnergy=4.35864317358056E-16, newtonSolves=20, ms=25, bytes=10792992]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:6:true, worstMoles=2.7479666910234547E-16, worstEnergy=3.2071489245572804E-16, newtonSolves=19, ms=24, bytes=10015008]
+MIXED_GAS_COST interval=5 cases=12 ms=314 newtonSolves=286 allocatedMB=134.1
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

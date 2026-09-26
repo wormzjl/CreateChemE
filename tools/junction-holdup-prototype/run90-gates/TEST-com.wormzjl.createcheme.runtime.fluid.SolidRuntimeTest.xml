@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:52:03.074Z" hostname="WORMZ-PC" time="0.213">
+  <properties/>
+  <testcase name="drySolidInventoryCanBeStoredSavedAndRemainStationary()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.002"/>
+  <testcase name="filterAndParticlesRoundTripAndCapacityChangesDoNotLoseStock()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.006"/>
+  <testcase name="disconnectedFilterRetainsItsCakeInAZeroFlowIsland()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.002"/>
+  <testcase name="generatorUsesSlurryVolumeFractionWithoutChangingTheFluidAxis()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.001"/>
+  <testcase name="aClosedConnectionTellsTheDeviceStatusWhichReasonStoppedIt()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.022"/>
+  <testcase name="unrelatedSolidDefinitionsDoNotChangeTheFluidBasis()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.048"/>
+  <testcase name="solidOnlyParcelsConserveEnergyAndRefuseUndefinedSplits()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.001"/>
+  <testcase name="physicalPumpFilterAndNitrogenReceiverStartTogether()" classname="com.wormzjl.createcheme.runtime.fluid.SolidRuntimeTest" time="0.102"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

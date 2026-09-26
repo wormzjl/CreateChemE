@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" tests="8" skipped="0" failures="2" errors="0" timestamp="2026-09-26T07:00:15.777Z" hostname="WORMZ-PC" time="0.944">
+  <properties/>
+  <testcase name="clocksMaterialFencesPendingEventsModulesAndCertificatesRoundTripExactly()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.375">
+    <failure message="org.opentest4j.AssertionFailedError: the certificate summary names the kind ==&gt; expected: &lt;2&gt; but was: &lt;1&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the certificate summary names the kind ==&gt; expected: &lt;2&gt; but was: &lt;1&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest.clocksMaterialFencesPendingEventsModulesAndCertificatesRoundTripExactly(FluidCheckpointFormatTest.java:191)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="everyInvalidCertificateFieldIsRefused()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.03"/>
+  <testcase name="formatThreeAndOlderAreRefusedWithAFreshWorldInstructionAndLeftUntouched()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.008"/>
+  <testcase name="aSignatureMismatchDiscardsTheCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.022"/>
+  <testcase name="aRestoredCertificateContinuesWithoutASolveExactlyAsIfNeverSaved()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.01">
+    <failure message="org.opentest4j.AssertionFailedError: the closed pair moved since its base ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the closed pair moved since its base ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest.aRestoredCertificateContinuesWithoutASolveExactlyAsIfNeverSaved(FluidCheckpointFormatTest.java:244)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="holdSaveAndRestartKeepsCommittedFrozenAndDebtAndRequalifiesOverTheConfirmCount()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.012"/>
+  <testcase name="restDetectionOffDiscardsEverySavedCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.009"/>
+  <testcase name="aThousandCertifiedIslandsLoadWithoutASolveBurst()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.446"/>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+1000 certified islands: encode 13.3 ms, decode 15.8 ms, register 7.3 ms, 243000 unit bytes, core record 144474 bytes
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

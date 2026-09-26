@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T05:21:21.783Z" hostname="WORMZ-PC" time="0.095">
+  <properties/>
+  <testcase name="aStraightPipeAutomaticallyShowsReverseFlowAndPreservesBothDirectionsOfAReversal()" classname="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" time="0.006"/>
+  <testcase name="fourFiveAndSixEquipmentConnectionsBalanceWithoutDuplicatingDisplayedThroughput()" classname="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" time="0.075"/>
+  <testcase name="anUnsolvedPipeHasZeroTransportButStillHasAPressureReading()" classname="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" time="0.001"/>
+  <system-out><![CDATA[RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+ENGAGED balancedSeed junction=100 rateOnly=true degree=4 P=102325.0 -> 101826.22085224575
+ENGAGED holdup junction=100 inventoryMassKg=1.0E-4 stateMassKg=0.984941493542715 inventoryVolume=1.0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

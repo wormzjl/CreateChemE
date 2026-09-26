@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-26T00:49:33.682Z" hostname="WORMZ-PC" time="0.504">
+  <properties/>
+  <testcase name="aLineChargedToItsOwnHydrostaticBalanceIntegratesAtZeroFlow()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.018"/>
+  <testcase name="aDeadHeadedElevatedLineBehavesLikeItsFlatEquivalent()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.183"/>
+  <testcase name="aVerticalPipeStackCompilesToOneEdgeWithAnElevationDifference()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.002"/>
+  <testcase name="elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.287"/>
+  <system-out><![CDATA[
+(balanced) generator at 400000 Pa, tank charged at 360918.3068374132 Pa: OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068374132 mass=4.082632911146436
+
+=== dead-headed at 101325 Pa, adverse column 39070.02218088346 Pa ===
+(rising plain)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  plain)   OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(rising filter) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  filter)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(falling plain) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=140395.02214833171 mass=261.8246704557523
+rising line:
+  node[0] id=1 GENERATOR y=-59.0 P=101325.0 rho=996.0083764813535 liquid=1.0 vapour=0.0
+  node[1] id=5 RESERVOIR y=-55.0 P=101325.0 rho=1.145353086183201 liquid=0.0 vapour=1.0
+  pipe id=1032387407353448371 0->1 Passive filter=false blocked=0
+
+=== generator at 400000 Pa, water column over 4 m = 39081.6931625868 Pa ===
+(flat control)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=400000.0056142352 mass=743.1612589993315
+(rising  generator->3 pipes up->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.47228805406 mass=715.3401670175984 offset vs flat=-39081.53332618112 Pa
+(falling generator->3 pipes down->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=439081.8102046798 mass=766.0003396492835 offset vs flat=39081.804590444604 Pa
+(rising  generator->pipe->filter->pipe->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3479850189 mass=715.3400690252906 offset vs flat=-39081.657629216264 Pa
+(rising  generator->pump->2 pipes->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=860948.060969144 mass=880.3313162709157 offset vs flat=460948.0553549088 Pa
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

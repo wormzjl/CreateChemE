@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" tests="6" skipped="0" failures="2" errors="0" timestamp="2026-09-25T04:58:51.324Z" hostname="WORMZ-PC" time="0.095">
+  <properties/>
+  <testcase name="branchJunctionHasNoInventoryAndBalancesEveryConnectedFlow()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.013">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton line search stalled at residual 2.5988422328344756; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton line search stalled at residual 2.5988422328344756; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:328)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:153)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:150)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest.branchJunctionHasNoInventoryAndBalancesEveryConnectedFlow(PassiveStepSolverTest.java:69)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="aPreviouslyAbsentGasComponentCanEnterAReceivingReservoir()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.003"/>
+  <testcase name="aJunctionNoOpenConnectionReachesKeepsItsPressureInsteadOfGoingSingular()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.007">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton line search stalled at residual 2.636028230177307; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton line search stalled at residual 2.636028230177307; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:328)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:153)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:150)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest.aJunctionNoOpenConnectionReachesKeepsItsPressureInsteadOfGoingSingular(PassiveStepSolverTest.java:55)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="bulkThreePhaseCrudeTransfersAllComponentsAndIncludesElevationEnergy()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.014"/>
+  <testcase name="endpointOrderOnlyChangesTheFlowSign()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.006"/>
+  <testcase name="gasAndLiquidFullReservoirsEqualizeWithConservedInventoriesAndEnergy()" classname="com.wormzjl.createcheme.science.fluid.network.PassiveStepSolverTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

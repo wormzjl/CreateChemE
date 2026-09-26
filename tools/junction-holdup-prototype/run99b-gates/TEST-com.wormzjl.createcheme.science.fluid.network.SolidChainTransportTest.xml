@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" tests="4" skipped="0" failures="2" errors="0" timestamp="2026-09-26T00:47:54.566Z" hostname="WORMZ-PC" time="0.143">
+  <properties/>
+  <testcase name="clearChainSubstepCountsAreUnchanged()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.003">
+    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;25&gt; but was: &lt;3&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;25&gt; but was: &lt;3&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+	at app//com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest.clearChainSubstepCountsAreUnchanged(SolidChainTransportTest.java:98)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="thirtyReservoirChainIntegratesOneIntervalWithinItsBudget()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.105"/>
+  <testcase name="filterIslandReusesItsSolverWorkspacesAcrossIntervals()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.008">
+    <failure message="org.opentest4j.AssertionFailedError: Endpoint rates were rebuilt: 0 reused against 0 solved ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Endpoint rates were rebuilt: 0 reused against 0 solved ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest.filterIslandReusesItsSolverWorkspacesAcrossIntervals(SolidChainTransportTest.java:141)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="tenReservoirChainIntegratesFiveSecondsWithoutALineSearchStall()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.018"/>
+  <system-out><![CDATA[solid chain: 30 nodes 5 s ms=53 accepted=13 rejected=0
+solid chain: 10 nodes 5 s ms=17 accepted=13 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=101; velocity=0.1716852131828352; deposition=0.17169294793808554; t=0.012482891600459973=1, Solid transport transition inside the step=50, blocked with solid: DEPOSITION; pipe=102; velocity=0.17169371973486636; deposition=0.17169390110630953; t=0.012637386839717785=1}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

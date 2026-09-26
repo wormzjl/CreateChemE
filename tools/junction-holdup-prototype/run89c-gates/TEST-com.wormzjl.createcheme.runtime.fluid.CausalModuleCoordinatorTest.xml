@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" tests="12" skipped="0" failures="1" errors="0" timestamp="2026-09-25T15:49:08.493Z" hostname="WORMZ-PC" time="1.993">
+  <properties/>
+  <testcase name="deadlineDrivenAdvanceMatchesThePolledHostAcrossABufferRemoval()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.213"/>
+  <testcase name="restartWithPartialFeedOrPendingProductsContinuesTheSamePhysicalTrajectory()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.439"/>
+  <testcase name="removedProductRetainsPendingMaterialOrModuleHoldupAndReleasesOtherIslands()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.048"/>
+  <testcase name="aKnownZeroCycleResolvesItsHorizonWithoutWakingACertifiedFeed()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.038"/>
+  <testcase name="emptyCycleWithDifferentCadencesBootstrapsWithoutCircularProductionWait()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.019"/>
+  <testcase name="deadlineDrivenAdvanceReproducesThePolledCycleSequence()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.215"/>
+  <testcase name="removingAnUnusedZeroFractionOutletDoesNotStrandTheActiveProduct()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.037"/>
+  <testcase name="strandedBuffersAndPartialInputsBehaveTheSameUnderCertificates()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.46"/>
+  <testcase name="certifiedIslandsReproduceTheModuleOutcomeOfIslandsThatSolveEveryInterval()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.244">
+    <failure message="org.opentest4j.AssertionFailedError: coupled reads=true ==&gt; expected: &lt;[1 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:403cc24f85a75dae:40ae80e51ef3cd6a/c1a4c171b36eef31, 2 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:404169467997639b:40b277a53fbfa22b/c1a921259cb1fd80, 3 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b01928:40915d44eb122796/c187aa6a95075253, 4 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b01928:40915d44eb122796/c187aa6a95075253, module 3000,81,true,3000-3300,WAITING: committed feed withdrawals,3000@0,3000@0, pending 3000@4002000000000000, pending 3000@4002000000000000]&gt; but was: &lt;[1 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:403cc24f85a75dae:40ae80e51ef3cd6a/c1a4c171b36eef31, 2 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:404169467997639b:40b277a53fbfa22b/c1a921259cb1fd80, 3 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b0192a:40915d44eb12279b/c187aa6a95075254, 4 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b0192a:40915d44eb12279b/c187aa6a95075254, module 3000,81,true,3000-3300,WAITING: committed feed withdrawals,3000@0,3000@0, pending 3000@4002000000000000, pending 3000@4002000000000000]&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: coupled reads=true ==&gt; expected: &lt;[1 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:403cc24f85a75dae:40ae80e51ef3cd6a/c1a4c171b36eef31, 2 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:404169467997639b:40b277a53fbfa22b/c1a921259cb1fd80, 3 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b01928:40915d44eb122796/c187aa6a95075253, 4 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b01928:40915d44eb122796/c187aa6a95075253, module 3000,81,true,3000-3300,WAITING: committed feed withdrawals,3000@0,3000@0, pending 3000@4002000000000000, pending 3000@4002000000000000]&gt; but was: &lt;[1 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:403cc24f85a75dae:40ae80e51ef3cd6a/c1a4c171b36eef31, 2 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:404169467997639b:40b277a53fbfa22b/c1a921259cb1fd80, 3 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b0192a:40915d44eb12279b/c187aa6a95075254, 4 3000/3000[3300]:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:4048892840b0192a:40915d44eb12279b/c187aa6a95075254, module 3000,81,true,3000-3300,WAITING: committed feed withdrawals,3000@0,3000@0, pending 3000@4002000000000000, pending 3000@4002000000000000]&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at app//com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest.certifiedIslandsReproduceTheModuleOutcomeOfIslandsThatSolveEveryInterval(CausalModuleCoordinatorTest.java:268)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="coupledHydraulicsAndFifteenSecondModulePreserveAllOwnersAtEveryCommit()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.081"/>
+  <testcase name="twoBufferedModulesRecycleActuallyOwnedMaterialWithoutSchedulingDeadlock()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.039"/>
+  <testcase name="theDriveIndexHoldsPositiveWithdrawalsAndDueInputsButNoKnownZeroCycle()" classname="com.wormzjl.createcheme.runtime.fluid.CausalModuleCoordinatorTest" time="0.085"/>
+  <system-out><![CDATA[coupled: 27 publications, module scans 964 polled, 31 deadline-driven
+empty-cycle: 18 publications, module scans 946 polled, 28 deadline-driven
+recycle: 18 publications, module scans 946 polled, 28 deadline-driven
+coupled (reads true): 118 vs 120 solves, certificates 20, wakes 20, rested ticks 200, materialisations 2
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

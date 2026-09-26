@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FairIslandQueueTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T07:18:16.924Z" hostname="WORMZ-PC" time="0.071">
+  <properties/>
+  <testcase name="catchupYieldsToAnotherReadyOwnerAndUnavailableOwnersDoNotWasteWorkers()" classname="com.wormzjl.createcheme.runtime.fluid.FairIslandQueueTest" time="0.002"/>
+  <testcase name="theReadyIndexServesTheRotatingDequeOrderUnderArbitraryChurn()" classname="com.wormzjl.createcheme.runtime.fluid.FairIslandQueueTest" time="0.067"/>
+  <testcase name="reKeyingAnExhaustedGapKeepsTheServiceOrder()" classname="com.wormzjl.createcheme.runtime.fluid.FairIslandQueueTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

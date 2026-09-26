@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FallbackAllowanceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:44:31.704Z" hostname="WORMZ-PC" time="0.001">
+  <properties/>
+  <testcase name="cadenceIncreaseAndRestartCannotExtendTheCapturedDuration()" classname="com.wormzjl.createcheme.runtime.fluid.FallbackAllowanceTest" time="0.0"/>
+  <testcase name="ThreeSmallCatchupSlicesStillExhaustTheIntervalCount()" classname="com.wormzjl.createcheme.runtime.fluid.FallbackAllowanceTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

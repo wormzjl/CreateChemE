@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T07:44:58.779Z" hostname="WORMZ-PC" time="0.573">
+  <properties/>
+  <testcase name="fixedAndAdaptiveCadencesPreserveTheRefinedPhysicalTrajectory()" classname="com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest" time="0.573">
+    <failure message="org.opentest4j.AssertionFailedError: water reference-refinement cumulative flow: 9.11593067214958E-5 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: water reference-refinement cumulative flow: 9.11593067214958E-5 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest.compare(CadenceTrajectoryQualificationTest.java:131)
+	at app//com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest.fixedAndAdaptiveCadencesPreserveTheRefinedPhysicalTrajectory(CadenceTrajectoryQualificationTest.java:29)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[WP1MEASURE cadence nitrogen reference-refinement tick=400 p=1.2235894418332864E-5 t=0.0013653685372219115 phase=0.0 massRel=5.210927450652756E-4
+WP1MEASURE cadence nitrogen reference-refinement tick=800 p=2.2274097813848564E-5 t=0.002439705575454809 phase=0.0 massRel=5.083623696756038E-4
+WP1MEASURE cadence nitrogen reference-refinement tick=1200 p=3.0392016849062374E-5 t=0.003271911972944963 phase=0.0 massRel=4.946816109748975E-4
+WP1MEASURE cadence nitrogen reference-refinement tick=1600 p=3.6806006169544306E-5 t=0.0039005896410344576 phase=0.0 massRel=4.798319968325782E-4
+WP1MEASURE cadence nitrogen fixed-1 tick=400 p=3.665873471773494E-5 t=0.004090257908785588 phase=0.0 massRel=0.0015612743311991773
+WP1MEASURE cadence nitrogen fixed-1 tick=800 p=6.673371601717114E-5 t=0.007308901120609335 phase=0.0 massRel=0.0015231346708448371
+WP1MEASURE cadence nitrogen fixed-1 tick=1200 p=9.105588430741351E-5 t=0.009802322429720789 phase=0.0 massRel=0.0014821476624544791
+WP1MEASURE cadence nitrogen fixed-1 tick=1600 p=1.1027336325043707E-4 t=0.011686094523042811 phase=0.0 massRel=0.0014376595879911302
+WP1MEASURE cadence nitrogen fixed-5 tick=400 p=7.561972253681431E-5 t=0.008433285951923608 phase=0.0 massRel=0.003221370442217241
+WP1MEASURE cadence nitrogen fixed-5 tick=800 p=1.3766438814701452E-4 t=0.015070412827071777 phase=0.0 massRel=0.0031427901770336732
+WP1MEASURE cadence nitrogen fixed-5 tick=1200 p=1.8784665443001973E-4 t=0.02021284169518367 phase=0.0 massRel=0.0030583381187217324
+WP1MEASURE cadence nitrogen fixed-5 tick=1600 p=2.275027819558393E-4 t=0.024098629576144504 phase=0.0 massRel=0.002966668853896066
+WP1MEASURE cadence nitrogen fixed-20 tick=400 p=2.5352374288312347E-4 t=0.028214811581392496 phase=0.0 massRel=0.010811060136303077
+WP1MEASURE cadence nitrogen fixed-20 tick=800 p=4.6159984175280183E-4 t=0.05043221393106023 phase=0.0 massRel=0.010548473293838963
+WP1MEASURE cadence nitrogen fixed-20 tick=1200 p=6.299542390917809E-4 t=0.0676557914189857 phase=0.0 massRel=0.010266184530629583
+WP1MEASURE cadence nitrogen fixed-20 tick=1600 p=7.630559535162868E-4 t=0.0806784381363741 phase=0.0 massRel=0.009959735486611682
+WP1MEASURE cadence nitrogen adaptive-controlled-cpu tick=400 p=7.561972253681431E-5 t=0.008433285951923608 phase=0.0 massRel=0.003221370442217241
+WP1MEASURE cadence nitrogen adaptive-controlled-cpu tick=800 p=1.6407970842777356E-4 t=0.01792567569344783 phase=0.0 massRel=0.003749282154369824
+WP1MEASURE cadence nitrogen adaptive-controlled-cpu tick=1200 p=2.3593695080796625E-4 t=0.02531875806852213 phase=0.0 massRel=0.003845878402277571
+WP1MEASURE cadence nitrogen adaptive-controlled-cpu tick=1600 p=2.826164144020468E-4 t=0.029887965235332103 phase=0.0 massRel=0.003687953587793344
+WP1MEASURE cadence water reference-refinement tick=400 p=4.787019192251694E-4 t=5.18001024829573E-6 phase=0.0 massRel=0.0018470265616507
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

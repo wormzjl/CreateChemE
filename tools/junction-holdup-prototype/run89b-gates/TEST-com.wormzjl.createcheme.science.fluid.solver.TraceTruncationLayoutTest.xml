@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:47:58.316Z" hostname="WORMZ-PC" time="0.03">
+  <properties/>
+  <testcase name="theOffSwitchIsThePreTruncationLayoutBitForBit()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.0"/>
+  <testcase name="aReducedLayoutLosesOneUnknownAndOneRowPerOmittedPhase()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.001"/>
+  <testcase name="freeWaterAndHeadspaceRegimesAreOutsideTheCutoffsReach()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.001"/>
+  <testcase name="aTruncatedInventorySolveReachesTheSameTemperaturePressureAndTotals()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.0"/>
+  <testcase name="theNetworkCutoffIsCappedWellBelowTheColumnsAndZeroIsAccepted()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.005"/>
+  <testcase name="supportFollowsTheSeedCompositionsAndNothingElse()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.001"/>
+  <testcase name="aTraceThatCrossesTheReinsertionThresholdIsPutBackIntoBothPhases()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.0"/>
+  <testcase name="theOmittedPhaseIsExactlyZeroAndTheComponentTotalIsExact()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.0"/>
+  <testcase name="anEquilibriumStateReactivatesNothingItJustTruncated()" classname="com.wormzjl.createcheme.science.fluid.solver.TraceTruncationLayoutTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

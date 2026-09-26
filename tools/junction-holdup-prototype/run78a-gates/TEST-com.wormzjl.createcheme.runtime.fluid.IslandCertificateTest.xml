@@ -1,0 +1,1551 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-25T07:07:46.201Z" hostname="WORMZ-PC" time="0.276">
+  <properties/>
+  <testcase name="deadHeadedLinesCertifyRestAndThenCostNothing()" classname="com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest" time="0.276">
+    <failure message="org.opentest4j.AssertionFailedError: dead-headed pump did not certify: no accepted interval ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: dead-headed pump did not certify: no accepted interval ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.IslandCertificateTest.deadHeadedLinesCertifyRestAndThenCostNothing(IslandCertificateTest.java:149)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[dead-headed line: certified at tick 200 Optional[Certified[REST, since 200, base 200, horizon 9223372036854775807, largest flow 0.0]] refusal=null
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=2 dt=1.0
+JDUMP initial |f|max=1.7129602851137338
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.031546483527410456
+JDUMP  row 1 node 1 JUNCTION local 1 f=-5.461161617511977E-10
+JDUMP  row 3 edge 0 hydraulic/cap f=2.3561074021267074E-10
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=774762.8131780716 T=299.78877226637775 rho=8.724035092205959
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=1.7129602847083623
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=1.7129602847083623
+JDUMP  junction=1 incomingMass=0.0 T=299.78877226637775 P=774762.8131780716 rows=[-1.7129602851137338, -5.461161617511977E-10, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.4999999999998335
+JDUMP  row 3 edge 0 hydraulic/cap f=-0.4999999999998335
+JDUMP  row 4 edge 1 hydraulic/cap f=0.3590858773663243
+JDUMP  row 1 node 1 JUNCTION local 1 f=-0.007703085289435702
+JDUMP  row 0 node 1 JUNCTION local 0 f=-5.802713864966336E-11
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=283715.41392561956 T=297.9449926662761 rho=3.21089327786623
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-5.802713864966336E-11 mode=PASSIVE closed=false capFlow=0.6304574208253375
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.6304574208253375
+JDUMP  junction=1 incomingMass=0.0 T=297.9449926662761 P=283715.41392561956 rows=[-5.802713864966336E-11, -0.007703085289435702, 0.0]
+JDUMP   edge=0 q=-5.802713864966336E-11 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000000000000003, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0000000000000002, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0000000000000002, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9999999999999966, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0000000000000002, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=2 dt=1.0
+JDUMP initial |f|max=1.7129602851137338
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.031546483527410456
+JDUMP  row 1 node 1 JUNCTION local 1 f=-5.461161617511977E-10
+JDUMP  row 3 edge 0 hydraulic/cap f=2.3561074021267074E-10
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=774762.8131780716 T=299.78877226637775 rho=8.724035092205959
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=1.7129602847083623
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=1.7129602847083623
+JDUMP  junction=1 incomingMass=0.0 T=299.78877226637775 P=774762.8131780716 rows=[-1.7129602851137338, -5.461161617511977E-10, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.4999999999998335
+JDUMP  row 3 edge 0 hydraulic/cap f=-0.4999999999998335
+JDUMP  row 4 edge 1 hydraulic/cap f=0.3590858773663243
+JDUMP  row 1 node 1 JUNCTION local 1 f=-0.007703085289435702
+JDUMP  row 0 node 1 JUNCTION local 0 f=-5.802713864966336E-11
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=283715.41392561956 T=297.9449926662761 rho=3.21089327786623
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-5.802713864966336E-11 mode=PASSIVE closed=false capFlow=0.6304574208253375
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.6304574208253375
+JDUMP  junction=1 incomingMass=0.0 T=297.9449926662761 P=283715.41392561956 rows=[-5.802713864966336E-11, -0.007703085289435702, 0.0]
+JDUMP   edge=0 q=-5.802713864966336E-11 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000000000000003, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0000000000000002, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0000000000000002, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-0.9999999999999966, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0000000000000002, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+JDUMP failure=Singular Newton Jacobian: Sparse LU rejected a singular matrix pass=0 dt=1.0
+JDUMP initial |f|max=27.688534309329704
+JDUMP  row 3 edge 0 hydraulic/cap f=27.688534309329704
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.7129602851137338
+JDUMP  row 4 edge 1 hydraulic/cap f=-0.87334375
+JDUMP  row 1 node 1 JUNCTION local 1 f=0.0
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.7129602851137338 mode=PASSIVE closed=false capFlow=0.2248895525824714
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.2248895525824714
+JDUMP  junction=1 incomingMass=0.0 T=298.15 P=101325.0 rows=[-1.7129602851137338, 0.0, 0.0]
+JDUMP   edge=0 q=-1.7129602851137338 donorFirst=false
+JDUMP    fwd h=1.0E-6 [0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.000000082740371, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-0.9999999999177334, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-0.999999993922529, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.000088900582341, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.000000082740371, 0.0, 0.0]
+JDUMP failed |f|max=0.5
+JDUMP  row 3 edge 0 hydraulic/cap f=0.5
+JDUMP  row 4 edge 1 hydraulic/cap f=-3.0269291558593977E-4
+JDUMP  row 1 node 1 JUNCTION local 1 f=6.847239571053829E-6
+JDUMP  row 0 node 1 JUNCTION local 0 f=-1.965691328155701E-21
+JDUMP  row 2 node 1 JUNCTION local 2 f=0.0
+JDUMP  row 5 edge 1 actuator f=0.0
+JDUMP  node 0 PORT z=0.0 P=101325.0 T=298.15 rho=1.145353086183201
+JDUMP  node 1 JUNCTION z=0.0 P=68433.84582472821 T=298.06854358974357 rho=0.7736990849175459
+JDUMP  node 2 PORT z=0.0 P=800000.0 T=298.15 rho=9.05935896826282
+JDUMP  edge 0 0->1 q=-1.965691328155701E-21 mode=PASSIVE closed=false capFlow=0.15191546007913176
+JDUMP  edge 1 1->2 q=0.0 mode=CLOSED closed=false capFlow=0.15191546007913176
+JDUMP  junction=1 incomingMass=0.0 T=298.06854358974357 P=68433.84582472821 rows=[-1.965691328155701E-21, 6.847239571053829E-6, 0.0]
+JDUMP   edge=0 q=-1.965691328155701E-21 donorFirst=false
+JDUMP    fwd h=1.0E-6 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [1.0, 0.0, 0.0]
+JDUMP   edge=1 q=0.0 donorFirst=true
+JDUMP    fwd h=1.0E-6 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-8 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-10 [-1.0, 0.0, 0.0]
+JDUMP    fwd h=1.0E-12 [-1.0, 0.0, 0.0]
+JDUMP    ctr h=1e-10 [-1.0, 0.0, 0.0]
+dead-headed pump: certified at tick -1 Optional.empty refusal=no accepted interval
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

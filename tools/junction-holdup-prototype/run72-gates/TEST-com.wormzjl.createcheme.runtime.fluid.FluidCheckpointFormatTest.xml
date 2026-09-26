@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:39:37.420Z" hostname="WORMZ-PC" time="1.223">
+  <properties/>
+  <testcase name="clocksMaterialFencesPendingEventsModulesAndCertificatesRoundTripExactly()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.408"/>
+  <testcase name="everyInvalidCertificateFieldIsRefused()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.054"/>
+  <testcase name="formatThreeAndOlderAreRefusedWithAFreshWorldInstructionAndLeftUntouched()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.008"/>
+  <testcase name="aSignatureMismatchDiscardsTheCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.07"/>
+  <testcase name="aRestoredCertificateContinuesWithoutASolveExactlyAsIfNeverSaved()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.042"/>
+  <testcase name="holdSaveAndRestartKeepsCommittedFrozenAndDebtAndRequalifiesOverTheConfirmCount()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.022"/>
+  <testcase name="aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.053"/>
+  <testcase name="restDetectionOffDiscardsEverySavedCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.042"/>
+  <testcase name="aThousandCertifiedIslandsLoadWithoutASolveBurst()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.485"/>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+1000 certified islands: encode 13.5 ms, decode 16.4 ms, register 10.4 ms, 243000 unit bytes, core record 144474 bytes
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

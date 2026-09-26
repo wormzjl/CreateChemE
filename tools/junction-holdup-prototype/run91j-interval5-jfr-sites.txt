@@ -1,0 +1,90 @@
+allocation samples weight total 432.8 MB; execution samples 74
+
+bytes by phase
+   146.9 MB  33.9%  outside solver
+   125.0 MB  28.9%  cold seed (balancedBoundarySeed)
+    59.3 MB  13.7%  phase check (phaseCorrection flash)
+    48.2 MB  11.1%  Newton (residuals, line search, LU)
+    14.6 MB   3.4%  trace seed (initialPhaseSeeds flash)
+    11.0 MB   2.5%  Jacobian build
+     6.0 MB   1.4%  PipeTransfer sample/accumulate
+     4.9 MB   1.1%  cold rate solve
+     4.5 MB   1.0%  reconstruction
+     4.0 MB   0.9%  equations/layout build
+     4.0 MB   0.9%  step solve other
+     2.0 MB   0.5%  interval solver other
+     2.0 MB   0.5%  gate residual
+     0.5 MB   0.1%  checkConservation
+
+bytes by solver-level caller (first network/solver frame)
+   146.9 MB  33.9%  ?
+   105.1 MB  24.3%  fluid.network.PassiveStepSolver.balancedBoundarySeed:1134
+    59.8 MB  13.8%  fluid.network.PassiveStepSolver.phaseCorrection0:1456
+    32.2 MB   7.4%  fluid.solver.PhaseLayout.decode:200
+    14.6 MB   3.4%  fluid.network.PassiveStepSolver.initialPhaseSeeds:954
+    13.0 MB   3.0%  fluid.network.PassiveStepSolver.viscosity:1684
+     8.5 MB   2.0%  fluid.solver.PhaseLayout.totalAmounts:451
+     8.5 MB   2.0%  fluid.network.PassiveStepSolver.viscosity:1678
+     7.4 MB   1.7%  fluid.network.PassiveStepSolver.balancedBoundarySeed:1137
+     5.0 MB   1.2%  fluid.solver.PhaseLayout.decode:184
+     2.5 MB   0.6%  fluid.network.ConservativeTransport.repartition:516
+     2.0 MB   0.5%  fluid.network.PipeTransfer.sample:40
+     2.0 MB   0.5%  fluid.solver.SparseNewton.factor:297
+     1.5 MB   0.3%  fluid.network.PassiveStepSolver.hasSolids:1670
+     1.5 MB   0.3%  fluid.network.PassiveStepSolver$Equations.nodeAccumulate:2180
+
+bytes by leaf site [class]
+    60.4 MB  13.9%  fluid.thermo.TranslatedPengRobinson$Values.phase:162 [[D]
+    46.4 MB  10.7%  fluid.thermo.TranslatedPengRobinson$Values.phase:161 [[D]
+    32.9 MB   7.6%  java.util.concurrent.ConcurrentHashMap.initTable:2301 [[Ljava/util/concurrent/ConcurrentHashMap$Node;]
+    24.5 MB   5.7%  fluid.thermo.GlobalLiquidResponse.logFugacity:49 [[D]
+    23.8 MB   5.5%  java.util.Arrays.copyOf:3541 [[B]
+    12.0 MB   2.8%  fluid.thermo.HydrocarbonModel.phase:111 [com/wormzjl/createcheme/science/fluid/thermo/HydrocarbonModel$Phase]
+    11.5 MB   2.7%  fluid.transport.MixtureViscosity$Prepared.<init>:64 [[D]
+     9.4 MB   2.2%  fluid.thermo.HydrocarbonModel.phase:102 [com/wormzjl/createcheme/science/fluid/thermo/HydrocarbonModel$Phase]
+     9.3 MB   2.2%  fluid.thermo.GlobalLiquidResponse.evaluate:24 [[D]
+     9.0 MB   2.1%  java.util.Arrays.copyOf:3704 [[D]
+     8.0 MB   1.8%  fluid.transport.MixtureViscosity$Prepared.<init>:63 [[D]
+     8.0 MB   1.8%  java.lang.Object.clone:-1 [[D]
+     6.0 MB   1.4%  thermo.PengRobinsonKernel.selectRoot:536 [com/wormzjl/createcheme/science/thermo/PengRobinsonKernel$RootSelection]
+     6.0 MB   1.4%  fluid.thermo.TranslatedPengRobinson$Workspace.<init>:123 [[D]
+     5.8 MB   1.3%  java.util.Arrays.copyOfRangeByte:3863 [[B]
+
+CPU samples by phase
+    64  86.5%  outside solver
+     6   8.1%  cold seed (balancedBoundarySeed)
+     1   1.4%  Newton (residuals, line search, LU)
+     1   1.4%  step solve other
+     1   1.4%  phase check (phaseCorrection flash)
+     1   1.4%  trace seed (initialPhaseSeeds flash)
+
+CPU samples by leaf
+    17  23.0%  java.util.regex.Pattern$Slice.match:4268
+    12  16.2%  java.util.regex.Pattern$CharPropertyGreedy.match:4479
+     8  10.8%  java.util.regex.Pattern$CharPropertyGreedy.match:4465
+     3   4.1%  java.util.regex.Pattern$CharPropertyGreedy.match:4470
+     3   4.1%  java.util.regex.Pattern$CharPropertyGreedy.match:4458
+     3   4.1%  java.lang.String.checkIndex:4816
+     3   4.1%  java.util.regex.Pattern$Slice.match:4260
+     1   1.4%  java.util.zip.ZipFile$CleanableResource.run:785
+     1   1.4%  java.util.stream.SortedOps$SizedRefSortingSink.end:354
+     1   1.4%  java.util.concurrent.ConcurrentHashMap.transfer:2489
+     1   1.4%  java.util.regex.Pattern$CharPropertyGreedy.match:4475
+     1   1.4%  java.util.regex.Matcher.match:1791
+     1   1.4%  java.util.regex.Pattern$CharPropertyGreedy.match:4448
+     1   1.4%  jdk.internal.org.objectweb.asm.ByteVector.putUTF8:300
+     1   1.4%  java.util.Arrays.copyOfRangeByte:3863
+
+outside-solver bytes by first project frames
+   102.3 MB  23.6%  (no project frame)
+     4.6 MB   1.1%  material.MaterialCatalog.viscosityFingerprint:278 < fluid.transport.MixtureViscosity.<init>:25 < fluid.thermo.FluidThermodynamics.<init>:101
+     4.1 MB   0.9%  material.MaterialCatalog$Bundled.read:626 < material.MaterialCatalog$Bundled.load:618 < material.MaterialCatalog$Bundled.<clinit>:613
+     3.5 MB   0.8%  material.MaterialCatalog.numbers:601 < material.MaterialCatalog.readViscosities:528 < material.MaterialCatalog.lambda$parse$10:340
+     3.4 MB   0.8%  material.MaterialCatalog.parse:295 < material.MaterialCatalog$Bundled.load:621 < material.MaterialCatalog$Bundled.<clinit>:613
+     2.9 MB   0.7%  material.MaterialCatalog.propertyScience:185 < material.MaterialCatalog.lambda$physicsFingerprint$2:191 < material.MaterialCatalog$$Lambda+0x000002254a208898.1257532915.apply:-1
+     2.0 MB   0.5%  material.MaterialCatalog.lambda$parse$16:467 < material.MaterialCatalog$$Lambda+0x000002254a1f5878.1875520143.run:-1 < material.MaterialCatalog.checked:604
+     1.5 MB   0.3%  material.MaterialCatalog.numbers:601 < material.MaterialCatalog.readViscosities:530 < material.MaterialCatalog.lambda$parse$10:340
+     1.5 MB   0.3%  com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe.costLine:152 < com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe.finiteTanksThroughRestAndRestart:36
+     1.5 MB   0.3%  material.MaterialAuthoring.expand:27 < material.MaterialCatalog.parse:312 < material.MaterialCatalog$Bundled.load:621
+     1.0 MB   0.2%  material.MaterialCatalog$Bundled.load:616 < material.MaterialCatalog$Bundled.<clinit>:613 < material.MaterialCatalog.bundled:611
+     1.0 MB   0.2%  fluid.thermo.TranslatedPengRobinson$Values.phase:161 < fluid.thermo.TranslatedPengRobinson.evaluate:248 < fluid.thermo.HydrocarbonModel.phase:105

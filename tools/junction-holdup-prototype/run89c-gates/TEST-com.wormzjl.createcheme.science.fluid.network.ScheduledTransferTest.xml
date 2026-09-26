@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:49:27.673Z" hostname="WORMZ-PC" time="0.125">
+  <properties/>
+  <testcase name="bulkWithdrawalIsDistributedInTimeAndCarriesEnthalpyAndElevationEnergy()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferTest" time="0.002"/>
+  <testcase name="waterCanBeDeliveredOverFiveFifteenAndThirtySecondsWithoutAnInstantaneousInventoryJump()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferTest" time="0.097"/>
+  <testcase name="anUnsupportedWithdrawalPublishesNoPartialInterval()" classname="com.wormzjl.createcheme.science.fluid.network.ScheduledTransferTest" time="0.02"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

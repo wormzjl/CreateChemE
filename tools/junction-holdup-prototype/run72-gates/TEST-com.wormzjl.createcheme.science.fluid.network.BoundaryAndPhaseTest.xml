@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.BoundaryAndPhaseTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:39:51.471Z" hostname="WORMZ-PC" time="0.058">
+  <properties/>
+  <testcase name="sourceToVoidHasSteadyThroughputAndBothBoundariesRejectReverseFlow()" classname="com.wormzjl.createcheme.science.fluid.network.BoundaryAndPhaseTest" time="0.004"/>
+  <testcase name="aThreePhaseWetCrudeFeedCanEnterNitrogenWithoutLosingAnyComponent()" classname="com.wormzjl.createcheme.science.fluid.network.BoundaryAndPhaseTest" time="0.025"/>
+  <testcase name="sourceFillsNitrogenChargedVesselAndWaterAppearsWithoutLosingTheInitialNitrogen()" classname="com.wormzjl.createcheme.science.fluid.network.BoundaryAndPhaseTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

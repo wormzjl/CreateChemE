@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:01:25.849Z" hostname="WORMZ-PC" time="1.152">
+  <properties/>
+  <testcase name="aGasTransferBetweenClosedTanksClosesWithinASecond()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.057"/>
+  <testcase name="aDomainRefusalIsItsOwnRejectionKeyAndTheReasonTheIntervalFails()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="1.082"/>
+  <testcase name="onWaterTheLimitIsTheSettingWithinWatersCompressibility()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.0"/>
+  <testcase name="theReferenceIsThisModelsOwnWaterAtRoomConditions()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.0"/>
+  <testcase name="anIntervalFailsOnTheDomainWhenItsLastOrMostRejectionsWereDomainOnes()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.001"/>
+  <system-out><![CDATA[gas transfer (P1): closed at 0.25 s, suction 297.908655 K 101038.220 Pa, discharge 298.391073 K 101612.020 Pa, rise at shutoff 573.7997 Pa, limit at the start 574.9716 Pa
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

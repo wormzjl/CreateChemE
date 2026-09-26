@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-09-26T07:48:18.603Z" hostname="WORMZ-PC" time="0.147">
+  <properties/>
+  <testcase name="twoDifferentFeedsMixAtAZeroHoldupJunction()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.004"/>
+  <testcase name="cancellationCannotLeavePartialTransfersAndExcessVelocityIsConservativelyLimited()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.011"/>
+  <testcase name="pumpShutoffUsesAddedPressureAndTankRecycleIsAllowed()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.003"/>
+  <testcase name="hydrocarbonLiquidCanDisappearIntoTheSharedGasPhase()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.018"/>
+  <testcase name="reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.004"/>
+  <testcase name="serialSectionsPreserveIndependentLaminarAndFittingLosses()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.001"/>
+  <testcase name="bypassCanPreventAValveFromMaintainingItsUpstreamSetpoint()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.011"/>
+  <testcase name="aRejectedTrialRestartsFromTheSameConservedStateAtTheSmallerStep()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.005"/>
+  <testcase name="hotNitrogenCanEvaporateTheLastFreeWaterWithoutDiscardingIt()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.031"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

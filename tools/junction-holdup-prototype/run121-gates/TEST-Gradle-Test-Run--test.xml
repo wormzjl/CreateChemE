@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="Gradle Test Run :test" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T04:33:10.190Z" hostname="WORMZ-PC" time="1350.696">
+  <properties/>
+  <testcase name="failed to execute tests" classname="Gradle Test Run :test" time="1350.696">
+    <failure message="org.gradle.process.ProcessExecutionException: Process 'Gradle Test Executor 23' finished with non-zero exit value -1" type="org.gradle.process.ProcessExecutionException">org.gradle.process.ProcessExecutionException: Process 'Gradle Test Executor 23' finished with non-zero exit value -1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:450)
+	at org.gradle.process.internal.worker.DefaultWorkerProcess.waitForStop(DefaultWorkerProcess.java:230)
+	at org.gradle.process.internal.worker.DefaultWorkerProcessBuilder$MemoryRequestingWorkerProcess.waitForStop(DefaultWorkerProcessBuilder.java:298)
+	at org.gradle.api.internal.tasks.testing.worker.ForkingTestClassProcessor.stop(ForkingTestClassProcessor.java:154)
+	at org.gradle.api.internal.tasks.testing.processors.RestartEveryNTestClassProcessor.endBatch(RestartEveryNTestClassProcessor.java:77)
+	at org.gradle.api.internal.tasks.testing.processors.RestartEveryNTestClassProcessor.stop(RestartEveryNTestClassProcessor.java:62)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.gradle.internal.dispatch.MethodInvocation.invokeOn(MethodInvocation.java:77)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:28)
+	at org.gradle.internal.dispatch.ReflectionDispatch.dispatch(ReflectionDispatch.java:19)
+	at org.gradle.internal.dispatch.FailureHandlingDispatch.dispatch(FailureHandlingDispatch.java:30)
+	at org.gradle.internal.dispatch.AsyncDispatch.dispatchMessages(AsyncDispatch.java:87)
+	at org.gradle.internal.dispatch.AsyncDispatch.access$000(AsyncDispatch.java:36)
+	at org.gradle.internal.dispatch.AsyncDispatch$1.run(AsyncDispatch.java:71)
+	at org.gradle.internal.concurrent.InterruptibleRunnable.run(InterruptibleRunnable.java:44)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:84)
+	at org.gradle.internal.operations.CurrentBuildOperationPreservingRunnable.run(CurrentBuildOperationPreservingRunnable.java:51)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

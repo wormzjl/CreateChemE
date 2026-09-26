@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" tests="9" skipped="0" failures="1" errors="0" timestamp="2026-09-26T08:07:42.464Z" hostname="WORMZ-PC" time="1.052">
+  <properties/>
+  <testcase name="clocksMaterialFencesPendingEventsModulesAndCertificatesRoundTripExactly()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.473"/>
+  <testcase name="everyInvalidCertificateFieldIsRefused()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.034"/>
+  <testcase name="formatThreeAndOlderAreRefusedWithAFreshWorldInstructionAndLeftUntouched()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.013"/>
+  <testcase name="aSignatureMismatchDiscardsTheCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.023"/>
+  <testcase name="aRestoredCertificateContinuesWithoutASolveExactlyAsIfNeverSaved()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.014"/>
+  <testcase name="holdSaveAndRestartKeepsCommittedFrozenAndDebtAndRequalifiesOverTheConfirmCount()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.02"/>
+  <testcase name="aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.032">
+    <failure message="org.opentest4j.AssertionFailedError: the revalidated pair and the awake island are encoded ==&gt; expected: &lt;2&gt; but was: &lt;3&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the revalidated pair and the awake island are encoded ==&gt; expected: &lt;2&gt; but was: &lt;3&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest.aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate(FluidCheckpointFormatTest.java:415)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="restDetectionOffDiscardsEverySavedCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.012"/>
+  <testcase name="aThousandCertifiedIslandsLoadWithoutASolveBurst()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.395"/>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+1000 certified islands: encode 13.4 ms, decode 16.8 ms, register 7.5 ms, 264000 unit bytes, core record 143378 bytes
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

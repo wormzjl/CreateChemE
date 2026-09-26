@@ -1,0 +1,12 @@
+{
+  "maximumPressureRelativeError": 0.004750754515819522,
+  "maximumTemperatureErrorKelvin": 0.495794174844832,
+  "defaultTemperatureErrorKelvin": 0.495794174844832,
+  "defaultPressureRelativeError": 0.004750754515819522,
+  "acceptedAdaptiveSteps": 11,
+  "durationSeconds": 1,
+  "rejectedTrials": 4,
+  "defaultIntegratedMassRelativeError": 0.014055356737336044,
+  "integratedMassRelativeError": 0.014055356737336044,
+  "referenceSteps": 400
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.PumpJunctionStartupTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-25T04:59:32.239Z" hostname="WORMZ-PC" time="0.03">
+  <properties/>
+  <testcase name="waterAndAmbientCrudeStartThroughAZeroStoragePumpInletWithoutInventingUpstreamNitrogen()" classname="com.wormzjl.createcheme.science.fluid.network.PumpJunctionStartupTest" time="0.03">
+    <failure message="org.opentest4j.AssertionFailedError: water total energy ==&gt; expected: &lt;-2.4650108962188363E7&gt; but was: &lt;-2.4651117161713272E7&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: water total energy ==&gt; expected: &lt;-2.4650108962188363E7&gt; but was: &lt;-2.4651117161713272E7&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.science.fluid.network.PumpJunctionStartupTest.waterAndAmbientCrudeStartThroughAZeroStoragePumpInletWithoutInventingUpstreamNitrogen(PumpJunctionStartupTest.java:39)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

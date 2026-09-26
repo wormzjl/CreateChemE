@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.SolidClosureFeasibilityTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:39:55.955Z" hostname="WORMZ-PC" time="0.061">
+  <properties/>
+  <testcase name="constantFeedMeetsTheFilterCapacityAtTheArithmeticFillTime()" classname="com.wormzjl.createcheme.science.fluid.network.SolidClosureFeasibilityTest" time="0.005"/>
+  <testcase name="drainingCarrierStopsAtTheParticleThresholdWhereATightIntegrationPutsIt()" classname="com.wormzjl.createcheme.science.fluid.network.SolidClosureFeasibilityTest" time="0.048"/>
+  <testcase name="heavyLiquidCoolingStopsAtTheActualViscosityTableCrossing()" classname="com.wormzjl.createcheme.science.fluid.network.SolidClosureFeasibilityTest" time="0.001"/>
+  <system-out><![CDATA[solid closure: capacity located=1.63125 s exact=1.63 s captured=4.923842332063695E-4 of 4.923842332068618E-4 m3, accepted=16 rejected=0 reasons={Solid transport transition inside the step=3, blocked with solid: FILTER_CLOGGED; pipe=3; velocity=0.0; deposition=0.0; t=1.63125=1}
+solid closure: deposition located=0.005428920 s reference=0.005433250 s floor=0.000001000 s
+solid closure: viscosity crossing=[333.941549063, 333.941549659] K
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

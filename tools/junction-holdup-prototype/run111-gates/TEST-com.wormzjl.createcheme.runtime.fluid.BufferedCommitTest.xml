@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.BufferedCommitTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-26T03:30:28.103Z" hostname="WORMZ-PC" time="0.296">
+  <properties/>
+  <testcase name="hydraulicAndPendingMaterialPublishTogetherAndAbortedStagingConsumesNeither()" classname="com.wormzjl.createcheme.runtime.fluid.BufferedCommitTest" time="0.296"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,261 @@
+package com.wormzjl.createcheme.runtime.fluid;
+
+import com.google.gson.JsonParser;
+import com.wormzjl.createcheme.fluid.support.FluidTestSupport;
+import com.wormzjl.createcheme.science.fluid.network.*;
+import com.wormzjl.createcheme.science.fluid.solver.SparseNewton;
+import com.wormzjl.createcheme.science.fluid.state.ParticleSize;
+import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind;
+import com.wormzjl.createcheme.science.material.*;
+import java.util.*;
+import java.util.function.*;
+import org.junit.jupiter.api.Test;
+
+/**
+ * Review 8.8 event probe (runs 100+): the smallest islands that exercise a discrete event - filter clog, dead-head
+ * and pump shutoff, a dead-headed line reopened by drainage, liquid filling, a pressure ramp through thresholds (the
+ * PSV / burst proxy), and the property domain from below and above - integrated in consecutive slices of
+ * {@code junction.eventCadences} seconds (default 0.1 and 5), each slice started at the previous slice's
+ * {@code nextStepEstimate()} as {@code RetainedSolver} does (0.05 s cold), with {@code junction.boundaryReopen} set to each
+ * of {@code junction.eventReopen} (default off, on) in turn. One {@code EVENT} line per slice end, one
+ * {@code EVENT_HELD} line where a slice throws (the case stops there, as a held island would), one
+ * {@code EVENT_SUMMARY} per run. Exploration wrapper: never fails; read the lines.
+ */
+class JunctionEventProbe {
+    private static final PipeResistance.Geometry BLOCK=new PipeResistance.Geometry(1,.05,.000045,0);
+    private static final double FILTER_CAPACITY=.01,FILTER_RESISTANCE=1e6;
+    private final FluidThermodynamics network=FluidTestSupport.networkModel();
+    private final int water=MaterialTestBasis.NETWORK,nitrogen=MaterialTestBasis.NITROGEN;
+
+    /** One case: its model, island, length, scheduled transfers and what it prints per slice. */
+    private record Setup(FluidThermodynamics model,PassiveNetwork graph,double duration,DoubleFunction<List<ScheduledTransfer>> transfers,
+                         BiFunction<PassiveNetwork,PassiveIntervalSolver.Result,String> extra) {}
+
+    @Test void events() {
+        String cases=System.getProperty("junction.eventCases","clog,passiveFill,pumpFill,gasPump,drainReopen,withdrawReopen,blowdown,flush,ramp,domainFloor,domainHot");
+        double[] cadences=Arrays.stream(System.getProperty("junction.eventCadences","0.1,5").split(",")).mapToDouble(Double::parseDouble).toArray();
+        String[] reopens=System.getProperty("junction.eventReopen","off,on").split(",");
+        // junction.eventPumpStart (default "carry"): the junction.pumpReopenStart values to run; a run other than "carry" is
+        // labelled reopen=<reopen>/<pumpStart>.
+        String[] pumpStarts=System.getProperty("junction.eventPumpStart","carry").split(",");
+        String saved=System.getProperty("junction.boundaryReopen"),savedPump=System.getProperty("junction.pumpReopenStart");
+        try {
+            for(String name:cases.split(","))for(double cadence:cadences)for(String reopen:reopens)for(String pumpStart:pumpStarts) {
+                System.setProperty("junction.boundaryReopen",reopen);System.setProperty("junction.pumpReopenStart",pumpStart);
+                String label="carry".equals(pumpStart)?reopen:reopen+"/"+pumpStart;
+                try{run(name,cadence,label);}
+                catch(Throwable failure){System.out.println("EVENT_SUMMARY case="+name+" cadence="+cadence+" reopen="+label+" SETUP_ERROR "+failure);}
+            }
+        } finally {
+            if(saved==null)System.clearProperty("junction.boundaryReopen");else System.setProperty("junction.boundaryReopen",saved);
+            if(savedPump==null)System.clearProperty("junction.pumpReopenStart");else System.setProperty("junction.pumpReopenStart",savedPump);
+        }
+    }
+
+    private void run(String name,double cadence,String reopen) throws ReflectiveOperationException {
+        var setup=setup(name);var model=setup.model();var graph=setup.graph();
+        var solver=new PassiveIntervalSolver(model);
+        var flowsField=PassiveIntervalSolver.class.getDeclaredField("beFlows");flowsField.setAccessible(true);
+        double[] mw=model.molecularWeights();
+        double[] initial=totals(graph,mw.length),external=new double[mw.length];
+        int slices=(int)Math.ceil(setup.duration()/cadence-1e-9);double time=0,step=RetainedSolver.COLD_START_SECONDS,worstLedger=0;
+        int accepted=0,rejected=0,held=0;long reopensBefore=PassiveIntervalSolver.BE_REOPENS.sum();long start=System.nanoTime();
+        for(int slice=0;slice<slices;slice++) {
+            double length=Math.min(cadence,setup.duration()-time);
+            graph=new PassiveNetwork(graph.reservoirs(),graph.pipes(),setup.transfers().apply(time));
+            PassiveIntervalSolver.Result result;
+            try {
+                result=solver.solve(graph,length,PassiveIntervalSolver.Settings.defaults(),()->{},Math.min(step,length));
+            }catch(RuntimeException failure) {
+                var domain=SparseNewton.domainViolation(failure);
+                String message=String.valueOf(failure.getMessage());if(message.length()>600)message=message.substring(0,600);
+                System.out.println("EVENT_HELD case="+name+" cadence="+cadence+" reopen="+reopen+" slice="+(slice+1)+" t0="+time+" type="+failure.getClass().getSimpleName()
+                        +" domain="+(domain==null?"null":domain.component()+":"+domain.code()+":node="+domain.node())+" message="+message+" lastAccepted="+states(graph));
+                held++;break;
+            }
+            time+=length;step=solver.nextStepEstimate();graph=result.graph();accepted+=result.acceptedSubsteps();rejected+=result.rejectedSubsteps();
+            for(var transfer:result.boundaries()){var n=transfer.moles();for(int c=0;c<n.length;c++)external[c]+=n[c];}
+            var sum=totals(graph,mw.length);double ledger=0;
+            for(int c=0;c<sum.length;c++)ledger=Math.max(ledger,Math.abs(sum[c]-initial[c]-external[c])/Math.max(1,Math.abs(initial[c])));
+            worstLedger=Math.max(worstLedger,ledger);
+            double[] endFlows=(double[])flowsField.get(solver);
+            System.out.println("EVENT case="+name+" cadence="+cadence+" reopen="+reopen+" slice="+(slice+1)+" t="+String.format(Locale.ROOT,"%.3f",time)
+                    +" acc="+result.acceptedSubsteps()+" rej="+result.rejectedSubsteps()+" modes="+result.endpointModes()
+                    +" q="+Arrays.toString(result.averageMassFlows())+" qEnd="+Arrays.toString(endFlows)+" capRatio="+capRatio(model,graph,endFlows)
+                    +" ledger="+ledger+" nodes="+states(graph)+" reasons="+reasons(result.rejectionReasons())+setup.extra().apply(graph,result));
+        }
+        System.out.println("EVENT_SUMMARY case="+name+" cadence="+cadence+" reopen="+reopen+" slices="+slices+" t="+time+" held="+held+" accepted="+accepted+" rejected="+rejected
+                +" reopens="+(PassiveIntervalSolver.BE_REOPENS.sum()-reopensBefore)+" worstLedger="+worstLedger+" ms="+(System.nanoTime()-start)/1000000);
+    }
+
+    /* ---------------- cases ---------------- */
+
+    private Setup setup(String name) {
+        return switch(name) {
+            // generator (300 kPa water, 5 % of 100 um particles) - pipe - filter - pipe - void: the cake reaches capacity mid-run.
+            case "clog"->{
+                var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.FILTER),device(4,3,0,Kind.PIPE),device(5,4,0,Kind.VOID));
+                var graph=compile(devices,Map.of(1L,slurry(300000,.05),5L,gas(101325)));
+                yield new Setup(network,graph,60,t->List.of(),(g,r)->filterText(g,r));
+            }
+            // generator (400 kPa water) - four pipes - tank: fills and dead-heads when the tank meets the generator.
+            case "passiveFill"->{
+                var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.PIPE),device(4,3,0,Kind.PIPE),device(5,4,0,Kind.PIPE),device(6,5,0,Kind.RESERVOIR));
+                yield new Setup(network,compile(devices,Map.of(1L,liquid(400000),6L,gas(101325))),200,t->List.of(),(g,r)->tankText(g,6)+" bound=400000");
+            }
+            // generator (1 atm water) - pump (0.01 m3/s, 500 kPa) - three pipes - tank: pumped fill to the pump's shutoff.
+            case "pumpFill"->{
+                var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,1,0,Kind.PUMP),device(3,2,0,Kind.PIPE),device(4,3,0,Kind.PIPE),device(5,4,0,Kind.PIPE),device(6,5,0,Kind.RESERVOIR));
+                yield new Setup(network,compile(devices,Map.of(1L,liquid(101325),6L,gas(101325))),150,t->List.of(),(g,r)->tankText(g,6)+" heads="+Arrays.toString(r.endpointHeads())+" bound="+(101325+500000));
+            }
+            // PumpRiseScalingTest's gas transfer: two closed nitrogen tanks, pump 0.01 m3/s 500 kPa (limit 575 Pa on the gas).
+            case "gasPump"->{
+                var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
+                var graph=transfer(model);double limit=500000*graph.reservoirs().getFirst().state().mass()/graph.reservoirs().getFirst().state().volume()/model.pumpReferenceDensity();
+                yield new Setup(model,graph,10,t->List.of(),(g,r)->" dP="+(g.reservoirs().get(1).state().pressure()-g.reservoirs().get(0).state().pressure())+" limitAtStart="+limit
+                        +" limitNow="+500000*g.reservoirs().getFirst().state().mass()/g.reservoirs().getFirst().state().volume()/model.pumpReferenceDensity()+" heads="+Arrays.toString(r.endpointHeads()));
+            }
+            // generator (180 kPa water) - two pipes - tank (nitrogen, 250 kPa, 400 K so the vented gas stays above water's
+            // 273.16 K domain floor; run 101's 298.15 K / 300 kPa tank cooled to 265 K and held on it) - pipe - void: the
+            // generator line is dead-headed at the start and must open once the tank has vented below the generator.
+            case "drainReopen"->{
+                var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.PIPE),device(4,3,0,Kind.RESERVOIR),device(5,4,0,Kind.PIPE),device(6,5,0,Kind.VOID));
+                yield new Setup(network,compile(devices,Map.of(1L,liquid(180000),4L,gas(400,250000),6L,gas(101325))),30,t->List.of(),(g,r)->tankText(g,4));
+            }
+            // generator (150 kPa water) - two pipes - tank (nitrogen, 200 kPa, 350 K): dead-headed and at rest for 10 s, so the
+            // steps grow to the slice; then 0.3 kg/s is withdrawn from the tank for 10 s, which takes it below the generator
+            // inside one step - the dead-head analogue of the injection bottling of review 8.7 (a).
+            case "withdrawReopen"->{
+                var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.PIPE),device(4,3,0,Kind.RESERVOIR));
+                var graph=compile(devices,Map.of(1L,liquid(150000),4L,gas(350,200000)));
+                int tank=-1;for(int i=0;i<graph.reservoirs().size();i++)if(graph.reservoirs().get(i).id()==4)tank=i;
+                var withdrawal=new ScheduledTransfer.Withdrawal(901,tank,.3);
+                yield new Setup(network,graph,25,t->t>=10-1e-9&&t<20-1e-9?List.of(withdrawal):List.of(),(g,r)->tankText(g,4));
+            }
+            // ElevatedBlockLineIslandTest's pumped line: generator (400 kPa water) - pump (facing up) - two pipes - tank, all
+            // vertical, the tank four blocks up; the tank should settle at 400 kPa + 500 kPa - one 4 m water column.
+            case "risingPump"->{
+                var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,0,1,Kind.PUMP,PhysicalFluidTopology.Direction.UP),device(3,0,2,Kind.PIPE),device(4,0,3,Kind.PIPE),device(5,0,4,Kind.RESERVOIR));
+                yield new Setup(network,compile(devices,Map.of(1L,liquid(400000),5L,gas(101325))),200,t->List.of(),(g,r)->tankText(g,5)+" heads="+Arrays.toString(r.endpointHeads()));
+            }
+            // tank (nitrogen, 300 kPa, 400 K) - pipe - void: a gas blowdown through the 50 mm bore, on its velocity cap at first.
+            case "blowdown"->{
+                var devices=List.of(device(1,0,0,Kind.RESERVOIR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.VOID));
+                yield new Setup(network,compile(devices,Map.of(1L,gas(400,300000),3L,gas(101325))),20,t->List.of(),(g,r)->tankText(g,1));
+            }
+            // generator (200 kPa water) - pipe - tank - pipe - void: the tank is flushed towards liquid-full (bulk withdrawal).
+            case "flush"->{
+                var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.RESERVOIR),device(4,3,0,Kind.PIPE),device(5,4,0,Kind.VOID));
+                yield new Setup(network,compile(devices,Map.of(1L,liquid(200000),3L,gas(101325),5L,gas(101325))),300,t->List.of(),(g,r)->tankText(g,3));
+            }
+            // tank - pipe - tank, 5 mol/s of nitrogen at 298.15 K injected into the first: a pressure ramp through 150 and 300 kPa.
+            case "ramp"->{
+                var devices=List.of(device(1,0,0,Kind.RESERVOIR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.RESERVOIR));
+                var graph=compile(devices,Map.of(1L,gas(101325),3L,gas(101325)));
+                yield new Setup(network,graph,60,schedule(injection(network,graph,1,5,0),0),(g,r)->tankText(g,1)+tankText(g,3)+" thresholds=150000,300000");
+            }
+            // PumpRiseScalingTest's domain fixture: nitrogen's fluid_domain floor narrowed to 298.05 K; the pumped suction cools past it.
+            case "domainFloor"->{
+                var resources=new HashMap<>(MaterialCatalog.bundled().resources());String key="data/createcheme/materials/properties/nitrogen.json";
+                var o=JsonParser.parseString(resources.get(key)).getAsJsonObject();o.getAsJsonObject("fluid_domain").addProperty("temperature_min_kelvin",298.05);resources.put(key,o.toString());
+                var narrowed=FluidThermodynamics.forNetwork(MaterialCatalog.parse(resources),"createcheme:tjl20_methane_nitrogen",1e-9);
+                yield new Setup(narrowed,transfer(narrowed),5,t->List.of(),(g,r)->" T1="+g.reservoirs().get(0).state().temperature()+" floor=298.05");
+            }
+            // tank - pipe - tank, 1 mol/s of nitrogen at 298.15 K plus 20 kW into the first: heated towards nitrogen's 900 K ceiling.
+            case "domainHot"->{
+                var devices=List.of(device(1,0,0,Kind.RESERVOIR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.RESERVOIR));
+                var graph=compile(devices,Map.of(1L,gas(101325),3L,gas(101325)));
+                yield new Setup(network,graph,60,schedule(injection(network,graph,1,1,20000),0),(g,r)->tankText(g,1)+tankText(g,3)+" ceiling=900");
+            }
+            default->throw new IllegalArgumentException("Unknown event case "+name);
+        };
+    }
+
+    /** The transfer from {@code start} seconds on. */
+    private static DoubleFunction<List<ScheduledTransfer>> schedule(ScheduledTransfer transfer,double start){return t->t>=start-1e-9?List.of(transfer):List.of();}
+
+    /* ---------------- fixtures ---------------- */
+
+    private static PhysicalFluidTopology.Device device(long id,int x,int y,Kind kind){return device(id,x,y,kind,PhysicalFluidTopology.Direction.EAST);}
+    private static PhysicalFluidTopology.Device device(long id,int x,int y,Kind kind,PhysicalFluidTopology.Direction facing) {
+        var control=kind==Kind.PUMP?new FlowControl.Pump(.01,500000,1):new FlowControl.Passive();
+        return new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",x,y,0),kind,facing,BLOCK,control);
+    }
+    private double[] pure(int component){double[] n=new double[MaterialTestBasis.NETWORK+1];n[component]=1;return n;}
+    private FluidDeviceSpec liquid(double pressure){return new FluidDeviceSpec(1,298.15,pressure,pure(water));}
+    private FluidDeviceSpec gas(double pressure){return new FluidDeviceSpec(1,298.15,pressure,pure(nitrogen));}
+    private FluidDeviceSpec gas(double temperature,double pressure){return new FluidDeviceSpec(1,temperature,pressure,pure(nitrogen));}
+    private FluidDeviceSpec slurry(double pressure,double fraction) {
+        return new FluidDeviceSpec(1,298.15,pressure,pure(water),new SlurryFeed(fraction,List.of(new SlurryFeed.Grade("createcheme:demo_particle",ParticleSize.micrometres("100"),1))));
+    }
+    private PassiveNetwork compile(List<PhysicalFluidTopology.Device> devices,Map<Long,FluidDeviceSpec> specs) {
+        var boundaries=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();
+        for(var d:devices)if(specs.containsKey(d.id()))boundaries.put(d.id(),specs.get(d.id()).initialize(d,network,()->{}));
+        var cakes=new LinkedHashMap<Long,InlineFilter>();
+        for(var d:devices)if(d.kind()==Kind.FILTER)cakes.put(d.id(),new InlineFilter(FILTER_CAPACITY,FILTER_RESISTANCE,SolidInventory.EMPTY,0));
+        var compiled=PhysicalFluidTopology.compile(devices,boundaries,cakes,network.initialNitrogenCharge(1,298.15,101325,()->{}));
+        var connected=compiled.islands().stream().filter(i->i.physicalIds().size()==devices.size()).toList();
+        if(connected.size()!=1)throw new IllegalStateException("one island expected: "+compiled.diagnostics());
+        return PassiveNetwork.sizeJunctionHoldups(connected.getFirst().graph(),network);
+    }
+    private static PassiveNetwork transfer(FluidThermodynamics model) {
+        var line=new PipeResistance.Geometry(1,.05,.000045,0);
+        var a=model.initialNitrogenCharge(1,298.15,101325,()->{});var b=model.initialNitrogenCharge(1,298.15,101325,()->{});
+        return new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,a),new PassiveNetwork.Reservoir(2,0,b)),
+                List.of(new PassiveNetwork.Pipe(10,0,1,line,new FlowControl.Pump(.01,500000,1))));
+    }
+    /** {@code rate} mol/s of nitrogen at 298.15 K and 1 atm plus {@code heat} W into the node with physical id {@code id}. */
+    private ScheduledTransfer injection(FluidThermodynamics model,PassiveNetwork graph,long id,double rate,double heat) {
+        int node=-1;for(int i=0;i<graph.reservoirs().size();i++)if(graph.reservoirs().get(i).id()==id)node=i;
+        double[] feed=new double[model.molecularWeights().length];feed[nitrogen]=rate;
+        var state=model.flashTP(298.15,101325,feed,()->{});
+        double energy=state.enthalpy()+rate*model.molecularWeights()[nitrogen]*PassiveStepSolver.GRAVITY*graph.reservoirs().get(node).elevation()+heat;
+        return new ScheduledTransfer.Injection(900,node,feed,energy);
+    }
+
+    /* ---------------- per-slice read-outs ---------------- */
+
+    private static double[] totals(PassiveNetwork graph,int count) {
+        var totals=new double[count];
+        for(var node:graph.reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR||node.junction()){var n=node.inventory().moles();for(int c=0;c<n.length;c++)totals[c]+=n[c];}
+        return totals;
+    }
+    private static String states(PassiveNetwork graph) {
+        var text=new StringBuilder("[");
+        for(var node:graph.reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR||node.junction())
+            text.append(node.id()).append(':').append(node.kind().name().charAt(0)).append(String.format(Locale.ROOT,"(P=%.3f,T=%.4f,m=%.6g,liq=%.6f,vap=%.6f)",node.state().pressure(),node.state().temperature(),node.state().mass(),
+                    (node.state().liquidVolume()+node.state().waterVolume())/node.state().volume(),node.state().vaporVolume()/node.state().volume())).append(' ');
+        return text.append(']').toString();
+    }
+    private static String tankText(PassiveNetwork graph,long id) {
+        for(var node:graph.reservoirs())if(node.id()==id) {
+            var s=node.state();
+            return String.format(Locale.ROOT," tank%d(P=%.3f,T=%.4f,m=%.6f,liqVol=%.9f,vapVol=%.9f,V=%.6f)",id,s.pressure(),s.temperature(),s.mass(),s.liquidVolume()+s.waterVolume(),s.vaporVolume(),s.volume());
+        }
+        return " tank"+id+"=?";
+    }
+    private static String filterText(PassiveNetwork graph,PassiveIntervalSolver.Result result) {
+        var text=new StringBuilder();
+        for(int e=0;e<graph.pipes().size();e++){var pipe=graph.pipes().get(e);if(pipe.filter()==null)continue;var f=pipe.filter();
+            text.append(" filterEdge=").append(e).append(" cakeKg=").append(f.captured().massKg()).append(" loading=").append(f.loading()).append(" clogged=").append(f.clogged())
+                    .append(" stopped=").append(f.stoppedAtCapacity()).append(" blocked=").append(pipe.blockedDirections());}
+        return text.toString();
+    }
+    private static String capRatio(FluidThermodynamics model,PassiveNetwork graph,double[] flows) {
+        if(flows==null||flows.length!=graph.pipes().size())return "n/a";
+        double worst=0;int at=-1;
+        for(int e=0;e<flows.length;e++) {
+            var pipe=graph.pipes().get(e);var donor=graph.reservoirs().get(flows[e]>=0?pipe.first():pipe.second()).state();
+            double cap=donor.mass()/donor.volume()*pipe.minimumArea()*model.velocityLimit(donor);
+            double ratio=Math.abs(flows[e])/cap;if(ratio>worst){worst=ratio;at=e;}
+        }
+        return worst+"@"+at;
+    }
+    private static String reasons(Map<String,Integer> reasons) {
+        var kept=new TreeMap<String,Integer>();
+        for(var entry:reasons.entrySet()){String k=entry.getKey();if(k.length()>120)k=k.substring(0,120);kept.merge(k,entry.getValue(),Integer::sum);}
+        return kept.toString().replace(' ','_');
+    }
+}

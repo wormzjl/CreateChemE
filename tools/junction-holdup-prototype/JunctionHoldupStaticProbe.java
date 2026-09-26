@@ -1,0 +1,177 @@
+package com.wormzjl.createcheme.runtime.fluid;
+
+import com.wormzjl.createcheme.science.fluid.network.*;
+import com.wormzjl.createcheme.science.fluid.solver.PhaseLayout;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind;
+import com.wormzjl.createcheme.science.material.MaterialCatalog;
+import com.wormzjl.createcheme.science.material.MaterialTestBasis;
+import java.util.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * E2 static probe: the 32-case fixed-boundary matrix of JunctionRobustnessProbe (3-6 ports,
+ * 102325/150000 Pa sources, swapped species, unequal P/T), cold compiled junction, one 0.05 s
+ * interval, no initializer. Component check across the junction includes the owned holdup's change
+ * ({@code createcheme.junctionHoldup} kg); with 0 it is the original exact in == out check.
+ * A one-way generator may shut off in the unequal cases. Exploration wrapper: read PASS/FAIL lines.
+ */
+class JunctionHoldupStaticProbe {
+    private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),"createcheme:tjl20_methane_nitrogen",1e-9);
+    private final double holdup=Double.parseDouble(System.getProperty("createcheme.junctionHoldup","0"));
+    // Review 7.10: junction.holdupTau > 0 sizes each junction to throughput; the oracle then counts the owned holdup too.
+    private final double tau=Double.parseDouble(System.getProperty("junction.holdupTau","0"));
+    private static final PipeResistance.Geometry BORE=new PipeResistance.Geometry(1,.05,PipeResistance.DEFAULT_ROUGHNESS_METRES,0);
+    private boolean swapped,asymmetric;
+    private PhysicalFluidTopology.Device device(long id,int x,int y,int z,Kind kind){
+        return new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",x,y,z),kind,PhysicalFluidTopology.Direction.EAST,BORE,new FlowControl.Passive());
+    }
+    private PassiveNetwork.Reservoir boundary(PhysicalFluidTopology.Device d,double pressure,int component){
+        double temperature=asymmetric&&d.kind()==Kind.GENERATOR?(d.id()==1?300:400):350;
+        double[] n=new double[model.components().size()];n[component]=1;
+        var unit=model.flashTP(temperature,pressure,n,()->{});n[component]/=unit.volume();
+        return new PassiveNetwork.Reservoir(d.id(),d.position().y(),model.flashTP(temperature,pressure,n,()->{}),
+            d.kind()==Kind.GENERATOR?PassiveNetwork.NodeKind.GENERATOR:PassiveNetwork.NodeKind.VOID);
+    }
+    @Test void coldJunctionMatrix(){
+        int passed=0;
+        for(boolean swap:new boolean[]{false,true})for(boolean unequal:new boolean[]{false,true}) {
+            swapped=swap;asymmetric=unequal;
+            for(double pressure:new double[]{102325,150000})for(int count=3;count<=6;count++) {
+                String key="ports="+count+" pressure="+pressure+" swap="+swap+" unequal="+unequal;
+                String filter=System.getProperty("junction.cases","");
+                if(!filter.isBlank()&&!Arrays.asList(filter.split(",")).contains(count+":"+pressure+":"+swap+":"+unequal))continue;
+                long start=System.nanoTime();costBegin();
+                try{String detail=runCase(count,pressure);passed++;System.out.println("HOLDUP_STATIC holdup="+holdup+" "+key+" PASS "+detail);}
+                catch(Exception|AssertionError failure){System.out.println("HOLDUP_STATIC holdup="+holdup+" "+key+" FAIL "+failure);}
+                if(DIAG)System.out.println(costLine("static:"+count+":"+pressure+":"+swap+":"+unequal,(System.nanoTime()-start)/1000000));
+            }
+        }
+        System.out.println("HOLDUP_STATIC holdup="+holdup+" passed="+passed+"/32");
+    }
+    private String runCase(int count,double pressure) {
+        int[][] ports={{-1,0,0},{1,0,0},{0,0,-1},{0,0,1},{0,1,0},{0,-1,0}};
+        var center=device(100,0,0,0,Kind.PIPE);var devices=new ArrayList<PhysicalFluidTopology.Device>();devices.add(center);
+        var boundaries=new HashMap<Long,PassiveNetwork.Reservoir>();
+        for(int i=0;i<count;i++){
+            int[] port=ports[i];var d=device(i+1,port[0],port[1],port[2],i<2?Kind.GENERATOR:Kind.VOID);devices.add(d);
+            boundaries.put(d.id(),boundary(d,i==0?pressure:i==1?pressure-(asymmetric?(pressure>110000?5000:100):0):101325,i<2?(((i==0)^swapped)?0:MaterialTestBasis.NITROGEN):MaterialTestBasis.NITROGEN));
+        }
+        var compiled=PhysicalFluidTopology.compile(devices,boundaries);
+        var graph=PassiveNetwork.sizeJunctionHoldups(mintHoldup(compiled.islands().getFirst().graph(),holdup),model);
+        int node=-1;for(int i=0;i<graph.reservoirs().size();i++)if(graph.reservoirs().get(i).id()==100)node=i;
+        assertTrue(graph.reservoirs().get(node).junction());
+        var before=graph.reservoirs().get(node).inventory();
+        var result=new PassiveIntervalSolver(model).solve(graph,.05,PassiveIntervalSolver.Settings.defaults(),()->{});
+        var accepted=result.graph();var after=accepted.reservoirs().get(node).state();var afterInventory=accepted.reservoirs().get(node).inventory();
+        double outgoing=0,incoming=0;int inlets=0,outlets=0;
+        double[] inComponents=new double[model.components().size()],outComponents=new double[model.components().size()];
+        for(var t:result.pipeTransfers()){
+            var edge=accepted.pipes().stream().filter(e->e.id()==t.pipeId()).findFirst().orElseThrow();
+            var out=edge.first()==node?t.forward():t.reverse();var in=edge.first()==node?t.reverse():t.forward();
+            outgoing+=out.massKg();incoming+=in.massKg();if(out.massKg()>1e-12)outlets++;if(in.massKg()>1e-12)inlets++;
+            double[] a=in.componentMoles(),b=out.componentMoles();for(int c=0;c<a.length;c++){inComponents[c]+=a[c];outComponents[c]+=b[c];}
+        }
+        if(!asymmetric)assertEquals(2,inlets,"two sources");else assertTrue(inlets>=1);
+        assertEquals(count-2,outlets);
+        assertEquals(incoming,outgoing,Math.max(1e-8,incoming*1e-7));
+        // Owned-holdup oracle: the junction's owned inventory change (0 with no holdup, where it owns nothing).
+        var a=before.moles();var b=afterInventory.moles();
+        for(int c=0;c<inComponents.length;c++) {
+            double stored=holdup>0||tau>0?b[c]-a[c]:0;
+            assertEquals(inComponents[c]-outComponents[c],stored,Math.max(1e-7,inComponents[c]*1e-6),"component "+c);
+        }
+        return (tau>0?mintLine(graph,model)+" ":"")+"inlets="+inlets+" in="+incoming+" kg T_J="+after.temperature()+" P_J="+after.pressure()+" substeps="+result.acceptedSubsteps()+"/"+result.rejectedSubsteps();
+    }
+    /** Owned-holdup mint for the probe: every junction gets {@code holdup} kg at its compiled seed
+     * composition, energy field m*h (enthalpy form). The mint is counted in the probe's initial state;
+     * the runtime compile would have to debit a neighbour or book a boundary transfer instead. */
+    /** Review 7.10: the junction (id 100) owned mass, its capacity basis and the minted m_J/capFlow. */
+    static String mintLine(PassiveNetwork graph,FluidThermodynamics model) {
+        int j=-1;for(int i=0;i<graph.reservoirs().size();i++)if(graph.reservoirs().get(i).id()==100)j=i;
+        var node=graph.reservoirs().get(j);var n=node.inventory().moles();double m=node.inventory().solids().massKg();for(int c=0;c<n.length;c++)m+=n[c]*model.molecularWeight(c);
+        var s=node.state();double rho=s.mass()/s.volume(),v=model.velocityLimit(s),cap=0;
+        for(var p:graph.pipes())if(p.first()==j||p.second()==j)cap=Math.max(cap,rho*p.minimumArea()*v);
+        return " mJ="+m+" mJfield="+node.inventory().volume()+" capFlow="+cap+" rhoSeed="+rho+" velocityLimit="+v+" tauEff="+(m/cap);
+    }
+    /** Review 8.5 (junction.solverDiag=true, Gradle -PsolverDiag=true): SolverDiagnostics on for each case, counters and
+     * the attempt log reset before it and read after it; see {@link #costLine}. */
+    static final boolean DIAG=Boolean.getBoolean("junction.solverDiag");
+    /** Review 8.7: the prototype counters (PassiveStepSolver and SparseNewton), printed by name on every HOLDUP_COST line. */
+    static final Map<String,java.util.concurrent.atomic.LongAdder> PROTOTYPE_COUNTERS=new LinkedHashMap<>();
+    static {
+        PROTOTYPE_COUNTERS.put("flashNewton",PassiveStepSolver.FLASH_NEWTON);PROTOTYPE_COUNTERS.put("flashReconstructed",PassiveStepSolver.FLASH_RECONSTRUCTED);
+        PROTOTYPE_COUNTERS.put("flashFailed",PassiveStepSolver.FLASH_FAILED);PROTOTYPE_COUNTERS.put("flashTraceSeed",PassiveStepSolver.FLASH_TRACE_SEED);
+        PROTOTYPE_COUNTERS.put("flashNanos",PassiveStepSolver.FLASH_NANOS);PROTOTYPE_COUNTERS.put("predictedSolves",PassiveStepSolver.PREDICTED_SOLVES);
+        PROTOTYPE_COUNTERS.put("predictedNodes",PassiveStepSolver.PREDICTED_NODES);PROTOTYPE_COUNTERS.put("newtonAllocBytes",PassiveStepSolver.NEWTON_ALLOC);
+        PROTOTYPE_COUNTERS.put("reconstructAllocBytes",PassiveStepSolver.RECONSTRUCT_ALLOC);PROTOTYPE_COUNTERS.put("conservationAllocBytes",PassiveStepSolver.CONSERVATION_ALLOC);
+        PROTOTYPE_COUNTERS.put("phaseAllocBytes",PassiveStepSolver.PHASE_ALLOC);
+        PROTOTYPE_COUNTERS.put("seedNanos",PassiveStepSolver.SEED_NANOS);PROTOTYPE_COUNTERS.put("coldRateNanos",PassiveStepSolver.COLD_RATE_NANOS);
+        PROTOTYPE_COUNTERS.put("jacobianNanos",com.wormzjl.createcheme.science.fluid.solver.SparseNewton.JACOBIAN_NANOS);
+        PROTOTYPE_COUNTERS.put("jacobianAllocBytes",com.wormzjl.createcheme.science.fluid.solver.SparseNewton.JACOBIAN_ALLOC);
+    }
+    private static long allocStart;
+    static void costBegin() {
+        if(!DIAG)return;
+        com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics.reset();
+        PassiveStepSolver.SEED_CALLS.reset();PassiveStepSolver.SEED_FLASHES.reset();
+        for(var adder:PROTOTYPE_COUNTERS.values())adder.reset();
+        com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics.ENABLED=true;
+        allocStart=threadAllocated();
+    }
+    private static long threadAllocated() {
+        var bean=java.lang.management.ManagementFactory.getThreadMXBean();
+        return bean instanceof com.sun.management.ThreadMXBean sun?sun.getCurrentThreadAllocatedBytes():-1;
+    }
+    /** One HOLDUP_COST line (plus a HOLDUP_COSTDETAIL line with the thrown attempts' messages) for the case just run. */
+    static String costLine(String key,long ms) {
+        if(!DIAG)return "";
+        long alloc=threadAllocated()-allocStart;
+        com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics.ENABLED=false;
+        var d=com.wormzjl.createcheme.science.fluid.diagnostics.SolverDiagnostics.sample();
+        var by=new LinkedHashMap<String,Integer>();
+        for(var k:new String[]{"embedded-boundary","embedded-pipe","embedded-state","refinement","newton","other"})by.put(k,0);
+        var detail=new TreeMap<String,Integer>();var special=new TreeMap<String,Integer>();int accepted=0;
+        for(var a:d.attempts()) {
+            if(a.accepted()){accepted++;if(a.dominant().equals("be-jump")||a.dominant().equals("be-floor"))special.merge(a.dominant(),1,Integer::sum);continue;}
+            String dom=a.dominant();
+            String kind=switch(dom){case "boundary","pipe","state"->"embedded-"+dom;default->dom.contains("|")?dom.substring(0,dom.indexOf('|')):dom;};
+            by.merge(kind,1,Integer::sum);
+            if(dom.contains("|"))detail.merge(dom,1,Integer::sum);
+        }
+        long newton=d.value("newtonSolves");
+        String line="HOLDUP_COST case="+key+" ms="+ms+" implicitSolves="+d.value("implicitSolves")+" newtonSolves="+newton+" newtonIterations="+d.value("newtonIterations")
+                +" newtonBacktracks="+d.value("newtonBacktracks")+" activeSetPasses="+d.value("activeSetPasses")+" jacobianBuilds="+d.value("jacobianBuilds")
+                +" luFactorNanos="+d.value("luFactorNanos")+" luSolveNanos="+d.value("luSolveNanos")+" companionSolves="+d.value("companionSolves")
+                +" companionFilters="+d.value("companionFilters")+" endpointRateBuilds="+d.value("endpointRateBuilds")+" endpointRateReuses="+d.value("endpointRateReuses")
+                +" stepAttempts="+d.attempts().size()+" accepted="+accepted+" rejectedBy="+by+" acceptedSpecial="+special
+                +" newtonPerAccepted="+(accepted>0?String.format("%.3f",(double)newton/accepted):"-")
+                +" iterationsPerNewton="+(newton>0?String.format("%.3f",(double)d.value("newtonIterations")/newton):"-")
+                +" flashCalls="+d.value("flashCalls")+" seedCalls="+PassiveStepSolver.SEED_CALLS.sum()+" seedFlashes="+PassiveStepSolver.SEED_FLASHES.sum()
+                +" reconstructCalls="+d.value("reconstructCalls")+" stateCalls="+d.value("stateCalls")
+                +" alloc=n/a threadAllocMB="+(alloc<0?"n/a":String.format("%.1f",alloc/1048576.0));
+        // Review 8.7: the reuse, evaluation and property counters, and the prototype's flash sites, timers and allocation splits.
+        for(var k:new String[]{"newtonSolvesPreconditioned","newtonIterationsFresh","newtonIterationsStale","residualEvaluations","residualEvaluationsInJacobian",
+                "stateCallsInJacobian","workspaceBuilds","workspaceReuses","luFactorizations","luSupersededFactorizations","newtonRefreshesStalled","newtonRefreshesAged",
+                "newtonRefreshesFailed","reconstructNanos","jacobianBlockBuilds","jacobianBlockColumns","verificationResiduals"})line+=" "+k+"="+d.value(k);
+        for(var e:PROTOTYPE_COUNTERS.entrySet())line+=" "+e.getKey()+"="+e.getValue().sum();
+        if(!detail.isEmpty())line+="\nHOLDUP_COSTDETAIL case="+key+" "+detail;
+        return line;
+    }
+    static PassiveNetwork mintHoldup(PassiveNetwork graph,double holdup) {
+        if(!(holdup>0))return graph;
+        // Review 7.8 Part B: with the runtime mint on, compile has already minted every junction (the same arithmetic),
+        // so the probe measures the runtime mint path and does not mint again.
+        if("on".equals(System.getProperty("junction.mintHoldup","off")))return graph;
+        var nodes=new ArrayList<PassiveNetwork.Reservoir>();
+        for(var n:graph.reservoirs()) {
+            if(!n.junction()){nodes.add(n);continue;}
+            var state=n.state();var moles=PhaseLayout.totalAmounts(state);double scale=holdup/state.mass();
+            for(int c=0;c<moles.length;c++)moles[c]*=scale;
+            nodes.add(new PassiveNetwork.Reservoir(n.id(),n.elevation(),state,n.kind(),
+                new PassiveNetwork.Inventory(state.volume(),moles,holdup*state.enthalpy()/state.mass())));
+        }
+        return new PassiveNetwork(nodes,graph.pipes(),graph.scheduledTransfers());
+    }
+}

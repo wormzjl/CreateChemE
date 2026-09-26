@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.DeadHeadedLineIslandTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-25T05:21:21.477Z" hostname="WORMZ-PC" time="0.25">
+  <properties/>
+  <testcase name="raisingTheGeneratorReopensADeadHeadedLineAndFillsTheTank()" classname="com.wormzjl.createcheme.runtime.fluid.DeadHeadedLineIslandTest" time="0.07"/>
+  <testcase name="aDeadHeadedFilterLineRestsInsteadOfHolding()" classname="com.wormzjl.createcheme.runtime.fluid.DeadHeadedLineIslandTest" time="0.07"/>
+  <testcase name="aTankChargedAboveItsGeneratorRestsInsteadOfHolding()" classname="com.wormzjl.createcheme.runtime.fluid.DeadHeadedLineIslandTest" time="0.074"/>
+  <testcase name="aDeadHeadedElevatedLineRestsInsteadOfHolding()" classname="com.wormzjl.createcheme.runtime.fluid.DeadHeadedLineIslandTest" time="0.019"/>
+  <system-out><![CDATA[RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(reopened at 400 kPa) OK intervals=40 accepted=1 rejected=0 tank P=360918.4722880688 mass=715.340167017609
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(lowered back to 101.325 kPa) OK intervals=40 accepted=1 rejected=0 tank P=360918.4722880688
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(flat filter)   OK intervals=40 accepted=1 rejected=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(rising filter) OK intervals=40 accepted=1 rejected=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(flat, tank charged at 101326 Pa, adverse 1 Pa) OK intervals=40 accepted=1 rejected=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(flat, tank charged at 110000 Pa, adverse 8675 Pa) OK intervals=40 accepted=1 rejected=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(flat, tank charged at 140395 Pa, adverse 39070 Pa) OK intervals=40 accepted=1 rejected=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(flat, tank charged at 200000 Pa, adverse 98675 Pa) OK intervals=40 accepted=1 rejected=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+(rising, 101325 Pa against 39070.02218088346 Pa of column) OK intervals=40 accepted=1 rejected=0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

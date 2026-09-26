@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" tests="9" skipped="0" failures="2" errors="0" timestamp="2026-09-25T05:24:49.771Z" hostname="WORMZ-PC" time="0.308">
+  <properties/>
+  <testcase name="twoDifferentFeedsMixAtAZeroHoldupJunction()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.003">
+    <failure message="java.lang.IllegalArgumentException: Negative/nonfinite inventory" type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: Negative/nonfinite inventory
+	at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.&lt;init&gt;(PassiveNetwork.java:61)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:58)
+	at com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.twoDifferentFeedsMixAtAZeroHoldupJunction(NetworkRegimeTest.java:32)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="cancellationCannotLeavePartialTransfersAndExcessVelocityIsConservativelyLimited()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.021"/>
+  <testcase name="pumpShutoffUsesAddedPressureAndTankRecycleIsAllowed()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.023"/>
+  <testcase name="hydrocarbonLiquidCanDisappearIntoTheSharedGasPhase()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.04"/>
+  <testcase name="reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.003">
+    <failure message="java.lang.IllegalArgumentException: Negative/nonfinite inventory" type="java.lang.IllegalArgumentException">java.lang.IllegalArgumentException: Negative/nonfinite inventory
+	at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.&lt;init&gt;(PassiveNetwork.java:61)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:58)
+	at com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable(NetworkRegimeTest.java:42)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="serialSectionsPreserveIndependentLaminarAndFittingLosses()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.001"/>
+  <testcase name="bypassCanPreventAValveFromMaintainingItsUpstreamSetpoint()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.097"/>
+  <testcase name="aRejectedTrialRestartsFromTheSameConservedStateAtTheSmallerStep()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.007"/>
+  <testcase name="hotNitrogenCanEvaporateTheLastFreeWaterWithoutDiscardingIt()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.064"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

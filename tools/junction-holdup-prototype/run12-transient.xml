@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T02:24:36.706Z" hostname="WORMZ-PC" time="0.298">
+  <properties/>
+  <testcase name="finiteTanksThroughRestAndRestart()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe" time="0.298"/>
+  <system-out><![CDATA[HOLDUP_METRICS case=0.05:4:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.05:4:false FAIL step=0 ms=28 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 11.295565187710363
+HOLDUP_METRICS case=0.05:4:true maxComponentError=1.0109222851823142E-11 maxEnergyError=1.4347922677255745E-7 reversedEdges=0 methaneInTank2=2.7706702368602714
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.05:4:true FAIL step=4 ms=22 org.opentest4j.AssertionFailedError: energy balance 1.4347922677255745E-7 ==> expected: <true> but was: <false>
+HOLDUP_METRICS case=0.05:5:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.05:5:false FAIL step=0 ms=23 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 11.374455411294525
+HOLDUP_METRICS case=0.05:5:true maxComponentError=2.3122539605141204E-11 maxEnergyError=1.4350138558819022E-7 reversedEdges=0 methaneInTank2=2.7703122669285967
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.05:5:true FAIL step=4 ms=19 org.opentest4j.AssertionFailedError: energy balance 1.4350138558819022E-7 ==> expected: <true> but was: <false>
+HOLDUP_METRICS case=0.05:6:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.05:6:false FAIL step=0 ms=24 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 11.374455411294525
+HOLDUP_METRICS case=0.05:6:true maxComponentError=2.6928344896757215E-11 maxEnergyError=1.434006065119329E-7 reversedEdges=0 methaneInTank2=2.770118494036693
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.05:6:true FAIL step=4 ms=25 org.opentest4j.AssertionFailedError: energy balance 1.434006065119329E-7 ==> expected: <true> but was: <false>
+HOLDUP_METRICS case=0.02:4:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.02:4:false FAIL step=0 ms=20 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 11.137872333021877
+HOLDUP_TRAJECTORY case=0.02:4:true time=1.0 P=[144075.17573259573, 94221.50640595496] q=[0.02525782186010285, -0.017743688879967686, -0.0037570664900675827, -0.0037570664900675827] modes=[VELOCITY_LIMITED, VELOCITY_LIMITED, PASSIVE, PASSIVE] substeps=1/0
+HOLDUP_TRAJECTORY case=0.02:4:true time=1.4 P=[141769.54330562087, 95900.29982340647] q=[0.024942408522572086, -0.01780545944697813, -0.0035684745377969774, -0.0035684745377969774] modes=[VELOCITY_LIMITED, VELOCITY_LIMITED, PASSIVE, PASSIVE] substeps=1/0
+HOLDUP_METRICS case=0.02:4:true maxComponentError=5.955213303212345E-13 maxEnergyError=1.0231454433103296E-7 reversedEdges=0 methaneInTank2=1.6561845448283645
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.02:4:true FAIL step=15 ms=30 org.opentest4j.AssertionFailedError: energy balance 1.0231454433103296E-7 ==> expected: <true> but was: <false>
+HOLDUP_METRICS case=0.02:5:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.02:5:false FAIL step=0 ms=21 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 11.374321560202624
+HOLDUP_TRAJECTORY case=0.02:5:true time=1.0 P=[144075.17573259573, 94219.22345756726] q=[0.02525782186010285, -0.01773510042031371, -0.0025628167243250243, -0.0025628167243250243, -0.0023970879911390875] modes=[VELOCITY_LIMITED, VELOCITY_LIMITED, PASSIVE, PASSIVE, PASSIVE] substeps=1/0
+HOLDUP_TRAJECTORY case=0.02:5:true time=1.4 P=[141769.54330562087, 95897.25987638488] q=[0.024942408522572086, -0.017797693427650967, -0.002439788959017146, -0.002439788959017146, -0.002265137176886829] modes=[VELOCITY_LIMITED, VELOCITY_LIMITED, PASSIVE, PASSIVE, PASSIVE] substeps=1/0
+HOLDUP_METRICS case=0.02:5:true maxComponentError=2.9238888143318147E-13 maxEnergyError=1.0231342420589701E-7 reversedEdges=0 methaneInTank2=1.6553389064858373
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.02:5:true FAIL step=15 ms=25 org.opentest4j.AssertionFailedError: energy balance 1.0231342420589701E-7 ==> expected: <true> but was: <false>
+HOLDUP_METRICS case=0.02:6:false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.02:6:false FAIL step=0 ms=23 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Conservative reconstruction fails equation gate: 11.374321560202624
+HOLDUP_TRAJECTORY case=0.02:6:true time=1.0 P=[144075.17573259573, 94218.27938339389] q=[0.02525782186010285, -0.017731498954476902, -0.001886448522656221, -0.001886448522656221, -0.0016671160587128783, -0.002086309801600628] modes=[VELOCITY_LIMITED, VELOCITY_LIMITED, PASSIVE, PASSIVE, PASSIVE, PASSIVE] substeps=1/0
+HOLDUP_TRAJECTORY case=0.02:6:true time=1.4 P=[141769.54330562087, 95895.99562899623] q=[0.024942408522572086, -0.017794391222291386, -0.0017926561114417934, -0.0017926561114417934, -0.0015607936423060146, -0.0020019114350910997] modes=[VELOCITY_LIMITED, VELOCITY_LIMITED, PASSIVE, PASSIVE, PASSIVE, PASSIVE] substeps=1/0
+HOLDUP_METRICS case=0.02:6:true maxComponentError=1.5517310870844648E-12 maxEnergyError=1.0231566829172833E-7 reversedEdges=0 methaneInTank2=1.6549866895626637
+HOLDUP_DYNAMIC holdup=1.0E-6 case=0.02:6:true FAIL step=15 ms=29 org.opentest4j.AssertionFailedError: energy balance 1.0231566829172833E-7 ==> expected: <true> but was: <false>
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupMemoryProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-26T00:53:58.715Z" hostname="WORMZ-PC" time="3.457">
+  <properties/>
+  <testcase name="retainedPerIsland()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupMemoryProbe" time="3.457"/>
+  <system-out><![CDATA[HOLDUP_MEMORY fixture=5node islands=40 nodes=5 pipes=4 retainedPerIslandBytes=44642 graphPerIslandBytes=14910 solverPerIslandBytes=29732 solveMsPerIsland=20.6 lowAlloc=on jacobianReuse=on
+HOLDUP_MEMORY_CLASS fixture=5node histogramGrowthPerIslandBytes=44344
+HOLDUP_MEMORY_CLASS fixture=5node class=[D bytesPerIsland=20584 instancesPerIsland=96.0
+HOLDUP_MEMORY_CLASS fixture=5node class=[I bytesPerIsland=9719 instancesPerIsland=104.0
+HOLDUP_MEMORY_CLASS fixture=5node class=[B bytesPerIsland=4710 instancesPerIsland=7.9
+HOLDUP_MEMORY_CLASS fixture=5node class=com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics$State bytesPerIsland=1152 instancesPerIsland=8.0
+HOLDUP_MEMORY_CLASS fixture=5node class=com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Pipe$Identity bytesPerIsland=768 instancesPerIsland=16.0
+HOLDUP_MEMORY_CLASS fixture=5node class=org.ejml.data.DMatrixSparseCSC bytesPerIsland=720 instancesPerIsland=18.0
+HOLDUP_MEMORY_CLASS fixture=5node class=[Ljava.lang.Object; bytesPerIsland=525 instancesPerIsland=13.0
+HOLDUP_MEMORY_CLASS fixture=5node class=java.util.LinkedHashMap bytesPerIsland=448 instancesPerIsland=7.0
+HOLDUP_MEMORY_CLASS fixture=5node class=com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel$Phase bytesPerIsland=448 instancesPerIsland=8.0
+HOLDUP_MEMORY_CLASS fixture=5node class=[J bytesPerIsland=312 instancesPerIsland=9.0
+HOLDUP_MEMORY_CLASS fixture=5node class=java.util.ImmutableCollections$ListN bytesPerIsland=288 instancesPerIsland=12.0
+HOLDUP_MEMORY_CLASS fixture=5node class=com.wormzjl.createcheme.science.fluid.state.SolidInventory$Moments bytesPerIsland=240 instancesPerIsland=6.0
+HOLDUP_MEMORY_CLASS fixture=5node class=com.wormzjl.createcheme.science.fluid.linalg.SparseLuSolver$Storage bytesPerIsland=240 instancesPerIsland=3.0
+HOLDUP_MEMORY_CLASS fixture=5node class=com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver bytesPerIsland=240 instancesPerIsland=2.0
+HOLDUP_MEMORY_CLASS fixture=5node class=[Ljava.util.HashMap$Node; bytesPerIsland=240 instancesPerIsland=3.0
+HOLDUP_MEMORY fixture=chain50 islands=8 nodes=50 pipes=49 retainedPerIslandBytes=435588 graphPerIslandBytes=102947 solverPerIslandBytes=332641 solveMsPerIsland=9.9 lowAlloc=on jacobianReuse=on
+HOLDUP_MEMORY_CLASS fixture=chain50 histogramGrowthPerIslandBytes=435588
+HOLDUP_MEMORY_CLASS fixture=chain50 class=[D bytesPerIsland=262600 instancesPerIsland=397.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=[I bytesPerIsland=96232 instancesPerIsland=65.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=[B bytesPerIsland=22623 instancesPerIsland=4.4
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics$State bytesPerIsland=14400 instancesPerIsland=100.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Pipe$Identity bytesPerIsland=7056 instancesPerIsland=147.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel$Phase bytesPerIsland=5600 instancesPerIsland=100.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.state.SolidInventory$Moments bytesPerIsland=4000 instancesPerIsland=100.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=[Ljdk.internal.vm.FillerElement; bytesPerIsland=3533 instancesPerIsland=2.9
+HOLDUP_MEMORY_CLASS fixture=chain50 class=[Ljava.lang.Object; bytesPerIsland=2479 instancesPerIsland=11.1
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Pipe bytesPerIsland=2352 instancesPerIsland=49.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.network.PipeResistance$Geometry bytesPerIsland=2352 instancesPerIsland=49.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory bytesPerIsland=2000 instancesPerIsland=50.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Reservoir bytesPerIsland=2000 instancesPerIsland=50.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=com.wormzjl.createcheme.science.fluid.state.SolidInventory bytesPerIsland=1600 instancesPerIsland=100.0
+HOLDUP_MEMORY_CLASS fixture=chain50 class=[J bytesPerIsland=1328 instancesPerIsland=7.0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

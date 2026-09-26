@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T00:47:57.682Z" hostname="WORMZ-PC" time="0.199">
+  <properties/>
+  <testcase name="fixedAndAdaptiveCadencesPreserveTheRefinedPhysicalTrajectory()" classname="com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest" time="0.199">
+    <failure message="org.opentest4j.AssertionFailedError: nitrogen fixed-20 cumulative flow: 2.5412259412552554E-4 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: nitrogen fixed-20 cumulative flow: 2.5412259412552554E-4 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest.compare(CadenceTrajectoryQualificationTest.java:130)
+	at app//com.wormzjl.createcheme.runtime.fluid.CadenceTrajectoryQualificationTest.fixedAndAdaptiveCadencesPreserveTheRefinedPhysicalTrajectory(CadenceTrajectoryQualificationTest.java:30)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

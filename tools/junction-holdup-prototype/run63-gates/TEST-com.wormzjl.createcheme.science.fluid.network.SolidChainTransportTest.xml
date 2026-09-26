@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-25T06:01:27.632Z" hostname="WORMZ-PC" time="0.249">
+  <properties/>
+  <testcase name="clearChainSubstepCountsAreUnchanged()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.037"/>
+  <testcase name="thirtyReservoirChainIntegratesOneIntervalWithinItsBudget()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.17"/>
+  <testcase name="filterIslandReusesItsSolverWorkspacesAcrossIntervals()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.005"/>
+  <testcase name="tenReservoirChainIntegratesFiveSecondsWithoutALineSearchStall()" classname="com.wormzjl.createcheme.science.fluid.network.SolidChainTransportTest" time="0.029"/>
+  <system-out><![CDATA[solid chain: 30 nodes 5 s ms=96 accepted=31 rejected=10
+solid chain: filter island reuses=114 builds=19 orderings=19 factorizations=19 jacobians=19 block=19 fallbacks=0 rates=57/0
+solid chain: 10 nodes 5 s ms=29 accepted=30 rejected=6 reasons={blocked with solid: DEPOSITION; pipe=102; velocity=0.10534170906235263; deposition=0.1716939436488819; t=2.0294189453125E-4=1, blocked with solid: DEPOSITION; pipe=101; velocity=0.17165661089804451; deposition=0.17169288549750578; t=0.0054796760067618=1, Solid transport transition inside the step=48, Embedded pipe error #=6}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

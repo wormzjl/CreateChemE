@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" tests="9" skipped="0" failures="2" errors="0" timestamp="2026-09-25T04:58:50.878Z" hostname="WORMZ-PC" time="0.437">
+  <properties/>
+  <testcase name="twoDifferentFeedsMixAtAZeroHoldupJunction()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.005">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: No finite Jacobian trial at variable 0; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: No finite Jacobian trial at variable 0; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:328)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solveRate(PassiveStepSolver.java:152)
+	at app//com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:84)
+	at app//com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:60)
+	at app//com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:58)
+	at app//com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.twoDifferentFeedsMixAtAZeroHoldupJunction(NetworkRegimeTest.java:32)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="cancellationCannotLeavePartialTransfersAndExcessVelocityIsConservativelyLimited()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.031"/>
+  <testcase name="pumpShutoffUsesAddedPressureAndTankRecycleIsAllowed()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.023"/>
+  <testcase name="hydrocarbonLiquidCanDisappearIntoTheSharedGasPhase()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.068"/>
+  <testcase name="reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.006">
+    <failure message="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: No finite Jacobian trial at variable 0; active-set pass=0" type="com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence">com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: No finite Jacobian trial at variable 0; active-set pass=0
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:328)
+	at app//com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solveRate(PassiveStepSolver.java:152)
+	at app//com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:84)
+	at app//com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:60)
+	at app//com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(TrBdf2StepSolver.java:58)
+	at app//com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest.reversingOneFeedSwitchesJunctionUpwindingAndSerialValvesRemainSolvable(NetworkRegimeTest.java:42)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="serialSectionsPreserveIndependentLaminarAndFittingLosses()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.001"/>
+  <testcase name="bypassCanPreventAValveFromMaintainingItsUpstreamSetpoint()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.112"/>
+  <testcase name="aRejectedTrialRestartsFromTheSameConservedStateAtTheSmallerStep()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.009"/>
+  <testcase name="hotNitrogenCanEvaporateTheLastFreeWaterWithoutDiscardingIt()" classname="com.wormzjl.createcheme.science.fluid.network.NetworkRegimeTest" time="0.096"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

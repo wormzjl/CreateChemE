@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" tests="11" skipped="0" failures="1" errors="0" timestamp="2026-09-25T15:41:05.303Z" hostname="WORMZ-PC" time="2.863">
+  <properties/>
+  <testcase name="aFilterBlockCostsAPumpedLineNoIntervalOfItsOwn()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.646">
+    <failure message="org.opentest4j.AssertionFailedError: A pumped line must settle at its own shutoff pressure ==&gt; expected: &lt;601325.0&gt; but was: &lt;601322.7594477679&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: A pumped line must settle at its own shutoff pressure ==&gt; expected: &lt;601325.0&gt; but was: &lt;601322.7594477679&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest.aFilterBlockCostsAPumpedLineNoIntervalOfItsOwn(FilterBlockLineIslandTest.java:376)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="filterLineToAVoidIntegratesWithSolidsAndDrivingPressure()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.021"/>
+  <testcase name="filterLineToAVoidIntegratesWithSolidsAndNoDrivingPressure()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.009"/>
+  <testcase name="filterFreeLineToATankKeepsIntegratingOnceTheTankIsFull()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.086"/>
+  <testcase name="valveLineToATankKeepsIntegratingOnceTheTankIsFull()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.509"/>
+  <testcase name="filterLineToATankKeepsIntegratingOnceTheTankIsFull()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="1.183"/>
+  <testcase name="aFilterBlockCompilesToTwoZeroHoldupJunctionsAroundItsOwnEdge()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.001"/>
+  <testcase name="aPassiveLineAtThePumpsShutoffPressureFillsTheSameTank()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.109"/>
+  <testcase name="filterLineToAVoidIntegratesWithModerateSolidsAndPressure()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.009"/>
+  <testcase name="filterFreeLineToATankIntegratesItsFirstInterval()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.214"/>
+  <testcase name="filterLineToATankIntegratesItsFirstIntervalAtRest()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.013"/>
+  <system-out><![CDATA[BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=0.4348028643136936 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.21740143215684757 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.10870071607842301 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.05435035803921228 transitions=0
+BETRACE t=0.0 step=0.3586915499185404 ok=false change=0.023730842014769094 transitions=0
+BETRACE t=0.0 step=0.7879779115257491 ok=false change=0.031374799108575956 transitions=0
+BETRACE t=0.0 step=0.8749571699855957 ok=false change=0.024916910251302538 transitions=0
+BETRACE t=0.0 step=1.0157089742666146 ok=false change=0.022513778009111387 transitions=0
+BETRACE t=0.0 step=1.4075156202381416 ok=false change=0.028495975301243055 transitions=0
+BETRACE t=0.0 step=0.9883552331169295 ok=false change=0.022121545113260546 transitions=0
+BETRACE t=0.0 step=0.746576320585317 ok=false change=0.02152111841516049 transitions=0
+BETRACE t=0.0 step=0.6671835069905218 ok=false change=0.034110310941175094 transitions=0
+BETRACE t=2.220494490092622 step=0.2964404348321607 ok=true change=0.013893686623521076 transitions=1 e1:PUMP_TARGET->PUMP_HEAD_LIMIT
+BETRACE t=0.0 step=5.0 ok=true change=4.6281521071055727E-10 transitions=1 e1:PUMP_HEAD_LIMIT->CLOSED
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=0.4348028643136936 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.21740143215684757 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.10870071607842301 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.05435035803921228 transitions=0
+BETRACE t=0.0 step=0.3587021105840287 ok=false change=0.02373154070277669 transitions=0
+BETRACE t=0.0 step=0.7879786494417795 ok=false change=0.031374828490068535 transitions=0
+BETRACE t=0.0 step=0.8749605929190638 ok=false change=0.02491700772913229 transitions=0
+BETRACE t=0.0 step=1.0157161368241943 ok=false change=0.022513936771350673 transitions=0
+BETRACE t=0.0 step=1.4075400687040487 ok=false change=0.02849657550783111 transitions=0
+BETRACE t=0.0 step=0.9883659107816049 ok=false change=0.02212187207104037 transitions=0
+BETRACE t=0.0 step=0.7465464975375492 ok=false change=0.021520349903430866 transitions=0
+BETRACE t=0.0 step=0.6671809164560972 ok=false change=0.034110530465734645 transitions=0
+BETRACE t=2.220475871274961 step=0.29643733967747893 ok=true change=0.016555292825862707 transitions=1 e1:PUMP_TARGET->PUMP_HEAD_LIMIT
+BETRACE t=0.0 step=2.377697543504155 ok=true change=1.676758590127141E-11 transitions=1 e1:PUMP_HEAD_LIMIT->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=2.165932995214376 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=1.0843841119719342 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.5429831428792984 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.27187560555660395 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.1360965136369425 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.06810447431082728 transitions=0
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.05101520271525879 transitions=0
+BETRACE t=0.0 step=0.16006306542111676 ok=false change=0.03121771173028646 transitions=0
+(ii) generator-pump-pipe-filter-pipe-tank, clear, at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator-pump-3 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(reference) passive generator at 601325 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) pumped tank P=601322.7594477679 mass=829.0187488408774 T=298.2151079913524 liq=0.8307858135971405 vap=0.1692141864028596
+(endpoint) passive tank P=601324.9999999432 mass=828.9544521855883 T=298.2920489296198 liq=0.8307378939018635 vap=0.1692621059579012
+BECOLD rate seed applied
+(iv) generator(20%/100um at 300 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+BECOLD rate seed applied
+(iii) generator(5%/100um)-pipe-filter-pipe-void, no driving pressure: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=8261561421756122062; velocity=0.0; deposition=0.0814002975619227; t=0.0=1}
+BETRACE t=0.0 step=0.05 ok=false change=1.670097947432555 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.8369776269968299 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.41951478917585966 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.21022649896870854 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.10529593182904538 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.052709437284813226 transitions=0
+BETRACE t=0.0 step=0.16141476495985307 ok=false change=0.03131705716357295 transitions=0
+BETRACE t=0.0 step=0.48796152979339236 ok=false change=0.030841157490646337 transitions=0
+BETRACE t=0.0 step=0.5024199799838072 ok=false change=0.03160658226355461 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=1.359294401489513E-11 transitions=1 e0:PASSIVE->CLOSED
+(control) generator at 400 kPa-4 pipes-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.3595421782024795 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.6822050633474575 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.3423426929785767 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.1717117455529969 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.08605700518012335 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.04960763330713706 transitions=0
+BETRACE t=0.0 step=0.16186063012755625 ok=false change=0.03122776389018675 transitions=0
+BETRACE t=0.0 step=0.2540369093218528 ok=false change=0.02347445289792784 transitions=0
+BETRACE t=0.0 step=0.5439715098527492 ok=false change=0.030599379499123492 transitions=0
+BETRACE t=0.0 step=0.77251663101501 ok=false change=0.03164055407975355 transitions=0
+BETRACE t=0.0 step=0.9549090374380871 ok=false change=0.02819363997268322 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=1.9396692126408653E-9 transitions=1 e1:VALVE_OPEN->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=1.3595724188013403 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.6822203431698447 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.34235042069564864 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.17171565081325899 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.08605897431927748 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.049607480165344886 transitions=0
+BETRACE t=0.0 step=0.16185756515829883 ok=false change=0.031227117418491677 transitions=0
+BETRACE t=0.0 step=0.2540606200083535 ok=false change=0.023476510203986962 transitions=0
+BETRACE t=0.0 step=0.543980874754424 ok=false change=0.030599529011351958 transitions=0
+BETRACE t=0.0 step=0.7725148081228285 ok=false change=0.03164048189619102 transitions=0
+BETRACE t=0.0 step=0.9549362844755706 ok=false change=0.028193202755258325 transitions=0
+(i-c) generator at 300000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=300000.00058127963 mass=657.3805259693519  control tank P=299999.99999997765 mass=657.3805254462059
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.6700411486468476 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.8369490387979995 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.419500387272589 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.2102192447264953 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.10529228243113609 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.052707604654929484 transitions=0
+BETRACE t=0.0 step=0.16141948789430233 ok=false change=0.03131804866721472 transitions=0
+BETRACE t=0.0 step=0.487667141176043 ok=false change=0.030821407025021702 transitions=0
+BETRACE t=0.0 step=0.5024166424385463 ok=false change=0.031606763796751945 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=2.6980607072484202E-9 transitions=1 e1:VALVE_OPEN->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=1.670097947432555 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.8369776269968299 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.41951478917585966 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.21022649896870854 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.10529593182904538 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.052709437284813226 transitions=0
+BETRACE t=0.0 step=0.16141476495985307 ok=false change=0.03131705716357295 transitions=0
+BETRACE t=0.0 step=0.48796152979339236 ok=false change=0.030841157490646337 transitions=0
+BETRACE t=0.0 step=0.5024199799838072 ok=false change=0.03160658226355461 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=1.359294401489513E-11 transitions=1 e0:PASSIVE->CLOSED
+(i-c) generator at 400000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 400000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=400000.0010704362 mass=743.1612560818464  control tank P=400000.00000315206 mass=743.1612563863432
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=2.162911149536062 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=1.0828752484684299 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.5422296765629787 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.2714992193431959 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.13590841239057122 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.06801044002857098 transitions=0
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.051022926475449024 transitions=0
+BETRACE t=0.0 step=0.16029263557386822 ok=false change=0.03126184769919985 transitions=0
+BETRACE t=0.0 step=0.17819580338350904 ok=false change=0.020789084853581618 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.943770676384622E-13 transitions=1 e1:VALVE_OPEN->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=1.9111847153512606E-9 transitions=1 e1:CLOSED->VALVE_OPEN
+BETRACE t=0.0 step=5.0 ok=true change=8.191153368319184E-9 transitions=1 e1:VALVE_OPEN->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=2.163036159974913 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=1.0829379846535903 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.5422611813892659 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.27151504336718396 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.1359163562321287 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.06801442393046725 transitions=0
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.05102260230641165 transitions=0
+BETRACE t=0.0 step=0.1602843579762526 ok=false change=0.03126011975816099 transitions=0
+BETRACE t=0.0 step=0.17792644468124733 ok=false change=0.020758756629636284 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=2.627687839176416E-12 transitions=1 e0:PASSIVE->CLOSED
+(i-c) generator at 600000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 600000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=600000.0049126823 mass=828.578625500354  control tank P=600000.0040466294 mass=828.578625253998
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=0.6623096938531149 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.3366507111730548 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.17070123612143712 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.0862343739368192 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.04957197591538164 transitions=0
+BETRACE t=0.0 step=0.12101876688268429 ok=false change=0.022357063015272544 transitions=0
+BETRACE t=0.0 step=0.7074986459188781 ok=false change=0.02302877122551232 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.404540717941128E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=0.6729931128988615 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.34135315041599756 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.17277998540958153 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.0871731155347648 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.04950471930354953 transitions=0
+BETRACE t=0.0 step=0.16734415530102162 ok=false change=0.031125744740904578 transitions=0
+BETRACE t=0.0 step=1.1430394653786384 ok=false change=0.02330191918781256 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=6.648226796777131E-11 transitions=1 e0:PASSIVE->CLOSED
+(i-b) generator at 150000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 150000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=150000.0000333666 mass=309.9201780630526  control tank P=150000.00000008603 mass=309.920177790391
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=0.9848259253650892 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.4964366233426091 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.2501243531440668 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.12583380870526165 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.06318604438575455 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.051431359996867196 transitions=0
+BETRACE t=0.0 step=0.16521390178484263 ok=false change=0.031260002937122076 transitions=0
+BETRACE t=0.0 step=0.26015222706932467 ok=false change=0.023215767293812205 transitions=0
+BETRACE t=0.0 step=0.56655739627083 ok=false change=0.030365207698498126 transitions=0
+BETRACE t=0.0 step=0.6117620121824827 ok=false change=0.02103896088355316 transitions=0
+BETRACE t=0.0 step=1.3247268349713412 ok=false change=0.02684464607053907 transitions=0
+BETRACE t=0.0 step=2.1881626369087326 ok=false change=0.021543338327085288 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.299015563555799E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=0.955981187081578 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.4815098529388034 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.24241016377613483 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.12187007736621182 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.06116536427113699 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.05159921180272703 transitions=0
+BETRACE t=0.0 step=0.10968096616591062 ok=false change=0.020886663313178816 transitions=0
+BETRACE t=0.0 step=0.2503089295229754 ok=false change=0.022667986655117232 transitions=0
+BETRACE t=0.0 step=0.5876361215269786 ok=false change=0.021255258798936413 transitions=0
+BETRACE t=0.0 step=2.0458056877181754 ok=false change=0.02159184011578359 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.235077360095398E-10 transitions=1 e0:PASSIVE->CLOSED
+(i-b) generator at 200000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 200000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=200000.00008092006 mass=484.5403334809512  control tank P=200000.0000006999 mass=484.5403330712963
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.235650314540993 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.6210816659923111 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.3121651587310296 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.15677507091516052 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.07864030603086701 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.0501878249948588 transitions=0
+BETRACE t=0.0 step=0.23677301142760693 ok=false change=0.021430280545104992 transitions=0
+BETRACE t=0.0 step=0.8717881943831174 ok=false change=0.02902434275118723 transitions=0
+BETRACE t=0.0 step=1.0239144013711774 ok=false change=0.021821702901919548 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.1915860497131774E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=1.174722999507771 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.5902121849300989 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.2965121229288823 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.14884823348792928 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.07463783002457917 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.050506585738087834 transitions=0
+BETRACE t=0.0 step=0.33882388201496266 ok=false change=0.03104469653879607 transitions=0
+BETRACE t=0.0 step=0.42800641595993455 ok=false change=0.02408329385787186 transitions=0
+BETRACE t=0.0 step=0.8391028308505826 ok=false change=0.02035981327742752 transitions=0
+(i-b) generator at 250000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 250000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=250000.0000785724 mass=588.4549371300649  control tank P=249999.99999995425 mass=588.454936860048
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.4480925355785808 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.726820337008585 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.36484259250653156 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.183054893464254 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.09176665358042742 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.04916718810282735 transitions=0
+BETRACE t=0.0 step=1.0910850614307934 ok=false change=0.025801624578485043 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=5.319126649667473E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=1.3595724188013403 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.6822203431698447 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.34235042069564864 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.17171565081325899 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.08605897431927748 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.049607480165344886 transitions=0
+BETRACE t=0.0 step=0.16185756515829883 ok=false change=0.031227117418491677 transitions=0
+BETRACE t=0.0 step=0.2540606200083535 ok=false change=0.023476510203986962 transitions=0
+BETRACE t=0.0 step=0.543980874754424 ok=false change=0.030599529011351958 transitions=0
+BETRACE t=0.0 step=0.7725148081228285 ok=false change=0.03164048189619102 transitions=0
+BETRACE t=0.0 step=0.9549362844755706 ok=false change=0.028193202755258325 transitions=0
+(i-b) generator at 300000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=300000.00011224917 mass=657.3805260441825  control tank P=299999.99999997765 mass=657.3805254462059
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.6356848956153625 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.8202802825342138 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.41143119616700846 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.20630310495128482 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.10337937945204453 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.05176609682675218 transitions=0
+BETRACE t=0.0 step=0.13046834689327017 ok=false change=0.025160023154248003 transitions=0
+BETRACE t=0.0 step=1.1104843081751687 ok=false change=0.021247520659636206 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=4.89630869525789E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=1.5226094298830668 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.7634490342879624 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.3828438475027306 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.19192277321916223 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.09615245799629815 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.048832360141356085 transitions=0
+BETRACE t=0.0 step=0.15611103771816137 ok=false change=0.030219048949830685 transitions=0
+BETRACE t=0.0 step=0.5427286781781983 ok=false change=0.030444589089757827 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=2.7529585973566872E-9 transitions=1 e0:PASSIVE->CLOSED
+(i-b) generator at 350000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 350000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=350000.0001219843 mass=706.4473148190127  control tank P=350000.00096259237 mass=706.4473148558029
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.8055061828369783 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.9049409331845457 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.4536518828245044 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.22737603017840324 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.11390611651094236 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.05702758647218483 transitions=0
+BETRACE t=0.0 step=0.11307487170367385 ok=false change=0.02186441212118025 transitions=0
+BETRACE t=0.0 step=0.33994839229529844 ok=false change=0.031039030713487164 transitions=0
+BETRACE t=0.0 step=0.33967236899144276 ok=false change=0.023157247748627843 transitions=0
+BETRACE t=0.0 step=0.3970671754611045 ok=false change=0.02333173322304248 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=3.36257406180023E-9 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=1.670097947432555 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.8369776269968299 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.41951478917585966 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.21022649896870854 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.10529593182904538 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.052709437284813226 transitions=0
+BETRACE t=0.0 step=0.16141476495985307 ok=false change=0.03131705716357295 transitions=0
+BETRACE t=0.0 step=0.48796152979339236 ok=false change=0.030841157490646337 transitions=0
+BETRACE t=0.0 step=0.5024199799838072 ok=false change=0.03160658226355461 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=1.359294401489513E-11 transitions=1 e0:PASSIVE->CLOSED
+(i-b) generator at 400000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 400000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=400000.00132259884 mass=743.1612562437657  control tank P=400000.00000315206 mass=743.1612563863432
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=2.373572819241667 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=1.1883873698600966 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.5950999329918965 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.29799903416165063 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.14918913300008457 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.07466304503659923 transitions=0
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.05048657195130053 transitions=0
+BETRACE t=0.0 step=0.33187034186780484 ok=false change=0.03318242589840919 transitions=0
+BETRACE t=0.0 step=0.2501740027416881 ok=false change=0.0325131641800327 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=2.2803704879752347E-10 transitions=1 e0:PASSIVE->CLOSED
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=2 e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BETRACE t=0.0 step=0.05 ok=false change=2.163036159974913 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=1.0829379846535903 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.5422611813892659 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.27151504336718396 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.1359163562321287 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.06801442393046725 transitions=0
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.05102260230641165 transitions=0
+BETRACE t=0.0 step=0.1602843579762526 ok=false change=0.03126011975816099 transitions=0
+BETRACE t=0.0 step=0.17792644468124733 ok=false change=0.020758756629636284 transitions=0
+BETRACE t=0.0 step=5.0 ok=true change=2.627687839176416E-12 transitions=1 e0:PASSIVE->CLOSED
+(i-b) generator at 600000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 600000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=600000.0000173304 mass=828.5786243554904  control tank P=600000.0040466294 mass=828.578625253998
+reservoir-terminated filter line:
+  node[0] id=1 GENERATOR P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=101325.0 liquid=0.0 vapour=1.0 solidKg=0.0
+  node[3] id=-3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0->1 Passive filter=false
+  pipe id=3932769516861099846 3->2 Passive filter=false
+  pipe id=-9223372036854775805 1->3 Passive filter=true
+BETRACE t=0.0 step=0.05 ok=false change=2.165932995214376 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=1.0843841119719342 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.5429831428792984 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.27187560555660395 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.1360965136369425 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.06810447431082728 transitions=0
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.05101520271525879 transitions=0
+BETRACE t=0.0 step=0.16006306542111676 ok=false change=0.03121771173028646 transitions=0
+BETRACE t=0.0 step=0.05 ok=false change=1.3595724188013403 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.6822203431698447 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.34235042069564864 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.17171565081325899 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.08605897431927748 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.049607480165344886 transitions=0
+BETRACE t=0.0 step=0.16185756515829883 ok=false change=0.031227117418491677 transitions=0
+BETRACE t=0.0 step=0.2540606200083535 ok=false change=0.023476510203986962 transitions=0
+BETRACE t=0.0 step=0.543980874754424 ok=false change=0.030599529011351958 transitions=0
+BETRACE t=0.0 step=0.7725148081228285 ok=false change=0.03164048189619102 transitions=0
+BETRACE t=0.0 step=0.9549362844755706 ok=false change=0.028193202755258325 transitions=0
+(probe) generator at 601325 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(probe) generator at 300000 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+BECOLD rate seed applied
+(v) generator(5%/100um at 150 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+BETRACE t=0.0 step=0.05 ok=false change=1.4089338951410775 transitions=0
+BETRACE t=0.0 step=0.025 ok=false change=0.7070142094049443 transitions=0
+BETRACE t=0.0 step=0.0125 ok=false change=0.35478652761974594 transitions=0
+BETRACE t=0.0 step=0.00625 ok=false change=0.17794241415065698 transitions=0
+BETRACE t=0.0 step=0.003125 ok=false change=0.089172771280885 transitions=0
+BETRACE t=0.0 step=0.0015625 ok=false change=0.050019398859681714 transitions=0
+BETRACE t=0.0 step=0.13228156941933253 ok=false change=0.025568617876955805 transitions=0
+BETRACE t=0.0 step=4.936586618423462 ok=true change=0.0 transitions=1 e0:PASSIVE->CLOSED
+(control) generator-4 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator(5%/100um at 300 kPa)-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=44096572600764770; velocity=0.08138896856761639; deposition=0.08138927027369308; t=0.0=1}
+BECOLD rate seed applied
+(i) generator-pipe-filter-pipe-tank, clear, at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

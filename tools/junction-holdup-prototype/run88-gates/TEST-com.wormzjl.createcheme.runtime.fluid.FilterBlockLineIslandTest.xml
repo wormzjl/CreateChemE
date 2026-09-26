@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" tests="11" skipped="0" failures="2" errors="0" timestamp="2026-09-25T15:35:29.077Z" hostname="WORMZ-PC" time="1.964">
+  <properties/>
+  <testcase name="aFilterBlockCostsAPumpedLineNoIntervalOfItsOwn()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.516">
+    <failure message="org.opentest4j.AssertionFailedError: A filter block shortened a pumped line: filtered=HELD at interval 1/40 (t=0 s): Substep refinement exhausted: Newton iteration limit at residual 895.6514350570004; active-set pass=0&#10;  node[0] id=1 GENERATOR P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0&#10;  node[1] id=2 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0&#10;  node[2] id=4 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0&#10;  node[3] id=6 RESERVOIR P=101325.0 liquid=0.0 vapour=1.0 solidKg=0.0&#10;  node[4] id=-4 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0&#10;  pipe id=4501053670907088488 0-&gt;1 Passive filter=false&#10;  pipe id=3500069797145310629 1-&gt;2 Pump filter=false&#10;  pipe id=1797148878547291489 4-&gt;3 Passive filter=false&#10;  pipe id=-9223372036854775804 2-&gt;4 Passive filter=true&#10;control=OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={} ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: A filter block shortened a pumped line: filtered=HELD at interval 1/40 (t=0 s): Substep refinement exhausted: Newton iteration limit at residual 895.6514350570004; active-set pass=0
+  node[0] id=1 GENERATOR P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=2 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[2] id=4 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[3] id=6 RESERVOIR P=101325.0 liquid=0.0 vapour=1.0 solidKg=0.0
+  node[4] id=-4 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  pipe id=4501053670907088488 0-&gt;1 Passive filter=false
+  pipe id=3500069797145310629 1-&gt;2 Pump filter=false
+  pipe id=1797148878547291489 4-&gt;3 Passive filter=false
+  pipe id=-9223372036854775804 2-&gt;4 Passive filter=true
+control=OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={} ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest.aFilterBlockCostsAPumpedLineNoIntervalOfItsOwn(FilterBlockLineIslandTest.java:366)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="filterLineToAVoidIntegratesWithSolidsAndDrivingPressure()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.026"/>
+  <testcase name="filterLineToAVoidIntegratesWithSolidsAndNoDrivingPressure()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.009"/>
+  <testcase name="filterFreeLineToATankKeepsIntegratingOnceTheTankIsFull()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.098"/>
+  <testcase name="valveLineToATankKeepsIntegratingOnceTheTankIsFull()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.649"/>
+  <testcase name="filterLineToATankKeepsIntegratingOnceTheTankIsFull()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.227">
+    <failure message="org.opentest4j.AssertionFailedError: HELD at interval 34/40 (t=165 s): Substep refinement exhausted: Backward-Euler mode transitions 2&#10;  node[0] id=1 GENERATOR P=150000.0 liquid=1.0 vapour=0.0 solidKg=0.0&#10;  node[1] id=3 JUNCTION P=150000.0000076912 liquid=0.9999999999999112 vapour=0.0 solidKg=0.0&#10;  node[2] id=5 RESERVOIR P=150000.0000355821 liquid=0.30998181126300695 vapour=0.690018188860948 solidKg=0.0&#10;  node[3] id=-3 JUNCTION P=150000.00002909784 liquid=0.9999999999982152 vapour=0.0 solidKg=0.0&#10;  pipe id=8261561421756122062 0-&gt;1 Passive filter=false&#10;  pipe id=3932769516861099846 3-&gt;2 Passive filter=false&#10;  pipe id=-9223372036854775805 1-&gt;3 Passive filter=true ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: HELD at interval 34/40 (t=165 s): Substep refinement exhausted: Backward-Euler mode transitions 2
+  node[0] id=1 GENERATOR P=150000.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=150000.0000076912 liquid=0.9999999999999112 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=150000.0000355821 liquid=0.30998181126300695 vapour=0.690018188860948 solidKg=0.0
+  node[3] id=-3 JUNCTION P=150000.00002909784 liquid=0.9999999999982152 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0-&gt;1 Passive filter=false
+  pipe id=3932769516861099846 3-&gt;2 Passive filter=false
+  pipe id=-9223372036854775805 1-&gt;3 Passive filter=true ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest.filterLineToATankKeepsIntegratingOnceTheTankIsFull(FilterBlockLineIslandTest.java:284)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <testcase name="aFilterBlockCompilesToTwoZeroHoldupJunctionsAroundItsOwnEdge()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.002"/>
+  <testcase name="aPassiveLineAtThePumpsShutoffPressureFillsTheSameTank()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.195"/>
+  <testcase name="filterLineToAVoidIntegratesWithModerateSolidsAndPressure()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.008"/>
+  <testcase name="filterFreeLineToATankIntegratesItsFirstInterval()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.145"/>
+  <testcase name="filterLineToATankIntegratesItsFirstIntervalAtRest()" classname="com.wormzjl.createcheme.runtime.fluid.FilterBlockLineIslandTest" time="0.017"/>
+  <system-out><![CDATA[(ii) generator-pump-pipe-filter-pipe-tank, clear, at rest: HELD at interval 1/40 (t=0 s): Substep refinement exhausted: Newton iteration limit at residual 895.6514350570004; active-set pass=0
+  node[0] id=1 GENERATOR P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=2 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[2] id=4 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[3] id=6 RESERVOIR P=101325.0 liquid=0.0 vapour=1.0 solidKg=0.0
+  node[4] id=-4 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  pipe id=4501053670907088488 0->1 Passive filter=false
+  pipe id=3500069797145310629 1->2 Pump filter=false
+  pipe id=1797148878547291489 4->3 Passive filter=false
+  pipe id=-9223372036854775804 2->4 Passive filter=true
+(control) generator-pump-3 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(reference) passive generator at 601325 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(iv) generator(20%/100um at 300 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+(iii) generator(5%/100um)-pipe-filter-pipe-void, no driving pressure: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=8261561421756122062; velocity=0.0; deposition=0.0814002975619227; t=0.0=1}
+(control) generator at 400 kPa-4 pipes-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(i-c) generator at 300000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=300000.0006675962 mass=657.380526068209  control tank P=299999.99999997235 mass=657.3805254807804
+(i-c) generator at 400000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 400000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=400000.0009600847 mass=743.1612560110012  control tank P=400000.0000027677 mass=743.1612559212255
+(i-c) generator at 600000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 600000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=599999.9999999944 mass=828.57862414303  control tank P=600000.0037845611 mass=828.5786251794494
+(i-b) generator at 150000 Pa-pipe-filter-pipe-tank, clear: HELD at interval 34/40 (t=165 s): Substep refinement exhausted: Backward-Euler mode transitions 2
+  node[0] id=1 GENERATOR P=150000.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=150000.0000076912 liquid=0.9999999999999112 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=150000.0000355821 liquid=0.30998181126300695 vapour=0.690018188860948 solidKg=0.0
+  node[3] id=-3 JUNCTION P=150000.00002909784 liquid=0.9999999999982152 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0->1 Passive filter=false
+  pipe id=3932769516861099846 3->2 Passive filter=false
+  pipe id=-9223372036854775805 1->3 Passive filter=true
+(control) generator at 150000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=150000.0000355821 mass=309.9201780594356  control tank P=150000.00000004764 mass=309.92017778167303
+reservoir-terminated filter line:
+  node[0] id=1 GENERATOR P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=101325.0 liquid=0.0 vapour=1.0 solidKg=0.0
+  node[3] id=-3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0->1 Passive filter=false
+  pipe id=3932769516861099846 3->2 Passive filter=false
+  pipe id=-9223372036854775805 1->3 Passive filter=true
+(probe) generator at 601325 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(probe) generator at 300000 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(v) generator(5%/100um at 150 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+(control) generator-4 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator(5%/100um at 300 kPa)-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=44096572600764770; velocity=0.08138845899341375; deposition=0.08138927027369308; t=0.0=1}
+(i) generator-pipe-filter-pipe-tank, clear, at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,63 @@
+{
+  "reservoirVolumeCubicMetres": 1.0,
+  "initialWaterChargeKg": 0.01,
+  "inletTemperatureKelvin": 298.15,
+  "inletPressurePascal": 101325,
+  "availableEnergyJoule": -24743.24545952675,
+  "minimumSampledSupportedEnergyJoule": -14116.012495326533,
+  "minimumTemperatureKelvin": 273.16,
+  "energyDeficitJoule": 10627.232964200219,
+  "samples": [
+    {
+      "temperatureKelvin": 273.16,
+      "pressurePascal": 611.6570697405119,
+      "internalEnergyJoule": -14116.012495326533
+    },
+    {
+      "temperatureKelvin": 275.0,
+      "pressurePascal": 698.4358600895746,
+      "internalEnergyJoule": -12499.554743432109
+    },
+    {
+      "temperatureKelvin": 280.0,
+      "pressurePascal": 991.7589280820333,
+      "internalEnergyJoule": -7181.917078910224
+    },
+    {
+      "temperatureKelvin": 285.0,
+      "pressurePascal": 1315.34000369335,
+      "internalEnergyJoule": -1560.0551338865757
+    },
+    {
+      "temperatureKelvin": 290.0,
+      "pressurePascal": 1338.4161441090225,
+      "internalEnergyJoule": -1490.011805755697
+    },
+    {
+      "temperatureKelvin": 295.0,
+      "pressurePascal": 1361.4922845246954,
+      "internalEnergyJoule": -1419.9213581671238
+    },
+    {
+      "temperatureKelvin": 298.15,
+      "pressurePascal": 1376.0302529865692,
+      "internalEnergyJoule": -1375.7377796564783
+    },
+    {
+      "temperatureKelvin": 300.0,
+      "pressurePascal": 1384.5684249403682,
+      "internalEnergyJoule": -1349.7784819956305
+    },
+    {
+      "temperatureKelvin": 350.0,
+      "pressurePascal": 1615.3298290970963,
+      "internalEnergyJoule": -644.4929207760441
+    },
+    {
+      "temperatureKelvin": 375.0,
+      "pressurePascal": 1730.7105311754603,
+      "internalEnergyJoule": -288.51281129919926
+    }
+  ],
+  "status": "FEASIBILITY_GAP: this small liquid charge has no supported fluid-only equilibrium state in the sampled liquid/vapor domain. No inventory is committed by this audit."
+}

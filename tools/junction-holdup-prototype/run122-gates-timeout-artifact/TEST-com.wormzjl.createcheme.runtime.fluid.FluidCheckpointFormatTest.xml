@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" tests="9" skipped="0" failures="3" errors="0" timestamp="2026-09-26T04:56:13.033Z" hostname="WORMZ-PC" time="300.766">
+  <properties/>
+  <testcase name="clocksMaterialFencesPendingEventsModulesAndCertificatesRoundTripExactly()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.341">
+    <failure message="org.opentest4j.AssertionFailedError: the certificate summary names the kind ==&gt; expected: &lt;2&gt; but was: &lt;1&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the certificate summary names the kind ==&gt; expected: &lt;2&gt; but was: &lt;1&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest.clocksMaterialFencesPendingEventsModulesAndCertificatesRoundTripExactly(FluidCheckpointFormatTest.java:191)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base@21.0.11/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base@21.0.11/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base@21.0.11/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="everyInvalidCertificateFieldIsRefused()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.028"/>
+  <testcase name="formatThreeAndOlderAreRefusedWithAFreshWorldInstructionAndLeftUntouched()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.006"/>
+  <testcase name="aSignatureMismatchDiscardsTheCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.016"/>
+  <testcase name="aRestoredCertificateContinuesWithoutASolveExactlyAsIfNeverSaved()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.007">
+    <failure message="org.opentest4j.AssertionFailedError: the closed pair moved since its base ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the closed pair moved since its base ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest.aRestoredCertificateContinuesWithoutASolveExactlyAsIfNeverSaved(FluidCheckpointFormatTest.java:244)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base@21.0.11/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base@21.0.11/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base@21.0.11/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="holdSaveAndRestartKeepsCommittedFrozenAndDebtAndRequalifiesOverTheConfirmCount()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.014"/>
+  <testcase name="aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="300.009">
+    <failure message="java.util.concurrent.TimeoutException: aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate() timed out after 300 seconds" type="java.util.concurrent.TimeoutException">java.util.concurrent.TimeoutException: aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate() timed out after 300 seconds
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: org.junit.jupiter.api.AssertTimeoutPreemptively$ExecutionTimeoutException: Execution timed out in thread junit-timeout-thread-72
+	at java.base@21.0.11/java.util.stream.AbstractPipeline.wrapSink(AbstractPipeline.java:547)
+	at java.base@21.0.11/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base@21.0.11/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+	at java.base@21.0.11/java.util.stream.ReduceOps$5.evaluateSequential(ReduceOps.java:258)
+	at java.base@21.0.11/java.util.stream.ReduceOps$5.evaluateSequential(ReduceOps.java:248)
+	at java.base@21.0.11/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base@21.0.11/java.util.stream.ReferencePipeline.count(ReferencePipeline.java:709)
+	at app//com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.verify(IslandCoordinator.java:1015)
+	at app//com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.tick(IslandCoordinator.java:438)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest$Rig.tick(FluidCheckpointFormatTest.java:113)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest$Rig.run(FluidCheckpointFormatTest.java:114)
+	at app//com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest.aCertifiedPayloadIsCopiedNotReencodedUntilASolveOrACertificate(FluidCheckpointFormatTest.java:411)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base@21.0.11/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base@21.0.11/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base@21.0.11/java.lang.Thread.run(Thread.java:1583)
+</failure>
+  </testcase>
+  <testcase name="restDetectionOffDiscardsEverySavedCertificateAndKeepsTheInventory()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.006"/>
+  <testcase name="aThousandCertifiedIslandsLoadWithoutASolveBurst()" classname="com.wormzjl.createcheme.runtime.fluid.FluidCheckpointFormatTest" time="0.311"/>
+  <system-out><![CDATA[WARN StatusConsoleListener Advanced terminal features are not available in this environment
+1000 certified islands: encode 12.9 ms, decode 11.8 ms, register 5.3 ms, 243000 unit bytes, core record 144474 bytes
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T07:17:28.836Z" hostname="WORMZ-PC" time="0.414">
+  <properties/>
+  <testcase name="belowSeaLevelNitrogenTankAcceptsWaterAfterAnIdlePeriodAndPressureEdit()" classname="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" time="0.2"/>
+  <testcase name="savedSonicRefusalAdvancesWithVelocityClampingAndKeepsCanonicalBalances()" classname="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" time="0.026"/>
+  <testcase name="clampedDrainContinuesAfterTheTankBecomesAlmostLiquidFull()" classname="com.wormzjl.createcheme.runtime.fluid.McpGameplayRegressionTest" time="0.188"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

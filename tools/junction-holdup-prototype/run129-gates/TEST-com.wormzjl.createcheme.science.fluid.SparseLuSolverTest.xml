@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.SparseLuSolverTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-26T07:01:34.309Z" hostname="WORMZ-PC" time="0.004">
+  <properties/>
+  <testcase name="equilibratesRowsWithVeryDifferentUnitsAndMagnitudes()" classname="com.wormzjl.createcheme.science.fluid.SparseLuSolverTest" time="0.0"/>
+  <testcase name="pivotsAcrossAZeroDiagonalWithoutChangingInputs()" classname="com.wormzjl.createcheme.science.fluid.SparseLuSolverTest" time="0.001"/>
+  <testcase name="rejectsDependentRowsEvenWhenNeitherRowIsEmpty()" classname="com.wormzjl.createcheme.science.fluid.SparseLuSolverTest" time="0.0"/>
+  <testcase name="rejectsAnEmptyRowAndMalformedSparseData()" classname="com.wormzjl.createcheme.science.fluid.SparseLuSolverTest" time="0.001"/>
+  <testcase name="handlesEmptySystemAndRejectsInvalidRightHandSide()" classname="com.wormzjl.createcheme.science.fluid.SparseLuSolverTest" time="0.001"/>
+  <testcase name="reorderedLargeNonsymmetricSystemPreservesSolutionAndMultipleRightHandSides()" classname="com.wormzjl.createcheme.science.fluid.SparseLuSolverTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

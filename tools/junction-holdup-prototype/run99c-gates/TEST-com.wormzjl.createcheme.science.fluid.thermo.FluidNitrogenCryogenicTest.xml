@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-26T00:48:15.798Z" hostname="WORMZ-PC" time="0.022">
+  <properties/>
+  <testcase name="theFitAboveTheJointIsUnchanged()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.001"/>
+  <testcase name="idealGasHeatCapacityBelow273KelvinFollowsNist()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.001"/>
+  <testcase name="enthalpyAndHeatCapacityAreContinuousAt273Point16Kelvin()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.001"/>
+  <testcase name="theNetworkPackageDeclaresTheNitrogenTriplePointAsItsMinimum()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.001"/>
+  <testcase name="saturatedLiquidDensityAtTheNormalBoilingPointAgreesWithNist()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.0"/>
+  <testcase name="vapourHeatCapacityAt100And200KelvinAgreesWithNistWithinOnePercent()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.001"/>
+  <testcase name="liquidNitrogenIsAWholeNetworkState()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.001"/>
+  <testcase name="saturationPressureAtTheNormalBoilingPointAgreesWithNist()" classname="com.wormzjl.createcheme.science.fluid.thermo.FluidNitrogenCryogenicTest" time="0.001"/>
+  <system-out><![CDATA[H(273.16) - H(273.16-ulp) = 1.705e-12 J/mol, Cp difference 3.553e-15 J/mol/K
+nitrogen saturated liquid density (77.355 K): model 808.8393 kg/m3, NIST 806.0844, +0.342 %
+nitrogen vapour Cp(100 K, 1 atm): model 29.72842 J/mol/K, NIST 30.02493, -0.988 %
+nitrogen vapour Cp(200 K, 1 atm): model 29.24122 J/mol/K, NIST 29.23213, +0.031 %
+nitrogen Psat(77.355 K): model 102568.995 Pa, NIST 101325.059 Pa, +1.228 %
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

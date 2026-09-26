@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T03:08:35.357Z" hostname="WORMZ-PC" time="0.397">
+  <properties/>
+  <testcase name="aDomainRefusalIsItsOwnRejectionKeyAndTheReasonTheIntervalFails()" classname="com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest" time="0.397">
+    <failure message="org.opentest4j.AssertionFailedError: the rejection map counts it under its key: Substep refinement exhausted: Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the rejection map counts it under its key: Substep refinement exhausted: Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0 ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.science.fluid.network.PumpRiseScalingTest.aDomainRefusalIsItsOwnRejectionKeyAndTheReasonTheIntervalFails(PumpRiseScalingTest.java:87)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[BEREJECT t=0.0 step=0.05 domain=true Newton line search stalled at residual 4.7905598119297977E-4; active-set pass=0
+BEREJECT t=0.025 step=0.025 domain=true Newton line search stalled at residual 0.0014112075613176072; active-set pass=0
+BEREJECT t=0.025 step=0.0125 domain=true Newton line search stalled at residual 6.395825345653684E-4; active-set pass=0
+BEREJECT t=0.03125 step=0.0125 domain=true Newton line search stalled at residual 0.0018699074243901277; active-set pass=0
+BEREJECT t=0.03125 step=0.00625 domain=true Newton line search stalled at residual 0.0013820176501413769; active-set pass=0
+BEREJECT t=0.03125 step=0.003125 domain=true Newton line search stalled at residual 4.062431435646579E-4; active-set pass=0
+BEREJECT t=0.0328125 step=0.003125 domain=true Newton line search stalled at residual 0.001614584226983694; active-set pass=0
+BEREJECT t=0.0328125 step=0.0015625 domain=true Newton line search stalled at residual 8.276588262667019E-4; active-set pass=0
+BEREJECT t=0.03359375 step=0.0015625 domain=true Newton line search stalled at residual 0.002046918383024341; active-set pass=0
+BEREJECT t=0.03359375 step=7.8125E-4 domain=true Newton line search stalled at residual 0.001670448632100491; active-set pass=0
+BEREJECT t=0.03359375 step=3.90625E-4 domain=true Newton line search stalled at residual 9.175216890272783E-4; active-set pass=0
+BEREJECT t=0.0337890625 step=3.90625E-4 domain=true Newton line search stalled at residual 0.0021340402689713485; active-set pass=0
+BEREJECT t=0.0337890625 step=1.953125E-4 domain=true Newton line search stalled at residual 0.0018392232045038482; active-set pass=0
+BEREJECT t=0.0337890625 step=9.765625E-5 domain=true Newton line search stalled at residual 0.001249591631025795; active-set pass=0
+BEREJECT t=0.0337890625 step=4.8828125E-5 domain=true Newton line search stalled at residual 7.034034143685815E-5; active-set pass=0
+BEREJECT t=0.0338134765625 step=4.8828125E-5 domain=true Newton line search stalled at residual 0.0012851315367223468; active-set pass=0
+BEREJECT t=0.0338134765625 step=2.44140625E-5 domain=true Newton line search stalled at residual 1.407235350382189E-4; active-set pass=0
+BEREJECT t=0.03382568359375 step=2.44140625E-5 domain=true Newton line search stalled at residual 0.0013556848017733762; active-set pass=0
+BEREJECT t=0.03382568359375 step=1.220703125E-5 domain=true Newton line search stalled at residual 2.8148774258267555E-4; active-set pass=0
+BEREJECT t=0.033831787109375004 step=1.220703125E-5 domain=true Newton line search stalled at residual 0.001496534460930736; active-set pass=0
+BEREJECT t=0.033831787109375004 step=6.103515625E-6 domain=true Newton line search stalled at residual 5.63015922960253E-4; active-set pass=0
+BEREJECT t=0.0338348388671875 step=6.103515625E-6 domain=true Newton line search stalled at residual 0.0017781056146535014; active-set pass=0
+BEREJECT t=0.0338348388671875 step=3.0517578125E-6 domain=true Newton line search stalled at residual 0.0011260721496168969; active-set pass=0
+BEREJECT t=0.03383636474609375 step=3.0517578125E-6 domain=true Newton line search stalled at residual 0.00234118360363858; active-set pass=0
+BEREJECT t=0.03383636474609375 step=1.52587890625E-6 domain=true Newton line search stalled at residual 0.002252185139857291; active-set pass=0
+BEREJECT t=0.03383636474609375 step=7.62939453125E-7 domain=true Newton line search stalled at residual 0.002074188482523951; active-set pass=0
+BEREJECT t=0.03383636474609375 step=3.814697265625E-7 domain=true Newton line search stalled at residual 0.0017181959176103662; active-set pass=0
+BEREJECT t=0.03383636474609375 step=1.9073486328125E-7 domain=true Newton line search stalled at residual 0.0010062131454876045; active-set pass=0
+BEREJECT t=0.03383646011352539 step=1.9073486328125E-7 domain=true Newton line search stalled at residual 0.0022213108319680494; active-set pass=0
+BEREJECT t=0.03383646011352539 step=9.5367431640625E-8 domain=true Newton line search stalled at residual 0.002012436893519562; active-set pass=0
+BEREJECT t=0.03383646011352539 step=4.76837158203125E-8 domain=true Newton line search stalled at residual 0.0015946888274403414; active-set pass=0
+BEREJECT t=0.03383646011352539 step=2.384185791015625E-8 domain=true Newton iteration limit at residual 7.59194272567778E-4; active-set pass=0
+BEREJECT t=0.03383647203445434 step=2.384185791015625E-8 domain=true Newton iteration limit at residual 0.0019742860025370617; active-set pass=0
+BEREJECT t=0.03383647203445434 step=1.1920928955078126E-8 domain=true Newton iteration limit at residual 0.001518388391138808; active-set pass=0
+BEREJECT t=0.03383647203445434 step=5.960464477539063E-9 domain=true Newton iteration limit at residual 6.065859650112211E-4; active-set pass=0
+BEREJECT t=0.03383647501468658 step=5.960464477539063E-9 domain=true Newton iteration limit at residual 0.0018216809948192318; active-set pass=0
+BEREJECT t=0.03383647501468658 step=2.9802322387695314E-9 domain=true Newton iteration limit at residual 0.0012131696576086078; active-set pass=0
+BEREJECT t=0.033836476504802704 step=2.9802322387695314E-9 domain=true Newton iteration limit at residual 0.0024283104079590922; active-set pass=0
+BEREJECT t=0.033836476504802704 step=1.4901161193847657E-9 domain=true Newton iteration limit at residual 0.002426436547759284; active-set pass=0
+BEREJECT t=0.033836476504802704 step=7.450580596923829E-10 domain=true Newton iteration limit at residual 0.0024226909915162588; active-set pass=0
+BEREJECT t=0.033836476504802704 step=3.7252902984619143E-10 domain=true Newton iteration limit at residual 0.002415208533569431; active-set pass=0
+BEREJECT t=0.033836476504802704 step=1.8626451492309571E-10 domain=true Newton iteration limit at residual 0.0024000218026405656; active-set pass=0
+BEREJECT t=0.033836476504802704 step=9.313225746154786E-11 domain=true Newton iteration limit at residual 0.0023699764089282218; active-set pass=0
+BEREJECT t=0.033836476504802704 step=4.656612873077393E-11 domain=true Newton iteration limit at residual 0.0023103906474695934; active-set pass=0
+BEREJECT t=0.033836476504802704 step=2.3283064365386964E-11 domain=true Newton iteration limit at residual 0.002189904606167979; active-set pass=0
+BEREJECT t=0.033836476504802704 step=1.1641532182693482E-11 domain=true Newton iteration limit at residual 0.001947075464308764; active-set pass=0
+BEREJECT t=0.033836476504802704 step=5.820766091346741E-12 domain=true Newton iteration limit at residual 0.0014697483209552282; active-set pass=0
+BEREJECT t=0.033836476504802704 step=2.9103830456733705E-12 domain=true Newton iteration limit at residual 4.837294774968879E-4; active-set pass=0
+BEREJECT t=0.033836476506257894 step=2.9103830456733705E-12 domain=true Newton iteration limit at residual 0.0017044487087638067; active-set pass=0
+BEREJECT t=0.033836476506257894 step=1.4551915228366853E-12 domain=true Newton iteration limit at residual 9.677027702765694E-4; active-set pass=0
+BEREJECT t=0.03383647650698549 step=1.4551915228366853E-12 domain=true Newton iteration limit at residual 0.0021182735480662087; active-set pass=0
+BEREJECT t=0.03383647650698549 step=7.275957614183426E-13 domain=true Newton iteration limit at residual 0.0018360432025497796; active-set pass=0
+BEREJECT t=0.03383647650698549 step=3.637978807091713E-13 domain=true Newton iteration limit at residual 0.0013084999160884604; active-set pass=0
+BEREJECT t=0.03383647650698549 step=1.8189894035458566E-13 domain=true Newton iteration limit at residual 4.6481252112357007E-4; active-set pass=0
+BEREJECT t=0.03383647650707644 step=1.8189894035458566E-13 domain=true Newton iteration limit at residual 0.0013512992365213763; active-set pass=0
+BEREJECT t=0.03383647650707644 step=9.094947017729283E-14 domain=true Newton iteration limit at residual 6.647095726196823E-4; active-set pass=0
+BEREJECT t=0.03383647650707644 step=4.5474735088646414E-14 domain=true Newton iteration limit at residual 4.090707313838882E-4; active-set pass=0
+BEREJECT t=0.03383647650709918 step=4.5474735088646414E-14 domain=true Newton iteration limit at residual 6.003828397854238E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=4.5474735088646414E-14 domain=true Newton iteration limit at residual 8.715234771085405E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=2.2737367544323207E-14 domain=true Newton iteration limit at residual 6.003828397858592E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=1.1368683772161604E-14 domain=true Newton iteration limit at residual 6.003828397858592E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=5.684341886080802E-15 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=2.842170943040401E-15 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=1.4210854715202005E-15 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=7.105427357601002E-16 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=3.552713678800501E-16 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=1.7763568394002506E-16 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=8.881784197001253E-17 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=4.4408920985006264E-17 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=2.2204460492503132E-17 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=1.1102230246251566E-17 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+BEREJECT t=0.03383647650712192 step=5.551115123125783E-18 domain=true Newton iteration limit at residual 5.146138626733338E-4; active-set pass=0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

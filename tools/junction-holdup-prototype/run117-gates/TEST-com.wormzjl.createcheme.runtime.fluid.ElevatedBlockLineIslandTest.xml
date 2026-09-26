@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T04:30:46.492Z" hostname="WORMZ-PC" time="0.459">
+  <properties/>
+  <testcase name="elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl()" classname="com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest" time="0.459">
+    <failure message="org.opentest4j.AssertionFailedError: A pumped tank must settle one water column below its own shutoff pressure ==&gt; expected: &lt;860918.3068374132&gt; but was: &lt;861062.9819044558&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: A pumped tank must settle one water column below its own shutoff pressure ==&gt; expected: &lt;860918.3068374132&gt; but was: &lt;861062.9819044558&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+	at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+	at app//com.wormzjl.createcheme.runtime.fluid.ElevatedBlockLineIslandTest.elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl(ElevatedBlockLineIslandTest.java:226)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[BETRACE t=0.0 step=0.05 ok=false change=1.929906622560266 transitions=0
+BEREJECT t=0.0 step=0.05 domain=false Backward-Euler state change 1.929906622560266
+BETRACE t=0.0 step=0.025 ok=false change=0.967118115636248 transitions=0
+BEREJECT t=0.0 step=0.025 domain=false Backward-Euler state change 0.967118115636248
+BETRACE t=0.0 step=0.0125 ok=false change=0.48474241519078776 transitions=0
+BEREJECT t=0.0 step=0.0125 domain=false Backward-Euler state change 0.48474241519078776
+BETRACE t=0.0 step=0.00625 ok=false change=0.2429306500956204 transitions=0
+BEREJECT t=0.0 step=0.00625 domain=false Backward-Euler state change 0.2429306500956204
+BETRACE t=0.0 step=0.003125 ok=false change=0.12169051029361565 transitions=0
+BEREJECT t=0.0 step=0.003125 domain=false Backward-Euler state change 0.12169051029361565
+BETRACE t=0.0 step=0.0015625 ok=false change=0.06092321449891966 transitions=0
+BEREJECT t=0.0 step=0.0015625 domain=false Backward-Euler state change 0.06092321449891966
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.051614788960840645 transitions=0
+BEREJECT t=0.0 step=7.8125E-4 domain=false Backward-Euler state change 0.051614788960840645
+BETRACE t=0.0 step=0.3861646456629513 ok=false change=0.07438607940032167 transitions=0
+BEREJECT t=0.0 step=0.3861646456629513 domain=false Backward-Euler state change 0.07438607940032167
+BETRACE t=0.0 step=1.0807343863079264 ok=false change=0.08202569846130336 transitions=0
+BEREJECT t=0.0 step=1.0807343863079264 domain=false Backward-Euler state change 0.08202569846130336
+BETRACE t=0.0 step=1.2902081558529666 ok=false change=0.058202593278613296 transitions=0
+BEREJECT t=0.0 step=1.2902081558529666 domain=false Backward-Euler state change 0.058202593278613296
+BETRACE t=0.0 step=5.0 ok=true change=4.2529043276002495E-9 transitions=1 e0:PASSIVE->CLOSED
+
+=== generator at 400000 Pa, water column over 4 m = 39081.6931625868 Pa ===
+(flat control)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=400000.0016998491 mass=743.1612564860314
+BETRACE t=0.0 step=0.05 ok=false change=1.7980747170749132 transitions=0
+BEREJECT t=0.0 step=0.05 domain=false Backward-Euler state change 1.7980747170749132
+BETRACE t=0.0 step=0.025 ok=false change=0.9013908570610403 transitions=0
+BEREJECT t=0.0 step=0.025 domain=false Backward-Euler state change 0.9013908570610403
+BETRACE t=0.0 step=0.0125 ok=false change=0.45196490436716685 transitions=0
+BEREJECT t=0.0 step=0.0125 domain=false Backward-Euler state change 0.45196490436716685
+BETRACE t=0.0 step=0.00625 ok=false change=0.2265728668309975 transitions=0
+BEREJECT t=0.0 step=0.00625 domain=false Backward-Euler state change 0.2265728668309975
+BETRACE t=0.0 step=0.003125 ok=false change=0.11352029081105791 transitions=0
+BEREJECT t=0.0 step=0.003125 domain=false Backward-Euler state change 0.11352029081105791
+BETRACE t=0.0 step=0.0015625 ok=false change=0.056839996576212276 transitions=0
+BEREJECT t=0.0 step=0.0015625 domain=false Backward-Euler state change 0.056839996576212276
+BETRACE t=0.0 step=0.38771118245319225 ok=false change=0.07453800648750228 transitions=0
+BEREJECT t=0.0 step=0.38771118245319225 domain=false Backward-Euler state change 0.07453800648750228
+BETRACE t=0.0 step=1.04394964260356 ok=false change=0.050001509215259844 transitions=0
+BEREJECT t=0.0 step=1.04394964260356 domain=false Backward-Euler state change 0.050001509215259844
+BEREJECT t=0.0 step=5.0 domain=false Conservative reconstruction fails equation gate: 3.2473336920440373E-7
+BETRACE t=0.0 step=0.05 ok=false change=2.053415337711669 transitions=0
+BEREJECT t=0.0 step=0.05 domain=false Backward-Euler state change 2.053415337711669
+BETRACE t=0.0 step=0.025 ok=false change=1.0287179259022299 transitions=0
+BEREJECT t=0.0 step=0.025 domain=false Backward-Euler state change 1.0287179259022299
+BETRACE t=0.0 step=0.0125 ok=false change=0.5154701368677296 transitions=0
+BEREJECT t=0.0 step=0.0125 domain=false Backward-Euler state change 0.5154701368677296
+BETRACE t=0.0 step=0.00625 ok=false change=0.25826791907355917 transitions=0
+BEREJECT t=0.0 step=0.00625 domain=false Backward-Euler state change 0.25826791907355917
+BETRACE t=0.0 step=0.003125 ok=false change=0.1293515157516271 transitions=0
+BEREJECT t=0.0 step=0.003125 domain=false Backward-Euler state change 0.1293515157516271
+BETRACE t=0.0 step=0.0015625 ok=false change=0.06475201488321845 transitions=0
+BEREJECT t=0.0 step=0.0015625 domain=false Backward-Euler state change 0.06475201488321845
+BETRACE t=0.0 step=7.8125E-4 ok=false change=0.05129770578509338 transitions=0
+BEREJECT t=0.0 step=7.8125E-4 domain=false Backward-Euler state change 0.05129770578509338
+BETRACE t=0.0 step=0.9404198574532834 ok=false change=0.08227510583682197 transitions=0
+BEREJECT t=0.0 step=0.9404198574532834 domain=false Backward-Euler state change 0.08227510583682197
+BETRACE t=0.0 step=5.0 ok=true change=4.942740383612707E-11 transitions=1 e0:PASSIVE->CLOSED
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=1.6741490780832748 transitions=0
+BEREJECT t=0.0 step=0.05 domain=false Backward-Euler state change 1.6741490780832748
+BETRACE t=0.0 step=0.025 ok=false change=0.8394527400343262 transitions=0
+BEREJECT t=0.0 step=0.025 domain=false Backward-Euler state change 0.8394527400343262
+BETRACE t=0.0 step=0.0125 ok=false change=0.4209916242746865 transitions=0
+BEREJECT t=0.0 step=0.0125 domain=false Backward-Euler state change 0.4209916242746865
+BETRACE t=0.0 step=0.00625 ok=false change=0.21107466977137446 transitions=0
+BEREJECT t=0.0 step=0.00625 domain=false Backward-Euler state change 0.21107466977137446
+BETRACE t=0.0 step=0.003125 ok=false change=0.10576296934003031 transitions=0
+BEREJECT t=0.0 step=0.003125 domain=false Backward-Euler state change 0.10576296934003031
+BETRACE t=0.0 step=0.0015625 ok=false change=0.05295748516252483 transitions=0
+BEREJECT t=0.0 step=0.0015625 domain=false Backward-Euler state change 0.05295748516252483
+BETRACE t=0.0 step=0.3842061657238735 ok=false change=0.07391026510136699 transitions=0
+BEREJECT t=0.0 step=0.3842061657238735 domain=false Backward-Euler state change 0.07391026510136699
+BETRACE t=0.0 step=1.4575028576067477 ok=false change=0.07174138688514395 transitions=0
+BEREJECT t=0.0 step=1.4575028576067477 domain=false Backward-Euler state change 0.07174138688514395
+BETRACE t=0.0 step=5.0 ok=true change=0.0 transitions=3 e0:PASSIVE->CLOSED e1:PASSIVE->CLOSED e2:PASSIVE->CLOSED
+BECOLD rate seed applied
+BETRACE t=0.0 step=0.05 ok=false change=0.43492826758466074 transitions=0
+BEREJECT t=0.0 step=0.05 domain=false Backward-Euler state change 0.43492826758466074
+BETRACE t=0.0 step=0.025 ok=false change=0.2174641306693403 transitions=0
+BEREJECT t=0.0 step=0.025 domain=false Backward-Euler state change 0.2174641306693403
+BETRACE t=0.0 step=0.0125 ok=false change=0.1087320645244824 transitions=0
+BEREJECT t=0.0 step=0.0125 domain=false Backward-Euler state change 0.1087320645244824
+BETRACE t=0.0 step=0.00625 ok=false change=0.054366032055848744 transitions=0
+BEREJECT t=0.0 step=0.00625 domain=false Backward-Euler state change 0.054366032055848744
+BETRACE t=0.0 step=0.7538329428808996 ok=false change=0.0745265311494238 transitions=0
+BEREJECT t=0.0 step=0.7538329428808996 domain=false Backward-Euler state change 0.0745265311494238
+BETRACE t=0.0 step=1.340770948681034 ok=false change=0.05338534900096046 transitions=0
+BEREJECT t=0.0 step=1.340770948681034 domain=false Backward-Euler state change 0.05338534900096046
+BETRACE t=0.0 step=1.680099021118256 ok=false change=0.05578951375674315 transitions=0
+BEREJECT t=0.0 step=1.680099021118256 domain=false Backward-Euler state change 0.05578951375674315
+BETRACE t=0.0 step=3.0648831372364707 ok=false change=0.07640249608519117 transitions=0
+BEREJECT t=0.0 step=3.0648831372364707 domain=false Backward-Euler state change 0.07640249608519117
+BETRACE t=0.0 step=3.379911302647791 ok=false change=0.07491774881305154 transitions=0
+BEREJECT t=0.0 step=3.379911302647791 domain=false Backward-Euler state change 0.07491774881305154
+BETRACE t=0.0 step=2.745469900770223 ok=false change=0.0640395211993629 transitions=0
+BEREJECT t=0.0 step=2.745469900770223 domain=false Backward-Euler state change 0.0640395211993629
+BETRACE t=0.0 step=3.2975474280623556 ok=false change=0.08866563241992145 transitions=0
+BEREJECT t=0.0 step=3.2975474280623556 domain=false Backward-Euler state change 0.08866563241992145
+BETRACE t=0.0 step=2.998445793584536 ok=false change=0.09257666195412499 transitions=0
+BEREJECT t=0.0 step=2.998445793584536 domain=false Backward-Euler state change 0.09257666195412499
+BETRACE t=0.0 step=1.7491104421346875 ok=false change=0.06124019201518871 transitions=0
+BEREJECT t=0.0 step=1.7491104421346875 domain=false Backward-Euler state change 0.06124019201518871
+BETRACE t=0.0 step=0.8426278500829897 ok=false change=0.058782519369743866 transitions=0
+BEREJECT t=0.0 step=0.8426278500829897 domain=false Backward-Euler state change 0.058782519369743866
+PUMPTRACE pass=0 dt=0.5256479194212765 edge=1 PUMP_TARGET->PUMP_HEAD_LIMIT flow=9.962934432442024 head=503608.9890806727 margin=9695.233221022703 band=0.01
+BETRACE t=2.548177074536153 step=0.5256479194212765 ok=true change=0.041063532318488194 transitions=1 e1:PUMP_TARGET->PUMP_HEAD_LIMIT
+PUMPTRACE pass=0 dt=3.482722298973824 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=4.2239544219549105E-6 head=500144.4966278311 margin=6.15646131336689E-5 band=0.01
+BETRACE t=0.0 step=3.482722298973824 ok=true change=2.5093035219427355E-13 transitions=1 e1:PUMP_HEAD_LIMIT->CLOSED
+PUMPTRACE carry dt=1.5172777010261762 edge=1 margin=0.10657446942059323 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161997343
+PUMPTRACE pass=0 dt=1.5172777010261762 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=9.686266618966557E-6 head=500144.4966353435 margin=1.4112755889073014E-4 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657446825644001 band=0.01 Pa=390229.57670935325 Pb=861062.9819044581 rhoA=996.2962161997343
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.903498240210477E-6 head=500144.4966548605 margin=4.225916927680373E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10658004332799464 band=0.01 Pa=390229.5767093533 Pb=861062.9819044538 rhoA=996.296216211522
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.960207018010505E-6 head=500144.49662659806 margin=4.3095555156469345E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196689862758 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161944388
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.960205659440286E-6 head=500144.4966265984 margin=4.309567157179117E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196666579694 band=0.01 Pa=390229.5767093533 Pb=861062.9819044573 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.960205655040249E-6 head=500144.49662659847 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196707325056 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056860841537E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196800457314 band=0.01 Pa=390229.5767093533 Pb=861062.9819044562 rhoA=996.2962161944394
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056971645762E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196707325056 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602057058167264E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196823740378 band=0.01 Pa=390229.5767093533 Pb=861062.9819044558 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056986424696E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196788815781 band=0.01 Pa=390229.5767093533 Pb=861062.9819044562 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056890957594E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196707325056 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602057099263583E-6 head=500144.49662659847 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196707325056 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.960205710824849E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196748070419 band=0.01 Pa=390229.5767093533 Pb=861062.9819044565 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056961050376E-6 head=500144.4966265986 margin=4.309567157179117E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196782995015 band=0.01 Pa=390229.5767093533 Pb=861062.9819044562 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.960205687732228E-6 head=500144.4966265984 margin=4.309567157179117E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.1065719670150429 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056729076393E-6 head=500144.49662659847 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196782995015 band=0.01 Pa=390229.5767093533 Pb=861062.9819044562 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.960205660594968E-6 head=500144.4966265984 margin=4.309567157179117E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196666579694 band=0.01 Pa=390229.5767093533 Pb=861062.9819044573 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.960205689383318E-6 head=500144.4966265986 margin=4.309567157179117E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.1065719670150429 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.96020564310551E-6 head=500144.4966265984 margin=4.309567157179117E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196666579694 band=0.01 Pa=390229.5767093533 Pb=861062.9819044573 rhoA=996.296216194439
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056543519854E-6 head=500144.49662659847 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196707325056 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056860841537E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196800457314 band=0.01 Pa=390229.5767093533 Pb=861062.9819044562 rhoA=996.2962161944394
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602056971645762E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+PUMPTRACE carry dt=5.0 edge=1 margin=0.10657196707325056 band=0.01 Pa=390229.5767093533 Pb=861062.981904457 rhoA=996.2962161944391
+PUMPTRACE pass=0 dt=5.0 edge=1 PUMP_HEAD_LIMIT->CLOSED flow=2.9602057058167264E-6 head=500144.4966265986 margin=4.3095787987113E-5 band=0.01
+(rising  generator->3 pipes up->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068373795 mass=715.3400366628814 offset vs flat=-39081.694862469565 Pa
+(falling generator->3 pipes down->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=439081.69316259696 mass=766.0002773512413 offset vs flat=39081.69146274787 Pa
+(rising  generator->pipe->filter->pipe->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.37872164365 mass=715.3399274031794 offset vs flat=-39081.62297820544 Pa
+(rising  generator->pump->2 pipes->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=861062.9819044558 mass=880.3467474425474 offset vs flat=461062.9802046067 Pa
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

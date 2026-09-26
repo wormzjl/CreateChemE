@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2026-09-26T08:19:16.512Z" hostname="WORMZ-PC" time="0.214">
+  <properties/>
+  <testcase name="junctionHoldupsAreBookedAsConstructedAndRemintedAtATopologyEdit()" classname="com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest" time="0.214">
+    <failure message="org.opentest4j.AssertionFailedError: the solved junctions had taken up methane, which the remint discards (booked, not lost) ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: the solved junctions had taken up methane, which the remint discards (booked, not lost) ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at app//org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at app//org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at app//org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at app//com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest.junctionHoldupsAreBookedAsConstructedAndRemintedAtATopologyEdit(PhysicalRegistryTest.java:328)
+	at java.base@21.0.11/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base@21.0.11/java.util.ArrayList.forEach(ArrayList.java:1596)
+</failure>
+  </testcase>
+  <system-out><![CDATA[junction 3: m_J 0.01664843224379107 kg, 0.05 s x cap flow 0.3329686448758214 kg/s
+DEBUG node 1 RESERVOIR P=117586.95845585426 moles=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 50.84627601410676, 0.0]
+DEBUG node 3 JUNCTION P=117586.95845585497 moles=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5943024496773347, 0.0]
+DEBUG node 6 RESERVOIR P=117586.95845584743 moles=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 45.73033775128905, 0.0]
+DEBUG node 7 RESERVOIR P=117586.95845584743 moles=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 45.73033775128905, 0.0]
+DEBUG status STEADY: replaying 6.458e-11 kg/s since 16.4 s, next check at 86416.4 s methane=0 nitrogen=19 components=[Methane, Ethane, Propane, Isobutane, N-butane, Isopentane, N-pentane, crude_pc01, crude_pc02, crude_pc03, crude_pc04, crude_pc05, crude_pc06, crude_pc07, crude_pc08, crude_pc09, crude_pc10, crude_pc11, crude_pc12, Nitrogen, Water]
+remint: old junction methane fractions up to 0.0; fresh junctions at their seed composition
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

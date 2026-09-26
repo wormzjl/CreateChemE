@@ -1,0 +1,16 @@
+| case | ms | accepted | rejected | rejected by | Newton solves | Newton/accepted | iter/Newton | backtracks | Jacobians | LU ms | companion solves/filters | rate builds | seed calls/flashes | flashes | alloc MB |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.05:4:false | 929 | 452 | 137 | embedded-boundary 96, embedded-pipe 14, refinement 17, newton 2, other 8 | 1451 | 3.21 | 6.09 | 1263 | 762 | 9.5 | 101/480 | 34 | 1/248 | 9291 | 796 |
+| 0.05:4:true | 795 | 514 | 173 | embedded-boundary 98, embedded-pipe 53, refinement 16, newton 2, other 4 | 1725 | 3.36 | 5.37 | 1350 | 687 | 7.5 | 186/497 | 33 | 1/248 | 11968 | 940 |
+| 0.05:5:false | 760 | 496 | 154 | embedded-boundary 94, embedded-pipe 35, refinement 17, newton 2, other 6 | 1732 | 3.49 | 5.98 | 1129 | 959 | 8.5 | 147/495 | 34 | 1/248 | 10880 | 943 |
+| 0.05:5:true | 723 | 517 | 170 | embedded-boundary 97, embedded-pipe 55, refinement 16, other 2 | 1890 | 3.66 | 5.05 | 980 | 696 | 6.4 | 199/486 | 33 | 1/248 | 11753 | 976 |
+| 0.05:6:false | 831 | 518 | 166 | embedded-boundary 77, embedded-pipe 60, refinement 24, newton 1, other 4 | 2214 | 4.27 | 6.88 | 1403 | 1335 | 9.9 | 374/306 | 35 | 2/496 | 13509 | 1210 |
+| 0.05:6:true | 370 | 220 | 87 | embedded-pipe 50, refinement 16, newton 20, other 1 | 1040 | 4.73 | 6.00 | 600 | 426 | 3.5 | 139/147 | 21 | 1/248 | 6393 | 529 |
+| 0.02:4:false | 630 | 579 | 128 | embedded-boundary 91, embedded-pipe 26, refinement 6, newton 1, other 4 | 1583 | 2.73 | 6.00 | 656 | 512 | 4.3 | 79/624 | 32 | 1/248 | 12587 | 948 |
+| 0.02:4:true | 789 | 725 | 189 | embedded-boundary 103, embedded-pipe 74, refinement 10, newton 1, other 1 | 2091 | 2.88 | 5.03 | 850 | 454 | 4.8 | 165/748 | 32 | 1/248 | 14690 | 1124 |
+| 0.02:5:false | 722 | 698 | 157 | embedded-boundary 98, embedded-pipe 43, refinement 11, newton 4, other 1 | 1959 | 2.81 | 5.51 | 871 | 491 | 5.2 | 91/762 | 34 | 1/248 | 13929 | 1114 |
+| 0.02:5:true | 774 | 696 | 190 | embedded-boundary 92, embedded-pipe 83, refinement 13, newton 1, other 1 | 2132 | 3.06 | 5.23 | 844 | 524 | 5.4 | 173/712 | 33 | 1/248 | 14685 | 1170 |
+| 0.02:6:false | 792 | 695 | 180 | embedded-boundary 99, embedded-pipe 59, refinement 9, newton 1, other 12 | 2041 | 2.94 | 5.44 | 746 | 522 | 5.7 | 95/768 | 33 | 1/248 | 14249 | 1177 |
+| 0.02:6:true | 779 | 659 | 196 | embedded-boundary 91, embedded-pipe 90, refinement 14, other 1 | 2072 | 3.14 | 5.21 | 883 | 557 | 5.7 | 154/700 | 33 | 1/248 | 14182 | 1171 |
+| transient total | 8894 | 6769 | 1927 | embedded-boundary 1036, embedded-pipe 642, refinement 169, newton 35, other 45 | 21930 | 3.24 | 5.62 | 11575 | 7925 | 76.5 | 1903/6725 | 387 | 13/3224 | 148116 | 12097 |
+| static total (32 cases) | 1036 | 95 | 86 | embedded-pipe 57, refinement 9, newton 20 | 427 | 4.49 | 8.64 | 436 | 412 | 13.7 | 0/161 | 55 | 55/13640 | 14760 | 717 |

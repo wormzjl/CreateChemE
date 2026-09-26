@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PendingTransfersTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-26T03:23:16.435Z" hostname="WORMZ-PC" time="0.002">
+  <properties/>
+  <testcase name="zeroAcceptanceDoesNotConsumeMaterialAndStaleBatchesCommitNothing()" classname="com.wormzjl.createcheme.runtime.fluid.PendingTransfersTest" time="0.001"/>
+  <testcase name="oneHundredKgCanArriveAsTwentyAndEightyWithoutLosingItsIdentityOrEnergy()" classname="com.wormzjl.createcheme.runtime.fluid.PendingTransfersTest" time="0.001"/>
+  <testcase name="revisionOverflowRejectsTheWholeBatchBeforeConsumingAnyParcel()" classname="com.wormzjl.createcheme.runtime.fluid.PendingTransfersTest" time="0.0"/>
+  <testcase name="fixedSplitCommutesWithAnEnergyReferenceMigration()" classname="com.wormzjl.createcheme.runtime.fluid.PendingTransfersTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

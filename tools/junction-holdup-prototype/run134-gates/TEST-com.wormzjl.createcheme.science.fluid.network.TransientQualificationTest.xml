@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-26T07:48:19.552Z" hostname="WORMZ-PC" time="2.508">
+  <properties/>
+  <testcase name="diluteGasSmallSignalMatchesAnalyticAdiabaticPoiseuilleRelaxation()" classname="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" time="0.004"/>
+  <testcase name="freeWaterDisappearanceMatchesRefinedTrajectoriesAcrossThreeIntervals()" classname="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" time="1.94"/>
+  <testcase name="liquidCompressionWetCrudeReversalAndPumpMatchRefinedTrajectories()" classname="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" time="0.552"/>
+  <system-out><![CDATA[WP1MEASURE freeWater interval=1 ref=1.0015333085855449E-4 mass=0.005632247403013935 p=0.002272549611021857 t=0.10151778547367485 water=4.5211645840168723E-7
+WP1MEASURE freeWater interval=2 ref=1.085300665837341E-4 mass=0.00719059122623078 p=0.0059184337406176235 t=1.0282529342755424 water=0.0
+WP1MEASURE freeWater interval=3 ref=1.0561807537756707E-4 mass=0.009386302118167045 p=0.008063045265193414 t=1.3706415220158874 water=0.0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.LiquidJunctionTransientTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-26T08:20:30.554Z" hostname="WORMZ-PC" time="0.141">
+  <properties/>
+  <testcase name="everyLiquidCaseConvergesAtTheFiveSecondCycle()" classname="com.wormzjl.createcheme.runtime.fluid.LiquidJunctionTransientTest" time="0.038"/>
+  <testcase name="everyLiquidCaseConvergesAndClosesItsLedgerAtTenthSecondIntervals()" classname="com.wormzjl.createcheme.runtime.fluid.LiquidJunctionTransientTest" time="0.1"/>
+  <system-out><![CDATA[LIQUID_JUNCTION interval=5 generators:0.05 m_J=9.774 kg Q(1s)=54.00 kg/s m_J/Q=0.1810 s mismatch(1s)=-0.000389 mismatch(end)=5.52e-10 perSlice=[-0.000389,-4.11e-07,-4.33e-10,5.52e-10] ms=11 newtonSolves=13
+LIQUID_JUNCTION interval=5 generators:0.02 m_J=1.564 kg Q(1s)=4.829 kg/s m_J/Q=0.3238 s mismatch(1s)=-0.00172 mismatch(end)=9.16e-09 perSlice=[-0.00172,-8.21e-06,-3.90e-08,9.16e-09] ms=8 newtonSolves=13
+LIQUID_JUNCTION interval=5 tanks:0.05 m_J=9.774 kg Q(1s)=0.01503 kg/s m_J/Q=650.2 s mismatch(1s)=-0.356 mismatch(end)=-0.472 perSlice=[-0.356,-0.472,-0.472,-0.472] ms=8 newtonSolves=17
+LIQUID_JUNCTION interval=5 tanks:0.02 m_J=1.564 kg Q(1s)=0.01503 kg/s m_J/Q=104.0 s mismatch(1s)=-0.342 mismatch(end)=-0.0806 perSlice=[-0.342,-0.0806,-0.0806,-0.0806] ms=7 newtonSolves=17
+LIQUID_JUNCTION interval=0.1 generators:0.05 m_J=9.774 kg Q(1s)=54.00 kg/s m_J/Q=0.1810 s tauFit(1.0-1.1s)=0.1809 s mismatch(1s)=-0.00288 mismatch(end)=4.10e-09 ms=24
+LIQUID_JUNCTION interval=0.1 generators:0.02 m_J=1.564 kg Q(1s)=4.829 kg/s m_J/Q=0.3238 s tauFit(1.0-1.1s)=0.3239 s mismatch(1s)=-0.0189 mismatch(end)=5.42e-09 ms=23
+LIQUID_JUNCTION interval=0.1 tanks:0.05 m_J=9.774 kg Q(1s)=2.740e-11 kg/s m_J/Q=3.567e+11 s tauFit(1.0-1.1s)=Infinity s mismatch(1s)=-0.427 mismatch(end)=-0.427 ms=24
+LIQUID_JUNCTION interval=0.1 tanks:0.02 m_J=1.564 kg Q(1s)=3.103e-12 kg/s m_J/Q=5.040e+11 s tauFit(1.0-1.1s)=1.003e+12 s mismatch(1s)=-0.983 mismatch(end)=NaN ms=24
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

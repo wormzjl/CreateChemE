@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-25T02:20:31.306Z" hostname="WORMZ-PC" time="1.324">
+  <properties/>
+  <testcase name="coldJunctionMatrix()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe" time="1.324"/>
+  <system-out><![CDATA[HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=false unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Singular Newton Jacobian: Sparse LU rejected a singular matrix; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=false unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=true unequal=false FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=102325.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=3 pressure=150000.0 swap=true unequal=true PASS inlets=1 in=0.016364046400859752 kg T_J=299.995967582869 P_J=148355.19271962004 substeps=20/19
+HOLDUP_STATIC holdup=1.0E-6 ports=4 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.4021043733179155; active-set pass=0
+HOLDUP_STATIC holdup=1.0E-6 ports=5 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 ports=6 pressure=150000.0 swap=true unequal=true FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Component balance failed: 0
+HOLDUP_STATIC holdup=1.0E-6 passed=1/32
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

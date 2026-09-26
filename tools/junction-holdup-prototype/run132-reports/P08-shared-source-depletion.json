@@ -1,0 +1,31 @@
+{
+  "maximumPermutationFlowErrorKgPerSecond": 3.469446951953614E-18,
+  "status": "PASS",
+  "components": 21,
+  "model": "createcheme:tjl20_methane",
+  "maximumPermutationComponentErrorMole": 0.0,
+  "permutations": [
+    {
+      "permutedInputs": false,
+      "acceptedIntervals": 24,
+      "acceptedSeconds": 0.24000000000000007,
+      "minimumFractionRemaining": 0.39072939671484175,
+      "minimumTemperatureKelvin": 241.44199761659618,
+      "minimumPressurePascal": 107644.68058092907,
+      "maximumComponentBalanceToleranceUnits": 2.109259365338723E-8,
+      "maximumEnergyBalanceToleranceUnits": 2.0814273759415452E-10
+    },
+    {
+      "permutedInputs": true,
+      "acceptedIntervals": 24,
+      "acceptedSeconds": 0.24000000000000007,
+      "minimumFractionRemaining": 0.39072939671484175,
+      "minimumTemperatureKelvin": 241.4419976165962,
+      "minimumPressurePascal": 107644.68058092908,
+      "maximumComponentBalanceToleranceUnits": 2.109259365338723E-8,
+      "maximumEnergyBalanceToleranceUnits": 2.0814273759415452E-10
+    }
+  ],
+  "maximumPermutationEnergyErrorJoule": 0.0,
+  "compressibility": 1.0E-9
+}

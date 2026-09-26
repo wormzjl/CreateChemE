@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T05:00:03.533Z" hostname="WORMZ-PC" time="0.179">
+  <properties/>
+  <testcase name="aStraightPipeAutomaticallyShowsReverseFlowAndPreservesBothDirectionsOfAReversal()" classname="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" time="0.013"/>
+  <testcase name="fourFiveAndSixEquipmentConnectionsBalanceWithoutDuplicatingDisplayedThroughput()" classname="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" time="0.142"/>
+  <testcase name="anUnsolvedPipeHasZeroTransportButStillHasAPressureReading()" classname="com.wormzjl.createcheme.runtime.fluid.PipePresentationTest" time="0.002"/>
+  <system-out><![CDATA[RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+ENGAGED balancedSeed junction=100 rateOnly=true degree=4 P=102325.0 -> 101826.22085224575
+ENGAGED holdup junction=100 inventoryMassKg=0.984941493542715 stateMassKg=0.984941493542715 inventoryVolume=1.0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=0.05 everCached=false sameNodesOtherTransfers=false cacheSize=0 transfers=0
+RATEMISS dt=6.785607729942754E-4 everCached=true sameNodesOtherTransfers=true cacheSize=8 transfers=0
+RATEWARM use=previous sameState=true maxDeltaP=0.0 previous=[0.17612934151736967, 0.17612934151736967, -0.08808587066658702, -0.08808587066658702, -0.0852344468159903, -0.09085249488557502] estimate=[0.17028099714949851, 0.17028099714949851, -0.0851519118483437, -0.0851519118483437, -0.08308893379518745, -0.08716923681241218]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,90 @@
+allocation samples weight total 278.4 MB; execution samples 66
+
+bytes by phase
+   142.2 MB  51.1%  outside solver
+    41.2 MB  14.8%  Newton (residuals, line search, LU)
+    38.2 MB  13.7%  cold seed (balancedBoundarySeed)
+    12.5 MB   4.5%  Jacobian build
+     7.0 MB   2.5%  reconstruction
+     6.5 MB   2.3%  PipeTransfer sample/accumulate
+     6.4 MB   2.3%  phase check (phaseCorrection flash)
+     5.5 MB   2.0%  trace seed (initialPhaseSeeds flash)
+     4.8 MB   1.7%  cold rate solve
+     4.5 MB   1.6%  step solve other
+     3.5 MB   1.3%  equations/layout build
+     2.5 MB   0.9%  interval solver other
+     1.9 MB   0.7%  gate residual
+     1.0 MB   0.4%  checkConservation
+     0.5 MB   0.2%  interval refresh (InventoryEquilibrium)
+
+bytes by solver-level caller (first network/solver frame)
+   142.2 MB  51.1%  ?
+    33.1 MB  11.9%  fluid.solver.PhaseLayout.decode:200
+    25.3 MB   9.1%  fluid.network.PassiveStepSolver.balancedBoundarySeed:1144
+    11.5 MB   4.1%  fluid.network.PassiveStepSolver.viscosity:1697
+     6.9 MB   2.5%  fluid.network.PassiveStepSolver.viscosity:1691
+     6.2 MB   2.2%  fluid.solver.PhaseLayout.totalAmounts:451
+     6.0 MB   2.2%  fluid.network.PassiveStepSolver.phaseCorrection0:1469
+     4.5 MB   1.6%  fluid.network.PassiveStepSolver.initialPhaseSeeds:964
+     4.5 MB   1.6%  fluid.network.ConservativeTransport.repartition:516
+     3.8 MB   1.4%  fluid.solver.PhaseLayout.decode:184
+     2.5 MB   0.9%  fluid.network.PipeTransfer$Stream.lambda$copy$0:27
+     2.0 MB   0.7%  fluid.network.PassiveNetwork$Pipe.identity:149
+     2.0 MB   0.7%  fluid.network.PassiveNetwork$Inventory.moles:118
+     1.5 MB   0.5%  fluid.solver.SparseNewton.factor:297
+     1.5 MB   0.5%  fluid.network.PassiveStepSolver.balancedBoundarySeed:1147
+
+bytes by leaf site [class]
+    32.9 MB  11.8%  java.util.concurrent.ConcurrentHashMap.initTable:2301 [[Ljava/util/concurrent/ConcurrentHashMap$Node;]
+    21.0 MB   7.5%  java.util.Arrays.copyOf:3541 [[B]
+    12.0 MB   4.3%  fluid.transport.MixtureViscosity$Prepared.<init>:64 [[D]
+    11.0 MB   3.9%  thermo.PengRobinsonKernel.selectRoot:536 [com/wormzjl/createcheme/science/thermo/PengRobinsonKernel$RootSelection]
+    10.1 MB   3.6%  java.util.Arrays.copyOfRangeByte:3863 [[B]
+    10.0 MB   3.6%  fluid.thermo.GlobalLiquidResponse.evaluate:24 [[D]
+     7.2 MB   2.6%  java.util.Arrays.copyOf:3704 [[D]
+     7.0 MB   2.5%  fluid.thermo.TranslatedPengRobinson$Values.<init>:140 [[D]
+     6.5 MB   2.3%  fluid.thermo.TranslatedPengRobinson$Workspace.<init>:123 [[D]
+     6.0 MB   2.2%  java.lang.Object.clone:-1 [[D]
+     6.0 MB   2.2%  fluid.thermo.HydrocarbonModel.phase:133 [[D]
+     5.5 MB   2.0%  java.lang.reflect.Method.copy:165 [java/lang/reflect/Method]
+     5.0 MB   1.8%  fluid.thermo.TranslatedPengRobinson$Workspace.<init>:122 [[D]
+     3.8 MB   1.4%  fluid.solver.PhaseLayout.decode:184 [[D]
+     3.5 MB   1.3%  thermo.PengRobinsonKernel$Workspace.<init>:646 [[D]
+
+CPU samples by phase
+    57  86.4%  outside solver
+     5   7.6%  cold seed (balancedBoundarySeed)
+     2   3.0%  Jacobian build
+     1   1.5%  phase check (phaseCorrection flash)
+     1   1.5%  trace seed (initialPhaseSeeds flash)
+
+CPU samples by leaf
+    20  30.3%  java.util.regex.Pattern$Slice.match:4268
+     9  13.6%  java.util.regex.Pattern$CharPropertyGreedy.match:4479
+     7  10.6%  java.util.regex.Pattern$CharPropertyGreedy.match:4465
+     6   9.1%  java.util.regex.Pattern$CharPropertyGreedy.match:4470
+     2   3.0%  java.lang.String.checkIndex:4816
+     1   1.5%  java.util.ListResourceBundle.loadLookup:202
+     1   1.5%  sun.security.provider.SHA.implCompress0:174
+     1   1.5%  org.gradle.api.internal.tasks.testing.worker.TestWorker$2.<init>:170
+     1   1.5%  sun.reflect.annotation.AnnotationParser$1.run:301
+     1   1.5%  org.junit.platform.engine.FilterResult.<init>:76
+     1   1.5%  java.util.regex.Pattern$CharPropertyGreedy.match:4461
+     1   1.5%  java.util.regex.Pattern$CharPropertyGreedy.match:4475
+     1   1.5%  java.util.regex.Pattern.lambda$DOT$11:5887
+     1   1.5%  java.util.regex.Pattern$Slice.match:4260
+     1   1.5%  jdk.internal.org.objectweb.asm.ByteVector.putShort:153
+
+outside-solver bytes by first project frames
+   103.4 MB  37.2%  (no project frame)
+     4.1 MB   1.5%  material.MaterialCatalog.viscosityFingerprint:278 < fluid.transport.MixtureViscosity.<init>:25 < fluid.thermo.FluidThermodynamics.<init>:101
+     3.5 MB   1.3%  material.MaterialCatalog.parse:295 < material.MaterialCatalog$Bundled.load:621 < material.MaterialCatalog$Bundled.<clinit>:613
+     3.5 MB   1.3%  material.MaterialCatalog.numbers:601 < material.MaterialCatalog.readViscosities:528 < material.MaterialCatalog.lambda$parse$10:340
+     3.4 MB   1.2%  material.MaterialCatalog.propertyScience:185 < material.MaterialCatalog.lambda$physicsFingerprint$2:191 < material.MaterialCatalog$$Lambda+0x0000019d04208f20.183995527.apply:-1
+     3.0 MB   1.1%  material.MaterialCatalog$Bundled.read:626 < material.MaterialCatalog$Bundled.load:618 < material.MaterialCatalog$Bundled.<clinit>:613
+     3.0 MB   1.1%  material.MaterialCatalog.lambda$parse$16:467 < material.MaterialCatalog$$Lambda+0x0000019d041f6d58.1899567935.run:-1 < material.MaterialCatalog.checked:604
+     1.5 MB   0.5%  material.MaterialCatalog.physicsFingerprint:196 < material.MaterialCatalog.requireSharedFluidPhysics:245 < material.MaterialCatalog.lambda$parse$20:482
+     1.5 MB   0.5%  com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe.costLine:153 < com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe.finiteTanksThroughRestAndRestart:36
+     1.0 MB   0.4%  material.MaterialFluidData.positive:47 < material.MaterialFluidData.read:36 < material.MaterialCatalog.parse:472
+     1.0 MB   0.4%  thermo.PengRobinsonKernel.selectRoot:536 < thermo.PengRobinsonKernel.evaluatePrepared:269 < thermo.PengRobinsonKernel.evaluate:176
+     1.0 MB   0.4%  material.MaterialCatalog$Bundled.load:616 < material.MaterialCatalog$Bundled.<clinit>:613 < material.MaterialCatalog.bundled:611

@@ -1,0 +1,93 @@
+allocation samples weight total 1257.0 MB; execution samples 76
+
+bytes by phase
+   461.6 MB  36.7%  phase check (phaseCorrection flash)
+   208.5 MB  16.6%  Newton (residuals, line search, LU)
+   161.2 MB  12.8%  outside solver
+   128.2 MB  10.2%  cold seed (balancedBoundarySeed)
+    76.6 MB   6.1%  trace seed (initialPhaseSeeds flash)
+    66.9 MB   5.3%  PipeTransfer sample/accumulate
+    44.4 MB   3.5%  reconstruction
+    30.5 MB   2.4%  equations/layout build
+    27.5 MB   2.2%  step solve other
+    18.5 MB   1.5%  Jacobian build
+    10.5 MB   0.8%  interval refresh (InventoryEquilibrium)
+    10.5 MB   0.8%  interval solver other
+     5.0 MB   0.4%  gate residual
+     4.5 MB   0.4%  checkConservation
+     2.7 MB   0.2%  cold rate solve
+
+bytes by solver-level caller (first network/solver frame)
+   455.6 MB  36.2%  fluid.network.PassiveStepSolver.phaseCorrection0:1456
+   155.2 MB  12.3%  ?
+   144.1 MB  11.5%  fluid.solver.PhaseLayout.decode:200
+   105.7 MB   8.4%  fluid.network.PassiveStepSolver.balancedBoundarySeed:1134
+    68.3 MB   5.4%  fluid.network.PassiveStepSolver.initialPhaseSeeds:954
+    27.5 MB   2.2%  fluid.network.PassiveStepSolver.viscosity:1678
+    23.0 MB   1.8%  fluid.network.PassiveStepSolver.viscosity:1684
+    20.5 MB   1.6%  fluid.network.ConservativeTransport.repartition:516
+    20.5 MB   1.6%  fluid.network.PipeTransfer$Stream.lambda$copy$0:27
+    18.5 MB   1.5%  fluid.solver.PhaseLayout.totalAmounts:451
+    17.5 MB   1.4%  fluid.solver.PhaseLayout.decode:184
+    13.0 MB   1.0%  fluid.network.PassiveNetwork$Inventory.moles:118
+    12.5 MB   1.0%  fluid.network.PassiveStepSolver.threadAllocated:170
+    11.0 MB   0.9%  fluid.network.PipeTransfer$Mutable.<init>:115
+     9.4 MB   0.7%  fluid.network.PipeTransfer.sample:40
+
+bytes by leaf site [class]
+   204.1 MB  16.2%  fluid.thermo.TranslatedPengRobinson$Values.phase:162 [[D]
+   180.2 MB  14.3%  fluid.thermo.TranslatedPengRobinson$Values.phase:161 [[D]
+    78.1 MB   6.2%  fluid.thermo.GlobalLiquidResponse.logFugacity:49 [[D]
+    43.3 MB   3.4%  fluid.thermo.GlobalLiquidResponse.evaluate:24 [[D]
+    35.6 MB   2.8%  fluid.thermo.HydrocarbonModel.phase:111 [com/wormzjl/createcheme/science/fluid/thermo/HydrocarbonModel$Phase]
+    32.9 MB   2.6%  java.util.concurrent.ConcurrentHashMap.initTable:2301 [[Ljava/util/concurrent/ConcurrentHashMap$Node;]
+    31.0 MB   2.5%  fluid.transport.MixtureViscosity$Prepared.<init>:64 [[D]
+    30.4 MB   2.4%  fluid.thermo.HydrocarbonModel.phase:102 [com/wormzjl/createcheme/science/fluid/thermo/HydrocarbonModel$Phase]
+    29.0 MB   2.3%  fluid.thermo.TranslatedPengRobinson$Workspace.<init>:123 [[D]
+    27.0 MB   2.1%  thermo.PengRobinsonKernel.selectRoot:536 [com/wormzjl/createcheme/science/thermo/PengRobinsonKernel$RootSelection]
+    26.5 MB   2.1%  java.lang.Object.clone:-1 [[D]
+    23.1 MB   1.8%  java.util.Arrays.copyOf:3541 [[B]
+    21.5 MB   1.7%  fluid.thermo.TranslatedPengRobinson$Values.<init>:140 [[D]
+    20.5 MB   1.6%  java.util.Arrays.copyOf:3704 [[D]
+    20.0 MB   1.6%  fluid.thermo.TranslatedPengRobinson$Workspace.<init>:122 [[D]
+
+CPU samples by phase
+    59  77.6%  outside solver
+     8  10.5%  phase check (phaseCorrection flash)
+     3   3.9%  cold seed (balancedBoundarySeed)
+     2   2.6%  PipeTransfer sample/accumulate
+     1   1.3%  step solve other
+     1   1.3%  cold rate solve
+     1   1.3%  Newton (residuals, line search, LU)
+     1   1.3%  trace seed (initialPhaseSeeds flash)
+
+CPU samples by leaf
+    16  21.1%  java.util.regex.Pattern$Slice.match:4268
+    10  13.2%  java.util.regex.Pattern$CharPropertyGreedy.match:4479
+     8  10.5%  java.util.regex.Pattern$CharPropertyGreedy.match:4465
+     4   5.3%  java.util.regex.Pattern$Slice.match:4260
+     3   3.9%  java.util.regex.Pattern$CharPropertyGreedy.match:4458
+     3   3.9%  fluid.thermo.GlobalLiquidResponse.logFugacity:50
+     2   2.6%  java.lang.String.checkIndex:4816
+     2   2.6%  java.lang.Double.isFinite:844
+     2   2.6%  fluid.thermo.TranslatedPengRobinson.fill:322
+     1   1.3%  java.util.TreeMap.fixAfterInsertion:2616
+     1   1.3%  java.nio.MappedByteBuffer.position:73
+     1   1.3%  sun.security.provider.SHA.implCompress0:159
+     1   1.3%  jdk.internal.org.objectweb.asm.ByteVector.putUTF8:291
+     1   1.3%  java.util.stream.ReduceOps$3ReducingSink.begin:164
+     1   1.3%  java.util.regex.Pattern$CharPropertyGreedy.match:4475
+
+outside-solver bytes by first project frames
+   103.9 MB   8.3%  (no project frame)
+     5.0 MB   0.4%  com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe.runCase:98 < com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe.finiteTanksThroughRestAndRestart:34
+     4.6 MB   0.4%  material.MaterialCatalog.viscosityFingerprint:278 < fluid.transport.MixtureViscosity.<init>:25 < fluid.thermo.FluidThermodynamics.<init>:101
+     4.4 MB   0.4%  material.MaterialCatalog.propertyScience:185 < material.MaterialCatalog.lambda$physicsFingerprint$2:191 < material.MaterialCatalog$$Lambda+0x000002590120a690.1096343229.apply:-1
+     4.0 MB   0.3%  material.MaterialCatalog.numbers:601 < material.MaterialCatalog.readViscosities:528 < material.MaterialCatalog.lambda$parse$10:340
+     3.8 MB   0.3%  material.MaterialCatalog.parse:295 < material.MaterialCatalog$Bundled.load:621 < material.MaterialCatalog$Bundled.<clinit>:613
+     3.5 MB   0.3%  material.MaterialCatalog$Bundled.read:626 < material.MaterialCatalog$Bundled.load:618 < material.MaterialCatalog$Bundled.<clinit>:613
+     2.1 MB   0.2%  com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe.runCase:101 < com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe.finiteTanksThroughRestAndRestart:34
+     2.0 MB   0.2%  fluid.thermo.TranslatedPengRobinson$Values.phase:162 < fluid.thermo.TranslatedPengRobinson.evaluate:248 < fluid.thermo.HydrocarbonModel.phase:105
+     1.9 MB   0.2%  fluid.thermo.TranslatedPengRobinson$Values.phase:161 < fluid.thermo.TranslatedPengRobinson.evaluate:248 < fluid.thermo.HydrocarbonModel.phase:105
+     1.5 MB   0.1%  com.wormzjl.createcheme.runtime.fluid.JunctionHoldupStaticProbe.costLine:152 < com.wormzjl.createcheme.runtime.fluid.JunctionHoldupTransientProbe.finiteTanksThroughRestAndRestart:36
+     1.5 MB   0.1%  material.MaterialCatalog.lambda$parse$16:467 < material.MaterialCatalog$$Lambda+0x00000259011f6590.838627755.run:-1 < material.MaterialCatalog.checked:604
