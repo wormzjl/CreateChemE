@@ -1,0 +1,27 @@
+# harness.sh all on the D13 commit 4a71629 (REPO = the worktree wt-vent, tree identical to the commit), 115 s; summary lines
+harness: compiled 255 main sources (incl. 57 stand-ins) and 112 test sources of 114 into /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/vent/harness-d13
+=== harness science (repo /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/wt-vent, 99f5312 + uncommitted src changes)
+[       216 tests found           ]
+[       216 tests successful      ]
+[         0 tests failed          ]
+=== harness runtime (repo /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/wt-vent, 99f5312 + uncommitted src changes)
+[       237 tests found           ]
+[       237 tests successful      ]
+[         0 tests failed          ]
+harness: 33 junction lines identical to reference/junction-lines.txt (6e1c5b6; wall ms, bytes and allocatedMB ignored)
+=== harness adjacent (repo /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/wt-vent, 99f5312 + uncommitted src changes)
+[        38 tests found           ]
+[        38 tests successful      ]
+[         0 tests failed          ]
+=== harness regression (repo /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/wt-vent, 99f5312 + uncommitted src changes)
+chain-100 vs reference: max deviation: state/moles 0.000e+00 relative (-), temperature 0.000e+00 K (-), phase fraction 0.000e+00 (-), flow 0.000e+00 relative (-)
+[         1 tests found           ]
+[         1 tests successful      ]
+[         0 tests failed          ]
+=== harness all (repo /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/wt-vent)
+science    PASS   216 tests found , 216 tests successful , 0 tests failed 
+runtime    PASS   237 tests found , 237 tests successful , 0 tests failed 
+adjacent   PASS   38 tests found , 38 tests successful , 0 tests failed 
+regression PASS   1 tests found , 1 tests successful , 0 tests failed 
+chain-100 vs reference: max deviation: state/moles 0.000e+00 relative (-), temperature 0.000e+00 K (-), phase fraction 0.000e+00 (-), flow 0.000e+00 relative (-)
+real	1m55.215s

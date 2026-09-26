@@ -275,16 +275,20 @@ class LevelHeadTest {
     // ---- 3. Manometer --------------------------------------------------------------------------------------------
 
     /** Tanks A and B, 0.3 m3 of water under nitrogen each, joined bottom to bottom ({@code port} at both ends, 2 m, 50 mm,
-     * level). A's headspace is held at 104325 Pa by a nitrogen generator on a BULK end (2 m, 50 mm; inflow only); B is
-     * closed, charged at 101325 Pa. The cushions start 3 kPa apart, below {@code rho g H} (9.8 kPa).
+     * level). A's headspace is held at 104325 Pa by a nitrogen generator on a BULK end (2 m, 50 mm; inflow only); B, charged
+     * at 101325 Pa, is vented through its VAPOR port to a 1 atm void (2 m, 50 mm) when {@code vented}, as the level-head
+     * review's fixture 3 has it, and closed otherwise. The cushions start 3 kPa apart, below {@code rho g H} (9.8 kPa).
      *
-     * <p>B is closed rather than vented: a VAPOR vent on a tank filled through its LIQUID port fails the reconstruction's
-     * equation gate at every step size on this fixture, on the WP2 tree as on this one (PHASE_PORTS_REVIEW.md, D9 section,
-     * WP2 option 3), and a BULK vent would carry B's water out. */
-    private PassiveNetwork manometer(PhasePort port) {
-        var nodes=List.of(new PassiveNetwork.Reservoir(1,0,waterUnderNitrogen(.3,104325)),new PassiveNetwork.Reservoir(2,0,waterUnderNitrogen(.3,101325)),
-                new PassiveNetwork.Reservoir(3,0,nitrogenAt(104325),PassiveNetwork.NodeKind.GENERATOR));
-        return new PassiveNetwork(nodes,List.of(pipe(96,0,1,line(2,.05),port,port),pipe(97,2,0,line(2,.05),PhasePort.BULK,PhasePort.BULK)));
+     * <p>Until decision D13 the vented form failed the reconstruction's equation gate at every step size (the D9 section's
+     * open item; PHASE_PORTS_REVIEW.md "Vent gate defect" and "D13"), so this fixture closed B; the BULK control keeps B
+     * closed, because a vent would hold B's cushion below A's and the control's point is that without the head the
+     * headspaces equalise. */
+    private PassiveNetwork manometer(PhasePort port,boolean vented) {
+        var nodes=new ArrayList<>(List.of(new PassiveNetwork.Reservoir(1,0,waterUnderNitrogen(.3,104325)),new PassiveNetwork.Reservoir(2,0,waterUnderNitrogen(.3,101325)),
+                new PassiveNetwork.Reservoir(3,0,nitrogenAt(104325),PassiveNetwork.NodeKind.GENERATOR)));
+        var pipes=new ArrayList<>(List.of(pipe(96,0,1,line(2,.05),port,port),pipe(97,2,0,line(2,.05),PhasePort.BULK,PhasePort.BULK)));
+        if(vented){nodes.add(new PassiveNetwork.Reservoir(4,0,nitrogenAt(101325),PassiveNetwork.NodeKind.VOID));pipes.add(pipe(98,1,3,line(2,.05),PhasePort.VAPOR,PhasePort.BULK));}
+        return new PassiveNetwork(nodes,pipes);
     }
     /**
      * Water runs from A to B until the bottoms stand level: the cushions end held apart by {@code dP = P_A - P_B}, less
@@ -294,7 +298,7 @@ class LevelHeadTest {
      * mixture carried over) stands unbalanced at the bottoms.
      */
     @Test void cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG() {
-        var run=drive("manometer",manometer(PhasePort.LIQUID),5,60);
+        var run=drive("manometer",manometer(PhasePort.LIQUID,true),5,60);
         var last=run.last();var a=last.reservoirs().get(0);var b=last.reservoirs().get(1);
         double dp=a.state().pressure()-b.state().pressure();
         double rhoA=model.liquidDensity(a.state()),rhoB=model.liquidDensity(b.state());
@@ -306,7 +310,7 @@ class LevelHeadTest {
         assertTrue(dp>0&&dp<model.liquidDensity(a.state())*G*H,"the cushions are held apart by less than rho g H: "+dp);
         assertEquals(0,bottom(a)-bottom(b),1e-3,"the bottoms stand level");
         assertEquals(expected,levelDifference,1e-4*expected,"the level difference is dP/(rho g)");
-        var control=drive("manometer-bulk",manometer(PhasePort.BULK),5,60);
+        var control=drive("manometer-bulk",manometer(PhasePort.BULK,false),5,60);
         var ca=control.last().reservoirs().get(0);var cb=control.last().reservoirs().get(1);
         System.out.println("LEVEL_HEAD_RUN manometer-bulk PA="+ca.state().pressure()+" PB="+cb.state().pressure()+" mA="+model.liquidMass(ca.state())+" mB="+model.liquidMass(cb.state())
                 +" lastFlow="+control.slices().getLast().averageMassFlows()[0]+" "+control.counters());

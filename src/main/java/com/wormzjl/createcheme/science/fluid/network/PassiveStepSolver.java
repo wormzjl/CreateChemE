@@ -443,24 +443,8 @@ public final class PassiveStepSolver {
                 double rho=suction.density;var mode=modes.get(i);var next=mode;
                 if(!boundaryAllowed(graph,pipe,flows[i])&&Math.abs(flows[i])>1e-10){if(illegalDirection<0)illegalDirection=i;continue;}
                 if(boundaryClosed[i])continue;
-                if(pipe.control() instanceof FlowControl.Pump pump) {
-                    double limit=riseLimit(pump,rho),margin=limit-demand(graph,pipe,states,rho);
-                    double band=shutoffBand(equations.pressureScales[i],tolerance);
-                    if(pump.targetVolumeFlow()==0)next=FlowControl.Mode.CLOSED;
-                    else if(mode==FlowControl.Mode.PUMP_TARGET&&pump.targetVolumeFlow()>pipe.minimumArea()*suction.velocityLimit*(1+1e-8))next=FlowControl.Mode.PUMP_HEAD_LIMIT;
-                    else if(mode==FlowControl.Mode.PUMP_TARGET&&heads[i]>limit+.01)next=FlowControl.Mode.PUMP_HEAD_LIMIT;
-                    else if(mode==FlowControl.Mode.PUMP_HEAD_LIMIT&&margin<band)next=FlowControl.Mode.CLOSED;
-                    else if(mode==FlowControl.Mode.PUMP_HEAD_LIMIT&&flows[i]/rho>pump.targetVolumeFlow()*(1+1e-8))next=FlowControl.Mode.PUMP_TARGET;
-                    else if(mode==FlowControl.Mode.CLOSED&&!atShutoff[i]&&margin>band)next=FlowControl.Mode.PUMP_HEAD_LIMIT;
-                    work+=dt*Math.max(0,flows[i])/rho*Math.max(0,heads[i])/pump.efficiency();
-                }else if(pipe.control() instanceof FlowControl.PressureValve valve) {
-                    if(mode==FlowControl.Mode.VALVE_REGULATING&&flows[i]<-1e-10)next=FlowControl.Mode.CLOSED;
-                    else if(mode==FlowControl.Mode.VALVE_REGULATING&&flows[i]>equations.capLimit(i,0,equations.cachedTransport[pipe.first()])*(1+1e-8))next=FlowControl.Mode.VALVE_OPEN;
-                    else if(mode==FlowControl.Mode.VALVE_REGULATING&&heads[i]<-.01)next=FlowControl.Mode.VALVE_OPEN;
-                    else if(mode==FlowControl.Mode.VALVE_OPEN&&flows[i]<-1e-10)next=FlowControl.Mode.CLOSED;
-                    else if(mode==FlowControl.Mode.VALVE_OPEN&&!graph.reservoirs().get(pipe.first()).fixed()&&up.pressure()<valve.targetPressure()-.01&&flows[i]>1e-10)next=FlowControl.Mode.VALVE_REGULATING;
-                    else if(mode==FlowControl.Mode.CLOSED&&up.pressure()>valve.targetPressure()+.01&&heads[i]>.01)next=FlowControl.Mode.VALVE_REGULATING;
-                }
+                next=nextMode(equations,i,mode,flows[i],heads[i],states,up,suction,tolerance,atShutoff[i]);
+                if(pipe.control() instanceof FlowControl.Pump pump)work+=dt*Math.max(0,flows[i])/rho*Math.max(0,heads[i])/pump.efficiency();
                 if(next!=mode&&!changed) {
                     modes.set(i,next);changed=true;
                     if(next==FlowControl.Mode.CLOSED&&mode==FlowControl.Mode.PUMP_HEAD_LIMIT)atShutoff[i]=true;
@@ -506,7 +490,16 @@ public final class PassiveStepSolver {
             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
             SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
             double maximumResidual=0;for(double residual:equations.residual(reconstructed))maximumResidual=Math.max(maximumResidual,Math.abs(residual));
-            if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6))throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);
+            double gate=acceptance==Acceptance.FULL?1e-8:1e-6;
+            if(maximumResidual>gate) {
+                // Decision D13: a refused point gets one polish on a fresh Jacobian before the step is refused; see
+                // {@link #polishRefusedPoint}. Reached only after the gate has refused, so every point it accepts is untouched.
+                var polished=polishRefusedPoint(graph,equations,x,dt,modes,boundaryClosed,promoted,atShutoff,tolerance,gate,checkpoint);
+                if(polished!=null){numerical=polished.numerical();x=polished.variables();states=polished.states();System.arraycopy(polished.flows(),0,flows,0,flows.length);
+                    System.arraycopy(polished.heads(),0,heads,0,heads.length);draws=polished.draws();
+                    projection=polished.projection();reconstructed=polished.reconstructed();maximumResidual=polished.residual();}
+            }
+            if(maximumResidual>gate){SolverDiagnostics.count(SolverDiagnostics.equationGateRejections);throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);}
             if(acceptance==Acceptance.APPROXIMATE)checkApproximation(equations,reconstructed,projection.states(),flows,workspace,checkpoint,tolerance);
             checkConservation(graph,projection);
             previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousInputStates=inputStates;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);
@@ -529,6 +522,101 @@ public final class PassiveStepSolver {
             return accepted;
         }
         throw new SparseNewton.Nonconvergence("Device active-set limit");
+    }
+    /** A point the equation gate refused, re-solved once and passing the gate; see {@link #polishRefusedPoint}. */
+    private record Polished(SparseNewton.Result numerical,double[] variables,List<FluidThermodynamics.State> states,double[] flows,double[] heads,
+                            double[][] draws,ConservativeTransport.Projection projection,double[] reconstructed,double residual) {}
+    /**
+     * Decision D13 (PHASE_PORTS_REVIEW.md "Vent gate defect", "D13"): one re-solve of a point the reconstruction's equation
+     * gate refused, from that converged point, on a fresh Jacobian of this step's own dt and state, at 1e-2 times the
+     * pass's Newton tolerance; the re-solved point is checked exactly as the pass loop checks a converged point before it
+     * accepts it (merged with decision D11: no trace reactivation due, no device mode change ({@link #nextMode}), no
+     * illegal direction, the phase-port segments its flows land in the ones the pass froze, the velocity constraint in its
+     * D11 form, the reconstruction with its own phase draws, the converged-point phase correction) and gated again.
+     * Returns it only if all of that holds; otherwise null, and the step is refused exactly as before.
+     *
+     * <p>Why it is needed: the Newton's last iterates usually run on a chord Jacobian inherited from another step (the
+     * workspace keyed by dt forks the previous structure's factorization), so a balance row can close only to the
+     * tolerance, which is stated over the node's total amount. The reconstruction books that node's exact amounts at the
+     * candidate's temperature and pressure, and a vessel whose gas is a small share of its amounts (a nitrogen cushion over
+     * water: 0.1-0.2 %) sees that residual magnified by n_total/n_gas in its volume and water-saturation rows - about 500
+     * times, where the gate keeps one order of margin. A fresh Jacobian closes such a row in one iteration (measured
+     * 8.5e-11 to 7e-16), so the polish passes where halving the step could lock the controller (the D9 manometer ran out
+     * its substep limit).
+     *
+     * <p>Only a refused point reaches this method, so every step the gate accepts is bitwise what it was; the fresh
+     * workspace is local and never retained, so no later solve's preconditioner changes either.
+     */
+    private Polished polishRefusedPoint(PassiveNetwork graph,Equations equations,double[] x,double dt,List<FlowControl.Mode> modes,
+                                        boolean[] boundaryClosed,boolean[][] promoted,boolean[] atShutoff,double tolerance,double gate,Runnable checkpoint) {
+        SolverDiagnostics.count(SolverDiagnostics.equationGatePolishes);
+        SparseNewton.Result numerical;
+        try{numerical=SparseNewton.solve(equations,x,new SparseNewton.Settings(20,tolerance*1e-2,1e-6,24),checkpoint,new SparseNewton.Workspace(ownership));}
+        catch(SparseNewton.Nonconvergence failure){return null;}
+        double[] variables=numerical.variables();var states=equations.states(variables);
+        // A trace the polished point would reactivate is an active-set change the pass loop would take (reactivate), not an
+        // accepted point: asked on copies, so nothing of the pass's own state moves.
+        if(model.traceTruncation().enabled())for(int node=0;node<states.size();node++) {
+            var layout=equations.layout[node];
+            if(layout==null||layout.singlePhaseComponentCount()==0)continue;
+            boolean[] flags=promoted[node]==null?new boolean[model.hydrocarbon.componentCount()]:promoted[node].clone();
+            if(layout.reactivate(states.get(node),model.traceTruncation(),flags)>0)return null;
+        }
+        double[] flows=new double[graph.pipes().size()],heads=new double[flows.length];
+        for(int edge=0;edge<flows.length;edge++) {
+            flows[edge]=variables[equations.edgeOffset+edge];heads[edge]=equations.controlOffsets[edge]<0?0:variables[equations.controlOffsets[edge]]*1e5;
+            if(boundaryClosed[edge]||modes.get(edge)==FlowControl.Mode.CLOSED){flows[edge]=0;variables[equations.edgeOffset+edge]=0;}
+            var pipe=graph.pipes().get(edge);
+            if(!boundaryAllowed(graph,pipe,flows[edge])&&Math.abs(flows[edge])>1e-10)return null;
+            if(boundaryClosed[edge])continue;
+            var suction=equations.drawn(edge,0,equations.cachedTransport[pipe.first()],flows[edge]);
+            if(nextMode(equations,edge,modes.get(edge),flows[edge],heads[edge],states,states.get(pipe.first()),suction,tolerance,atShutoff[edge])!=modes.get(edge))return null;
+        }
+        if(equations.segmentsMoved(flows))return null;
+        for(int edge=0;edge<flows.length;edge++) {
+            var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
+            double cap=pipe.drawPort(flows[edge])==PassiveNetwork.PhasePort.BULK?massFlowLimit(pipe,upstream,PassiveNetwork.PhasePort.BULK)
+                    :equations.capLimit(edge,flows[edge]>=0?0:1,equations.cachedTransport[flows[edge]>=0?pipe.first():pipe.second()]);
+            if(Math.abs(flows[edge])>cap*(1+2e-8)+1e-12)return null;
+        }
+        var draws=equations.draws(flows,states);
+        var projection=ConservativeTransport.reconstruct(graph,states,flows,heads,dt,model,checkpoint,transport,rateOnly,draws);
+        if(phaseCorrection(graph,projection.states(),checkpoint,true,equations.cachedPrepared)!=null)return null;
+        var reconstructed=variables.clone();
+        for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
+        SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
+        double residual=0;for(double value:equations.residual(reconstructed))residual=Math.max(residual,Math.abs(value));
+        if(residual>gate)return null;
+        SolverDiagnostics.count(SolverDiagnostics.equationGatePolishesAccepted);
+        return new Polished(numerical,variables,states,flows,heads,draws,projection,reconstructed,residual);
+    }
+    /**
+     * The device mode the pass loop moves connection {@code i} to from {@code mode} at a converged point ({@code flow},
+     * {@code head}, the node {@code states}, the first node's state {@code up} and what its first end draws, {@code suction});
+     * {@code mode} itself when the point holds it. The one statement of the pump and valve transitions, read by the pass
+     * loop and by {@link #polishRefusedPoint}, which must accept a point only where the pass loop would.
+     */
+    private FlowControl.Mode nextMode(Equations equations,int i,FlowControl.Mode mode,double flow,double head,List<FluidThermodynamics.State> states,
+                                      FluidThermodynamics.State up,Equations.Transport suction,double tolerance,boolean atShutoff) {
+        var graph=equations.graph;var pipe=graph.pipes().get(i);double rho=suction.density;var next=mode;
+        if(pipe.control() instanceof FlowControl.Pump pump) {
+            double limit=riseLimit(pump,rho),margin=limit-demand(graph,pipe,states,rho);
+            double band=shutoffBand(equations.pressureScales[i],tolerance);
+            if(pump.targetVolumeFlow()==0)next=FlowControl.Mode.CLOSED;
+            else if(mode==FlowControl.Mode.PUMP_TARGET&&pump.targetVolumeFlow()>pipe.minimumArea()*suction.velocityLimit*(1+1e-8))next=FlowControl.Mode.PUMP_HEAD_LIMIT;
+            else if(mode==FlowControl.Mode.PUMP_TARGET&&head>limit+.01)next=FlowControl.Mode.PUMP_HEAD_LIMIT;
+            else if(mode==FlowControl.Mode.PUMP_HEAD_LIMIT&&margin<band)next=FlowControl.Mode.CLOSED;
+            else if(mode==FlowControl.Mode.PUMP_HEAD_LIMIT&&flow/rho>pump.targetVolumeFlow()*(1+1e-8))next=FlowControl.Mode.PUMP_TARGET;
+            else if(mode==FlowControl.Mode.CLOSED&&!atShutoff&&margin>band)next=FlowControl.Mode.PUMP_HEAD_LIMIT;
+        }else if(pipe.control() instanceof FlowControl.PressureValve valve) {
+            if(mode==FlowControl.Mode.VALVE_REGULATING&&flow<-1e-10)next=FlowControl.Mode.CLOSED;
+            else if(mode==FlowControl.Mode.VALVE_REGULATING&&flow>equations.capLimit(i,0,equations.cachedTransport[pipe.first()])*(1+1e-8))next=FlowControl.Mode.VALVE_OPEN;
+            else if(mode==FlowControl.Mode.VALVE_REGULATING&&head<-.01)next=FlowControl.Mode.VALVE_OPEN;
+            else if(mode==FlowControl.Mode.VALVE_OPEN&&flow<-1e-10)next=FlowControl.Mode.CLOSED;
+            else if(mode==FlowControl.Mode.VALVE_OPEN&&!graph.reservoirs().get(pipe.first()).fixed()&&up.pressure()<valve.targetPressure()-.01&&flow>1e-10)next=FlowControl.Mode.VALVE_REGULATING;
+            else if(mode==FlowControl.Mode.CLOSED&&up.pressure()>valve.targetPressure()+.01&&head>.01)next=FlowControl.Mode.VALVE_REGULATING;
+        }
+        return next;
     }
     /** Value key over compact codes instead of rendered strings and boxed lists; the arrays belong
      * to the key from construction on, so a caller must hand over a snapshot of anything it mutates.

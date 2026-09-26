@@ -93,6 +93,14 @@ public final class SolverDiagnostics {
      * reconstruction has to pass.
      */
     public static final LongAdder verificationResiduals=new LongAdder();
+    /**
+     * Steps the reconstruction's equation gate refused (after the polish below had its chance), the refused points the
+     * step solver re-solved once on a fresh Jacobian before refusing (decision D13), and the subset of those that then
+     * passed the gate and were accepted.
+     */
+    public static final LongAdder equationGateRejections=new LongAdder();
+    public static final LongAdder equationGatePolishes=new LongAdder();
+    public static final LongAdder equationGatePolishesAccepted=new LongAdder();
     // ---- properties ----
     public static final LongAdder stateCalls=new LongAdder();
     /** The subset of {@link #stateCalls} performed while building a Jacobian: the node decodes a
@@ -195,6 +203,8 @@ public final class SolverDiagnostics {
         map.put("newtonRefreshesStalled",newtonRefreshesStalled);map.put("newtonRefreshesAged",newtonRefreshesAged);
         map.put("newtonRefreshesFailed",newtonRefreshesFailed);
         map.put("verificationResiduals",verificationResiduals);
+        map.put("equationGateRejections",equationGateRejections);map.put("equationGatePolishes",equationGatePolishes);
+        map.put("equationGatePolishesAccepted",equationGatePolishesAccepted);
         map.put("luFactorizations",luFactorizations);map.put("luFactorNanos",luFactorNanos);
         map.put("luSolves",luSolves);map.put("luSolveNanos",luSolveNanos);
         map.put("luChecks",luChecks);map.put("luRefinements",luRefinements);
