@@ -17,8 +17,8 @@ import java.util.*;
  * restart restores it while the signature still holds, and otherwise discards it and keeps the inventory.
  *
  * <p>Replay is arithmetic on the last solved interval, never a model evaluation: from the base tick b to a tick
- * t the island holds {@code base + f * delta} with {@code f = (t - b) / D} in every finite node, component and
- * internal energy, and the boundary transfers, pump work and pipe history of the replayed span are the recorded
+ * t the island holds {@code base + f * delta} with {@code f = (t - b) / D} in every finite node (vessel or junction
+ * holdup), component and energy field, and the boundary transfers, pump work and pipe history of the replayed span are the recorded
  * ones scaled by the replayed fraction. States are the base states. Conservation is exact by construction
  * because the recorded interval conserved and the scaling is linear. Solids never move under replay: the entry
  * evidence requires unchanged node solids, and an island on which anything moves carries no solids in transport and
@@ -34,18 +34,23 @@ public final class IslandCertificate {
         }
     }
 
-    /** What the evidence compares, derived once per solved interval. Row n is null for a node that owns no stock. */
+    /**
+     * What the evidence compares, derived once per solved interval. Row n is null for a node that owns no stock (a
+     * generator, void or port). A vessel and a junction own stock: a junction's holdup m_J (BE_INTEGRATOR_PLAN.md
+     * section 2) keeps its mass but moves its composition and energy, so its change enters the evidence, the drift,
+     * the zero-crossing limit and the replay exactly like a vessel's.
+     */
     static final class Summary {
         final Interval interval;
         final long startTick,endTick;final int durationTicks;
         final PassiveNetwork before,after;final PassiveIntervalSolver.Result result;
         final double[][] moles;final double[] energy;final int[] phases;
-        /** The largest relative change of any finite node's temperature or pressure over the interval. */
+        /** The largest relative change of any finite node's (vessel's or junction's) temperature or pressure over the interval. */
         final double stateChange;
         /**
          * Per pipe, the fluid mass (kg) of the smaller finite inventory its flow draws on at the end of the
-         * interval: the smaller of its endpoints' masses, a junction standing for the island's smallest finite
-         * inventory (it holds nothing and passes the flow on), a generator, void or port for none (infinity).
+         * interval: the smaller of its endpoints' masses, a junction standing for the island's smallest vessel
+         * inventory (its small holdup passes the flow on), a generator, void or port for none (infinity).
          */
         final double[] referenceMass;
         final boolean fullAcceptance,transitionFree,closuresUnchanged,solidsUnchanged,phasesUnchanged,exactZero,grossWithoutNet,solidsInTransport,hasFilter;
@@ -61,7 +66,7 @@ public final class IslandCertificate {
                 var a=before.reservoirs().get(n);var b=after.reservoirs().get(n);
                 if(a.id()!=b.id()||a.kind()!=b.kind())throw new IllegalArgumentException("Interval changed the island's structure");
                 nodeMass[n]=Double.POSITIVE_INFINITY;
-                if(b.kind()!=PassiveNetwork.NodeKind.RESERVOIR)continue;
+                if(b.kind()!=PassiveNetwork.NodeKind.RESERVOIR&&!b.junction())continue;
                 phases[n]=phases(b.state());if(phases(a.state())!=phases[n])phase=false;
                 // An empty vessel's state is a numerical guess, not a physical temperature or pressure.
                 if(!a.empty()&&!b.empty())state=Math.max(state,Math.max(Math.abs(b.state().temperature()-a.state().temperature())/b.state().temperature(),
@@ -70,7 +75,7 @@ public final class IslandCertificate {
                 if(m1.length!=molecularWeights.length)throw new IllegalArgumentException("Molecular weights do not match the component basis");
                 double mass=0;
                 for(int c=0;c<m1.length;c++){moles[n][c]=m1[c]-m0[c];if(moles[n][c]!=0)zero=false;mass+=m1[c]*molecularWeights[c];}
-                nodeMass[n]=mass;smallest=Math.min(smallest,mass);
+                if(!b.junction()){nodeMass[n]=mass;smallest=Math.min(smallest,mass);}
                 energy[n]=b.inventory().internalEnergy()-a.inventory().internalEnergy();if(energy[n]!=0)zero=false;
                 if(!a.inventory().solids().equals(b.inventory().solids()))solids=false;
             }

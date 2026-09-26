@@ -268,6 +268,77 @@ class PhysicalRegistryTest {
     }
 
     /**
+     * BE_INTEGRATOR_PLAN.md WP3 (b): every junction owns a holdup m_J = tau x the largest velocity-cap mass flow of its
+     * connections at its seed state (tau = 0.05 s, PassiveStepSolver.HOLDUP_TAU), and the world ledger books it: minted
+     * as constructed when the island is compiled, and at a topology edit the replaced island's junction stock - as it
+     * stands after solving - as destroyed and the recompile's freshly minted junctions as constructed. The edit resets a
+     * junction's composition to its seed state (the accepted behaviour, review 9.3).
+     */
+    @Test void junctionHoldupsAreBookedAsConstructedAndRemintedAtATopologyEdit() {
+        var w=new World(1);int count=model.components().size();var weights=model.molecularWeights();
+        int methane=catalog.requirePackage("createcheme:tjl20_methane_nitrogen").components().indexOf("Methane");
+        int nitrogen=model.components().indexOf("Nitrogen");
+        double[] methaneFeed=new double[count],nitrogenFeed=new double[count];methaneFeed[methane]=1;nitrogenFeed[nitrogen]=1;
+        // A methane generator at 150 kPa filling two tanks charged with nitrogen at 1 atm: a line of three pipes with a
+        // branch off the middle one to the second tank (a series of pipes compiles to one connection; a branch to a third
+        // port compiles a junction). The island flows and its junction changes composition.
+        long tank=queueSpec(w,16,16,Kind.GENERATOR,new FluidDeviceSpec(1,298.15,150000,methaneFeed));
+        for(int x=17;x<=19;x++)queueSpec(w,x,16,Kind.PIPE,new FluidDeviceSpec(1,298.15,101325,nitrogenFeed));
+        queueSpec(w,18,17,Kind.PIPE,new FluidDeviceSpec(1,298.15,101325,nitrogenFeed));
+        queueSpec(w,18,18,Kind.RESERVOIR,new FluidDeviceSpec(1,298.15,101325,nitrogenFeed));
+        long other=queueSpec(w,20,16,Kind.RESERVOIR,new FluidDeviceSpec(1,298.15,101325,nitrogenFeed));
+        var empty=WorldTopologyLedger.MaterialTotal.empty(count);
+        var start=w.ledger.snapshot();w.apply();var placed=w.ledger.snapshot();
+        var graph=w.island(tank).graph();var junctions=graph.reservoirs().stream().filter(PassiveNetwork.Reservoir::junction).toList();
+        assertFalse(junctions.isEmpty(),"the branch compiles a junction");
+        for(var junction:junctions) {
+            var state=junction.state();double rho=state.mass()/state.volume(),capacity=0;int index=graph.reservoirs().indexOf(junction);
+            for(var pipe:graph.pipes())if(pipe.first()==index||pipe.second()==index)capacity=Math.max(capacity,rho*pipe.minimumArea()*model.velocityLimit(state));
+            double minted=0;var n=junction.inventory().moles();for(int c=0;c<count;c++)minted+=n[c]*weights[c];
+            System.out.println("junction "+junction.id()+": m_J "+minted+" kg, 0.05 s x cap flow "+capacity+" kg/s");
+            assertEquals(.05*capacity,minted,1e-12*minted,"junction "+junction.id()+" owns tau x its largest cap flow");
+        }
+        var tanks=graph.reservoirs().stream().filter(n->n.kind()==PassiveNetwork.NodeKind.RESERVOIR).toList();
+        var all=new ArrayList<PassiveNetwork.Reservoir>(tanks);all.addAll(junctions);
+        assertEquals(2,tanks.size());
+        assertBooked(empty.plus(all,weights),placed.constructed(),start.constructed(),"the placement books both tanks and every minted junction as constructed");
+        assertBooked(empty,placed.destroyed(),start.destroyed(),"a placement into an empty world destroys nothing");
+        // Ten intervals of flow move the junctions' composition away from the mint.
+        w.run(1_000);
+        long owner=w.owner(tank);var solved=w.coordinator.snapshot(owner);assertEquals(1_000,solved.clock().committedTick());
+        var old=solved.graph().reservoirs().stream().filter(PassiveNetwork.Reservoir::junction).toList();
+        var before=w.ledger.snapshot();
+        // The edit: a stub off the first pipe recompiles the island.
+        w.place(17,15,Kind.PIPE);
+        var after=w.ledger.snapshot();assertNotEquals(owner,w.owner(tank),"the edit replaced the island");
+        var fresh=w.island(tank).graph().reservoirs().stream().filter(PassiveNetwork.Reservoir::junction).toList();
+        assertFalse(fresh.isEmpty(),"the recompiled island mints its junctions again");
+        assertBooked(empty.plus(old,weights),after.destroyed(),before.destroyed(),"the replaced island's solved junction stock is booked as destroyed");
+        assertBooked(empty.plus(fresh,weights),after.constructed(),before.constructed(),"the recompile's minted junctions (and no tank) are booked as constructed");
+        // Composition resets at an edit: every fresh junction holds its seed state's composition, whatever the old one held.
+        double moved=0;
+        for(var junction:fresh) {
+            var seed=com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(junction.state());var n=junction.inventory().moles();
+            double seedTotal=0,total=0;for(int c=0;c<count;c++){seedTotal+=seed[c];total+=n[c];}
+            assertEquals(seed[methane]/seedTotal,n[methane]/total,1e-12,"junction "+junction.id()+" is minted at its seed composition");
+        }
+        for(var junction:old){var n=junction.inventory().moles();double total=0;for(double v:n)total+=v;moved=Math.max(moved,n[methane]/total);}
+        System.out.println("remint: old junction methane fractions up to "+moved+"; fresh junctions at their seed composition");
+        assertTrue(moved>1e-3,"the solved junctions had taken up methane, which the remint discards (booked, not lost)");
+    }
+    private long queueSpec(World w,int x,int z,Kind kind,FluidDeviceSpec spec) {
+        long id=w.ledger.nextIdentity();
+        var device=new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position(DIM,x,Y,z),kind,PhysicalFluidTopology.Direction.EAST,new PipeResistance.Geometry(1,.05,.000045,0),new FlowControl.Passive());
+        w.registry.submit(List.of(new WorldTopologyLedger.Edit(id,new WorldTopologyLedger.Registration(device,spec,0))),id+1,null);return id;
+    }
+    /** What the ledger booked between two snapshots equals {@code expected}, to roundoff of the cumulative totals. */
+    private static void assertBooked(WorldTopologyLedger.MaterialTotal expected,WorldTopologyLedger.MaterialTotal later,WorldTopologyLedger.MaterialTotal earlier,String what) {
+        var n=expected.moles();var a=later.moles();var b=earlier.moles();
+        for(int c=0;c<n.length;c++)assertEquals(n[c],a[c]-b[c],1e-12*Math.max(1,Math.abs(a[c])),what+": component "+c);
+        assertEquals(expected.totalEnergy(),later.totalEnergy()-earlier.totalEnergy(),1e-12*Math.max(1,Math.abs(later.totalEnergy())),what+": energy");
+    }
+
+    /**
      * The scaling test on the synchronous rig: one placement - a pipe extending a line, which recompiles and replaces that
      * line's island - in worlds of 500, 2,000 and 5,000 devices costs the same. The old event path compiled the whole
      * registry: 1.6, 5.2 and 19.3 ms (FLUID_PLACEMENT_REVIEW.md section 1). Counted, it compiles six devices at every size.

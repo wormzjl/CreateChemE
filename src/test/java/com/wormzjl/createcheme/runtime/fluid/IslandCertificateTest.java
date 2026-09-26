@@ -81,6 +81,13 @@ class IslandCertificateTest {
         var devices=line(Kind.GENERATOR,Kind.PIPE,Kind.PIPE,Kind.RESERVOIR,Kind.PIPE,Kind.PIPE,Kind.VOID);
         return island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,125000,feed),4L,new FluidDeviceSpec(volume,298.15,tankPressure,charge),7L,new FluidDeviceSpec(1,298.15,101325,feed)));
     }
+    /** generator - pipe - 10 m3 tank - a branching pipe (a compiled junction) - two voids, one through a second pipe. */
+    private PassiveNetwork flushThroughJunction(double[] feed,double[] charge) {
+        var devices=List.of(device(1,0,0,Kind.GENERATOR),device(2,1,0,Kind.PIPE),device(3,2,0,Kind.RESERVOIR),device(4,3,0,Kind.PIPE),
+                device(5,4,0,Kind.VOID),device(6,3,1,Kind.PIPE),device(7,3,2,Kind.VOID));
+        return island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,125000,feed),3L,new FluidDeviceSpec(10,298.15,113000,charge),
+                5L,new FluidDeviceSpec(1,298.15,101325,feed),7L,new FluidDeviceSpec(1,298.15,101325,feed)));
+    }
     /** Two nitrogen tanks in a loop driven by a pump: flow is steady and the pump heats the gas. */
     private PassiveNetwork pumpedLoop() {
         var devices=new ArrayList<PhysicalFluidTopology.Device>(List.of(device(1,0,0,Kind.RESERVOIR),device(2,1,0,Kind.PIPE),
@@ -326,6 +333,52 @@ class IslandCertificateTest {
         rig.run(100);
         var again=rig.stored(1).certificate();
         if(again.isPresent())assertEquals(first.horizonTick()+200,again.orElseThrow().baseTick(),"the revalidating slice and one more");
+    }
+
+    /**
+     * BE_INTEGRATOR_PLAN.md WP3 (a): a certificate replays the junctions' owned holdups like the vessels. A flush certified
+     * under a loose tolerance still moves the composition of its junctions; the materialised island holds each junction
+     * at exactly {@code base + f * delta} (the arithmetic of {@link IslandCertificate#graphAt}), and the finite stock -
+     * vessels and junction holdups - changes by exactly what crossed the boundaries in the replayed spans.
+     */
+    @Test void aCertifiedIslandReplaysItsJunctionHoldupsExactly() {
+        var rig=new Rig(new CertificatePolicy(true,1e-6,1e-3,5,2,0));rig.register(1,flushThroughJunction(mix(.6),mix(.4)));
+        long at=rig.runUntilCertified(1,40_000);assertTrue(at>0,rig.coordinator.certificationRefusal(1));
+        var certified=rig.stored(1).certificate().orElseThrow();var saved=certified.saved().orElseThrow();
+        var before=saved.interval().before();var base=saved.interval().result().graph();
+        long baseTick=saved.baseTick(),duration=saved.interval().endTick()-saved.interval().startTick();
+        double largest=0;int junctions=0;
+        for(int n=0;n<base.reservoirs().size();n++) {
+            if(!base.reservoirs().get(n).junction())continue;junctions++;
+            var a=before.reservoirs().get(n).inventory().moles();var b=base.reservoirs().get(n).inventory().moles();
+            for(int c=0;c<a.length;c++)largest=Math.max(largest,Math.abs(b[c]-a[c]));
+        }
+        System.out.println("junction replay: certified at tick "+at+" "+certified+", "+junctions+" junctions, largest junction component change "+largest+" mol per interval");
+        assertTrue(junctions>0,"the line compiles junctions");
+        assertTrue(largest>0,"the certified interval moves a junction's composition, so dropping it would show");
+        var initial=stock(base);int from=rig.replayed.size();
+        long target=baseTick+duration*5/2;assertTrue(target<certified.horizonTick());
+        rig.run((int)(target-rig.epoch[0]));
+        var now=rig.read(1).graph();assertEquals(target,rig.read(1).clock().committedTick(),"materialised to the target");
+        double f=(target-baseTick)/(double)duration;
+        for(int n=0;n<base.reservoirs().size();n++) {
+            var node=base.reservoirs().get(n);if(!node.junction())continue;
+            var a=before.reservoirs().get(n).inventory();var b=node.inventory();
+            var expected=b.moles();var m0=a.moles();var m1=b.moles();
+            for(int c=0;c<expected.length;c++)expected[c]+=f*(m1[c]-m0[c]);
+            var replayed=now.reservoirs().get(n).inventory();
+            assertArrayEquals(expected,replayed.moles(),0,"junction "+node.id()+" moles: base + f * delta, bit for bit");
+            assertEquals(b.internalEnergy()+f*(b.internalEnergy()-a.internalEnergy()),replayed.internalEnergy(),0,"junction "+node.id()+" energy field");
+        }
+        var after=stock(now);var crossed=new double[components+1];
+        for(var snapshot:rig.replayed.subList(from,rig.replayed.size()))for(var boundary:snapshot.lastResult().orElseThrow().boundaries()){var n=boundary.moles();for(int c=0;c<n.length;c++)crossed[c]+=n[c];crossed[components]+=boundary.totalEnergyJoule();}
+        for(int c=0;c<=components;c++)assertEquals(after[c]-initial[c],crossed[c],1e-12*Math.max(Math.abs(initial[c]),1)," ledger of the replayed span, "+(c==components?"energy":"component "+c));
+    }
+    /** Vessels and junction holdups: moles per component, then the energy field (every node here at elevation 0). */
+    private double[] stock(PassiveNetwork graph) {
+        var sum=new double[components+1];
+        for(var node:graph.reservoirs())if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR||node.junction()){var n=node.inventory().moles();for(int c=0;c<n.length;c++)sum[c]+=n[c];sum[components]+=node.inventory().internalEnergy();}
+        return sum;
     }
 
     /** Plan sections 3.6 and 5 item 5: a hold freezes committed time; resume discards the certificate and requalifies. */
