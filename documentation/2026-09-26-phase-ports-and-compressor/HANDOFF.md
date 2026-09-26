@@ -1,53 +1,66 @@
-# Handoff: fluid basis merged, phase ports and compressor about to start
+# Handoff: phase ports and compressor, batch closed on the branch (WP0-WP6 done), awaiting the owner's check and merge
 
-Written 2026-09-26 by Claude (Fable 5.1, orchestrating opus agents) on the owner's "stop and make a handoff". Covers two batches: `documentation/2026-09-24-mixed-gas-junction` (merged today) and this one (planned, WP0 done, WP1 not started).
+Written 2026-09-26 by Claude (Opus 5.5) at the batch close (WP6). The handoff this batch started from (the 0.6.0 merge, the decisions D1-D9, WP0) is archived as `HANDOFF_2026-09-26_start.md` in this folder. Details of every package: `PHASE_PORTS_REVIEW.md` (one section per package, in commit order, ending with "WP6: gates and close"); decisions: `DECISION_LOG.md`; plan: `PHASE_PORTS_PLAN.md` (section 7 rows carry each package's result).
 
 ## 1. Repository state
 
-- Main checkout `D:/Minecraft/Modding/1.21/CreateChemE`: `main` at **c32acac** = version **0.6.0**, NOT pushed. History: 9674bf1 (0.5.0) -> eae658a (owner's culling fix) -> 8 WIP commits of the mixed-gas batch (3dba4b0, 640d87b, b6422e3, 618ea63, 5b708fa, daa1ccc, c7a7dc2, b5ed407) -> 6296e21 (merge of main into the branch) -> c32acac (CHANGELOG 0.6.0 heading, `mod_version` 0.6.0). Fast-forwarded after the fluid suites passed on the merged tree (run 160, 406/406).
-- **Work in the NEW worktree `D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/phase-ports-compressor`** (created 2026-09-26 18:30): branch **`claude/phase-ports-compressor`** at c32acac, no commits over main, tree clean; it holds copies of both batch document folders, the bridge jar in `run/mods/` and `run/mcp-client-mods/`, and `.mcp.json`. The OLD worktree `.claude/worktrees/remove-agents-attribution-line-3d0c97` (mixed-gas batch, merged) is left detached at c32acac and can be removed once its git-ignored `run/mcp-client/` test world is no longer wanted (its documents and tools are already in the main checkout); it also carries an uncommitted removal of `documentation/` from `.gitignore` made at 18:15 by someone other than the agents. Branch `claude/charming-elion-1170cc` is fully merged and can be deleted. At 18:15:41 the main checkout was switched from `main` to the stale branch `claude/remove-agents-attribution-line-3d0c97` (4b21bd0); `git checkout main` there restores the 0.6.0 files on disk.
-- Git-ignored material is in BOTH checkouts (agents copied files, the main copy is canonical): `documentation/2026-09-24-mixed-gas-junction/`, `documentation/2026-09-26-phase-ports-and-compressor/`, `tools/junction-holdup-prototype/` (runs 1-161, patches, probes, init scripts, the removed `TrBdf2StepSolver.java` with a reattach patch, `wp4-ingame/` screenshots and notes). `documentation/INDEX.md` and `tools/INDEX.md` rows are updated in the main checkout.
-- The bridge jar `run/mods/minecraft-mcp-1.21.1-neoforge-v0.3.0.jar`, `run/mcp-client-mods/`, `run/mcp-client/` (a saved test world) and `.mcp.json` sit in the worktree, git-ignored.
-- Checkpoint format is 5 (breaking; fresh world). `mod_version` 0.6.0.
+- **Branch `claude/phase-ports-compressor`** in the cloud container checkout `/home/user/CreateChemE` (OpenJDK 21.0.10, Linux, 4 cores). HEAD = the WP6 docs commit (`Docs: phase-ports batch close, changelog entry, handoff`) on the WP6 code commit `cb41860`; 37 commits over `c32acac` (0.6.0). The branch was pushed to `origin/claude/phase-ports-compressor` up to `5f38474` (WP5); **the two WP6 commits are not pushed** (the brief said not to push).
+- `origin/main` = `ea16150` ("Cloud prep", the owner's commit on `c32acac`), an ancestor of this branch (merged at `6e1c5b6`), so `main` fast-forwards to the branch.
+- **The Windows main checkout `D:/Minecraft/Modding/1.21/CreateChemE` was not updated** from here (no access from the container): it is at `c32acac` as far as this session knows. The owner's "Cloud prep" commit made `documentation/`, `research/` and `tools/` tracked (their `.gitignore` lines removed), so this batch's documents and tool folders are **tracked on the branch**; the AGENTS.md rule "documents written in a worktree are copied into the main checkout's `documentation/<batch>/` when the work merges" is satisfied by the merge itself. Before pulling on Windows, move the untracked local `documentation/`, `research/`, `tools/` copies aside (git refuses to overwrite untracked files) and compare after; the tracked copies are canonical from then on.
+- Side branches of the session, all merged into this branch (their worktrees are in the session scratchpad and can be removed): `claude/cloud-harness-wip` (`b83537a`, worktree `wt-harness`, src = `6e1c5b6` = `c32acac`'s, used as the clean base for comparisons), `claude/extreme-topology-tests-wip` (`55508e4`, `wt-extreme`), `claude/cold-start-generators-wip` (`bb16308`, `wt-coldstart`, D12), `claude/vent-gate-polish-wip` (`ce6b09c`, `wt-vent`, D13).
+- Checkpoint format **6** (breaking; fresh world); wire protocol **fluid-7**; `mod_version` still 0.6.0 (0.7.0 at the merge); `CHANGELOG.md` `[Unreleased]` holds the batch's line.
 
-## 2. What 0.6.0 contains (mixed-gas batch, read `HANDOFF_REVIEW.md` sections 8-9 and `BE_INTEGRATOR_PLAN.md` in its folder)
+## 2. What each package and decision delivered
 
-- Backward-Euler transient basis: `PassiveIntervalSolver` steps with `PassiveStepSolver.solve(graph, h)` under a state-change controller (5 % cap on vessel pressure/mass change, growth clamp(0.9 sqrt(cap/change), 0.5, 2), halve on Newton failure), one cold rate solve with the balanced pressure seed at a cold start, boundary reopen rule, pump reopen from its limit, deterministic certified replay (factorizations and warm starts dropped at job dispatch). TR-BDF2 removed with all its machinery and `Settings.relativeTolerance`.
-- Owned junction holdup m_J = 0.05 s x largest cap flow at the seed, enthalpy form, amount-form rows, mass pinned by the reconstruction, mint booked in the topology ledger, inventories carried by certificates.
-- One certificate kind keyed on drift (status `STEADY: no flow` / `STEADY: replaying ...`), labels SOLVED/REPLAYED.
-- Pump columns and rise limit read the suction transported density (owner rule).
-- Gates at merge: fluid suites 406/406 (94 classes), exact regression chain-100 re-recorded and bitwise, 38 adjacent 38/38, 30/30 fluid GameTests, mixed-gas 32/32 static + 12/12 transients at 0.1 s and 5 s (`MixedGasJunctionStaticTest`, `MixedGasJunctionTransientTest`, `LiquidJunctionTransientTest`), cost at 5 s: 12 cases x 16 s in ~270-290 ms / 286 Newton solves / 134 MB, ~50 KB retained per 5-node island. In-game mixed-gas check passed (review 9.7, run 161).
-- Owner decisions D1-D18 in that folder's `DECISION_LOG.md`. Notable: D14 keep the 100 m/s cap as the supersonic guard (no liquid velocity setting); D16 leave the roundoff-flow "replaying" status.
+| Package | Commit(s) | Delivered |
+|---|---|---|
+| WP0 | (plan Appendix C) | classification of every pump test and vertical tank link on `c32acac` |
+| cloud harness | `b83537a` | Minecraft-free javac/JUnit runner for the fluid gates (`tools/cloud-science-harness/`) |
+| WP1 | `35e354d` | `PhasePort { BULK, VAPOR, LIQUID }` per pipe end, per-end streams read by every donor reader, the reconstruction's frozen-stream booking on pinned flows, the per-end driving-pressure helper; all-BULK bitwise |
+| WP2 | `d836cf2` | absent-phase closure (availability mask, throttle, reopen allowance); **superseded by D11** |
+| D10 | `07e7426` | water trace (1e-12) in the seed of a dry junction with water reachable (fixes WP1's base defect) |
+| extreme topology | `55508e4` (merged `3338663`) | `ExtremeTopologyIslandTest`: the owner's generator/tank grid and alternating rows; found the first-interval pass-0 defect |
+| D9 | `fdf3574` | level head `g m_c H / V`, H = 1 m, at LIQUID ports through the helper's eleven sites |
+| vent gate investigation | `420a0dc` (no code) | the equation-gate defect classified (chord residual amplified by the reconstruction's fixed-(T, P) restatement), options A-E |
+| D11 | `548a9bf` | ports draw phases by priority with per-step capacities (priority stream, per-pass segments), WP2's closure removed, the WP1 unbacked-trace defect fixed |
+| D12 | `418ca7e` (merged `aaa6624`) | one-way generators from the cold start (one-way pressure estimate before the cold rate seed's pass 0) |
+| D13 | `4a71629` (merged `334ca78`) | polish on a fresh Jacobian before a gate refusal; no equation-gate refusal left in any suite |
+| WP3 + WP4 | `fc9574d` | liquid-only pump with `INLET_WRONG_PHASE` (2 % / 0.5 % hysteresis per slice, supply walk, a port's D11 draw over the slice), `FlowControl.Mover`, `Compressor` (ratio limit, isothermal work as heat, 1 % / 0.2 % condensed and solid refusal), 15 tests migrated, three re-baselines |
+| WP5 | `9744a45` | faces to ports (UP VAPOR, DOWN LIQUID, sides BULK), `fluid_compressor` block, format 6, fluid-7, mover reasons and limits, tank page "Connections by face", four physical-topology re-baselines, three GameTests |
+| WP6 | `cb41860` and the docs commit after it | cleanup (open-defect reproduction and unread condensed-stream builders detached with reattach patches, stale text corrected), final gates, review close, changelog entry, this handoff, INDEX rows |
 
-Open items left from that batch (none blocking):
-- Push main.
-- WIP commits carry `Co-Authored-By: Claude Opus 5.5 (1M context)` trailers (the model that did the work); rewrite only if uniformity is wanted.
-- `ApproximationAnchor` revision label still reads `fluid-trbdf2-r1` (identity string, left on purpose).
-- The three island exact-regression fixtures still skip (no current-basis stress snapshot).
+Tools/docs commits between them: `3097e60`, `3dbd9b8`, `9c723e0`, `9b33d03`, `0cf4ec9`, `fdc7571`, `0795215`, `38debce`, `ce6b09c`, `bb16308`, `be8e226`, `11f8e39`, `5a375ea`, `5f38474`; decision-log commits `7051391`, `99f5312`, `85c492f`.
 
-## 3. This batch: decisions taken (all in `DECISION_LOG.md`)
+## 3. Gates at the close (WP6, after the cleanup; review "WP6: gates and close" (d))
 
-Owner: D1 liquid-only pump; D2 gas compressor; D3 tank faces UP = gas outlet, DOWN = liquid outlet, sides = bulk, inputs undistinguished; D4 suction density only; D5 one-slice delay accepted. O1 = `INLET_WRONG_PHASE` CLOSED with a typed reason, decided per slice with hysteresis (2 % refuse / 0.5 % resume vapour by volume); O2 = **level head option B** (bottom port only, fixed 1 m, no setting; `LEVEL_HEAD_REVIEW.md`), implemented as a small package after WP2; O3 = compressor pressure-ratio limit `riseLimit = (r_max - 1) P_suction`; O4 = compressor work booked as heat, ideal isothermal on suction properties. Defaults A1-A7 (faces; bottom outlet draws liquid + water + mobile solids; inlet check reads the source stream, not the pump's junction; thresholds; per-slice decision; module withdrawals stay bulk; compressor refuses solids) and A8 (absent-phase stream density falls back to bulk for sign tests) stand unless the owner objects.
+- Fluid suites (Gradle): **472/472** in 103 classes, the 33 junction lines identical to `tools/phase-ports-probes/d10/logs/02-junction-lines-d10.txt`, **MIXED_GAS_COST 286** Newton solves.
+- Exact regression: **0.000e+00** (3 accepted / 0 rejected, 4 Newton solves, 29 iterations).
+- Adjacent selection: **45/45**.
+- Fluid GameTests on a fresh world (`-PfluidGameTestRunId=wp6-final`): **33/33**.
+- Full `test` task: **1166 tests, 1165 passed, 1 failed** (`RegroupedCrudeTest.previouslyDifficultCrudesPublishAuditedClassicalSolutionsWithoutLearnedSeeds`, its own 45 s wall-clock deadline under full-suite load; fails identically on the clean base `6e1c5b6` = `c32acac`'s src in the full suite, passes alone on both trees: pre-existing, not fixed).
+- `build -x test`: BUILD SUCCESSFUL; GameTest and mcpCompat sources compile.
+- Cloud harness `all`: 223 + 249 (junction lines identical) + 45 + chain-100 0.000e+00.
+- Logs: `tools/phase-ports-probes/wp6/logs/`.
 
-## 4. WP0 result (plan Appendix C, at c32acac)
+## 4. Open owner items
 
-19 unit-test files construct a pump, 4 GameTest classes place one. Classes: unchanged 14 (+ water half of `PumpJunctionStartupTest`), compressor 15, refusal 1 (`VelocityClampTest` wet-crude arm), re-baselined 2 unit + 1 GameTest. All vertical tank links are inflow-only -> unchanged under A1. Re-baselines the owner must see before WP3 edits them: `PumpJunctionStartupTest` crude at 298 K / 1 atm (bubble point ~1.2 atm by hand, confirm by one flash; raise the generator), GameTest `heatedCrudePumpStartsIntoNitrogenReservoir` (raise to ~1 MPa), `FluidFallbackQualificationTest` wet-crude pump case (liquid supply or drop). Five compressor conversions change assertions (`PumpRiseScalingTest` 575 Pa shutoff, `FluidPumpedFillLineTest` scaled limit, `NetworkRegimeTest` bracket via r_max = 1.5, `FluidThermoDomainHoldTest` status text, `IslandCertificateTest` dead-headed device). Level head D9 touches `ElevatedBlockLineIslandTest` :216/:220/:229 and `DeadHeadedLineIslandTest` :234 (~7 kPa).
+- **In-game check** (not runnable here: no display for the MCP client): the three scenarios of review WP5 section 11 on a fresh world.
+- **Windows JDK 21.0.11 lane**: the Gradle gates and GameTests of section 3 on the owner's machine.
+- **Decisions and options** collected in review "WP6: gates and close" (e): the re-baselines to confirm (A32, A44, A54), D14's later-batch options (wall heat exchange, ice region, clamped water properties), D11 items 2/4/5, WP3+WP4 items 1-7, WP5 items 1-3, the extreme-topology water variant.
+- Mixed-gas carry-overs: the `fluid-trbdf2-r1` anchor label; the three island exact-regression fixtures still skip.
 
-Plan corrections from WP0 that override the plan text: junction rows are the owned-holdup vessel form and the reconstruction books pinned flows (`ConservativeTransport` :169-177, :327-350); `boundaryAllowed` (`PassiveStepSolver` :1303) is static, WP2 passes an availability mask from the start state; name the port enum `PhasePort` (there is a `NodeKind.PORT`); `graphIdentity` (`IslandCertificate.java:336-360`) has an exhaustive switch, a `Compressor` needs a case; checkpoint `VERSION` 5 -> 6; 34 GameTests exist, not 85; `PassiveStepSolver.java` is byte-identical between 618ea63 and c32acac, so `LEVEL_HEAD_REVIEW.md` line numbers hold; the start on PUMP_HEAD_LIMIT partly exists (:293-294).
+## 5. What the owner must do to merge (review "WP6: gates and close" (f))
 
-## 5. Next step: WP1 (not started; the agent was stopped before editing)
+1. Run the in-game check and, if wanted, the Windows lane.
+2. Fast-forward `main` to the branch (or merge); in the same merge: `CHANGELOG.md` `[Unreleased]` line under `## [0.7.0] - <merge date>`, `mod_version` 0.6.0 -> 0.7.0 in `gradle.properties`, `documentation/INDEX.md` row of this batch to "Implemented <merge date>", `tools/INDEX.md` rows noted.
+3. Play on a fresh world (format 6; fluid-7 client and server from the same build).
+4. On Windows, move the untracked `documentation/`, `research/`, `tools/` copies aside before pulling (section 1).
 
-Scope = plan section 7 WP1 (sections 3.1-3.3, 3.8, science only) plus the amendment: (1) `PhasePort { BULK, VAPOR, LIQUID }` per pipe end on `PassiveNetwork.Pipe`, in `Pipe.Identity` (:126-133) and `graphIdentity`; non-BULK valid only on RESERVOIR/PORT ends. (2) Per-end transported stream from the vessel flash in `FluidThermodynamics` (composition, density, viscosity, enthalpy, velocity limit, solids of the drawn phase), read by every plan Appendix A reader (re-resolved in Appendix C.4); absent phase -> bulk density for sign tests (A8). (3) Material-row column drop skips nodes with a non-BULK port. (4) Reconstruction books a phase-port outflow as a fixed donor with stream fractions frozen from the converged candidate, on the pinned flows. (5) `PipeTransfer.sample`, `SolidMobility` outlet mapping (BULK/LIQUID -> MIXED, VAPOR -> GAS), filter capture on the stream's solid share. (6) One per-end helper `endDrivingPressure(node, end)` through all 11 static driving-pressure sites of Appendix C.3 (plus pump reopen start and `closeDeadHeads`), zero offset in WP1: the level head (D9) then becomes a one-line change.
+## 6. Standing rules that bit in this batch
 
-Gates: exact regression `-PfluidRegressionMode=exact` 0.000e+00 (all BULK); fluid suites 406/406 with the MIXED_GAS_COST / LIQUID_JUNCTION lines reporting the same Newton solve counts (286) and ledger values as review 9.5 (any change = defect in the all-BULK path, never a re-baseline); 38 adjacent 38/38; fixture 1 = two-phase vessel with one VAPOR-port and one LIQUID-port line to sinks, each line carries its phase's composition, ledger 1e-12, no nonconvergence at 0.1 s and 5 s (`PhasePortTest`); GameTest source set compiles. Commit `WIP phase-ports WP1: ...`, review section in `PHASE_PORTS_REVIEW.md` (new file), plan WP1 row updated, copies to main.
-
-Then: WP2 absent-phase closure (availability mask, throttle, `boundaryReopen` link allowance) -> level head B (D9, after WP2) -> WP3 liquid-only pump (show the owner the re-baselines first) -> WP4 compressor -> WP5 runtime/GUI/format 6 -> WP6 gates, in-game scenarios, tooling cleanup, `CHANGELOG.md` `[Unreleased]`, `mod_version` 0.6.0 -> 0.7.0 at merge, INDEX rows.
-
-## 6. Standing rules that bit today
-
-- One Gradle invocation at a time; the dev client counts. JAVA_HOME `C:/Program Files/Java/jdk-21.0.11`; `JAVA_OPTS=-Xshare:off` for the client.
-- **Never any desktop keyboard/mouse input from an agent** (`robot.ps1`, SendKeys, Poke/Desk): a WP4 paste went to a Chrome payment dialog behind the client. In-game work uses only the bridge's in-process tools on the `runMcpClient` lane: `./gradlew.bat --no-configuration-cache runMcpClient --offline --console=plain`, game dir `run/mcp-client/`, bridge jar in `run/mcp-client-mods/`, `createcheme_mcp_compat` in the log; text entry = `click {x,y}` on the field, `hotkey {"keys":"key.keyboard.left control,key.keyboard.a"}`, `type_text`; component search `type_text` + `press_key enter`; `click_button_index N`; from Git Bash `MSYS_NO_PATHCONV=1` for `/tp` chat; a `click` with no screen open breaks a block; reservoirs have no editable controls (use generators); shut down via pause -> Save and Quit -> Quit Game. Recipe and pitfalls: `tools/junction-holdup-prototype/wp4-ingame/mcp-lane/NOTES.md`. The skill lives on branch `claude/minecraft-mcp-skill-c3f0f0` (`git show <branch>:.claude/skills/minecraft-mcp/...`), not on main.
-- A defect fix that rests on an assumption not forced by physics or a recorded rule is presented as options, not implemented (owner 2026-09-26). Classify every test failure before editing; re-baselines record old and new values.
-- Every run gets a numbered README row with its command line and log (tool folder). Documents written in the worktree are copied to the main checkout's batch folder.
-- No save/checkpoint compatibility work; format bumps are tested on a fresh world.
-- Research and implementation subagents run on opus; fable medium only when the opus quota is out.
+- **JDK roundoff.** OpenJDK 21.0.10 (Linux, container) and JDK 21.0.11 (Windows) differ in one mixed-gas ledger value (`MIXED_GAS_TRANSIENT interval=0.1 key=0.02:5:false`, libm-sensitive at 1e-15; `tools/cloud-science-harness/README.md`). Every "identical to base" comparison of this batch is against a base captured in the container (`tools/phase-ports-probes/d10/logs/02-junction-lines-d10.txt` for Gradle, `tools/cloud-science-harness/reference/junction-lines.txt` for the harness); on Windows compare against the Windows capture.
+- **`JAVA_TOOL_OPTIONS` proxy.** The container's outbound HTTPS goes through a proxy set in `JAVA_TOOL_OPTIONS`; Gradle and the GameTest server need it as set (the harness unsets it for javac/java). The GameTest server's Yggdrasil key fetch is refused by the allowlist, harmlessly.
+- **The harness.** `tools/cloud-science-harness/harness.sh all` (about 100 s) is a Minecraft-free stand-in; it never replaced a Gradle gate of record, but it was the only gate of the D12/D13 side worktrees while another agent held the Gradle lane, and those gates were re-run in Gradle after the merges.
+- **One Gradle lane.** One Gradle invocation at a time on the machine, the full `test` task included; side worktrees used the harness instead.
+- **GameTests run headless here, the MCP client cannot.** `runFluidGameTestServer` runs in the container (33/33 on fresh run ids); the langyo/minecraft-mod-mcp in-game check needs a display and is the owner's.
+- A fix resting on an assumption not forced by physics or a recorded rule is presented as options (the vent gate, D11-D14 were decided that way); every test failure is classified before any edit, and re-baselines record old and new values.

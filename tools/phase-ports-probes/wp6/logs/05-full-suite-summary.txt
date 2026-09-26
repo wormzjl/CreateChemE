@@ -1,0 +1,12 @@
+WP6 tree (the cleaned tree, committed as the WP6 code commit), ./gradlew --no-configuration-cache --no-build-cache test --rerun --console=plain --continue (log 05-gradle-full-test-wp6.log, 7 min 15 s):
+classes=237 tests=1166 failures=1 errors=0 skipped=0
+FAILED com.wormzjl.createcheme.science.column.v3.thermo.RegroupedCrudeTest previouslyDifficultCrudesPublishAuditedClassicalSolutionsWithoutLearnedSeeds() 54.703 s
+  java.util.concurrent.CancellationException: Regrouped preset deadline (the test's own 45 s wall-clock deadline per preset, fired inside V3FiniteDifferenceJacobian under the parallel full-suite load)
+33 MIXED_GAS/LIQUID_JUNCTION lines identical to d10/logs/02-junction-lines-d10.txt (ms/bytes/allocatedMB masked)
+by package: science.fluid 224, runtime.fluid 248, science.column 517, client.gui 58, science.material 39, science.thermo 13, runtime.* (non-fluid-package) 36, network.* codecs 31
+
+Classification (pre-existing, not this batch; not fixed here):
+- the batch changes nothing under science/column, science/thermo or their tests (git diff --stat c32acac HEAD on those paths: empty), and column code calls no fluid code;
+- alone, the test passes on both trees in the same time: WP6 50.55 s (08-regrouped-crude-wp6.log), base 6e1c5b6 (= c32acac's src) 49.46 s (08-regrouped-crude-base-6e1c5b6.log);
+- the full test task on the clean base worktree scratchpad/wt-harness (src 6e1c5b6) fails the same test the same way: 1100 tests, 1 failed, RegroupedCrudeTest.previouslyDifficultCrudesPublishAuditedClassicalSolutionsWithoutLearnedSeeds, CancellationException "Regrouped preset deadline" (09-gradle-full-test-base-6e1c5b6.log).
+A wall-clock deadline of 45 s against a ~25 s-per-preset solve that the 4-core container's parallel test forks slow past it.

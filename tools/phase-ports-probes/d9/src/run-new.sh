@@ -1,0 +1,1 @@
+java -cp d9/probe-new:d9/harness-new/main:/home/user/CreateChemE/src/main/resources:/home/user/CreateChemE/src/generated/resources:lib/gson-2.10.1.jar:lib/ejml-core-0.44.0.jar:lib/ejml-ddense-0.44.0.jar:lib/ejml-dsparse-0.44.0.jar com.wormzjl.createcheme.science.fluid.network.${P:-DrainProbe} "$@"

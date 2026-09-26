@@ -120,3 +120,7 @@ Plan: `PHASE_PORTS_PLAN.md` in this folder. Entries are dated; a later entry sup
 - **A52 Compressor block assets.** No mod texture exists (the pump uses vanilla textures), so the block model is the pump's model as parent with vanilla textures overridden (light-grey concrete body and particle, oxidised-copper motor); block name "Process Gas Compressor"; in the pickaxe and Create `non_movable` tags like every fluid device.
 - **A53 `PassiveStepSolver.LEVEL_HEAD_HEIGHT` public** (visibility only), read by the tank page's head and the re-baselined runtime tests.
 - **A54 Re-baselines and fixture 6.** The four physical-topology assertions of Appendix C.5 item 5 state the tank's bottom-port pressure `P + g m_c H/V` against the unchanged expectation and tolerance (headspace 6.95 kPa lower, 8.61 kPa pumped). The falling lines' last-digit moves (VAPOR inflow end, +4.4 mPa and -0.11 mPa) are classified as the A28 leading-phase column at the landing resolution, not re-baselined. The level-head review's fixture 6 is a tank over a void (only the head drives the water down), because a stack of two tanks passes its gas up the same pipe.
+
+## WP6 (2026-09-26, batch close)
+
+- No new decision or default. The cleanup detached dead code only (the extreme-topology open-defect reproduction, the unread WP1 condensed-stream builders), each with a reattach patch; the open owner items of every section are collected in `PHASE_PORTS_REVIEW.md` "WP6: gates and close" (e).

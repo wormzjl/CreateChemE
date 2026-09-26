@@ -11,6 +11,11 @@ integrate at the default cap with every oracle, and the flagged test is now thei
 false`). Numbers, mechanism check and gates: `PHASE_PORTS_REVIEW.md`, section "D12". Sections 4.1, 4.4, 5 and 6 below are
 the record of the defect as found.
 
+**At the batch close (WP6, 2026-09-26):** the reproduction branch (the `FULL_CASES_OPEN_DEFECT` flag, the failure
+assertions and `capDrop`) was detached to `tools/phase-ports-probes/extreme/` with a reattach patch, and the flagged test
+was renamed `theFullCasesIntegrateAtTheDefaultCap` (its assertions, the success branch, unchanged; the JUnit XML names of
+its three cases unchanged). `PHASE_PORTS_REVIEW.md`, section "WP6: gates and close".
+
 ## 1. The owner's cases and how they were read
 
 1. "10 generator in one line with 10 pipe block, connected to another 10 pipe blocks and 10 tanks, each with different
@@ -243,10 +248,11 @@ REPO=<worktree> LIB=<jar folder> bash tools/cloud-science-harness/harness.sh sel
 
 (10 tests, about 22 s; `harness.sh runtime` includes them: 237 tests passed at this commit, junction lines identical to
 the reference.) Output lines: `EXTREME_TOPOLOGY` (one per case and slice), `EXTREME_TOPOLOGY_CADENCE`,
-`EXTREME_TOPOLOGY_STRUCTURE`, and, only with `FULL_CASES_OPEN_DEFECT = true` (before D12), `EXTREME_TOPOLOGY_CAP` and
+`EXTREME_TOPOLOGY_STRUCTURE`, and, only with `FULL_CASES_OPEN_DEFECT = true` (before D12; the flag and these two lines
+were detached at WP6 to `tools/phase-ports-probes/extreme/`), `EXTREME_TOPOLOGY_CAP` and
 `OPEN DEFECT EXTREME_TOPOLOGY`. Since D12 the full cases print unlabelled `EXTREME_TOPOLOGY` and `EXTREME_TOPOLOGY_CADENCE`
 lines like the reduced cases. Under Gradle the class is part of
 `fluidRuntimeTest` (package `runtime.fluid`).
 
-The scan that located the boundary (sections 4.4 and 7) was a temporary test method, not committed; its source was kept
-outside the tree for the batch's tools folder (see the task report).
+The scan that located the boundary (sections 4.4 and 7) was a temporary test method, not committed; its source is
+`tools/phase-ports-probes/extreme/src/ExtremeTopologyScanProbe.java` (how to run it: that folder's README section).

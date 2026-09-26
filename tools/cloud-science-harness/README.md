@@ -6,8 +6,17 @@ Minecraft. It stands in for the Gradle gates only; **the Gradle gates remain the
 the network later that day and Gradle now resolves in the container, so this tool is a fallback: it is for a
 container without Minecraft, or for a quick check that does not need the Gradle lane.
 
-Batch: `2026-09-26-phase-ports-and-compressor` (the WP1 gates in `HANDOFF.md` section 5 and `PHASE_PORTS_PLAN.md`
-section 7). Built at commit `6e1c5b6` on branch `claude/cloud-harness-wip`.
+Batch: `2026-09-26-phase-ports-and-compressor` (the WP1 gates in `HANDOFF_2026-09-26_start.md` section 5 and `PHASE_PORTS_PLAN.md`
+section 7). Built at commit `6e1c5b6` on branch `claude/cloud-harness-wip`, merged into `claude/phase-ports-compressor` at
+`b83537a`.
+
+Use in the batch (WP1 to WP6, 2026-09-26): the quick pre-Gradle check of every work package and the only gate of the two
+side worktrees (D12, D13) while another agent held the Gradle lane; the D9/D11/D12/D13 bitwise probes and every
+`tools/phase-ports-probes/*/src` driver compile against its `compile` output. At the batch's close (WP6, on the cleaned
+tree): science 223/223, runtime 249/249 with the 33 junction lines identical to `reference/junction-lines.txt`, adjacent
+45/45 (the 38 plus the 7 `PhysicalFluidTopologyTest` methods the batch added, which the adjacent patterns select),
+chain-100 0.000e+00 (`tools/phase-ports-probes/wp6/logs/07-harness-all-wp6.log`). No stand-in or exclusion-list change was
+needed in the batch. Status: in use as a fallback (the Gradle gates of record ran in the same container).
 
 ## How to run
 
@@ -147,11 +156,27 @@ JDK 21.0.11 on Windows, the harness on OpenJDK 21.0.10 on Linux, with identical 
 toolchain, not a stand-in. The harness therefore compares with its own capture; its header records the JDK and the
 harness prints a note when the JDK differs.
 
+## Investigation: `investigation/libm-cbrt/`
+
+The toolchain question of "Reference results" above (is the one differing `MIXED_GAS_TRANSIENT` ledger value a stand-in
+or the JDK?). `XMath1.java` is a `Math` stand-in whose `cbrt` is correctly rounded (BigDecimal midpoint test) unless
+`-Dxmath.cbrt=fdlibm`; the science sources were compiled with their `Math.` calls rewritten to `harness.XMath1.` (a one-off
+`sed` over a scratch copy of `src/main/java`, not kept) and the 12 interval-0.1 `MIXED_GAS_TRANSIENT` cases run with each
+mode: `correct.txt` and `fdlibm.txt` hold the worst ledger values per case; every case moves, so the ledger values are
+libm-sensitive at the 1e-15 level and the Linux/Windows difference is the toolchain. Batch: this one, WP1 (the harness's
+coverage check). To rerun: copy `src/main/java` to a scratch folder, rewrite `Math.` to `harness.XMath1.` in the fluid
+science sources, add this file under `harness/`, compile with `REPO=<scratch copy> harness.sh compile`, and run
+`select --select-class=com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionTransientTest` with
+`HARNESS_JVM_OPTS="-Xmx2g -Dxmath.cbrt=correct"` or `fdlibm`.
+
 ## Files
 
 - `harness.sh` - the runner.
 - `stubs/` - the stand-ins (57 files).
 - `reference/junction-lines.txt` - the harness's junction lines at 6e1c5b6 (compared by `runtime`);
   `reference/junction-lines.gradle-run156.txt` - Gradle run 156's, for information.
+- `investigation/libm-cbrt/` - the correctly rounded `cbrt` experiment (section above).
+- The seed this harness grew from, the javac-only science runner of WP1, is `tools/phase-ports-probes/wp1/src/science-build.sh`
+  (byte-identical to the `science-build-seed.sh` left untracked in the harness worktree `scratchpad/wt-harness`).
 - `lib/` (git-ignored) - the jars `fetch` downloads: gson 2.10.1 (Minecraft 1.21.1's), ejml-core/ddense/dsparse 0.44.0,
   junit-platform-console-standalone 1.11.4 (JUnit 5.11.4, the build's `junit_version`).
