@@ -1,0 +1,19 @@
+=== harness select (repo /home/user/CreateChemE, 85c492f + uncommitted src changes)
+INLET_PHASE_RUN fixture4 interval=5.0 slices=6 worstUlpsVsAlone=0 accepted=104/104 rejected=9/9 reasons={Backward-Euler state change #=9} waterLineFlow=1.7074387174716796 twoPhaseShare=0.30000000000000004 reasons: ERROR: pump inlet not liquid (vapour 100.0 % by volume, from node 3) | ERROR: pump inlet not liquid (vapour 30.0 % by volume, from node 5)
+INLET_PHASE_RUN fixture4 interval=0.1 slices=60 worstUlpsVsAlone=10 accepted=86/86 rejected=19/19 reasons={Backward-Euler state change #=19} waterLineFlow=1.728204423801727 twoPhaseShare=0.30000000000000004 reasons: ERROR: pump inlet not liquid (vapour 100.0 % by volume, from node 3) | ERROR: pump inlet not liquid (vapour 30.0 % by volume, from node 5)
+COMPRESSOR_RUN heating junction=391.6218604717433K 303981.8799312368Pa head=202672.02708612618Pa ratio=3.000217390437959 workPerKg=97196.43102923293 J/kg rise=93.4718604717433K mode=PUMP_TARGET
+
+Test run finished after 1690 ms
+[         5 containers found      ]
+[         0 containers skipped    ]
+[         5 containers started    ]
+[         0 containers aborted    ]
+[         5 containers successful ]
+[         0 containers failed     ]
+[         2 tests found           ]
+[         0 tests skipped         ]
+[         2 tests started         ]
+[         0 tests aborted         ]
+[         2 tests successful      ]
+[         0 tests failed          ]
+

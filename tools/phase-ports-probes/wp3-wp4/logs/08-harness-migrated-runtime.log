@@ -1,0 +1,24 @@
+=== harness select (repo /home/user/CreateChemE, 85c492f + uncommitted src changes)
+six-tank fill: online 100, committed 100, 1 jobs, 0.4 s of work, FULL, Optional.empty [102038.7 Pa, 297.89 K, liquid 0.0488] [101904.5 Pa, 291.52 K, liquid 0.0011] [101891.2 Pa, 282.34 K, liquid 0.0000] [101885.8 Pa, 297.64 K, liquid 0.0000] [101883.7 Pa, 298.61 K, liquid 0.0000] [101883.2 Pa, 298.62 K, liquid 0.0000]
+GUPRPRPR: first tick accepted=11 rejected=4 reasons={Backward-Euler state change #=4}
+GUPRPRPRPRPRPR: first tick accepted=11 rejected=4 reasons={Backward-Euler state change #=4}
+GUPRPRPRPRPRPRPV: first tick accepted=11 rejected=4 reasons={Backward-Euler state change #=4}
+three-tank fill, 0.6 s: accepted=52 rejected=5 reasons={Backward-Euler state change #=4, thermo-domain: Water temperature < 273.16 K=1}
+three-tank fill: online 5400, committed 5400, 54 jobs, 0.2 s of work, STEADY: replaying 4.306e-09 kg/s since 270.0 s, next check at 26575.0 s, Optional[Certified[drift 1.9005140460218647E-10, since 5400, base 5400, horizon 531500, largest flow 4.3058546964306865E-9]] [601324.5 Pa, 298.17 K, liquid 0.9796] [601324.5 Pa, 298.19 K, liquid 0.8918] [601324.5 Pa, 298.32 K, liquid 0.6208]
+gas transfer (compressor): online 300, committed 300, 3 jobs, 0.0 s of work, STEADY: replaying 5.747e-28 kg/s since 15.0 s, next check at 86415.0 s, Optional[Certified[drift 4.3299279573995715E-16, since 300, base 300, horizon 1728300, largest flow 5.747387395992803E-28]] [100823.3 Pa, 297.73 K, liquid 0.0000] [101828.7 Pa, 298.57 K, liquid 0.0000]
+vented three-tank chain: online 12000, committed 12000, 120 jobs, 0.2 s of work, FULL, Optional.empty [116691.5 Pa, 298.15 K, liquid 0.9977] [111441.0 Pa, 298.15 K, liquid 0.9830] [106266.8 Pa, 298.15 K, liquid 0.9374]
+
+Test run finished after 4579 ms
+[         5 containers found      ]
+[         0 containers skipped    ]
+[         5 containers started    ]
+[         0 containers aborted    ]
+[         5 containers successful ]
+[         0 containers failed     ]
+[        12 tests found           ]
+[         0 tests skipped         ]
+[        12 tests started         ]
+[         0 tests aborted         ]
+[        12 tests successful      ]
+[         0 tests failed          ]
+

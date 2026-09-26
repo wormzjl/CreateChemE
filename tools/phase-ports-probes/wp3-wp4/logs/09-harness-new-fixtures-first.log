@@ -1,0 +1,56 @@
+=== harness select (repo /home/user/CreateChemE, 85c492f + uncommitted src changes)
+INLET_PHASE_RUN hysteresis sweep=[0.0, 0.01, 0.019, 0.021, 0.03, 0.05, 0.03, 0.01, 0.006, 0.004, 0.0] refused=[false, false, false, true, true, true, true, true, true, false, false]
+INLET_PHASE_RUN walk bottom vapourShare=0.0 leading=0.0
+INLET_PHASE_RUN walk top vapourShare=1.0 leading=1.0
+INLET_PHASE_RUN walk dry bottom vapourShare=1.0 leading=1.0
+INLET_PHASE_RUN walk short bottom vapourShare=0.22036380270794775 leading=0.0
+INLET_PHASE_RUN fixture5 modes=[PUMP_TARGET, PUMP_TARGET, PUMP_HEAD_LIMIT, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE] drawnKg=[9.960284697707271, 9.960325602222586, 9.860140390376321, 0.0, 0.0, 0.0, 0.0, 0.0] tankWater=9.249434149766665E-10kg accepted=88 rejected=4 reasons={Backward-Euler state change #=4}
+INLET_PHASE_RUN fixture8 shares=[0.028697048452243388, 0.026513542699051453, 0.02435365191298246, 0.022221873696582527, 0.020124016288645474, 0.018067712560673483, 0.016063180330458466, 0.01412435534669007, 0.01227022522101192, 0.010526634583243995, 0.008931275220185754, 0.007535745736471079] modes=[INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE, INLET_WRONG_PHASE] accepted=52 rejected=0
+INLET_PHASE_RUN fixture4 interval=5.0 slices=6 worstUlpsVsAlone=0 accepted=104/104 rejected=9/9 reasons={Backward-Euler state change #=9} waterLineFlow=1.7074387174716796 twoPhaseShare=0.30000000000000004 reasons: ERROR: pump inlet not liquid (vapour 100.0 % by volume, from node 3) | ERROR: pump inlet not liquid (vapour 30.0 % by volume, from node 5)
+COMPRESSOR_RUN heating junction=343.26167511103375K 303975.0247985223Pa head=202650.08281872573Pa ratio=3.0000008173572734 workPerKg=97190.04479787909 J/kg rise=45.111675111033776K mode=PUMP_TARGET
+COMPRESSOR_RUN fixture7 interval=5.0 accepted=12 rejected=0 reasons={blocked with solid: NO_LIQUID_CARRIER; pipe=12; velocity=0.0; deposition=0.0; t=0.0=4} topFlow=0.0016237019842240586 texts=[ERROR: compressor inlet not gas (condensed 99.8 % by mass, from node 1), ERROR: compressor inlet not gas (condensed 99.8 % by mass, from node 2), ERROR: compressor inlet not gas (solids 4.0e-07 by volume, from node 3), ERROR: compressor inlet not gas (condensed 100.0 % by mass, from node 1)]
+COMPRESSOR_RUN fixture7 interval=0.1 accepted=40 rejected=0 reasons={blocked with solid: NO_LIQUID_CARRIER; pipe=12; velocity=0.0; deposition=0.0; t=0.0=40} topFlow=0.0016698869693691982 texts=[ERROR: compressor inlet not gas (condensed 99.8 % by mass, from node 1), ERROR: compressor inlet not gas (condensed 99.8 % by mass, from node 2), ERROR: compressor inlet not gas (solids 4.0e-07 by volume, from node 3), ERROR: compressor inlet not gas (condensed 100.0 % by mass, from node 1)]
+COMPRESSOR_RUN target q=0.02268025913234062 rhoS=1.1340129566169062 head=2871.5142310619926 work=28.310290721080722 formula=28.310290721080722
+COMPRESSOR_RUN transfer interval=5.0 modes=[PUMP_TARGET, CLOSED] suction=81582.4570767508Pa/280.443766338834K discharge=122373.67547023752Pa/314.74549028350464K ratio=1.49999987564865 landing=-0.010144888670765795Pa work=3254.180662621949J accepted=39 rejected=0 reasons={}
+COMPRESSOR_RUN transfer interval=0.1 modes=[PUMP_TARGET, PUMP_HEAD_LIMIT, CLOSED] suction=81521.22712911849Pa/280.2031115817209K discharge=122281.6508285756Pa/314.5352608009838K ratio=1.499997670973453 landing=-0.18986510213289876Pa work=2871.3434760969412J accepted=600 rejected=0 reasons={}
+
+Failures (2):
+  JUnit Jupiter:InletPhaseTest:refusedPumpsCarryNothingAndTheIslandsWaterLineIntegratesBitwise()
+    MethodSource [className = 'com.wormzjl.createcheme.science.fluid.network.InletPhaseTest', methodName = 'refusedPumpsCarryNothingAndTheIslandsWaterLineIntegratesBitwise', methodParameterTypes = '']
+    => org.opentest4j.AssertionFailedError: water line vs the line alone @0.1 slice 28: 7 ulp ==> expected: <true> but was: <false>
+       org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+       org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+       org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+       org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+       org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+       com.wormzjl.createcheme.science.fluid.network.InletPhaseTest.refusedPumpsCarryNothingAndTheIslandsWaterLineIntegratesBitwise(InletPhaseTest.java:203)
+       java.base/java.lang.reflect.Method.invoke(Method.java:580)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+  JUnit Jupiter:CompressorTest:theDischargeOfARatioThreeCompressionOfNitrogenIsAboutNinetyKelvinWarmer()
+    MethodSource [className = 'com.wormzjl.createcheme.science.fluid.network.CompressorTest', methodName = 'theDischargeOfARatioThreeCompressionOfNitrogenIsAboutNinetyKelvinWarmer', methodParameterTypes = '']
+    => org.opentest4j.AssertionFailedError: the discharge carries the suction's enthalpy plus the work ==> expected: <96926.65784781189> but was: <46362.25156110754>
+       org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+       org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+       org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+       org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:86)
+       org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1024)
+       com.wormzjl.createcheme.science.fluid.network.CompressorTest.theDischargeOfARatioThreeCompressionOfNitrogenIsAboutNinetyKelvinWarmer(CompressorTest.java:147)
+       java.base/java.lang.reflect.Method.invoke(Method.java:580)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+Test run finished after 2726 ms
+[         5 containers found      ]
+[         0 containers skipped    ]
+[         5 containers started    ]
+[         0 containers aborted    ]
+[         5 containers successful ]
+[         0 containers failed     ]
+[        11 tests found           ]
+[         0 tests skipped         ]
+[        11 tests started         ]
+[         0 tests aborted         ]
+[         9 tests successful      ]
+[         2 tests failed          ]
+

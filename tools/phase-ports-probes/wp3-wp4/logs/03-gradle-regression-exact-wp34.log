@@ -1,0 +1,30 @@
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=38659 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+> Task :createMinecraftArtifacts UP-TO-DATE
+> Task :compileJava UP-TO-DATE
+> Task :generateModMetadata UP-TO-DATE
+> Task :verifyMaterialIndex
+> Task :processResources UP-TO-DATE
+> Task :classes UP-TO-DATE
+> Task :jarJar UP-TO-DATE
+> Task :jar UP-TO-DATE
+> Task :compileTestJava UP-TO-DATE
+> Task :processTestResources UP-TO-DATE
+> Task :testClasses UP-TO-DATE
+
+> Task :fluidSolverRegression
+Picked up JAVA_TOOL_OPTIONS: -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts -Djavax.net.ssl.trustStoreType=JKS -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=38659 -Dhttp.nonProxyHosts=localhost|127.0.0.1|::1|127.*|0.*|::|169.254.*|api.anthropic.com|api-staging.anthropic.com|api-pr-preview.anthropic.com|mcp-proxy.anthropic.com|mcp-proxy-staging.anthropic.com|registry.npmjs.org|jsr.io|npm.jsr.io|pypi.org|files.pythonhosted.org|index.crates.io|proxy.golang.org|host.docker.internal|10.*|172.16.*|172.17.*|172.18.*|172.19.*|172.20.*|172.21.*|172.22.*|172.23.*|172.24.*|172.25.*|172.26.*|172.27.*|172.28.*|172.29.*|172.30.*|172.31.*|192.168.*|100.64.0.0/10|*.svc.cluster.local|*.svc.cluster.local -Djdk.http.auth.tunneling.disabledSchemes= -Djdk.http.auth.proxying.disabledSchemes=
+
+FluidSolverRegressionTest > replaySavedIslandsAgainstCapturedReferences() STANDARD_OUT
+    Fluid solver regression SKIP quiet-11312 (no readable core.dat island 11312)
+    Fluid solver regression SKIP quiet-11324 (no readable core.dat island 11324)
+    Fluid solver regression SKIP cold-11312 (no readable core-fallback.dat island 11312)
+
+    ### chain-100 - 100-reservoir cosine-pressure chain (1 x 5 s)
+    | interval | wall ms | allocated MB | accepted | rejected | implicitSolves | activeSetPasses | newtonSolves | newtonIterations | newtonBacktracks | residualEvaluations | residualEvaluationsInJacobian | jacobianBuilds | jacobianColors | jacobianNonzeros | jacobianBlockBuilds | jacobianBlockColumns | jacobianBlockFallbacks | newtonSolvesPreconditioned | newtonIterationsPreconditioned | newtonIterationsFresh | newtonIterationsStale | newtonStepEvaluationsFresh | newtonStepEvaluationsStale | newtonMeritProbes | newtonRefreshesStalled | newtonRefreshesAged | newtonRefreshesFailed | verificationResiduals | equationGateRejections | equationGatePolishes | equationGatePolishesAccepted | luFactorizations | luFactorNanos | luSolves | luSolveNanos | luChecks | luRefinements | luOrderings | luOrderingNanos | luStorages | luSupersededFactorizations | transportFactorizations | transportFactorNanos | transportSolves | transportSolveNanos | transportOrderings | transportOrderingNanos | stateCalls | stateCallsInJacobian | temperatureTermsCalls | flashCalls | reconstructCalls | reconstructNanos | traceOmittedUnknowns | truncatedNodePasses | traceReactivations | solidMomentProjections | solidMomentProjectionsAtAcceptedPoints | solidTransitionRejections | workspaceReuses | workspaceBuilds | stepAttempts | stepAttemptsAccepted |
+    | 0 | 694.03 | 125.7 | 3 | 0 | 4 | 4 | 4 | 29 | 0 | 33 | 0 | 4 | 488 | 684688 | 4 | 16396 | 0 | 2 | 19 | 4 | 25 | 4 | 25 | 0 | 0 | 3 | 0 | 4 | 0 | 0 | 0 | 4 | 163480727 | 29 | 42613196 | 7 | 0 | 1 | 28244841 | 4 | 0 | 4 | 1285708 | 84 | 985328 | 2 | 69957 | 19800 | 16000 | 3878 | 0 | 4 | 19194505 | 1500 | 300 | 0 | 0 | 0 | 0 | 1 | 3 | 3 | 3 |
+    attempts: [Attempt[index=0, step=1.0, accepted=true, dominant=be-state, error=0.0012837802542459177], Attempt[index=1, step=2.0, accepted=true, dominant=be-state, error=0.0019748735309241703], Attempt[index=2, step=2.0, accepted=true, dominant=be-state, error=0.0015538234403200256]]
+    chain-100 vs reference: max deviation: state/moles 0.000e+00 relative (-), temperature 0.000e+00 K (-), phase fraction 0.000e+00 (-), flow 0.000e+00 relative (-)
+    Fluid solver regression report /home/user/CreateChemE/build/reports/fluid/solver-optimization.json
+
+BUILD SUCCESSFUL in 2s
+10 actionable tasks: 2 executed, 8 up-to-date

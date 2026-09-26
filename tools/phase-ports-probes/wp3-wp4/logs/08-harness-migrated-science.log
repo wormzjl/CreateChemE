@@ -1,0 +1,17 @@
+=== harness select (repo /home/user/CreateChemE, 85c492f + uncommitted src changes)
+gas transfer (compressor, ratio 1.05): closed at 0.35 s, suction 296.069176 K 98866.032 Pa, discharge 300.232581 K 103809.285 Pa, rise at shutoff 4943.2531 Pa, limit 4943.3016 Pa, work 63.115 J
+
+Test run finished after 7516 ms
+[        12 containers found      ]
+[         0 containers skipped    ]
+[        12 containers started    ]
+[         0 containers aborted    ]
+[        12 containers successful ]
+[         0 containers failed     ]
+[        38 tests found           ]
+[         0 tests skipped         ]
+[        38 tests started         ]
+[         0 tests aborted         ]
+[        38 tests successful      ]
+[         0 tests failed          ]
+

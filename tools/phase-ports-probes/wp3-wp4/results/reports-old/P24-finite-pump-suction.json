@@ -1,0 +1,26 @@
+{
+  "insufficientSuction": {
+    "outcome": "bounded-feasible-transfer",
+    "acceptedIntervals": 7,
+    "acceptedSeconds": 1.0,
+    "averageFlowKgPerSecond": 0.0024747308580623626,
+    "minimumFractionRemaining": 0.14286153635934576,
+    "minimumTemperatureKelvin": 247.97157041870787,
+    "minimumPressurePascal": 30347.88279003034,
+    "maximumComponentBalanceToleranceUnits": 3.466149579978697E-8,
+    "maximumEnergyBalanceToleranceUnits": 1.730902998520188E-11
+  },
+  "model": "createcheme:tjl20_methane",
+  "components": 21,
+  "compressibility": 1.0E-9,
+  "adequateSuction": {
+    "maximumComponentBalanceToleranceUnits": 0.0,
+    "maximumEnergyBalanceToleranceUnits": 1.3878801464172814E-10,
+    "acceptedIntervals": 1,
+    "acceptedSeconds": 0.1,
+    "pumpWorkJoule": 0.6089606719338477,
+    "averageFlowKgPerSecond": 9.753069085721877E-5
+  },
+  "status": "PASS",
+  "requestedOutcome": "bounded-feasible-transfer"
+}

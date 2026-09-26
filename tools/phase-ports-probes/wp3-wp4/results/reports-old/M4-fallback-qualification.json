@@ -1,0 +1,34 @@
+{
+  "secondsPerInterval": 5,
+  "intervals": 3,
+  "trigger": "injected monotonic clock; real timings are separate measurements",
+  "rows": [
+    {
+      "case": "nitrogen",
+      "status": "PASS",
+      "maximumPressureRelativeError": 1.801478531904266E-7,
+      "maximumTemperatureErrorKelvin": 1.8383864187399013E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "maximumCumulativeComponentThroughputError": 2.4085524007061294E-5,
+      "actualApproximateWallMillisecondsForThreeIntervals": 6.791830000000001
+    },
+    {
+      "case": "wet crude",
+      "status": "PASS",
+      "maximumPressureRelativeError": 1.5327577163049E-7,
+      "maximumTemperatureErrorKelvin": 2.0317292523941433E-6,
+      "maximumPhaseVolumeFractionError": 9.81074566031026E-9,
+      "maximumCumulativeComponentThroughputError": 1.5289010617828674E-5,
+      "actualApproximateWallMillisecondsForThreeIntervals": 6.1916139999999995
+    },
+    {
+      "case": "wet crude pump",
+      "status": "PASS",
+      "maximumPressureRelativeError": 8.97037999436634E-12,
+      "maximumTemperatureErrorKelvin": 4.713456291938201E-10,
+      "maximumPhaseVolumeFractionError": 1.0547118733938987E-14,
+      "maximumCumulativeComponentThroughputError": 0.0,
+      "actualApproximateWallMillisecondsForThreeIntervals": 5.809309000000001
+    }
+  ]
+}

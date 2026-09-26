@@ -1,0 +1,16 @@
+T=298.15 P=101325 vaporVolumeShare=1.115000e-01 vapourMoleFraction=1.293065e-03
+T=298.15 P=150000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=298.15 P=200000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=298.15 P=300000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=298.15 P=500000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=298.15 P=1000000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=298.15 P=2000000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=298.15 bubble point 117840.7 Pa
+T=350.00 P=101325 vaporVolumeShare=7.636081e-01 vapourMoleFraction=2.916824e-02
+T=350.00 P=150000 vaporVolumeShare=4.003890e-01 vapourMoleFraction=9.004243e-03
+T=350.00 P=200000 vaporVolumeShare=1.100087e-01 vapourMoleFraction=2.226526e-03
+T=350.00 P=300000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=350.00 P=500000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=350.00 P=1000000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=350.00 P=2000000 vaporVolumeShare=0.000000e+00 vapourMoleFraction=0.000000e+00
+T=350.00 bubble point 225960.1 Pa
