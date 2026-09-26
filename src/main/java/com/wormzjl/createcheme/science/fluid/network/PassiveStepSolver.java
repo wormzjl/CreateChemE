@@ -548,7 +548,15 @@ public final class PassiveStepSolver {
             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
             SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
             double maximumResidual=0;for(double residual:equations.residual(reconstructed))maximumResidual=Math.max(maximumResidual,Math.abs(residual));
-            if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6))throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);
+            double gate=acceptance==Acceptance.FULL?1e-8:1e-6;
+            if(maximumResidual>gate) {
+                // Decision D13: a refused point gets one polish on a fresh Jacobian before the step is refused; see
+                // {@link #polishRefusedPoint}. Reached only after the gate has refused, so every point it accepts is untouched.
+                var polished=polishRefusedPoint(graph,equations,x,heads,dt,modes,boundaryClosed,closedPorts,tolerance,gate,checkpoint);
+                if(polished!=null){numerical=polished.numerical();x=polished.variables();states=polished.states();System.arraycopy(polished.flows(),0,flows,0,flows.length);
+                    projection=polished.projection();reconstructed=polished.reconstructed();maximumResidual=polished.residual();}
+            }
+            if(maximumResidual>gate){SolverDiagnostics.count(SolverDiagnostics.equationGateRejections);throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);}
             if(acceptance==Acceptance.APPROXIMATE)checkApproximation(equations,reconstructed,projection.states(),flows,workspace,checkpoint,tolerance);
             checkConservation(graph,projection);
             previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousInputStates=inputStates;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);
@@ -571,6 +579,52 @@ public final class PassiveStepSolver {
             return accepted;
         }
         throw new SparseNewton.Nonconvergence("Device active-set limit");
+    }
+    /** A point the equation gate refused, re-solved once and passing the gate; see {@link #polishRefusedPoint}. */
+    private record Polished(SparseNewton.Result numerical,double[] variables,List<FluidThermodynamics.State> states,double[] flows,
+                            ConservativeTransport.Projection projection,double[] reconstructed,double residual) {}
+    /**
+     * Decision D13 (PHASE_PORTS_REVIEW.md "Vent gate defect", "D13"): one re-solve of a point the reconstruction's equation
+     * gate refused, from that converged point, on a fresh Jacobian of this step's own dt and state, at 1e-2 times the
+     * pass's Newton tolerance; the re-solved point is checked as the accepted path checks one (the boundary rule, the
+     * velocity constraint, the converged-point phase correction) and gated again. Returns it only if all of that holds;
+     * otherwise null, and the step is refused exactly as before.
+     *
+     * <p>Why it is needed: the Newton's last iterates usually run on a chord Jacobian inherited from another step (the
+     * workspace keyed by dt forks the previous structure's factorization), so a balance row can close only to the
+     * tolerance, which is stated over the node's total amount. The reconstruction books that node's exact amounts at the
+     * candidate's temperature and pressure, and a vessel whose gas is a small share of its amounts (a nitrogen cushion over
+     * water: 0.1-0.2 %) sees that residual magnified by n_total/n_gas in its volume and water-saturation rows - about 500
+     * times, where the gate keeps one order of margin. A fresh Jacobian closes such a row in one iteration (measured
+     * 8.5e-11 to 7e-16), so the polish passes where halving the step could lock the controller (the D9 manometer ran out
+     * its substep limit).
+     *
+     * <p>Only a refused point reaches this method, so every step the gate accepts is bitwise what it was; the fresh
+     * workspace is local and never retained, so no later solve's preconditioner changes either.
+     */
+    private Polished polishRefusedPoint(PassiveNetwork graph,Equations equations,double[] x,double[] heads,double dt,List<FlowControl.Mode> modes,
+                                        boolean[] boundaryClosed,byte[] closedPorts,double tolerance,double gate,Runnable checkpoint) {
+        SolverDiagnostics.count(SolverDiagnostics.equationGatePolishes);
+        SparseNewton.Result numerical;
+        try{numerical=SparseNewton.solve(equations,x,new SparseNewton.Settings(20,tolerance*1e-2,1e-6,24),checkpoint,new SparseNewton.Workspace(ownership));}
+        catch(SparseNewton.Nonconvergence failure){return null;}
+        double[] variables=numerical.variables();var states=equations.states(variables);double[] flows=new double[graph.pipes().size()];
+        for(int edge=0;edge<flows.length;edge++) {
+            flows[edge]=variables[equations.edgeOffset+edge];
+            if(boundaryClosed[edge]||modes.get(edge)==FlowControl.Mode.CLOSED){flows[edge]=0;variables[equations.edgeOffset+edge]=0;}
+            var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
+            if(!boundaryAllowed(graph,pipe,flows[edge],closedPorts)&&Math.abs(flows[edge])>1e-10)return null;
+            if(Math.abs(flows[edge])>massFlowLimit(pipe,upstream,pipe.drawPort(flows[edge]))*(1+2e-8)+1e-12)return null;
+        }
+        var projection=ConservativeTransport.reconstruct(graph,states,flows,heads,dt,model,checkpoint,transport,rateOnly);
+        if(phaseCorrection(graph,projection.states(),checkpoint,true,equations.cachedPrepared)!=null)return null;
+        var reconstructed=variables.clone();
+        for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
+        SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
+        double residual=0;for(double value:equations.residual(reconstructed))residual=Math.max(residual,Math.abs(value));
+        if(residual>gate)return null;
+        SolverDiagnostics.count(SolverDiagnostics.equationGatePolishesAccepted);
+        return new Polished(numerical,variables,states,flows,projection,reconstructed,residual);
     }
     /** Value key over compact codes instead of rendered strings and boxed lists; the arrays belong
      * to the key from construction on, so a caller must hand over a snapshot of anything it mutates.
