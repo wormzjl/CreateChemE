@@ -1,0 +1,6 @@
+humidity=0.0 liquidWater=0.0 interval=0.1 acc=20 rej=0 ok
+humidity=0.0 liquidWater=0.0 interval=5.0 acc=6 rej=0 ok
+humidity=0.005 liquidWater=0.0 interval=0.1 acc=20 rej=0 ok
+humidity=0.005 liquidWater=0.0 interval=5.0 acc=6 rej=0 ok
+humidity=0.01 liquidWater=0.0 interval=0.1 acc=20 rej=0 ok
+humidity=0.01 liquidWater=0.0 interval=5.0 acc=6 rej=0 ok

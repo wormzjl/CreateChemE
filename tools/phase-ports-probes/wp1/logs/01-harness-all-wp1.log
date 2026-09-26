@@ -1,0 +1,397 @@
+harness: compiled 255 main sources (incl. 57 stand-ins) and 107 test sources of 109 into /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/harness-wp1
+=== harness science (repo /home/user/CreateChemE, b83537a + uncommitted src changes)
+block jacobian: filter island with a junction columns=16 entries=196 neighbour-solid-couplings=6 filter columns=1
+block jacobian: ten-node slurry chain columns=69 entries=1177 neighbour-solid-couplings=126 filter columns=0
+gas transfer (P1): closed at 0.30 s, suction 297.908762 K 101038.277 Pa, discharge 298.391131 K 101612.019 Pa, rise at shutoff 573.7415 Pa, limit at the start 574.9716 Pa
+TranslatedPengRobinson derivatives vs central differences: 18 phase evaluations, 18 identity checks
+    sum x_i h_i = h           max 2.074e-15 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 15786.2042433, analytic 15786.2042433)
+    cp = cp_ideal + dH^R/dT   max 6.967e-16 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 407.939157343, analytic 407.939157343)
+    d ln phi_i/dT             max 1.116e-09 over 360 comparisons at T=480.0 P=900000.0 LIQUID (difference 0.313334668503, analytic 0.313334668153)
+    dh/dT (cp)                max 6.614e-10 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 407.939157612, analytic 407.939157343)
+    dv/dT                     max 2.372e-09 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 3.00122276144e-06, analytic 3.00122275432e-06)
+    d2v/dT2                   max 8.093e-09 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 2.31485305958e-07, analytic 2.31485304084e-07)
+    d ln phi_i/dP             max 1.023e-07 over 360 comparisons at T=520.0 P=250000.0 VAPOR (difference -2.23038404824e-05, analytic -2.23038382001e-05)
+    dv/dP                     max 2.174e-07 over 18 comparisons at T=300.0 P=101325.0 LIQUID (difference -1.90280057355e-13, analytic -1.90280098723e-13)
+    dh/dP                     max 1.091e-07 over 18 comparisons at T=520.0 P=250000.0 VAPOR (difference -0.0414319189326, analytic -0.0414319144139)
+    d ln phi_i/dn_j           max 6.974e-08 over 6520 comparisons at T=300.0 P=101325.0 LIQUID d18/dn9 (difference -0.133374740585, analytic -0.133374590525)
+    dH/dn_j                   max 4.589e-08 over 326 comparisons at T=480.0 P=900000.0 LIQUID dH/dn18 (difference -90551.5464838, analytic -90551.5423287)
+    dV/dn_j                   max 2.292e-08 over 326 comparisons at T=480.0 P=900000.0 LIQUID dV/dn18 (difference -0.00475169162304, analytic -0.00475169151413)
+solid populations: 64 held, reasons={blocked with solid: POPULATION_LIMIT; pipe=10; velocity=1.5743021157464467; deposition=0.0; t=0.0=1}
+H(273.16) - H(273.16-ulp) = 1.705e-12 J/mol, Cp difference 3.553e-15 J/mol/K
+nitrogen saturated liquid density (77.355 K): model 808.8393 kg/m3, NIST 806.0844, +0.342 %
+nitrogen vapour Cp(100 K, 1 atm): model 29.72842 J/mol/K, NIST 30.02493, -0.988 %
+nitrogen vapour Cp(200 K, 1 atm): model 29.24122 J/mol/K, NIST 29.23213, +0.031 %
+nitrogen Psat(77.355 K): model 102568.995 Pa, NIST 101325.059 Pa, +1.228 %
+solid closure: capacity located=1.85 s exact=1.63 s captured=4.923842332063694E-4 of 4.923842332068618E-4 m3, accepted=14 rejected=0 reasons={blocked with solid: FILTER_CLOGGED; pipe=3; velocity=0.0; deposition=0.0; t=1.85=1}
+solid closure: deposition located=0.012507934 s reference=0.005497313 s floor=0.000001000 s
+solid closure: viscosity crossing=[333.941549063, 333.941549659] K
+solid chain: 30 nodes 5 s ms=180 accepted=13 rejected=0
+solid chain: filter island reuses=57 builds=19 orderings=19 factorizations=19 jacobians=19 block=19 fallbacks=0 solves=76/57 attempts
+solid chain: 10 nodes 5 s ms=55 accepted=13 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=101; velocity=0.17168521623619715; deposition=0.17169294793808518; t=0.012482891600421792=1, blocked with solid: DEPOSITION; pipe=102; velocity=0.17169372017518056; deposition=0.17169390110630997; t=0.012637386839679604=1, Solid transport transition inside the step=50}
+PHASE_PORT_STEP WATER_UNDER_NITROGEN composition=1.6620303323428683E-16 booked-vs-sampled=4.960121773085748E-16 flows=[0.009303229617138939, 0.1902556070558613, 0.13610261353256595]
+PHASE_PORT_STEP PENTANE_UNDER_METHANE composition=0.0 booked-vs-sampled=8.185589691246138E-15 flows=[0.01722762134007646, 0.22354471770322368, 0.17394179278825106]
+PHASE_PORT_SOLIDS vessel=90.28351961288169 captured=9.71648038711831 boundary=0.0 initial=100.0
+PHASE_PORT_INTEGRATION WATER_UNDER_NITROGEN interval=0.1 slices=100 accepted=100 rejected=0 worstComponentLedger=1.6093722205357047E-15 worstEnergyLedger=7.040838001790465E-16 worstCompositionGap=2.220446049250313E-16 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION PENTANE_UNDER_METHANE interval=0.1 slices=100 accepted=100 rejected=0 worstComponentLedger=1.8285507101863053E-15 worstEnergyLedger=8.750093654917208E-16 worstCompositionGap=2.220446049250313E-16 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION WATER_UNDER_NITROGEN interval=5.0 slices=2 accepted=6 rejected=0 worstComponentLedger=3.884691566810322E-16 worstEnergyLedger=8.86765002387664E-17 worstCompositionGap=2.3453063553746656E-4 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION PENTANE_UNDER_METHANE interval=5.0 slices=2 accepted=6 rejected=0 worstComponentLedger=4.696238881801654E-16 worstEnergyLedger=1.714373344610355E-16 worstCompositionGap=0.0012918128926803496 worstGapBeyondDrift=0.0
+PHASE_PORT_JUNCTIONS interval=0.1 worstComponentLedger=3.2445950689328524E-16 worstEnergyLedger=4.0814091193249716E-16 gasLineNitrogenFraction=0.9839924664656855 liquidLineWaterFraction=1.0
+PHASE_PORT_JUNCTIONS interval=5.0 worstComponentLedger=1.6638949071450526E-16 worstEnergyLedger=1.4526888270040895E-16 gasLineNitrogenFraction=0.983428663376299 liquidLineWaterFraction=1.0
+
+Test run finished after 10700 ms
+[        53 containers found      ]
+[         0 containers skipped    ]
+[        53 containers started    ]
+[         0 containers aborted    ]
+[        53 containers successful ]
+[         0 containers failed     ]
+[       188 tests found           ]
+[         0 tests skipped         ]
+[       188 tests started         ]
+[         0 tests aborted         ]
+[       188 tests successful      ]
+[         0 tests failed          ]
+
+=== harness runtime (repo /home/user/CreateChemE, b83537a + uncommitted src changes)
+six-tank fill: online 100, committed 100, 1 jobs, 0.4 s of work, FULL, Optional.empty [102038.7 Pa, 297.89 K, liquid 0.0488] [101904.5 Pa, 291.52 K, liquid 0.0011] [101891.2 Pa, 282.34 K, liquid 0.0000] [101885.8 Pa, 297.64 K, liquid 0.0000] [101883.7 Pa, 298.61 K, liquid 0.0000] [101883.2 Pa, 298.62 K, liquid 0.0000]
+GUPRPRPR: first tick accepted=11 rejected=4 reasons={Backward-Euler state change #=4}
+GUPRPRPRPRPRPR: first tick accepted=11 rejected=4 reasons={Backward-Euler state change #=4}
+GUPRPRPRPRPRPRPV: first tick accepted=11 rejected=4 reasons={Backward-Euler state change #=4}
+three-tank fill, 0.6 s: accepted=52 rejected=5 reasons={thermo-domain: Water temperature < 273.16 K=1, Backward-Euler state change #=4}
+three-tank fill: online 5400, committed 5400, 54 jobs, 0.2 s of work, STEADY: replaying 4.306e-09 kg/s since 270.0 s, next check at 26575.0 s, Optional[Certified[drift 1.9005140460218647E-10, since 5400, base 5400, horizon 531500, largest flow 4.3058546964306865E-9]] [601324.5 Pa, 298.17 K, liquid 0.9796] [601324.5 Pa, 298.19 K, liquid 0.8918] [601324.5 Pa, 298.32 K, liquid 0.6208]
+gas transfer: online 300, committed 300, 3 jobs, 0.0 s of work, STEADY: replaying 1.495e-22 kg/s since 15.0 s, next check at 86415.0 s, Optional[Certified[drift 1.1521813159613257E-15, since 300, base 300, horizon 1728300, largest flow 1.494909574377327E-22]] [101039.1 Pa, 297.91 K, liquid 0.0000] [101611.6 Pa, 298.39 K, liquid 0.0000]
+vented three-tank chain: online 12000, committed 12000, 120 jobs, 0.2 s of work, FULL, Optional.empty [116691.5 Pa, 298.15 K, liquid 0.9977] [111441.0 Pa, 298.15 K, liquid 0.9830] [106266.8 Pa, 298.15 K, liquid 0.9374]
+thermo-domain hold: HELD (thermo domain): Nitrogen at 298.04999999999995 K is below 298.05 K in reservoir at 0, 64, 0 (valid 298.05..900 K, package createcheme:tjl20_methane_nitrogen); the retry failed the same way, so the island waits for a change to its network | [Thermo domain: Nitrogen at 298.04999999999995 K is below its valid range 298.05..900 K (package createcheme:tjl20_methane_nitrogen) at node 1; the state cannot be evaluated | reservoir at 0, 64, 0]
+dead-headed line: certified at tick 200 Optional[Certified[drift 0.0, since 200, base 200, horizon 9223372036854775807, largest flow 0.0]] refusal=null
+dead-headed pump: certified at tick 300 Optional[Certified[drift 0.0, since 300, base 300, horizon 9223372036854775807, largest flow 0.0]] refusal=null
+pumped loop: pump work 0.6338897206547203 J per interval, Optional.empty refusal=a node's temperature or pressure changed by 1.2434488899076778E-6 per interval
+closed pair: certified at tick 300 Optional[Certified[drift 0.0, since 300, base 300, horizon 9223372036854775807, largest flow 0.0]] refusal=null
+closed pair, three-interval window: 0 solves in 40 intervals, Optional[Certified[drift 0.0, since 300, base 300, horizon 9223372036854775807, largest flow 0.0]] refusal=null
+composition replacement at eps_s 1.0E-9: Optional[Certified[drift 5.3987877871396305E-9, since 17700, base 17700, horizon 36200, largest flow 0.20000434818169985]], last refusal while flushing: a node's temperature or pressure changed by 4.953568230797673E-6 per interval
+composition replacement at eps_s 1.0E-7: Optional[Certified[drift 4.097472573816563E-7, since 13200, base 13200, horizon 13400, largest flow 0.20000452591399168]], last refusal while flushing: a node's temperature or pressure changed by 4.953568230797673E-6 per interval
+closed ladder 65: certified at tick 400 Optional[Certified[drift 1.6395960772211036E-9, since 400, base 400, horizon 61300, largest flow 2.8414784208204296E-8]] refusal=null evidence=Evidence[endTick=400, stationarity=Stationarity[discrete=null, state=1.4302302606132463E-10, component=2.657114655219001E-9, componentAt=node 6618 component 8, energy=2.6079021036296192E-9, energyAt=node 6618 energy, flow=3.6888745953268044E-9, flowAt=pipe 4134588280833814892, flowChange=1.620525921695002, flowMoves=3.6888745953268044E-9, largestRelativeFlowChange=1.620525921695002], drift=1.6395960772211036E-9]
+drop: certified Certified[drift 4.150819943615419E-6, since 10800, base 10800, horizon 11300, largest flow 0.20000617149190797], then Optional.empty refusal=revalidation: node 4 component 19 changed by 2.2906404449625334E-6 of its inventory
+renewal: Optional[Certified[drift 0.0, since 200, base 600, horizon 900, largest flow 0.33296864487582145]] refusal=null
+generator to void: certified at tick 200 Optional[Certified[drift 0.0, since 200, base 200, horizon 1728200, largest flow 0.33296864487582145]] refusal=null
+generator to void: 2 solves certified vs 400 reference; void received -2.377209799e+04 vs -2.377209799e+04 mol nitrogen
+matched throughput: certified at tick 1700 Optional[Certified[drift 5.463868888421577E-8, since 1700, base 1700, horizon 3500, largest flow 0.26587941328760356]] refusal=null
+matched throughput: base 1700, solves certified 45 vs reference 217
+slow fill: Optional.empty refusal=a node's temperature or pressure changed by 0.001137576970733679 per interval
+slow fill: a node's temperature or pressure changed by 0.0018861458917317673 per interval
+pumped loop: a node's temperature or pressure changed by 1.294961842410822E-6 per interval
+stress100 ladder 7: a node's temperature or pressure changed by 1.1818890040185269E-8 per interval
+junction replay: certified at tick 10700 Certified[drift 4.462869572243965E-6, since 10700, base 10700, horizon 11200, largest flow 0.20318609563324733], 1 junctions, largest junction component change 1.2231222091263483E-6 mol per interval
+(iii) OK 40 intervals (tank drawn down through a void)
+  node[0] id=1 GENERATOR P=400000.0 mass=1071.4906085273121 solidKg=125.0 storedSolidKg=125.0
+  node[1] id=3 JUNCTION P=399279.6186825066 mass=1071.4904786399236 solidKg=124.99987011261122 storedSolidKg=1.1410740888880844
+  node[2] id=5 RESERVOIR P=101324.99970233704 mass=509.9845862874534 solidKg=0.0 storedSolidKg=0.0
+  node[3] id=7 VOID P=101325.0 mass=1.145353086183201 solidKg=0.0 storedSolidKg=0.0
+  node[4] id=-3 JUNCTION P=102209.62435303742 mass=946.4906085273121 solidKg=0.0 storedSolidKg=0.0
+  pipe 0->1 plain
+  pipe 4->2 plain
+  pipe 2->3 plain
+  pipe 1->4 filter captured=24.999999999975003
+(i) freshly activated slurry filter line:
+  node[0] id=1 GENERATOR P=400000.0 mass=1071.4906085273121 solidKg=125.0 storedSolidKg=125.0
+  node[1] id=3 JUNCTION P=400000.0 mass=946.4906085273121 solidKg=0.0 storedSolidKg=0.0
+  node[2] id=5 RESERVOIR P=101325.0 mass=1.145353086183201 solidKg=0.0 storedSolidKg=0.0
+  node[3] id=-3 JUNCTION P=400000.0 mass=946.4906085273121 solidKg=0.0 storedSolidKg=0.0
+  pipe 0->1 plain
+  pipe 3->2 plain
+  pipe 1->3 filter captured=0.0
+(ii) island rebuilt by the configuration event:
+  node[0] id=1 GENERATOR P=400000.0 mass=1071.4906085273121 solidKg=125.0 storedSolidKg=125.0
+  node[1] id=3 JUNCTION P=400000.0 mass=946.4906085273121 solidKg=0.0 storedSolidKg=0.0
+  node[2] id=5 RESERVOIR P=400000.0014512148 mass=743.1612563263856 solidKg=0.0 storedSolidKg=0.0
+  node[3] id=-3 JUNCTION P=400000.0 mass=946.4906085273121 solidKg=0.0 storedSolidKg=0.0
+  pipe 0->1 plain
+  pipe 3->2 plain
+  pipe 1->3 filter captured=0.0
+(ii) OK 20 intervals (5 % solids onto a full tank)
+(control) OK 20 intervals (in-place boundary swap)
+(iv) OK 20 intervals (feed back to 0 %)
+  node[0] id=1 GENERATOR P=400000.0 mass=996.3059037129602 solidKg=0.0 storedSolidKg=0.0
+  node[1] id=3 JUNCTION P=400000.0 mass=996.3059037129602 solidKg=0.0 storedSolidKg=0.0
+  node[2] id=5 RESERVOIR P=400000.0014512148 mass=743.1612563263856 solidKg=0.0 storedSolidKg=0.0
+  node[3] id=-3 JUNCTION P=400000.0 mass=996.3059037129602 solidKg=0.0 storedSolidKg=0.0
+  pipe 0->1 plain
+  pipe 3->2 plain
+  pipe 1->3 filter captured=0.0
+one placement, median ms by world size: {500=0.202345, 2000=0.15634, 5000=0.124561}
+junction 3: m_J 0.009559865965626475 kg, 0.05 s x cap flow 0.19119731931252948 kg/s
+remint: old junction methane fractions up to 0.9999999964953259; fresh junctions at their seed composition
+10000 islands: cold save capture 17.3 ms, encode 142.4 ms, write 94.2 ms (2420000 unit bytes, pack 2420479 bytes, core 0 bytes); warm save capture 15.7 ms, encode 134.7 ms, write 49.8 ms; load 222.3 ms; register 99.1 ms; first save after load capture 11.6 ms, encode 42.4 ms, write 47.0 ms; core file 397757 bytes, pack files 2420479 bytes
+[harness-log ERROR] fluid_checkpoint status=WRITE_FAILED sequence=2 detail=the previous save stays in force; the next save writes every unit afresh | java.io.IOException: injected: crash before the core record's rename
+[harness-log ERROR] fluid_checkpoint status=WRITE_FAILED sequence=2 detail=the previous save stays in force; the next save writes every unit afresh | java.io.IOException: injected: the pack write failed
+[harness-log ERROR] fluid_checkpoint status=NOT_WRITTEN sequence=3 detail=the save it builds on (2) was not written; the next save writes every unit afresh
+pack files on disk at most: 17
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:4:false, worstMoles=5.10099316571176E-15, worstEnergy=5.4395265571948675E-15, newtonSolves=0, ms=133, bytes=38999696]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:4:true, worstMoles=1.8286551733222133E-15, worstEnergy=4.607488907237493E-15, newtonSolves=0, ms=133, bytes=36657952]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:5:false, worstMoles=3.0662160794169303E-15, worstEnergy=5.731974221560183E-15, newtonSolves=0, ms=197, bytes=51889928]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:5:true, worstMoles=1.2841621953470297E-15, worstEnergy=1.8311814887738755E-15, newtonSolves=0, ms=140, bytes=37511416]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:6:false, worstMoles=1.3627627019630802E-15, worstEnergy=7.603639273498202E-16, newtonSolves=0, ms=315, bytes=96421456]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.05:6:true, worstMoles=7.835885536287712E-16, worstEnergy=2.864912974372031E-15, newtonSolves=0, ms=190, bytes=123940856]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:4:false, worstMoles=5.514587206174876E-16, worstEnergy=1.2785353309169641E-15, newtonSolves=0, ms=124, bytes=45843312]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:4:true, worstMoles=1.2013212947883937E-15, worstEnergy=2.9155899314157096E-15, newtonSolves=0, ms=117, bytes=44159456]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:5:false, worstMoles=9.995189311191963E-16, worstEnergy=2.063091102161465E-15, newtonSolves=0, ms=136, bytes=50881152]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:5:true, worstMoles=7.556908400314501E-16, worstEnergy=2.886434032101552E-15, newtonSolves=0, ms=121, bytes=47144224]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:6:false, worstMoles=9.61788341858209E-16, worstEnergy=8.71728634716112E-16, newtonSolves=0, ms=165, bytes=75563088]
+MIXED_GAS_TRANSIENT interval=0.1 Outcome[key=0.02:6:true, worstMoles=8.915014561666219E-16, worstEnergy=2.769810434844924E-15, newtonSolves=0, ms=158, bytes=67005400]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:4:false, worstMoles=2.4126319027015086E-16, worstEnergy=3.21692430801847E-16, newtonSolves=28, ms=44, bytes=12454952]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:4:true, worstMoles=5.968135467490589E-16, worstEnergy=5.611685207532844E-16, newtonSolves=26, ms=45, bytes=11211512]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:5:false, worstMoles=2.72552540392616E-16, worstEnergy=2.924476643653155E-16, newtonSolves=33, ms=51, bytes=15797344]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:5:true, worstMoles=5.780909902760545E-16, worstEnergy=1.7721111181682666E-16, newtonSolves=27, ms=43, bytes=12824008]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:6:false, worstMoles=2.38483472843539E-16, worstEnergy=2.339581314922524E-16, newtonSolves=35, ms=59, bytes=17057464]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.05:6:true, worstMoles=1.6350177741836058E-16, worstEnergy=5.611685207532844E-16, newtonSolves=29, ms=50, bytes=14040784]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:4:false, worstMoles=2.060975018267591E-16, worstEnergy=2.324609692576299E-16, newtonSolves=16, ms=35, bytes=8048944]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:4:true, worstMoles=3.2632104455903524E-16, worstEnergy=7.288974828539274E-16, newtonSolves=16, ms=34, bytes=8046328]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:5:false, worstMoles=4.825263805403017E-16, worstEnergy=6.392676654584821E-16, newtonSolves=20, ms=46, bytes=11648840]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:5:true, worstMoles=4.121950036535182E-16, worstEnergy=4.081825903981993E-16, newtonSolves=17, ms=42, bytes=9671800]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:6:false, worstMoles=4.1359404046311573E-16, worstEnergy=4.35864317358056E-16, newtonSolves=20, ms=44, bytes=10877648]
+MIXED_GAS_TRANSIENT interval=5 Outcome[key=0.02:6:true, worstMoles=2.7479666910234547E-16, worstEnergy=3.2071489245572804E-16, newtonSolves=19, ms=40, bytes=10095992]
+MIXED_GAS_COST interval=5 cases=12 ms=533 newtonSolves=286 allocatedMB=135.2
+
+(balanced) generator at 400000 Pa, tank charged at 360918.3068374132 Pa: OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068374132 mass=4.082632911146436
+
+=== dead-headed at 101325 Pa, adverse column 39070.02218088346 Pa ===
+(rising plain)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  plain)   OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(rising filter) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(flat  filter)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+(falling plain) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=140395.02229129805 mass=261.8246711792764
+rising line:
+  node[0] id=1 GENERATOR y=-59.0 P=101325.0 rho=996.0083764813535 liquid=1.0 vapour=0.0
+  node[1] id=5 RESERVOIR y=-55.0 P=101325.0 rho=1.145353086183201 liquid=0.0 vapour=1.0
+  pipe id=1032387407353448371 0->1 Passive filter=false blocked=0
+
+=== generator at 400000 Pa, water column over 4 m = 39081.6931625868 Pa ===
+(flat control)  OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=400000.0016998491 mass=743.1612564860314
+(rising  generator->3 pipes up->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.3068373795 mass=715.3400366628814 offset vs flat=-39081.694862469565 Pa
+(falling generator->3 pipes down->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=439081.69316259696 mass=766.0002773512413 offset vs flat=39081.69146274787 Pa
+(rising  generator->pipe->filter->pipe->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=360918.37874640257 mass=715.3399274191281 offset vs flat=-39081.622953446524 Pa
+(rising  generator->pump->2 pipes->tank) OK intervals=40 advanced=5.0 accepted=1 rejected=0
+   tank P=861062.9819044366 mass=880.3467474425455 offset vs flat=461062.9802045875 Pa
+(reopened at 400 kPa) OK intervals=40 accepted=1 rejected=0 tank P=360918.3068373795 mass=715.3400366624348
+(lowered back to 101.325 kPa) OK intervals=40 accepted=1 rejected=0 tank P=360918.3068373795
+(flat filter)   OK intervals=40 accepted=1 rejected=0
+(rising filter) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 101326 Pa, adverse 1 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 110000 Pa, adverse 8675 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 140395 Pa, adverse 39070 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 200000 Pa, adverse 98675 Pa) OK intervals=40 accepted=1 rejected=0
+(rising, 101325 Pa against 39070.02218088346 Pa of column) OK intervals=40 accepted=1 rejected=0
+1000 certified islands: encode 6.8 ms, decode 11.2 ms, register 6.7 ms, 264000 unit bytes, core record 0 bytes
+(ii) generator-pump-pipe-filter-pipe-tank, clear, at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator-pump-3 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(reference) passive generator at 601325 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) pumped tank P=601324.9467316902 mass=829.0189727840632 T=298.215576722573 liq=0.8307861375538368 vap=0.16921386244617773
+(endpoint) passive tank P=601324.9999998952 mass=828.9544530663226 T=298.2920489296234 liq=0.8307378947857147 vap=0.16926210595791694
+(iv) generator(20%/100um at 300 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+(iii) generator(5%/100um)-pipe-filter-pipe-void, no driving pressure: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=8261561421756122062; velocity=0.0; deposition=0.0814002975619227; t=0.0=1}
+(control) generator at 400 kPa-4 pipes-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(i-c) generator at 300000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=300000.00003546325 mass=657.3805253433853  control tank P=300000.0005819588 mass=657.3805259701313
+(i-c) generator at 400000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 400000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=400000.00135758595 mass=743.1612562662372  control tank P=400000.0000015244 mass=743.1612557244054
+(i-c) generator at 600000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 600000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=599999.9999999127 mass=828.5786247201402  control tank P=599999.9999999144 mass=828.5786247086509
+(i-b) generator at 150000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 150000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=150000.00006461696 mass=309.92017828531044  control tank P=150000.00005913712 mass=309.9201780469524
+(i-b) generator at 200000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 200000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=200000.0001181334 mass=484.5403332753902  control tank P=200000.0001556185 mass=484.54033332041655
+(i-b) generator at 250000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 250000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=250000.00004770243 mass=588.4549366696046  control tank P=250000.00003626704 mass=588.4549366356877
+(i-b) generator at 300000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=300000.0007311327 mass=657.3805261412045  control tank P=300000.0005819588 mass=657.3805259701313
+(i-b) generator at 350000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 350000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=350000.0013095293 mass=706.4473151473416  control tank P=349999.9999999841 mass=706.4473141492515
+(i-b) generator at 400000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 400000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=400000.0014512148 mass=743.1612563263856  control tank P=400000.0000015244 mass=743.1612557244054
+(i-b) generator at 600000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 600000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=600000.0001429326 mass=828.578624928397  control tank P=599999.9999999144 mass=828.5786247086509
+reservoir-terminated filter line:
+  node[0] id=1 GENERATOR P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=101325.0 liquid=0.0 vapour=1.0 solidKg=0.0
+  node[3] id=-3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0->1 Passive filter=false
+  pipe id=3932769516861099846 3->2 Passive filter=false
+  pipe id=-9223372036854775805 1->3 Passive filter=true
+(probe) generator at 601325 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(probe) generator at 300000 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(v) generator(5%/100um at 150 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+(control) generator-4 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator(5%/100um at 300 kPa)-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=44096572600764770; velocity=0.08138905819655261; deposition=0.08138927027369308; t=0.0=1}
+(i) generator-pipe-filter-pipe-tank, clear, at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+coupled: 27 publications, module scans 964 polled, 31 deadline-driven
+empty-cycle: 18 publications, module scans 946 polled, 28 deadline-driven
+recycle: 18 publications, module scans 946 polled, 28 deadline-driven
+coupled (reads true): 118 vs 120 solves, certificates 20, wakes 20, replayed ticks 200, materialisations 2
+coupled (reads false): 118 vs 120 solves, certificates 20, wakes 18, replayed ticks 200, materialisations 2
+empty-cycle (reads true): 6 vs 90 solves, certificates 3, wakes 0, replayed ticks 5600, materialisations 56
+empty-cycle (reads false): 6 vs 90 solves, certificates 3, wakes 0, replayed ticks 5600, materialisations 56
+recycle (reads true): 62 vs 90 solves, certificates 1, wakes 0, replayed ticks 2800, materialisations 28
+recycle (reads false): 62 vs 90 solves, certificates 1, wakes 0, replayed ticks 0, materialisations 0
+LIQUID_JUNCTION interval=5 generators:0.05 m_J=9.774 kg Q(1s)=54.00 kg/s m_J/Q=0.1810 s mismatch(1s)=-0.000389 mismatch(end)=5.52e-10 perSlice=[-0.000389,-4.11e-07,-4.33e-10,5.52e-10] ms=14 newtonSolves=13
+LIQUID_JUNCTION interval=5 generators:0.02 m_J=1.564 kg Q(1s)=4.829 kg/s m_J/Q=0.3238 s mismatch(1s)=-0.00172 mismatch(end)=9.16e-09 perSlice=[-0.00172,-8.21e-06,-3.90e-08,9.16e-09] ms=11 newtonSolves=13
+LIQUID_JUNCTION interval=5 tanks:0.05 m_J=9.774 kg Q(1s)=0.01503 kg/s m_J/Q=650.2 s mismatch(1s)=-0.356 mismatch(end)=-0.472 perSlice=[-0.356,-0.472,-0.472,-0.472] ms=12 newtonSolves=17
+LIQUID_JUNCTION interval=5 tanks:0.02 m_J=1.564 kg Q(1s)=0.01503 kg/s m_J/Q=104.0 s mismatch(1s)=-0.342 mismatch(end)=-0.0806 perSlice=[-0.342,-0.0806,-0.0806,-0.0806] ms=12 newtonSolves=17
+LIQUID_JUNCTION interval=0.1 generators:0.05 m_J=9.774 kg Q(1s)=54.00 kg/s m_J/Q=0.1810 s tauFit(1.0-1.1s)=0.1809 s mismatch(1s)=-0.00288 mismatch(end)=4.10e-09 ms=47
+LIQUID_JUNCTION interval=0.1 generators:0.02 m_J=1.564 kg Q(1s)=4.829 kg/s m_J/Q=0.3238 s tauFit(1.0-1.1s)=0.3239 s mismatch(1s)=-0.0189 mismatch(end)=5.42e-09 ms=44
+LIQUID_JUNCTION interval=0.1 tanks:0.05 m_J=9.774 kg Q(1s)=2.740e-11 kg/s m_J/Q=3.567e+11 s tauFit(1.0-1.1s)=Infinity s mismatch(1s)=-0.427 mismatch(end)=-0.427 ms=37
+LIQUID_JUNCTION interval=0.1 tanks:0.02 m_J=1.564 kg Q(1s)=3.103e-12 kg/s m_J/Q=5.040e+11 s tauFit(1.0-1.1s)=1.003e+12 s mismatch(1s)=-0.983 mismatch(end)=NaN ms=35
+
+Test run finished after 37612 ms
+[        49 containers found      ]
+[         0 containers skipped    ]
+[        49 containers started    ]
+[         0 containers aborted    ]
+[        49 containers successful ]
+[         0 containers failed     ]
+[       227 tests found           ]
+[         0 tests skipped         ]
+[       227 tests started         ]
+[         0 tests aborted         ]
+[       227 tests successful      ]
+[         0 tests failed          ]
+
+--- junction ledger lines (MIXED_GAS_COST, LIQUID_JUNCTION as printed):
+MIXED_GAS_COST interval=5 cases=12 ms=533 newtonSolves=286 allocatedMB=135.2
+LIQUID_JUNCTION interval=5 generators:0.05 m_J=9.774 kg Q(1s)=54.00 kg/s m_J/Q=0.1810 s mismatch(1s)=-0.000389 mismatch(end)=5.52e-10 perSlice=[-0.000389,-4.11e-07,-4.33e-10,5.52e-10] ms=14 newtonSolves=13
+LIQUID_JUNCTION interval=5 generators:0.02 m_J=1.564 kg Q(1s)=4.829 kg/s m_J/Q=0.3238 s mismatch(1s)=-0.00172 mismatch(end)=9.16e-09 perSlice=[-0.00172,-8.21e-06,-3.90e-08,9.16e-09] ms=11 newtonSolves=13
+LIQUID_JUNCTION interval=5 tanks:0.05 m_J=9.774 kg Q(1s)=0.01503 kg/s m_J/Q=650.2 s mismatch(1s)=-0.356 mismatch(end)=-0.472 perSlice=[-0.356,-0.472,-0.472,-0.472] ms=12 newtonSolves=17
+LIQUID_JUNCTION interval=5 tanks:0.02 m_J=1.564 kg Q(1s)=0.01503 kg/s m_J/Q=104.0 s mismatch(1s)=-0.342 mismatch(end)=-0.0806 perSlice=[-0.342,-0.0806,-0.0806,-0.0806] ms=12 newtonSolves=17
+LIQUID_JUNCTION interval=0.1 generators:0.05 m_J=9.774 kg Q(1s)=54.00 kg/s m_J/Q=0.1810 s tauFit(1.0-1.1s)=0.1809 s mismatch(1s)=-0.00288 mismatch(end)=4.10e-09 ms=47
+LIQUID_JUNCTION interval=0.1 generators:0.02 m_J=1.564 kg Q(1s)=4.829 kg/s m_J/Q=0.3238 s tauFit(1.0-1.1s)=0.3239 s mismatch(1s)=-0.0189 mismatch(end)=5.42e-09 ms=44
+LIQUID_JUNCTION interval=0.1 tanks:0.05 m_J=9.774 kg Q(1s)=2.740e-11 kg/s m_J/Q=3.567e+11 s tauFit(1.0-1.1s)=Infinity s mismatch(1s)=-0.427 mismatch(end)=-0.427 ms=37
+LIQUID_JUNCTION interval=0.1 tanks:0.02 m_J=1.564 kg Q(1s)=3.103e-12 kg/s m_J/Q=5.040e+11 s tauFit(1.0-1.1s)=1.003e+12 s mismatch(1s)=-0.983 mismatch(end)=NaN ms=35
+harness: 33 junction lines identical to reference/junction-lines.txt (6e1c5b6; wall ms, bytes and allocatedMB ignored)
+=== harness adjacent (repo /home/user/CreateChemE, b83537a + uncommitted src changes)
+(ii) generator-pump-pipe-filter-pipe-tank, clear, at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator-pump-3 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(reference) passive generator at 601325 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) pumped tank P=601324.9467316902 mass=829.0189727840632 T=298.215576722573 liq=0.8307861375538368 vap=0.16921386244617773
+(endpoint) passive tank P=601324.9999998952 mass=828.9544530663226 T=298.2920489296234 liq=0.8307378947857147 vap=0.16926210595791694
+(iv) generator(20%/100um at 300 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+(iii) generator(5%/100um)-pipe-filter-pipe-void, no driving pressure: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=8261561421756122062; velocity=0.0; deposition=0.0814002975619227; t=0.0=1}
+(control) generator at 400 kPa-4 pipes-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(i-c) generator at 300000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=300000.00003546325 mass=657.3805253433853  control tank P=300000.0005819588 mass=657.3805259701313
+(i-c) generator at 400000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 400000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=400000.00135758595 mass=743.1612562662372  control tank P=400000.0000015244 mass=743.1612557244054
+(i-c) generator at 600000 Pa-pipe-valve-2 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 600000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) valve tank P=599999.9999999127 mass=828.5786247201402  control tank P=599999.9999999144 mass=828.5786247086509
+(i-b) generator at 150000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 150000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=150000.00006461696 mass=309.92017828531044  control tank P=150000.00005913712 mass=309.9201780469524
+(i-b) generator at 200000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 200000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=200000.0001181334 mass=484.5403332753902  control tank P=200000.0001556185 mass=484.54033332041655
+(i-b) generator at 250000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 250000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=250000.00004770243 mass=588.4549366696046  control tank P=250000.00003626704 mass=588.4549366356877
+(i-b) generator at 300000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 300000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=300000.0007311327 mass=657.3805261412045  control tank P=300000.0005819588 mass=657.3805259701313
+(i-b) generator at 350000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 350000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=350000.0013095293 mass=706.4473151473416  control tank P=349999.9999999841 mass=706.4473141492515
+(i-b) generator at 400000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 400000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=400000.0014512148 mass=743.1612563263856  control tank P=400000.0000015244 mass=743.1612557244054
+(i-b) generator at 600000 Pa-pipe-filter-pipe-tank, clear: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator at 600000 Pa-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(endpoint) filter tank P=600000.0001429326 mass=828.578624928397  control tank P=599999.9999999144 mass=828.5786247086509
+reservoir-terminated filter line:
+  node[0] id=1 GENERATOR P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[1] id=3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  node[2] id=5 RESERVOIR P=101325.0 liquid=0.0 vapour=1.0 solidKg=0.0
+  node[3] id=-3 JUNCTION P=101325.0 liquid=1.0 vapour=0.0 solidKg=0.0
+  pipe id=8261561421756122062 0->1 Passive filter=false
+  pipe id=3932769516861099846 3->2 Passive filter=false
+  pipe id=-9223372036854775805 1->3 Passive filter=true
+(probe) generator at 601325 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(probe) generator at 300000 Pa-4 pipes-tank, no pump: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(v) generator(5%/100um at 150 kPa)-pipe-filter-pipe-void: OK intervals=1 advanced=5.0 accepted=7 rejected=0 reasons={}
+(control) generator-4 pipes-tank at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(control) generator(5%/100um at 300 kPa)-4 pipes-tank: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=44096572600764770; velocity=0.08138905819655261; deposition=0.08138927027369308; t=0.0=1}
+(i) generator-pipe-filter-pipe-tank, clear, at rest: OK intervals=40 advanced=5.0 accepted=1 rejected=0 reasons={}
+(reopened at 400 kPa) OK intervals=40 accepted=1 rejected=0 tank P=360918.3068373795 mass=715.3400366624348
+(lowered back to 101.325 kPa) OK intervals=40 accepted=1 rejected=0 tank P=360918.3068373795
+(flat filter)   OK intervals=40 accepted=1 rejected=0
+(rising filter) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 101326 Pa, adverse 1 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 110000 Pa, adverse 8675 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 140395 Pa, adverse 39070 Pa) OK intervals=40 accepted=1 rejected=0
+(flat, tank charged at 200000 Pa, adverse 98675 Pa) OK intervals=40 accepted=1 rejected=0
+(rising, 101325 Pa against 39070.02218088346 Pa of column) OK intervals=40 accepted=1 rejected=0
+
+Test run finished after 3998 ms
+[        10 containers found      ]
+[         0 containers skipped    ]
+[        10 containers started    ]
+[         0 containers aborted    ]
+[        10 containers successful ]
+[         0 containers failed     ]
+[        38 tests found           ]
+[         0 tests skipped         ]
+[        38 tests started         ]
+[         0 tests aborted         ]
+[        38 tests successful      ]
+[         0 tests failed          ]
+
+=== harness regression (repo /home/user/CreateChemE, b83537a + uncommitted src changes)
+Fluid solver regression SKIP quiet-11312 (no readable core.dat island 11312)
+Fluid solver regression SKIP quiet-11324 (no readable core.dat island 11324)
+Fluid solver regression SKIP cold-11312 (no readable core-fallback.dat island 11312)
+
+### chain-100 - 100-reservoir cosine-pressure chain (1 x 5 s)
+| interval | wall ms | allocated MB | accepted | rejected | implicitSolves | activeSetPasses | newtonSolves | newtonIterations | newtonBacktracks | residualEvaluations | residualEvaluationsInJacobian | jacobianBuilds | jacobianColors | jacobianNonzeros | jacobianBlockBuilds | jacobianBlockColumns | jacobianBlockFallbacks | newtonSolvesPreconditioned | newtonIterationsPreconditioned | newtonIterationsFresh | newtonIterationsStale | newtonStepEvaluationsFresh | newtonStepEvaluationsStale | newtonMeritProbes | newtonRefreshesStalled | newtonRefreshesAged | newtonRefreshesFailed | verificationResiduals | luFactorizations | luFactorNanos | luSolves | luSolveNanos | luChecks | luRefinements | luOrderings | luOrderingNanos | luStorages | luSupersededFactorizations | transportFactorizations | transportFactorNanos | transportSolves | transportSolveNanos | transportOrderings | transportOrderingNanos | stateCalls | stateCallsInJacobian | temperatureTermsCalls | flashCalls | reconstructCalls | reconstructNanos | traceOmittedUnknowns | truncatedNodePasses | traceReactivations | solidMomentProjections | solidMomentProjectionsAtAcceptedPoints | solidTransitionRejections | workspaceReuses | workspaceBuilds | stepAttempts | stepAttemptsAccepted |
+| 0 | 814.20 | 125.0 | 3 | 0 | 4 | 4 | 4 | 29 | 0 | 33 | 0 | 4 | 488 | 684688 | 4 | 16396 | 0 | 2 | 19 | 4 | 25 | 4 | 25 | 0 | 0 | 3 | 0 | 4 | 4 | 198802910 | 29 | 40169267 | 7 | 0 | 1 | 108357477 | 4 | 0 | 4 | 658227 | 84 | 914469 | 2 | 97190 | 19800 | 16000 | 3878 | 0 | 4 | 14492678 | 1500 | 300 | 0 | 0 | 0 | 0 | 1 | 3 | 3 | 3 |
+attempts: [Attempt[index=0, step=1.0, accepted=true, dominant=be-state, error=0.0012837802542459177], Attempt[index=1, step=2.0, accepted=true, dominant=be-state, error=0.0019748735309241703], Attempt[index=2, step=2.0, accepted=true, dominant=be-state, error=0.0015538234403200256]]
+chain-100 vs reference: max deviation: state/moles 0.000e+00 relative (-), temperature 0.000e+00 K (-), phase fraction 0.000e+00 (-), flow 0.000e+00 relative (-)
+Fluid solver regression report /home/user/CreateChemE/build/reports/fluid/solver-optimization.json
+
+Test run finished after 1466 ms
+[         4 containers found      ]
+[         0 containers skipped    ]
+[         4 containers started    ]
+[         0 containers aborted    ]
+[         4 containers successful ]
+[         0 containers failed     ]
+[         1 tests found           ]
+[         0 tests skipped         ]
+[         1 tests started         ]
+[         0 tests aborted         ]
+[         1 tests successful      ]
+[         0 tests failed          ]
+
+=== harness all (repo /home/user/CreateChemE)
+science    PASS   188 tests found , 188 tests successful , 0 tests failed 
+runtime    PASS   227 tests found , 227 tests successful , 0 tests failed 
+adjacent   PASS   38 tests found , 38 tests successful , 0 tests failed 
+regression PASS   1 tests found , 1 tests successful , 0 tests failed 
+chain-100 vs reference: max deviation: state/moles 0.000e+00 relative (-), temperature 0.000e+00 K (-), phase fraction 0.000e+00 (-), flow 0.000e+00 relative (-)
+
+real	1m6.621s
+user	3m8.523s
+sys	0m3.533s

@@ -1,0 +1,65 @@
+Picked up JAVA_TOOL_OPTIONS: 
+block jacobian: filter island with a junction columns=16 entries=196 neighbour-solid-couplings=6 filter columns=1
+block jacobian: ten-node slurry chain columns=69 entries=1177 neighbour-solid-couplings=126 filter columns=0
+gas transfer (P1): closed at 0.30 s, suction 297.908762 K 101038.277 Pa, discharge 298.391131 K 101612.019 Pa, rise at shutoff 573.7415 Pa, limit at the start 574.9716 Pa
+solid closure: capacity located=1.85 s exact=1.63 s captured=4.923842332063694E-4 of 4.923842332068618E-4 m3, accepted=14 rejected=0 reasons={blocked with solid: FILTER_CLOGGED; pipe=3; velocity=0.0; deposition=0.0; t=1.85=1}
+solid closure: deposition located=0.012507934 s reference=0.005497313 s floor=0.000001000 s
+solid closure: viscosity crossing=[333.941549063, 333.941549659] K
+solid chain: 30 nodes 5 s ms=171 accepted=13 rejected=0
+solid chain: filter island reuses=57 builds=19 orderings=19 factorizations=19 jacobians=19 block=19 fallbacks=0 solves=76/57 attempts
+solid chain: 10 nodes 5 s ms=71 accepted=13 rejected=0 reasons={blocked with solid: DEPOSITION; pipe=102; velocity=0.17169372017518056; deposition=0.17169390110630997; t=0.012637386839679604=1, Solid transport transition inside the step=50, blocked with solid: DEPOSITION; pipe=101; velocity=0.17168521623619715; deposition=0.17169294793808518; t=0.012482891600421792=1}
+TranslatedPengRobinson derivatives vs central differences: 18 phase evaluations, 18 identity checks
+    sum x_i h_i = h           max 2.074e-15 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 15786.2042433, analytic 15786.2042433)
+    cp = cp_ideal + dH^R/dT   max 6.967e-16 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 407.939157343, analytic 407.939157343)
+    d ln phi_i/dT             max 1.116e-09 over 360 comparisons at T=480.0 P=900000.0 LIQUID (difference 0.313334668503, analytic 0.313334668153)
+    dh/dT (cp)                max 6.614e-10 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 407.939157612, analytic 407.939157343)
+    dv/dT                     max 2.372e-09 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 3.00122276144e-06, analytic 3.00122275432e-06)
+    d2v/dT2                   max 8.093e-09 over 18 comparisons at T=480.0 P=900000.0 LIQUID (difference 2.31485305958e-07, analytic 2.31485304084e-07)
+    d ln phi_i/dP             max 1.023e-07 over 360 comparisons at T=520.0 P=250000.0 VAPOR (difference -2.23038404824e-05, analytic -2.23038382001e-05)
+    dv/dP                     max 2.174e-07 over 18 comparisons at T=300.0 P=101325.0 LIQUID (difference -1.90280057355e-13, analytic -1.90280098723e-13)
+    dh/dP                     max 1.091e-07 over 18 comparisons at T=520.0 P=250000.0 VAPOR (difference -0.0414319189326, analytic -0.0414319144139)
+    d ln phi_i/dn_j           max 6.974e-08 over 6520 comparisons at T=300.0 P=101325.0 LIQUID d18/dn9 (difference -0.133374740585, analytic -0.133374590525)
+    dH/dn_j                   max 4.589e-08 over 326 comparisons at T=480.0 P=900000.0 LIQUID dH/dn18 (difference -90551.5464838, analytic -90551.5423287)
+    dV/dn_j                   max 2.292e-08 over 326 comparisons at T=480.0 P=900000.0 LIQUID dV/dn18 (difference -0.00475169162304, analytic -0.00475169151413)
+PHASE_PORT_STEP WATER_UNDER_NITROGEN composition=1.6620303323428683E-16 booked-vs-sampled=4.960121773085748E-16 flows=[0.009303229617138939, 0.1902556070558613, 0.13610261353256595]
+PHASE_PORT_STEP PENTANE_UNDER_METHANE composition=0.0 booked-vs-sampled=8.185589691246138E-15 flows=[0.01722762134007646, 0.22354471770322368, 0.17394179278825106]
+PHASE_PORT_SOLIDS vessel=90.28351961288169 captured=9.71648038711831 boundary=0.0 initial=100.0
+PHASE_PORT_INTEGRATION WATER_UNDER_NITROGEN interval=0.1 slices=100 accepted=100 rejected=0 worstComponentLedger=1.6093722205357047E-15 worstEnergyLedger=7.040838001790465E-16 worstCompositionGap=2.220446049250313E-16 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION PENTANE_UNDER_METHANE interval=0.1 slices=100 accepted=100 rejected=0 worstComponentLedger=1.8285507101863053E-15 worstEnergyLedger=8.750093654917208E-16 worstCompositionGap=2.220446049250313E-16 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION WATER_UNDER_NITROGEN interval=5.0 slices=2 accepted=6 rejected=0 worstComponentLedger=3.884691566810322E-16 worstEnergyLedger=8.86765002387664E-17 worstCompositionGap=2.3453063553746656E-4 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION PENTANE_UNDER_METHANE interval=5.0 slices=2 accepted=6 rejected=0 worstComponentLedger=4.696238881801654E-16 worstEnergyLedger=1.714373344610355E-16 worstCompositionGap=0.0012918128926803496 worstGapBeyondDrift=0.0
+PHASE_PORT_JUNCTIONS interval=0.1 worstComponentLedger=3.2445950689328524E-16 worstEnergyLedger=4.0814091193249716E-16 gasLineNitrogenFraction=0.9839924664656855 liquidLineWaterFraction=1.0
+PHASE_PORT_JUNCTIONS interval=5.0 worstComponentLedger=1.6638949071450526E-16 worstEnergyLedger=1.4526888270040895E-16 gasLineNitrogenFraction=0.983428663376299 liquidLineWaterFraction=1.0
+solid populations: 64 held, reasons={blocked with solid: POPULATION_LIMIT; pipe=10; velocity=1.5743021157464467; deposition=0.0; t=0.0=1}
+H(273.16) - H(273.16-ulp) = 1.705e-12 J/mol, Cp difference 3.553e-15 J/mol/K
+nitrogen saturated liquid density (77.355 K): model 808.8393 kg/m3, NIST 806.0844, +0.342 %
+nitrogen vapour Cp(100 K, 1 atm): model 29.72842 J/mol/K, NIST 30.02493, -0.988 %
+nitrogen vapour Cp(200 K, 1 atm): model 29.24122 J/mol/K, NIST 29.23213, +0.031 %
+nitrogen Psat(77.355 K): model 102568.995 Pa, NIST 101325.059 Pa, +1.228 %
+
+Failures (1):
+  JUnit Jupiter:PackagedSparseLuTest:solvesUsingOnlyTheBuiltModAndItsEmbeddedLibraries()
+    MethodSource [className = 'com.wormzjl.createcheme.science.fluid.PackagedSparseLuTest', methodName = 'solvesUsingOnlyTheBuiltModAndItsEmbeddedLibraries', methodParameterTypes = '']
+    => java.lang.NullPointerException
+       java.base/java.util.Objects.requireNonNull(Objects.java:233)
+       java.base/sun.nio.fs.UnixFileSystem.getPath(UnixFileSystem.java:296)
+       java.base/java.nio.file.Path.of(Path.java:148)
+       com.wormzjl.createcheme.science.fluid.PackagedSparseLuTest.solvesUsingOnlyTheBuiltModAndItsEmbeddedLibraries(PackagedSparseLuTest.java:17)
+       java.base/java.lang.reflect.Method.invoke(Method.java:580)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+Test run finished after 10787 ms
+[        51 containers found      ]
+[         0 containers skipped    ]
+[        51 containers started    ]
+[         0 containers aborted    ]
+[        51 containers successful ]
+[         0 containers failed     ]
+[       181 tests found           ]
+[         0 tests skipped         ]
+[       181 tests started         ]
+[         0 tests aborted         ]
+[       180 tests successful      ]
+[         1 tests failed          ]
+

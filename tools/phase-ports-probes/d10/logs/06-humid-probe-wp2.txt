@@ -1,0 +1,6 @@
+humidity=0.0 liquidWater=0.0 interval=0.1 acc=20 rej=0 ok
+humidity=0.0 liquidWater=0.0 interval=5.0 acc=6 rej=0 ok
+humidity=0.005 liquidWater=0.0 interval=0.1 acc=0 rej=0 FAILED Substep refinement exhausted: Conservative reconstruction fails equation gate: 1.305787733496544E-8; reasons={Conservative reconstruction fails equation 
+humidity=0.005 liquidWater=0.0 interval=5.0 acc=0 rej=0 FAILED Substep refinement exhausted: Conservative reconstruction fails equation gate: 1.3057570569241506E-7; reasons={Conservative reconstruction fails equation
+humidity=0.01 liquidWater=0.0 interval=0.1 acc=0 rej=0 FAILED Substep refinement exhausted: Conservative reconstruction fails equation gate: 2.615115768378473E-8; reasons={Conservative reconstruction fails equation 
+humidity=0.01 liquidWater=0.0 interval=5.0 acc=0 rej=0 FAILED Substep refinement exhausted: Conservative reconstruction fails equation gate: 2.615054209842427E-7; reasons={Conservative reconstruction fails equation 
