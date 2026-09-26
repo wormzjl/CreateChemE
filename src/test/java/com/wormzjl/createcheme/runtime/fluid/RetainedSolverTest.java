@@ -23,12 +23,18 @@ class RetainedSolverTest {
     @Test void aRetainedSolverReusesItsStructureAcrossTheIntervalBoundary() {
         var model=model();var retained=new RetainedSolver();var settings=PassiveIntervalSolver.Settings.defaults();
         var next=retained.solve(model,graph(model),5,settings,()->{}).graph();
-        var carried=measure(()->retained.solve(model,next,5,settings,()->{}));
-        var cold=measure(()->new RetainedSolver().solve(model,next,5,settings,()->{}));
+        var results=new PassiveIntervalSolver.Result[2];
+        var carried=measure(()->results[0]=retained.solve(model,next,5,settings,()->{}));
+        var cold=measure(()->results[1]=new RetainedSolver().solve(model,next,5,settings,()->{}));
         assertEquals(0,carried.value("luOrderings"),"the fill-reducing ordering must survive the interval boundary");
         assertTrue(cold.value("luOrderings")>0,"a fresh handle still orders the matrix");
-        assertTrue(carried.value("jacobianBuilds")<cold.value("jacobianBuilds"),
-                "carried preconditioner "+carried.value("jacobianBuilds")+" vs fresh "+cold.value("jacobianBuilds")+" Jacobian builds");
+        // Nothing numeric crosses a job boundary (deterministic replay, WP1 of the mixed-gas junction batch): the
+        // carried job builds exactly the Jacobians a fresh handle builds and reaches the same state bit for bit.
+        assertEquals(cold.value("jacobianBuilds"),carried.value("jacobianBuilds"),"carried vs fresh Jacobian builds");
+        for(int i=0;i<next.reservoirs().size();i++) {
+            assertEquals(results[1].graph().reservoirs().get(i).inventory(),results[0].graph().reservoirs().get(i).inventory(),"a job must not depend on what the handle solved before");
+            assertEquals(results[1].graph().reservoirs().get(i).state().pressure(),results[0].graph().reservoirs().get(i).state().pressure(),0.0);
+        }
     }
     private static SolverDiagnostics.Sample measure(Runnable work) {
         SolverDiagnostics.reset();SolverDiagnostics.ENABLED=true;

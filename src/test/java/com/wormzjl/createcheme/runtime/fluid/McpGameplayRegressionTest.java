@@ -84,7 +84,8 @@ class McpGameplayRegressionTest {
         var actual=result.graph().reservoirs().getFirst().state();var expected=refined.graph().reservoirs().getFirst().state();
         assertEquals(expected.pressure(),actual.pressure(),.001*expected.pressure());
         assertEquals(expected.temperature(),actual.temperature(),.1);
-        assertEquals(expected.mass(),actual.mass(),.001*expected.mass());
+        // Backward Euler (WP1 of the mixed-gas junction batch): 203.164 against a refined 203.419 kg, 0.125 % (TR-BDF2 0.1 %).
+        assertEquals(expected.mass(),actual.mass(),.002*expected.mass());
         assertEquals(refined.averageMassFlows()[0],result.averageMassFlows()[0],.002*Math.abs(refined.averageMassFlows()[0]));
     }
 }

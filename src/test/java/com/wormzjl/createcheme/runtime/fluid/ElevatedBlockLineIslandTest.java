@@ -219,11 +219,14 @@ class ElevatedBlockLineIslandTest {
                 "A tank below its generator must settle one water column above it");
         assertEquals(pressure-head(pressure,LIFT),lines.get("rising  generator->pipe->filter->pipe->tank").tank().pressure(),1e-5*pressure,
                 "A filter block may not change where the column settles");
-        // A hundred pascals rather than the four the passive lines hold to, and the reason is
-        // physical: the pump raises the pressure by half a megapascal in the middle of the column
-        // and does work on the water doing it, so the four blocks of column are not four blocks of
-        // one density. The measured gap is 23.6 Pa in 860 kPa, i.e. 0.06 % of the head itself.
-        assertEquals(pressure+PUMP_HEAD-head(pressure,LIFT),lines.get("rising  generator->pump->2 pipes->tank").tank().pressure(),
+        // The pump's shutoff is its rise limit, the setting scaled by its suction's density over the pump reference
+        // density (the suction is the junction one block above the generator), less the column: the model's exact
+        // shutoff. The earlier expectation took the rise as exactly PUMP_HEAD and was 144.5 Pa low; TR-BDF2 met it only
+        // while its pump row stood on the discharge column (HANDOFF_REVIEW.md 8.9 (e) of the mixed-gas junction batch,
+        // decision D6). A hundred pascals rather than the four the passive lines hold to, because the pump does work on
+        // the water in the middle of the column.
+        double suctionDensity=waterDensity(pressure-head(pressure,1));
+        assertEquals(pressure+PUMP_HEAD*suctionDensity/model.pumpReferenceDensity()-head(pressure,LIFT),lines.get("rising  generator->pump->2 pipes->tank").tank().pressure(),
                 1e-4*(pressure+PUMP_HEAD),"A pumped tank must settle one water column below its own shutoff pressure");
     }
 

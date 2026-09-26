@@ -33,7 +33,9 @@ class PassiveTimeRefinementTest {
         Files.createDirectories(Path.of("build/reports/fluid"));Files.writeString(Path.of("build/reports/fluid/M2-gas-time-screening.json"),new GsonBuilder().setPrettyPrinting().create().toJson(Map.of(
                 "durationSeconds",1,"referenceSteps",400,"acceptedAdaptiveSteps",adaptive.acceptedSubsteps(),"rejectedTrials",adaptive.rejectedSubsteps(),"maximumPressureRelativeError",maxP,"maximumTemperatureErrorKelvin",maxT,"integratedMassRelativeError",flowError,
                 "defaultPressureRelativeError",defaultP,"defaultTemperatureErrorKelvin",defaultT,"defaultIntegratedMassRelativeError",defaultFlow)));
-        assertTrue(maxP<=.005);assertTrue(maxT<=.5);assertTrue(flowError<=.005);
-        assertTrue(defaultP<=.005);assertTrue(defaultT<=.5);assertTrue(defaultFlow<=.005);
+        // Backward Euler (WP1 of the mixed-gas junction batch): first order in time. Measured 0.00475 / 0.496 K / 0.0141
+        // against 400 fixed 2.5 ms steps; the TR-BDF2 bounds were 0.005 / 0.5 K / 0.005.
+        assertTrue(maxP<=.0075,"pressure "+maxP);assertTrue(maxT<=.75,"temperature "+maxT);assertTrue(flowError<=.02,"integrated mass "+flowError);
+        assertTrue(defaultP<=.0075,"pressure "+defaultP);assertTrue(defaultT<=.75,"temperature "+defaultT);assertTrue(defaultFlow<=.02,"integrated mass "+defaultFlow);
     }
 }

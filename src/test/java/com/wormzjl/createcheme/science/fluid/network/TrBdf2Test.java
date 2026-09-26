@@ -7,14 +7,18 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 
 class TrBdf2Test {
-    @Test void embeddedControlAgreesWithStepDoublingAndFixedStepsShowSecondOrder() {
+    /** The step is backward Euler (WP1 of the mixed-gas junction batch; the TR-BDF2 this class was named for is gone): the
+     * controlled interval agrees with a refined fixed-step integration, and halving a fixed step halves the error
+     * (first order; measured ratio 2.03, where TR-BDF2 showed more than 3). */
+    @Test void controlledIntervalAgreesWithFixedStepsAndFixedStepsShowFirstOrder() {
         var graph=graph(gas(1,180000,0),gas(2,101325,0),new FlowControl.Passive());
-        var embedded=new PassiveIntervalSolver(model).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
-        var doubled=new PassiveIntervalSolver(model).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
-        assertEquals(doubled.averageMassFlows()[0],embedded.averageMassFlows()[0],.005*Math.abs(doubled.averageMassFlows()[0]));
+        var controlled=new PassiveIntervalSolver(model).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
         double reference=integratedMass(graph,256),coarse=Math.abs(integratedMass(graph,4)-reference),fine=Math.abs(integratedMass(graph,8)-reference);
-        assertTrue(coarse/fine>3,"Observed error ratio="+coarse/fine);
+        assertEquals(reference,controlled.averageMassFlows()[0]*.2,CONTROLLED_TOLERANCE*Math.abs(reference));
+        assertTrue(coarse/fine>1.8&&coarse/fine<2.5,"Observed error ratio="+coarse/fine);
     }
+    /** Measured 0.88 % against 256 fixed steps. */
+    private static final double CONTROLLED_TOLERANCE=.015;
     private double integratedMass(PassiveNetwork initial,int steps) {
         var graph=initial;var solver=new PassiveStepSolver(model);double mass=0;
         for(int i=0;i<steps;i++){var result=solver.solve(graph,.2/steps,()->{});graph=PassiveIntervalSolver.replace(graph,result);mass+=result.massFlows()[0]*.2/steps;}

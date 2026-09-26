@@ -19,6 +19,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * stall, and the clear-fluid chain beside it has to be untouched.
  */
 class SolidChainTransportTest {
+    // Measured under the backward-Euler controller (WP1); see clearChainSubstepCountsAreUnchanged.
+    private static final int HALF_ACCEPTED=3,HALF_REJECTED=1,FULL_ACCEPTED=5,FULL_REJECTED=1,TWO_ACCEPTED=4,TWO_REJECTED=0;
+    /** The solid closure pass solves the port graph once at each interval start (measured: 1 per interval). */
+    private static final int RATE_SOLVES_PER_INTERVAL=2;
     private final FluidThermodynamics model=FluidTestSupport.networkModel();
 
     private FluidThermodynamics.State water(double pressure) {
@@ -90,25 +94,26 @@ class SolidChainTransportTest {
     }
 
     @Test void clearChainSubstepCountsAreUnchanged() {
-        // Recorded on the unmodified tree at 440a754. The nonnegativity floor is zero for every
-        // fluid amount and the decode projection exists only where there are solid moments, so a
-        // clear island must take the same steps it always took, not merely a similar number.
+        // Recorded under the backward-Euler controller (WP1 of the mixed-gas junction batch; the TR-BDF2 counts of
+        // 440a754 were 25/10, 32/14 and 18/5). The nonnegativity floor is zero for every fluid amount and the decode
+        // projection exists only where there are solid moments, so a clear island must take the same steps it always
+        // took, not merely a similar number.
         var graph=chain(10,false);
         var half=new PassiveIntervalSolver(model).solve(graph,0.5,PassiveIntervalSolver.Settings.defaults(),()->{});
-        assertEquals(25,half.acceptedSubsteps());
-        assertEquals(10,half.rejectedSubsteps());
         var full=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
-        assertEquals(32,full.acceptedSubsteps());
-        assertEquals(14,full.rejectedSubsteps());
         var two=new PassiveIntervalSolver(model).solve(chain(2,false),5,PassiveIntervalSolver.Settings.defaults(),()->{});
-        assertEquals(18,two.acceptedSubsteps());
-        assertEquals(5,two.rejectedSubsteps());
+        assertEquals(HALF_ACCEPTED,half.acceptedSubsteps());
+        assertEquals(HALF_REJECTED,half.rejectedSubsteps());
+        assertEquals(FULL_ACCEPTED,full.acceptedSubsteps());
+        assertEquals(FULL_REJECTED,full.rejectedSubsteps());
+        assertEquals(TWO_ACCEPTED,two.acceptedSubsteps());
+        assertEquals(TWO_REJECTED,two.rejectedSubsteps());
     }
 
     @Test void filterIslandReusesItsSolverWorkspacesAcrossIntervals() {
         // PassiveNetwork.Pipe is a record whose equality used to include the mutable cake, and
-        // TR-BDF2 rebuilds the pipe list with a re-weighted cake at every stage, so every workspace
-        // key, structure key and warm-flow comparison missed on every stage of a filter island.
+        // every step rebuilds the pipe list with the cake it left, so every workspace key, structure
+        // key and warm-flow comparison missed on every step of a filter island.
         var slurry=water(400000).withSolids(new SolidInventory(List.of(new SolidInventory.Population(
                 model.solids.require("createcheme:demo_particle"),ParticleSize.micrometres("100"),100))));
         var graph=new PassiveNetwork(List.of(
@@ -133,16 +138,14 @@ class SolidChainTransportTest {
             // Jacobian of this island was paying a coloured whole-island residual per colour again.
             assertTrue(sample.value("jacobianBlockBuilds")>0,"A filter island built no block Jacobian");
             assertEquals(0,sample.value("jacobianBlockFallbacks"),"A filter island fell back to the coloured Jacobian sweep");
-            // The endpoint rate of one step is the start-of-step rate of the next. A key that
-            // varied with the cake would miss on every step of a filling filter and pay one extra
-            // implicit solve for each; the cake belongs in it, because the clogging resistance
-            // reads the loading the cake sets.
-            long rateReuses=sample.value("endpointRateReuses"),rateBuilds=sample.value("endpointRateBuilds");
-            assertTrue(rateReuses>4*rateBuilds,"Endpoint rates were rebuilt: "+rateReuses+" reused against "+rateBuilds+" solved");
+            // Every step is one implicit solve (backward Euler): the solves beyond the attempted steps are the rate
+            // solves of the solid closure pass at each interval start and of the start-of-step guard, a few per interval.
+            long solves=sample.value("implicitSolves"),attempts=sample.value("stepAttempts"),acceptedSteps=sample.value("stepAttemptsAccepted");
+            assertTrue(solves<=attempts+RATE_SOLVES_PER_INTERVAL*19,"Implicit solves beyond one per step: "+solves+" for "+attempts+" attempted steps in 19 intervals");
             assertFalse(running.pipes().getFirst().filter().captured().empty());
-            System.out.printf(Locale.ROOT,"solid chain: filter island reuses=%d builds=%d orderings=%d factorizations=%d jacobians=%d block=%d fallbacks=%d rates=%d/%d%n",
+            System.out.printf(Locale.ROOT,"solid chain: filter island reuses=%d builds=%d orderings=%d factorizations=%d jacobians=%d block=%d fallbacks=%d solves=%d/%d attempts%n",
                     reuses,builds,sample.value("luOrderings"),sample.value("luFactorizations"),
-                    sample.value("jacobianBuilds"),sample.value("jacobianBlockBuilds"),sample.value("jacobianBlockFallbacks"),rateReuses,rateBuilds);
+                    sample.value("jacobianBuilds"),sample.value("jacobianBlockBuilds"),sample.value("jacobianBlockFallbacks"),solves,attempts);
         } finally {SolverDiagnostics.ENABLED=enabled;SolverDiagnostics.reset();}
     }
 }

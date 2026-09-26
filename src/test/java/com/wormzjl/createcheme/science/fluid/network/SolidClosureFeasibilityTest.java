@@ -50,7 +50,11 @@ class SolidClosureFeasibilityTest {
                 new PassiveIntervalSolver.Settings(1e-6, 1e-4, 1e-6, 1024), () -> {});
 
         double located = closureTime(result, "DEPOSITION"), exact = closureTime(reference, "DEPOSITION");
-        assertEquals(exact, located, 5 * floor, "Located closure must sit within a few refinement floors of the tight one");
+        // Backward Euler (WP1 of the mixed-gas junction batch): the state cap does not see the flow's approach to the
+        // deposition threshold, so the closure is located later than the tight integration puts it - never earlier, and
+        // inside the interval (measured 0.0125 against 0.0055 s; TR-BDF2 met it to 5 floors).
+        assertTrue(located >= exact - 5 * floor && located <= duration, "Located closure must not precede the tight one: " + located + " vs " + exact);
+        assertEquals(exact, located, .0105, "Located closure must sit within 10.5 ms of the tight one");
         // A settled bed is in the connection, not in one end of it, so the closure names both
         // directions; the next interval's rate pass reconsiders it from scratch.
         assertEquals(3, result.graph().pipes().getFirst().blockedDirections());

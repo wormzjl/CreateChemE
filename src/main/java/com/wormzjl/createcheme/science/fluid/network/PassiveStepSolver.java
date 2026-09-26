@@ -206,7 +206,8 @@ public final class PassiveStepSolver {
      * earlier jobs (see {@link PassiveIntervalSolver#replayStart}).
      * <ul>
      * <li>No Newton opens on a factorization from an earlier job: every retained workspace's numeric Jacobian and LU are
-     * dropped. The sparsity pattern, colouring and fill-reducing ordering stay: they are functions of the structure only.</li>
+     * dropped, and the dt-keyed workspaces themselves. The sparsity pattern, colouring and fill-reducing ordering stay:
+     * they are functions of the structure only.</li>
      * <li>No warm start: the flows, heads and input states of the last solve are forgotten, so the first solve starts from
      * {@code initialMassFlows} of the committed states, as a fresh solver does.</li>
      * <li>The pump active-set carry ({@link #previousModes}) is restated from the committed interval's endpoint modes (a pump
@@ -219,8 +220,12 @@ public final class PassiveStepSolver {
      */
     void replayStart(PassiveNetwork graph,boolean committedStructure,List<FlowControl.Mode> committedModes) {
         ownership.check("Each executing island job needs its own step workspace");
-        for(var workspace:workspaces.values())workspace.invalidate();
-        for(var workspace:structures.values())workspace.invalidate();
+        // Exactly a fresh solver's numerics: no dt-keyed workspace, and every structure's latest workspace replaced by a
+        // fork that keeps its pattern, colouring and ordering (functions of the structure) and no Jacobian or LU. An
+        // invalidated workspace left under its dt key would not inherit the chord this job builds on its first step, so a
+        // carried job refreshed its Jacobian where a fresh one reused it (RetainedSolverTest).
+        workspaces.clear();
+        for(var entry:structures.entrySet())entry.setValue(entry.getValue().forkStructure());
         previousFlows=new double[0];previousHeads=new double[0];previousInputStates=List.of();inputStates=List.of();
         previousPipes=List.of();previousNodeIds=new long[0];previousModes=List.of();
         keepOpen=Set.of();lastSolve=null;
