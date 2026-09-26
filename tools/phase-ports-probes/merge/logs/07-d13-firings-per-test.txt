@@ -1,0 +1,80 @@
+# D13 polish firings per test on the merged tree 334ca78: harness all on a copy with a print at the entry of polishRefusedPoint (D13_POLISH), at its acceptance (D13_ACCEPTED) and at a gate refusal that stands (D13_GATE_REJECTED), attributed to the outermost *Test frame (the @Test method); same pass counts and junction-line comparison as 01
+harness: 33 junction lines identical to reference/junction-lines.txt (6e1c5b6; wall ms, bytes and allocatedMB ignored)
+science    PASS   211 tests found , 211 tests successful , 0 tests failed 
+runtime    PASS   237 tests found , 237 tests successful , 0 tests failed 
+adjacent   PASS   38 tests found , 38 tests successful , 0 tests failed 
+regression PASS   1 tests found , 1 tests successful , 0 tests failed 
+== science
+     35 D13_ACCEPTED LevelHeadTest.aFreshSolverReplaysASlowHeadDrainBitwise
+      4 D13_ACCEPTED LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtFiveSecondSlices
+      1 D13_ACCEPTED LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtTenthSecondSlices
+     16 D13_ACCEPTED LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG
+     13 D13_ACCEPTED VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices
+      7 D13_ACCEPTED VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate
+     35 D13_POLISH LevelHeadTest.aFreshSolverReplaysASlowHeadDrainBitwise
+      4 D13_POLISH LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtFiveSecondSlices
+      1 D13_POLISH LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtTenthSecondSlices
+     16 D13_POLISH LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG
+     13 D13_POLISH VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices
+      7 D13_POLISH VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate
+== runtime
+      2 D13_ACCEPTED DeadHeadedLineIslandTest.raisingTheGeneratorReopensADeadHeadedLineAndFillsTheTank
+      2 D13_ACCEPTED ElevatedBlockLineIslandTest.elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl
+      3 D13_ACCEPTED FilterBlockLineIslandTest.aPassiveLineAtThePumpsShutoffPressureFillsTheSameTank
+      3 D13_ACCEPTED FilterBlockLineIslandTest.filterLineToATankKeepsIntegratingOnceTheTankIsFull
+      3 D13_ACCEPTED FilterBlockLineIslandTest.valveLineToATankKeepsIntegratingOnceTheTankIsFull
+      2 D13_POLISH DeadHeadedLineIslandTest.raisingTheGeneratorReopensADeadHeadedLineAndFillsTheTank
+      2 D13_POLISH ElevatedBlockLineIslandTest.elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl
+      3 D13_POLISH FilterBlockLineIslandTest.aPassiveLineAtThePumpsShutoffPressureFillsTheSameTank
+      3 D13_POLISH FilterBlockLineIslandTest.filterLineToATankKeepsIntegratingOnceTheTankIsFull
+      3 D13_POLISH FilterBlockLineIslandTest.valveLineToATankKeepsIntegratingOnceTheTankIsFull
+== adjacent
+      2 D13_ACCEPTED DeadHeadedLineIslandTest.raisingTheGeneratorReopensADeadHeadedLineAndFillsTheTank
+      3 D13_ACCEPTED FilterBlockLineIslandTest.aPassiveLineAtThePumpsShutoffPressureFillsTheSameTank
+      3 D13_ACCEPTED FilterBlockLineIslandTest.filterLineToATankKeepsIntegratingOnceTheTankIsFull
+      3 D13_ACCEPTED FilterBlockLineIslandTest.valveLineToATankKeepsIntegratingOnceTheTankIsFull
+      2 D13_POLISH DeadHeadedLineIslandTest.raisingTheGeneratorReopensADeadHeadedLineAndFillsTheTank
+      3 D13_POLISH FilterBlockLineIslandTest.aPassiveLineAtThePumpsShutoffPressureFillsTheSameTank
+      3 D13_POLISH FilterBlockLineIslandTest.filterLineToATankKeepsIntegratingOnceTheTankIsFull
+      3 D13_POLISH FilterBlockLineIslandTest.valveLineToATankKeepsIntegratingOnceTheTankIsFull
+== regression
+== polished gate residuals (science)
+LevelHeadTest.aFreshSolverReplaysASlowHeadDrainBitwise dt=2.0 n=35 min=1.083688758392118E-12 max=2.1719410946943977E-12
+LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtFiveSecondSlices dt=0.7221449621899563 n=1 min=6.883530810975356E-13 max=6.883530810975356E-13
+LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtFiveSecondSlices dt=1.2268321101511708 n=1 min=5.513079933342312E-12 max=5.513079933342312E-12
+LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtFiveSecondSlices dt=2.0 n=2 min=7.44444941305983E-14 max=1.3562736254902301E-13
+LevelHeadTest.aTankAtTheVoidsPressureDrainsOnItsHeadAloneAtTenthSecondSlices dt=0.1 n=1 min=4.0786383731063914E-13 max=4.0786383731063914E-13
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=0.20009602411837246 n=1 min=2.9516322813442327E-12 max=2.9516322813442327E-12
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=0.3587185061194642 n=1 min=2.5879222872968575E-12 max=2.5879222872968575E-12
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=0.4632895969180666 n=1 min=2.4032952226171994E-12 max=2.4032952226171994E-12
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=0.5287646903209859 n=1 min=2.1878507378605516E-12 max=2.1878507378605516E-12
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=0.5652121270249157 n=1 min=1.924261786914154E-12 max=1.924261786914154E-12
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=0.5806344007245006 n=1 min=2.401940832668259E-12 max=2.401940832668259E-12
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=1.5301260899113187 n=1 min=5.498406540282765E-13 max=5.498406540282765E-13
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=1.5416451642733222 n=1 min=7.158642642882778E-13 max=7.158642642882778E-13
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=1.8939904164695884 n=1 min=1.9598124788266437E-13 max=1.9598124788266437E-13
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=1.97394436246631 n=1 min=3.760044363105723E-13 max=3.760044363105723E-13
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=2.0 n=3 min=3.885780586188056E-15 max=5.152296368655143E-10
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=2.044695210855185 n=1 min=5.021671784543414E-13 max=5.021671784543414E-13
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=2.1523882315706224 n=1 min=2.5880031362641143E-13 max=2.5880031362641143E-13
+LevelHeadTest.cushionsHeldApartStandAtALevelDifferenceOfDpOverRhoG dt=2.2779607864909206 n=1 min=7.644684106165576E-14 max=7.644684106165576E-14
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=0.20009602411837246 n=1 min=2.9516322813442327E-12 max=2.9516322813442327E-12
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=0.3587185061194642 n=1 min=2.5879222872968575E-12 max=2.5879222872968575E-12
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=0.4632895969180666 n=1 min=2.4032952226171994E-12 max=2.4032952226171994E-12
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=0.5287646903209859 n=1 min=2.1878507378605516E-12 max=2.1878507378605516E-12
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=0.5652121270249157 n=1 min=1.924261786914154E-12 max=1.924261786914154E-12
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=0.5806344007245006 n=1 min=2.401940832668259E-12 max=2.401940832668259E-12
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=1.5301260899113187 n=1 min=5.498406540282765E-13 max=5.498406540282765E-13
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=1.5416451642733222 n=1 min=7.158642642882778E-13 max=7.158642642882778E-13
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=1.8939904164695884 n=1 min=1.9598124788266437E-13 max=1.9598124788266437E-13
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=1.97394436246631 n=1 min=3.760044363105723E-13 max=3.760044363105723E-13
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=2.044695210855185 n=1 min=5.021671784543414E-13 max=5.021671784543414E-13
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=2.1523882315706224 n=1 min=2.5880031362641143E-13 max=2.5880031362641143E-13
+VentGatePolishTest.aTankFilledThroughItsBottomAndVentedThroughItsTopIntegratesAtFiveSecondSlices dt=2.2779607864909206 n=1 min=7.644684106165576E-14 max=7.644684106165576E-14
+VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate dt=2.0851535780246238 n=1 min=1.128221970946807E-13 max=1.128221970946807E-13
+VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate dt=2.0964747820004748 n=1 min=1.284260012300414E-13 max=1.284260012300414E-13
+VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate dt=2.1048082741666887 n=1 min=1.4787159748307465E-13 max=1.4787159748307465E-13
+VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate dt=2.1196033249662447 n=1 min=1.7497596939370522E-13 max=1.7497596939370522E-13
+VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate dt=2.143800205480181 n=1 min=2.1183593050594297E-13 max=2.1183593050594297E-13
+VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate dt=2.1801541239077142 n=1 min=8.545838238411426E-14 max=8.545838238411426E-14
+VentGatePolishTest.theBulkVentControlIsNeverRefusedByTheGate dt=2.232183803408478 n=1 min=3.075238017808548E-13 max=3.075238017808548E-13

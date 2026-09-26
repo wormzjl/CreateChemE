@@ -596,7 +596,7 @@ JDK OpenJDK 21.0.10 (container); `JAVA_TOOL_OPTIONS` as set; one Gradle invocati
 4. **The mobility check reads the leading phase**, not the step's mixture (its `StageGuard` sees states and flows, no draw); a liquid pinned beside gas is checked at the liquid's velocity for the whole flow (conservative for blockage, optimistic for deposition). Carrying the draws into the guard is the option.
 5. **Unbacked traces** (section 6) are dropped only for a donor that receives nothing in the step; a donor that also receives, with a seeded trace its inflows do not bring, could still overdraw it (none measured). Options: drop per component when no inflow could carry it (a reachability test at booking), or cap each frozen fraction at what the donor can deliver.
 6. **WP3/WP4.** `INLET_EMPTY` is gone (D11); a pump fed from a phase port reads the priority stream's density in its target and head rows, so WP3's `INLET_WRONG_PHASE` decision (D1) reads the leading phase or the draw.
-7. **Vent gate (D13).** The equation-gate rejections still present (head drain 5 s: 11; replay: 12; manometer: 2) are the vent-gate class; D13's polish is another package.
+7. **Vent gate (D13).** The equation-gate rejections still present (head drain 5 s: 11; replay: 12; manometer: 2) are the vent-gate class; D13's polish is another package. *Closed by the D13 merge: 0 in every suite (section "D11+D12+D13 merge", 2).*
 8. **WP1 condensed-stream builders** (`liquidStream`, `liquidCarrierViscosity`, and the parts only it uses) are no longer read by the solver; kept for WP6's cleanup.
 
 ### 13. Material
@@ -741,3 +741,50 @@ Every polish passed the gate (99 of 99); no gate refusal is left in any suite. P
 ### 4. Gates not run here
 
 No Gradle run: the Gradle lane belongs to the D11 agent. The Gradle gates of record (fluid suites with the 33 junction lines against `d10/logs/02-junction-lines-d10.txt`, exact regression, the 38 adjacent, GameTest and mcpCompat compile) run after this branch merges into `claude/phase-ports-compressor`. The harness is a Minecraft-free stand-in and does not compile the GameTest and mcpCompat source sets; the only non-test main change besides `PassiveStepSolver` is three public counters in `SolverDiagnostics`, whose one GameTest reader (`FluidServerBenchmark`) iterates `names()`.
+
+## D11+D12+D13 merge (2026-09-26)
+
+- Author: Claude (Opus 5.5), on branch `claude/phase-ports-compressor` in `/home/user/CreateChemE` (D11 tools commit `be8e226`). Merge commits: `aaa6624` (`claude/cold-start-generators-wip`, D12: `418ca7e` + `bb16308`) and `334ca78` (`claude/vent-gate-polish-wip`, D13: `4a71629`, `38debce`, `ce6b09c`); tools and this section in the commit after them. Not merged to `main`, not pushed. Material: `tools/phase-ports-probes/merge/logs/`.
+
+### 1. Reconciliation
+
+- **D12 under D11 (`aaa6624`).** One Java conflict. D12's `closeColdReceivingGenerators` and `oneWayPressures` took WP2's `closedPorts` mask, which D11 removed. They now take none, and their edge test is D11's static `boundaryAllowed(graph,pipe,flow)`: `solve` calls `closeColdReceivingGenerators(graph,boundaryClosed,keep,checkpoint)` after `closeIllegalStarts`. D12's defaults A20-A23 collided with D11's A20-A32. They are renumbered A33-A36 in `DECISION_LOG.md` and at every reference in this review and the plan. Documents: every section and row from both sides, kept in order.
+- **D13 under D11 (`334ca78`).** `polishRefusedPoint` came from the WP2 tree. It checked the WP2 mask in `boundaryAllowed`, capped every flow with `massFlowLimit` at the draw port, reconstructed without phase draws, and reused the refused point's heads. It never asked the other questions the pass loop asks before it accepts a point. Merged, the polished point is checked exactly as the D11 pass loop checks an accepted point, in the same order:
+  1. A trace reactivation that is due refuses the polish. The check uses copies of the `promoted` flags, so no pass state moves.
+  2. Flows and heads are recomputed from the polished variables, with closed edges zeroed.
+  3. Static `boundaryAllowed`.
+  4. No device mode change. The pump and valve transitions were factored out of the pass loop into `nextMode(...)` with the same arithmetic, so the pass loop and the polish read one statement of them.
+  5. `segmentsMoved` against the segments the pass froze.
+  6. The D11 velocity cap: `massFlowLimit` at a BULK end, `capLimit` at a phase port.
+  7. `draws(flows,states)` and the reconstruction with those six-entry draws.
+  8. `phaseCorrection`, then the gate.
+  
+  `Polished` now carries the polished flows, heads and draws, and the caller installs all of them. `PipeTransfer.sample`, the accepted modes' `velocityCap` and the retained last solve therefore read the polished point, not the refused one. `polishRefusedPoint` never ran on the D11 fixtures, and every step the gate accepts is untouched, so all D11 output is bitwise as before, apart from the four lines below.
+- `LevelHeadTest` auto-merged: D11's restated `aTankAtTheVoidsPressureDrainsOnItsHeadAlone*` (A32) and D13's vented `manometer(PhasePort, boolean vented)`. Both hold, and no assertion changed in the merge.
+
+### 2. D13 counters on the D11 fixtures (D11 open item 7)
+
+Measured from the `LEVEL_HEAD_RUN` / `VENT_GATE_RUN` / `PHASE_PORT_PRIORITY_*` lines of the harness run (`logs/06`), and from a traced copy of `334ca78` that prints each polish entry, each acceptance and each gate refusal left standing, attributed to the @Test method (`logs/07`).
+
+| fixture | D11 (`548a9bf`) | merged (`334ca78`) |
+|---|---|---|
+| head drain 5 s | 213 / 34, 11 equation gate | 203 / 22, **0** equation gate (9 state change, 5 Newton limit, 4 line-search stall, 4 phase-correction cycle); 4 polishes, 4 accepted; `lastSliceOut` 2.2e-12 -> 0.0 kg |
+| head drain 0.1 s | 1500 / 0 | 1500 / 0; 1 polish (its BULK control), accepted; BULK control output 1.67e-6 -> 8.8e-7 kg (D13's own figure) |
+| slow drain (replay) | 48 / 12, 12 equation gate | 36 / 0, **0**; 35 polishes, 35 accepted; the replay still bitwise |
+| manometer | 182 / 3, 2 equation gate (B closed, the D9 form) | vented through B's VAPOR port (D13): 187 / 2, **0** equation gate (1 reopen, 1 Newton limit); 16 polishes, 16 accepted. The line is bit-identical to D13's own capture (`vent/logs/15`) |
+| `PhasePortPriorityTest` (all 10) | no equation gate | no polish fires; every `PHASE_PORT_PRIORITY_*` line bit-identical to `d11/logs/06` |
+| `VentGatePolishTest` | (not on D11) | VAPOR vent 5 s 30 / 1, 13 polishes; 0.1 s 100 / 1, none; BULK vent 5 s 32 / 1, 7 polishes; `gateRejections=0` in all three. Bit-identical to D13's capture |
+
+Open item 7 is closed: no equation-gate refusal is left in any suite. Across `all`, the polish fired 100 times and was accepted every time: science 76 (`LevelHeadTest` 56, `VentGatePolishTest` 20), runtime 13, adjacent 11, regression 0. Polished residuals were 3.9e-15 to 5.2e-10 against the 1e-8 gate. D13 alone fired 99 times (`LevelHeadTest` 55). The extra firing is in the restated D11 drain.
+
+### 3. Gates (on `334ca78`; logs `tools/phase-ports-probes/merge/logs/`)
+
+| # | command (from `/home/user/CreateChemE`) | result |
+|---|---|---|
+| (a) | `LIB=<jars> OUT=<dir> REPO=/home/user/CreateChemE bash tools/cloud-science-harness/harness.sh all` (`01-harness-all-merge.log`, 103 s) | science 211/211 (D11's 208 + `VentGatePolishTest` 3), runtime 237/237 with the 33 junction lines identical to its reference, adjacent 38/38, chain-100 0.000e+00 |
+| (b) | `./gradlew --no-configuration-cache --no-build-cache test --rerun --tests com.wormzjl.createcheme.science.fluid.* --tests com.wormzjl.createcheme.runtime.fluid.* --console=plain --continue` (`02-gradle-fluid-suite-merge.log`, 79 s) | **446/446** in 100 classes, 0 skipped: every one of D11's 443 names plus `VentGatePolishTest`'s 3, none missing (`02-test-names-merge.txt`). The 33 junction lines (`02-junction-lines-merge.txt`) are identical to `d10/logs/02-junction-lines-d10.txt` apart from ms/bytes/allocatedMB. MIXED_GAS_COST 286 Newton solves (624 ms, 135.0 MB, single run). `ExtremeTopologyIslandTest` 10/10 with `FULL_CASES_OPEN_DEFECT = false`: the three full fixtures run 40/40 x 5 s and 400/400 x 0.1 s at the default 100 m/s cap and at the configuration's largest (100000 m/s), every oracle |
+| (c) | `./gradlew --no-configuration-cache fluidSolverRegression -PfluidRegressionMode=exact --console=plain` (`03-...`) | **0.000e+00** on state/moles, temperature, phase fraction and flow; 3 accepted / 0 rejected, 4 Newton solves, 29 iterations |
+| (d) | the 38 adjacent (WP1 G3 command; `04-...`) | **38/38** in 7 classes |
+| (e) | `./gradlew --no-configuration-cache compileFluidGameTestJava compileMcpCompatJava --rerun --console=plain` (`05-...`) | **BUILD SUCCESSFUL**, both tasks executed |
+
+No gate failed. No assertion and no tolerance changed in either merge.
