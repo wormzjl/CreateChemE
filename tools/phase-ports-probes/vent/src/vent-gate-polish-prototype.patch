@@ -1,0 +1,44 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 9ab69a9..56bd130 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -548,6 +548,39 @@ public final class PassiveStepSolver {
+             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
+             SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
+             double maximumResidual=0;for(double residual:equations.residual(reconstructed))maximumResidual=Math.max(maximumResidual,Math.abs(residual));
++            if(maximumResidual>1e-8&&acceptance==Acceptance.FULL) {
++                // PROTOTYPE (vent gate defect, option A): the Newton's last iterates ran on a preconditioner built at
++                // another step's dt, so a balance row of a small gas inventory beside a large liquid one closes only to
++                // the tolerance on the node's total amount scale; the reconstruction books the targets exactly at the
++                // candidate's (T, P) and the volume and saturation rows see that residual amplified by n_total/n_gas.
++                // Before refusing the step, polish the converged point once on a Jacobian of this step's own dt and
++                // state, two orders below the tolerance, and gate that point instead. Reached only where the gate
++                // failed, so every step the gate accepts today is untouched.
++                SparseNewton.Result polished=null;
++                try{polished=SparseNewton.solve(equations,x,new SparseNewton.Settings(20,tolerance*1e-2,1e-6,24),checkpoint,new SparseNewton.Workspace(ownership));}
++                catch(SparseNewton.Nonconvergence ignored){}
++                if(polished!=null) {
++                    double[] px=polished.variables();var pstates=equations.states(px);double[] pflows=new double[flows.length];boolean legal=true;
++                    for(int i=0;i<pflows.length;i++) {
++                        pflows[i]=px[equations.edgeOffset+i];
++                        if(boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED){pflows[i]=0;px[equations.edgeOffset+i]=0;}
++                        var pipe=graph.pipes().get(i);var upstream=pstates.get(pflows[i]>=0?pipe.first():pipe.second());
++                        if(!boundaryAllowed(graph,pipe,pflows[i],closedPorts)&&Math.abs(pflows[i])>1e-10)legal=false;
++                        if(Math.abs(pflows[i])>massFlowLimit(pipe,upstream,pipe.drawPort(pflows[i]))*(1+2e-8)+1e-12)legal=false;
++                    }
++                    if(legal) {
++                        var pprojection=ConservativeTransport.reconstruct(graph,pstates,pflows,heads,dt,model,checkpoint,transport,rateOnly);
++                        if(phaseCorrection(graph,pprojection.states(),checkpoint,true,equations.cachedPrepared)==null) {
++                            var preconstructed=px.clone();
++                            for(int node=0;node<pprojection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(pprojection.states().get(node));System.arraycopy(encoded,0,preconstructed,equations.offsets[node],encoded.length);}
++                            SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
++                            double polishedResidual=0;for(double residual:equations.residual(preconstructed))polishedResidual=Math.max(polishedResidual,Math.abs(residual));
++                            if(Boolean.getBoolean("vent.polish.trace"))System.out.println("VENT_POLISH "+StackWalker.getInstance().walk(f->f.filter(fr->fr.getClassName().endsWith("Test")).map(fr->fr.getClassName().substring(fr.getClassName().lastIndexOf('.')+1)+"."+fr.getMethodName()).findFirst().orElse("?"))+" dt="+dt+" gate "+maximumResidual+" -> "+polishedResidual+" iterations "+polished.iterations());
++                            if(polishedResidual<=1e-8){numerical=polished;x=px;states=pstates;System.arraycopy(pflows,0,flows,0,flows.length);projection=pprojection;reconstructed=preconstructed;maximumResidual=polishedResidual;}
++                        }
++                    }
++                }
++            }
+             if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6))throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);
+             if(acceptance==Acceptance.APPROXIMATE)checkApproximation(equations,reconstructed,projection.states(),flows,workspace,checkpoint,tolerance);
+             checkConservation(graph,projection);

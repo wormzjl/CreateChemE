@@ -422,3 +422,60 @@ Code commit `fdf3574` (`WIP phase-ports D9: level head at the bottom port (optio
 ### 11. Re-run after the last edit
 
 The javadoc of `PassiveNetwork.PhasePort` and `PassiveStepSolver.endPressure` was re-wrapped after G1-G4 (comment only). Re-run on the final tree: G1 (log `10-gradle-fluid-suite-final-d9.log`) 448/448 in 99 classes, the same test names, the 33 junction lines again identical to D10's (`10-junction-lines-final-d9.txt`); G2 (log `11-gradle-regression-exact-final-d9.log`) 0.000e+00.
+
+## Vent gate defect (2026-09-26): investigation, no code change
+
+- Author: Claude (Opus 5.5), same worktree and branch, base `fdc7571` (D9 plus its tools commit), clean tree. No tracked source changed: the booking the brief would have fixed is already exact, and every change that closes the defect is a solver-policy choice (section 5), so the options are for the owner. Material: `tools/phase-ports-probes/vent/` (instrumentation and prototype patches against `fdc7571`, logs numbered as cited below).
+- The defect: the D9 open item "VAPOR vent failure" (D9 section 5; WP2 section 4 and option 3): two tanks joined LIQUID to LIQUID, A fed by a nitrogen generator, B vented through its VAPOR port (`d9/src/ManometerProbe.java 5 4 LIQUID 104325 101325 0.3 0.3 0.05 VAPOR VAPOR`).
+
+### 1. Reproduction on `fdc7571` (measured)
+
+- 5 s slices: slice 0 commits after 497 accepted and 503 rejected substeps (502 equation gate, 1 reopen); slice 1 fails, "Interval substep limit ... advanced=4.2256 of 5.0 s, accepted=509, rejected=515, last=... equation gate: 1.0083460016084983E-8" (`logs/01`), bit for bit the D9 capture.
+- 0.1 s slices: 300 slices integrate, 300 accepted, 1 rejected (the vent's reopen at rest) (`logs/07`). The defect needs steps of order a second.
+
+### 2. Which row fails, and why, by numbers (instrumented scratch copy, `src/instr-gate-probe.patch`, `logs/02`)
+
+First failing step: dt 1.894 s, Newton converged to 3.689e-10 after 5 chord iterations. Layout of each tank block: local 0 N2 balance, 1 water balance, 2 energy, 3 volume, 4 water saturation `ln(p_w/Psat)`, 5 partial-pressure closure.
+
+| row | Newton's residual at its point | gate at the reconstructed point |
+|---|---|---|
+| A local 3 (volume) | -3.8e-11 | **-3.132e-8** |
+| A local 4 (saturation) | 1.8e-10 | **4.306e-8** (the gate's maximum) |
+| A local 5 | 5.4e-12 | 1.3e-9 |
+| B local 3, 4 | 1.9e-11, 1.4e-10 | -1.197e-8, 1.771e-8 |
+| balance rows N2, water, energy of A and B | <= 1.8e-10 | <= 1.7e-11 |
+| edge rows | 3.7e-10, 1.9e-10 | unchanged |
+
+- **The booking is exact.** Vent edge (B's VAPOR port to the void): the Newton's target booking `dt q n_c/m` and the reconstruction's `dt |q| w_stream / M_c` are the same doubles, N2 0.36169952116860066 mol, water 0.011676887918495993 mol (difference 0; 2.8e-17 at the second failure); the LIQUID link books 504.76023509407260 mol of water in both. The reconstructed amounts equal the Newton's targets exactly: A's N2 29.716298498875040 mol, B's 27.112096349239750 mol (difference 0; at most 3.6e-15 mol in later failures). The plan's inference (3.3 item 2, "the reconstructed inventories equal the Newton's targets to its tolerance") is therefore wrong in its premise: they are equal bit for bit.
+- **What is off by the tolerance is the Newton's own state.** Its amounts differ from its own targets: A's N2 by +1.276e-6 mol (+4.29e-8 relative), B's by +4.75e-7 mol (+1.75e-8); water by 5.6e-11 relative. The balance row states that difference over the node's total amount (`PhaseLayout.componentScales` = `amountScale` when the headspace is at least 1 % of the vessel): 15066 mol, of which 15036 water and 29.7 N2, so A's N2 row reads 8.2e-11, well inside the 1e-9 Newton tolerance.
+- **The reconstruction restates that difference at fixed (T, P).** `ConservativeTransport.reconstruct` books the exact amounts and keeps the candidate's temperature, pressure and phase ratios (`repartition` -> `adoptingState`, no flash). The volume row then sees the corrected gas amount at the old pressure: 1.276e-6 mol x RT/P (0.02376 m3/mol) = 3.03e-8 of the 1 m3 vessel (measured -3.13e-8); the saturation row sees the water mole fraction move by the relative N2 change: 4.29e-8 (measured 4.31e-8).
+- **Amplification.** Saturation row over N2 balance row = n_total / n_N2 = 507; volume row = that times the gas volume fraction 0.73 = 370. The 1e-8 gate thus asks the N2 balance row of such a vessel to close to about 2e-11, 50 times below the Newton's tolerance (the solver's own comment keeps "two orders of margin" to the gate, which holds only for amplification below 10).
+
+### 3. Why the Newton stops there (chord iteration; `logs/04`, `logs/05`)
+
+- A's N2 row per iteration at dt 0.947 s: -1.24e-5, -1.22e-7, -5.1e-10, +6.0e-10, +2.4e-10, +8.5e-11: it contracts by 0.35-0.4 per iteration while the norm reaches 1.5e-10, so the Newton exits with that row carrying a large share of its residual. The row is linear in (n_N2 of A, generator flow) with the coefficient `dt w / s`; the iterations ran on a preconditioner inherited from another step (iteration 0 has `refresh=false`: `WorkspaceKey` carries dt and a new dt forks the previous structure's factorization, `forkPreconditioner`), so that coefficient is stale.
+- With a Jacobian built at the start of every solve (this step's dt and state, chord afterwards), the same row is 6.8e-16 after one iteration and 0 after two, and the manometer integrates at 5 s: 4 accepted / 0 rejected per slice after slice 0's reopen; with a fresh Jacobian at every iteration, likewise over 6 slices (`logs/05`).
+- In the BULK-link layout the same row ends at 1.3e-13 (`logs/04`) and nothing fails (`logs/03`: LIQUID link + VAPOR vent 1017 failures in 2 slices; LIQUID + BULK vent 1; BULK + VAPOR 0; BULK + BULK 0). The phase ports change which chord mode converges slowest; they do not create the amplification.
+
+### 4. Why it exhausts the substep limit, and that it is not phase-port specific
+
+- Near the threshold the accepted substeps commit reconstructed states whose volume row sits just under the gate (e.g. accepted at dt 2.61e-3 with gate 9.38e-9, volume row -7.35e-9); the next step starts from that inconsistency and its gate hovers at 1.0e-8 at every dt (fail 1.0008e-8 at 5.22e-3 s, pass 9.38e-9 at 2.61e-3 s, fail 1.13e-8 at 1.04e-2 s): the controller alternates between three step sizes until the 1000-substep limit (`logs/03`, tail of the LIQUID/VAPOR file). That is the "1.008e-8 at every substep".
+- All-BULK fixtures meet the same row class today and recover it by halving (instrumented runs, `logs/11`): `DeadHeadedLineIslandTest` and `FilterBlockLineIslandTest` fail the gate at the tank's local row 4 at 3.25e-7 and 3.62e-7 (N2 0.10-0.11 % of the tank's amounts, relative N2 error 3.2e-7 / 3.6e-7, gas 28 / 34 % of the volume, volume row -9.1e-8 / -1.2e-7), and `LevelHeadTest`'s BULK drain control at 0.1 s has one (section 5, A). The D9 drain (`d9/src/DrainProbe.java`, the head drain at 5 s: 18 gate rejections in 12 slices) is the same: tank rows 3/4, relative N2 error up to 5.7e-8 (`logs/09`).
+
+Candidates ruled out: the stream composition the Newton used versus the one the reconstruction reads (the candidate is the Newton's last iterate; bookings identical, above); water vapour to the void or the vessels' water rows (water rows at the reconstructed point 0 and 1.3e-14; water booked identically); a stiff gas cap (0.7 m3 of nitrogen at 1 atm is not stiff; the factor is n_total/n_gas); the throttle or the D9 head on one side only (the WP2 + D10 tree fails without a head, D9 `logs/08`; the vent runs PASSIVE, never at its cap or throttle); the solid share or the energy booking (no solids; energy rows 5e-12 and 1.7e-11 at the reconstructed point).
+
+### 5. Classification and options for the owner (not implemented)
+
+A tolerance-level mismatch, but not the booking mismatch the plan inferred: the brief's forced fix (the reconstruction books what the Newton booked) already holds bit for bit. What closes it is a change to when the Newton stops, how it scales a minor component's balance, or how the reconstruction restates a state; each has its own blast radius, so it is the owner's choice.
+
+- **A. Polish before refusing (recommended).** When the FULL gate fails, re-solve once from the converged point on a fresh workspace (a Jacobian of this step's own dt and state) at the tolerance times 1e-2, reconstruct, re-check `boundaryAllowed`, the velocity constraint and `phaseCorrection`, and gate that point; refuse as today if any of that fails. Runs only where the gate has already refused, so **every step the gate accepts today is bitwise unchanged**. Prototype `src/vent-gate-polish-prototype.patch` (33 lines in `PassiveStepSolver`), measured: manometer at 5 s, 8 slices, 3-4 accepted / 0 rejected each (slice 0 one reopen), 13 firings, each one iteration, gate 2.2e-8..1.6e-7 -> 7.7e-14..3.0e-12 (`logs/06`); at 0.1 s byte-identical to HEAD, never fires; the BULK-vent control 1 gate rejection per slice -> 0 (`logs/08`); the D9 drain 18 -> 0 (`logs/09`). Cloud harness `all` on the prototype: science 213/213, runtime 237/237 with the 33 junction lines identical to the reference, adjacent 38/38, chain-100 0.000e+00 (`logs/10`); it fires 64 times across the suites (`LevelHeadTest` 40, `FilterBlockLineIslandTest` 18, `DeadHeadedLineIslandTest` 4, `ElevatedBlockLineIslandTest` 2), every assertion holds, and the printed `LEVEL_HEAD_RUN` counters move (`logs/12`): drain 5 s 168/21 -> 152/3 (Newton solves 190 -> 159, iterations 661 -> 379, Jacobian builds 70 -> 54), manometer 182/3 -> 181/1, replay 48/12 -> 36/0, the drain's 0.1 s BULK control output 1.67e-6 -> 8.8e-7 kg. Cost where it fires: one Jacobian build, one or two iterations and one reconstruction, against a halving and its re-solves today.
+- **B. Do not fork a preconditioner across dt.** Build the Jacobian at every new dt. Fixes the manometer (measured with a Jacobian at every solve start, section 3); not bitwise wherever the step size changes (*inferred*), and it gives up what the fork saves.
+- **C. Per-component balance scales.** State every component's balance over its own amount, as `resolveTraces` already does below a 1 % headspace. Tightens the Newton on minor gases everywhere; not bitwise; the solver's comment records a 1e-11 stall on caloric cancellation near liquid-full water (*inferred risk*).
+- **D. Restate (T, P) in the reconstruction.** A UV flash (or a local T, P, split solve) at the booked amounts, energy and volume, so the gate sees only the transport. Not bitwise; one flash per node per step; reverses the "reconstruction does not flash" design (*inferred*).
+- **E. Accept.** Recovered by halving in most layouts, but the manometer shows it can lock the controller and fail the interval at 5 s, which a compiled vented tank (WP5) would meet in game.
+
+If A is taken: port the prototype without the trace line, add the regression test the brief describes (a tank filled through its LIQUID port with a VAPOR vent, 5 s and 0.1 s, no "equation gate" key in the rejection reasons of any slice; `SolverDiagnostics` counts verification residuals but has no gate-rejection counter, so the reasons map is the assertion), switch `LevelHeadTest`'s manometer to vent B through its VAPOR port as D9 section 5 intended, and run the usual gates; on this evidence no existing assertion changes.
+
+### 6. Material
+
+`tools/phase-ports-probes/vent/`: `src/instr-gate-probe.patch` (the instrumented gate and Newton, against `fdc7571`; never commit), `src/vent-gate-polish-prototype.patch` (option A, against `fdc7571`), `src/run-probe.sh` (runs the d9 probes against a compiled tree), `logs/01`-`12` as cited. No Gradle run: no tracked source changed.

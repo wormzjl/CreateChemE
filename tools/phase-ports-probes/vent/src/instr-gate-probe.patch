@@ -1,0 +1,104 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 9ab69a9..aff74eb 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -548,6 +548,21 @@ public final class PassiveStepSolver {
+             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
+             SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
+             double maximumResidual=0;for(double residual:equations.residual(reconstructed))maximumResidual=Math.max(maximumResidual,Math.abs(residual));
++            if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6)&&System.getProperty("proto.polish")!=null) {
++                SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
++                try{var polished=SparseNewton.solve(equations,x.clone(),new SparseNewton.Settings(20,tolerance*Double.parseDouble(System.getProperty("proto.polish")),1e-6,24),checkpoint,new SparseNewton.Workspace(ownership));
++                    double[] px=polished.variables();var pstates=equations.states(px);double[] pflows=new double[flows.length];
++                    for(int i=0;i<pflows.length;i++){pflows[i]=px[equations.edgeOffset+i];if(boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED){pflows[i]=0;px[equations.edgeOffset+i]=0;}}
++                    var pproj=ConservativeTransport.reconstruct(graph,pstates,pflows,heads,dt,model,checkpoint,transport,rateOnly);
++                    if(phaseCorrection(graph,pproj.states(),checkpoint,true,equations.cachedPrepared)==null){
++                        var prec=px.clone();for(int node=0;node<pproj.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(pproj.states().get(node));System.arraycopy(encoded,0,prec,equations.offsets[node],encoded.length);}
++                        double pmax=0;for(double residual:equations.residual(prec))pmax=Math.max(pmax,Math.abs(residual));
++                        if(System.getProperty("proto.verbose")!=null)System.out.printf(java.util.Locale.ROOT,"POLISH dt=%.4e gate %.4e -> %.4e iterations %d newton %.3e%n",dt,maximumResidual,pmax,polished.iterations(),polished.residualNorm());
++                        if(pmax<=1e-8){x=px;states=pstates;System.arraycopy(pflows,0,flows,0,flows.length);projection=pproj;reconstructed=prec;maximumResidual=pmax;numerical=polished;POLISH_OK++;}else POLISH_FAIL++;
++                    }else POLISH_FAIL++;
++                }catch(SparseNewton.Nonconvergence e){POLISH_FAIL++;if(System.getProperty("proto.verbose")!=null)System.out.println("POLISH nonconvergence "+e.getMessage());}
++            }
++            if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6)||System.getProperty("gateprobe.all")!=null)gateProbe(equations,x,reconstructed,projection,flows,dt,states,graph,maximumResidual,numerical.residualNorm());
+             if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6))throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);
+             if(acceptance==Acceptance.APPROXIMATE)checkApproximation(equations,reconstructed,projection.states(),flows,workspace,checkpoint,tolerance);
+             checkConservation(graph,projection);
+@@ -572,6 +587,47 @@ public final class PassiveStepSolver {
+         }
+         throw new SparseNewton.Nonconvergence("Device active-set limit");
+     }
++
++
++    private void compactProbe(Equations eq,double[] x,double[] rec,ConservativeTransport.Projection projection,List<FluidThermodynamics.State> states,PassiveNetwork graph,double dt,double max,double newtonNorm) {
++        double[] rN=eq.residual(x);double[][] tN=new double[eq.targets.length][];for(int n=0;n<tN.length;n++)tN[n]=eq.targets[n]==null?null:eq.targets[n].clone();
++        double[] rR=eq.residual(rec);int arg=0;for(int r=0;r<rR.length;r++)if(Math.abs(rR[r])>Math.abs(rR[arg]))arg=r;int nodeAt=-1;for(int nn=0;nn<eq.offsets.length;nn++)if(eq.layout[nn]!=null&&arg>=eq.offsets[nn]&&arg<eq.offsets[nn]+eq.layout[nn].size())nodeAt=nn;
++        var sb=new StringBuilder();
++        for(int node=0;node<graph.reservoirs().size();node++){if(eq.layout[node]==null)continue;var aN=com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(states.get(node));
++            int worst=-1;double rel=0,tot=0;for(int c=0;c<aN.length;c++)tot+=tN[node][c];for(int c=0;c<aN.length;c++){double d=tN[node][c]>0?Math.abs(aN[c]-tN[node][c])/tN[node][c]:0;if(d>rel){rel=d;worst=c;}}
++            var sNd=states.get(node);double gasFrac=sNd.vaporVolume()/sNd.volume();
++            sb.append(String.format(java.util.Locale.ROOT," n%d[%s worst c%d rel %.2e n_c/n_tot %.2e gasVol %.2f vol %.2e maxRow %.2e]",node,graph.reservoirs().get(node).kind(),worst,rel,worst>=0?tN[node][worst]/tot:0,gasFrac,graph.reservoirs().get(node).junction()?0:rR[eq.offsets[node]+eq.layout[node].componentBalanceCount()+1],maxAbs(rR,eq.offsets[node],eq.layout[node].size())));}
++        System.out.printf(java.util.Locale.ROOT,"GATE %s dt=%.4e max=%.4e row=%d node=%d local=%d newton=%.3e%s%n",max>1e-8?"FAIL":"pass",dt,max,arg,nodeAt,nodeAt>=0?arg-eq.offsets[nodeAt]:-1,newtonNorm,sb);
++    }
++    static double maxAbs(double[] r,int o,int n){double m=0;for(int i=o;i<o+n;i++)m=Math.max(m,Math.abs(r[i]));return m;}
++    static int GATE_PRINTS=0;public static int POLISH_OK=0,POLISH_FAIL=0;
++    private void gateProbe(Equations eq,double[] x,double[] rec,ConservativeTransport.Projection projection,double[] flows,double dt,List<FluidThermodynamics.State> states,PassiveNetwork graph,double max,double newtonNorm) {
++        if(System.getProperty("gateprobe.compact")!=null){compactProbe(eq,x,rec,projection,states,graph,dt,max,newtonNorm);return;}
++        if(GATE_PRINTS++>=Integer.getInteger("gateprobe.max",3))return;
++        double[] rN=eq.residual(x);double[][] tN=new double[eq.targets.length][];for(int n=0;n<tN.length;n++)tN[n]=eq.targets[n]==null?null:eq.targets[n].clone();double[] eN=eq.energy.clone();
++        var trN=eq.cachedTransport.clone();
++        double[] rR=eq.residual(rec);double[][] tR=new double[eq.targets.length][];for(int n=0;n<tR.length;n++)tR[n]=eq.targets[n]==null?null:eq.targets[n].clone();double[] eR=eq.energy.clone();
++        var trR=eq.cachedTransport.clone();
++        System.out.printf(java.util.Locale.ROOT,"GATEPROBE dt=%.6e max=%.6e newtonNorm=%.6e flows=%s%n",dt,max,newtonNorm,Arrays.toString(flows));
++        for(int r=0;r<rR.length;r++){if(Math.abs(rR[r])<1e-10&&Math.abs(rN[r])<1e-10)continue;int nodeAt=-1;for(int nn=0;nn<eq.offsets.length;nn++)if(eq.layout[nn]!=null&&r>=eq.offsets[nn]&&r<eq.offsets[nn]+eq.layout[nn].size())nodeAt=nn;
++            System.out.printf(java.util.Locale.ROOT,"  row %d node %d local %d  newton %.6e  recon %.6e  x %.17g rec %.17g%n",r,nodeAt,nodeAt>=0?r-eq.offsets[nodeAt]:r-eq.edgeOffset,rN[r],rR[r],x[r],rec[r]);}
++        double[] mw=model.molecularWeights();
++        for(int node=0;node<graph.reservoirs().size();node++){if(eq.layout[node]==null)continue;
++            var sN=states.get(node);var sR=projection.states().get(node);var aN=com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(sN);var aR=com.wormzjl.createcheme.science.fluid.solver.PhaseLayout.totalAmounts(sR);
++            System.out.printf(java.util.Locale.ROOT,"  node %d T %.10f P %.6f  V_N %.17g V_R %.17g Vinv %.17g U_N %.10e U_R %.10e Utarget_N %.10e Utarget_R %.10e%n",node,sN.temperature(),sN.pressure(),sN.volume(),sR.volume(),graph.reservoirs().get(node).inventory().volume(),sN.internalEnergy(),sR.internalEnergy(),eN[node],eR[node]);
++            var inv=projection.inventories().get(node).moles();
++            for(int c=0;c<aN.length;c++)if(aN[c]!=0||aR[c]!=0||tN[node][c]!=0)System.out.printf(java.util.Locale.ROOT,"    c%d amountN %.17g amountR %.17g inventoryR %.17g targetN %.17g targetR %.17g  (aN-tN) %.3e (aR-tR) %.3e (aR-tN) %.3e (inv-tR) %.3e%n",c,aN[c],aR[c],inv[c],tN[node][c],tR[node][c],aN[c]-tN[node][c],aR[c]-tR[node][c],aR[c]-tN[node][c],inv[c]-tR[node][c]);
++            System.out.printf(java.util.Locale.ROOT,"    phase N: wl %.17g wv %.17g vap %s liq %s ; R: wl %.17g wv %.17g vap %s liq %s%n",sN.waterLiquid(),sN.waterVapor(),Arrays.toString(sN.vaporView()),Arrays.toString(sN.liquidView()),sR.waterLiquid(),sR.waterVapor(),Arrays.toString(sR.vaporView()),Arrays.toString(sR.liquidView()));
++        }
++        for(int edge=0;edge<flows.length;edge++){var pipe=graph.pipes().get(edge);if(pipe.drawPort(flows[edge])==PassiveNetwork.PhasePort.BULK)continue;int donor=flows[edge]>=0?pipe.first():pipe.second();
++            var tn=trN[donor].port(pipe.drawPort(flows[edge]));var tr=trR[donor].port(pipe.drawPort(flows[edge]));
++            System.out.printf(java.util.Locale.ROOT,"  edge %d port %s donor %d flow %.17g%n",edge,pipe.drawPort(flows[edge]),donor,flows[edge]);
++            var sN=states.get(donor);double vm=model.vaporMass(sN),lm=model.liquidMass(sN);boolean vap=pipe.drawPort(flows[edge])==PassiveNetwork.PhasePort.VAPOR;
++            for(int c=0;c<tn.moles.length;c++){double newton=dt*flows[edge]*tn.moles[c]/tn.mass,atRec=dt*flows[edge]*tr.moles[c]/tr.mass;
++                double wc=vap?(c<tn.moles.length-1?sN.vaporView()[c]:sN.waterVapor())*mw[c]/vm:(c<tn.moles.length-1?sN.liquidView()[c]:sN.waterLiquid())*mw[c]/lm;double book=dt*Math.abs(flows[edge])*wc/mw[c];
++                if(newton!=0||book!=0)System.out.printf(java.util.Locale.ROOT,"    c%d newtonBooked %.17g reconBooked(unpinned) %.17g atReconState %.17g  diff(newton-recon) %.3e diff(atRec-recon) %.3e%n",c,newton,book,atRec,newton-book,atRec-book);}
++        }
++    }
+     /** Value key over compact codes instead of rendered strings and boxed lists; the arrays belong
+      * to the key from construction on, so a caller must hand over a snapshot of anything it mutates.
+      * {@code supports} is the per-node, per-component phase support flattened in node order: it
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+index 12d9666..f850570 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+@@ -134,7 +134,7 @@ public final class SparseNewton {
+         int n=equations.size();if(n==0||initial.length!=n)throw new IllegalArgumentException("Invalid equation dimension");
+         if(workspace.pattern==null)workspace.pattern=new Pattern(n,equations.columnRows());
+         if(workspace.pattern.offsets.length!=n+1)throw new IllegalArgumentException("Newton workspace structure changed");
+-        var pattern=workspace.pattern;int calls=1,lastNonzeros=0,iterationsSinceRefresh=0;boolean refresh=!workspace.preconditioned();double[] x=initial.clone();
++        var pattern=workspace.pattern;int calls=1,lastNonzeros=0,iterationsSinceRefresh=0;boolean refresh=!workspace.preconditioned()||System.getProperty("newton.fresh")!=null||System.getProperty("newton.freshStart")!=null;double[] x=initial.clone();
+         boolean openedPreconditioned=!refresh;
+         if(openedPreconditioned)SolverDiagnostics.count(SolverDiagnostics.newtonSolvesPreconditioned);
+         checkpoint.run();double[] f=evaluate(equations,x,n);double norm=norm(f);
+@@ -143,6 +143,7 @@ public final class SparseNewton {
+         ThermoDomainViolation domain=null;
+         for(int iteration=0;iteration<=settings.iterations();iteration++) {
+             checkpoint.run();
++            if(System.getProperty("newtonprobe")!=null)System.out.printf(java.util.Locale.ROOT,"NEWTON it=%d norm=%.3e refresh=%b f0=%.3e f6=%.3e%n",iteration,norm,refresh,f[0],f.length>6?f[6]:0);
+             if(norm<=settings.tolerance())return new Result(x,norm,iteration,calls,lastNonzeros,pattern.groups.size());
+             if(iteration==settings.iterations())break;
+             domain=null;
+@@ -185,7 +186,7 @@ public final class SparseNewton {
+                         // Residual evaluation and triangular solves are much cheaper than a new
+                         // colored Jacobian. Keep a contracting chord iteration a little longer;
+                         // stalled searches still force a fresh Jacobian immediately.
+-                        refresh=reduction>.8||++iterationsSinceRefresh>=8;
++                        refresh=reduction>.8||++iterationsSinceRefresh>=8||System.getProperty("newton.fresh")!=null;
+                         if(refresh)SolverDiagnostics.count(reduction>.8?SolverDiagnostics.newtonRefreshesStalled:SolverDiagnostics.newtonRefreshesAged);
+                         x=candidate;f=next;norm=nextNorm;accepted=true;break;
+                     }
