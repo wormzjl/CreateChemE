@@ -1,0 +1,12 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 27dcdb7..7302d3b 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -802,6 +802,7 @@ public final class PassiveStepSolver {
+      * amount; the state itself if that flash leaves the property domain. See {@link #initialPhaseSeeds}. */
+     private FluidThermodynamics.State waterTraceSeed(FluidThermodynamics.State state,Runnable checkpoint) {
+         var n=PhaseLayout.totalAmounts(state);n[n.length-1]=Arrays.stream(n).sum()*1e-12;
++        {var st=Thread.currentThread().getStackTrace();String who="?";for(var e:st)if(e.getClassName().endsWith("Test")){who=e.getClassName()+"#"+e.getMethodName();break;}System.out.println("D10TRACE "+who);}
+         try{return model.flashTP(state.temperature(),state.pressure(),n,checkpoint).withSolidState(state.solids(),state.solidMoments());}
+         catch(com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation outside){return state;}
+     }

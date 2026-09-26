@@ -250,7 +250,7 @@ Code commit `d836cf2`. Drivers and logs: `tools/phase-ports-probes/wp2/` (`src/P
 
 ## D10: water trace seed in junctions with water reachable (2026-09-26)
 
-- Author: Claude (Opus 5.5), same worktree and branch. Base: `9c723e0` (WP2 `d836cf2` plus its tools commit). Commit: `WIP phase-ports D10: water trace seed in junctions with water reachable` (hash recorded in the following commit).
+- Author: Claude (Opus 5.5), same worktree and branch. Base: `9c723e0` (WP2 `d836cf2` plus its tools commit). Commit: `07e7426` (`WIP phase-ports D10: water trace seed in junctions with water reachable`), on `9c723e0`; not merged, not pushed.
 - Decision: D10 (owner, 2026-09-26): the base defect of WP1 section 8 is fixed by option 1, a water trace seeded into junctions, chosen over the recommended option 2.
 
 ### 1. What changed
