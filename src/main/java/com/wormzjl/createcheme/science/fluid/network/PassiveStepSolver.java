@@ -87,6 +87,61 @@ public final class PassiveStepSolver {
      * decision D2 of that batch's DECISION_LOG.md.
      */
     static final double HOLDUP_TAU=.05;
+    /**
+     * The share of its vessel's volume a port's phase must fill, on the accepted state a step starts from, for the port to
+     * carry outflow in that step ({@code phi_open}; decision A4 of the phase-ports batch, plan Appendix B): a VAPOR port
+     * reads {@code vaporVolume/V}, a LIQUID port {@code (liquidVolume + waterVolume)/V}. Below it the port is closed for
+     * outflow for the whole step ({@link #boundaryAllowed}); inflow through it is never refused.
+     */
+    static final double PHASE_PORT_OPEN=.01;
+    /**
+     * The floor of an open phase port's outflow throttle ({@code phi_reserve}; decision A4): the port may draw at most
+     * {@code (phi_start - phi_reserve) V rho_stream,start / (n dt)} over a step (see {@link Equations#throttles}), so no step
+     * draws its phase below the reserve by more than the flash moves the interface. Where one step spans the band - a draw
+     * the throttle cuts - the phase lands on the reserve and the gap to {@link #PHASE_PORT_OPEN} keeps the port shut until
+     * it regrows by half a percent of the vessel. Under the state-change controller's steps a draining port usually closes
+     * at the first step start below {@code phi_open} instead (0.99 % on the drained water tank), and a port fed while it
+     * drains duty-cycles about {@code phi_open} (risk R1): stateless, no carried state (plan 3.4;
+     * documentation/2026-09-26-phase-ports-and-compressor/PHASE_PORTS_REVIEW.md, WP2).
+     */
+    static final double PHASE_PORT_RESERVE=.005;
+    /** The share of {@code state}'s volume the phase {@code port} draws fills: the vapour's at a VAPOR port, the hydrocarbon
+     * liquid's plus the free water's at a LIQUID port (solids alone do not flow as a liquid); a BULK end draws everything. */
+    static double portPhaseShare(FluidThermodynamics.State state,PassiveNetwork.PhasePort port) {
+        return switch(port) {
+            case BULK->1;
+            case VAPOR->state.vaporVolume()/state.volume();
+            case LIQUID->(state.liquidVolume()+state.waterVolume())/state.volume();
+        };
+    }
+    /** Whether a port may carry outflow from a vessel in {@code state}: a BULK end always, a phase port while its phase
+     * fills at least {@link #PHASE_PORT_OPEN} of the vessel. Stateless: nothing is carried from step to step. */
+    static boolean portAvailable(FluidThermodynamics.State state,PassiveNetwork.PhasePort port) {
+        return port==PassiveNetwork.PhasePort.BULK||portPhaseShare(state,port)>=PHASE_PORT_OPEN;
+    }
+    private static int portBit(PassiveNetwork.PhasePort port){return port==PassiveNetwork.PhasePort.VAPOR?1:port==PassiveNetwork.PhasePort.LIQUID?2:0;}
+    /**
+     * The start-state availability mask of a solve: per node, bit 1 set when a VAPOR port some connection has at that node
+     * may not carry outflow ({@link #portAvailable} false on the node's own state in {@code graph}), bit 2 the same for a
+     * LIQUID port. Only ports some connection actually has are recorded, so a graph with no phase port - every graph
+     * before phase ports - has an all-zero mask whatever its states, and every reader of it decides exactly as before.
+     *
+     * <p>Why a mask from the start state and not a state argument: {@link #boundaryAllowed} is read by the start-of-solve
+     * closures, the pass loop, the reachable-component sweep, the start point and the approximation probe on this solve's
+     * start, and by the boundary-reopen test ({@link #reopenable}) on the step's <em>end</em> states. A port decided open on
+     * one state and closed on another would let the reopen test reopen a run whose only driven direction the solve then
+     * refuses (plan Appendix C.3, availability caveat). So every reader of one step reads this one mask, built from the
+     * accepted state the step starts from.
+     */
+    static byte[] closedPorts(PassiveNetwork graph) {
+        byte[] closed=new byte[graph.reservoirs().size()];
+        for(var pipe:graph.pipes())for(int end=0;end<2;end++) {
+            var port=end==0?pipe.firstPort():pipe.secondPort();if(port==PassiveNetwork.PhasePort.BULK)continue;
+            int node=end==0?pipe.first():pipe.second();
+            if(!portAvailable(graph.reservoirs().get(node).state(),port))closed[node]|=(byte)portBit(port);
+        }
+        return closed;
+    }
     /** Connections the next step solve may not close at its start; set by {@link #reopenNext}, consumed by that solve. */
     private Set<PassiveNetwork.Pipe.Identity> keepOpen=Set.of();
     /** Exempts these connections from the start-of-solve closures ({@link #closeDeadHeads}, {@link #closeIllegalStarts})
@@ -132,6 +187,10 @@ public final class PassiveStepSolver {
         Arrays.fill(degree,0);
         for(int edge=0;edge<edges;edge++){var pipe=graph.pipes().get(edge);nodeEdges[pipe.first()][degree[pipe.first()]++]=edge;nodeEdges[pipe.second()][degree[pipe.second()]++]=edge;}
         boolean[] taken=new boolean[edges];var reopen=new LinkedHashSet<PassiveNetwork.Pipe.Identity>();
+        // The step's start-state availability, the mask the solve itself refused its directions on: a port closed for
+        // outflow is one more link that refuses a direction, so a run is reopened only in a direction every link, port
+        // included, allows (inflow through a closed port reopens as any one-way run does; plan 3.4).
+        byte[] closedPorts=closedPorts(graph);
         for(int edge=0;edge<edges;edge++) {
             if(taken[edge]||!closed[edge])continue;
             var pipe=graph.pipes().get(edge);
@@ -154,8 +213,8 @@ public final class PassiveStepSolver {
             boolean forwardAllowed=true,reverseAllowed=true;
             for(int position=0;position<chain.size();position++) {
                 var link=graph.pipes().get(chain.get(position));boolean aligned=link.first()==order.get(position);
-                forwardAllowed&=boundaryAllowed(graph,link,aligned?1:-1);
-                reverseAllowed&=boundaryAllowed(graph,link,aligned?-1:1);
+                forwardAllowed&=boundaryAllowed(graph,link,aligned?1:-1,closedPorts);
+                reverseAllowed&=boundaryAllowed(graph,link,aligned?-1:1,closedPorts);
             }
             var a=states.get(start);var b=states.get(finish);
             // Each end of the run stands in what its own end port draws, at its own end's driving pressure.
@@ -277,9 +336,12 @@ public final class PassiveStepSolver {
         ownership.check("Each executing island job needs its own step workspace");
         lastSolve=null;
         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
+        // Which phase ports may carry outflow in this step, on the accepted state it starts from (every vessel state the
+        // junction seed below leaves unchanged); read by every direction test of this solve. See {@link #closedPorts}.
+        byte[] closedPorts=closedPorts(inputGraph);
         // A cold junction's pressure guess replaced by the balanced one; a Newton starting guess only, the junction's
         // owned inventory is untouched. See {@link #seedBoundaryJunctions}.
-        var graph=seedBoundaryJunctions(inputGraph,checkpoint);
+        var graph=seedBoundaryJunctions(inputGraph,checkpoint,closedPorts);
         if(graph.pipes().isEmpty()&&graph.scheduledTransfers().isEmpty())return new Result(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),new double[0],dt,
                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
                 graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList(),List.of(),List.of());
@@ -333,8 +395,8 @@ public final class PassiveStepSolver {
         // may still close it on a converged point. See {@link #reopenable}.
         boolean[] keep=null;
         if(!keepOpen.isEmpty()&&!rateOnly){var ids=identities(graph);keep=new boolean[ids.size()];for(int i=0;i<keep.length;i++)keep[i]=keepOpen.contains(ids.get(i));keepOpen=Set.of();}
-        closeDeadHeads(graph,boundaryClosed,keep);
-        closeIllegalStarts(graph,modes,boundaryClosed,keep);
+        closeDeadHeads(graph,boundaryClosed,keep,closedPorts);
+        closeIllegalStarts(graph,modes,boundaryClosed,keep,closedPorts);
         // The species this island can carry, and the trial states built from them, are read off the
         // connections this pass leaves open - so they are stated after the closure above and not
         // before it. A connection the closure has taken carries exactly zero by a row of its own,
@@ -342,8 +404,8 @@ public final class PassiveStepSolver {
         // trace of a component only that connection could bring puts an unknown on a nonnegativity
         // boundary whose only root is zero, which is what used to refuse the whole Newton step. See
         // {@link #closeDeadHeads} and documentation/DEAD_HEADED_LINE.md.
-        var reachable=reachableComponents(graph,null,boundaryClosed);
-        var seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable);
+        var reachable=reachableComponents(graph,null,boundaryClosed,closedPorts);
+        var seeds=initialPhaseSeeds(graph,dt,checkpoint,reachable,closedPorts);
         var seen=new HashSet<WorkspaceKey>();
         // Constant for this solve: every pass keys on the same graph identity and component support.
         var pipeIdentities=identities(graph);
@@ -362,14 +424,14 @@ public final class PassiveStepSolver {
             int[] phases=new int[seeds.size()];for(int i=0;i<phases.length;i++)phases[i]=phaseCode(seeds.get(i));
             byte[] modeCodes=new byte[modes.size()];for(int i=0;i<modeCodes.length;i++)modeCodes[i]=(byte)modes.get(i).ordinal();
             var supports=supports(graph,seeds,reachable,promoted);
-            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,reachable,supports);
+            var equations=new Equations(graph,dt,modes,boundaryClosed,seeds,reachable,supports,closedPorts);
             // The active-set state is exactly what varies between passes, so the structure key is
             // also the cycle key: repeating one means the pass sequence cannot make progress. The
             // frozen junction donors belong to it for the same reason the modes do - they decide
             // which equations this pass states, and the pass loop revises them.
-            var structure=new WorkspaceKey(0,nodeIds,kinds,pipeIdentities,phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone(),equations.junctionDonorFirst);
+            var structure=new WorkspaceKey(0,nodeIds,kinds,pipeIdentities,phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone(),equations.junctionDonorFirst,closedPorts);
             if(!seen.add(structure))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
-            var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,pipeIdentities,phases,componentMask,structure.supports,modeCodes,structure.boundaryClosed,structure.junctionDonors);
+            var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,pipeIdentities,phases,componentMask,structure.supports,modeCodes,structure.boundaryClosed,structure.junctionDonors,closedPorts);
             var workspace=workspaces.get(key);
             SolverDiagnostics.count(workspace==null?SolverDiagnostics.workspaceBuilds:SolverDiagnostics.workspaceReuses);
             if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
@@ -431,7 +493,7 @@ public final class PassiveStepSolver {
                 flows[i]=x[equations.edgeOffset+i];heads[i]=equations.controlOffsets[i]<0?0:x[equations.controlOffsets[i]]*1e5;
                 if(boundaryClosed[i]||modes.get(i)==FlowControl.Mode.CLOSED){flows[i]=0;x[equations.edgeOffset+i]=0;}
                 var pipe=graph.pipes().get(i);var up=states.get(pipe.first());double rho=endDensity(up,pipe.firstPort());var mode=modes.get(i);var next=mode;
-                if(!boundaryAllowed(graph,pipe,flows[i])&&Math.abs(flows[i])>1e-10){if(illegalDirection<0)illegalDirection=i;continue;}
+                if(!boundaryAllowed(graph,pipe,flows[i],closedPorts)&&Math.abs(flows[i])>1e-10){if(illegalDirection<0)illegalDirection=i;continue;}
                 if(boundaryClosed[i])continue;
                 if(pipe.control() instanceof FlowControl.Pump pump) {
                     double limit=riseLimit(pump,rho),margin=limit-demand(graph,pipe,states,rho);
@@ -517,13 +579,13 @@ public final class PassiveStepSolver {
      * the ordering and every retained factorization belong to it as much as to the phase code. */
     private record WorkspaceKey(long stepBits,long[] nodeIds,byte[] kinds,List<PassiveNetwork.Pipe.Identity> pipes,
                                 int[] phases,boolean[] componentMask,byte[] supports,byte[] modes,boolean[] boundaryClosed,
-                                boolean[] junctionDonors) {
+                                boolean[] junctionDonors,byte[] closedPorts) {
         @Override public boolean equals(Object other) {
             return other instanceof WorkspaceKey key&&stepBits==key.stepBits&&Arrays.equals(nodeIds,key.nodeIds)
                     &&Arrays.equals(kinds,key.kinds)&&pipes.equals(key.pipes)&&Arrays.equals(phases,key.phases)
                     &&Arrays.equals(componentMask,key.componentMask)&&Arrays.equals(supports,key.supports)
                     &&Arrays.equals(modes,key.modes)&&Arrays.equals(boundaryClosed,key.boundaryClosed)
-                    &&Arrays.equals(junctionDonors,key.junctionDonors);
+                    &&Arrays.equals(junctionDonors,key.junctionDonors)&&Arrays.equals(closedPorts,key.closedPorts);
         }
         @Override public int hashCode() {
             int hash=31*Long.hashCode(stepBits)+Arrays.hashCode(nodeIds);
@@ -531,7 +593,7 @@ public final class PassiveStepSolver {
             hash=31*(31*hash+Arrays.hashCode(phases))+Arrays.hashCode(componentMask);
             hash=31*hash+Arrays.hashCode(supports);
             hash=31*(31*hash+Arrays.hashCode(modes))+Arrays.hashCode(boundaryClosed);
-            return 31*hash+Arrays.hashCode(junctionDonors);
+            return 31*(31*hash+Arrays.hashCode(junctionDonors))+Arrays.hashCode(closedPorts);
         }
     }
     /**
@@ -616,7 +678,7 @@ public final class PassiveStepSolver {
             for(int node:new int[]{pipe.first(),pipe.second()})if(!equations.graph.reservoirs().get(node).junction()&&!equations.graph.reservoirs().get(node).fixed())floor+=1e-9*candidate.get(node).mass()/equations.dt;
             if(inflation*Math.abs(q-flows[edge])>floor+.002*Math.abs(q)
                     ||Math.signum(q)!=Math.signum(flows[edge])&&Math.max(Math.abs(q),Math.abs(flows[edge]))>floor
-                    ||!boundaryAllowed(equations.graph,pipe,q)&&Math.abs(q)>floor)
+                    ||!boundaryAllowed(equations.graph,pipe,q,equations.closedPorts)&&Math.abs(q)>floor)
                 throw new ApproximationRejected("Coupled flow-error estimate exceeds the fallback trust profile");
             double head=equations.controlOffsets[edge]<0?0:probe[equations.controlOffsets[edge]]*1e5;
             var up=corrected.get(pipe.first());var mode=equations.modes.get(edge);
@@ -640,10 +702,11 @@ public final class PassiveStepSolver {
     }
     /** Physical species can traverse passive pipes in either direction, actuators only downstream.
      * Junction property guesses own no inventory and therefore cannot introduce a species. */
-    private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions){return reachableComponents(graph,directions,null);}
+    private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions){return reachableComponents(graph,directions,null,closedPorts(graph));}
     /** {@code closed} names the connections this pass has already pinned to a flow of exactly zero;
-     * they carry no species in either direction. {@code null} is no closure at all. */
-    private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions,boolean[] closed) {
+     * they carry no species in either direction. {@code null} is no closure at all. {@code closedPorts} is the solve's
+     * start-state availability mask ({@link #closedPorts}): a port closed for outflow sends nothing out of its vessel. */
+    private boolean[][] reachableComponents(PassiveNetwork graph,double[] directions,boolean[] closed,byte[] closedPorts) {
         int count=model.hydrocarbon.componentCount()+1,nodes=graph.reservoirs().size();
         var possible=new BitSet[nodes];var outgoing=new ArrayList<List<Integer>>(nodes);
         for(int i=0;i<nodes;i++) {
@@ -659,8 +722,8 @@ public final class PassiveStepSolver {
         for(int edge=0;edge<graph.pipes().size();edge++) {var pipe=graph.pipes().get(edge);
             if(closed!=null&&closed[edge])continue;
             if(!(pipe.control() instanceof FlowControl.Pump pump)||pump.targetVolumeFlow()>0) {
-                if((directions==null||directions[edge]>1e-14)&&boundaryAllowed(graph,pipe,1))outgoing.get(pipe.first()).add(pipe.second());
-                if((directions==null||directions[edge]<-1e-14)&&pipe.control() instanceof FlowControl.Passive&&boundaryAllowed(graph,pipe,-1))outgoing.get(pipe.second()).add(pipe.first());
+                if((directions==null||directions[edge]>1e-14)&&boundaryAllowed(graph,pipe,1,closedPorts))outgoing.get(pipe.first()).add(pipe.second());
+                if((directions==null||directions[edge]<-1e-14)&&pipe.control() instanceof FlowControl.Passive&&boundaryAllowed(graph,pipe,-1,closedPorts))outgoing.get(pipe.second()).add(pipe.first());
             }
         }
         var queue=new ArrayDeque<Integer>();var queued=new boolean[nodes];
@@ -690,7 +753,7 @@ public final class PassiveStepSolver {
      * junction is seeded with its own state: its owned holdup is a small stock whose mixture the
      * backward-Euler rows move from where it is.
      */
-    private List<FluidThermodynamics.State> initialPhaseSeeds(PassiveNetwork graph,double dt,Runnable checkpoint,boolean[][] reachable) {
+    private List<FluidThermodynamics.State> initialPhaseSeeds(PassiveNetwork graph,double dt,Runnable checkpoint,boolean[][] reachable,byte[] closedPorts) {
         int count=model.hydrocarbon.componentCount()+1,nodes=graph.reservoirs().size();
         double[] flows=initialMassFlows(graph);
         var seeds=new ArrayList<FluidThermodynamics.State>(nodes);
@@ -709,7 +772,7 @@ public final class PassiveStepSolver {
                 var pipe=graph.pipes().get(edge);
                 if(pipe.first()!=nodeIndex&&pipe.second()!=nodeIndex)continue;
                 double flow=flows[edge];int receiver=flow>=0?pipe.second():pipe.first(),donor=flow>=0?pipe.first():pipe.second();
-                if(receiver!=nodeIndex||!boundaryAllowed(graph,pipe,flow))continue;
+                if(receiver!=nodeIndex||!boundaryAllowed(graph,pipe,flow,closedPorts))continue;
                 var incoming=graph.reservoirs().get(donor).state();double mass=Math.min(state.mass()*.25,dt*Math.abs(flow));var port=pipe.drawPort(flow);
                 var feed=endMoles(incoming,port);double feedMass=endMass(incoming,port);
                 for(int i=0;i<count;i++)n[i]+=mass*feed[i]/feedMass;
@@ -742,7 +805,7 @@ public final class PassiveStepSolver {
      * and the Newton descend from a state no solution is near (the 7-of-32 static matrix of review 6.1). A starting guess
      * only: the junction's owned inventory is not touched.
      */
-    private PassiveNetwork seedBoundaryJunctions(PassiveNetwork graph,Runnable checkpoint) {
+    private PassiveNetwork seedBoundaryJunctions(PassiveNetwork graph,Runnable checkpoint,byte[] closedPorts) {
         List<PassiveNetwork.Reservoir> nodes=null;
         for(int node=0;node<graph.reservoirs().size();node++) {
             var junction=graph.reservoirs().get(node);
@@ -764,7 +827,7 @@ public final class PassiveStepSolver {
             if(!eligible||degree<3||!(high>low))continue;
             double pressure=junction.state().pressure();
             if(pressure>low&&pressure<high)continue; // Keep an already interior/settled guess.
-            var seed=balancedBoundarySeed(graph,node,low,high,checkpoint);
+            var seed=balancedBoundarySeed(graph,node,low,high,checkpoint,closedPorts);
             if(nodes==null)nodes=new ArrayList<>(graph.reservoirs());
             nodes.set(node,new PassiveNetwork.Reservoir(junction.id(),junction.elevation(),seed,
                 junction.kind(),junction.inventory()));
@@ -774,7 +837,7 @@ public final class PassiveStepSolver {
 
     /** The seed itself: eight sweeps of a 36-step bisection on the junction pressure for zero net estimated inflow, then a
      * 30-step bisection on the temperature at which the delivered mixture has the delivered specific enthalpy. */
-    private FluidThermodynamics.State balancedBoundarySeed(PassiveNetwork graph,int node,double low,double high,Runnable checkpoint) {
+    private FluidThermodynamics.State balancedBoundarySeed(PassiveNetwork graph,int node,double low,double high,Runnable checkpoint,byte[] closedPorts) {
         var junction=graph.reservoirs().get(node);var seed=junction.state();
         double stock=PhaseLayout.sum(PhaseLayout.totalAmounts(seed));
         for(int sweep=0;sweep<8;sweep++) {
@@ -788,7 +851,7 @@ public final class PassiveStepSolver {
                 for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
                     double flow=initialMassFlow(trial,pipe,pipe.first()==node?pressure:endPressure(trial,pipe,pipe.first()),
                         pipe.second()==node?pressure:endPressure(trial,pipe,pipe.second()));
-                    if(boundaryAllowed(trial,pipe,flow))net+=pipe.first()==node?-flow:flow;
+                    if(boundaryAllowed(trial,pipe,flow,closedPorts))net+=pipe.first()==node?-flow:flow;
                 }
                 if(net>0)lo=pressure;else hi=pressure;
             }
@@ -798,7 +861,7 @@ public final class PassiveStepSolver {
                 double flow=initialMassFlow(trial,pipe,pipe.first()==node?pressure:endPressure(trial,pipe,pipe.first()),
                     pipe.second()==node?pressure:endPressure(trial,pipe,pipe.second()));
                 int donor=flow>=0?pipe.first():pipe.second();
-                if(donor==node||!boundaryAllowed(trial,pipe,flow))continue;
+                if(donor==node||!boundaryAllowed(trial,pipe,flow,closedPorts))continue;
                 var source=nodes.get(donor);double rate=Math.abs(flow);var port=pipe.portAt(donor);
                 var n=endMoles(source.state(),port);double sourceMass=endMass(source.state(),port);
                 for(int c=0;c<n.length;c++)amounts[c]+=rate*n[c]/sourceMass;
@@ -929,7 +992,7 @@ public final class PassiveStepSolver {
      */
     private void startPoint(PassiveNetwork graph,List<FlowControl.Mode> modes,boolean[] boundaryClosed,
                             List<PassiveNetwork.Pipe.Identity> pipeIdentities,List<FluidThermodynamics.State> seeds,
-                            double[] flows,double[] heads,boolean[] headSet) {
+                            double[] flows,double[] heads,boolean[] headSet,byte[] closedPorts) {
         boolean warmFlow=graph.reservoirs().stream().anyMatch(node->node.junction()||node.fixed())
                 ||graph.pipes().stream().anyMatch(pipe->phaseCode(graph.reservoirs().get(pipe.first()).state())!=phaseCode(graph.reservoirs().get(pipe.second()).state()));
         // A carry restated at a job start holds modes but no flows; see {@link #replayStart}.
@@ -1000,7 +1063,7 @@ public final class PassiveStepSolver {
                 if(!usable||missing<0)continue;
                 var pipe=graph.pipes().get(missing);double q=pipe.first()==node?net:-net;
                 if(node==(q>=0?pipe.second():pipe.first())&&pipe.filter()!=null){var donor=graph.reservoirs().get(q>=0?pipe.first():pipe.second()).state();q/=Math.max(1e-12,1-solidShare(donor,pipe.drawPort(q)));}
-                if(boundaryAllowed(graph,pipe,q)){flows[missing]=q;known[missing]=true;changed=true;}
+                if(boundaryAllowed(graph,pipe,q,closedPorts)){flows[missing]=q;known[missing]=true;changed=true;}
             }
             if(!changed)break;
         }
@@ -1298,7 +1361,7 @@ public final class PassiveStepSolver {
      * it. It is per solve, so a line whose generator is raised afterwards is decided again from the
      * new starting point and opens.
      */
-    private void closeDeadHeads(PassiveNetwork graph,boolean[] boundaryClosed,boolean[] keep) {
+    private void closeDeadHeads(PassiveNetwork graph,boolean[] boundaryClosed,boolean[] keep,byte[] closedPorts) {
         int edges=graph.pipes().size(),nodes=graph.reservoirs().size();
         int[] degree=new int[nodes];boolean[] actuated=new boolean[nodes];
         for(var pipe:graph.pipes()) {
@@ -1339,8 +1402,8 @@ public final class PassiveStepSolver {
             boolean forwardAllowed=true,reverseAllowed=true;
             for(int position=0;position<chain.size();position++) {
                 var link=graph.pipes().get(chain.get(position));boolean aligned=link.first()==order.get(position);
-                forwardAllowed&=boundaryAllowed(graph,link,aligned?1:-1);
-                reverseAllowed&=boundaryAllowed(graph,link,aligned?-1:1);
+                forwardAllowed&=boundaryAllowed(graph,link,aligned?1:-1,closedPorts);
+                reverseAllowed&=boundaryAllowed(graph,link,aligned?-1:1,closedPorts);
             }
             if(forwardAllowed&&reverseAllowed)continue;
             var a=graph.reservoirs().get(start);var b=graph.reservoirs().get(finish);
@@ -1377,11 +1440,11 @@ public final class PassiveStepSolver {
      * guess, not a state. And only where the static driving pressure forbids the direction with either end's density
      * ({@link #illegalWithEitherDensity}). {@code keep} names the connections the interval solver reopened.
      */
-    private void closeIllegalStarts(PassiveNetwork graph,List<FlowControl.Mode> modes,boolean[] boundaryClosed,boolean[] keep) {
+    private void closeIllegalStarts(PassiveNetwork graph,List<FlowControl.Mode> modes,boolean[] boundaryClosed,boolean[] keep,byte[] closedPorts) {
         if(!(acceptedPipes.equals(identities(graph))&&Arrays.equals(acceptedNodeIds,nodeIds(graph))))return;
         int edges=graph.pipes().size();
         double[] start=new double[edges];
-        startPoint(graph,modes,boundaryClosed,identities(graph),null,start,new double[edges],new boolean[edges]);
+        startPoint(graph,modes,boundaryClosed,identities(graph),null,start,new double[edges],new boolean[edges],closedPorts);
         double[] estimate=null;
         for(int i=0;i<edges;i++) {
             var pipe=graph.pipes().get(i);
@@ -1389,7 +1452,7 @@ public final class PassiveStepSolver {
             if(keep!=null&&keep[i])continue;
             double q=start[i];
             if(Math.abs(q)<=1e-10){if(estimate==null)estimate=initialMassFlows(graph);q=estimate[i];}
-            if(Math.abs(q)>1e-10&&!boundaryAllowed(graph,pipe,q)) {
+            if(Math.abs(q)>1e-10&&!boundaryAllowed(graph,pipe,q,closedPorts)) {
                 if(illegalWithEitherDensity(graph,pipe,q))boundaryClosed[i]=true;
             }
         }
@@ -1412,10 +1475,21 @@ public final class PassiveStepSolver {
         double drivingSecond=dp-endDensity(b.state(),pipe.secondPort())*GRAVITY*dz;if(!(Math.signum(drivingSecond)==Math.signum(flow)))return false;
         return true;
     }
+    /**
+     * Whether a connection may carry {@code flow}'s direction: not blocked that way, not out of a void or into a generator,
+     * and - phase ports - not out of an end whose port is closed for outflow in {@code closedPorts}, the solve's start-state
+     * availability mask ({@link #closedPorts}). Flow into a vessel through any port is never refused by the port (D3: inputs
+     * are not distinguished). A BULK end never reads the mask, so an all-BULK graph is decided exactly as before.
+     */
     private static boolean boundaryAllowed(PassiveNetwork graph,PassiveNetwork.Pipe pipe,double flow) {
         var a=graph.reservoirs().get(pipe.first()).kind();var b=graph.reservoirs().get(pipe.second()).kind();
         return !pipe.blocked(flow)&&!(flow<0&&(a==PassiveNetwork.NodeKind.GENERATOR||b==PassiveNetwork.NodeKind.VOID)
                 ||flow>0&&(b==PassiveNetwork.NodeKind.GENERATOR||a==PassiveNetwork.NodeKind.VOID));
+    }
+    private static boolean boundaryAllowed(PassiveNetwork graph,PassiveNetwork.Pipe pipe,double flow,byte[] closedPorts) {
+        if(!boundaryAllowed(graph,pipe,flow))return false;
+        if(flow>0&&pipe.firstPort()!=PassiveNetwork.PhasePort.BULK&&(closedPorts[pipe.first()]&portBit(pipe.firstPort()))!=0)return false;
+        return !(flow<0&&pipe.secondPort()!=PassiveNetwork.PhasePort.BULK&&(closedPorts[pipe.second()]&portBit(pipe.secondPort()))!=0);
     }
     void checkConservation(PassiveNetwork graph,ConservativeTransport.Projection projection) {
         int count=model.hydrocarbon.componentCount()+1;double[] before=new double[count],after=new double[count],turnover=new double[count];double eb=0,ea=0,energyScale=0;
@@ -1503,6 +1577,27 @@ public final class PassiveStepSolver {
          * it would draw, and it neither builds a stream nor costs its node a structural zero. A graph with no open phase
          * port has neither and is solved as it always was. */
         final boolean[] drawsVapor,drawsLiquid;
+        /** This solve's start-state availability mask ({@link PassiveStepSolver#closedPorts}); constant for the solve. */
+        final byte[] closedPorts;
+        /**
+         * The outflow throttle of each open phase port, per connection and direction ({@code [edge][0]}: flow leaving the
+         * first end, {@code [edge][1]}: leaving the second), {@code +infinity} where there is none; {@code null} when the
+         * graph has none at all. For an end whose port is open on the accepted state the step starts from:
+         * <pre>throttle = (phi_start - phi_reserve) * V * rho_stream,start / (n * dt)</pre>
+         * with {@code phi_start} the port's phase share of the vessel ({@link #portPhaseShare}), {@code V} the vessel's
+         * volume, {@code rho_stream,start} the drawn stream's density ({@link #endDensity}), all on the start state,
+         * {@code phi_reserve} = {@link #PHASE_PORT_RESERVE}, {@code n} the number of this vessel's ends with the same port
+         * whose connection may carry outflow from it ({@link #boundaryAllowed} with the mask; the true constraint couples
+         * them, so they share it equally), and {@code dt} this solve's step - the backward-Euler step the interval solver
+         * attempts, the interval's remainder when that is shorter, halved with every retry - never the slice. Over the step
+         * the ports of one phase then draw at most {@code (phi_start - phi_reserve) V rho_start} together, the phase above
+         * the reserve at the start density, so a draining port lands its phase at the reserve on a step boundary instead of
+         * past it (plan 3.4). It enters {@code edgeRows} beside the velocity cap as {@code min(cap, throttle)} for the
+         * direction leaving the port, exactly as the filter's room limit does: a constant for the solve, a saturated law,
+         * absent in a rate solve (which carries no step) and while a device of the island prescribes its own flow
+         * ({@link #prescribedFlow}, as for the filter; WP3 revisits the pump fed from a port).
+         */
+        final double[][] throttles;
         final Transport[][] capSources;final double[][] capMassFlows,capPressureDrops;
         final FluidThermodynamics.Prepared[] cachedPrepared;
         /**
@@ -1662,9 +1757,11 @@ public final class PassiveStepSolver {
          * amount form over the junction's own mass; see there. */
         double junctionWeight=1;
         Equations(PassiveNetwork graph,double dt,List<FlowControl.Mode> modes,boolean[] boundaryClosed,List<FluidThermodynamics.State> seeds,boolean[][] reachable,
-                  PhaseSupport[][] supports) {
+                  PhaseSupport[][] supports,byte[] closedPorts) {
             this.modes=List.copyOf(modes);
             prescribedFlow=this.modes.contains(FlowControl.Mode.PUMP_TARGET);
+            this.closedPorts=closedPorts;
+            throttles=rateOnly||prescribedFlow?null:throttles(graph,dt,closedPorts);
             this.seeds=List.copyOf(seeds);
             this.boundaryClosed=boundaryClosed.clone();
             this.graph=graph;this.dt=dt;pipeIdentities=identities(graph);solidSupport=hasSolids(graph);int count=graph.reservoirs().size();layout=new PhaseLayout[count];offsets=new int[count];oldAmounts=new double[count][];
@@ -1802,6 +1899,31 @@ public final class PassiveStepSolver {
                 headDensities[edge]=fromFirst?first:second;
             }
         }
+        /** {@link #throttles} of {@code graph} (its states are the step's start states), or null when it has no open phase
+         * port. */
+        private double[][] throttles(PassiveNetwork graph,double dt,byte[] closedPorts) {
+            int edges=graph.pipes().size(),nodes=graph.reservoirs().size();
+            // n: per node, the ends of each phase whose connection may carry outflow from that node through an open port.
+            int[] vapor=new int[nodes],liquid=new int[nodes];boolean any=false;
+            for(var pipe:graph.pipes())for(int end=0;end<2;end++) {
+                var port=end==0?pipe.firstPort():pipe.secondPort();if(port==PassiveNetwork.PhasePort.BULK)continue;
+                if(!boundaryAllowed(graph,pipe,end==0?1:-1,closedPorts))continue;
+                int node=end==0?pipe.first():pipe.second();any=true;
+                if(port==PassiveNetwork.PhasePort.VAPOR)vapor[node]++;else liquid[node]++;
+            }
+            if(!any)return null;
+            double[][] limits=new double[edges][2];
+            for(int edge=0;edge<edges;edge++) {
+                var pipe=graph.pipes().get(edge);
+                for(int end=0;end<2;end++) {
+                    var port=end==0?pipe.firstPort():pipe.secondPort();int node=end==0?pipe.first():pipe.second();
+                    if(port==PassiveNetwork.PhasePort.BULK||!boundaryAllowed(graph,pipe,end==0?1:-1,closedPorts)){limits[edge][end]=Double.POSITIVE_INFINITY;continue;}
+                    var start=graph.reservoirs().get(node).state();int n=port==PassiveNetwork.PhasePort.VAPOR?vapor[node]:liquid[node];
+                    limits[edge][end]=(portPhaseShare(start,port)-PHASE_PORT_RESERVE)*start.volume()*endDensity(start,port)/(n*dt);
+                }
+            }
+            return limits;
+        }
         private void buildSparsity() {
             int count=layout.length;
             BitSet[] columns=new BitSet[size];for(int i=0;i<size;i++)columns[i]=new BitSet(size);
@@ -1883,7 +2005,10 @@ public final class PassiveStepSolver {
             double[] x=new double[size];for(int i=0;i<layout.length;i++)if(layout[i]!=null){var encoded=layout[i].encode(seeds.get(i));System.arraycopy(encoded,0,x,offsets[i],encoded.length);}
             int edges=graph.pipes().size();
             double[] q=new double[edges],head=new double[edges];boolean[] headSet=new boolean[edges];
-            startPoint(graph,modes,boundaryClosed,pipeIdentities,seeds,q,head,headSet);
+            startPoint(graph,modes,boundaryClosed,pipeIdentities,seeds,q,head,headSet,closedPorts);
+            // The pass starts inside its own throttles, as {@link #initialMassFlow} starts inside the velocity cap: a start
+            // flow at the cap of a line whose throttle is a hundredth of it asks the Newton to walk the vessel empty first.
+            if(throttles!=null)for(int i=0;i<edges;i++){double limit=throttles[i][q[i]>=0?0:1];if(Math.abs(q[i])>limit)q[i]=Math.copySign(limit,q[i]);}
             for(int i=0;i<edges;i++) {
                 x[edgeOffset+i]=q[i];
                 if(headSet[i]&&controlOffsets[i]>=0)x[controlOffsets[i]]=head[i];
@@ -2131,6 +2256,10 @@ public final class PassiveStepSolver {
                         double room=pipe.filter().capacity()*(1-FILTER_CAPACITY_MARGIN)-pipe.filter().captured().volume();
                         if(retainedPerMass>0&&room>0)limit=Math.min(limit,room/(dt*retainedPerMass));
                     }
+                    // An open phase port's outflow throttle, for the direction leaving it: the same kind of second limit, a
+                    // constant for the solve, so the port lands its phase at the reserve on a step boundary; see
+                    // {@link #throttles}. The direction's donor end is the port's end by construction of the index.
+                    if(throttles!=null)limit=Math.min(limit,throttles[edge][direction]);
                     capMassFlows[edge][direction]=limit;capPressureDrops[edge][direction]=pipe.filter()==null?pipe.pressureDrop(limit,capTransport.density,capTransport.viscosity):filterCoefficient*limit;capSources[edge][direction]=capTransport;
                 }
                 double limitDrop=capPressureDrops[edge][direction];

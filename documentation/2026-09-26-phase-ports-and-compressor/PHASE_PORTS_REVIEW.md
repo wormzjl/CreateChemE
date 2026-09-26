@@ -134,3 +134,114 @@ Where WP0 (Appendix C, "Where c32acac contradicts the plan") already said the pl
 ### 11. Scratch material
 
 Measurement drivers written for this package live in the session scratchpad, not in the repository: `probe/BitwiseProbe.java` (G0b), `jprobe/JunctionProbe.java` and `instr/src/PassiveStepSolver.java` (the gate instrumentation, section 8), `hprobe/HumidJunctionProbe.java` (the base defect). They are candidates for a `tools/` folder at WP6's cleanup (`tools/` is owned by another agent in this session, so none was added here).
+
+## WP2: the "outlet phase absent" state (2026-09-26)
+
+- Author: Claude (Opus 5.5), worktree `/home/user/CreateChemE` (cloud container), branch `claude/phase-ports-compressor`.
+- Base: `3dbd9b8` (WP1 `35e354d`, its review `3097e60`, the WP1 tools commit). Commit: see section 12 (the commit line is recorded there after committing).
+- Scope: plan 3.4 exactly: availability on the step's start state through `boundaryAllowed` with a start-state mask, the outflow throttle in `edgeRows`, the mask in the workspace and cycle key, the port refusal as a per-link allowance of the boundary-reopen retry, and the phase-vanishing case verified. Not in it: the level head (D9), the pump (WP3), the compressor (WP4), runtime (WP5). The base defect of WP1 section 8 is untouched (owner decision; since taken as D10, a separate commit after this one).
+
+### 1. What changed, per file
+
+| file | change |
+|---|---|
+| `science/fluid/network/PassiveStepSolver.java` | Constants `PHASE_PORT_OPEN = 0.01`, `PHASE_PORT_RESERVE = 0.005` (A4); `portPhaseShare(state, port)`, `portAvailable(state, port)`; `closedPorts(graph)`, the start-state availability mask (per node, bit 1 a VAPOR port some connection has there is closed, bit 2 a LIQUID one); `boundaryAllowed(graph, pipe, flow, closedPorts)` (the static rule, then: flow leaving an end whose phase port is closed in the mask is refused). Every reader passes the solve's mask: `reopenable` (built from the start graph it is handed), the pass loop's forbidden-direction closure, `closeDeadHeads`, `closeIllegalStarts`, `reachableComponents`, `startPoint`'s junction propagation, the approximation probe, and also `initialPhaseSeeds` and the balanced junction seed (`seedBoundaryJunctions`/`balancedBoundarySeed`), the two other `boundaryAllowed` readers. `WorkspaceKey` gains the mask (equals and hash). `Equations` gains `closedPorts` and `throttles` (built once per pass from the start states, `null` for a rate solve, while a device holds `PUMP_TARGET`, and for a graph with no open phase port); `edgeRows`' cap branch takes `min(limit, throttle)` for the direction leaving the port, beside the filter's room limit; `buildInitial` clamps the pass's start flows to the throttle. |
+| `src/test/.../science/fluid/network/PhasePortClosureTest.java` | new, 15 tests: fixtures 2 and 3 at 5 s and 0.1 s slices plus the throttle and the vanishing phase (section 5). |
+
+`PassiveIntervalSolver` needed no change: its be-reopen retry calls `reopenable(start, result)` with the step's start graph, from which `reopenable` builds the same mask the solve used. `PhasePortTest` (fixture 1) is unchanged and green with every number of WP1 section 7 identical (its phases stay far above 1 % and its throttles above the velocity caps, so nothing binds).
+
+### 2. The rules as implemented
+
+- **Availability** (stateless, start state). For a VAPOR port `phi = vaporVolume / V`, for a LIQUID port `phi = (liquidVolume + waterVolume) / V`, `V = volume` of the node's state in the graph the step starts from (the accepted state; the junction seed and the cold-start rate seed change junction states only). The port may carry outflow iff `phi >= 0.01`. A closed port refuses the direction leaving its end in `boundaryAllowed`; inflow through it is never refused (D3). Only ports some connection has enter the mask, so the mask of an all-BULK graph is all zero whatever its states and every reader decides exactly as before (gate G1: bitwise).
+- **One mask per step** (plan C.3 caveat). `reopenable` evaluates the run's drive on the step's end states but the allowances on the start state's mask, the one the solve refused on. Measured consequence (fixture `thePortAlone...`, section 5): with the reopen test reading no mask, every step in which the port was the only refusal was refused once and re-solved (20 reopens in 24 slices at 5 s, 322 in 600 at 0.1 s); with the start mask, one reopen each, at the step where the inflow actually starts.
+- **Throttle.** For each end whose port is open on the start state and whose connection may carry outflow from it:
+
+  `throttle = (phi_start - 0.005) * V_start * rho_stream,start / (n * dt)`
+
+  `rho_stream,start` = the drawn stream's density (`vaporDensity` / `liquidDensity` of the start state; the liquid stream's volume includes the solids, as in WP1); `n` = the number of ends of that vessel with the same phase port whose connection may carry outflow from it by `boundaryAllowed` with the mask (static: blocked masks, generator ends; start-of-solve closures do not change it, so it is a constant of the solve); **`dt` = the solve's step**: the backward-Euler step the interval solver attempts (its estimate truncated to the rest of the interval, halved on every retry), never the slice. Over a step the ports of one phase therefore draw at most `(phi_start - 0.005) V rho_start` together, the phase above the reserve at the start density. It enters the saturated law of `edgeRows` as `limit = min(velocity cap [, filter room], throttle)` for the direction leaving the port (direction index 0 = leaving the first end, 1 = the second), a constant for the solve; absent in a rate solve (no step) and while any device of the island holds `PUMP_TARGET` (the filter's `prescribedFlow` exemption: a prescribed flow and a saturated inlet are two equations for one edge; WP3 revisits the pump fed from a port). A throttled connection's accepted mode stays PASSIVE (as for the filter room limit; presentation only).
+- **Start point.** The pass's start flows are clamped to the throttle (A15). Found necessary, not assumed: a 5 s step from rest on a 2 MPa tank whose throttle is 1.5 % of the velocity cap failed its first Newton at the iteration limit (residual 0.076, pass 0) when it started at the cap; clamped, it converges and lands on the reserve.
+- **Phase vanishing inside a step.** Nothing new: the pass whose layout has lost the phase reads the port's stream as absent (A9, zero velocity limit), so the cap is `min(0, throttle) = 0` and the converged flow is zero with no illegal direction; the next step start finds `phi = 0 < 0.01` and closes the port. Measured in section 5 (flow -1.5e-39 kg/s, mode PASSIVE, next step CLOSED).
+
+### 3. What the band does, measured (plan 3.4 amended)
+
+The plan expected a draining port to land its phase on the reserve and the band `[0.005, 0.01)` to keep it from reopening. Measured: **the throttle binds only where one step spans the band.** Under the state-change controller (5 % of a vessel's mass or pressure per step) a draining port's steps are short near the end, so the port closes at the first step start below `phi_open`, holding its phase in `[phi_reserve - drift, phi_open)`: 0.9934 % (5 s) and 0.9901 % (0.1 s) on the drained water tank, 0.9865 % on the squeezed gas cap (0.1 s). Where a step does span it (a 2 MPa tank, a 5 s step), the throttle lands the phase on the reserve exactly: 0.49998 % (drift -1.9e-7). The guarantee kept is the floor: no step draws a phase below the reserve by more than the flash drift.
+
+Consequence (risk R1): a port fed while it drains duty-cycles about `phi_open`. Scratch probe `PhasePortDutyCycleProbe` (a 1 m3 nitrogen tank at 150 kPa, 2 % water, fed 0.011 kg/s of water through a 4 mm line, drained through a LIQUID port that carries 1.5 kg/s when open): 45 open/closed transitions in 300 s at 0.1 s slices (86 open slices, 0 rejections), 9 at 5 s (6 open slices, 23 state-change rejections), 5 at fixed 1 s steps; the water share stays in [0.9850 %, 1.0001 %] (0.1 s) and [0.9657 %, 1.0018 %] (5 s) after the first 100 s; no nonconvergence, no held slice, ledgers closed. It is an overflow at 1 %, stepped. Options in section 10.
+
+### 4. Controller rejections and reopens per slice (risk R3)
+
+| fixture (slices) | cadence | accepted / rejected | rejections by slice and reason | reopens |
+|---|---|---|---|---|
+| dry, LIQUID drain (40 / 1450) | 5 s | 154 / 4 | slices 6, 7: 1; 8: 2 (state change, the vessel's mass shrinking) | 0 |
+| | 0.1 s | 1450 / 0 | none | 0 |
+| squeeze, VAPOR vent (40 / 900) | 5 s | 151 / 8 | 0: 1 reopen (the vent at rest at the start, BROKEN class 3, base); 3, 8: 1 equation gate each (below); 12: 5 state change (the cushion compressed from 101.6 to 299 kPa) | 1 |
+| | 0.1 s | 900 / 1 | 0: 1 reopen (same) | 1 |
+| inflow through a closed port (12 / 600) | 5 s | 65 / 27 | 6: 25 (11 reopens, 13 Newton line-search stalls, 1 iteration limit); 7: 2 state change | 11 |
+| | 0.1 s | 612 / 19 | 342: 19 (7 reopens, 12 line-search stalls) | 7 |
+| the port alone refuses (24 / 600) | 5 s | 72 / 1 | 6: 1 reopen | 1 |
+| | 0.1 s | 600 / 1 | 321: 1 reopen | 1 |
+| same port drains via a junction (40 / 1000) | 5 s | 217 / 11 | 0-3: 7, 2, 1, 1 state change (water filling a 1 atm gas tank) | 0 |
+| | 0.1 s | 1028 / 20 | 0-14: 1-2 each, state change (same) | 0 |
+| closed port refuses to drain into a junction (120) | 0.1 s | 148 / 20 | 0-14: 1-2 each, state change (same fill) | 0 |
+| dissolving cap (24 / 300) | 5 s | 129 / 17 | 0: 17 state change (200 kPa to 1 MPa) | 0 |
+| | 0.1 s | 347 / 10 | 18: 10 state change | 0 |
+
+- The throttle bound no step in these interval fixtures (section 3), so none of the rejections is the throttle's; the "negative transport reconstruction" and several-ports overdraw of R3 did not occur. The per-vessel constraint row R3 held in reserve is not needed on this evidence.
+- The reopens of the inflow fixture are the BROKEN class 3' cost review 8.8 (c) measured for water entering a dry gas tank (reopened solves stall from a zero start flow across the liquid/gas friction kink before halving converges); the retries succeed, no slice ends bottled.
+- **Equation-gate rejections with a VAPOR vent** (squeeze at 5 s: 2, residual 4.45e-8 and 2.06e-7, the tank's local row 4, dt 2 s, Newton converged to 9.2e-10 and 2.6e-10). Classified as WP1 behaviour, not WP2: the same fixture on the WP1 tree (`3dbd9b8`, no mask, no throttle) gives 4 gate rejections in the first 12 slices where WP2 gives 2, and the same fixture with BULK ends gives none. Halving recovers them; no held slice. Options in section 10.
+
+### 5. Fixtures (`PhasePortClosureTest`, measured; Gradle run G1, identical to the harness run)
+
+Every slice of every interval fixture commits whole (FULL, advanced = interval) and closes the component ledger (worst 2.3e-13 relative) and the energy ledger (worst 6.3e-14).
+
+| test | measured |
+|---|---|
+| `aLiquidPortDrainsDryAndStaysClosed...` (0.1 m3 water under N2 at 200 kPa, LIQUID port 10 m 25 mm to a void) | 5 s: open for 8 slices (out 10.9 to 4.6 kg per slice), closes inside slice 8, slices 9-39 start closed (31 x 5 s): out 0, mode CLOSED, water share 0.009934488833801991 constant; one open-to-closed transition. 0.1 s: closes at slice 423, 1027 slices closed (102.7 s), water share 0.009901226157602 constant. |
+| `aVaporPortIsSqueezedShutByLiquid...` (0.8 m3 water under N2 at 1 atm, filled by a 300 kPa water generator through the LIQUID port, VAPOR vent 10 m 25 mm to a void) | 5 s: vent open 12 slices (18 g per slice), closes inside slice 12, the cushion is compressed to 299.1 kPa in that slice and to 300000.00004 Pa after; final gas share 0.19 %. 0.1 s: closes at slice 617 with the gas at 0.9865 % and 101641.8 Pa, final 300000.0009 Pa, gas 0.327 %. One transition each. |
+| `inflowOpensAClosedLiquidPort...` (N2 tank at 150 kPa, LIQUID port facing a 130 kPa water generator, BULK vent 10 mm) | dead-headed (CLOSED) while the tank stands above 130 kPa; water enters in slice 6 (5 s: 0.157 kg, the tank at 128.1 kPa at the slice end; 11 reopens) and slice 342 (0.1 s, 7 reopens); no slice ends bottled (below 130 kPa minus the band with nothing entering); nothing leaves through the port. |
+| `thePortAloneRefusesOutflow...` (N2 tanks A 150 kPa / B 120 kPa joined at A's LIQUID port, B fed by a 200 kPa N2 generator) | A holds 150000.0 Pa, run CLOSED, 0 reopens until B passes A; B's gas enters A from slice 6 (5 s) / 321 (0.1 s) after one reopen; A never loses gas through the port. Counterfactual (reopen test with no mask): 20 / 322 reopens. |
+| `theSamePortDrainsOnceItsLiquidIsThere...` (N2 tank at 1 atm, LIQUID port to a junction fed by a 300 kPa water generator and drained to a void; generator lowered to 110 kPa after 40 s) | water enters through the closed port (10.5 kg per 5 s slice), 8.31 % of the tank at 113.6 kPa when the generator is lowered; the same port then drains (0.31 kg in the first 5 s slice through the 10 mm line) and the generator's line closes. |
+| `aPortBelowItsOpeningShareRefusesToDrainIntoAJunction` (same, generator lowered to 100 kPa after 2 s) | water share 0.42 % when lowered; for 100 slices the tank stands above the junction (103641 against 101325 Pa) and keeps its water, out 0. |
+| `theThrottleLandsAnOpenPortAtItsReserveInOneStep` (2 MPa tank, 2 % water, one and two LIQUID lines 2 m 50 mm, one 5 s step) | flows equal the throttle to the printed digit: 2.996802216998662 kg/s (one line), 1.498401108499331 each (two, n = 2); water lands at 0.49998 %; the next step starts CLOSED with flow 0. |
+| `aPhaseThatVanishesInsideAStep...` (n-pentane with a 1.5 % methane cap at 200 kPa, fed pentane at 1 MPa, VAPOR vent 10 mm; one 5 s step) | the cap dissolves inside the step (888 kPa at its end); vent flow -1.47e-39 kg/s, accepted mode PASSIVE (no illegal direction); next step: flow 0, CLOSED. |
+| `aDissolvingCapIntegrates...` (same vessel, interval solver) | the port closes once (5 s: slice 1; 0.1 s: slice 7), stays closed, the liquid-full vessel stands at 1000000.2 Pa (5 s) / 1000000.00000003 Pa (0.1 s). |
+
+### 6. Gates
+
+| # | command (from `/home/user/CreateChemE`) | result |
+|---|---|---|
+| G0 | `LIB=<scratch>/lib OUT=<scratch>/harness-wp2 REPO=/home/user/CreateChemE bash tools/cloud-science-harness/harness.sh all` (log `wp2-01-harness-all.log`, 77 s) | science 203/203 (188 + 15), runtime 227/227, the 33 junction lines identical to its `6e1c5b6` reference, adjacent 38/38, chain-100 0.000e+00 |
+| G1 | `./gradlew --no-configuration-cache --no-build-cache test --rerun --tests com.wormzjl.createcheme.science.fluid.* --tests com.wormzjl.createcheme.runtime.fluid.* --console=plain --continue` (log `wp2-02-gradle-fluid-suite.log`, XML `wp2-02-xml/`, 51 s) | **428/428** in 96 classes, 0 skipped (406 base + 7 WP1 + 15 WP2; names `wp2-02-test-names.txt`); the 33 MIXED_GAS_*/LIQUID_JUNCTION lines (`wp2-02-junction-lines.txt`) character-identical to `tools/phase-ports-probes/wp1/logs/02-junction-lines-base.txt` with ms/bytes/allocatedMB masked (`diff` empty); MIXED_GAS_COST 286 Newton solves (612 ms, 135.2 MB, single run, no cost claim) |
+| G2 | `./gradlew --no-configuration-cache fluidSolverRegression -PfluidRegressionMode=exact --console=plain` (log `wp2-03-gradle-regression-exact.log`) | **0.000e+00** on state/moles, temperature, phase fraction and flow; 3 accepted / 0 rejected, 4 Newton solves, 29 iterations |
+| G3 | the 38 adjacent (WP1 G3 command; log `wp2-04-gradle-adjacent.log`, XML `wp2-04-xml/`) | **38/38** in 7 classes |
+| G4 | `./gradlew --no-configuration-cache compileFluidGameTestJava compileMcpCompatJava --console=plain`, then again with `--rerun` on both tasks (log `wp2-05-gradle-compile-gametest-mcpcompat.log`) | **BUILD SUCCESSFUL**, both tasks executed on the second run |
+
+One Gradle invocation at a time, `JAVA_TOOL_OPTIONS` as the environment sets it, no dev client. Logs in the session scratchpad and copied to `tools/phase-ports-probes/wp2/logs/`. No existing test changed; fixture 1 unchanged. Section 11 records the re-run after the last (comment-only) edit.
+
+### 7. What was not run, and why
+
+- Fluid GameTests and the in-game scenarios: WP2 changes no runtime path, and runtime graphs carry no port until WP5.
+- The owner's Windows JDK 21.0.11 lane: not available here.
+- No timing claim.
+
+### 8. Plan text amended (tagged "Amended 2026-09-26 after WP2")
+
+3.4 (the throttle's landing and the band, the readers list), section 5 (the "port closed" audit), section 6 fixtures 2 and 3 (landing interval; a generator refuses inflow, so "the same port drains" goes through a junction to a void), section 7 WP2 row, section 8 R1 and R3 (measured), Appendix C.3 caveat (resolved).
+
+### 9. Decisions recorded
+
+`DECISION_LOG.md`, "WP2 defaults": A13 (the availability mask), A14 (the throttle's `dt`, `n`, density and exemptions), A15 (start point inside the throttle), A16 (the landing interval under the stateless rule).
+
+### 10. Options for the owner
+
+1. **The band under short steps (section 3).** (a) Accept: the port closes at the first step start below 1 %, the throttle is a floor, a port fed while it drains duty-cycles about 1 % (measured benign: no failure, no held slice). (b) Hysteresis in the committed endpoint mode: a port that drew in the previous accepted step stays open down to the reserve, a closed one opens at 1 %. It lands phases on the reserve and removes the duty cycle, but is carried state: it would ride on the pump's existing carry (`previousModes`, restated from the committed endpoint modes by `replayStart`, review 8.9 (d)), which is replay-safe in the same way, not a new history input of 8.9 (b)'s kind. Recommended: (a) for v1, (b) only if in-game use shows the duty cycle (it is visible as a line flickering open/closed in the GUI at the 5 s cadence at most). Not implemented: the plan and the brief require the band stateless.
+2. **Pump fed from a port (WP3).** The throttle is off while any device holds `PUMP_TARGET` (as the filter room limit). WP3's `INLET_EMPTY` and target-above-supply start decide whether to keep that exemption or to throttle the pump edge itself.
+3. **Gate rejections with a VAPOR vent (section 4, WP1 behaviour).** (i) Accept (2-4 halvings in 12 slices, recovered); (ii) investigate the frozen-stream booking against the Newton's stream on a filling tank (row 4 of the tank block) in WP6. Recommended (i) now, (ii) with WP6's gates.
+
+### 11. Re-run after the last edit
+
+The `PHASE_PORT_RESERVE` javadoc was corrected to the measured behaviour (section 3) after G1-G4 (comment only). Re-run on the final tree: G1 (log `wp2-06-gradle-fluid-suite-final.log`) 428/428 in 96 classes, the same test names, the 33 junction lines again identical to the base (`wp2-06-junction-lines.txt`); G2 (log `wp2-07-gradle-regression-exact-final.log`) 0.000e+00.
+
+### 12. Scratch material and commit
+
+Drivers and logs: `tools/phase-ports-probes/wp2/` (`src/PhasePortDutyCycleProbe.java` the R1 probe, `src/SqueezeGateProbe.java` the gate classification probe, `logs/` the gate logs above). The counterfactual runs (reopen test with no mask; the gate instrumentation) were temporary edits of `PassiveStepSolver.java`, reverted; their outputs are in `logs/`.
