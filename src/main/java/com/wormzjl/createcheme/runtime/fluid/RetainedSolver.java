@@ -3,20 +3,21 @@ package com.wormzjl.createcheme.runtime.fluid;
 import com.wormzjl.createcheme.science.fluid.SolverOwnership;
 import com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver;
 import com.wormzjl.createcheme.science.fluid.network.PassiveNetwork;
-import com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver;
+import com.wormzjl.createcheme.science.fluid.network.StageGuard;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 import java.util.Objects;
 
 /**
- * One interval solver kept for one island across its jobs, so the sparsity pattern, the colouring,
- * the fill-reducing ordering, the last factorization (the modified-Newton preconditioner) and the
- * TR-BDF2 endpoint rate survive between intervals instead of being rebuilt per job.
+ * One interval solver kept for one island across its jobs, so the sparsity pattern, the colouring and the
+ * fill-reducing ordering survive between intervals instead of being rebuilt per job.
  *
- * <p>It also carries the adaptive controller's step estimate between intervals, so a quiet island
- * stops rediscovering its step size from 1 s at every boundary. Like {@code maximumSliceTicks} in
- * the coordinator this is an ephemeral cost hint and is deliberately not persisted: a restart
- * rediscovers it from {@link #COLD_START_SECONDS} within a few substeps, while saved inventory,
- * energy, cadence, debt and fences stay authoritative.
+ * <p>Nothing numeric crosses a job boundary: at the start of every job the solver is reset to what a fresh solver would
+ * derive from the island's committed interval ({@link PassiveIntervalSolver#replayStart}; the coordinator hands the
+ * committed interval over at dispatch, {@link #committed}), and an ordinary interval starts at
+ * {@code min(initialStep, duration)}, a function of the interval alone. A certified island is woken with a new handle,
+ * and its replay must reproduce the island that solved every interval bit for bit; a factorization or a step estimate
+ * carried from an earlier job made them differ in the last digits (HANDOFF_REVIEW.md 8.9 of the mixed-gas junction
+ * batch). The cost is one fresh Jacobian per job, +8 % wall time at 5 s slices.
  *
  * <p>This is ephemeral cost state, never material state: dropping it costs one Jacobian build and a
  * few substeps and changes nothing that is committed. The coordinator replaces the handle whenever
@@ -29,34 +30,41 @@ import java.util.Objects;
  * Workers therefore still touch only the immutable snapshot and this handle.
  */
 public final class RetainedSolver {
-    /** Step an island starts from with no history: after a revision change, a hold, or a restart.
-     * Small enough that a transient does not begin with an oversized attempt, and the controller
-     * doubles out of it within a few substeps. */
+    /** Step a trial starts from: small enough that a transient does not begin with an oversized attempt, and the
+     * controller doubles out of it within a few substeps. */
     public static final double COLD_START_SECONDS=.05;
 
     private final SolverOwnership ownership=SolverOwnership.released();
     private PassiveIntervalSolver solver;
     private FluidThermodynamics model;
-    private double stepHint=COLD_START_SECONDS;
+    /** The island's committed interval (null for none), handed over at each dispatch, and whether the job in progress
+     * has not yet reset the solver from it. */
+    private PassiveIntervalSolver.Result committed;
+    private boolean replayPending;
+    /** Records the island's committed interval (null for none) for the next job's start. Called by the coordinator when
+     * it dispatches, while no job holds this handle. */
+    public void committed(PassiveIntervalSolver.Result result){this.committed=result;}
+    private void begin(PassiveIntervalSolver solver,PassiveNetwork snapshot) {
+        if(!replayPending)return;
+        replayPending=false;solver.replayStart(snapshot,committed==null?null:committed.graph(),committed==null?null:committed.endpointModes());
+    }
 
     /** One job's exclusive use of this island's solver. A job may integrate its interval more than
      * once - the module planner searches feasible transfer sizes - and every attempt then shares
-     * the retained structure and preconditioner instead of rebuilding them per attempt. */
+     * the retained structure instead of rebuilding it per attempt. */
     public interface Job {
         PassiveIntervalSolver.Result solve(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint);
         /** For an attempt that introduces a boundary change rather than continuing the island's
-         * trajectory - a trial source or sink term. It starts from the cold step, because the
-         * island's carried estimate describes the undisturbed problem, and it leaves that estimate
-         * alone, because a trial that is never committed must not steer the next interval. The
-         * retained pattern, colouring, ordering and preconditioner are still shared. */
+         * trajectory - a trial source or sink term. It starts from the cold step. The retained
+         * pattern, colouring and ordering are still shared. */
         PassiveIntervalSolver.Result solveTrial(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint);
         PassiveIntervalSolver.Result solveApproximate(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,
-                                                      Runnable checkpoint,TrBdf2StepSolver.StageGuard guard);
+                                                      Runnable checkpoint,StageGuard guard);
     }
     /** Claims the latch for the whole job and returns it in a {@code finally}, including on
      * cancellation and on the wall/soft deadlines. */
     public <T>T run(FluidThermodynamics model,java.util.function.Function<Job,T> job) {
-        Objects.requireNonNull(job);var solver=acquire(model);
+        Objects.requireNonNull(job);var solver=acquire(model);replayPending=true;
         try{return job.apply(new Leased(solver));}
         finally{ownership.release();}
     }
@@ -65,32 +73,30 @@ public final class RetainedSolver {
         return run(model,job->job.solve(snapshot,duration,settings,checkpoint));
     }
     public PassiveIntervalSolver.Result solveApproximate(FluidThermodynamics model,PassiveNetwork snapshot,double duration,
-                                                         PassiveIntervalSolver.Settings settings,Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
+                                                         PassiveIntervalSolver.Settings settings,Runnable checkpoint,StageGuard guard) {
         return run(model,job->job.solveApproximate(snapshot,duration,settings,checkpoint,guard));
     }
     private final class Leased implements Job {
         private final PassiveIntervalSolver solver;
         private Leased(PassiveIntervalSolver solver){this.solver=solver;}
         @Override public PassiveIntervalSolver.Result solve(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint) {
-            try {
-                var result=solver.solve(snapshot,duration,settings,checkpoint,Math.min(stepHint,duration));
-                stepHint=solver.nextStepEstimate();return result;
-            }catch(RuntimeException|Error failure){stepHint=COLD_START_SECONDS;throw failure;}
+            begin(solver,snapshot);
+            return solver.solve(snapshot,duration,settings,checkpoint,Math.min(settings.initialStep(),duration));
         }
         @Override public PassiveIntervalSolver.Result solveTrial(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,Runnable checkpoint) {
+            begin(solver,snapshot);
             return solver.solve(snapshot,duration,settings,checkpoint,Math.min(COLD_START_SECONDS,duration));
         }
         @Override public PassiveIntervalSolver.Result solveApproximate(PassiveNetwork snapshot,double duration,PassiveIntervalSolver.Settings settings,
-                                                                       Runnable checkpoint,TrBdf2StepSolver.StageGuard guard) {
-            // A degraded interval is evidence that this island is struggling: restart the next one small.
-            try{return solver.solveApproximate(snapshot,duration,settings,checkpoint,guard);}
-            finally{stepHint=COLD_START_SECONDS;}
+                                                                       Runnable checkpoint,StageGuard guard) {
+            begin(solver,snapshot);
+            return solver.solveApproximate(snapshot,duration,settings,checkpoint,guard);
         }
     }
     private PassiveIntervalSolver acquire(FluidThermodynamics model) {
         Objects.requireNonNull(model);ownership.acquire();
         try {
-            if(solver==null||this.model!=model){solver=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.EMBEDDED,ownership);this.model=model;}
+            if(solver==null||this.model!=model){solver=new PassiveIntervalSolver(model,ownership);this.model=model;}
             return solver;
         }catch(RuntimeException|Error failure){ownership.release();throw failure;}
     }

@@ -17,9 +17,4 @@ public record InlineFilter(double capacity, double cleanResistance, SolidInvento
     public InlineFilter stopped(){return new InlineFilter(capacity,cleanResistance,captured,energyJoule,true);}
     public InlineFilter add(SolidInventory material,double energy){if(material.empty()&&energy==0)return this;return new InlineFilter(capacity,cleanResistance,captured.plus(material),energyJoule+energy,stoppedAtCapacity);}
     public InlineFilter cleared(){return new InlineFilter(capacity,cleanResistance,SolidInventory.EMPTY,0);}
-    public static InlineFilter combine(InlineFilter first,double a,InlineFilter second,double b){
-        if(first.equals(second)&&a+b==1)return first;
-        if(first.capacity!=second.capacity||first.cleanResistance!=second.cleanResistance)throw new IllegalArgumentException("Filter settings changed during solve");
-        return new InlineFilter(first.capacity,first.cleanResistance,SolidInventory.combine(first.captured,a,second.captured,b),a*first.energyJoule+b*second.energyJoule,first.stoppedAtCapacity||second.stoppedAtCapacity);
-    }
 }

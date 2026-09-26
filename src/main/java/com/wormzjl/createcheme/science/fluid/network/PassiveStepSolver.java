@@ -191,24 +191,60 @@ public final class PassiveStepSolver {
     /** The structure of the last solve this solver accepted; {@link #closeIllegalStarts} acts only on it. */
     private List<PassiveNetwork.Pipe.Identity> acceptedPipes=List.of();
     private long[] acceptedNodeIds=new long[0];
-    /** The last successful solve, together with the Newton tolerance it converged under: the
-     * companion filter may not claim to resolve a defect the solve itself could not. */
-    record LastSolve(Equations equations,double[] variables,SparseNewton.Workspace workspace,double newtonTolerance) {}
+    /** The structure of the last step the interval solver's controller accepted (a converged solve it refused does not
+     * count): the cold start ({@link #backwardEulerCold}) lasts until then. */
+    private List<PassiveNetwork.Pipe.Identity> beAcceptedPipes=List.of();
+    private long[] beAcceptedNodeIds=new long[0];
+    /** The interval solver accepted a step of this structure. */
+    void markBackwardEulerAccepted(PassiveNetwork graph){beAcceptedPipes=identities(graph);beAcceptedNodeIds=nodeIds(graph);}
+    /** Whether no step of this structure has been accepted yet: the cold start after compile, a topology change, or a job
+     * start with no committed interval on this structure. */
+    boolean backwardEulerCold(PassiveNetwork graph){return !(beAcceptedPipes.equals(identities(graph))&&Arrays.equals(beAcceptedNodeIds,nodeIds(graph)));}
+    /**
+     * Puts this solver, at the start of an island job, in the state a fresh solver would be in given only the island's
+     * committed state, so a job's solves depend on the accepted state and the interval and not on what this solver did in
+     * earlier jobs (see {@link PassiveIntervalSolver#replayStart}).
+     * <ul>
+     * <li>No Newton opens on a factorization from an earlier job: every retained workspace's numeric Jacobian and LU are
+     * dropped. The sparsity pattern, colouring and fill-reducing ordering stay: they are functions of the structure only.</li>
+     * <li>No warm start: the flows, heads and input states of the last solve are forgotten, so the first solve starts from
+     * {@code initialMassFlows} of the committed states, as a fresh solver does.</li>
+     * <li>The pump active-set carry ({@link #previousModes}) is restated from the committed interval's endpoint modes (a pump
+     * on its head limit or CLOSED there opens there), not from the last pass of whatever this solver solved last (a refused
+     * step, an uncommitted planner trial).</li>
+     * <li>"This structure has been accepted" (the cold start and the void-start history gate) is true exactly when the
+     * island has a committed interval on this structure.</li>
+     * <li>The reopen exemption and the retained last solve are dropped.</li>
+     * </ul>
+     */
+    void replayStart(PassiveNetwork graph,boolean committedStructure,List<FlowControl.Mode> committedModes) {
+        ownership.check("Each executing island job needs its own step workspace");
+        for(var workspace:workspaces.values())workspace.invalidate();
+        for(var workspace:structures.values())workspace.invalidate();
+        previousFlows=new double[0];previousHeads=new double[0];previousInputStates=List.of();inputStates=List.of();
+        previousPipes=List.of();previousNodeIds=new long[0];previousModes=List.of();
+        keepOpen=Set.of();lastSolve=null;
+        if(committedStructure) {
+            var ids=identities(graph);long[] nodes=nodeIds(graph);
+            beAcceptedPipes=ids;beAcceptedNodeIds=nodes;acceptedPipes=ids;acceptedNodeIds=nodes;
+            if(committedModes!=null&&committedModes.size()==graph.pipes().size()){previousPipes=ids;previousNodeIds=nodes;previousModes=List.copyOf(committedModes);}
+        } else {beAcceptedPipes=List.of();beAcceptedNodeIds=new long[0];acceptedPipes=List.of();acceptedNodeIds=new long[0];}
+    }
+    /** The same pipe identities and node ids. */
+    static boolean sameStructure(PassiveNetwork a,PassiveNetwork b){return identities(a).equals(identities(b))&&Arrays.equals(nodeIds(a),nodeIds(b));}
+    /** The last successful solve, for the block Jacobian check; see {@link #acceptedEquations}. */
+    record LastSolve(Equations equations,double[] variables) {}
     private LastSolve lastSolve;
     private boolean rateOnly;
     /** Owned by this solver, which the ownership latch confines to one worker at a time. */
     private final com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace viscosities=
             new com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.Workspace();
-    /** The island's retained transport linear algebra; the TR-BDF2 solver hands the same one to both
-     * of its stage solvers and uses it for the endpoint rate, so an island holds exactly one. */
+    /** The island's retained transport linear algebra; an island holds exactly one. */
     private final ConservativeTransport.Workspace transport;
     public PassiveStepSolver(FluidThermodynamics model){this(model,SolverOwnership.confinedToCurrentThread());}
     public PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership) {
-        this(model,ownership,new ConservativeTransport.Workspace(Objects.requireNonNull(ownership)));
-    }
-    PassiveStepSolver(FluidThermodynamics model,SolverOwnership ownership,ConservativeTransport.Workspace transport) {
         this.model=Objects.requireNonNull(model);this.ownership=Objects.requireNonNull(ownership);
-        this.transport=Objects.requireNonNull(transport);
+        transport=new ConservativeTransport.Workspace(ownership);
     }
     public record Result(List<FluidThermodynamics.State> states,double[] massFlows,double deltaTime,SparseNewton.Result numerical,
                          List<FlowControl.Mode> modes,double[] devicePressureChanges,double pumpWorkJoule,double[] externalMoles,double externalEnergyJoule,
@@ -456,7 +492,7 @@ public final class PassiveStepSolver {
             }
             if(SolverDiagnostics.ENABLED)SolverDiagnostics.count(SolverDiagnostics.solidMomentProjectionsAtAcceptedPoints,
                     equations.negativeSolidUnknowns(x)+equations.negativeSolidUnknowns(reconstructed));
-            lastSolve=new LastSolve(equations,x,workspace,tolerance);
+            lastSolve=new LastSolve(equations,x);
             var accepted=new Result(projection.states(),flows,dt,numerical,acceptedModes,heads,projection.pumpWork(),projection.externalMoles(),projection.externalEnergy(),projection.inventories(),projection.boundaries(),PipeTransfer.sample(graph,projection.states(),flows,dt),projection.filters());
             // The retained last solve keeps its equations and point, not their per-node decode caches (states, transport
             // rows, prepared temperature workspaces): a later reader re-decodes (review 8.7 (c) E2).
@@ -464,80 +500,6 @@ public final class PassiveStepSolver {
             return accepted;
         }
         throw new SparseNewton.Nonconvergence("Device active-set limit");
-    }
-    /** A linearized companion stage: reconstructed states, edge mass flows and boundary ledger. */
-    record Companion(List<FluidThermodynamics.State> states,double[] massFlows,List<ConservativeTransport.BoundaryTransfer> boundaries) {}
-    /**
-     * Filters a change of reservoir target inventories through the last successful solve instead of
-     * re-solving it. TR-BDF2's embedded companion stage is exactly that: the same equations at the
-     * same step, with the stage-two targets shifted by the order-three defect. The residual
-     * subtracts the target on a reservoir's component and energy rows only, so shifting it by
-     * {@code delta} moves those rows by {@code delta/scale} and leaves the volume, equilibrium,
-     * hydraulic and junction rows alone. The base point is the converged solution, where the
-     * residual is already inside the Newton tolerance, so the step to the perturbed root is
-     * {@code J*dx = delta/scale}; the endpoint is then decoded from {@code x+dx} and reconstructed
-     * on {@code corrected} exactly as an ordinary solve would be.
-     *
-     * <p>The factorization may be the chord an earlier stage built; that is a first-order
-     * linearization either way, and the result is an error estimate that is never committed.
-     * Returns {@code null} - and the caller must then run the full nonlinear stage - when there is
-     * no matching last solve, when its factorization is gone or singular, when the linearized point
-     * leaves the property domain, or when the reconstruction refuses it.
-     *
-     * <p>Two rules keep the filter inside what the engine can actually resolve, because unlike the
-     * nonlinear stage it has no residual of its own to answer to:
-     *
-     * <ul>
-     * <li>A defect whose scaled right-hand side is already inside the Newton tolerance that solve
-     *     converged under is not filtered at all: the correction is zero, because the engine cannot
-     *     resolve a target shift its own stage solve treats as converged. That is what the
-     *     nonlinear stage did - its Newton exited at iteration 0 and returned the stage-two point.</li>
-     * <li>Otherwise the filtered point must actually solve the perturbed equations: the residual it
-     *     leaves, {@code f(x+dx) - delta/scale}, may not exceed the solve's own tolerance or the
-     *     defect it was handed. The factorization may be a chord inherited from another step size -
-     *     {@link SparseNewton.Workspace#forkPreconditioner} carries it across substeps and intervals
-     *     - and such a chord is a fine search direction, which the nonlinear residual corrects, but
-     *     it is the implicit operator of <em>that</em> step, so as an error filter it can overshoot
-     *     severalfold. A quiescent island holds one chord for whole intervals, and the overshoot
-     *     lands in the flow unknowns, where it is many times the controller's own numerical
-     *     allowance and rejects steps that need no refinement. The check costs one residual
-     *     assembly and shares its node decode with the endpoint below.</li>
-     * </ul>
-     */
-    Companion companion(PassiveNetwork solved,PassiveNetwork corrected,double[][] deltaMoles,double[] deltaEnergy,
-                        double[][] deltaSolidMoments,double[] heads,double dt,Runnable checkpoint) {
-        ownership.check("Each executing island job needs its own step workspace");
-        var last=lastSolve;
-        if(last==null||last.equations.graph!=solved||last.equations.dt!=dt)return null;
-        var equations=last.equations;
-        double[] rows=new double[equations.size];
-        for(int node=0;node<equations.layout.length;node++) {
-            if(equations.layout[node]==null||solved.reservoirs().get(node).junction())continue;
-            equations.layout[node].targetRows(deltaMoles[node],deltaEnergy[node],
-                    deltaSolidMoments==null?null:deltaSolidMoments[node],rows,equations.offsets[node]);
-        }
-        double defect=0;for(double row:rows)defect=Math.max(defect,Math.abs(row));
-        List<FluidThermodynamics.State> states;double[] flows=new double[solved.pipes().size()];
-        try {
-            double[] x;
-            if(defect<=last.newtonTolerance) {
-                SolverDiagnostics.count(SolverDiagnostics.companionDefectsBelowTolerance);x=last.variables.clone();
-            }else {
-                x=SparseNewton.applyFactorization(last.workspace,last.variables,rows);
-                if(x==null)return null;
-                SolverDiagnostics.count(SolverDiagnostics.companionFilterResiduals);
-                double left=0;double[] perturbed=equations.residual(x);
-                for(int row=0;row<perturbed.length;row++)left=Math.max(left,Math.abs(perturbed[row]-rows[row]));
-                if(left>Math.max(last.newtonTolerance,defect)) {
-                    SolverDiagnostics.count(SolverDiagnostics.companionFiltersRefused);return null;
-                }
-            }
-            states=equations.states(x);
-            for(int edge=0;edge<flows.length;edge++)flows[edge]=equations.boundaryClosed[edge]||equations.modes.get(edge)==FlowControl.Mode.CLOSED
-                    ?0:x[equations.edgeOffset+edge];
-            var projection=ConservativeTransport.reconstruct(corrected,states,flows,heads,dt,model,checkpoint,transport);
-            return new Companion(projection.states(),flows,projection.boundaries());
-        }catch(SparseLuSolver.SolveFailure|SparseNewton.Nonconvergence|IllegalArgumentException outsideTheLinearization){return null;}
     }
     /** Value key over compact codes instead of rendered strings and boxed lists; the arrays belong
      * to the key from construction on, so a caller must hand over a snapshot of anything it mutates.
@@ -778,7 +740,12 @@ public final class PassiveStepSolver {
             double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;int degree=0;boolean eligible=true;
             for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
                 degree++;int other=pipe.first()==node?pipe.second():pipe.first();
-                boolean held=graph.reservoirs().get(other).fixed();
+                // A vessel neighbour counts as held while this structure is cold: with no rate solve per step, a step is the
+                // only solve a cold junction ever sees, and a vessel's pressure moves by at most the state cap over it (review
+                // 8.6 (b), run 85d). Only until a step of the structure has been accepted: at a hydrostatic rest the junction
+                // pressure lies outside its neighbours' range and the seed would fire at every step (run 85b: 480 seeds,
+                // 119040 flashes in one case).
+                boolean held=graph.reservoirs().get(other).fixed()||graph.reservoirs().get(other).kind()==PassiveNetwork.NodeKind.RESERVOIR&&backwardEulerCold(graph);
                 if(!held||!(pipe.control() instanceof FlowControl.Passive)
                         ||pipe.filter()!=null||pipe.blockedDirections()!=0){eligible=false;break;}
                 double pressure=graph.reservoirs().get(other).state().pressure();
@@ -1390,6 +1357,8 @@ public final class PassiveStepSolver {
     /** The equations of the last accepted solve, for the check that the block Jacobian sweep and an
      * independent column-by-column difference of {@link Equations#residual} produce the same entries;
      * {@code null} until a solve has been accepted. Nothing in production reads it. */
+    /** Drops the retained last solve; the interval solver does after every accepted step. */
+    void releaseLastSolve(){lastSolve=null;}
     Equations acceptedEquations(){return lastSolve==null?null:lastSolve.equations();}
     /** The point {@link #acceptedEquations} converged to. */
     double[] acceptedPoint(){return lastSolve==null?null:lastSolve.variables().clone();}

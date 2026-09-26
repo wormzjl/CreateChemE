@@ -10,13 +10,13 @@ class TrBdf2Test {
     @Test void embeddedControlAgreesWithStepDoublingAndFixedStepsShowSecondOrder() {
         var graph=graph(gas(1,180000,0),gas(2,101325,0),new FlowControl.Passive());
         var embedded=new PassiveIntervalSolver(model).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
-        var doubled=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
+        var doubled=new PassiveIntervalSolver(model).solve(graph,.2,PassiveIntervalSolver.Settings.defaults(),()->{});
         assertEquals(doubled.averageMassFlows()[0],embedded.averageMassFlows()[0],.005*Math.abs(doubled.averageMassFlows()[0]));
         double reference=integratedMass(graph,256),coarse=Math.abs(integratedMass(graph,4)-reference),fine=Math.abs(integratedMass(graph,8)-reference);
         assertTrue(coarse/fine>3,"Observed error ratio="+coarse/fine);
     }
     private double integratedMass(PassiveNetwork initial,int steps) {
-        var graph=initial;var solver=new TrBdf2StepSolver(model);double mass=0;
+        var graph=initial;var solver=new PassiveStepSolver(model);double mass=0;
         for(int i=0;i<steps;i++){var result=solver.solve(graph,.2/steps,()->{});graph=PassiveIntervalSolver.replace(graph,result);mass+=result.massFlows()[0]*.2/steps;}
         return mass;
     }
@@ -44,7 +44,7 @@ class TrBdf2Test {
         // A pump's setting is its rise for water (F4, P1): the setting that is 500 kPa on this nitrogen, as before.
         var suction=gas(1,101325,0);
         var graph=graph(suction,gas(2,200000,10),new FlowControl.Pump(.001,500000*model.pumpReferenceDensity()/(suction.state().mass()/suction.state().volume()),.8));
-        var result=new TrBdf2StepSolver(model).solve(graph,.2,()->{});
+        var result=new PassiveStepSolver(model).solve(graph,.2,()->{});
         assertTrue(result.pumpWorkJoule()>0);double change=0;
         for(int i=0;i<2;i++){var old=graph.reservoirs().get(i).inventory();var next=result.inventories().get(i);double dm=(next.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]-old.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN])*model.hydrocarbon.molecularWeight(com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN);change+=next.internalEnergy()-old.internalEnergy()+dm*graph.reservoirs().get(i).elevation()*PassiveStepSolver.GRAVITY;}
         assertEquals(result.pumpWorkJoule(),change,1e-5);assertTrue(result.boundaries().isEmpty());
@@ -52,7 +52,7 @@ class TrBdf2Test {
     @Test void sourceAndVoidKeepSeparateNonzeroLedgersDespiteZeroNetTransfer() {
         var source=new PassiveNetwork.Reservoir(1,0,gas(1,200000,0).state(),PassiveNetwork.NodeKind.GENERATOR);
         var sink=new PassiveNetwork.Reservoir(2,0,gas(2,101325,0).state(),PassiveNetwork.NodeKind.VOID);
-        var result=new TrBdf2StepSolver(model).solve(graph(source,sink,new FlowControl.Passive()),2,()->{});
+        var result=new PassiveStepSolver(model).solve(graph(source,sink,new FlowControl.Passive()),2,()->{});
         double sourceMoles=0,sinkMoles=0;for(var entry:result.boundaries()){if(entry.nodeId()==1)sourceMoles+=entry.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];else sinkMoles+=entry.moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN];}
         assertTrue(sourceMoles>0);assertEquals(sourceMoles,-sinkMoles,1e-9);
         assertEquals(result.massFlows()[0]*2,sourceMoles*model.hydrocarbon.molecularWeight(com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN),1e-9);

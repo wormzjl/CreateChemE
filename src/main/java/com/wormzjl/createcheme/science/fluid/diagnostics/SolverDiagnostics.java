@@ -32,13 +32,6 @@ public final class SolverDiagnostics {
     // ---- interval and step control ----
     public static final LongAdder implicitSolves=new LongAdder();
     public static final LongAdder activeSetPasses=new LongAdder();
-    /** TR-BDF2 companion defects answered by one linear filter, and by a complete nonlinear stage. */
-    public static final LongAdder companionFilters=new LongAdder();
-    public static final LongAdder companionSolves=new LongAdder();
-    /** Filtered defects already inside the stage solve's own Newton tolerance, whose estimate is zero. */
-    public static final LongAdder companionDefectsBelowTolerance=new LongAdder();
-    /** Linear filters whose point failed to solve the perturbed equations, handed to the nonlinear stage. */
-    public static final LongAdder companionFiltersRefused=new LongAdder();
     // ---- Newton ----
     public static final LongAdder newtonSolves=new LongAdder();
     public static final LongAdder newtonIterations=new LongAdder();
@@ -97,11 +90,9 @@ public final class SolverDiagnostics {
     /**
      * Residual evaluations that do not go through {@link com.wormzjl.createcheme.science.fluid.solver.SparseNewton}
      * and are therefore absent from {@link #residualEvaluations}: the equation gate the conservative
-     * reconstruction has to pass, and the check that the linearized companion point actually solves
-     * the perturbed equations.
+     * reconstruction has to pass.
      */
     public static final LongAdder verificationResiduals=new LongAdder();
-    public static final LongAdder companionFilterResiduals=new LongAdder();
     // ---- properties ----
     public static final LongAdder stateCalls=new LongAdder();
     /** The subset of {@link #stateCalls} performed while building a Jacobian: the node decodes a
@@ -146,11 +137,6 @@ public final class SolverDiagnostics {
      * A cache key that accidentally varies per stage shows up here as zero reuse. */
     public static final LongAdder workspaceReuses=new LongAdder();
     public static final LongAdder workspaceBuilds=new LongAdder();
-    /** TR-BDF2 steps that found the previous step's endpoint rate already computed, and those that
-     * had to solve the algebraic port graph for it. A key that varies per step shows up here as
-     * zero reuse and one extra implicit solve per step. */
-    public static final LongAdder endpointRateReuses=new LongAdder();
-    public static final LongAdder endpointRateBuilds=new LongAdder();
     // ---- adaptive step control ----
     /** Every interval attempt, and the accepted subset; exact even when the attempt log is full. */
     public static final LongAdder stepAttempts=new LongAdder();
@@ -196,9 +182,6 @@ public final class SolverDiagnostics {
     private static Map<String,LongAdder> counters() {
         var map=new LinkedHashMap<String,LongAdder>();
         map.put("implicitSolves",implicitSolves);map.put("activeSetPasses",activeSetPasses);
-        map.put("companionFilters",companionFilters);map.put("companionSolves",companionSolves);
-        map.put("companionDefectsBelowTolerance",companionDefectsBelowTolerance);
-        map.put("companionFiltersRefused",companionFiltersRefused);
         map.put("newtonSolves",newtonSolves);map.put("newtonIterations",newtonIterations);map.put("newtonBacktracks",newtonBacktracks);
         map.put("residualEvaluations",residualEvaluations);map.put("residualEvaluationsInJacobian",residualEvaluationsInJacobian);
         map.put("jacobianBuilds",jacobianBuilds);map.put("jacobianColors",jacobianColors);map.put("jacobianNonzeros",jacobianNonzeros);
@@ -211,7 +194,7 @@ public final class SolverDiagnostics {
         map.put("newtonMeritProbes",newtonMeritProbes);
         map.put("newtonRefreshesStalled",newtonRefreshesStalled);map.put("newtonRefreshesAged",newtonRefreshesAged);
         map.put("newtonRefreshesFailed",newtonRefreshesFailed);
-        map.put("verificationResiduals",verificationResiduals);map.put("companionFilterResiduals",companionFilterResiduals);
+        map.put("verificationResiduals",verificationResiduals);
         map.put("luFactorizations",luFactorizations);map.put("luFactorNanos",luFactorNanos);
         map.put("luSolves",luSolves);map.put("luSolveNanos",luSolveNanos);
         map.put("luChecks",luChecks);map.put("luRefinements",luRefinements);
@@ -229,7 +212,6 @@ public final class SolverDiagnostics {
         map.put("solidMomentProjectionsAtAcceptedPoints",solidMomentProjectionsAtAcceptedPoints);
         map.put("solidTransitionRejections",solidTransitionRejections);
         map.put("workspaceReuses",workspaceReuses);map.put("workspaceBuilds",workspaceBuilds);
-        map.put("endpointRateReuses",endpointRateReuses);map.put("endpointRateBuilds",endpointRateBuilds);
         map.put("stepAttempts",stepAttempts);map.put("stepAttemptsAccepted",stepAttemptsAccepted);
         return Collections.unmodifiableMap(map);
     }

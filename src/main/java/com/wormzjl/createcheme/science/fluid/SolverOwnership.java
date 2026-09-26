@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Exclusive-use latch for solver workspaces that outlive a single job. Every workspace that caches
- * numeric state (step solver caches, TR-BDF2 endpoint rates, Newton workspaces, sparse
+ * numeric state (step solver caches, Newton workspaces, sparse
  * factorizations) holds one, and checks it wherever it used to compare against its creating thread.
  *
  * <p>A workspace built for one job keeps the old contract through {@link #confinedToCurrentThread()}:

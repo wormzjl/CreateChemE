@@ -238,55 +238,24 @@ public final class PhaseLayout {
         return row;
     }
     /**
-     * The change {@link #residual} would show if this node's target amounts and internal energy
-     * moved by the given amounts, at a fixed state: the component rows carry it divided by their
-     * own component scale and the energy row by the energy scale, in the same row order, while the
-     * volume and equilibrium rows carry no target at all. A Newton step for that perturbation is
-     * therefore {@code J*dx = +delta/scale}, because the residual subtracts the target.
+     * A junction's rows: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization, then its phase
+     * equilibrium rows. {@code weight} multiplies the mixing and enthalpy rows: an owned junction states them in amount
+     * form over its holdup, {@code (dt/m)(m/dt + Q)} times the difference (see
+     * {@code PassiveStepSolver.Equations.junctionInflow}).
      */
-    public void targetRows(double[] deltaAmounts,double deltaEnergy,double[] rows,int offset) {
-        targetRows(deltaAmounts,deltaEnergy,null,rows,offset);
+    public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
+                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared,double weight) {
+        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,weight);
+        equilibriumResidual(state,state.liquidView(),state.vaporView(),result,row,offset,variables,prepared);
     }
     /**
-     * {@code deltaSolidMoments} is the matching shift of the three aggregate solid targets, which
-     * {@link #solidRows} subtracts in the same way and divides by {@link #solidScale}. A layout
-     * that carries no solid unknowns ignores it; one that does requires it, because leaving those
-     * rows at zero would claim the companion stage holds the solid inventory fixed while its own
-     * corrected graph moves it.
-     */
-    public void targetRows(double[] deltaAmounts,double deltaEnergy,double[] deltaSolidMoments,double[] rows,int offset) {
-        if(deltaAmounts.length!=componentScales.length)throw new IllegalArgumentException("Balance basis mismatch");
-        int row=offset,water=componentScales.length-1;
-        for(int i:components)rows[row++]=deltaAmounts[i]/componentScales[i];
-        if(waterLiquidIndex>=0||waterVaporIndex>=0)rows[row++]=deltaAmounts[water]/componentScales[water];
-        rows[row]=deltaEnergy/energyScale;
-        if(solidIndex<0)return;
-        if(deltaSolidMoments==null||deltaSolidMoments.length!=3)throw new IllegalArgumentException("Solid target basis mismatch");
-        int solidRow=offset+componentBalanceCount()+2;
-        for(int i=0;i<3;i++)rows[solidRow+i]=deltaSolidMoments[i]/solidScale[i];
-    }
-    /** Zero-holdup mixing: M-1 mass-fraction equations, continuity, enthalpy, and amount normalization. */
-    public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
-                                 double netMassFlow,double[] result,int offset,double[] variables) {
-        junctionResidual(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,0,result,offset,variables,null);
-    }
-    public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
-                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared) {
-        double[] l=state.liquidView(),v=state.vaporView();
-        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables);
-        equilibriumResidual(state,l,v,result,row,offset,variables,prepared);
-    }
-    /** The mixing block of {@link #junctionResidual}: everything the inflow and the net flow move,
-     * and nothing the equilibrium rows below it read. Returns the first row after this block. */
-    public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
-                            double netMassFlow,double[] result,int offset,double[] variables) {
-        return junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,0,result,offset,variables);
-    }
-    /**
-     * {@code retainedPressure} is positive only for a junction no open connection reaches, and is
+     * The mixing block of {@link #junctionResidual}: everything the inflow and the net flow move, and nothing the
+     * equilibrium rows below it read. Returns the first row after this block.
+     *
+     * <p>{@code retainedPressure} is positive only for a junction no open connection reaches, and is
      * then the pressure it keeps.
      *
-     * <p>A junction owns no volume, so nothing but the hydraulics decides its pressure: the net
+     * <p>Nothing but the hydraulics decides a junction's pressure: the net
      * mass flow row below balances what arrives against what leaves, and the connected pressure
      * drops relate that to the pressure here. Close every connection and both halves of that
      * disappear at once. Each closed connection already has a row of its own stating that its flow
@@ -296,22 +265,8 @@ public final class PhaseLayout {
      * shut pumps, or two connections a transport closure has taken in both directions produces.
      *
      * <p>So an isolated junction keeps the pressure it had, exactly as it keeps the composition it
-     * had: the remaining rows already pin its mass fractions, its specific enthalpy and its total
-     * amount to the stored guess, because nothing arrives to say otherwise. It is the same rule
-     * reachability already applies when it says that a junction nothing can reach retains only its
-     * arbitrary property guess.
+     * holds: nothing arrives to move it.
      */
-    public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
-                            double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables) {
-        return junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,1);
-    }
-    /** {@code weight} multiplies the mixing and enthalpy rows: an owned junction states them in amount form over its
-     * holdup, {@code (dt/m)(m/dt + Q)} times the difference (see {@code PassiveStepSolver.Equations.junctionInflow}). */
-    public void junctionResidual(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
-                                 double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,FluidThermodynamics.Prepared prepared,double weight) {
-        int row=junctionRows(state,incomingMassFractions,incomingSpecificEnthalpy,netMassFlow,retainedPressure,result,offset,variables,weight);
-        equilibriumResidual(state,state.liquidView(),state.vaporView(),result,row,offset,variables,prepared);
-    }
     public int junctionRows(FluidThermodynamics.State state,double[] incomingMassFractions,double incomingSpecificEnthalpy,
                             double netMassFlow,double retainedPressure,double[] result,int offset,double[] variables,double weight) {
         var n=totalAmounts(state,state.liquidView(),state.vaporView());

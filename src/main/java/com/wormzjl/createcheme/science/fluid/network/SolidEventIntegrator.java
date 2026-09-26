@@ -48,7 +48,7 @@ final class SolidEventIntegrator {
          * a position in one graph and means nothing outside it. */
         final long pipeId;
         final SolidMobility.Check check;
-        /** Seen on the endpoint rate at the start of a step: the event is at the accepted state
+        /** Seen on the state at the start of a step: the event is at the accepted state
          * itself, so it needs no refinement and is declared where the integration stands. */
         final boolean atStart;
         Transition(int edge,long pipeId,int direction,SolidMobility.Check check,boolean atStart) {
@@ -216,8 +216,8 @@ final class SolidEventIntegrator {
     private static boolean atCapacity(InlineFilter state) {
         return state.clogged()||state.captured().volume()>=state.capacity()*(1-1e-9);
     }
-    private TrBdf2StepSolver.StageGuard guard(PassiveNetwork graph) {
-        return new TrBdf2StepSolver.StageGuard() {
+    private StageGuard guard(PassiveNetwork graph) {
+        return new StageGuard() {
             public void check(List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes) {}
             @Override public void checkRate(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows) {
                 // The graph this guard closes over is the one the segment started from, so its own
@@ -226,10 +226,10 @@ final class SolidEventIntegrator {
                 var failure=failed(graph,states,flows);if(failure!=null)throw failure.atStart();
             }
             @Override public void checkFilters(Map<Long,InlineFilter> filters,List<FluidThermodynamics.State> states,List<FlowControl.Mode> modes,double[] flows) {
-                // A stage may not reach capacity: the exact test, so the saturated inlet law's own
+                // A step may not reach capacity: the exact test, so the saturated inlet law's own
                 // landing a relative hair below it is an accepted step whose closure the next
                 // step's t0 guard declares, while a step that overshot the remaining room - by
-                // more than the stage-two extrapolation absorbs, or on an island where the law is
+                // more than rounding absorbs, or on an island where the law is
                 // not applied at all - is refused and the controller halves onto the fill.
                 var over=overfilledFilter(filters);if(over!=null)throw over;
                 checkFlow(states,modes,flows);
@@ -271,6 +271,11 @@ final class SolidEventIntegrator {
             var candidate=rate(graph,checkpoint);var failure=failed(graph,candidate.states(),candidate.massFlows());
             if(failure==null)break;
             blocked[failure.edge]|=failure.direction;
+            // A cake the last interval's final step left at capacity is declared here, at the next interval's t0, and
+            // not by an in-interval guard: under backward Euler a 5 s interval is often a single step, so the saturated
+            // inlet's landing is the interval's last step. Stop the filter exactly as a declared FILTER_CLOGGED
+            // transition does below, so the stopped state (status, checkpoint) is the same either way (review 8.8 (a)).
+            if(failure.reason()==SolidMobility.Reason.FILTER_CLOGGED&&graph.pipes().get(failure.edge).filter()!=null)graph=stopFilter(graph,failure.edge);
             reasons.merge(failure.getMessage()+"; t="+elapsed,1,Integer::sum);
             if(attempt==2*blocked.length)throw new SparseNewton.Nonconvergence("Solid closure active set did not settle");
         }

@@ -31,7 +31,7 @@ class HydraulicMatrixQualificationTest {
             double mu=water?model.viscosity.waterLiquid(350):model.viscosity.vapor(350,source.vapor(),0);
             var sections=List.of(new PipeResistance.Geometry(100,.01,0,0),new PipeResistance.Geometry(200,.012,0,0));
             var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,source,PassiveNetwork.NodeKind.GENERATOR),new PassiveNetwork.Reservoir(2,0,sink,PassiveNetwork.NodeKind.VOID)),List.of(new PassiveNetwork.Pipe(3,0,1,sections.get(0)),new PassiveNetwork.Pipe(4,0,1,sections.get(1))));
-            var result=new TrBdf2StepSolver(model).solve(graph,5,()->{});
+            var result=new PassiveStepSolver(model).solve(graph,5,()->{});
             for(int i=0;i<2;i++) {
                 var p=sections.get(i);double reference=100*Math.PI*rho*Math.pow(p.diameter(),4)/(128*mu*p.length());
                 assertTrue(4*reference/(Math.PI*mu*p.diameter())<2000,"Analytic fixture left laminar regime");
@@ -45,9 +45,9 @@ class HydraulicMatrixQualificationTest {
         var upper=state(true,200000-rho*PassiveStepSolver.GRAVITY*dz);
         var pipe=new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(100,.01,0,0));
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,lower),new PassiveNetwork.Reservoir(2,dz,upper)),List.of(pipe));
-        var rest=new TrBdf2StepSolver(model).solve(graph,.1,()->{});assertEquals(0,rest.massFlows()[0],1e-10);
+        var rest=new PassiveStepSolver(model).solve(graph,.1,()->{});assertEquals(0,rest.massFlows()[0],1e-10);
         var reversed=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,dz,lower),new PassiveNetwork.Reservoir(2,0,upper)),List.of(pipe));
-        var result=new TrBdf2StepSolver(model).solve(reversed,.1,()->{});assertTrue(result.massFlows()[0]>0);
+        var result=new PassiveStepSolver(model).solve(reversed,.1,()->{});assertTrue(result.massFlows()[0]>0);
         double before=0,after=0;for(int i=0;i<2;i++) {
             var node=reversed.reservoirs().get(i);before+=node.inventory().internalEnergy()+node.state().mass()*PassiveStepSolver.GRAVITY*node.elevation();
             after+=result.inventories().get(i).internalEnergy()+result.states().get(i).mass()*PassiveStepSolver.GRAVITY*node.elevation();
@@ -64,7 +64,7 @@ class HydraulicMatrixQualificationTest {
             var original=new PassiveNetwork(nodes,pipes);var shuffled=new ArrayList<>(nodes);Collections.shuffle(shuffled,random);
             var index=new HashMap<Long,Integer>();for(int i=0;i<6;i++)index.put(shuffled.get(i).id(),i);
             var permutedPipes=new ArrayList<PassiveNetwork.Pipe>();for(var p:pipes)permutedPipes.add(new PassiveNetwork.Pipe(p.id(),index.get(nodes.get(p.first()).id()),index.get(nodes.get(p.second()).id()),p.sections(),p.control()));Collections.shuffle(permutedPipes,random);
-            var a=new TrBdf2StepSolver(model).solve(original,.05,()->{});var b=new TrBdf2StepSolver(model).solve(new PassiveNetwork(shuffled,permutedPipes),.05,()->{});
+            var a=new PassiveStepSolver(model).solve(original,.05,()->{});var b=new PassiveStepSolver(model).solve(new PassiveNetwork(shuffled,permutedPipes),.05,()->{});
             double before=0,after=0,beforeU=0,afterU=0,maximumPressureDifference=0;int component=water?com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK:com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN;
             for(int i=0;i<6;i++) {
                 int j=index.get(nodes.get(i).id());var ia=a.inventories().get(i);var ib=b.inventories().get(j);

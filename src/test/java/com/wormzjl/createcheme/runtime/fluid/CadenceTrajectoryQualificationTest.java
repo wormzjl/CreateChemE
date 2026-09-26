@@ -59,7 +59,7 @@ class CadenceTrajectoryQualificationTest {
         var graph=initial;double moved=0;var frames=new ArrayList<Frame>();
         var settings=new PassiveIntervalSolver.Settings(maximumStep,maximumStep,1e-5,8192);
         for(int tick=400;tick<=1600;tick+=400) {
-            var result=new PassiveIntervalSolver(model,PassiveIntervalSolver.ErrorControl.STEP_DOUBLING).solve(graph,20,settings,()->{});
+            var result=new PassiveIntervalSolver(model).solve(graph,20,settings,()->{});
             graph=result.graph();assertClosed(initial,graph);moved+=20*result.averageMassFlows()[0];frames.add(new Frame(tick,graph,moved));
         }
         return new Trajectory(frames,Set.of(),4);

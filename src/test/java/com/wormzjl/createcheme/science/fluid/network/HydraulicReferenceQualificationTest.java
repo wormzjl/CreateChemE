@@ -50,7 +50,7 @@ class HydraulicReferenceQualificationTest {
                         var drain = new PassiveNetwork.Reservoir(2, 0, sink, PassiveNetwork.NodeKind.VOID);
                         var graph = new PassiveNetwork(reverse ? List.of(drain, generator) : List.of(generator, drain),
                                 List.of(new PassiveNetwork.Pipe(3, 0, 1, geometry)));
-                        var actual = new TrBdf2StepSolver(model).solve(graph, 5, () -> {});
+                        var actual = new PassiveStepSolver(model).solve(graph, 5, () -> {});
                         double expected = reverse ? -expectedFlow : expectedFlow;
                         assertEquals(expected, actual.massFlows()[0], 1e-10 + 1e-4 * expectedFlow);
                         assertEquals(FlowControl.Mode.PASSIVE, actual.modes().getFirst());

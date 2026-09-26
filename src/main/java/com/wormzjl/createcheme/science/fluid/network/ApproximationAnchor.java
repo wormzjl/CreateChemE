@@ -38,7 +38,7 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
         if(full.acceptance()!=PassiveStepSolver.Acceptance.FULL)throw new IllegalArgumentException("Only a full result may renew the anchor");
         return new ApproximationAnchor(revision(model),full.graph(),full.endpointModes());
     }
-    public TrBdf2StepSolver.StageGuard guard(FluidThermodynamics model,PassiveNetwork current) {
+    public StageGuard guard(FluidThermodynamics model,PassiveNetwork current) {
         if(!propertyRevision.equals(revision(model)))throw new ApproximationRejected("Property or numerical revision changed");
         if(!graph.scheduledTransfers().equals(current.scheduledTransfers()))throw new ApproximationRejected("Scheduled material boundary changed");
         if(graph.reservoirs().size()!=current.reservoirs().size()||graph.pipes().size()!=current.pipes().size())throw new ApproximationRejected("Topology changed");
@@ -60,7 +60,7 @@ public record ApproximationAnchor(String propertyRevision,PassiveNetwork graph,L
                     ||graph.reservoirs().get(old.second()).id()!=current.reservoirs().get(pipe.second()).id())throw new ApproximationRejected("Pipe topology or control changed");
             expectedModes.add(oldModes.get(pipe.id()));
         }
-        TrBdf2StepSolver.StageGuard guard=(states,actualModes)->{
+        StageGuard guard=(states,actualModes)->{
             if(states.size()!=references.size()||!actualModes.equals(expectedModes))throw new ApproximationRejected("Device regime changed");
             for(int i=0;i<states.size();i++) {
                 var old=references.get(i).state();var state=states.get(i);

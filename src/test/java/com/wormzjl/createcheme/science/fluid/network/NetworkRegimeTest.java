@@ -29,7 +29,7 @@ class NetworkRegimeTest {
         var graph=new PassiveNetwork(List.of(gas(1,350,220000,0,PassiveNetwork.NodeKind.GENERATOR),gas(2,400,210000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR),
                 gas(3,350,195000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.JUNCTION),gas(4,350,180000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
                 new PassiveNetwork.Pipe(1,0,2,geometry),new PassiveNetwork.Pipe(2,1,2,geometry),new PassiveNetwork.Pipe(3,2,3,geometry)));
-        var result=new TrBdf2StepSolver(model).solve(graph,1,()->{});var q=result.massFlows();assertTrue(q[0]>0&&q[1]>0);
+        var result=new PassiveStepSolver(model).solve(graph,1,()->{});var q=result.massFlows();assertTrue(q[0]>0&&q[1]>0);
         assertEquals(q[0]+q[1],q[2],1e-9);var mixture=result.states().get(2);var n=PhaseLayout.totalAmounts(mixture);
         assertEquals(q[0]/q[2],n[0]*model.hydrocarbon.molecularWeight(0)/mixture.mass(),1e-8);
         double h=0;for(int i=0;i<2;i++){var feed=graph.reservoirs().get(i).state();h+=q[i]*feed.enthalpy()/feed.mass();}
@@ -39,11 +39,11 @@ class NetworkRegimeTest {
         var reversed=new PassiveNetwork(List.of(gas(1,350,220000,0,PassiveNetwork.NodeKind.GENERATOR),gas(2,400,170000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),
                 gas(3,350,195000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.JUNCTION),gas(4,350,180000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
                 new PassiveNetwork.Pipe(1,0,2,geometry),new PassiveNetwork.Pipe(2,1,2,geometry),new PassiveNetwork.Pipe(3,2,3,geometry)));
-        var back=new TrBdf2StepSolver(model).solve(reversed,.1,()->{});assertTrue(back.massFlows()[1]<0);
+        var back=new PassiveStepSolver(model).solve(reversed,.1,()->{});assertTrue(back.massFlows()[1]<0);
         assertEquals(0,PhaseLayout.totalAmounts(back.states().get(2))[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],1e-9);assertTrue(back.inventories().get(1).moles()[0]>0);
         var serial=new PassiveNetwork(List.of(gas(1,350,250000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR),gas(2,350,200000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.JUNCTION),gas(3,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
                 new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.PressureValve(200000)),new PassiveNetwork.Pipe(2,1,2,geometry,new FlowControl.PressureValve(180000))));
-        var result=new TrBdf2StepSolver(model).solve(serial,1,()->{});assertTrue(result.massFlows()[0]>0);assertEquals(result.massFlows()[0],result.massFlows()[1],1e-9);
+        var result=new PassiveStepSolver(model).solve(serial,1,()->{});assertTrue(result.massFlows()[0]>0);assertEquals(result.massFlows()[0],result.massFlows()[1],1e-9);
         assertEquals(FlowControl.Mode.VALVE_OPEN,result.modes().getFirst());
     }
     @Test void aRejectedTrialRestartsFromTheSameConservedStateAtTheSmallerStep() {
@@ -60,7 +60,7 @@ class NetworkRegimeTest {
         double setting=500000*model.pumpReferenceDensity()/(source.state().mass()/source.state().volume());
         for(double p:new double[]{1.49e6,1.51e6}) {
             var graph=new PassiveNetwork(List.of(source,gas(2,350,p,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.Pump(.001,setting,1))));
-            var result=new TrBdf2StepSolver(model).solve(graph,1,()->{});
+            var result=new PassiveStepSolver(model).solve(graph,1,()->{});
             if(p<1.5e6)assertTrue(result.massFlows()[0]>0);else assertEquals(0,result.massFlows()[0],1e-9);
         }
         var recycle=new PassiveNetwork(List.of(gas(1,350,150000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),gas(2,350,150000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR)),List.of(

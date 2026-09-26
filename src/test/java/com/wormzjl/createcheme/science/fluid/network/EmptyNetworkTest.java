@@ -23,7 +23,7 @@ class EmptyNetworkTest {
     @Test void unsupportedVacuumFillingIsExplicitAndCannotPublishOutflowFromTheRetainedGuess() {
         var empty=empty();var source=new PassiveNetwork.Reservoir(2,0,model.initialNitrogenCharge(1,298.15,200000,()->{}),PassiveNetwork.NodeKind.GENERATOR);
         var graph=new PassiveNetwork(List.of(empty,source),List.of(new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(1,.05,0,0))));
-        var failure=assertThrows(IllegalArgumentException.class,()->new TrBdf2StepSolver(model).solve(graph,1,()->{}));assertTrue(failure.getMessage().contains("no fluid temperature"));
+        var failure=assertThrows(IllegalArgumentException.class,()->new PassiveStepSolver(model).solve(graph,1,()->{}));assertTrue(failure.getMessage().contains("no fluid temperature"));
         assertArrayEquals(new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],empty.inventory().moles());assertEquals(0,empty.inventory().internalEnergy());
     }
 }
