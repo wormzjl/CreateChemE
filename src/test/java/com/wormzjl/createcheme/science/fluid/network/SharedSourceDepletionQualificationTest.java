@@ -72,7 +72,7 @@ class SharedSourceDepletionQualificationTest {
                 try {
                     result = new PassiveIntervalSolver(model).solve(
                             graph, .01,
-                            new PassiveIntervalSolver.Settings(.005, .01, .001, 128),
+                            new PassiveIntervalSolver.Settings(.005, .01, 128),
                             () -> {});
                 } catch (SparseNewton.Nonconvergence refusal) {
                     // A supported finite source may reject a near-empty trial. The

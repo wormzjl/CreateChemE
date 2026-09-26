@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Checkpoint format 4 (F3, replacing format 3 of plan section 3.5): clocks, material, fences, pending events, modules
+ * Checkpoint format 5 (F3's format 4, which replaced format 3 of plan section 3.5, less its kind column): clocks, material, fences, pending events, modules
  * and certificates round-trip exactly through the core record and the island units; every index and certificate
  * field is validated; certificates are discarded, keeping inventory, when certificates are off or their signature
  * changed; a certified island's unit is reused in place, never re-encoded, while it stays certified; a thousand

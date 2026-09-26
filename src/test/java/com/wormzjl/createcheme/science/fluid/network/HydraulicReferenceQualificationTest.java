@@ -135,7 +135,7 @@ class HydraulicReferenceQualificationTest {
                     new PassiveNetwork.Reservoir(2, 0, state(false, 1000 - sign * .5))),
                     List.of(new PassiveNetwork.Pipe(3, 0, 1, new PipeResistance.Geometry(1, .01, 0, 0))));
             var actual = new PassiveIntervalSolver(model).solve(graph, duration,
-                    new PassiveIntervalSolver.Settings(.1, .1, 1e-6, 1024), () -> {});
+                    new PassiveIntervalSolver.Settings(.1, .1, 1024), () -> {});
             assertEquals(sign * meanFlow, actual.averageMassFlows()[0], 1e-10 + 1e-4 * meanFlow);
             double difference = actual.graph().reservoirs().get(0).state().pressure()
                     - actual.graph().reservoirs().get(1).state().pressure();

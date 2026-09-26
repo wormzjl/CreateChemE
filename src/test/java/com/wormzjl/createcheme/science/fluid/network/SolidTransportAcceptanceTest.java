@@ -54,7 +54,7 @@ class SolidTransportAcceptanceTest {
         var solids=new SolidInventory(List.of(new SolidInventory.Population(model.solids.require("createcheme:demo_particle"),ParticleSize.micrometres("100"),100)));
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,water(160000).withSolids(solids)),new PassiveNetwork.Reservoir(2,0,water(150000))),List.of(pipe()));
         var first=new PassiveIntervalSolver(model).solve(graph,.05,PassiveIntervalSolver.Settings.defaults(),()->{});
-        var second=new PassiveIntervalSolver(model).solve(graph,.05,new PassiveIntervalSolver.Settings(.0005,.001,1e-6,1024),()->{});
+        var second=new PassiveIntervalSolver(model).solve(graph,.05,new PassiveIntervalSolver.Settings(.0005,.001,1024),()->{});
         assertNotEquals(0,first.graph().pipes().getFirst().blockedDirections());
         assertTrue(first.averageMassFlows()[0]>0);
         assertTrue(first.rejectionReasons().keySet().stream().anyMatch(s->s.contains("DEPOSITION")));

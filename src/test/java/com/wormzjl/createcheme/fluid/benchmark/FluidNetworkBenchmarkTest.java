@@ -37,7 +37,7 @@ class FluidNetworkBenchmarkTest {
             try {
                 var result=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
                 row.put("status","CONVERGED");row.put("acceptedSubsteps",result.acceptedSubsteps());row.put("rejectedSubsteps",result.rejectedSubsteps());
-                row.put("rejectionReasons",result.rejectionReasons());row.put("integrator","TR-BDF2 with filtered embedded 2(3) estimator; valve intervals use step doubling");
+                row.put("rejectionReasons",result.rejectionReasons());row.put("integrator","backward Euler under the state-change controller (vessel pressure and mass change at most 5 % per step)");
                 row.put("firstCallMilliseconds",(System.nanoTime()-start)/1e6);
                 var repeated=new ArrayList<Double>();
                 for(int repeat=0;repeat<2;repeat++){long measured=System.nanoTime();new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});repeated.add((System.nanoTime()-measured)/1e6);}

@@ -6,9 +6,14 @@ import com.wormzjl.createcheme.science.material.MaterialCatalog;
 import java.util.*;
 import org.junit.jupiter.api.Test;
 
-class TrBdf2Test {
-    /** The step is backward Euler (WP1 of the mixed-gas junction batch; the TR-BDF2 this class was named for is gone): the
-     * controlled interval agrees with a refined fixed-step integration, and halving a fixed step halves the error
+/**
+ * The backward-Euler step and the interval controller built on it: first-order convergence against refined fixed steps,
+ * the boundary ledgers of a water-appearance step and of a source-to-void step, pump work against the energy balance,
+ * and a valve closure against a refined fixed-step reference. Formerly {@code TrBdf2Test}, named for the TR-BDF2
+ * integrator that the mixed-gas junction batch replaced (WP1, removed at {@code 640d87b}; renamed in WP5).
+ */
+class BackwardEulerStepTest {
+    /** The controlled interval agrees with a refined fixed-step integration, and halving a fixed step halves the error
      * (first order; measured ratio 2.03, where TR-BDF2 showed more than 3). */
     @Test void controlledIntervalAgreesWithFixedStepsAndFixedStepsShowFirstOrder() {
         var graph=graph(gas(1,180000,0),gas(2,101325,0),new FlowControl.Passive());

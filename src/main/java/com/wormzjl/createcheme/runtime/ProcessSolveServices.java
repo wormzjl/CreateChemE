@@ -412,7 +412,7 @@ public final class ProcessSolveServices {
                     // ran out. Its detail says so, so the hold policy treats it as a budget hold (IslandCoordinator.hold).
                     try {
                         var guard=fallback.anchor().orElseThrow().guard(model,snapshot);
-                        var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,.0025,256);
+                        var approximateSettings=new PassiveIntervalSolver.Settings(Math.min(1,durationSeconds),20,256);
                         var candidate=retained.solveApproximate(model,snapshot,durationSeconds,approximateSettings,hard,guard);hard.run();
                         return new FluidIslandSolveResult(Optional.of(candidate),"APPROXIMATE: soft budget",elapsed[0],fallback.allowance().accept(ticks,fallback.cadenceTicks()),fallback.anchor());
                     }catch(com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence|IllegalArgumentException|ApproximationRejected refused) {

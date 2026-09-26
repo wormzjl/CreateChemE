@@ -67,7 +67,7 @@ class NetworkRegimeTest {
         var graph=new PassiveNetwork(List.of(gas(1,350,200000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),gas(2,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR)),List.of(new PassiveNetwork.Pipe(1,0,1,geometry)));
         var calls=new AtomicInteger();var before=graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList();
         var rejected=new PassiveIntervalSolver(model).solve(graph,1,PassiveIntervalSolver.Settings.defaults(),()->{if(calls.incrementAndGet()==30)throw new com.wormzjl.createcheme.science.fluid.solver.SparseNewton.Nonconvergence("Forced rejection");});
-        var fresh=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.5,20,.001,1024),()->{});
+        var fresh=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.5,20,1024),()->{});
         assertTrue(rejected.rejectedSubsteps()>0);assertArrayEquals(fresh.averageMassFlows(),rejected.averageMassFlows(),1e-8);
         assertEquals(before,graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList());
     }
@@ -115,8 +115,8 @@ class NetworkRegimeTest {
         var graph=new PassiveNetwork(List.of(gas(1,350,200000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),gas(2,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR)),List.of(new PassiveNetwork.Pipe(1,0,1,geometry)));
         var solver=new PassiveIntervalSolver(model);var count=new AtomicInteger();
         assertThrows(CancellationException.class,()->solver.solve(graph,1,PassiveIntervalSolver.Settings.defaults(),()->{if(count.incrementAndGet()==30)throw new CancellationException();}));
-        var retry=solver.solve(graph,1,new PassiveIntervalSolver.Settings(.1,.1,.001,1024),()->{});
-        var fresh=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.1,.1,.001,1024),()->{});
+        var retry=solver.solve(graph,1,new PassiveIntervalSolver.Settings(.1,.1,1024),()->{});
+        var fresh=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.1,.1,1024),()->{});
         assertArrayEquals(fresh.averageMassFlows(),retry.averageMassFlows(),1e-8);
         var sonic=new PassiveNetwork(List.of(gas(1,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR),gas(2,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
                 new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(.1,.01,0,0),new FlowControl.Pump(1,500000*model.pumpReferenceDensity()/(sonicSource().mass()/sonicSource().volume()),1))));

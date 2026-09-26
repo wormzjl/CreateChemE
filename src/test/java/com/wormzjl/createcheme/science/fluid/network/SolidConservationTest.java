@@ -37,7 +37,7 @@ class SolidConservationTest {
         var source=water(160000).withSolids(particles(100));
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,source,PassiveNetwork.NodeKind.GENERATOR),
                 new PassiveNetwork.Reservoir(2,0,water(150000))),List.of(new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(100,.05,.000045,0))));
-        var result=new PassiveIntervalSolver(model).solve(graph,.001,new PassiveIntervalSolver.Settings(.0001,.0001,1e-4,1024),()->{});
+        var result=new PassiveIntervalSolver(model).solve(graph,.001,new PassiveIntervalSolver.Settings(.0001,.0001,1024),()->{});
         double received=result.graph().reservoirs().get(1).inventory().solids().massKg();
         double external=result.boundaries().stream().mapToDouble(b->b.solidDirection()*b.solids().massKg()).sum();
         assertTrue(received>0);
@@ -63,7 +63,7 @@ class SolidConservationTest {
         var pipe=new PassiveNetwork.Pipe(3,0,1,new PipeResistance.Geometry(1,.05,.000045,0)).withFilter(filter);
         var graph=new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1,0,source,PassiveNetwork.NodeKind.GENERATOR),
                 new PassiveNetwork.Reservoir(2,0,water(150000),PassiveNetwork.NodeKind.VOID)),List.of(pipe));
-        var result=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.001,.01,1e-5,1024),()->{});
+        var result=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.001,.01,1024),()->{});
         var cake=result.graph().pipes().getFirst().filter();
         assertEquals(3,result.graph().pipes().getFirst().blockedDirections());
         assertTrue(cake.captured().volume()<=filter.capacity());

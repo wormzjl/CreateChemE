@@ -47,7 +47,7 @@ class SolidClosureFeasibilityTest {
         // Three orders tighter on the tolerance and four on the largest step, i.e. a completely
         // different step sequence reaching the same physical crossing.
         var reference = new PassiveIntervalSolver(model).solve(initial, duration,
-                new PassiveIntervalSolver.Settings(1e-6, 1e-4, 1e-6, 1024), () -> {});
+                new PassiveIntervalSolver.Settings(1e-6, 1e-4, 1024), () -> {});
 
         double located = closureTime(result, "DEPOSITION"), exact = closureTime(reference, "DEPOSITION");
         // Backward Euler (WP1 of the mixed-gas junction batch): the state cap does not see the flow's approach to the
@@ -88,7 +88,7 @@ class SolidClosureFeasibilityTest {
                         new InlineFilter(capacity, 1e4, SolidInventory.EMPTY, 0))));
         double longestStep = 0.25;
         var result = new PassiveIntervalSolver(model).solve(graph, 3,
-                new PassiveIntervalSolver.Settings(0.05, longestStep, 1e-3, 1024), () -> {});
+                new PassiveIntervalSolver.Settings(0.05, longestStep, 1024), () -> {});
 
         var cake = result.graph().pipes().getFirst().filter();
         assertTrue(cake.clogged());

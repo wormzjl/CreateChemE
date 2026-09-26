@@ -36,7 +36,7 @@ class McpGameplayRegressionTest {
         var graph=archivedGraph(archivedIsland("/fluid/mcp-clamped-liquid-full-checkpoint.json"),model);
         var result=new PassiveIntervalSolver(model).solve(graph,1,PassiveIntervalSolver.Settings.defaults(),()->{});
         assertEquals(1,result.advancedSeconds());assertTrue(result.graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]>0);
-        var refined=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.005,.02,.0001,4096),()->{});
+        var refined=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.005,.02,4096),()->{});
         for(int i=0;i<graph.reservoirs().size();i++) {
             var actual=result.graph().reservoirs().get(i);var expected=refined.graph().reservoirs().get(i);
             assertEquals(expected.state().pressure(),actual.state().pressure(),1+.001*expected.state().pressure());
@@ -80,7 +80,7 @@ class McpGameplayRegressionTest {
         var result=solver.solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
         assertTrue(result.graph().reservoirs().getFirst().state().waterLiquid()>0);
         assertEquals(nitrogen.vapor()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],result.graph().reservoirs().getFirst().inventory().moles()[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN],1e-8);
-        var refined=new PassiveIntervalSolver(model).solve(graph,5,new PassiveIntervalSolver.Settings(.00005,.02,.0001,4096),()->{});
+        var refined=new PassiveIntervalSolver(model).solve(graph,5,new PassiveIntervalSolver.Settings(.00005,.02,4096),()->{});
         var actual=result.graph().reservoirs().getFirst().state();var expected=refined.graph().reservoirs().getFirst().state();
         assertEquals(expected.pressure(),actual.pressure(),.001*expected.pressure());
         assertEquals(expected.temperature(),actual.temperature(),.1);

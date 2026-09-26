@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
- * The binary primitives of a checkpoint storage unit (format 4): big-endian fixed-width integers and doubles, unsigned
+ * The binary primitives of a checkpoint storage unit (format 4 onwards): big-endian fixed-width integers and doubles, unsigned
  * LEB128 variable-length integers, UTF-8 texts with their byte length, and sparse double arrays - a bit mask of the
  * entries whose raw bits are not zero, then those entries' raw bits. Every double is written and read with its exact
  * bits and must be finite, as every number of format 3 had to be; a sparse array never stores an entry whose raw bits

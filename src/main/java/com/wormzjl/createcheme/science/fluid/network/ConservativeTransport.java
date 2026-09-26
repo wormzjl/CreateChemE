@@ -19,7 +19,7 @@ public final class ConservativeTransport {
      *
      * <p>Without it each reconstruction built its own {@link SparseLuSolver.Storage} - an EJML
      * solver, a CSC copy, two dense vectors, a sorter and the scaling buffers - and its own
-     * ordering, three or four times per interval for the life of the island. The stage graphs
+     * ordering, three or four times per interval for the life of the island. The solved graphs
      * alternate (a step solve and a rate solve of the port graph do not share a sparsity
      * pattern), so the orderings are a small keyed cache while the storage, which
      * reshapes itself, is single and shared.

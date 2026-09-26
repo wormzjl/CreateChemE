@@ -15,7 +15,7 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * Checkpoint format 4 through the world: a world with a resting tank is saved by its own saved-data path, exactly as an
+ * Checkpoint format 5 through the world: a world with a resting tank is saved by its own saved-data path, exactly as an
  * autosave saves it - prepared on the server thread, the new pack and the core record written on NeoForge's IO worker -
  * and the files are copied as a restarted server finds them and loaded into a fresh store and a fresh coordinator. The
  * tank comes back certified, its status line continuing from the saved since tick; the restarted store, seeded by the
@@ -52,7 +52,7 @@ public final class FluidCheckpointGameTests {
                 Files.createDirectories(restart.resolve(FluidCheckpointStore.UNIT_DIRECTORY));Files.copy(core,restart.resolve(FluidCheckpointStore.CORE_NAME));
                 try(var files=Files.list(packs)){for(var file:(Iterable<Path>)files::iterator)Files.copy(file,restart.resolve(FluidCheckpointStore.UNIT_DIRECTORY).resolve(file.getFileName()));}
                 var raw=net.minecraft.nbt.NbtIo.readCompressed(core,net.minecraft.nbt.NbtAccounter.unlimitedHeap());
-                helper.assertTrue(raw.getCompound("data").getInt("FluidFormat")==FluidCheckpointCodec.VERSION&&raw.contains("DataVersion"),"Not format 4 as a saved data file");
+                helper.assertTrue(raw.getCompound("data").getInt("FluidFormat")==FluidCheckpointCodec.VERSION&&raw.contains("DataVersion"),"Not format 5 as a saved data file");
                 var store=FluidCheckpointStore.directory(restart,net.neoforged.neoforge.common.IOUtilities::withIOWorker,true);
                 var loaded=FluidSavedData.read(store,models).orElseThrow();
                 helper.assertTrue(loaded.world().orElseThrow().onlineTick()==raw.getCompound("data").getLong("Epoch"),"The topology and the epoch did not round-trip");

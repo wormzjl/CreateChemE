@@ -9,7 +9,7 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Checkpoint format 4, one island: round trip, field refusals, a changed basis, energy datum or velocity limit. */
+/** Checkpoint format 5, one island: round trip, field refusals, a changed basis, energy datum or velocity limit. */
 class FluidCheckpointCodecTest {
     private static final String PACKAGE="createcheme:tjl20_methane_nitrogen";
     private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),PACKAGE,1e-9);

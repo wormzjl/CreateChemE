@@ -19,7 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Checkpoint format 4 through its real layout on a temporary directory (F3): the core record as the world's saved
+ * Checkpoint format 5 through its real layout on a temporary directory (F3): the core record as the world's saved
  * data file, the island and topology units in pack files beside it. Minecraft's save path round-trips clocks,
  * material, fences, pending events, modules, certificates and held islands; a save writes only the units of islands
  * that changed; a crash between a pack and its core record leaves the previous checkpoint in force; a commit built on
@@ -180,7 +180,7 @@ class FluidCheckpointStoreTest {
     /**
      * Minecraft's save path (SavedData.save(File)) writes the core record and one pack; a fresh store reading the files
      * gives back clocks (the held island's retry tick too), inventories bit for bit, fences, statuses, pending material,
-     * a module, a queued topology event and the REST and STEADY certificates exactly.
+     * a module, a queued topology event and the no-flow and moving certificates exactly.
      */
     @Test void clocksMaterialFencesPendingEventsModulesCertificatesAndHeldIslandsRoundTripThroughTheFiles() throws IOException {
         var rig=new Rig(CertificatePolicy.defaults());
@@ -443,7 +443,7 @@ class FluidCheckpointStoreTest {
     // ---------------- the seeded store ----------------
 
     /**
-     * The index a load reads seeds the dirty tracking: registered as loaded, awake, REST and STEADY islands keep their
+     * The index a load reads seeds the dirty tracking: registered as loaded, awake, no-flow and moving certified islands keep their
      * units and the topology its unit, so the first save after the load encodes nothing; a certificate discarded at
      * registration (certificates off at the restart) changes what its island records, and only those units are written.
      */

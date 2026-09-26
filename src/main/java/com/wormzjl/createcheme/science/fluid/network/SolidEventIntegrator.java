@@ -36,7 +36,7 @@ final class SolidEventIntegrator {
     }
     /**
      * A stage guard's report that the connection it names may no longer carry what the trajectory
-     * asks it to. It is a control-flow signal out of a stage solve, thrown once per rejected
+     * asks it to. It is a control-flow signal out of a step solve, thrown once per rejected
      * substep while the interval solver refines onto the event, so it carries no stack trace.
      */
     static final class Transition extends RuntimeException {

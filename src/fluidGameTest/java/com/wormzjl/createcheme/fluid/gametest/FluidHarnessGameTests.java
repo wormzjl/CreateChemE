@@ -93,7 +93,7 @@ public final class FluidHarnessGameTests {
         var graph=new com.wormzjl.createcheme.science.fluid.network.PassiveNetwork(java.util.List.of(new com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.Reservoir(1,0,model.initialNitrogenCharge(1,298.15,65000,()->{}))),java.util.List.of());
         var island=new com.wormzjl.createcheme.runtime.fluid.IslandCoordinator.Snapshot(1,0,graph,new com.wormzjl.createcheme.runtime.fluid.IslandClock.Snapshot(250,100,0,100),com.wormzjl.createcheme.runtime.fluid.FallbackAllowance.NONE,java.util.Optional.empty(),java.util.Optional.empty(),"HELD");
         var checkpoint=new com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodec.Checkpoint(java.util.List.of(new com.wormzjl.createcheme.runtime.fluid.FluidCheckpointCodec.IslandEntry("minecraft:overworld","createcheme:tjl20_methane_nitrogen",1e-9,island)),new com.wormzjl.createcheme.runtime.fluid.BufferedTransfers.Snapshot(0,java.util.Map.of(),java.util.Map.of()));
-        // Format 4 through Minecraft's own save path: the core record and a pack written on NeoForge's IO worker, in a
+        // Format 5 through Minecraft's own save path: the core record and a pack written on NeoForge's IO worker, in a
         // folder of their own under the GameTest world's data.
         var folder=helper.getLevel().getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("data/fluid-checkpoint-tests/"+java.util.UUID.randomUUID());java.nio.file.Files.createDirectories(folder);
         var store=com.wormzjl.createcheme.runtime.fluid.FluidCheckpointStore.directory(folder,net.neoforged.neoforge.common.IOUtilities::withIOWorker,true);

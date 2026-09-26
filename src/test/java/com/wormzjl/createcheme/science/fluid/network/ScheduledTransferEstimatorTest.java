@@ -25,7 +25,7 @@ class ScheduledTransferEstimatorTest {
     }
     private void compare(PassiveNetwork graph) {
         var actual=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});
-        var reference=new PassiveIntervalSolver(model).solve(graph,5,new PassiveIntervalSolver.Settings(.005,.05,.0001,4096),()->{});
+        var reference=new PassiveIntervalSolver(model).solve(graph,5,new PassiveIntervalSolver.Settings(.005,.05,4096),()->{});
         for(int i=0;i<graph.reservoirs().size();i++) {
             var a=actual.graph().reservoirs().get(i).state();var r=reference.graph().reservoirs().get(i).state();
             assertEquals(r.pressure(),a.pressure(),.001*r.pressure());assertEquals(r.temperature(),a.temperature(),.05);assertEquals(r.mass(),a.mass(),.001*r.mass());

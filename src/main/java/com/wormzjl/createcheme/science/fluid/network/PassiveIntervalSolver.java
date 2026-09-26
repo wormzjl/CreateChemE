@@ -35,13 +35,14 @@ public final class PassiveIntervalSolver {
     public PassiveIntervalSolver(FluidThermodynamics model,SolverOwnership ownership) {
         this.model=Objects.requireNonNull(model);implicit=new PassiveStepSolver(model,Objects.requireNonNull(ownership));
     }
-    /** {@code relativeTolerance} is not read by the backward-Euler controller, whose step bound is {@link #STATE_CAP}. */
-    public record Settings(double initialStep,double maximumStep,double relativeTolerance,int maximumAttempts) {
+    /** The step bounds and the attempt cap of an interval. There is no tolerance: the backward-Euler controller's step
+     * bound is {@link #STATE_CAP} (the relative tolerance of the TR-BDF2 error estimate went with it). */
+    public record Settings(double initialStep,double maximumStep,int maximumAttempts) {
         public Settings {
             if(!Double.isFinite(initialStep)||initialStep<=0||!Double.isFinite(maximumStep)||maximumStep<initialStep
-                    ||!Double.isFinite(relativeTolerance)||relativeTolerance<=0||maximumAttempts<1)throw new IllegalArgumentException("Invalid interval settings");
+                    ||maximumAttempts<1)throw new IllegalArgumentException("Invalid interval settings");
         }
-        public static Settings defaults(){return new Settings(1,20,.001,1024);}
+        public static Settings defaults(){return new Settings(1,20,1024);}
     }
     public record Result(PassiveNetwork graph,double advancedSeconds,double[] averageMassFlows,int acceptedSubsteps,int rejectedSubsteps,
                          double pumpWorkJoule,List<ConservativeTransport.BoundaryTransfer> boundaries,Map<String,Integer> rejectionReasons,
