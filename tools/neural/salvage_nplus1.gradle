@@ -1,0 +1,10 @@
+gradle.projectsEvaluated {
+    def p=gradle.rootProject
+    p.tasks.register('salvageNplus1', JavaExec) {
+        dependsOn p.tasks.named('neuralMvpClasses')
+        classpath=p.sourceSets.neuralMvp.runtimeClasspath
+        mainClass='com.wormzjl.createcheme.science.column.v3.V3SalvageNplus1Probe'
+        maxHeapSize='6g'
+        args p.providers.gradleProperty('salvageOutput').get(), p.providers.gradleProperty('salvageSource').get(), p.providers.gradleProperty('salvageModel').get()
+    }
+}

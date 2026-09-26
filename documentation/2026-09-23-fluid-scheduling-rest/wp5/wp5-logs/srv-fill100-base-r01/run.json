@@ -1,0 +1,126 @@
+{
+  "runId": "srv-fill100-base-r01",
+  "scenario": "fill100",
+  "kind": "server",
+  "worktree": "D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/fluid-baseline-eb28fc5",
+  "warmupSeconds": 60,
+  "windowSeconds": 60,
+  "events": [
+    {
+      "t": 1790168598496,
+      "iso": "2026-09-23T13:03:18.496Z",
+      "what": "machine",
+      "endfield": 0,
+      "freeMiB": 26134
+    },
+    {
+      "t": 1790168598932,
+      "iso": "2026-09-23T13:03:18.932Z",
+      "what": "launch"
+    },
+    {
+      "t": 1790168610559,
+      "iso": "2026-09-23T13:03:30.559Z",
+      "what": "server ready"
+    },
+    {
+      "t": 1790168610988,
+      "iso": "2026-09-23T13:03:30.988Z",
+      "what": "jvm",
+      "pid": 45420
+    },
+    {
+      "t": 1790168610996,
+      "iso": "2026-09-23T13:03:30.996Z",
+      "what": "forceload",
+      "reply": "Running function createcheme_bench:forceload\n"
+    },
+    {
+      "t": 1790168616007,
+      "iso": "2026-09-23T13:03:36.007Z",
+      "what": "place start"
+    },
+    {
+      "t": 1790168617887,
+      "iso": "2026-09-23T13:03:37.887Z",
+      "what": "place done",
+      "reply": "Running function createcheme_bench:fill100\n",
+      "placementMillis": 1879
+    },
+    {
+      "t": 1790168620911,
+      "iso": "2026-09-23T13:03:40.911Z",
+      "what": "devices registered",
+      "onlineTick": 200,
+      "devices": 800,
+      "islands": 100,
+      "kinds": "{AWAKE=100}",
+      "statuses": "{WAITING=100}"
+    },
+    {
+      "t": 1790168681610,
+      "iso": "2026-09-23T13:04:41.610Z",
+      "what": "jfr start",
+      "reply": "45420:\r\nStarted recording 1. No limit specified, using maxsize=250MB as default.\n\nUse jcmd 45420 JFR.dump name=wp5window to copy recording data to file."
+    },
+    {
+      "t": 1790168683337,
+      "iso": "2026-09-23T13:04:43.337Z",
+      "what": "window start"
+    },
+    {
+      "t": 1790168741820,
+      "iso": "2026-09-23T13:05:41.820Z",
+      "what": "window end"
+    },
+    {
+      "t": 1790168742169,
+      "iso": "2026-09-23T13:05:42.169Z",
+      "what": "jfr stop",
+      "reply": "45420:\r\nStopped recording \"wp5window\", 99.6 MB written to:\n\nD:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\documentation\\fluid-scheduler\\wp5-logs\\srv-fill100-base-r01\\window.jfr"
+    },
+    {
+      "t": 1790168742816,
+      "iso": "2026-09-23T13:05:42.816Z",
+      "what": "live heap"
+    },
+    {
+      "t": 1790168742819,
+      "iso": "2026-09-23T13:05:42.819Z",
+      "what": "stop",
+      "reply": "Stopping the server\n"
+    },
+    {
+      "t": 1790168743675,
+      "iso": "2026-09-23T13:05:43.675Z",
+      "what": "gradle exit",
+      "code": 0
+    },
+    {
+      "t": 1790168747295,
+      "iso": "2026-09-23T13:05:47.295Z",
+      "what": "done",
+      "endfield": 0,
+      "freeMiB": 26126
+    }
+  ],
+  "machineBefore": {
+    "endfield": 0,
+    "freeMiB": 26134
+  },
+  "pid": 45420,
+  "placementMillis": 1879,
+  "placedState": {
+    "onlineTick": 200,
+    "devices": 800,
+    "islands": 100,
+    "kinds": "{AWAKE=100}",
+    "statuses": "{WAITING=100}"
+  },
+  "windowStart": 1790168681621,
+  "windowEnd": 1790168741624,
+  "machineAfter": {
+    "endfield": 0,
+    "freeMiB": 26126
+  }
+}

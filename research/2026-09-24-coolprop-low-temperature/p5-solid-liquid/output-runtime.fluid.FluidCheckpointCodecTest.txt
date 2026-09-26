@@ -1,0 +1,2 @@
+===== runtime.fluid.FluidCheckpointCodecTest.xml tests="8" skipped="0" failures="0" errors="0"
+

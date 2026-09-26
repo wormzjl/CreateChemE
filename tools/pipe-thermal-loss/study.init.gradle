@@ -1,0 +1,19 @@
+allprojects {
+    afterEvaluate { p ->
+        def study = p.sourceSets.create('pipeThermalStudy')
+        study.java.srcDir('D:/Minecraft/Modding/1.21/CreateChemE/tools/pipe-thermal-loss/java')
+        study.compileClasspath += p.sourceSets.main.output + p.sourceSets.test.compileClasspath
+        study.runtimeClasspath += study.output + study.compileClasspath + p.sourceSets.test.runtimeClasspath
+        p.tasks.register('preparePipeThermalStudy') {
+            dependsOn p.tasks.named('pipeThermalStudyClasses')
+            doLast {
+                def out = p.layout.buildDirectory.dir('pipe-thermal-study').get().asFile
+                out.mkdirs()
+                new File(out, 'classpath.txt').text = study.runtimeClasspath.asPath
+                new File(out, 'java.txt').text = p.javaToolchains.launcherFor {
+                    languageVersion = JavaLanguageVersion.of(21)
+                }.get().executablePath.asFile.absolutePath
+            }
+        }
+    }
+}

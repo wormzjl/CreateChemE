@@ -1,0 +1,30 @@
+G3 F9 typed refusals just outside each new boundary (and the state just inside answered)
+G3 F9 | Boundary | Path | Just inside (answered) | Just outside | Refusal: component, code |
+G3 F9 |---|---|---|---|---|
+G3 F9 | 10 MPa, N2 | pilot network | 300 K, 10.00 MPa | 300.0 K, 10.05 MPa | Nitrogen, THERMO_DOMAIN_PRESSURE_ABOVE |
+G3 F9 | 10 MPa, CO2 | pilot network | 400 K, 10.00 MPa | 400.0 K, 10.05 MPa | CarbonDioxide, THERMO_DOMAIN_PRESSURE_ABOVE |
+G3 F9 | 10 MPa, N2 (bundled) | bundled network | 300 K, 10.00 MPa | 300.0 K, 10.05 MPa | Nitrogen, THERMO_DOMAIN_PRESSURE_ABOVE |
+G3 F9 | 10 MPa, CH4 (bundled) | bundled network | 300 K, 10.00 MPa | 300.0 K, 10.05 MPa | Methane, THERMO_DOMAIN_PRESSURE_ABOVE |
+G3 F9 | 2 MPa kept, C2H6 (bundled) | bundled network | 350 K, 2.000 MPa | 350.0 K, 2.010 MPa | Ethane, THERMO_DOMAIN_PRESSURE_ABOVE |
+G3 F9 | 63.151 K, N2 | pilot network | 63.2 K, 0.1000 MPa | 63.1 K, 0.1000 MPa | Nitrogen, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | 63.151 K, N2 (bundled) | bundled network | 63.2 K, 0.1000 MPa | 63.1 K, 0.1000 MPa | Nitrogen, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | 90.694 K, CH4 | pilot network | 90.7 K, 0.1000 MPa | 90.69 K, 0.1000 MPa | Methane, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | 90.368 K, C2H6 | pilot network | 90.4 K, 0.1000 MPa | 90.36 K, 0.1000 MPa | Ethane, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | 90 K, CO2 gas (crystal competition) | pilot network | 90.1 K, 0.0001000 MPa | 89.9 K, 0.0001000 MPa | CarbonDioxide, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | 293.15 K, CH4 (bundled) | bundled network | 293.2 K, 0.1000 MPa | 293.1 K, 0.1000 MPa | Methane, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | 1200 K, N2 | pilot network | 1200 K, 0.2000 MPa | 1200.5 K, 0.2000 MPa | Nitrogen, THERMO_DOMAIN_TEMPERATURE_ABOVE |
+G3 F9 | 1200 K, CH4 | pilot network | 1200 K, 0.2000 MPa | 1200.5 K, 0.2000 MPa | Methane, THERMO_DOMAIN_TEMPERATURE_ABOVE |
+G3 F9 | 900 K (bundled) | bundled network | 900 K, 0.2000 MPa | 900.5 K, 0.2000 MPa | Nitrogen, THERMO_DOMAIN_TEMPERATURE_ABOVE |
+G3 F9 | 273.16 K, water | pilot network | 273.2 K, 0.1000 MPa | 273.1 K, 0.1000 MPa | Water, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | 273.16 K, water (bundled) | bundled network | 273.2 K, 1.000 MPa | 273.1 K, 1.000 MPa | Water, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | Region 1 623.15 K, liquid water | pilot network waterLiquid | 623.1 K, 20 MPa | 623.2 K, 20 MPa | Water, THERMO_DOMAIN_TEMPERATURE_ABOVE |
+G3 F9 | methane spine 1200 K (D13) | pilot evaluator | 1200 K, 0.2 MPa | 1200.5 K, 0.2 MPa | Methane, THERMO_DOMAIN_TEMPERATURE_ABOVE |
+G3 F9 | N2 spine to 6000 K (envelope 1200 K) | pilot evaluator | 1500 K, 0.2 MPa (evaluates) | - | the envelope refuses above 1200 K |
+G3 F9 | methane spine 90.6941 K | pilot evaluator | 90.7 K | 90.69 K, 0.1 MPa | Methane, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | CO2 spine 90 K (WP3 extension) | pilot evaluator | 90 K, 0.1 MPa | 89.9 K | CarbonDioxide, THERMO_DOMAIN_TEMPERATURE_BELOW |
+G3 F9 | CO2-I crystal (research-only record) | pilot engine contract | - | competition with CO2-I at 180 K | UNSUPPORTED, PHASE_COMPETITION_NOT_QUALIFIED |
+G3 F9 | hydrates (D8) | pilot engine contract | - | competition with hydrates | UNSUPPORTED, WATER_CHEMISTRY_NOT_MODELLED |
+G3 F9 | 10 MPa, N2 | pilot engine contract | - | 300 K, 10.05 MPa | OUT_OF_DOMAIN, Nitrogen, THERMO_DOMAIN_PRESSURE_ABOVE |
+G3 F9 | 10 MPa, closed CH4/C2H6 vessel (UV) | pilot engine contract | (U, V) of 283 K, 9.95 MPa: 9.950 MPa | (U, V) of 283 K, 10.05 MPa | OUT_OF_DOMAIN, Methane, THERMO_DOMAIN_PRESSURE_ABOVE (51 TP equilibria) |
+G3 F9 | 216.592 K, CO2 | pilot engine contract | - | 216.5 K, 0.1 MPa | OUT_OF_DOMAIN, CarbonDioxide |
+

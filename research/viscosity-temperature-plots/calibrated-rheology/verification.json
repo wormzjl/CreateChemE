@@ -1,0 +1,14 @@
+{
+  "zero_wax_recovery": true,
+  "monotone_stress_vs_rate_at_fixed_history": true,
+  "history_recovery_and_breakdown_limits": true,
+  "zero_shear_viscosity_not_fabricated": true,
+  "training_count": 20,
+  "maximum_training_relative_error": 1.1102230246251565e-15,
+  "temperature_check_count": 10,
+  "maximum_temperature_check_error_percent": 3.870283214170178,
+  "mean_absolute_temperature_check_error_percent": 0.8735179384609373,
+  "pseudo_curve_monotonicity_checked": true,
+  "wax_inventory_and_phase_mass_balance_checked": true,
+  "scope": "Same-assay temperature checks; not external crude validation or validation of low-temperature rheology."
+}

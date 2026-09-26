@@ -1,0 +1,13 @@
+table01: 205 rows x 3 cols; caption: (*) authors to whom the correspondence should be addressed | E-mails: jean-noel.jaubert@univ-lorraine.fr ; romain.privat@univ-lorraine.fr | Table S1. Molecules involved in the optimisation of E-PPR78:
+table02: 1302 rows x 15 cols; caption: Table S2. Characteristics of the experimental data used to optimise the E-PPR78 model. It is specified that the second column informs about the contribution of each binary system to the error function
+table03: 1302 rows x 2 cols; caption: Table S3. Bibliographic references of data used to optimise the E-PPR78 model.
+table04: 14 rows x 14 cols; caption: Table S4. Group–binary interaction parameters: (Akl = Alk)/MPa and (Bkl = Blk)/MPa. Only the G-bips between groups 12 and 15, 13 and 15, 3 and 20 have been determined in this work. The other parameter
+table05: 15 rows x 14 cols; caption: 
+table06: 15 rows x 15 cols; caption: 
+table07: 14 rows x 14 cols; caption: 
+table08: 14 rows x 15 cols; caption: 
+table09: 14 rows x 14 cols; caption: 
+table10: 10 rows x 11 cols; caption: Table S5. Schematics of the content of Table S6-Table S8.
+table11: 6 rows x 6 cols; caption: Table S6. Error functions by binary classes of compounds Alkanes/Alkenes/Alkynes/Aromatics/Naphthenes, obtained with E-PPR78 model.
+table12: 6 rows x 6 cols; caption: Table S7. Error functions by binary classes of compounds Alkanes/Alkenes/Alkynes/Aromatics/Naphthenes/Freons/Sulfur-containing compounds/Non-permanent gases/Permanent gases/Water, obtained with E-PPR7
+table13: 5 rows x 6 cols; caption: Table S8. Error functions by binary classes of compounds Freons / Sulfur-containing-compounds / Non-permanent gases / Permanent gases / Water, obtained with E-PPR78 model.

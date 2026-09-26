@@ -1,0 +1,161 @@
+{
+  "runId": "srv-empty-wp5-r01",
+  "scenario": "empty",
+  "kind": "server",
+  "windowSeconds": 60.003,
+  "configuredWindowSeconds": 60,
+  "warmupSeconds": 60,
+  "windowStartIso": "2026-09-23T12:49:46.785Z",
+  "placementMillis": 5,
+  "jfrRssMiB": {
+    "samples": 57,
+    "mean": 1602.9285224780701,
+    "max": 1656.734375,
+    "last": 1596.84375
+  },
+  "mcServerTickTimeMs": {
+    "samples": 57,
+    "p50": 0.16619599999999998,
+    "p95": 0.231432,
+    "max": 0.441012,
+    "mean": 0.17380308771929828
+  },
+  "jfrCpuCores": {
+    "samples": 57,
+    "jvm": 0.0860260748126316,
+    "user": 0.02465885903719298,
+    "system": 0.061367215775438584,
+    "machine": 1.3904099677192978
+  },
+  "gc": {
+    "count": 0,
+    "pauseMsTotal": 0,
+    "longestPauseMs": 0,
+    "names": [],
+    "heapInspectionGcs": 0
+  },
+  "heapMiB": {
+    "afterGcMean": null,
+    "afterGcLast": null,
+    "afterGcSamples": 0,
+    "afterFullGcAtJfrStartEnd": [],
+    "committedMax": null
+  },
+  "allocationMiBPerSecond": 0.2789317858404615,
+  "process": {
+    "samples": 60,
+    "cpuCores": 0.0956815046600047,
+    "userCores": 0.03995491403384812,
+    "kernelCores": 0.05572659062615659,
+    "workingSetMiB": {
+      "mean": 1602.8540364583334,
+      "last": 1596.84375,
+      "max": 1656.6640625
+    },
+    "privateMiB": {
+      "mean": 1691.2539713541667,
+      "last": 1684.8828125
+    },
+    "threads": {
+      "mean": 88,
+      "last": 81
+    }
+  },
+  "threadDumps": 7,
+  "threadCores": {
+    "jvmOther": 0.000520807292968685,
+    "observation": 0.05312234388280586,
+    "jit": 0.01328033598320084,
+    "other": 0,
+    "server": 0.004166458343749481,
+    "gc": 0.0005208072929686849
+  },
+  "threadCoresTotal": 0.07161075279569355,
+  "threadCoresUnattributed": 0.024070751864311152,
+  "topThreads": [
+    "JFR Periodic Tasks=0.0529",
+    "C2 CompilerThread0=0.0094",
+    "Server thread=0.0042",
+    "C2 CompilerThread2=0.0026",
+    "G1 Refine#0=0.0005",
+    "C2 CompilerThread1=0.0005",
+    "Monitor Deflation Thread=0.0003",
+    "Attach Listener=0.0003",
+    "C1 CompilerThread0=0.0003",
+    "VM Periodic Task Thread=0.0003",
+    "C2 CompilerThread1=0.0003",
+    "C2 CompilerThread2=0.0003"
+  ],
+  "threadNames": [
+    "Attach Listener",
+    "C1 CompilerThread#",
+    "C2 CompilerThread#",
+    "Common-Cleaner",
+    "DestroyJavaVM",
+    "FileSystemWatchService",
+    "Finalizer",
+    "ForkJoinPool-3-worker#",
+    "ForkJoinPool.commonPool-worker#",
+    "G1 Conc#",
+    "G1 Main Marker",
+    "G1 Refine#",
+    "G1 Service",
+    "GC Thread#",
+    "HttpClient-2-SelectorManager",
+    "JFR Periodic Tasks",
+    "JFR Recorder Thread",
+    "JNA Cleaner",
+    "LanServerPinger #",
+    "Monitor Deflation Thread",
+    "Netty Server IO #",
+    "Notification Thread",
+    "RCON Client /127.0.0.1 #",
+    "RCON Listener #",
+    "Reference Handler",
+    "Server thread",
+    "Service Thread",
+    "Signal Dispatcher",
+    "Timer hack thread",
+    "VM Periodic Task Thread",
+    "VM Thread",
+    "Worker-Main#",
+    "Yggdrasil Key Fetcher",
+    "config-file-watcher-0#",
+    "kubejs-background-thread",
+    "modloading-sync-worker",
+    "modloading-worker#"
+  ],
+  "ticks": {
+    "count": 1200,
+    "tickMs": {
+      "p50": 0.1855,
+      "p95": 0.3479,
+      "p99": 0.6557,
+      "max": 1.1764,
+      "mean": 0.21252666666666664
+    },
+    "engineMs": {
+      "p50": 0.0108,
+      "p95": 0.034,
+      "p99": 0.0509,
+      "max": 0.1546,
+      "mean": 0.014134833333333352
+    },
+    "ticksPerSecond": 19.999000049997502
+  },
+  "diagCountersInWindow": {},
+  "diagPeriodsInWindow": 6,
+  "endState": {
+    "onlineTick": 2600,
+    "devices": 0,
+    "islands": 0,
+    "kinds": {},
+    "statuses": {},
+    "workersActive": 0,
+    "workersLimit": 1
+  },
+  "placementGap": null,
+  "heldLines": 0,
+  "liveHeapMiB": 305.1826171875,
+  "committedHeapAfterFullGcMiB": 1054
+}

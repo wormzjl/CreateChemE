@@ -1,0 +1,176 @@
+{
+  "archiveBytes": 20726832,
+  "archivePath": ".neural-cache/transformer-investigation-v1/study.zip",
+  "archiveSha256": "31126c7c63a991ea5f868df694f037cfceef0625e5f700e6ffd339d7c9fb5b55",
+  "entries": [
+    {
+      "bytes": 56394661,
+      "entry": "data-v2/cases.jsonl",
+      "sha256": "ba6d746e1b51368395cc08aacaa1190cc232aa0ee6ba16bc289ffca29feb3930"
+    },
+    {
+      "bytes": 24606,
+      "entry": "data-v2/data.json",
+      "sha256": "b6c0b6b87c6bbfe20be4db76bfc7d2266f25187e83c527c152666afb131a1e6b"
+    },
+    {
+      "bytes": 252035,
+      "entry": "data-v2/fresh-benchmark.jsonl",
+      "sha256": "96f9a67eda92c9f901a0905911d662a0640c61664c8ef7ca8235947c56326fb6"
+    },
+    {
+      "bytes": 991955,
+      "entry": "data-v2/fresh-holdout.jsonl",
+      "sha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082"
+    },
+    {
+      "bytes": 4018,
+      "entry": "data-v2/profile-disagreements.jsonl",
+      "sha256": "31384f6b04270838071cd29d58f3125a531b6bb9d410fb64e4a01f4bb2931575"
+    },
+    {
+      "bytes": 1648777,
+      "entry": "data-v2/provenance.jsonl",
+      "sha256": "65a0f6967a222d4d2838751fed1f0370a280f37096edaacc95054ed8d3603a90"
+    },
+    {
+      "bytes": 351401,
+      "entry": "pilot-mlp-20260910/model.pt",
+      "sha256": "6d3da9ef12039a10cf4b2c15c27468e6f282d804f445e06b4475163c08081666"
+    },
+    {
+      "bytes": 16800,
+      "entry": "pilot-mlp-20260910/report.json",
+      "sha256": "468ebf6fd3e9b200d7490046d3f6b11dc9dc5c49be5daf6194d348d7e9f6acba"
+    },
+    {
+      "bytes": 48193,
+      "entry": "pilot-mlp-20260910/validation.jsonl",
+      "sha256": "c43024538d112d012a11b7594c6afffa6875c4d7adcda9ff407fae27db05454a"
+    },
+    {
+      "bytes": 351337,
+      "entry": "pilot-mlp-20260911/model.pt",
+      "sha256": "a872e67aa8e5f478d656c25dacd75ae0ef814499e501797f9775beaf899201ae"
+    },
+    {
+      "bytes": 16674,
+      "entry": "pilot-mlp-20260911/report.json",
+      "sha256": "3801cd8049522e03c079ce5d0f2fbcd65804c1789c591dc941707b1e7219704f"
+    },
+    {
+      "bytes": 48160,
+      "entry": "pilot-mlp-20260911/validation.jsonl",
+      "sha256": "2e4f4a8c2984ff4dd68fa64597fdbfd7987caa9f44ffc55f32aa8c0e9a4bf2be"
+    },
+    {
+      "bytes": 351081,
+      "entry": "pilot-mlp-20260912/model.pt",
+      "sha256": "0a74163a0c7e56e8fa41abea3f1b1d02e0bad7982941d4ba94d2b3e965ba02d4"
+    },
+    {
+      "bytes": 15946,
+      "entry": "pilot-mlp-20260912/report.json",
+      "sha256": "98b5e6cb88444da2d883509dfb9b2c17a6523874908aff9cb18673a123c84160"
+    },
+    {
+      "bytes": 48186,
+      "entry": "pilot-mlp-20260912/validation.jsonl",
+      "sha256": "8af5f5291533a0b455858a5459e839fa9d27ce4220634f6fb0e138e25c3ecabc"
+    },
+    {
+      "bytes": 358765,
+      "entry": "pilot-transformer-20260910/model.pt",
+      "sha256": "c98f0b0fcce6ba734531d760f4c9163af23cb2a037a2a62087f58c6902427fee"
+    },
+    {
+      "bytes": 21731,
+      "entry": "pilot-transformer-20260910/report.json",
+      "sha256": "81a00ad78d9c198af133ca64678de532bd9661007e1eaddab3402ffd2e32471c"
+    },
+    {
+      "bytes": 48252,
+      "entry": "pilot-transformer-20260910/validation.jsonl",
+      "sha256": "0f70a4f1d4f570e2685ce688aa4d862acaaa9d695752faeccdba3ecd61936313"
+    },
+    {
+      "bytes": 357357,
+      "entry": "pilot-transformer-20260911/model.pt",
+      "sha256": "aea34bd4e6139d234f8f3a9a042decd01979ca7d381f1604fe7d89fba46964d8"
+    },
+    {
+      "bytes": 17769,
+      "entry": "pilot-transformer-20260911/report.json",
+      "sha256": "ac759ab7167de6a53445a57cba52bf90f44885cdf71f577281412f6b85e99967"
+    },
+    {
+      "bytes": 48239,
+      "entry": "pilot-transformer-20260911/validation.jsonl",
+      "sha256": "c807f34fe449991f97a0359e89dc0d189d55fcca0786b91ca8337ddaddfb3b2e"
+    },
+    {
+      "bytes": 358765,
+      "entry": "pilot-transformer-20260912/model.pt",
+      "sha256": "735c9dc5deeafac410020c5578078c8c35fb0bcec463b7791c95af983e183a21"
+    },
+    {
+      "bytes": 21744,
+      "entry": "pilot-transformer-20260912/report.json",
+      "sha256": "6ff81e986987c0076b0640b18049c47b5bfb781f9ce33f4a02015f50dbff773b"
+    },
+    {
+      "bytes": 48274,
+      "entry": "pilot-transformer-20260912/validation.jsonl",
+      "sha256": "d41e59230a4c6a54ca553c61bf6f0e53de694ecf9b010dbfba1ffc4f586896e4"
+    },
+    {
+      "bytes": 39842,
+      "entry": "analysis/summary.json",
+      "sha256": "39021ab6cbabee273417558bb5d26b78ae33b8448a49424083a2749a6806a5f8"
+    },
+    {
+      "bytes": 892,
+      "entry": "environment.txt",
+      "sha256": "50738f697b228886b49d54e450927036eb3b34755bc5f0e2088e199f530c02de"
+    },
+    {
+      "bytes": 12109,
+      "entry": "implementation/prepare_transformer_data.py",
+      "sha256": "120cda45aba786e3af53a79370d66b9aa7dfa27e71709024412a16d048eddb78"
+    },
+    {
+      "bytes": 11502,
+      "entry": "implementation/train_transformer.py",
+      "sha256": "ce5f1220ae44dab66d8cc63297903fb31f0ee15bc7bf7f63c4a7c8e934ee2b1f"
+    },
+    {
+      "bytes": 4986,
+      "entry": "implementation/test_transformer.py",
+      "sha256": "3dc9b7226e3e9f71a2533e46ea3b9cad9183b9486edaf157165be84ee5deefb4"
+    },
+    {
+      "bytes": 12883,
+      "entry": "implementation/finalize_transformer_pilot.py",
+      "sha256": "fef9f33bc2e905e8af2d4566b6f737ac5201e12b417c99c9b234d6fb320179cb"
+    },
+    {
+      "bytes": 4851,
+      "entry": "implementation/transformer-protocol.md",
+      "sha256": "dccd068fbb73bc9dd69ef8357484692eb2006d7f12fa066f949be39ea7af05c3"
+    },
+    {
+      "bytes": 6711,
+      "entry": "implementation/transformer-investigation.md",
+      "sha256": "0373360a5954b2a707587dcb883767db93f06eb3fece9a65e95c06e6ca8ddc73"
+    },
+    {
+      "bytes": 234,
+      "entry": "implementation/requirements-transformer.txt",
+      "sha256": "33563a85dcf8e797a5f5fa336be2ea9149f40fd9abc77ea8baf0d22dc53970a1"
+    }
+  ],
+  "restoreRoot": "build/neural-transformer",
+  "revision": "transformer-investigation-cache-v1",
+  "sourceGen3ManifestSha256": "2a93c8a72f593eaa07181e4d2a5984cfd3d5abd059cec7938a4f9ea5a9989b07",
+  "verifiedAllEntries": true
+}

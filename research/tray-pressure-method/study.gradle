@@ -1,0 +1,22 @@
+gradle.projectsEvaluated {
+    def p = gradle.rootProject
+    def dest = p.layout.buildDirectory.dir('tray-pressure-method/classes')
+    p.tasks.register('compileTrayPressureMethod', JavaCompile) {
+        dependsOn p.tasks.named('classes')
+        source = p.fileTree('experiments/tray-pressure-method/java') { include '**/*.java' }
+        classpath = p.sourceSets.main.runtimeClasspath
+        destinationDirectory = dest
+        javaCompiler = p.javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+        options.encoding = 'UTF-8'
+    }
+    p.tasks.register('trayPressureMethod', JavaExec) {
+        dependsOn p.tasks.named('compileTrayPressureMethod')
+        classpath = p.files(dest) + p.sourceSets.main.runtimeClasspath
+        mainClass = 'com.wormzjl.createcheme.science.column.v3.TrayPressureMethodStudy'
+        javaLauncher = p.javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+        maxHeapSize = '2g'
+        systemProperties = System.properties.findAll { it.key.toString().startsWith('study.') }
+        args p.providers.gradleProperty('studyMode').getOrElse('pilot'),
+             p.providers.gradleProperty('studyOutput').getOrElse('build/tray-pressure-method/results')
+    }
+}

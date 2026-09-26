@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:21.720Z" hostname="WORMZ-PC" time="0.004">
+  <properties/>
+  <testcase name="subnormalRowsCanBeScaledWithoutOverflowingTheirReciprocals()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.0"/>
+  <testcase name="independentRowAndColumnScalesRecoverTheKnownSolution()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.0"/>
+  <testcase name="matrixRejectsWritesOutsideDeclaredBand()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.001"/>
+  <testcase name="pivotedTridiagonalCorrectionMatchesAnIndependentDensePartialPivotSolve()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.0"/>
+  <testcase name="singularBandReturnsTypedFailureWithoutProducingANumericSolution()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.0"/>
+  <testcase name="unrepresentableScaledRightHandSideReturnsATypedFailure()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.0"/>
+  <testcase name="deterministicRandomDiagonallyDominantBandsMatchDenseOracleAndPreserveInputs()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.001"/>
+  <testcase name="subnormalColumnScalingAndZeroSolutionUnscalingRemainFinite()" classname="com.wormzjl.createcheme.science.column.v3.linalg.V3BandedPivotedSolverTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

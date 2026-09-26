@@ -1,0 +1,500 @@
+  A attempt=0 t=0.0 step=0.05
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=false norm=0.07791293710512757 worst=4 alpha=0.0078125 bt=7 next=0.07730422160016352 nextWorst=4 descent=true
+      N it=1 fresh=true norm=0.07730422160016352 worst=4 alpha=1.0 bt=0 next=0.003355712443713565 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.003355712443713565 worst=5 alpha=1.0 bt=0 next=0.0018774770737134117 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.0018774770737134117 worst=5 alpha=1.0 bt=0 next=0.0012329685160501216 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.0012329685160501216 worst=5 alpha=1.0 bt=0 next=8.813766884219017E-4 nextWorst=5 descent=true
+      N it=5 fresh=false norm=8.813766884219017E-4 worst=5 alpha=1.0 bt=0 next=6.650681752406239E-4 nextWorst=5 descent=true
+      N it=6 fresh=false norm=6.650681752406239E-4 worst=5 alpha=1.0 bt=0 next=5.21286653950285E-4 nextWorst=5 descent=true
+      N it=7 fresh=false norm=5.21286653950285E-4 worst=5 alpha=1.0 bt=0 next=4.203455928779899E-4 nextWorst=5 descent=true
+      N it=8 fresh=true norm=4.203455928779899E-4 worst=5 alpha=1.0 bt=0 next=1.0143242074182573E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=1.0143242074182573E-4 worst=5 alpha=1.0 bt=0 next=5.562999770656522E-5 nextWorst=5 descent=true
+      N it=10 fresh=false norm=5.562999770656522E-5 worst=5 alpha=1.0 bt=0 next=3.5908328056367217E-5 nextWorst=5 descent=true
+      N it=11 fresh=false norm=3.5908328056367217E-5 worst=5 alpha=1.0 bt=0 next=2.5275963798634266E-5 nextWorst=5 descent=true
+      N it=12 fresh=false norm=2.5275963798634266E-5 worst=5 alpha=1.0 bt=0 next=1.8807058182408484E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=1.8807058182408484E-5 worst=5 alpha=1.0 bt=0 next=1.4552134818661203E-5 nextWorst=5 descent=true
+      N it=14 fresh=false norm=1.4552134818661203E-5 worst=5 alpha=1.0 bt=0 next=1.15946094062128E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.15946094062128E-5 worst=5 alpha=1.0 bt=0 next=9.451865901037316E-6 nextWorst=5 descent=true
+      N it=16 fresh=true norm=9.451865901037316E-6 worst=5 alpha=1.0 bt=0 next=1.3568353936654037E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=1.3568353936654037E-6 worst=5 alpha=1.0 bt=0 next=1.0834580305247925E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=1.0834580305247925E-6 worst=5 alpha=1.0 bt=0 next=8.651611753268738E-7 nextWorst=5 descent=true
+      N it=19 fresh=false norm=8.651611753268738E-7 worst=5 alpha=1.0 bt=0 next=6.90847119320742E-7 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 6.90847119320742E-7
+  A REJ t=0.0 step=0.05 Nonconvergence: Newton iteration limit at residual 6.90847119320742E-7; active-set pass=0
+  A attempt=1 t=0.0 step=0.025
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=0.025 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=2 t=0.0 step=0.0125
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=0.0125 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=3 t=0.0 step=0.00625
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=0.00625 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=4 t=0.0 step=0.003125
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=0.003125 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=5 t=0.0 step=0.0015625
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=0.0015625 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=6 t=0.0 step=7.8125E-4
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=7.8125E-4 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=7 t=0.0 step=3.90625E-4
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=3.90625E-4 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=8 t=0.0 step=1.953125E-4
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=1.953125E-4 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=9 t=0.0 step=9.765625E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=9.765625E-5 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=10 t=0.0 step=4.8828125E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=4.8828125E-5 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=11 t=0.0 step=2.44140625E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=2.44140625E-5 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=12 t=0.0 step=1.220703125E-5
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=1.220703125E-5 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=13 t=0.0 step=6.103515625E-6
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=6.103515625E-6 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=14 t=0.0 step=3.0517578125E-6
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=3.0517578125E-6 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=15 t=0.0 step=1.52587890625E-6
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=1.52587890625E-6 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=16 t=0.0 step=7.62939453125E-7
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=7.62939453125E-7 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=17 t=0.0 step=3.814697265625E-7
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=3.814697265625E-7 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=18 t=0.0 step=1.9073486328125E-7
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=1.9073486328125E-7 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0
+  A attempt=19 t=0.0 step=9.5367431640625E-8
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE] closed=[false, false, false, false] phases=[4, 4, 2, 2, 2] start=[9.960056050459702, 9.960083764813534, 0.410044175266168, -0.22123261173967604] size=8 offsets=[0, 0, 3, 3, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n1 T=298.1500 P=101325.00 l=0.000 w=1.000 v=0.000] [n2 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n3 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n4 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.77e-05 1:0.00 2:0.00 3:-0.0260 4:-0.0779 5:-0.0744 6:0.0222 7:0.00
+      N it=0 fresh=true norm=0.07791293710512757 worst=4 alpha=1.0 bt=0 next=0.018566828940903474 nextWorst=5 descent=true
+      N it=1 fresh=false norm=0.018566828940903474 worst=5 alpha=1.0 bt=0 next=0.01042334384476808 nextWorst=5 descent=true
+      N it=2 fresh=false norm=0.01042334384476808 worst=5 alpha=1.0 bt=0 next=0.006867596265526879 nextWorst=5 descent=true
+      N it=3 fresh=false norm=0.006867596265526879 worst=5 alpha=1.0 bt=0 next=0.004924831677279009 nextWorst=5 descent=true
+      N it=4 fresh=false norm=0.004924831677279009 worst=5 alpha=1.0 bt=0 next=0.0037276469130255205 nextWorst=5 descent=true
+      N it=5 fresh=false norm=0.0037276469130255205 worst=5 alpha=1.0 bt=0 next=0.0029305434221834807 nextWorst=5 descent=true
+      N it=6 fresh=false norm=0.0029305434221834807 worst=5 alpha=1.0 bt=0 next=0.002369992013689083 nextWorst=5 descent=true
+      N it=7 fresh=true norm=0.002369992013689083 worst=5 alpha=1.0 bt=0 next=5.826714477268447E-4 nextWorst=5 descent=true
+      N it=8 fresh=false norm=5.826714477268447E-4 worst=5 alpha=1.0 bt=0 next=3.2351150895025267E-4 nextWorst=5 descent=true
+      N it=9 fresh=false norm=3.2351150895025267E-4 worst=5 alpha=1.0 bt=0 next=2.109952786250368E-4 nextWorst=5 descent=true
+      N it=10 fresh=false norm=2.109952786250368E-4 worst=5 alpha=1.0 bt=0 next=1.4987403809351858E-4 nextWorst=5 descent=true
+      N it=11 fresh=false norm=1.4987403809351858E-4 worst=5 alpha=1.0 bt=0 next=1.1242621711843697E-4 nextWorst=5 descent=true
+      N it=12 fresh=false norm=1.1242621711843697E-4 worst=5 alpha=1.0 bt=0 next=8.76348977270956E-5 nextWorst=5 descent=true
+      N it=13 fresh=false norm=8.76348977270956E-5 worst=5 alpha=1.0 bt=0 next=7.029857643016434E-5 nextWorst=5 descent=true
+      N it=14 fresh=true norm=7.029857643016434E-5 worst=5 alpha=1.0 bt=0 next=1.654124952778166E-5 nextWorst=5 descent=true
+      N it=15 fresh=false norm=1.654124952778166E-5 worst=5 alpha=1.0 bt=0 next=8.934964207666056E-6 nextWorst=5 descent=true
+      N it=16 fresh=false norm=8.934964207666056E-6 worst=5 alpha=1.0 bt=0 next=5.121357056135215E-6 nextWorst=5 descent=true
+      N it=17 fresh=false norm=5.121357056135215E-6 worst=5 alpha=1.0 bt=0 next=2.8519762952824767E-6 nextWorst=5 descent=true
+      N it=18 fresh=false norm=2.8519762952824767E-6 worst=5 alpha=1.0 bt=0 next=2.043284859067515E-6 nextWorst=5 descent=true
+      N it=19 fresh=false norm=2.043284859067515E-6 worst=5 alpha=1.0 bt=0 next=1.6713658571722549E-6 nextWorst=5 descent=true
+    P FAIL pass=0: Newton iteration limit at residual 1.6713658571722549E-6
+  A REJ t=0.0 step=9.5367431640625E-8 Nonconvergence: Newton iteration limit at residual 1.6713658571722549E-6; active-set pass=0

@@ -1,0 +1,347 @@
+{
+  "model": "extended_Walther_least_squares_in_transformed_coordinates",
+  "equation": "log10(log10(Z(nu_cSt))) = a + b*log10(T_kelvin); Z=nu+0.7+exp(-1.47-1.84*nu-0.51*nu^2)",
+  "note": "Not a claim of full ASTM D341 compliance; extrapolated fixed-composition liquid only.",
+  "records": [
+    {
+      "id": "wti_light",
+      "name": "WTI Light - Export",
+      "reference": "WTLEX26Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/wti_light.pdf",
+      "pdf_sha256": "96ea254f6666fb85b3b12d050ed34f04a6f74187dd5b7c1efc51990c11b65c9c",
+      "crude": {
+        "points": [
+          [
+            20,
+            2.56
+          ],
+          [
+            40,
+            1.76
+          ],
+          [
+            50,
+            1.5
+          ]
+        ],
+        "density_15c_kg_m3": 790.6,
+        "pour_point_celsius": -25.0,
+        "coefficients": [
+          9.884282346842427,
+          -4.123840429865435
+        ],
+        "fit_min_celsius": 20.0,
+        "fit_max_celsius": 50.0,
+        "residual_percent": [
+          0.030333355790967964,
+          -0.07917664780406897,
+          0.049939248628394495
+        ],
+        "max_absolute_residual_percent": 0.07917664780406897
+      },
+      "residue": {
+        "points": [
+          [
+            50,
+            48.9
+          ],
+          [
+            60,
+            32.9
+          ],
+          [
+            100,
+            10.0
+          ]
+        ],
+        "density_15c_kg_m3": 881.6,
+        "pour_point_celsius": 18.0,
+        "coefficients": [
+          8.937256403005753,
+          -3.470081477349293
+        ],
+        "fit_min_celsius": 50.0,
+        "fit_max_celsius": 100.0,
+        "residual_percent": [
+          0.11533932529697033,
+          -0.1324402554324089,
+          0.019843364139049413
+        ],
+        "max_absolute_residual_percent": 0.1324402554324089
+      },
+      "residue_cut_celsius": 370
+    },
+    {
+      "id": "upper_zakum",
+      "name": "Upper Zakum",
+      "reference": "UPZAK26B",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/upper_zakum.pdf",
+      "pdf_sha256": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+      "crude": {
+        "points": [
+          [
+            20,
+            10.1
+          ],
+          [
+            40,
+            5.79
+          ],
+          [
+            50,
+            4.59
+          ]
+        ],
+        "density_15c_kg_m3": 857.7,
+        "pour_point_celsius": -21.0,
+        "coefficients": [
+          9.039564353977203,
+          -3.6582460044708176
+        ],
+        "fit_min_celsius": 20.0,
+        "fit_max_celsius": 50.0,
+        "residual_percent": [
+          0.03759360750459351,
+          -0.09591601411338413,
+          0.059564215630669715
+        ],
+        "max_absolute_residual_percent": 0.09591601411338413
+      },
+      "residue": {
+        "points": [
+          [
+            50,
+            606.0
+          ],
+          [
+            60,
+            315.0
+          ],
+          [
+            100,
+            46.8
+          ]
+        ],
+        "density_15c_kg_m3": 972.0999999999999,
+        "pour_point_celsius": 28.0,
+        "coefficients": [
+          9.281639604221446,
+          -3.5216198801631777
+        ],
+        "fit_min_celsius": 50.0,
+        "fit_max_celsius": 100.0,
+        "residual_percent": [
+          -0.05481968811604787,
+          0.06257295021554476,
+          -0.009001942171060762
+        ],
+        "max_absolute_residual_percent": 0.06257295021554476
+      },
+      "residue_cut_celsius": 370
+    },
+    {
+      "id": "bonga",
+      "name": "Bonga",
+      "reference": "BONGA25Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2025/bonga.pdf",
+      "pdf_sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+      "crude": {
+        "points": [
+          [
+            20,
+            13.9
+          ],
+          [
+            40,
+            7.32
+          ],
+          [
+            50,
+            5.63
+          ]
+        ],
+        "density_15c_kg_m3": 888.4,
+        "pour_point_celsius": -44.0,
+        "coefficients": [
+          9.524148970953346,
+          -3.8336876141163994
+        ],
+        "fit_min_celsius": 20.0,
+        "fit_max_celsius": 50.0,
+        "residual_percent": [
+          0.008022228753179483,
+          -0.020137456722613134,
+          0.012409646513189543
+        ],
+        "max_absolute_residual_percent": 0.020137456722613134
+      },
+      "residue": {
+        "points": [
+          [
+            50,
+            785.0
+          ],
+          [
+            60,
+            356.0
+          ],
+          [
+            100,
+            38.7
+          ]
+        ],
+        "density_15c_kg_m3": 965.0,
+        "pour_point_celsius": 31.0,
+        "coefficients": [
+          10.856696191217917,
+          -4.142408482496528
+        ],
+        "fit_min_celsius": 50.0,
+        "fit_max_celsius": 100.0,
+        "residual_percent": [
+          0.04922261022053398,
+          -0.05508068495025942,
+          0.00741420009071625
+        ],
+        "max_absolute_residual_percent": 0.05508068495025942
+      },
+      "residue_cut_celsius": 370
+    },
+    {
+      "id": "dalia",
+      "name": "Dalia",
+      "reference": "DALIA26Y",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/dalia.pdf",
+      "pdf_sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+      "crude": {
+        "points": [
+          [
+            20,
+            142.0
+          ],
+          [
+            40,
+            46.9
+          ],
+          [
+            50,
+            30.2
+          ]
+        ],
+        "density_15c_kg_m3": 917.8,
+        "pour_point_celsius": -48.0,
+        "coefficients": [
+          9.673141447028044,
+          -3.78577297736893
+        ],
+        "fit_min_celsius": 20.0,
+        "fit_max_celsius": 50.0,
+        "residual_percent": [
+          -0.03672025192685835,
+          0.08957737497514717,
+          -0.05427968124682714
+        ],
+        "max_absolute_residual_percent": 0.08957737497514717
+      },
+      "residue": {
+        "points": [
+          [
+            50,
+            1117.0
+          ],
+          [
+            60,
+            524.0
+          ],
+          [
+            100,
+            59.6
+          ]
+        ],
+        "density_15c_kg_m3": 963.1999999999999,
+        "pour_point_celsius": 11.0,
+        "coefficients": [
+          9.864463541209012,
+          -3.7381047473294884
+        ],
+        "fit_min_celsius": 50.0,
+        "fit_max_celsius": 100.0,
+        "residual_percent": [
+          -0.021614201657638166,
+          0.024492972300782512,
+          -0.0034309484119088296
+        ],
+        "max_absolute_residual_percent": 0.024492972300782512
+      },
+      "residue_cut_celsius": 370
+    },
+    {
+      "id": "cold_lake_blend",
+      "name": "Cold Lake Blend",
+      "reference": "CLKBL23B",
+      "url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2024/cold_lake_blend.pdf",
+      "pdf_sha256": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+      "crude": {
+        "points": [
+          [
+            20,
+            1019.0
+          ],
+          [
+            40,
+            174.0
+          ],
+          [
+            50,
+            88.1
+          ]
+        ],
+        "density_15c_kg_m3": 936.6999999999999,
+        "pour_point_celsius": -20.0,
+        "coefficients": [
+          11.476407531943284,
+          -4.457896740965519
+        ],
+        "fit_min_celsius": 20.0,
+        "fit_max_celsius": 50.0,
+        "residual_percent": [
+          0.04706623052264103,
+          -0.1089937009046471,
+          0.06447069570600927
+        ],
+        "max_absolute_residual_percent": 0.1089937009046471
+      },
+      "residue": {
+        "points": [
+          [
+            50,
+            65885.0
+          ],
+          [
+            60,
+            20568.0
+          ],
+          [
+            100,
+            717.0
+          ]
+        ],
+        "density_15c_kg_m3": 1020.9999999999999,
+        "pour_point_celsius": 46.0,
+        "coefficients": [
+          9.807545685942296,
+          -3.636166890941596
+        ],
+        "fit_min_celsius": 50.0,
+        "fit_max_celsius": 100.0,
+        "residual_percent": [
+          -0.012116956753516206,
+          0.013763012094925031,
+          -0.0019321617546363967
+        ],
+        "max_absolute_residual_percent": 0.013763012094925031
+      },
+      "residue_cut_celsius": 370
+    }
+  ]
+}

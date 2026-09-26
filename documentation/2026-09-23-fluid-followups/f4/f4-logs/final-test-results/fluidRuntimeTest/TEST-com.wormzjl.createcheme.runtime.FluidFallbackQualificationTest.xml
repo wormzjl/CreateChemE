@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.FluidFallbackQualificationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:44:05.539Z" hostname="WORMZ-PC" time="0.272">
+  <properties/>
+  <testcase name="durationCapAndAnUntrustedCandidateCannotConsumeOrRenewAllowance()" classname="com.wormzjl.createcheme.runtime.FluidFallbackQualificationTest" time="0.104"/>
+  <testcase name="bulkCompositionDriftCannotHideInsideAnUnchangedGasPhase()" classname="com.wormzjl.createcheme.runtime.FluidFallbackQualificationTest" time="0.004"/>
+  <testcase name="hardTimeoutInsideFallbackAndBoundaryRegimeChangesCannotPublish()" classname="com.wormzjl.createcheme.runtime.FluidFallbackQualificationTest" time="0.004"/>
+  <testcase name="trustBoundaryPerturbationsAreCheckedOnBothSidesOfThePublishedProfile()" classname="com.wormzjl.createcheme.runtime.FluidFallbackQualificationTest" time="0.025"/>
+  <testcase name="threeApproximateIntervalsMeetThePublishedTrajectoryAndThroughputBounds()" classname="com.wormzjl.createcheme.runtime.FluidFallbackQualificationTest" time="0.094"/>
+  <testcase name="topologyPropertyPhaseAndTrustChangesRefuseTheOldAnchor()" classname="com.wormzjl.createcheme.runtime.FluidFallbackQualificationTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

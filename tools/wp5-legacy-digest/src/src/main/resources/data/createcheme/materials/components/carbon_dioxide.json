@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "id": "CarbonDioxide",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.carbon_dioxide",
+  "fallback": "CarbonDioxide"
+}

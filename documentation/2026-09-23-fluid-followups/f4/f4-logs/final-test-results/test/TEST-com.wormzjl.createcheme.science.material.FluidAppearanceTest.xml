@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.material.FluidAppearanceTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:58.089Z" hostname="WORMZ-PC" time="0.067">
+  <properties/>
+  <testcase name="appearanceEditsPreserveScientificAndTransportFingerprints()" classname="com.wormzjl.createcheme.science.material.FluidAppearanceTest" time="0.025"/>
+  <testcase name="invalidAppearanceIdentifiesResourceAndRetainsPublishedSnapshot()" classname="com.wormzjl.createcheme.science.material.FluidAppearanceTest" time="0.024"/>
+  <testcase name="bundledComponentsWaterAndAssaysHaveIndependentAppearances()" classname="com.wormzjl.createcheme.science.material.FluidAppearanceTest" time="0.001"/>
+  <testcase name="legacyRecordsWithoutAppearanceRemainLoadable()" classname="com.wormzjl.createcheme.science.material.FluidAppearanceTest" time="0.017"/>
+  <testcase name="transparencyHasExplicitOpaqueAndInvisibleEndpoints()" classname="com.wormzjl.createcheme.science.material.FluidAppearanceTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

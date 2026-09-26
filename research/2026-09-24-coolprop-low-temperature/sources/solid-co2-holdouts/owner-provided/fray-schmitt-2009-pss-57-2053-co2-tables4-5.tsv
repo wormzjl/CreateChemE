@@ -1,0 +1,23 @@
+# Fray N., Schmitt B. (2009). Sublimation of ices of astrophysical interest: A bibliographic review. Planet. Space Sci. 57,
+# 2053-2080. doi:10.1016/j.pss.2009.09.011. Elsevier copyright, owner-provided. Local copy: fray-schmitt-2009-pss-57-2053.pdf
+# (sha256 2870cea9fadfa715474dec31eb51bd0df57dbf6ef9e6c83ccb9b64d5e5c18462).
+# CO2 rows of Table 4 ("Informations on the polynomials of extrapolations", p. 2062) and Table 5 ("Coefficients of the
+# polynomials of extrapolations", p. 2063), read from 220 dpi renders; accuracy statement from section 3.2.6 (p. 2065).
+# Form: ln(P) = A0 + sum_{i=1..6} A_i / T^i, T in K, P in bar ("values of pressure are expressed in bar", section 2, p. 2055).
+# The coefficients equal the Lisse et al. 2020 reproduction in ../fray-schmitt-2009-co2-sublimation-via-lisse-2020.tsv digit
+# for digit; this file adds the ranges and accuracies that the reproduction lacked (and confirms the inferred bar unit).
+# type: T = thermodynamic relation (CO2-1 is Brown and Ziegler 1979's calculation), I = empirical interpolation (this work).
+# n_points, degree, sd_pct, max_dev_pct = Table 4 columns: number of data points, degree of polynomial, standard deviation
+# and maximum deviation of the data from the relation, in %.
+# Section 3.2.6: triple point 216.58 +- 0.03 K and 5.185 +- 0.005 bar (their Table 2); 207 measurements from 69.69 K
+# (1.148e-13 bar) to 216.56 K compiled. CO2-1 "fit[s] with experimental measurements with an accuracy of +-63 %, reflecting
+# the dispersion of the experimental data at T < 120 K. For 120 K < T < 194.7 K, the accuracy of this relation is about +-9 %."
+# CO2-2 (194.7 to 216.58 K) is an empirical interpolation, SD 0.33 %, max 0.72 %. They recommend CO2-1 below 194.7 K and
+# CO2-2 above.
+# Sanity check: same digits as the independent Lisse 2020 reproduction; CO2-1 gives 1.008 bar at 194.6855 K (survey check).
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G4 pure-CO2 sublimation holdout (ranges and accuracy for the existing coefficient file). Transcribed 2026-09-25,
+# batch 2026-09-24-coolprop-low-temperature.
+designation	solid_phase	type	T_range_K	n_points	degree	sd_pct	max_dev_pct	reference	A0	A1_K	A2_K2	A3_K3	A4_K4	A5_K5	A6_K6
+CO2-1	-	T	40-194.7	161	5	14.5	63	Brown and Ziegler (1979)	1.476e+1	-2.571e+3	-7.781e+4	4.325e+6	-1.207e+8	1.350e+9	0
+CO2-2	-	I	194.7-216.58 (triple p.)	46	2	0.33	0.72	This work	1.861e+1	-4.154e+3	1.041e+5	0	0	0	0

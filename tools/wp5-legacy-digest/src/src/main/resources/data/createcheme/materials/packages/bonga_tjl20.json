@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:bonga_tjl20",
+  "revision": "crude-regrouped-r1",
+  "model": "pr78",
+  "interactions": "createcheme:tjl20",
+  "missing_interactions": "zero",
+  "water_model": "createcheme:water",
+  "temperature_min_kelvin": 298.15,
+  "temperature_max_kelvin": 900.0,
+  "pressure_min_pascal": 50000.0,
+  "pressure_max_pascal": 2000000.0,
+  "fluid_domain": {
+    "temperature_min_kelvin": 273.16,
+    "temperature_max_kelvin": 900,
+    "pressure_min_pascal": 100,
+    "pressure_max_pascal": 2000000,
+    "evidence": "Fluid network envelope: from the water model triple point (273.16 K; ice is not modelled), the lowest minimum of any component of this package, to the 900 K of the caloric fits; 100 Pa..2 MPa is the span the fluid network evaluates (liquid reference 2 MPa). Every component declares its own range inside it."
+  },
+  "aliases": {},
+  "advisory_evidence": [
+    "SHARED_COMPONENT_SURROGATE: source assay rebinned onto shared regrouped crude basis; properties are not characterized for this crude",
+    "ASSAY_SOURCE: ExxonMobil BONGA25Y; source light-end and cut mass yields retained with rounding adjustment",
+    "C1_C2_ALLOCATION: combined methane+ethane assigned to ethane; methane zero; original split is unknown",
+    "ESTIMATED_HEAVY_TAIL: above 590C exponential tail constrained by reported 550C+ volume-average boiling point",
+    "CONTAMINANTS: whole-crude elemental totals retained as metadata; no chemical speciation or removal model",
+    "TRANSPORT_SURROGATE: reused shared regrouped crude basis component viscosity curves are not crude-specific measurements",
+    "ESTIMATED_REGROUPING: PC08-12 mass/volume-constrained Tia Juana reconstruction; heavy Tc/Pc extrapolated; global Dalia transport"
+  ],
+  "liquid_mixture": {
+    "type": "symmetric_pair_groups_v1",
+    "coefficients": [
+      0.7585241056539558,
+      0.45724340571290695,
+      0.08245501128109843,
+      0.05051713998043995
+    ],
+    "reference_kelvin": 323.15,
+    "slope_cap_kelvin": 373.15,
+    "source": "Global Dalia whole/residue fit; whole 40C and residue 60C held out; non-donor mismatch accepted",
+    "revision": "dalia-global-r1"
+  },
+  "basis": "createcheme:crude_19"
+}

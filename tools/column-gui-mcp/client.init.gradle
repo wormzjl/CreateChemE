@@ -1,0 +1,16 @@
+// Local-only GUI verification helpers; no tracked source edits or test-gate changes.
+gradle.projectsEvaluated {
+    def p = gradle.rootProject
+    def helpers = new File('D:/Minecraft/Modding/1.21/CreateChemE/tools/column-gui-mcp')
+    p.sourceSets.mcpCompat.java.srcDir(new File(helpers, 'src/mcpCompat/java'))
+    p.tasks.named('processMcpCompatResources').configure {
+        def mixins = new File(helpers, 'src/mcpCompat/resources/createcheme_mcp_compat.mixins.json')
+        inputs.file(mixins)
+        doLast {
+            new File(destinationDir, 'createcheme_mcp_compat.mixins.json').bytes = mixins.bytes
+        }
+    }
+    p.neoForge.runs.named('mcpClient').configure {
+        programArguments.set(['--username', 'FluidMcpTester', '--width', '2560', '--height', '1440'])
+    }
+}

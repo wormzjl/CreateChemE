@@ -1,0 +1,64 @@
+# Gao T., Shen T., Lin W., Gu A., Ju Y. (2012). Experimental Determination of CO2 Solubility in Liquid CH4/N2 Mixtures at
+# Cryogenic Temperatures. Ind. Eng. Chem. Res. 51, 9403-9408. doi:10.1021/ie3002815. ACS copyright, owner-provided.
+# Local copy: gao-2012-iecr-51-9403.pdf (sha256 44fc3130894ccd82f690f712e66c841398d3ed3a162fff73abe3be0df73d4c3f).
+# Tables 2 (p. 9406) and 4 (p. 9407), read from 170-200 dpi renders.
+# System: solid CO2 + saturated liquid (static-analytic SLE, GC analysis; the liquid is at its bubble point, so these are
+# three-phase points with vapour present, vapour not sampled). Solvent N2 fraction is the CO2-free feed composition.
+# block BIN = Table 2, CO2 solubility in pure liquid CH4: x in 10^3 ppm (as printed; x_CO2 = value x 1e-3), with Davis et al.
+#   1962 values xexp (10^3 ppm) and delta = 100 (x - xexp)/xexp at seven of the temperatures; MRD 4.39 %. NO PRESSURE printed
+#   (Maltby 2025 therefore lists only the 32 ternary points). 9 points, -160 to -103.3 C (113.2 to 169.9 K).
+#   NOTE: xexp are the Davis 1962 Table 4 crystal points (-226.3 to -153.9 F = -143.5 to -103.3 C; 0.16 mol % = 1.6 x 10^3
+#   ppm). At -103.3 C Gao prints 29.0 where Davis prints 2.94 mol % (29.4 x 10^3 ppm); not reconciled.
+# block N2_10/N2_30/N2_50/N2_70 = Table 4, CO2 solubility in CH4/N2 mixtures with 10, 30, 50, 70 % N2: p in kPa (equilibrium
+#   pressure as printed), x in ppm (mole fraction x 1e6), xcal = their PR EOS calculation (kij CH4/CO2 T-dependent, N2/CO2
+#   -0.02, CH4/N2 0.036, Table 3). MRD of xcal: 5.39, 10.39, 39.22, 67.40 %. 32 points, -150 to -190 C (123.15 to 83.15 K),
+#   124 to 2023 kPa, x 3 to 900 ppm.
+# Uncertainty (section 2): temperature accuracy +-0.05 C, pressure relative 0.1 %, GC total relative 1.1 % (TCD) and
+#   1.6 % (FID), repeatability of the ten samples per point within 3 %; standard-gas purity 1 % of label (1 ppm absolute
+#   for the lowest CO2 standards).
+# T_K is derived here (C + 273.15), not printed.
+# Sanity check: x falls monotonically as T falls in every block, and p falls with T.
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Role: G5 low-temperature liquidus in CH4 and the N2 domain. Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+block	T_C	T_K	p_kPa	x	x_unit	xref	xref_meaning	delta_pct
+BIN	-160	113.15		0.172	1e3 ppm			
+BIN	-150	123.15		0.823	1e3 ppm			
+BIN	-143.5	129.65		1.413	1e3 ppm	1.6	xexp_Davis_1e3ppm	-11.69
+BIN	-137.9	135.25		2.479	1e3 ppm	2.5	xexp_Davis_1e3ppm	-0.84
+BIN	-133.7	139.45		3.678	1e3 ppm	3.7	xexp_Davis_1e3ppm	-0.59
+BIN	-128.6	144.55		5.665	1e3 ppm	5.8	xexp_Davis_1e3ppm	-2.33
+BIN	-122.8	150.35		8.225	1e3 ppm	9.3	xexp_Davis_1e3ppm	-11.56
+BIN	-111.1	162.05		17.64	1e3 ppm	18.3	xexp_Davis_1e3ppm	-3.61
+BIN	-103.3	169.85		28.96	1e3 ppm	29.0	xexp_Davis_1e3ppm	-0.14
+N2_10	-150	123.15	571	825	ppm	830	xcal_PR_ppm	
+N2_10	-155	118.15	452	505	ppm	493	xcal_PR_ppm	
+N2_10	-160	113.15	347	280	ppm	280	xcal_PR_ppm	
+N2_10	-165	108.15	241	170	ppm	151	xcal_PR_ppm	
+N2_10	-170	103.15	175	70	ppm	77	xcal_PR_ppm	
+N2_10	-175	98.15	139	40	ppm	37	xcal_PR_ppm	
+N2_30	-150	123.15	1115	900	ppm	930	xcal_PR_ppm	
+N2_30	-155	118.15	919	578	ppm	576	xcal_PR_ppm	
+N2_30	-160	113.15	715	330	ppm	342	xcal_PR_ppm	
+N2_30	-165	108.15	545	189	ppm	193	xcal_PR_ppm	
+N2_30	-170	103.15	413	84	ppm	104	xcal_PR_ppm	
+N2_30	-175	98.15	289	50	ppm	52	xcal_PR_ppm	
+N2_30	-180	93.15	200	29	ppm	24	xcal_PR_ppm	
+N2_30	-185	88.15	130	15	ppm	10	xcal_PR_ppm	
+N2_50	-150	123.15	1596	837	ppm	922	xcal_PR_ppm	
+N2_50	-155	118.15	1270	535	ppm	599	xcal_PR_ppm	
+N2_50	-160	113.15	1000	300	ppm	374	xcal_PR_ppm	
+N2_50	-165	108.15	760	185	ppm	222	xcal_PR_ppm	
+N2_50	-170	103.15	564	105	ppm	126	xcal_PR_ppm	
+N2_50	-175	98.15	419	50	ppm	67	xcal_PR_ppm	
+N2_50	-180	93.15	292	21	ppm	34	xcal_PR_ppm	
+N2_50	-185	88.15	196	10	ppm	15	xcal_PR_ppm	
+N2_50	-190	83.15	124	3	ppm	7	xcal_PR_ppm	
+N2_70	-150	123.15	2023	640	ppm	756	xcal_PR_ppm	
+N2_70	-155	118.15	1612	440	ppm	526	xcal_PR_ppm	
+N2_70	-160	113.15	1240	272	ppm	350	xcal_PR_ppm	
+N2_70	-165	108.15	945	150	ppm	222	xcal_PR_ppm	
+N2_70	-170	103.15	703	70	ppm	134	xcal_PR_ppm	
+N2_70	-175	98.15	505	40	ppm	76	xcal_PR_ppm	
+N2_70	-180	93.15	353	18	ppm	41	xcal_PR_ppm	
+N2_70	-185	88.15	240	9	ppm	20	xcal_PR_ppm	
+N2_70	-190	83.15	145	6	ppm	9	xcal_PR_ppm	

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseContinuationTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:57.630Z" hostname="WORMZ-PC" time="0.505">
+  <properties/>
+  <testcase name="[1] 0.0" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseContinuationTest" time="0.297"/>
+  <testcase name="[2] 1.0E-6" classname="com.wormzjl.createcheme.science.column.v3.V3CondenserPhaseContinuationTest" time="0.208"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

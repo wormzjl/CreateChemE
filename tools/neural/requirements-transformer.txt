@@ -1,0 +1,5 @@
+# Windows Python 3.12; official CUDA 12.8 wheels. Install in .neural-venv.
+# python -m pip install -r tools/neural/requirements-transformer.txt
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch==2.10.0+cu128
+numpy==2.3.5

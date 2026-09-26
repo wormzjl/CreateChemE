@@ -1,0 +1,57 @@
+{
+  "runId": "probe3-r01",
+  "scenario": "probe3",
+  "kind": "server",
+  "worktree": "D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/agent-ae139e4fc1b184b36",
+  "warmupSeconds": 420,
+  "windowSeconds": 20,
+  "events": [
+    {
+      "t": 1790165111128,
+      "iso": "2026-09-23T12:05:11.128Z",
+      "what": "machine",
+      "endfield": 0,
+      "freeMiB": 26881
+    },
+    {
+      "t": 1790165111534,
+      "iso": "2026-09-23T12:05:11.534Z",
+      "what": "launch"
+    },
+    {
+      "t": 1790165122124,
+      "iso": "2026-09-23T12:05:22.124Z",
+      "what": "server ready"
+    },
+    {
+      "t": 1790165122565,
+      "iso": "2026-09-23T12:05:22.565Z",
+      "what": "jvm",
+      "pid": 24064
+    },
+    {
+      "t": 1790165122572,
+      "iso": "2026-09-23T12:05:22.572Z",
+      "what": "forceload",
+      "reply": "Running function createcheme_bench:forceload\n"
+    },
+    {
+      "t": 1790165127576,
+      "iso": "2026-09-23T12:05:27.576Z",
+      "what": "place start"
+    },
+    {
+      "t": 1790165127773,
+      "iso": "2026-09-23T12:05:27.773Z",
+      "what": "place done",
+      "reply": "Running function createcheme_bench:probe3\n",
+      "placementMillis": 196
+    }
+  ],
+  "machineBefore": {
+    "endfield": 0,
+    "freeMiB": 26881
+  },
+  "pid": 24064,
+  "placementMillis": 196
+}

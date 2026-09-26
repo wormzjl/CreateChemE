@@ -1,0 +1,9 @@
+{
+  "tests": 188,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "command": "gradlew -I tools/pipe-thermal-loss/study.init.gradle preparePipeThermalStudy fluidScienceTest --console=plain --no-configuration-cache",
+  "base": "f9d6be1",
+  "branch": "codex/pipe-thermal-loss-study"
+}

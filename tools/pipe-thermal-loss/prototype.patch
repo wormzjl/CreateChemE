@@ -1,0 +1,156 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeHeatExchange.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeHeatExchange.java
+new file mode 100644
+index 0000000..5a4c368
+--- /dev/null
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PipeHeatExchange.java
+@@ -0,0 +1,81 @@
++package com.wormzjl.createcheme.science.fluid.network;
++
++import java.util.Arrays;
++
++/**
++ * Experimental zero-holdup stream heat exchange against a prescribed ambient temperature.
++ * The immutable curve is built outside an inner network solve. Enthalpy is J/kg, temperature K,
++ * mass flow kg/s and conductance UA W/K. Equal-temperature knots represent latent heat.
++ * This kernel is not yet wired into world simulation or its energy ledger.
++ */
++public final class PipeHeatExchange {
++    private final double[] enthalpy;
++    private final double[] temperature;
++
++    public PipeHeatExchange(double[] enthalpy, double[] temperature) {
++        if (enthalpy.length < 2 || enthalpy.length != temperature.length)
++            throw new IllegalArgumentException("At least two matching thermodynamic knots required");
++        this.enthalpy = enthalpy.clone();
++        this.temperature = temperature.clone();
++        for (int i = 0; i < enthalpy.length; i++) {
++            if (!Double.isFinite(this.enthalpy[i]) || !Double.isFinite(this.temperature[i])
++                    || this.temperature[i] <= 0 || i > 0 && (this.enthalpy[i] <= this.enthalpy[i - 1]
++                    || this.temperature[i] < this.temperature[i - 1]))
++                throw new IllegalArgumentException("Curve must have increasing enthalpy and nondecreasing temperature");
++        }
++    }
++
++    /** Positive heatLossWatts means energy leaves the stream; reversing flow selects the donor externally. */
++    public record Exchange(double outletEnthalpy, double outletTemperature, double heatLossWatts) {}
++
++    public double temperatureAt(double h) {
++        int i = interval(h);
++        return temperature[i] + (h - enthalpy[i]) / (enthalpy[i + 1] - enthalpy[i])
++                * (temperature[i + 1] - temperature[i]);
++    }
++
++    /** Exact integration of dh/d(UA) = -(T(h)-ambient)/abs(flow) on each affine curve segment. */
++    public Exchange exchange(double inletEnthalpy, double massFlow, double conductance, double ambient) {
++        if (!Double.isFinite(massFlow) || !Double.isFinite(conductance) || conductance < 0
++                || !Double.isFinite(ambient) || ambient < temperature[0]
++                || ambient > temperature[temperature.length - 1])
++            throw new IllegalArgumentException("Invalid flow/conductance or ambient outside the curve");
++        double initialTemperature = temperatureAt(inletEnthalpy);
++        if (massFlow == 0 || conductance == 0 || initialTemperature == ambient)
++            return new Exchange(inletEnthalpy, initialTemperature, 0);
++        double mass = Math.abs(massFlow), h = inletEnthalpy, remaining = conductance;
++        boolean cooling = initialTemperature > ambient;
++        for (int steps = 0; steps <= enthalpy.length; steps++) {
++            int i = interval(h);
++            if (cooling && i > 0 && h == enthalpy[i]) i--;
++            double t = temperatureAt(h), difference = t - ambient;
++            if (difference == 0 || remaining == 0) break;
++            double slope = (temperature[i + 1] - temperature[i]) / (enthalpy[i + 1] - enthalpy[i]);
++            int next = cooling ? i : i + 1;
++            double boundaryDifference = temperature[next] - ambient;
++            double crossing = Double.POSITIVE_INFINITY;
++            if (cooling ? boundaryDifference > 0 : boundaryDifference < 0) {
++                crossing = slope == 0 ? mass * Math.abs(enthalpy[next] - h) / Math.abs(difference)
++                        : mass / slope * Math.log(difference / boundaryDifference);
++            }
++            if (remaining < crossing || !Double.isFinite(crossing)) {
++                double delta = slope == 0 ? -remaining / mass * difference
++                        : difference / slope * Math.expm1(-slope * (remaining / mass));
++                h += delta;
++                // Only bound roundoff at the representable endpoints, never clip a physical temperature.
++                h = Math.max(enthalpy[0], Math.min(enthalpy[enthalpy.length - 1], h));
++                return new Exchange(h, temperatureAt(h), mass * (inletEnthalpy - h));
++            }
++            h = enthalpy[next];
++            remaining -= crossing;
++        }
++        return new Exchange(h, temperatureAt(h), mass * (inletEnthalpy - h));
++    }
++
++    private int interval(double h) {
++        if (!Double.isFinite(h) || h < enthalpy[0] || h > enthalpy[enthalpy.length - 1])
++            throw new IllegalArgumentException("Enthalpy outside the curve");
++        int at = Arrays.binarySearch(enthalpy, h);
++        return Math.min(enthalpy.length - 2, at >= 0 ? at : -at - 2);
++    }
++}
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/PipeHeatExchangeTest.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/PipeHeatExchangeTest.java
+new file mode 100644
+index 0000000..bf30ff8
+--- /dev/null
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/PipeHeatExchangeTest.java
+@@ -0,0 +1,63 @@
++package com.wormzjl.createcheme.science.fluid.network;
++
++import org.junit.jupiter.api.Test;
++import static org.junit.jupiter.api.Assertions.*;
++
++class PipeHeatExchangeTest {
++    private static PipeHeatExchange sensible() {
++        return new PipeHeatExchange(new double[]{0, 400_000}, new double[]{300, 400});
++    }
++    @Test void agreesWithIndependentConstantCpSolutionAndEnergyBalance() {
++        var result = sensible().exchange(400_000, 2, 8000, 300);
++        assertEquals(300 + 100 / Math.E, result.outletTemperature(), 1e-12);
++        assertEquals(400_000 / Math.E, result.outletEnthalpy(), 1e-9);
++        assertEquals(2 * (400_000 - result.outletEnthalpy()), result.heatLossWatts(), 1e-8);
++    }
++    @Test void latentHeatIsRemovedAtConstantTemperatureBeforeLiquidCools() {
++        var curve = new PipeHeatExchange(new double[]{0, 400_000, 2_400_000, 2_600_000},
++                new double[]{300, 400, 400, 500});
++        var partial = curve.exchange(2_400_000, 1, 10_000, 300);
++        assertEquals(1_400_000, partial.outletEnthalpy(), 1e-8);
++        assertEquals(400, partial.outletTemperature());
++        var full = curve.exchange(2_400_000, 1, 24_000, 300);
++        assertEquals(400_000 / Math.E, full.outletEnthalpy(), 1e-8);
++        assertEquals(300 + 100 / Math.E, full.outletTemperature(), 1e-10);
++    }
++    @Test void heatingAndReversalPreserveSignedHeatAccounting() {
++        var forward = sensible().exchange(0, 2, 8000, 400);
++        var reverse = sensible().exchange(0, -2, 8000, 400);
++        assertEquals(forward, reverse);
++        assertEquals(400 - 100 / Math.E, forward.outletTemperature(), 1e-12);
++        assertTrue(forward.heatLossWatts() < 0);
++        assertEquals(-2 * forward.outletEnthalpy(), forward.heatLossWatts());
++    }
++    @Test void subdivisionAndEnergyReferenceDoNotChangeTheAnswer() {
++        var curve = new PipeHeatExchange(new double[]{0, 200_000, 300_000, 700_000},
++                new double[]{300, 350, 350, 500});
++        var whole = curve.exchange(700_000, .4, 600, 300);
++        var first = curve.exchange(700_000, .4, 200, 300);
++        var second = curve.exchange(first.outletEnthalpy(), .4, 400, 300);
++        assertEquals(whole.outletEnthalpy(), second.outletEnthalpy(), 1e-8);
++        assertEquals(whole.heatLossWatts(), first.heatLossWatts() + second.heatLossWatts(), 1e-8);
++        var shifted = new PipeHeatExchange(new double[]{-1e6, -800_000, -700_000, -300_000},
++                new double[]{300, 350, 350, 500}).exchange(-300_000, .4, 600, 300);
++        assertEquals(whole.heatLossWatts(), shifted.heatLossWatts(), 1e-8);
++    }
++    @Test void zeroFlowAndHugeExposureHaveBoundedPhysicalLimits() {
++        assertEquals(0, sensible().exchange(400_000, 0, 1000, 300).heatLossWatts());
++        assertEquals(400, sensible().exchange(400_000, 0, 1000, 300).outletTemperature());
++        assertEquals(400, sensible().exchange(400_000, 2, 0, 300).outletTemperature());
++        var slow = sensible().exchange(400_000, 1e-100, 1000, 300);
++        assertEquals(300, slow.outletTemperature());
++        assertEquals(4e-95, slow.heatLossWatts(), 1e-108);
++    }
++    @Test void malformedCurvesAreRefusedAndInputsAreOwned() {
++        assertThrows(IllegalArgumentException.class, () -> new PipeHeatExchange(new double[]{0, 0}, new double[]{300, 400}));
++        assertThrows(IllegalArgumentException.class, () -> new PipeHeatExchange(new double[]{0, 1}, new double[]{400, 300}));
++        assertThrows(IllegalArgumentException.class, () -> sensible().exchange(400_001, 1, 1, 300));
++        assertThrows(IllegalArgumentException.class, () -> sensible().exchange(0, 1, -1, 300));
++        double[] h = {0, 400_000}, t = {300, 400};
++        var curve = new PipeHeatExchange(h, t); h[1] = 0; t[1] = 0;
++        assertEquals(400, curve.temperatureAt(400_000));
++    }
++}

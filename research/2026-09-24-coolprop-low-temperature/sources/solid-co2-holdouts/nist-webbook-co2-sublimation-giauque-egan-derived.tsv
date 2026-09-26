@@ -1,0 +1,17 @@
+# NIST Chemistry WebBook, SRD 69, carbon dioxide (CAS 124-38-9), "Phase change data",
+# https://webbook.nist.gov/cgi/cbook.cgi?ID=C124389&Units=SI&Mask=4, retrieved 2026-09-25; snapshot
+# raw/nist-webbook-co2-phase-change-mask4-2026-09-25.html. Data compilation copyright by the U.S. Secretary of Commerce.
+# These are the only open numbers traceable to Giauque W.F., Egan C.J. (1937), J. Chem. Phys. 5, 45-54,
+# DOI 10.1063/1.1749929 (paywalled). The 25.2 kJ/mol row is a compilation value "Based on data from 154. to 196. K"
+# (vapour-pressure derived, AC = Acree/Chickos compilation), not the calorimetric value of the paper; the paper's own
+# calorimetric enthalpy of sublimation (Trusler 2011 Table 2: u_r 0.08 % at 195 K) must be read from the original.
+# Antoine form (WebBook convention): log10(P/bar) = A - B/(T/K + C). Digits verbatim. Transcribed 2026-09-25.
+quantity	value	unit	T_K	method	reference	comment
+dsubH	25.2	kJ/mol	195.		Giauque and Egan, 1937	Based on data from 154. to 196. K.; AC
+dsubH	25.9	kJ/mol	188.		Ambrose, 1956	Based on data from 179. to 198. K.; AC
+dsubH	26.3	kJ/mol	167.	A	Stull, 1947	Based on data from 139. to 195. K.; AC
+dsubH	26.1	kJ/mol	207.	A	Stephenson and Malanowski, 1987	Based on data from 198. to 216. K.; AC
+dsubH	27.2 +- 0.4	kJ/mol	70. to 102.	LE	Bryson, Cazcarra, et al., 1974	AC
+Antoine A	6.81228		154.26 to 195.89		Giauque and Egan, 1937	Coefficents calculated by NIST from author's data.
+Antoine B	1301.679	K	154.26 to 195.89		Giauque and Egan, 1937	Coefficents calculated by NIST from author's data.
+Antoine C	-3.494	K	154.26 to 195.89		Giauque and Egan, 1937	Coefficents calculated by NIST from author's data.

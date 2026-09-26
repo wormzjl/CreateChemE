@@ -1,0 +1,5 @@
+transient100-f1-r03 (restDetection true) vs transient100-f1-r04 (restDetection true)
+  fingerprints: 100 islands, 100 identical on every common publication, 0 parted
+  held at startup: 5 / 5 islands; held in one run only: 0
+  reference grid tick 1900: 95 islands exact in both, 0 not bitwise equal; worst inventory 0.000e+0 (island null), energy 0.000e+0, ledger 0.000e+0
+  ledger deviation against the island's own inventory: worst 0.000e+0 (null); conservation (ledger deviation minus inventory deviation, against inventory): worst 0.000e+0 (null); energy 0.000e+0

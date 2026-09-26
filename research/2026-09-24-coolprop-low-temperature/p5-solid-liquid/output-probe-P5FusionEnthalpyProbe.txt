@@ -1,0 +1,190 @@
+===== science.thermo.qualification.P5FusionEnthalpyProbe.xml tests="1" skipped="0" failures="0" errors="0"
+
+===== anchor fusion enthalpy 9019 J/mol =====
+T K | p_sub model Pa | vs SW 3.12 % | vs Fray-Schmitt %
+130.0000 | NaN | NaN | NaN
+140.0000 | 192.4145 | +4.824 | +3.441
+150.0000 | 866.5615 | +2.838 | +2.941
+160.0000 | 3206.7620 | +1.881 | +2.397
+170.0000 | 10101.1200 | +1.413 | +1.825
+180.0000 | 27854.8182 | +1.081 | +1.303
+190.0000 | 68814.9443 | +0.691 | +0.989
+194.6855 | 101803.4749 | +0.472 | +0.981
+200.0000 | 155348.9749 | +0.205 | -0.199
+210.0000 | 326285.2971 | -0.246 | -0.697
+216.0000 | 495649.3040 | -0.364 | -0.900
+sublimation enthalpy at 194.67 K: 25194.69 J/mol (-0.164 % against 25,236)
+melting at 0.6 MPa: 216.60866 K (-0.0009 K against SW 3.10)
+melting at 1.0 MPa: 216.68976 K (-0.0053 K against SW 3.10)
+melting at 2.0 MPa: 216.89184 K (-0.0166 K against SW 3.10)
+melting at 5.0 MPa: 217.49234 K (-0.0537 K against SW 3.10)
+melting at 10.0 MPa: 218.47521 K (-0.1249 K against SW 3.10)
+G4F1 binary Le-Trebble 2007 set 1: 55 points, MAD 2.312 K, bias -1.080 K, max 5.193 K
+G4F1 binary Zhang 2011 set 1: 17 points, MAD 0.667 K, bias +0.170 K, max 1.255 K
+G4F1 binary Xiong 2015 set 3: 63 points, MAD 0.703 K, bias +0.121 K, max 3.516 K
+G4F1 binary pooled: 135 points (1 condensed first apart), MAD 1.354 K, bias -0.362 K, max 5.193 K
+G4F1 ternary Le-Trebble 2007 set 2: 24 points, MAD 1.730 K, bias -0.296 K, max 3.809 K
+G4F1 ternary Le-Trebble 2007 set 3: 24 points, MAD 1.662 K, bias -0.356 K, max 3.692 K
+G4F1 ternary Xiong 2015 set 1: 77 points, MAD 0.955 K, bias -0.373 K, max 5.444 K
+G4F1 ternary Xiong 2015 set 2: 49 points, MAD 0.935 K, bias +0.865 K, max 2.523 K
+G4F1 ternary pooled: 174 points (4 condensed first apart), MAD 1.154 K, bias -0.012 K, max 5.444 K
+G4F2: vapour carrier 51 MAD 0.420 bias -0.181 max 1.991; dense 14 MAD 3.505 bias +3.505; all 65 MAD 1.084
+G5F2: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Shen 2012 | CH4 | 9 | 0 | 0 | 0 | 2.365 | -2.365 | 2.925 | 2.0
+Shen 2012 | CH4 + N2 (0.9 CH4) | 9 | 0 | 0 | 0 | 1.660 | -1.660 | 3.368 | 2.0
+Shen 2012 | CH4 + N2 (0.95 CH4) | 9 | 0 | 0 | 0 | 2.020 | -2.020 | 3.667 | 2.0
+Shen 2012 | CH4 + N2 (0.98 CH4) | 9 | 0 | 0 | 0 | 2.176 | -2.176 | 2.945 | 2.0
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 9 | 0 | 0 | 0 | 2.012 | -2.012 | 2.833 | 2.0
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 9 | 0 | 0 | 0 | 1.936 | -1.936 | 2.438 | 2.0
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 9 | 0 | 0 | 0 | 2.103 | -2.103 | 2.666 | 2.0
+Davis 1962 | CH4 (Table 4) | 11 | 0 | 0 | 0 | 1.902 | -0.659 | 2.786 | 2.0
+Shen 2012 (dataset) | all | 63 | 0 | 0 | 0 | 2.039 | -2.039 | 3.667 | 2.0
+Davis 1962 (dataset) | all | 11 | 0 | 0 | 0 | 1.902 | -0.659 | 2.786 | 2.0
+G5F3 Davis 1962: |dP/P| MAD 1.638 %, bias -0.984 %, max 5.613 %; T-equivalent MAD 0.324 K, max 0.849 K
+G5F3 Souza 2020: |dP/P| MAD 2.496 %, bias +1.244 %, max 4.599 %; T-equivalent MAD 0.444 K, max 2.032 K
+G5F4: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Campestrini 2022 | SVE 0 % N2 | 12 | 0 | 0 | 0 | 0.499 | -0.499 | 0.684 | 2.0
+Campestrini 2022 | SLE 0 % N2 | 6 | 0 | 0 | 0 | 0.842 | -0.733 | 1.765 | 2.0
+Campestrini 2022 | SVE 5 % N2 | 8 | 0 | 0 | 0 | 0.517 | -0.509 | 0.836 | 2.0
+Campestrini 2022 | SLE 5 % N2 | 6 | 0 | 0 | 0 | 1.111 | -1.111 | 1.506 | 2.0
+Campestrini 2022 | SVE 10 % N2 | 12 | 0 | 0 | 0 | 0.522 | -0.522 | 0.696 | 2.0
+Campestrini 2022 | SLE 10 % N2 | 5 | 0 | 0 | 0 | 0.907 | -0.907 | 1.108 | 2.0
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 12 | 0 | 0 | 0 | 0.186 | -0.186 | 0.375 | 2.0
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 6 | 0 | 0 | 0 | 0.439 | -0.439 | 0.520 | 2.0
+Riva-Stringari 2018 | N2 series liquid | 6 | 0 | 0 | 0 | 3.690 | -2.980 | 6.731 | 2.0
+Riva-Stringari 2018 | N2 series vapour | 6 | 0 | 0 | 0 | 1.593 | -1.593 | 2.971 | 2.0
+Campestrini 2022 (dataset) | all | 67 | 0 | 0 | 0 | 0.560 | -0.549 | 1.765 | 2.0
+Riva-Stringari 2018 (dataset) | all | 12 | 0 | 0 | 0 | 2.642 | -2.286 | 6.731 | 2.0
+G5F5: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Gao 2012 | CH4 | 9 | 0 | 0 | 0 | 2.580 | -2.580 | 4.813 | report
+Gao 2012 | N2_10 | 6 | 0 | 0 | 0 | 0.769 | -0.401 | 1.270 | report
+Gao 2012 | N2_30 | 8 | 0 | 0 | 0 | 2.797 | +2.797 | 6.031 | report
+Gao 2012 | N2_50 | 8 | 0 | 1 | 0 | 4.125 | +4.125 | 5.335 | report
+Gao 2012 | N2_70 | 9 | 0 | 0 | 0 | 6.134 | +6.134 | 9.684 | report
+Sampson 2023 | CH4 | 3 | 0 | 3 | 0 | 5.517 | -5.517 | 6.444 | report
+Gao 2012 (dataset) | all | 40 | 0 | 1 | 0 | 3.461 | +2.124 | 9.684 | report
+Sampson 2023 (dataset) | all | 3 | 0 | 3 | 0 | 5.517 | -5.517 | 6.444 | report
+
+===== anchor fusion enthalpy 8875 J/mol =====
+T K | p_sub model Pa | vs SW 3.12 % | vs Fray-Schmitt %
+130.0000 | NaN | NaN | NaN
+140.0000 | 201.0195 | +9.511 | +8.067
+150.0000 | 897.8866 | +6.556 | +6.663
+160.0000 | 3298.8496 | +4.807 | +5.337
+170.0000 | 10325.5720 | +3.666 | +4.087
+180.0000 | 28314.4395 | +2.748 | +2.975
+190.0000 | 69600.9714 | +1.842 | +2.142
+194.6855 | 102742.8770 | +1.399 | +1.913
+200.0000 | 156414.2496 | +0.892 | +0.485
+210.0000 | 327153.3437 | +0.020 | -0.432
+216.0000 | 495767.2972 | -0.340 | -0.877
+sublimation enthalpy at 194.67 K: 25049.92 J/mol (-0.737 % against 25,236)
+melting at 0.6 MPa: 216.60893 K (-0.0006 K against SW 3.10)
+melting at 1.0 MPa: 216.69135 K (-0.0037 K against SW 3.10)
+melting at 2.0 MPa: 216.89672 K (-0.0117 K against SW 3.10)
+melting at 5.0 MPa: 217.50707 K (-0.0390 K against SW 3.10)
+melting at 10.0 MPa: 218.50628 K (-0.0938 K against SW 3.10)
+G4F1 binary Le-Trebble 2007 set 1: 54 points, MAD 2.328 K, bias -1.199 K, max 5.412 K
+G4F1 binary Zhang 2011 set 1: 17 points, MAD 0.647 K, bias +0.092 K, max 1.337 K
+G4F1 binary Xiong 2015 set 3: 63 points, MAD 0.678 K, bias -0.072 K, max 3.278 K
+G4F1 binary pooled: 134 points (2 condensed first apart), MAD 1.339 K, bias -0.505 K, max 5.412 K
+G4F1 ternary Le-Trebble 2007 set 2: 23 points, MAD 1.616 K, bias -0.336 K, max 3.998 K
+G4F1 ternary Le-Trebble 2007 set 3: 24 points, MAD 1.672 K, bias -0.546 K, max 3.881 K
+G4F1 ternary Xiong 2015 set 1: 77 points, MAD 0.990 K, bias -0.554 K, max 5.687 K
+G4F1 ternary Xiong 2015 set 2: 49 points, MAD 0.820 K, bias +0.711 K, max 2.318 K
+G4F1 ternary pooled: 173 points (5 condensed first apart), MAD 1.120 K, bias -0.166 K, max 5.687 K
+G4F2: vapour carrier 51 MAD 0.560 bias -0.429 max 1.439; dense 14 MAD 2.971 bias +2.971; all 65 MAD 1.079
+G5F2: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Shen 2012 | CH4 | 9 | 0 | 0 | 0 | 2.923 | -2.923 | 3.516 | 2.0
+Shen 2012 | CH4 + N2 (0.9 CH4) | 9 | 0 | 0 | 0 | 2.227 | -2.227 | 3.877 | 2.0
+Shen 2012 | CH4 + N2 (0.95 CH4) | 9 | 0 | 0 | 0 | 2.583 | -2.583 | 4.184 | 2.0
+Shen 2012 | CH4 + N2 (0.98 CH4) | 9 | 0 | 0 | 0 | 2.736 | -2.736 | 3.428 | 2.0
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 9 | 0 | 0 | 0 | 2.553 | -2.553 | 3.315 | 2.0
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 9 | 0 | 0 | 0 | 2.484 | -2.484 | 2.972 | 2.0
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 9 | 0 | 0 | 0 | 2.656 | -2.656 | 3.261 | 2.0
+Davis 1962 | CH4 (Table 4) | 11 | 0 | 0 | 0 | 2.148 | -1.186 | 2.867 | 2.0
+Shen 2012 (dataset) | all | 63 | 0 | 0 | 0 | 2.594 | -2.594 | 4.184 | 2.0
+Davis 1962 (dataset) | all | 11 | 0 | 0 | 0 | 2.148 | -1.186 | 2.867 | 2.0
+G5F3 Davis 1962: |dP/P| MAD 1.670 %, bias -1.148 %, max 5.613 %; T-equivalent MAD 0.330 K, max 0.781 K
+G5F3 Souza 2020 at 207.07 K: no three-phase point between 1 kPa and 10 MPa
+G5F3 Souza 2020: |dP/P| MAD 1.519 %, bias -0.330 %, max 5.520 %; T-equivalent MAD 0.063 K, max 0.194 K
+G5F4: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Campestrini 2022 | SVE 0 % N2 | 12 | 0 | 0 | 0 | 0.661 | -0.661 | 0.782 | 2.0
+Campestrini 2022 | SLE 0 % N2 | 6 | 0 | 0 | 0 | 1.158 | -1.158 | 2.195 | 2.0
+Campestrini 2022 | SVE 5 % N2 | 8 | 0 | 0 | 0 | 0.653 | -0.653 | 0.915 | 2.0
+Campestrini 2022 | SLE 5 % N2 | 6 | 0 | 0 | 0 | 1.564 | -1.564 | 1.955 | 2.0
+Campestrini 2022 | SVE 10 % N2 | 12 | 0 | 0 | 0 | 0.682 | -0.682 | 0.808 | 2.0
+Campestrini 2022 | SLE 10 % N2 | 5 | 0 | 0 | 0 | 1.409 | -1.409 | 1.596 | 2.0
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 12 | 0 | 0 | 0 | 0.443 | -0.443 | 0.635 | 2.0
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 6 | 0 | 0 | 0 | 0.954 | -0.954 | 1.040 | 2.0
+Riva-Stringari 2018 | N2 series liquid | 6 | 0 | 0 | 0 | 4.086 | -3.571 | 7.330 | 2.0
+Riva-Stringari 2018 | N2 series vapour | 6 | 0 | 0 | 0 | 1.886 | -1.886 | 3.265 | 2.0
+Campestrini 2022 (dataset) | all | 67 | 0 | 0 | 0 | 0.832 | -0.832 | 2.195 | 2.0
+Riva-Stringari 2018 (dataset) | all | 12 | 0 | 0 | 0 | 2.986 | -2.728 | 7.330 | 2.0
+G5F5: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Gao 2012 | CH4 | 9 | 0 | 0 | 0 | 3.139 | -3.139 | 5.412 | report
+Gao 2012 | N2_10 | 6 | 0 | 0 | 0 | 1.024 | -0.995 | 1.868 | report
+Gao 2012 | N2_30 | 8 | 0 | 0 | 0 | 2.209 | +2.209 | 5.467 | report
+Gao 2012 | N2_50 | 8 | 0 | 1 | 0 | 3.532 | +3.532 | 4.784 | report
+Gao 2012 | N2_70 | 9 | 0 | 0 | 0 | 5.504 | +5.504 | 9.146 | report
+Sampson 2023 | CH4 | 3 | 0 | 3 | 0 | 6.113 | -6.113 | 7.039 | report
+Gao 2012 (dataset) | all | 40 | 0 | 1 | 0 | 3.246 | +1.531 | 9.146 | report
+Sampson 2023 (dataset) | all | 3 | 0 | 3 | 0 | 6.113 | -6.113 | 7.039 | report
+
+SUMMARY | quantity | 9019 J/mol | 8875 J/mol | better
+SUMMARY | sublimation p vs SW at 150 K, % | 2.8381 | 6.5556 | 9019
+SUMMARY | sublimation p worst vs SW 150 K to T_t, % | 2.8381 | 6.5556 | 9019
+SUMMARY | sublimation p worst vs SW/FS 130-140 K, % | NaN | NaN | -
+SUMMARY | sublimation enthalpy 194.67 K vs 25,236, % | -0.1637 | -0.7373 | 9019
+SUMMARY | melting worst |dT| to 10 MPa, K | 0.1249 | 0.0938 | 8875
+SUMMARY | G4F1 binary Le-Trebble 2007 set 1 MAD, K | 2.3119 | 2.3277 | 9019
+SUMMARY | G4F1 binary Zhang 2011 set 1 MAD, K | 0.6673 | 0.6467 | 8875
+SUMMARY | G4F1 binary Xiong 2015 set 3 MAD, K | 0.7031 | 0.6779 | 8875
+SUMMARY | G4F1 binary pooled MAD, K | 1.3540 | 1.3388 | 8875
+SUMMARY | G4F1 binary pooled bias, K | -0.3622 | -0.5054 | -
+SUMMARY | G4F1 binary pooled max, K | 5.1934 | 5.4120 | 9019
+SUMMARY | G4F1 ternary Le-Trebble 2007 set 2 MAD, K | 1.7298 | 1.6161 | 8875
+SUMMARY | G4F1 ternary Le-Trebble 2007 set 3 MAD, K | 1.6625 | 1.6719 | 9019
+SUMMARY | G4F1 ternary Xiong 2015 set 1 MAD, K | 0.9550 | 0.9895 | 9019
+SUMMARY | G4F1 ternary Xiong 2015 set 2 MAD, K | 0.9352 | 0.8205 | 8875
+SUMMARY | G4F1 ternary pooled MAD, K | 1.1539 | 1.1196 | 8875
+SUMMARY | G4F1 ternary pooled bias, K | -0.0115 | -0.1659 | -
+SUMMARY | G4F1 ternary pooled max, K | 5.4438 | 5.6870 | 9019
+SUMMARY | G4F2 vapour carrier MAD, K | 0.4199 | 0.5602 | 9019
+SUMMARY | G4F2 vapour carrier bias, K | -0.1808 | -0.4289 | -
+SUMMARY | G4F2 vapour carrier max, K | 1.9906 | 1.4388 | 8875
+SUMMARY | G4F2 dense carrier MAD, K | 3.5048 | 2.9710 | 8875
+SUMMARY | G4F2 dense carrier bias, K | 3.5048 | 2.9710 | -
+SUMMARY | G4F2 all scored MAD, K | 1.0844 | 1.0794 | 8875
+SUMMARY | G5F2 Shen 2012 MAD, K | 2.0388 | 2.5944 | 9019
+SUMMARY | G5F2 Shen 2012 bias, K | -2.0388 | -2.5944 | -
+SUMMARY | G5F2 Shen 2012 max, K | 3.6669 | 4.1841 | 9019
+SUMMARY | G5F2 Davis 1962 MAD, K | 1.9015 | 2.1476 | 9019
+SUMMARY | G5F2 Davis 1962 bias, K | -0.6586 | -1.1864 | -
+SUMMARY | G5F2 Davis 1962 max, K | 2.7858 | 2.8667 | 9019
+SUMMARY | G5F3 Davis 1962 |dP/P| MAD, % | 1.6376 | 1.6704 | 9019
+SUMMARY | G5F3 Davis 1962 dP/P bias, % | -0.9841 | -1.1484 | -
+SUMMARY | G5F3 Davis 1962 |dP/P| max, % | 5.6128 | 5.6132 | 9019
+SUMMARY | G5F3 Davis 1962 T-equivalent MAD, K | 0.3242 | 0.3301 | 9019
+SUMMARY | G5F3 Davis 1962 T-equivalent max, K | 0.8494 | 0.7815 | 8875
+SUMMARY | G5F3 Souza 2020 |dP/P| MAD, % | 2.4958 | 1.5193 | 8875
+SUMMARY | G5F3 Souza 2020 dP/P bias, % | 1.2442 | -0.3300 | -
+SUMMARY | G5F3 Souza 2020 |dP/P| max, % | 4.5986 | 5.5195 | 9019
+SUMMARY | G5F3 Souza 2020 T-equivalent MAD, K | 0.4445 | 0.0632 | 8875
+SUMMARY | G5F3 Souza 2020 T-equivalent max, K | 2.0325 | 0.1940 | 8875
+SUMMARY | G5F3 Davis y |ln| MAD, % | 21.1915 | 20.2340 | 8875
+SUMMARY | G5F3 Davis y ln bias, % | -15.9285 | -14.1822 | -
+SUMMARY | G5F3 Davis x |ln| MAD, % | 11.9114 | 14.1615 | 9019
+SUMMARY | G5F3 Davis x ln bias, % | 6.2378 | 9.4769 | -
+SUMMARY | G5F4 Campestrini 2022 MAD, K | 0.5599 | 0.8322 | 9019
+SUMMARY | G5F4 Campestrini 2022 max, K | 1.7654 | 2.1950 | 9019
+SUMMARY | G5F4 Riva-Stringari 2018 MAD, K | 2.6415 | 2.9859 | 9019
+SUMMARY | G5F4 Riva-Stringari 2018 max, K | 6.7309 | 7.3299 | 9019
+SUMMARY | G5F5 Gao 2012 | CH4 MAD, K | 2.5803 | 3.1386 | 9019
+SUMMARY | G5F5 Gao 2012 | N2_10 MAD, K | 0.7694 | 1.0241 | 9019
+SUMMARY | G5F5 Gao 2012 | N2_30 MAD, K | 2.7973 | 2.2092 | 8875
+SUMMARY | G5F5 Gao 2012 | N2_50 MAD, K | 4.1253 | 3.5323 | 8875
+SUMMARY | G5F5 Gao 2012 | N2_70 MAD, K | 6.1336 | 5.5036 | 8875
+SUMMARY | G5F5 Sampson 2023 | CH4 MAD, K | 5.5171 | 6.1129 | 9019
+SUMMARY | G5F3 Souza 2020 points without a three-phase point, count | 0.0000 | 1.0000 | -
+

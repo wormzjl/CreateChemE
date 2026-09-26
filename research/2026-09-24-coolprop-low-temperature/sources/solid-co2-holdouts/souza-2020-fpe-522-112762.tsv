@@ -1,0 +1,196 @@
+# Souza L.F.S., Al Ghafri S.Z.S., Fandino O., Trusler J.P.M. (2020). Vapor-liquid equilibria, solid-vapor-liquid equilibria
+# and H2S partition coefficient in (CO2 + CH4) at temperatures between (203.96 and 303.15) K at pressures up to 9 MPa.
+# Fluid Phase Equilib. 522, 112762. DOI 10.1016/j.fluid.2020.112762 (paywalled; not read).
+# Set 4: SVLE (three-phase) pressures of CO2 + CH4, 7 points, 203.96 to 215.79 K, 964 to 4858 kPa, crystal of unknown type
+# per TRC. Sets 1-3: pure CO2 vapour pressure (7) and CO2 + CH4 VLE (83 p-x and 83 y points, 218.124 to 303.166 K), kept as
+# context; they involve no solid.
+# Holdout role: P5 three-phase line of CO2 + CH4 at the CO2-rich end (G5 SLV consistency next to the triple point).
+# Source: NIST TRC ThermoML Archive (IUPAC ThermoML), https://trc.nist.gov/ThermoML/10.1016/j.fluid.2020.112762.xml, retrieved 2026-09-25;
+# archive DOI 10.18434/mds2-2422. TRC terms: no warranty by the publisher, editors or NIST/TRC; TRC requests that works
+# using ThermoML Archive data cite them. The XML is TRC's compilation of the paper's tables, not the paper itself.
+# Flattened with thermoml_to_tsv.py (this folder): one row per property value, digits exactly as in the XML.
+# U95 = nCombExpandUncertValue, expanded uncertainty at 95 % assessed by the TRC data-file compiler (not the authors' own
+# statement unless the paper gives the same number). Labels abbreviated: fluid/liquid/gas/crystal, CO2/CH4/N2/C2H6.
+# Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+# XML file: thermoml/souza-2020-fpe-522-112762.xml (sha256 92157292381b190a8eeb25d9f8ad0f7bbf8fc041f06de03f2497df3e077216b2)
+set	system	phases	property	method	value	U95	Temperature, K@liquid	Mole fraction[CH4]@liquid	Temperature, K@gas
+1	CO2	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	553.2	18	218.124		
+1	CO2	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1004	18.1	233.154		
+1	CO2	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1428.7	18.1	243.123		
+1	CO2	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	2292.3	18.3	258.159		
+1	CO2	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3484	18.7	273.154		
+1	CO2	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5091	19.4	288.155		
+1	CO2	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7212.3	20.8	303.166		
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	553.2	18.1	218.124	0	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	873.2	54.4	218.145	0.0132	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1105.8	34.6	218.18	0.0237	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1821.3	239	218.171	0.0582	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	2892.9	40.4	218.169	0.1218	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3783.8	40.2	218.172	0.1917	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	4628.6	40.4	218.16	0.2919	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5112.2	37.4	218.163	0.374	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5399.6	32.6	218.151	0.4287	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5731.2	31.5	218.161	0.5209	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5867.4	31.1	218.161	0.5588	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5957.8	31	218.165	0.5848	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6045.5	30.4	218.162	0.6099	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6283.2	29.1	218.17	0.6811	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6384.5	27.5	218.162	0.7245	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1004	18.2	233.154	0	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1342.5	42.8	233.16	0.0141	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1773.7	31.1	233.156	0.0314	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	2890.9	39	233.156	0.0862	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3858.1	48.2	233.156	0.1431	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	4677.3	49.5	233.158	0.2028	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5485.6	51.8	233.158	0.2763	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5969	47.7	233.16	0.3314	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6349.9	44.2	233.162	0.3824	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6755	41.1	233.163	0.4449	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7034.3	38.9	233.161	0.4977	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7211.3	38.7	233.159	0.536	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1428.7	18.5	243.123	0	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	1768.7	34.7	243.16	0.0133	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	2397.8	29.2	243.152	0.0392	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3196.5	39.1	243.152	0.076	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3882.3	43.4	243.155	0.1111	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	4861.6	53.3	243.154	0.1694	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5649.9	48.4	243.157	0.226	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6990.7	54.6	243.15	0.3551	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7473	41.4	243.157	0.4208	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7881.9	38.5	243.158	0.5101	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	2292.3	19.2	258.159	0	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	2644.6	30.1	258.157	0.0162	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3042.2	31.1	258.142	0.0291	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	4144.9	41.4	258.151	0.0769	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	4948.8	47.9	258.149	0.1161	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5764.1	58.8	258.148	0.1613	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6246.6	58.6	258.153	0.1914	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6741	59.5	258.154	0.224	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7212.5	56.9	258.158	0.2597	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7549.8	56.7	258.152	0.2922	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7840	48	258.152	0.3207	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	8025.3	42	258.157	0.3511	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3484	20.6	273.154	0	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	3633.8	20.8	273.145	0.0056	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	4425.5	29.1	273.15	0.0361	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5383	44.8	273.146	0.0769	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5870.1	49.4	273.143	0.0992	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6375.3	51.4	273.145	0.1245	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6935.1	69.3	273.145	0.1554	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7066.4	65.3	273.149	0.1625	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7210.2	63.7	273.151	0.1709	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7411.1	57.9	273.153	0.1845	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7671	57.8	273.15	0.2017	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7923.4	54.4	273.156	0.221	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	8040.7	50	273.146	0.2324	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	8213.5	48.8	273.152	0.2495	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	8295.7	44	273.154	0.2601	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5091	23.1	288.155	0	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	5564.1	27.2	288.151	0.0181	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6027.9	31.7	288.137	0.0367	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6510.9	38.1	288.168	0.0565	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	6769	40	288.156	0.0684	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7038.5	42.8	288.16	0.0811	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7264.4	43.2	288.161	0.0922	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7558.3	47.2	288.166	0.1089	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7647.9	43.6	288.153	0.1146	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7832.5	42.8	288.157	0.127	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7979	37.7	288.158	0.1395	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	8079.5	35.5	288.158	0.1534	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7212.3	27.3	303.166	0	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7236.3	27.3	303.147	0.00104	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7285.8	27.5	303.147	0.00336	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7292.5	27.5	303.157	0.00359	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7316.5	28.6	303.156	0.00466	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7364.9	28.6	303.156	0.00694	
+2	CO2 + CH4	liquid | gas	Vapor or sublimation pressure, kPa @liquid	Closed cell (Static) method	7384.5	28.7	303.157	0.00795	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0		218.124	0	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3468	0.0446	218.145	0.0132	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.4696	0.0114	218.18	0.0237	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6546	0.037	218.171	0.0582	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.7576	0.0052	218.169	0.1218	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.7963	0.0041	218.172	0.1917	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.8115	0.0038	218.16	0.2919	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.8162	0.0037	218.163	0.374	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.8174	0.0037	218.151	0.4287	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.8157	0.0037	218.161	0.5209	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.8142	0.0038	218.161	0.5588	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.8126	0.0038	218.165	0.5848	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.8105	0.0039	218.162	0.6099	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.797	0.0043	218.17	0.6811	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.7738	0.0049	218.162	0.7245	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0		233.154	0	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.2286	0.0201	233.16	0.0141	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3955	0.0083	233.156	0.0314	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5898	0.0077	233.156	0.0862	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6639	0.0063	233.156	0.1431	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6993	0.0055	233.158	0.2028	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.718	0.0051	233.158	0.2763	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.7236	0.005	233.16	0.3314	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.7245	0.005	233.162	0.3824	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.7198	0.005	233.163	0.4449	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.7104	0.0054	233.161	0.4977	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6982	0.0054	233.159	0.536	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0		243.123	0	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1713	0.0111	243.16	0.0133	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3552	0.0076	243.152	0.0392	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.4836	0.0082	243.152	0.076	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5495	0.0072	243.155	0.1111	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6077	0.0066	243.154	0.1694	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6348	0.0061	243.157	0.226	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6488	0.0058	243.15	0.3551	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.6376	0.0063	243.157	0.4208	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5948	0.0069	243.158	0.5101	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0		258.159	0	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1117	0.007	258.157	0.0162	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.2047	0.0056	258.142	0.0291	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3667	0.0075	258.151	0.0769	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.4363	0.0072	258.149	0.1161	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.4807	0.0074	258.148	0.1613	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5003	0.0072	258.153	0.1914	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5133	0.0071	258.154	0.224	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5205	0.0069	258.158	0.2597	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5203	0.007	258.152	0.2922	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5156	0.007	258.152	0.3207	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.5084	0.0071	258.157	0.3511	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0		273.154	0	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.0318	0.0036	273.145	0.0056	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1606	0.0041	273.15	0.0361	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.2615	0.006	273.146	0.0769	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.298	0.006	273.143	0.0992	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3271	0.006	273.145	0.1245	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3506	0.0078	273.145	0.1554	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3555	0.007	273.149	0.1625	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.359	0.0067	273.151	0.1709	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3632	0.0061	273.153	0.1845	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3668	0.0061	273.15	0.2017	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3664	0.0061	273.156	0.221	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3636	0.0061	273.146	0.2324	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3587	0.0061	273.152	0.2495	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.3526	0.0063	273.154	0.2601	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0		288.155	0	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.0563	0.0021	288.151	0.0181	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1017	0.0028	288.137	0.0367	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1389	0.0035	288.168	0.0565	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1548	0.0037	288.156	0.0684	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1694	0.0039	288.16	0.0811	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1806	0.0038	288.161	0.0922	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1899	0.0039	288.166	0.1089	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.192	0.0038	288.153	0.1146	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1944	0.0038	288.157	0.127	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1932	0.0038	288.158	0.1395	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.1874	0.0039	288.158	0.1534	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0		303.166	0	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.00171	5e-05	303.147	0.00104	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.00487	0.00015	303.147	0.00336	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.00516	0.00016	303.157	0.00359	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.00653	0.00059	303.156	0.00466	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.00908	0.00055	303.156	0.00694	
+3	CO2 + CH4	gas | liquid	Mole fraction [CH4] @gas		0.01006	0.00058	303.157	0.00795	
+4	CO2 + CH4	gas | liquid | crystal(unknown type)	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	4858	71			203.96
+4	CO2 + CH4	gas | liquid | crystal(unknown type)	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	4691	71			207.07
+4	CO2 + CH4	gas | liquid | crystal(unknown type)	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	4101	71			209.58
+4	CO2 + CH4	gas | liquid | crystal(unknown type)	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	4104	71			209.63
+4	CO2 + CH4	gas | liquid | crystal(unknown type)	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	3655	71			210.67
+4	CO2 + CH4	gas | liquid | crystal(unknown type)	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1981	71			214.16
+4	CO2 + CH4	gas | liquid | crystal(unknown type)	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	964	70			215.79

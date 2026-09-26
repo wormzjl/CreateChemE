@@ -1,0 +1,98 @@
+{
+  "arms": {
+    "baseline": [
+      0.0,
+      0.0001,
+      false,
+      0.0
+    ],
+    "decoded": [
+      0.0,
+      0.0001,
+      false,
+      2.0
+    ],
+    "regularized-05": [
+      0.05,
+      0.001,
+      true,
+      0.0
+    ],
+    "regularized-05-decoded": [
+      0.05,
+      0.001,
+      true,
+      2.0
+    ],
+    "regularized-10": [
+      0.1,
+      0.001,
+      true,
+      0.0
+    ],
+    "regularized-10-decoded": [
+      0.1,
+      0.001,
+      true,
+      2.0
+    ]
+  },
+  "createdUtc": "2026-09-11T02:32:53.057382+00:00",
+  "epochs": 160,
+  "fixtureSource": {
+    "path": "build/neural-transformer/native-v1/transformer/fixture.json",
+    "sha256": "32921c9489cc9b8ffcfe693ef62526ab22da060deb85919d04920923abc516cf"
+  },
+  "historicalTestRetainedUnchanged": true,
+  "incumbent": {
+    "path": "build/neural-transformer/native-v1/transformer/model.json",
+    "sha256": "2b94646bc26cc78df54654817a2a0a9c2c731e29c14dd9bbea1b08feb1ad1102"
+  },
+  "patience": 40,
+  "revision": "transformer-accuracy-v1",
+  "seeds": [
+    20260910,
+    20260911,
+    20260912
+  ],
+  "selection": "Same decoded validation score for all epochs and arms; choose lowest mean across three seeds, then arm name. Choose lowest-score seed within the winning arm, then seed. Freeze before test. No test selection.",
+  "sources": {
+    "tools/neural/V3CandidateModels.java": "3ee6666a97de988c437410d3c2f2dd8b6e8ebdde88a720d30d0901296cf095ac",
+    "tools/neural/V3ColumnTransformerInitializer.java": "43e393bf811c54a1e12e370f4b3b5ff9183ee6af5e7645804ed41a388bde89d2",
+    "tools/neural/V3GeneralTrainingProbe.java": "e4abf47119aaab57c32c48feb66aaa9448d99d66f6ce1960964616c041dbe3ef",
+    "tools/neural/train_gen3_factorized.py": "b3bd89eb6c195c9a4e3262e7ff576087c2fe49cce72c48bcb9beb59527e2fbd5",
+    "tools/neural/train_generalized.py": "ff89253c2329283ed52dc12722f7e6778193200838f2b210ace10e4662ebabf5",
+    "tools/neural/train_transformer.py": "ce5f1220ae44dab66d8cc63297903fb31f0ee15bc7bf7f63c4a7c8e934ee2b1f",
+    "tools/neural/train_transformer_accuracy.py": "18a2f3767b1421ef235b0dd8c4489937883a792c68046d4454c0421f0db6886c",
+    "tools/neural/transformer-accuracy-protocol.md": "6126b9978a0be2869a85833712318d828666b1b50cf1638f5ea8210a137bd503"
+  },
+  "strategies": [
+    "current",
+    "neural",
+    "neuralFirst"
+  ],
+  "test": {
+    "cases": 252,
+    "path": "build/neural-transformer/accuracy-v1/test.jsonl",
+    "sha256": "d015152993e84478d86a68e1852868c71314fc33c7b09948ab02636009270f0f"
+  },
+  "testPolicy": {
+    "deadlineMillis": 30000,
+    "mode": "benchmark",
+    "neuralBudgetMillis": 2000,
+    "neuralMaximumIterations": 16,
+    "workers": 1
+  },
+  "testSelectionAllowed": false,
+  "trainingColumns": 805,
+  "trainingData": {
+    "path": "build/neural-transformer/data-v2/cases.jsonl",
+    "sha256": "ba6d746e1b51368395cc08aacaa1190cc232aa0ee6ba16bc289ffca29feb3930"
+  },
+  "validation": {
+    "cases": 405,
+    "path": "build/neural-transformer/native-v1/validation.jsonl",
+    "qualifiedReferences": 168,
+    "sha256": "aa3cf527b38f5bc5fd933bbf2fce841186bf4e8a752c7a59517d9fd1381f575e"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "candidates": {
+    "gen3-factorized": {
+      "modelPath": "build/neural-gen3/factorized-v1/factorized-model.json",
+      "modelSha256": "19ed50603c2955841a9dd8e5a539aa076b1d8d59a09304b2bc0c613cc520e512"
+    },
+    "mlp": {
+      "cpuFloat32VsFloat64MaximumBranchDifference": 1.1042804715089005e-06,
+      "cpuFloat32VsFloat64MaximumStandardizedDifference": 7.179061719320146e-06,
+      "modelPath": "build/neural-transformer/native-v1/mlp/model.json",
+      "modelSha256": "9569e44056b95e1792e68895080326fc286d436af2237004a08ba53c5f897f9e",
+      "offlineValidationLoss": 1.5000807046890259,
+      "seed": 20260912
+    },
+    "nearest-k1": {
+      "modelPath": "build/neural-gen3/nearest-k1/model.json",
+      "modelSha256": "4975ef506cce65efd888e412b81a572cd8f87316c507ff3fdc627b7c04005eec"
+    },
+    "transformer": {
+      "cpuFloat32VsFloat64MaximumBranchDifference": 2.1009752728673448e-06,
+      "cpuFloat32VsFloat64MaximumStandardizedDifference": 1.1470105325983582e-05,
+      "modelPath": "build/neural-transformer/native-v1/transformer/model.json",
+      "modelSha256": "2b94646bc26cc78df54654817a2a0a9c2c731e29c14dd9bbea1b08feb1ad1102",
+      "offlineValidationLoss": 1.2094178199768066,
+      "seed": 20260912
+    }
+  },
+  "createdUtc": "2026-09-10T16:48:56.700530+00:00",
+  "historicalCampaigns": [
+    "build/neural-transformer/native-v1/fresh-*",
+    "build/neural-transformer/native-v1/benchmark-*"
+  ],
+  "outputPath": "build/neural-transformer/unified-v1",
+  "policy": "Keep the original 405 validation inputs for selection. Measure convergence and runtime together on all 252 test inputs, serially, using one policy for every strategy/model. No 64-case subset.",
+  "priorTestExposure": "These 252 inputs were already released for the native-v1 campaign. This unified run is a fixed-model follow-up, not another independent blind test.",
+  "priorValidationSelectionNeuralBudgetMillis": 10000,
+  "revision": "unified-column-evaluation-v1",
+  "selectedModel": "transformer",
+  "sets": {
+    "test": {
+      "cases": 252,
+      "path": "build/neural-transformer/data-v2/fresh-holdout.jsonl",
+      "sha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082"
+    },
+    "validation": {
+      "cases": 405,
+      "path": "build/neural-transformer/native-v1/validation.jsonl",
+      "sha256": "aa3cf527b38f5bc5fd933bbf2fce841186bf4e8a752c7a59517d9fd1381f575e"
+    }
+  },
+  "sources": {
+    "build/neural-transformer/native-v1/candidates.json": "9ab3a562e677529a11f8244b181889372a1899baa161bdae6b98afa87f28485f",
+    "build/neural-transformer/native-v1/parity.json": "cd3b50b80c2dc0cf330d577ea72813af13d8b07ecce1bf36fd6b8814acc2ff24",
+    "build/neural-transformer/native-v1/selection.json": "570c23ddf1fac0982d0332d37c109203db643ce823099b7485f5e4eef68c5241",
+    "tools/neural/V3CandidateModels.java": "3ee6666a97de988c437410d3c2f2dd8b6e8ebdde88a720d30d0901296cf095ac",
+    "tools/neural/V3ColumnTransformerInitializer.java": "43e393bf811c54a1e12e370f4b3b5ff9183ee6af5e7645804ed41a388bde89d2",
+    "tools/neural/V3GeneralTrainingProbe.java": "e4abf47119aaab57c32c48feb66aaa9448d99d66f6ce1960964616c041dbe3ef"
+  },
+  "strategies": [
+    "current",
+    "neural",
+    "neuralFirst"
+  ],
+  "testPolicy": {
+    "deadlineMillis": 30000,
+    "mode": "benchmark",
+    "neuralBudgetMillis": 2000,
+    "neuralMaximumIterations": 16,
+    "workers": 1
+  },
+  "testSelectionAllowed": false
+}

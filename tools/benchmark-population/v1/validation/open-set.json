@@ -1,0 +1,1186 @@
+{
+ "revision": "benchmark-population-open-set-v1",
+ "population": "validation",
+ "note": "Cases kept in the cleaned population that no archived arm has ever solved strictly. Advisory-only and never-converged cases are deliberately retained; this is the work left.",
+ "cleanedPopulation": 330,
+ "count": 116,
+ "neverConverged": 101,
+ "advisoryOnly": 15,
+ "cases": [
+  {
+   "id": "gd-s31-w0-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1273947995509859
+  },
+  {
+   "id": "gd-s31-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.13029284020695864
+  },
+  {
+   "id": "gd-s38-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05936573488483198
+  },
+  {
+   "id": "gd-s45-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.23461775629603399
+  },
+  {
+   "id": "gd-s45-w1-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2742812837429109
+  },
+  {
+   "id": "gd-s10-w0-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.16528457669584615
+  },
+  {
+   "id": "gd-s45-w1-p4-d2-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.044170061016387686
+  },
+  {
+   "id": "gd-s31-w1-p2-d2-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.19531611526053452
+  },
+  {
+   "id": "gd-s03-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1659238943010751
+  },
+  {
+   "id": "gd-s17-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.15534006410463938
+  },
+  {
+   "id": "gd-s17-w1-p4-d2-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:current:b1",
+    "budget:F0-baseline:current:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:current:b1",
+    "budget:F0-phase-floor:current:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 148,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.02709303862334209
+  },
+  {
+   "id": "gd-s45-w1-p3-d0-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s17-w1-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1358785482131402
+  },
+  {
+   "id": "gd-s59-w1-p1-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.02456056559687389
+  },
+  {
+   "id": "gd-s38-w1-p4-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s24-w1-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.11672959384252626
+  },
+  {
+   "id": "gd-s59-w1-p0-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s31-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05369981190810306
+  },
+  {
+   "id": "gd-s59-w0-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09217066038990762
+  },
+  {
+   "id": "gd-s59-w1-p1-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s52-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.13949937998138084
+  },
+  {
+   "id": "gd-s45-w1-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09190847282496112
+  },
+  {
+   "id": "gd-s10-w1-p4-d1-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0522485715858218
+  },
+  {
+   "id": "gd-s45-w1-p4-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s24-w1-p3-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1762853441236717
+  },
+  {
+   "id": "gd-s52-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2880484021074985
+  },
+  {
+   "id": "gd-s17-w1-p3-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s03-w1-p4-d0-r00",
+   "classicalControlStatus": "INFEASIBLE_SPECIFICATION",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-phase-floor:neural:b1",
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2",
+    "budget:F0-progress-phase-floor:neural:b1",
+    "budget:F0-progress-phase-floor:neural:b2",
+    "budget:F0-progress-phase-floor:neuralFirst:b1",
+    "budget:F0-progress-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 22,
+   "classicalTypedInfeasible": true,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s45-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.030365417625664148
+  },
+  {
+   "id": "gd-s10-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.049383461609551524
+  },
+  {
+   "id": "gd-s52-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:neural:b1",
+    "budget:F0-baseline:neural:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:neural:b1",
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 116,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05012977425142638
+  },
+  {
+   "id": "gd-s31-w1-p4-d3-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1016850623045688
+  },
+  {
+   "id": "gd-s52-w1-p1-d0-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s52-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1368551475845531
+  },
+  {
+   "id": "gd-s59-w1-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.11926610681570439
+  },
+  {
+   "id": "gd-s59-w1-p1-d2-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:current:b1",
+    "budget:F0-baseline:current:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:current:b1",
+    "budget:F0-phase-floor:current:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 132,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.048248519575134964
+  },
+  {
+   "id": "gd-s59-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "hybrid:N-20260910:neural:1",
+    "hybrid:N-20260910:neural:2",
+    "hybrid:N-20260910:neuralFirst:1",
+    "hybrid:N-20260910:neuralFirst:2"
+   ],
+   "solvingArmCount": 4,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09134206048884833
+  },
+  {
+   "id": "gd-s38-w1-p1-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0679875457442765
+  },
+  {
+   "id": "gd-s59-w1-p2-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.020780991097132648
+  },
+  {
+   "id": "gd-s59-w0-p3-d0-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s24-w1-p4-d2-r00",
+   "classicalControlStatus": "INFEASIBLE_SPECIFICATION",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-progress-phase-floor:neural:b1",
+    "budget:F0-progress-phase-floor:neural:b2",
+    "budget:F0-progress-phase-floor:neuralFirst:b1",
+    "budget:F0-progress-phase-floor:neuralFirst:b2",
+    "capacity:L2-20260913-s2080:neural:b1",
+    "capacity:L2-20260913-s2080:neural:b2",
+    "capacity:L2-20260913-s2080:neuralFirst:b1",
+    "capacity:L2-20260913-s2080:neuralFirst:b2"
+   ],
+   "solvingArmCount": 12,
+   "classicalTypedInfeasible": true,
+   "liquidSupplyRatio": 0.035007048866857494
+  },
+  {
+   "id": "gd-s52-w1-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.030922472082201984
+  },
+  {
+   "id": "gd-s52-w1-p0-d1-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.12792400935942813
+  },
+  {
+   "id": "gd-s10-w1-p4-d2-r00",
+   "classicalControlStatus": "INFEASIBLE_SPECIFICATION",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:neural:b1",
+    "budget:F0-baseline:neural:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:neural:b1",
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 72,
+   "classicalTypedInfeasible": true,
+   "liquidSupplyRatio": 0.03562951199680758
+  },
+  {
+   "id": "gd-s59-w0-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1272642080166753
+  },
+  {
+   "id": "gd-s59-w0-p2-d0-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s17-w0-p4-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09779924031636517
+  },
+  {
+   "id": "gd-s17-w1-p1-d1-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:current:b1",
+    "budget:F0-baseline:current:b2",
+    "budget:F0-baseline:neural:b1",
+    "budget:F0-baseline:neural:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:current:b1",
+    "budget:F0-phase-floor:current:b2"
+   ],
+   "solvingArmCount": 186,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.018266098023302625
+  },
+  {
+   "id": "gd-s45-w1-p4-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:neural:b2",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:neural:b1",
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b2",
+    "capacity:L2-20260913-s2080:neuralFirst:b1",
+    "hybrid:N-20260910:neuralFirst:2",
+    "hybrid:Nplus1-20260912:neural:2"
+   ],
+   "solvingArmCount": 30,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.017264609905901993
+  },
+  {
+   "id": "gd-s24-w1-p3-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s45-w0-p0-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05571412451961768
+  },
+  {
+   "id": "gd-s52-w0-p1-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s52-w0-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.14061735780273224
+  },
+  {
+   "id": "gd-s52-w0-p3-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.10235076511013952
+  },
+  {
+   "id": "gd-s31-w0-p3-d3-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.18536732325585661
+  },
+  {
+   "id": "gd-s17-w1-p3-d1-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.12605146082088947
+  },
+  {
+   "id": "gd-s52-w1-p1-d0-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s45-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1663065976865725
+  },
+  {
+   "id": "gd-s45-w1-p1-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s38-w0-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.10776230451420257
+  },
+  {
+   "id": "gd-s31-w0-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09713233312581618
+  },
+  {
+   "id": "gd-s59-w1-p3-d2-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.034682824193560974
+  },
+  {
+   "id": "gd-s10-w0-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.19972623905098086
+  },
+  {
+   "id": "gd-s38-w1-p2-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08201912945462057
+  },
+  {
+   "id": "gd-s52-w0-p3-d3-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06779859478349681
+  },
+  {
+   "id": "gd-s59-w1-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.03974092941910806
+  },
+  {
+   "id": "gd-s52-w1-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.04904249160145671
+  },
+  {
+   "id": "gd-s45-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.03900937028763108
+  },
+  {
+   "id": "gd-s24-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06289267549904849
+  },
+  {
+   "id": "gd-s38-w1-p2-d2-r01",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:current:b1",
+    "budget:F0-baseline:current:b2",
+    "budget:F0-baseline:neural:b1",
+    "budget:F0-baseline:neural:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:current:b1",
+    "budget:F0-phase-floor:current:b2"
+   ],
+   "solvingArmCount": 186,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.041148444072645056
+  },
+  {
+   "id": "gd-s45-w0-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.05688368339814435
+  },
+  {
+   "id": "gd-s24-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.10619751110155184
+  },
+  {
+   "id": "gd-s45-w1-p3-d1-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.02065480890023943
+  },
+  {
+   "id": "gd-s17-w0-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.28456910870929975
+  },
+  {
+   "id": "gd-s17-w1-p0-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s17-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0842144747996065
+  },
+  {
+   "id": "gd-s24-w1-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08510370247870287
+  },
+  {
+   "id": "gd-s38-w0-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08811935568857544
+  },
+  {
+   "id": "gd-s24-w1-p3-d3-r00",
+   "classicalControlStatus": "INFEASIBLE_SPECIFICATION",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-phase-floor:neural:b1",
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2",
+    "budget:F0-progress-phase-floor:neural:b1",
+    "budget:F0-progress-phase-floor:neural:b2",
+    "budget:F0-progress-phase-floor:neuralFirst:b1",
+    "budget:F0-progress-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 70,
+   "classicalTypedInfeasible": true,
+   "liquidSupplyRatio": 0.056934953519925335
+  },
+  {
+   "id": "gd-s10-w1-p2-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.10437155374196176
+  },
+  {
+   "id": "gd-s10-w1-p1-d1-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.12027826008354392
+  },
+  {
+   "id": "gd-s52-w1-p4-d2-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.09902296819736099
+  },
+  {
+   "id": "gd-s31-w1-p3-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.027561403690990097
+  },
+  {
+   "id": "gd-s10-w1-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.14154849946544718
+  },
+  {
+   "id": "gd-s10-w0-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.1078165822204841
+  },
+  {
+   "id": "gd-s38-w1-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.12957948904475391
+  },
+  {
+   "id": "gd-s17-w1-p2-d0-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s59-w1-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06716385608078544
+  },
+  {
+   "id": "gd-s45-w0-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08808232873724439
+  },
+  {
+   "id": "gd-s45-w1-p0-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.18563773008319323
+  },
+  {
+   "id": "gd-s31-w0-p2-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.22433072860874942
+  },
+  {
+   "id": "gd-s59-w0-p2-d2-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06388558580915031
+  },
+  {
+   "id": "gd-s31-w0-p1-d2-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.07998808470666573
+  },
+  {
+   "id": "gd-s52-w1-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.235661224228699
+  },
+  {
+   "id": "gd-s24-w0-p0-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08638877349520781
+  },
+  {
+   "id": "gd-s31-w1-p4-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:neural:b1",
+    "budget:F0-baseline:neural:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:neural:b1",
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 80,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.028349502152264294
+  },
+  {
+   "id": "gd-s59-w0-p0-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.12184895023441827
+  },
+  {
+   "id": "gd-s59-w0-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08711814042931165
+  },
+  {
+   "id": "gd-s52-w1-p1-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.11800277065684998
+  },
+  {
+   "id": "gd-s31-w1-p4-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.024883842735807606
+  },
+  {
+   "id": "gd-s17-w0-p3-d3-r00",
+   "classicalControlStatus": "ACCEPTANCE_AUDIT_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.08362330880061367
+  },
+  {
+   "id": "gd-s59-w1-p4-d2-r00",
+   "classicalControlStatus": "INFEASIBLE_SPECIFICATION",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b2",
+    "capacity:L2-20260913-s2080:neural:b1",
+    "capacity:L2-20260913-s2080:neuralFirst:b1",
+    "trace:C-20260911-s4640:neural:b2",
+    "trace:K-20260911-s4160:neuralFirst:b2",
+    "trace:T-20260911-s3120:neural:b1",
+    "trace:T-20260911-s3120:neural:b2"
+   ],
+   "solvingArmCount": 10,
+   "classicalTypedInfeasible": true,
+   "liquidSupplyRatio": 0.028303309357369605
+  },
+  {
+   "id": "gd-s24-w1-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.17125337644999605
+  },
+  {
+   "id": "gd-s59-w1-p2-d2-r00",
+   "classicalControlStatus": "LINEAR_SOLVE_FAILURE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2383978097496634
+  },
+  {
+   "id": "gd-s17-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0517289611109128
+  },
+  {
+   "id": "gd-s59-w1-p1-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.13327887880958933
+  },
+  {
+   "id": "gd-s59-w0-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.14511420002770575
+  },
+  {
+   "id": "gd-s38-w1-p0-d1-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.06519300069267694
+  },
+  {
+   "id": "gd-s10-w0-p3-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.13418578014504373
+  },
+  {
+   "id": "gd-s45-w0-p0-d0-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s59-w0-p2-d3-r00",
+   "classicalControlStatus": "DEADLINE_EXCEEDED",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.24766700821579615
+  },
+  {
+   "id": "gd-s52-w1-p4-d0-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  },
+  {
+   "id": "gd-s38-w1-p1-d2-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.2570513388298938
+  },
+  {
+   "id": "gd-s52-w0-p4-d3-r00",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": false,
+   "solvingArms": [],
+   "solvingArmCount": 0,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.20123660527824738
+  },
+  {
+   "id": "gd-s17-w1-p2-d3-r00",
+   "classicalControlStatus": "ACCEPTED",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:current:b1",
+    "budget:F0-baseline:current:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:current:b1",
+    "budget:F0-phase-floor:current:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 169,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.051550703270667436
+  },
+  {
+   "id": "gd-s45-w1-p4-d0-r01",
+   "classicalControlStatus": "NONCONVERGENCE",
+   "everSolvedAdvisory": true,
+   "solvingArms": [
+    "budget:F0-baseline:neural:b1",
+    "budget:F0-baseline:neural:b2",
+    "budget:F0-baseline:neuralFirst:b1",
+    "budget:F0-baseline:neuralFirst:b2",
+    "budget:F0-phase-floor:neural:b1",
+    "budget:F0-phase-floor:neural:b2",
+    "budget:F0-phase-floor:neuralFirst:b1",
+    "budget:F0-phase-floor:neuralFirst:b2"
+   ],
+   "solvingArmCount": 100,
+   "classicalTypedInfeasible": false,
+   "liquidSupplyRatio": 0.0
+  }
+ ]
+}

@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:spine_carbon_dioxide",
+  "component": "CarbonDioxide",
+  "revision": "spine-carbon_dioxide-r2",
+  "source": "P2 reference spine (batch 2026-09-24-coolprop-low-temperature, decision D6): CoolProp alpha0 from the triple point to 975 K (join at the smallest Cp step on a 25 K grid, -0.0073 %), NASA CEA above; ATcT 1.220 formation enthalpy; CEA standard entropy. Built by tools/spine-join-measurement/build-spine-records.mjs. r2 (P3 WP3): the same alpha0 continued below the triple point to 90 K as its own segment, graded estimated_declared_error, for the CO2-lean liquid in liquid methane (fixture F7).",
+  "molar_mass_kg_per_mol": 0.0440098,
+  "formation_enthalpy": {
+    "value_j_per_mol": -393477,
+    "uncertainty_j_per_mol": 15,
+    "temperature_kelvin": 298.15,
+    "source": "ATcT 1.220 (124-38-9*0) as carried in CoolProp master 9b35f538 INFO.STANDARD_STATE"
+  },
+  "standard_entropy": {
+    "value_j_per_mol_kelvin": 213.7864,
+    "pressure_pascal": 100000,
+    "source": "NASA CEA thermo.inp CO2 (g 9/99) polynomial at 298.15 K and 1e5 Pa with R = 8.314472; CEA states no uncertainty, the uncertainty given is |CEA - JANAF| with JANAF C-095 S(298.15) = 213.795 (Chase 1998), a disagreement estimate",
+    "uncertainty_j_per_mol_kelvin": 0.0086
+  },
+  "ideal_gas": {
+    "maximum_cp_step_fraction": 0.005,
+    "segments": [
+      {
+        "type": "helmholtz_ideal_terms",
+        "temperature_min_kelvin": 90,
+        "temperature_max_kelvin": 216.592,
+        "source": "CoolProp CarbonDioxide.json EOS[0].alpha0 (revision ae81610e, MIT; Span-JPCRD-1996), the terms of the next segment continued below the triple point, where the Span-Wagner equation of state states no range; lead and enthalpy-entropy offset terms omitted (constants only)",
+        "revision": "coolprop-ae81610e-carbon_dioxide-alpha0-subtriple",
+        "coverage": {
+          "grade": "estimated_declared_error",
+          "evidence": "Extrapolation: the Span-Wagner alpha0 is a sum of Planck-Einstein (harmonic-oscillator) terms on the rigid linear-rotor limit Cp0 = 3.5 R, analytic below the triple point, but the equation of state's range starts at the triple point 216.592 K, so nothing in the source qualifies it below. Held to JANAF C-095 (Chase 1998) at 100 and 200 K within 0.2 % by ReferenceSpineTest (P3: -0.008 % and +0.018 %); JANAF tabulates no 150 K value. Declared error 0.2 % in Cp from 90 K to the triple point."
+        },
+        "gas_constant_j_per_mol_kelvin": 8.31451,
+        "reducing_temperature_kelvin": 304.1282,
+        "terms": [
+          {
+            "type": "log_tau",
+            "a": 2.5
+          },
+          {
+            "type": "planck_einstein",
+            "n": [
+              1.99427042,
+              0.62105248,
+              0.41195293,
+              1.04028922,
+              0.08327678
+            ],
+            "t": [
+              3.15163,
+              6.1119,
+              6.77708,
+              11.32384,
+              27.08792
+            ]
+          }
+        ]
+      },
+      {
+        "type": "helmholtz_ideal_terms",
+        "temperature_min_kelvin": 216.592,
+        "temperature_max_kelvin": 975,
+        "source": "CoolProp CarbonDioxide.json EOS[0].alpha0 (revision ae81610e, MIT; Span-JPCRD-1996); lead and enthalpy-entropy offset terms omitted (constants only)",
+        "revision": "coolprop-ae81610e-carbon_dioxide-alpha0",
+        "gas_constant_j_per_mol_kelvin": 8.31451,
+        "reducing_temperature_kelvin": 304.1282,
+        "terms": [
+          {
+            "type": "log_tau",
+            "a": 2.5
+          },
+          {
+            "type": "planck_einstein",
+            "n": [
+              1.99427042,
+              0.62105248,
+              0.41195293,
+              1.04028922,
+              0.08327678
+            ],
+            "t": [
+              3.15163,
+              6.1119,
+              6.77708,
+              11.32384,
+              27.08792
+            ]
+          }
+        ]
+      },
+      {
+        "type": "nasa9",
+        "temperature_min_kelvin": 975,
+        "temperature_max_kelvin": 1000,
+        "source": "NASA CEA thermo.inp (github.com/nasa/cea 3f4441d2, Apache-2.0; McBride, Zehe and Gordon 2002, NASA/TP-2002-211556), CO2 record g 9/99 (Gurvich,1991 pt1 p27 pt2 p24.), interval 200..1000 K; coefficients a1..a7, b1, b2 as printed, b1 and b2 not used",
+        "revision": "cea-3f4441d2-carbon_dioxide-200-1000",
+        "gas_constant_j_per_mol_kelvin": 8.314472,
+        "coefficients": [
+          49436.5054,
+          -626.411601,
+          5.30172524,
+          0.002503813816,
+          -2.127308728e-7,
+          -7.68998878e-10,
+          2.849677801e-13,
+          -45281.9846,
+          -7.04827944
+        ]
+      },
+      {
+        "type": "nasa9",
+        "temperature_min_kelvin": 1000,
+        "temperature_max_kelvin": 6000,
+        "source": "NASA CEA thermo.inp (github.com/nasa/cea 3f4441d2, Apache-2.0; McBride, Zehe and Gordon 2002, NASA/TP-2002-211556), CO2 record g 9/99 (Gurvich,1991 pt1 p27 pt2 p24.), interval 1000..6000 K; coefficients a1..a7, b1, b2 as printed, b1 and b2 not used",
+        "revision": "cea-3f4441d2-carbon_dioxide-1000-6000",
+        "gas_constant_j_per_mol_kelvin": 8.314472,
+        "coefficients": [
+          117696.2419,
+          -1788.791477,
+          8.29152319,
+          -0.0000922315678,
+          4.86367688e-9,
+          -1.891053312e-12,
+          6.33003659e-16,
+          -39083.5059,
+          -26.52669281
+        ]
+      }
+    ]
+  },
+  "groups": {
+    "scheme": "eppr78-2022",
+    "counts": {
+      "CO2": 1
+    }
+  },
+  "coverage": {
+    "grade": "qualified",
+    "evidence": "P2 ReferenceSpineTest: CoolProp segment equal to the Java Helmholtz oracle to 1e-9; CEA Cp within 0.2 % of JANAF C-095 at 1000, 1100 and 1200 K (D7). Applies from the triple point 216.592 K; the segment below it carries its own grade (estimated_declared_error)."
+  }
+}

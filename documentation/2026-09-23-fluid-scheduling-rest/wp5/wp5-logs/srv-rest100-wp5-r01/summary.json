@@ -1,0 +1,170 @@
+{
+  "runId": "srv-rest100-wp5-r01",
+  "scenario": "rest100",
+  "kind": "server",
+  "windowSeconds": 60.004,
+  "configuredWindowSeconds": 60,
+  "warmupSeconds": 60,
+  "windowStartIso": "2026-09-23T12:52:15.791Z",
+  "placementMillis": 766,
+  "jfrRssMiB": {
+    "samples": 57,
+    "mean": 1388.135348135965,
+    "max": 1417.89453125,
+    "last": 1342.56640625
+  },
+  "mcServerTickTimeMs": {
+    "samples": 57,
+    "p50": 0.15765099999999999,
+    "p95": 0.21556,
+    "max": 0.38025800000000004,
+    "mean": 0.16250861403508773
+  },
+  "jfrCpuCores": {
+    "samples": 57,
+    "jvm": 0.08306675139649124,
+    "user": 0.02126994750315789,
+    "system": 0.06179680389333333,
+    "machine": 1.4342940477192978
+  },
+  "gc": {
+    "count": 0,
+    "pauseMsTotal": 0,
+    "longestPauseMs": 0,
+    "names": [],
+    "heapInspectionGcs": 0
+  },
+  "heapMiB": {
+    "afterGcMean": null,
+    "afterGcLast": null,
+    "afterGcSamples": 0,
+    "afterFullGcAtJfrStartEnd": [],
+    "committedMax": null
+  },
+  "allocationMiBPerSecond": 0.29665202655130435,
+  "process": {
+    "samples": 60,
+    "cpuCores": 0.09718673301280974,
+    "userCores": 0.04018802743502673,
+    "kernelCores": 0.05699870557778301,
+    "workingSetMiB": {
+      "mean": 1389.4279296875,
+      "last": 1342.58984375,
+      "max": 1417.89453125
+    },
+    "privateMiB": {
+      "mean": 1453.8930338541666,
+      "last": 1407.66796875
+    },
+    "threads": {
+      "mean": 91.53333333333333,
+      "last": 85
+    }
+  },
+  "threadDumps": 7,
+  "threadCores": {
+    "jvmOther": 0.001302079861342577,
+    "observation": 0.05286114259049397,
+    "jit": 0.011978201453236451,
+    "other": 0,
+    "server": 0.007291180587960803,
+    "fluidWorkers": 0,
+    "gc": 0.0005207986134257716
+  },
+  "threadCoresTotal": 0.07395340310645958,
+  "threadCoresUnattributed": 0.02323332990635016,
+  "topThreads": [
+    "JFR Periodic Tasks=0.0529",
+    "C2 CompilerThread0=0.0112",
+    "Server thread=0.0073",
+    "VM Periodic Task Thread=0.0010",
+    "G1 Refine#0=0.0005",
+    "C1 CompilerThread0=0.0003",
+    "VM Thread=0.0003",
+    "C2 CompilerThread3=0.0003",
+    "C2 CompilerThread1=0.0003",
+    "Reference Handler=0.0000",
+    "Finalizer=0.0000",
+    "Signal Dispatcher=0.0000"
+  ],
+  "threadNames": [
+    "Attach Listener",
+    "C1 CompilerThread#",
+    "C2 CompilerThread#",
+    "Common-Cleaner",
+    "DestroyJavaVM",
+    "FileSystemWatchService",
+    "Finalizer",
+    "ForkJoinPool-3-worker#",
+    "ForkJoinPool.commonPool-worker#",
+    "G1 Conc#",
+    "G1 Main Marker",
+    "G1 Refine#",
+    "G1 Service",
+    "GC Thread#",
+    "JFR Periodic Tasks",
+    "JFR Recorder Thread",
+    "JNA Cleaner",
+    "LanServerPinger #",
+    "Monitor Deflation Thread",
+    "Netty Server IO #",
+    "Notification Thread",
+    "RCON Client /127.0.0.1 #",
+    "RCON Listener #",
+    "Reference Handler",
+    "Server thread",
+    "Service Thread",
+    "Signal Dispatcher",
+    "Timer hack thread",
+    "VM Periodic Task Thread",
+    "VM Thread",
+    "Worker-Main#",
+    "Yggdrasil Key Fetcher",
+    "config-file-watcher-0#",
+    "createcheme-cpu-solve#",
+    "kubejs-background-thread",
+    "modloading-sync-worker",
+    "modloading-worker#"
+  ],
+  "ticks": {
+    "count": 1200,
+    "tickMs": {
+      "p50": 0.1723,
+      "p95": 0.318,
+      "p99": 0.6468,
+      "max": 1.8387,
+      "mean": 0.20064691666666695
+    },
+    "engineMs": {
+      "p50": 0.011,
+      "p95": 0.0241,
+      "p99": 0.0543,
+      "max": 0.1817,
+      "mean": 0.013465833333333364
+    },
+    "ticksPerSecond": 19.998666755549632
+  },
+  "diagCountersInWindow": {},
+  "diagPeriodsInWindow": 6,
+  "endState": {
+    "onlineTick": 2600,
+    "devices": 500,
+    "islands": 100,
+    "kinds": {
+      "REST": 100
+    },
+    "statuses": {
+      "RESTING": 100
+    },
+    "workersActive": 0,
+    "workersLimit": 1
+  },
+  "placementGap": {
+    "t": 1790167871293,
+    "ms": 788.3,
+    "devices": 500
+  },
+  "heldLines": 0,
+  "liveHeapMiB": 305.8212890625,
+  "committedHeapAfterFullGcMiB": 956
+}

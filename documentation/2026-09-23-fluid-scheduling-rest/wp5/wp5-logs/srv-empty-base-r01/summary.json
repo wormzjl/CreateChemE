@@ -1,0 +1,163 @@
+{
+  "runId": "srv-empty-base-r01",
+  "scenario": "empty",
+  "kind": "server",
+  "windowSeconds": 60.005,
+  "configuredWindowSeconds": 60,
+  "warmupSeconds": 60,
+  "windowStartIso": "2026-09-23T12:47:18.002Z",
+  "placementMillis": 5,
+  "jfrRssMiB": {
+    "samples": 57,
+    "mean": 1628.7255345394738,
+    "max": 1657.796875,
+    "last": 1644.78125
+  },
+  "mcServerTickTimeMs": {
+    "samples": 57,
+    "p50": 0.181675,
+    "p95": 0.29174300000000003,
+    "max": 0.421737,
+    "mean": 0.192823947368421
+  },
+  "jfrCpuCores": {
+    "samples": 57,
+    "jvm": 0.08951103981754387,
+    "user": 0.020153297445614036,
+    "system": 0.06935774237192982,
+    "machine": 1.5425051472280702
+  },
+  "gc": {
+    "count": 0,
+    "pauseMsTotal": 0,
+    "longestPauseMs": 0,
+    "names": [],
+    "heapInspectionGcs": 0
+  },
+  "heapMiB": {
+    "afterGcMean": null,
+    "afterGcLast": null,
+    "afterGcSamples": 0,
+    "afterFullGcAtJfrStartEnd": [],
+    "committedMax": null
+  },
+  "allocationMiBPerSecond": 0.30532448282940855,
+  "process": {
+    "samples": 60,
+    "cpuCores": 0.09591370814483444,
+    "userCores": 0.03862826054052236,
+    "kernelCores": 0.05728544760431207,
+    "workingSetMiB": {
+      "mean": 1628.7585286458334,
+      "last": 1644.78125,
+      "max": 1657.9140625
+    },
+    "privateMiB": {
+      "mean": 1718.8352864583333,
+      "last": 1732.9765625
+    },
+    "threads": {
+      "mean": 87.88333333333334,
+      "last": 81
+    }
+  },
+  "threadDumps": 7,
+  "threadCores": {
+    "jvmOther": 0.0002603116406966087,
+    "observation": 0.05312057328555953,
+    "jit": 0.011457211899008413,
+    "other": 0.0002604782934755437,
+    "server": 0.004166319473377218,
+    "gc": 0.0002603116406966087
+  },
+  "threadCoresTotal": 0.06952520623281391,
+  "threadCoresUnattributed": 0.026388501912020523,
+  "topThreads": [
+    "JFR Periodic Tasks=0.0526",
+    "C2 CompilerThread0=0.0102",
+    "Server thread=0.0042",
+    "C1 CompilerThread0=0.0010",
+    "config-file-watcher-0-0=0.0003",
+    "RCON Listener #1=0.0003",
+    "VM Periodic Task Thread=0.0003",
+    "G1 Refine#0=0.0003",
+    "JFR Recorder Thread=0.0003",
+    "C1 CompilerThread1=0.0003",
+    "Reference Handler=0.0000",
+    "Finalizer=0.0000"
+  ],
+  "threadNames": [
+    "Attach Listener",
+    "C1 CompilerThread#",
+    "C2 CompilerThread#",
+    "Common-Cleaner",
+    "DestroyJavaVM",
+    "FileSystemWatchService",
+    "Finalizer",
+    "ForkJoinPool-3-worker#",
+    "ForkJoinPool.commonPool-worker#",
+    "G1 Conc#",
+    "G1 Main Marker",
+    "G1 Refine#",
+    "G1 Service",
+    "GC Thread#",
+    "JFR Periodic Tasks",
+    "JFR Recorder Thread",
+    "JNA Cleaner",
+    "LanServerPinger #",
+    "Monitor Deflation Thread",
+    "Netty Server IO #",
+    "Notification Thread",
+    "RCON Client /127.0.0.1 #",
+    "RCON Listener #",
+    "Reference Handler",
+    "Server thread",
+    "Service Thread",
+    "Signal Dispatcher",
+    "Timer hack thread",
+    "VM Periodic Task Thread",
+    "VM Thread",
+    "Worker-Main#",
+    "Yggdrasil Key Fetcher",
+    "config-file-watcher-0#",
+    "kubejs-background-thread",
+    "modloading-sync-worker",
+    "modloading-worker#"
+  ],
+  "ticks": {
+    "count": 1200,
+    "tickMs": {
+      "p50": 0.206,
+      "p95": 0.4094,
+      "p99": 0.7825,
+      "max": 1.7524,
+      "mean": 0.24234524999999987
+    },
+    "engineMs": {
+      "p50": 0.0217,
+      "p95": 0.0621,
+      "p99": 0.1186,
+      "max": 0.2546,
+      "mean": 0.027704749999999966
+    },
+    "ticksPerSecond": 19.99833347221065
+  },
+  "diagCountersInWindow": {
+    "topologySnapshots": 1200,
+    "readinessPumps": 3600
+  },
+  "diagPeriodsInWindow": 6,
+  "endState": {
+    "onlineTick": 2600,
+    "devices": 0,
+    "islands": 0,
+    "kinds": {},
+    "statuses": {},
+    "workersActive": 0,
+    "workersLimit": 1
+  },
+  "placementGap": null,
+  "heldLines": 0,
+  "liveHeapMiB": 304.4609375,
+  "committedHeapAfterFullGcMiB": 1068
+}

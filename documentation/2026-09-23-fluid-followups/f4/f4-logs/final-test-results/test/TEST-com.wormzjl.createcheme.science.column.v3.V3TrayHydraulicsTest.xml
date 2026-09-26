@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:21.435Z" hostname="WORMZ-PC" time="0.003">
+  <properties/>
+  <testcase name="aTrayWithoutVaporKeepsOnlyItsFrothHeadAndTheBubbleResidual()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="theTotalDropMismatchIsNormalisedOnTheMarchedProfileSoAZeroNominalReportsOne()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="aConstantDropMarchesToTheUniformProfileOnTheNMinusOneIntervals()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="aNonPositiveDiameterIsNotASieveTray()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="aFloodedTrayNamesItsCauseAndItsRemedy()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.001"/>
+  <testcase name="thePinnedTrayReproducesTheIndependentlyEvaluatedTermsAndFloodFraction()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="theMarchedProfileIsRejectedWhenItDoesNotDescribeTheAuthoredColumn()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="trayTrafficCarriesTheAuthoredSteamAndTheFreeWaterOfTheTrayAbove()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="aSummaryFindsTheWorstTrayItsSplitAndTheMeanDropOverTheIntervals()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="theDryTermRisesWithTheVaporLoadAndFallsWithTheDiameterAtFixedProperties()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.0"/>
+  <testcase name="theDryTermFallsWithThePressureItIsEvaluatedAtBecauseTheVaporExpands()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

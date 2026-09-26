@@ -1,0 +1,69 @@
+===== science.thermo.qualification.G3F7CarbonDioxideInLiquidMethaneTest.xml tests="1" skipped="0" failures="0" errors="0"
+G3 F7 CO2 in liquid methane, 30 fluid states (one-phase rows at 2 MPa or x_CO2 1e-3 printed); the crystal competition below
+G3 F7 | T K | P MPa | x_CO2 | Classification (label) | Feed verdict | rho kg/m3 | ln phi_CO2 | f_CO2 Pa | Grade (research contract) | CO2 spine grade at T | Production paths |
+G3 F7 |---|---|---|---|---|---|---|---|---|---|---|
+G3 F7 | 91 | 0.5 | 1e-03 | SINGLE_LIQUID (LIQUID) | STABLE | 460.3 | -8.7662 | 0.07795 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 91 | 2.0 | 1e-04 | SINGLE_FLUID (LIQUID) | STABLE | 460.3 | -10.0860 | 0.008332 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 91 | 2.0 | 1e-03 | SINGLE_FLUID (LIQUID) | STABLE | 461.1 | -10.0957 | 0.08251 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 95 | 0.5 | 1e-03 | SINGLE_LIQUID (LIQUID) | STABLE | 455.5 | -8.0041 | 0.1670 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 95 | 2.0 | 1e-04 | SINGLE_FLUID (LIQUID) | STABLE | 455.6 | -9.3270 | 0.01780 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 95 | 2.0 | 1e-03 | SINGLE_FLUID (LIQUID) | STABLE | 456.4 | -9.3361 | 0.1764 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 100 | 0.5 | 1e-03 | SINGLE_LIQUID (LIQUID) | STABLE | 449.2 | -7.1362 | 0.3979 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 100 | 2.0 | 1e-04 | SINGLE_FLUID (LIQUID) | STABLE | 449.5 | -8.4628 | 0.04224 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 100 | 2.0 | 1e-03 | SINGLE_FLUID (LIQUID) | STABLE | 450.3 | -8.4711 | 0.4189 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 110 | 0.5 | 1e-03 | SINGLE_LIQUID (LIQUID) | STABLE | 435.6 | -5.6365 | 1.783 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 110 | 2.0 | 1e-04 | SINGLE_FLUID (LIQUID) | STABLE | 436.1 | -6.9695 | 0.1880 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 110 | 2.0 | 1e-03 | SINGLE_FLUID (LIQUID) | STABLE | 436.9 | -6.9767 | 1.867 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 110 | 2.0 | 1e-02 | SINGLE_FLUID (LIQUID) | STABLE | 444.7 | -7.0476 | 17.39 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 120 | 0.5 | 1e-03 | SINGLE_LIQUID (LIQUID) | STABLE | 420.2 | -4.3886 | 6.209 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 120 | 2.0 | 1e-04 | SINGLE_FLUID (LIQUID) | STABLE | 421.3 | -5.7274 | 0.6511 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 120 | 2.0 | 1e-03 | SINGLE_FLUID (LIQUID) | STABLE | 422.0 | -5.7336 | 6.471 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 | 120 | 2.0 | 1e-02 | SINGLE_FLUID (LIQUID) | STABLE | 429.7 | -5.7949 | 60.86 | RESEARCH_ONLY | ESTIMATED_DECLARED_ERROR | network: answered (P5); contract: CarbonDioxide below 216.592 K |
+G3 F7 split fluid-only splits: a subcooled CO2-rich liquid beside the methane liquid (both liquid-like: LIQUID_LIQUID since P3 WP7d)
+G3 F7 split | T K | P MPa | x_CO2 | Classification | Phases (engine label: amount, x_CO2, density) | Grade |
+G3 F7 split |---|---|---|---|---|---|
+G3 F7 split | 91 | 0.5 | 1e-02 | LIQUID_LIQUID | LIQUID: fraction 0.9933, x_CO2 0.0033, rho 462.4 kg/m3; LIQUID: fraction 0.0067, x_CO2 0.9973, rho 1483.6 kg/m3 | RESEARCH_ONLY |
+G3 F7 split | 91 | 2.0 | 1e-02 | LIQUID_LIQUID | LIQUID: fraction 0.9933, x_CO2 0.0033, rho 463.2 kg/m3; LIQUID: fraction 0.0067, x_CO2 0.9973, rho 1483.9 kg/m3 | RESEARCH_ONLY |
+G3 F7 split | 95 | 0.5 | 1e-02 | LIQUID_LIQUID | LIQUID: fraction 0.9949, x_CO2 0.0049, rho 459.0 kg/m3; LIQUID: fraction 0.0051, x_CO2 0.9960, rho 1476.3 kg/m3 | RESEARCH_ONLY |
+G3 F7 split | 95 | 2.0 | 1e-02 | LIQUID_LIQUID | LIQUID: fraction 0.9949, x_CO2 0.0049, rho 459.9 kg/m3; LIQUID: fraction 0.0051, x_CO2 0.9960, rho 1476.7 kg/m3 | RESEARCH_ONLY |
+G3 F7 split | 100 | 0.5 | 1e-02 | LIQUID_LIQUID | LIQUID: fraction 0.9976, x_CO2 0.0076, rho 455.0 kg/m3; LIQUID: fraction 0.0024, x_CO2 0.9938, rho 1466.2 kg/m3 | RESEARCH_ONLY |
+G3 F7 split | 100 | 2.0 | 1e-02 | LIQUID_LIQUID | LIQUID: fraction 0.9976, x_CO2 0.0076, rho 456.1 kg/m3; LIQUID: fraction 0.0024, x_CO2 0.9938, rho 1466.6 kg/m3 | RESEARCH_ONLY |
+G3 F7 crystal competition (P5) CO2 in liquid methane on the pilot's crystal competition: 30 states answered, 26 with the crystal; worst |mu - mu_s|/RT 5.2e-10, conservation 1.7e-16, liquidus consistency 4.8e-09 K
+G3 F7 crystal competition (P5) | T K | P MPa | x_CO2 | Classification | crystal mol | liquid x_CO2 | freezing T of the liquid - T, K | |mu - mu_s|/RT | conservation | network |
+G3 F7 crystal competition (P5) |---|---|---|---|---|---|---|---|---|---|
+G3 F7 crystal competition (P5) | 91 | 0.5 | 1e-04 | LIQUID_SOLID | 8.946e-05 | 1.054e-05 | -3.24e-09 | 1.6e-10 | 1.4e-16 | liquid slot |
+G3 F7 crystal competition (P5) | 91 | 0.5 | 1e-03 | LIQUID_SOLID | 0.0009895 | 1.054e-05 | -2.40e-09 | 0.0e+00 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 91 | 0.5 | 1e-02 | LIQUID_SOLID | 0.009990 | 1.054e-05 | -2.41e-09 | 2.1e-12 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 91 | 2.0 | 1e-04 | LIQUID_SOLID | 8.951e-05 | 1.049e-05 | -3.18e-09 | 1.6e-10 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 91 | 2.0 | 1e-03 | LIQUID_SOLID | 0.0009895 | 1.049e-05 | -2.34e-09 | 0.0e+00 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 91 | 2.0 | 1e-02 | LIQUID_SOLID | 0.009990 | 1.049e-05 | -2.34e-09 | 0.0e+00 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 95 | 0.5 | 1e-04 | LIQUID_SOLID | 7.794e-05 | 2.206e-05 | -4.76e-10 | 8.1e-11 | 1.4e-16 | liquid slot |
+G3 F7 crystal competition (P5) | 95 | 0.5 | 1e-03 | LIQUID_SOLID | 0.0009780 | 2.206e-05 | -1.72e-11 | 7.4e-14 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 95 | 0.5 | 1e-02 | LIQUID_SOLID | 0.009978 | 2.206e-05 | -2.87e-11 | 1.8e-12 | 1.7e-16 | liquid slot |
+G3 F7 crystal competition (P5) | 95 | 2.0 | 1e-04 | LIQUID_SOLID | 7.803e-05 | 2.197e-05 | -4.77e-10 | 8.1e-11 | 1.4e-16 | liquid slot |
+G3 F7 crystal competition (P5) | 95 | 2.0 | 1e-03 | LIQUID_SOLID | 0.0009780 | 2.197e-05 | -1.66e-11 | 0.0e+00 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 95 | 2.0 | 1e-02 | LIQUID_SOLID | 0.009978 | 2.197e-05 | -1.70e-11 | 1.5e-13 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 100 | 0.5 | 1e-04 | LIQUID_SOLID | 4.907e-05 | 5.093e-05 | -7.23e-10 | 9.4e-12 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 100 | 0.5 | 1e-03 | LIQUID_SOLID | 0.0009491 | 5.093e-05 | -6.64e-10 | 0.0e+00 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 100 | 0.5 | 1e-02 | LIQUID_SOLID | 0.009950 | 5.093e-05 | -6.67e-10 | 4.2e-13 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 100 | 2.0 | 1e-04 | LIQUID_SOLID | 4.926e-05 | 5.075e-05 | -6.75e-10 | 9.5e-12 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 100 | 2.0 | 1e-03 | LIQUID_SOLID | 0.0009493 | 5.075e-05 | -6.14e-10 | 0.0e+00 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 100 | 2.0 | 1e-02 | LIQUID_SOLID | 0.009950 | 5.075e-05 | -6.18e-10 | 4.9e-13 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 110 | 0.5 | 1e-04 | SINGLE_LIQUID |  | 0.0001000 |  |  | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 110 | 0.5 | 1e-03 | LIQUID_SOLID | 0.0007860 | 0.0002141 | +6.96e-13 | 6.4e-14 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 110 | 0.5 | 1e-02 | LIQUID_SOLID | 0.009788 | 0.0002141 | -2.56e-11 | 3.5e-12 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 110 | 2.0 | 1e-04 | SINGLE_FLUID |  | 0.0001000 |  |  | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 110 | 2.0 | 1e-03 | LIQUID_SOLID | 0.0007866 | 0.0002136 | -8.53e-14 | 0.0e+00 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 110 | 2.0 | 1e-02 | LIQUID_SOLID | 0.009788 | 0.0002136 | -2.57e-11 | 3.4e-12 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 120 | 0.5 | 1e-04 | SINGLE_LIQUID |  | 0.0001000 |  |  | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 120 | 0.5 | 1e-03 | LIQUID_SOLID | 0.0002965 | 0.0007037 | -4.80e-09 | 5.2e-10 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 120 | 0.5 | 1e-02 | LIQUID_SOLID | 0.009303 | 0.0007037 | -7.00e-11 | 7.5e-12 | 1.7e-16 | liquid slot |
+G3 F7 crystal competition (P5) | 120 | 2.0 | 1e-04 | SINGLE_FLUID |  | 0.0001000 |  |  | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 120 | 2.0 | 1e-03 | LIQUID_SOLID | 0.0002973 | 0.0007029 | -4.84e-09 | 5.2e-10 | 0.0e+00 | liquid slot |
+G3 F7 crystal competition (P5) | 120 | 2.0 | 1e-02 | LIQUID_SOLID | 0.009304 | 0.0007029 | -6.90e-11 | 7.5e-12 | 0.0e+00 | liquid slot |
+G3 F7 solubility against Shen 2012 / Gao 2012 solubility of CO2 in liquid CH4 beside the crystal (G5F2 scores the liquidus)
+G3 F7 solubility against Shen 2012 / Gao 2012 | T K | P MPa | x_CO2 engine | x_CO2 data | ratio |
+G3 F7 solubility against Shen 2012 / Gao 2012 |---|---|---|---|---|
+G3 F7 solubility against Shen 2012 / Gao 2012 | 112 | 1.0 | 0.0002763 | 0.0002130 | 1.297 |
+G3 F7 solubility against Shen 2012 / Gao 2012 | 123.2 | 1.0 | 0.0009824 | 0.0008230 | 1.194 |
+

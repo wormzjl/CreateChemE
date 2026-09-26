@@ -1,0 +1,338 @@
+# Xiong X., Lin W., Jia R., Song Y., Gu A. (2015). Measurement and Calculation of CO2 Frost Points in CH4 + CO2/CH4 + CO2 + N2/
+# CH4 + CO2 + C2H6 Mixtures at Low Temperatures. J. Chem. Eng. Data 60(11), 3077-3086. DOI 10.1021/acs.jced.5b00059.
+# Frost (sublimation) pressure of the gas at given T and gas composition, static analytic with sampling, 153.15 to 193.15 K,
+# 219 to 3038 kPa. Set 3: CH4 + CO2, 64 points, y_CO2 0.001 to 0.3407. Set 1: CH4 + CO2 + N2, 141 rows = the same 64 binary
+# points with y_N2 = 0 plus 77 points with y_N2 up to 0.0574. Set 2: CH4 + C2H6 + CO2, 117 rows = the 64 binary points with
+# y_C2H6 = 0 plus 53 points with y_C2H6 up to 0.0594. Unique points: 194. Do not count the binary rows three times.
+# Holdout role: P5 context (frost points in CH4) and the N2 effect at 3 to 6 % N2; no CO2 + N2 binary.
+# Source: NIST TRC ThermoML Archive (IUPAC ThermoML), https://trc.nist.gov/ThermoML/10.1021/acs.jced.5b00059.xml, retrieved 2026-09-25;
+# archive DOI 10.18434/mds2-2422. TRC terms: no warranty by the publisher, editors or NIST/TRC; TRC requests that works
+# using ThermoML Archive data cite them. The XML is TRC's compilation of the paper's tables, not the paper itself.
+# Flattened with thermoml_to_tsv.py (this folder): one row per property value, digits exactly as in the XML.
+# U95 = nCombExpandUncertValue, expanded uncertainty at 95 % assessed by the TRC data-file compiler (not the authors' own
+# statement unless the paper gives the same number). Labels abbreviated: fluid/liquid/gas/crystal, CO2/CH4/N2/C2H6.
+# Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+# XML file: thermoml/xiong-2015-jced-60-3077-acs.jced.5b00059.xml (sha256 00876ad7d95f570aab9a063986f21fdbbd2e976da0b23046279465c400481e6a)
+set	system	phases	property	method	value	U95	Temperature, K@gas	Mole fraction[CO2]@gas	Mole fraction[N2]@gas	Mole fraction[C2H6]@gas
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1235	53	153.15	0.001	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	996	42	153.15	0.0013	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	878	42	153.15	0.0016	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	726	43	153.15	0.002	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	652	46	153.15	0.0022	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	559	39	153.15	0.0025	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	490	41	153.15	0.0029	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	437	31	153.15	0.0032	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	380	32	153.15	0.0036	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	270	49	153.15	0.005	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	219	21	153.15	0.0063	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1183	104	153.15	0.0016	0.0318	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	970	61	153.15	0.0013	0.0313	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	786	143	153.15	0.0015	0.0311	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	590	52	153.15	0.0025	0.0304	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	423	52	153.15	0.0032	0.0297	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	273	42	153.15	0.0048	0.0293	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1067	26	153.15	0.0012	0.0567	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	882	39	153.15	0.0024	0.0532	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	679	46	153.15	0.0021	0.0486	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	525	80	153.15	0.0027	0.0434	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	400	42	153.15	0.0031	0.0497	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	279	63	153.15	0.0042	0.0513	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1074	39	158.15	0.0048	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	970	41	158.15	0.0041	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	865	31	158.15	0.0033	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	761	20	158.15	0.0039	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	649	32	158.15	0.0048	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	561	81	158.15	0.0056	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	474	33	158.15	0.0066	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	415	36	158.15	0.0075	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	341	32	158.15	0.0092	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	271	34	158.15	0.0113	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1510	34	168.15	0.0082	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1335	35	168.15	0.0071	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1130	39	168.15	0.0091	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	953	28	168.15	0.0108	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	791	33	168.15	0.0125	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	669	67	168.15	0.0145	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	562	75	168.15	0.017	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	467	56	168.15	0.0209	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	369	42	168.15	0.0252	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	277	27	168.15	0.0331	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1408	592	168.15	0.008	0.0307	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1050	590	168.15	0.0083	0.0306	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	853	13	168.15	0.0093	0.0305	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	673	410	168.15	0.014	0.0303	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	492	382	168.15	0.0164	0.0298	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	267	28	168.15	0.0337	0.0294	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1703	321	168.15	0.0041	0.0522	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1564	864	168.15	0.0053	0.0503	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1260	545	168.15	0.0054	0.0504	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	969	507	168.15	0.0077	0.0499	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	752	47	168.15	0.0102	0.0501	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	570	49	168.15	0.0146	0.0504	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	415	54	168.15	0.0195	0.0511	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	272	81	168.15	0.0272	0.0518	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1920	118	178.15	0.0185	0.0345	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1765	186	178.15	0.0201	0.0344	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1592	139	178.15	0.0225	0.0337	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1402	406	178.15	0.0252	0.0325	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1198	397	178.15	0.0257	0.0319	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	912	49	178.15	0.0322	0.0313	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	718	68	178.15	0.0389	0.0319	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	532	47	178.15	0.0533	0.0312	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	389	34	178.15	0.0675	0.0308	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	275	23	178.15	0.0937	0.03	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1930	383	178.15	0.0161	0.0562	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1622	367	178.15	0.0163	0.0544	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1332	151	178.15	0.0201	0.0524	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1032	80	178.15	0.0264	0.0529	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	831	73	178.15	0.0328	0.0525	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	635	47	178.15	0.0433	0.0524	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	424	41	178.15	0.0655	0.0507	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	275	23	178.15	0.0991	0.0486	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1983	179	178.15	0.0154	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1775	329	178.15	0.0158	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1563	95	178.15	0.0222	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1305	46	178.15	0.0252	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1090	41	178.15	0.0283	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	933	35	178.15	0.0316	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	768	77	178.15	0.0383	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	589	44	178.15	0.0467	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	397	31	178.15	0.07	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	278	28	178.15	0.0903	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2183	193	178.15	0.0161	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	390	31	188.15	0.1692	0.0296	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	276	22	188.15	0.2373	0.0262	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2138	202	188.15	0.04	0.0547	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1876	155	188.15	0.0448	0.0539	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1572	54	188.15	0.0512	0.0519	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1250	44	188.15	0.0578	0.0503	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	960	33	188.15	0.0707	0.0476	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	775	108	188.15	0.0867	0.0543	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	574	26	188.15	0.1138	0.0525	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	400	31	188.15	0.1604	0.0491	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	268	22	188.15	0.229	0.0528	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2088	66	188.15	0.0412	0.0334	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1791	96	188.15	0.0455	0.0335	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1472	98	188.15	0.055	0.0344	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1131	48	188.15	0.0673	0.0327	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	783	34	188.15	0.0871	0.0314	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2982	170	188.15	0.0392	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2644	165	188.15	0.0377	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2124	111	188.15	0.0375	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1841	54	188.15	0.0476	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1660	157	188.15	0.0495	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1468	253	188.15	0.0517	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1168	55	188.15	0.0639	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	852	47	188.15	0.0814	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	654	30	188.15	0.1025	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	390	25	188.15	0.1633	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	273	23	188.15	0.2249	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	581	39	188.15	0.1167	0.0315	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1450	65	193.15	0.0794	0.0558	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1223	73	193.15	0.0925	0.0549	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	924	60	193.15	0.1184	0.0536	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	674	28	193.15	0.156	0.0452	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	432	34	193.15	0.2332	0.045	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	277	22	193.15	0.3479	0.0489	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1620	92	193.15	0.0719	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1389	68	193.15	0.0811	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1051	63	193.15	0.1029	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	921	56	193.15	0.1157	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	803	62	193.15	0.1263	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	3038	327	193.15	0.0546	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2746	448	193.15	0.0526	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2418	974	193.15	0.0519	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1752	116	193.15	0.0685	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	533	27	193.15	0.1932	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	284	25	193.15	0.3407	0	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2010	90	193.15	0.06	0.0311	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1784	125	193.15	0.0639	0.0345	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1498	151	193.15	0.0704	0.034	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1180	57	193.15	0.0864	0.0329	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	889	45	193.15	0.1127	0.0327	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	685	36	193.15	0.1404	0.0316	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	497	32	193.15	0.1905	0.0296	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	283	24	193.15	0.3214	0.025	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2200	247	193.15	0.0632	0.0574	
+1	CH4 + CO2 + N2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1740	241	193.15	0.0685	0.0571	
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	3038	327	193.15	0.0546		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2746	448	193.15	0.0526		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2418	974	193.15	0.0519		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1752	116	193.15	0.0685		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1620	92	193.15	0.0719		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1389	68	193.15	0.0811		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1051	63	193.15	0.1029		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	921	56	193.15	0.1157		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	803	62	193.15	0.1263		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	533	27	193.15	0.1932		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	284	130	193.15	0.3407		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2982	170	188.15	0.0392		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2644	165	188.15	0.0377		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2124	111	188.15	0.0375		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1841	54	188.15	0.0476		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1660	157	188.15	0.0495		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1468	253	188.15	0.0517		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1168	55	188.15	0.0639		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	852	47	188.15	0.0814		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	654	30	188.15	0.1025		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	390	25	188.15	0.1633		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	273	23	188.15	0.2249		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2183	193	178.15	0.0161		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1983	179	178.15	0.0154		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1775	329	178.15	0.0158		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1563	95	178.15	0.0222		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1305	46	178.15	0.0252		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1090	41	178.15	0.0283		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	933	35	178.15	0.0316		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	768	77	178.15	0.0383		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	589	44	178.15	0.0467		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	397	31	178.15	0.07		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	278	28	178.15	0.0903		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1510	34	168.15	0.0082		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1335	35	168.15	0.0071		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1130	39	168.15	0.0091		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	953	28	168.15	0.0108		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	791	33	168.15	0.0125		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	669	67	168.15	0.0145		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	562	75	168.15	0.017		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	467	56	168.15	0.0209		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	369	42	168.15	0.0252		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	277	27	168.15	0.0331		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1074	39	158.15	0.0048		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	970	41	158.15	0.0041		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	865	31	158.15	0.0033		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	761	20	158.15	0.0039		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	649	32	158.15	0.0048		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	561	81	158.15	0.0056		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	474	33	158.15	0.0066		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	415	36	158.15	0.0075		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	341	32	158.15	0.0092		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	271	34	158.15	0.0113		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1235	53	153.15	0.001		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	996	42	153.15	0.0013		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	878	51	153.15	0.0016		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	726	43	153.15	0.002		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	652	46	153.15	0.0022		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	559	39	153.15	0.0025		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	490	38	153.15	0.0029		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	437	31	153.15	0.0032		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	380	32	153.15	0.0036		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	270	49	153.15	0.005		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	219	21	153.15	0.0063		0
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2010	91	193.15	0.0645		0.0307
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1820	87	193.15	0.068		0.0306
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1488	96	193.15	0.0804		0.0306
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1158	51	193.15	0.1037		0.0296
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	836	32	193.15	0.118		0.0285
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	633	35	193.15	0.1594		0.0305
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	429	29	193.15	0.2249		0.028
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	272	116	193.15	0.3331		0.0241
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2195	61	193.15	0.0581		0.0516
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1847	85	193.15	0.0677		0.0594
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1548	92	193.15	0.0814		0.0579
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1253	79	193.15	0.0966		0.0566
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	924	91	193.15	0.114		0.0562
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	673	29	193.15	0.1632		0.0527
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	446	28	193.15	0.2338		0.0486
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	274	107	193.15	0.3365		0.0514
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1835	158	188.15	0.0427		0.0349
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1545	118	188.15	0.049		0.035
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1286	67	188.15	0.0636		0.0344
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	959	43	188.15	0.0832		0.0311
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	738	45	188.15	0.1004		0.0305
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	574	24	188.15	0.1251		0.0282
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	408	30	188.15	0.1731		0.0268
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	277	23	188.15	0.2511		0.0244
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2055	68	188.15	0.0404		0.0498
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1790	91	188.15	0.0476		0.0533
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1514	177	188.15	0.0561		0.0547
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1200	99	188.15	0.0618		0.0516
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	896	72	188.15	0.0751		0.0506
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	697	32	188.15	0.1018		0.0525
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	464	29	188.15	0.1487		0.0487
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	274	26	188.15	0.2307		0.0507
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1640	72	178.15	0.0196		0.0339
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1336	57	178.15	0.0235		0.0337
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1036	51	178.15	0.0304		0.0319
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	810	45	178.15	0.0367		0.032
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	600	34	178.15	0.0469		0.0315
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	418	33	178.15	0.0682		0.0307
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	274	26	178.15	0.0999		0.0297
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1206	68	178.15	0.0272		0.0531
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	914	88	178.15	0.0326		0.0533
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	676	41	178.15	0.044		0.0525
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	462	40	178.15	0.0608		0.0514
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	286	26	178.15	0.0939		0.0531
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1029	138	168.15	0.0118		0.0327
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	833	67	168.15	0.0142		0.0346
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	649	125	168.15	0.0176		0.0347
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	412	34	168.15	0.0277		0.0348
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	282	47	168.15	0.0408		0.0305
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	644	44	168.15	0.0178		0.0516
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	443	50	168.15	0.0224		0.0506
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	275	32	168.15	0.0325		0.0481
+2	CH4 + C2H6 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	273	60	153.15	0.0065		0.0308
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	3038	327	193.15	0.0546		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2746	448	193.15	0.0526		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2418	974	193.15	0.0519		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1752	116	193.15	0.0685		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1620	92	193.15	0.0719		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1389	68	193.15	0.0811		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1051	63	193.15	0.1029		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	921	56	193.15	0.1157		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	803	62	193.15	0.1263		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	533	27	193.15	0.1932		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	284	130	193.15	0.3407		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2982	170	188.15	0.0392		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2644	165	188.15	0.0377		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2124	111	188.15	0.0375		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1841	54	188.15	0.0476		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1660	157	188.15	0.0495		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1468	253	188.15	0.0517		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1168	55	188.15	0.0639		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	852	47	188.15	0.0814		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	654	30	188.15	0.1025		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	390	25	188.15	0.1633		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	273	23	188.15	0.2249		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	2183	193	178.15	0.0161		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1983	179	178.15	0.0154		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1775	329	178.15	0.0158		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1563	95	178.15	0.0222		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1305	46	178.15	0.0252		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1090	41	178.15	0.0283		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	933	35	178.15	0.0316		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	768	77	178.15	0.0383		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	589	44	178.15	0.0467		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	397	31	178.15	0.07		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	278	28	178.15	0.0903		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1510	34	168.15	0.0082		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1335	35	168.15	0.0071		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1130	39	168.15	0.0091		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	953	28	168.15	0.0108		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	791	33	168.15	0.0125		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	669	67	168.15	0.0145		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	562	75	168.15	0.017		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	467	56	168.15	0.0209		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	369	42	168.15	0.0252		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	277	27	168.15	0.0331		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1074	39	158.15	0.0048		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	970	41	158.15	0.0041		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	865	31	158.15	0.0033		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	761	20	158.15	0.0039		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	649	32	158.15	0.0048		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	561	81	158.15	0.0056		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	474	33	158.15	0.0066		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	415	36	158.15	0.0075		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	341	32	158.15	0.0092		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	271	34	158.15	0.0113		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	1235	53	153.15	0.001		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	996	42	153.15	0.0013		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	878	51	153.15	0.0016		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	726	43	153.15	0.002		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	652	46	153.15	0.0022		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	559	39	153.15	0.0025		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	490	38	153.15	0.0029		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	437	31	153.15	0.0032		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	380	32	153.15	0.0036		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	270	49	153.15	0.005		
+3	CH4 + CO2	gas | crystal[CO2]	Vapor or sublimation pressure, kPa @gas	Closed cell (Static) method	219	21	153.15	0.0063		

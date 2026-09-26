@@ -1,0 +1,25 @@
+stress100-f1-off-r02 (restDetection false) vs stress100-f1-on-r02 (restDetection true)
+  fingerprints: 100 islands, 69 identical on every common publication, 31 parted
+    island 11309: first differing publication ends at tick 1100 (S), 22 common publications
+    island 11330: first differing publication ends at tick 1100 (S), 22 common publications
+    island 11372: first differing publication ends at tick 1100 (S), 22 common publications
+    island 11351: first differing publication ends at tick 1200 (S), 21 common publications
+    island 11393: first differing publication ends at tick 1200 (S), 21 common publications
+    island 11314: first differing publication ends at tick 1400 (S), 18 common publications
+    island 11335: first differing publication ends at tick 1400 (S), 21 common publications
+    island 11340: first differing publication ends at tick 1500 (S), 17 common publications
+    island 11361: first differing publication ends at tick 1500 (S), 21 common publications
+    island 11319: first differing publication ends at tick 1600 (S), 20 common publications
+    island 11382: first differing publication ends at tick 1600 (S), 18 common publications
+    island 11403: first differing publication ends at tick 1600 (S), 18 common publications
+    island 11345: first differing publication ends at tick 1700 (S), 20 common publications
+    island 11324: first differing publication ends at tick 1800 (S), 16 common publications
+    island 11366: first differing publication ends at tick 1800 (S), 16 common publications
+    island 11387: first differing publication ends at tick 1800 (S), 20 common publications
+    island 11308: first differing publication ends at tick 1900 (S), 20 common publications
+    island 11329: first differing publication ends at tick 2000 (S), 18 common publications
+    island 11350: first differing publication ends at tick 2000 (S), 18 common publications
+    island 11371: first differing publication ends at tick 2000 (S), 19 common publications
+  held at startup: 2 / 3 islands; held in one run only: 1
+  reference grid tick 1900: 97 islands exact in both, 31 not bitwise equal; worst inventory 6.759e-9 (island 11350), energy 9.864e-9, ledger 7.186e-6
+  ledger deviation against the island's own inventory: worst 8.235e-10 (11314/c10); conservation (ledger deviation minus inventory deviation, against inventory): worst 1.217e-15 (11335/c6); energy 3.072e-12

@@ -1,0 +1,266 @@
+{
+    "isotopologue": {
+        "iso_formula": "(12C)(1H)4",
+        "iso_slug": "12C-1H4",
+        "inchi": "InChI=1S/CH4/h1H4",
+        "inchikey": "VNWKTOKETHGBQD-UHFFFAOYSA-N",
+        "cas_registry_number": "74-82-8",
+        "mass_in_Da": 16.03130013,
+        "point_group": "Td"
+    },
+    "atoms": {
+        "number_of_atoms": 5,
+        "element": {
+            "C": 12,
+            "H": 1
+        }
+    },
+    "irreducible_representations": {
+        "A1": 5,
+        "A2": 5,
+        "E": 2,
+        "T1": 3,
+        "T2": 3
+    },
+    "dataset": {
+        "name": "MM",
+        "version": 20240113,
+        "doi": "10.1093/mnras/stae148",
+        "max_temperature": 2000.0,
+        "num_pressure_broadeners": 2,
+        "cooling_function_available": false,
+        "specific_heat_available": false,
+        "continuum": false,
+        "states": {
+            "number_of_states": 9155208,
+            "max_energy": 18000.0,
+            "hyperfine_resolved_dataset": false,
+            "uncertainty_description": null,
+            "uncertainties_available": true,
+            "lifetime_available": true,
+            "lande_g_available": false,
+            "quantum_case_label": "sphcs",
+            "num_quanta": 26,
+            "num_quantum_types": 3,
+            "states_file_fields": [
+                {
+                    "name": "ID",
+                    "desc": "Unique integer identifier for the energy level",
+                    "ffmt": "I12",
+                    "cfmt": "%12d"
+                },
+                {
+                    "name": "E",
+                    "desc": "State energy in cm-1",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f"
+                },
+                {
+                    "name": "gtot",
+                    "desc": "Total energy level degeneracy",
+                    "ffmt": "I6",
+                    "cfmt": "%6d"
+                },
+                {
+                    "name": "J",
+                    "desc": "Total rotational quantum number, excluding nuclear spin",
+                    "ffmt": "I7",
+                    "cfmt": "%7d"
+                },
+                {
+                    "name": "unc",
+                    "desc": "Energy uncertainty in cm-1",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f"
+                },
+                {
+                    "name": "tau",
+                    "desc": "Lifetime in s",
+                    "ffmt": "ES12.4",
+                    "cfmt": "%12.4e"
+                },
+                {
+                    "name": "Grve",
+                    "ffmt": "A3",
+                    "cfmt": "%3s",
+                    "desc": "Total (rovibronic) symmetry"
+                },
+                {
+                    "name": "Polyad:P",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "Polyad number"
+                },
+                {
+                    "name": "Polyad:Pnum",
+                    "ffmt": "I3",
+                    "cfmt": "%3d",
+                    "desc": "Polyad counting number"
+                },
+                {
+                    "name": "Herzberg:n1",
+                    "ffmt": "I6",
+                    "cfmt": "%6d",
+                    "desc": "[0/10] A_1_-symmetry normal mode quantum number"
+                },
+                {
+                    "name": "Herzberg:n2",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] E-symmetry normal mode quantum number"
+                },
+                {
+                    "name": "Herzberg:L2",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] L_2_ vib. angular momentum quantum number"
+                },
+                {
+                    "name": "Herzberg:n3",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/10] F_1_-symmetry normal mode quantum number"
+                },
+                {
+                    "name": "Herzberg:L3",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/10] L_3_ vib. angular momentum quantum number"
+                },
+                {
+                    "name": "Herzberg:M3",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/10] M_3_ Multiplicity index quantum number"
+                },
+                {
+                    "name": "Herzberg:n4",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] F_2_-symmetry normal mode quantum number"
+                },
+                {
+                    "name": "Herzberg:L4",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] L_4_ vib. angular momentum quantum number"
+                },
+                {
+                    "name": "Herzberg:M4",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] M_4_ Multiplicity index quantum number"
+                },
+                {
+                    "name": "TROVE:Gvib",
+                    "ffmt": "A3",
+                    "cfmt": "%3s",
+                    "desc": "Vibrational symmetry"
+                },
+                {
+                    "name": "TROVE:irot",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "Index in rotational symmetry block"
+                },
+                {
+                    "name": "TROVE:Grot",
+                    "ffmt": "A3",
+                    "cfmt": "%3s",
+                    "desc": "Rotational symmetry"
+                },
+                {
+                    "name": "TROVE:ivib",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "Index in vibrational symmetry block"
+                },
+                {
+                    "name": "TROVE:Coef",
+                    "ffmt": "F5.2",
+                    "cfmt": "%5.2f",
+                    "desc": "Coefficient with the largest contribution"
+                },
+                {
+                    "name": "TROVE:v1",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/10] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v2",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v3",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v4",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v5",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v6",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v7",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v8",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "TROVE:v9",
+                    "ffmt": "I4",
+                    "cfmt": "%4d",
+                    "desc": "[0/20] Local mode vibrational quantum number"
+                },
+                {
+                    "name": "Auxiliary:SourceType",
+                    "ffmt": "A2",
+                    "cfmt": "%2s",
+                    "desc": "Ma=MARVEL,Ca=Calculated,EH=Effective Hamiltonian,IE=Isotopologue extrapolation"
+                },
+                {
+                    "name": "Auxiliary:Ecal",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f",
+                    "desc": "Calculated energy in cm-1"
+                }
+            ]
+        },
+        "transitions": {
+            "number_of_transitions": 50395644806,
+            "number_of_transition_files": 120,
+            "max_wavenumber": 12000.0
+        }
+    },
+    "partition_function": {
+        "max_partition_function_temperature": 5000.0,
+        "partition_function_step_size": 1.0
+    },
+    "broad": {
+        "default_Lorentzian_half-width": 0.0488,
+        "default_temperature_exponent": 0.4
+    }
+}

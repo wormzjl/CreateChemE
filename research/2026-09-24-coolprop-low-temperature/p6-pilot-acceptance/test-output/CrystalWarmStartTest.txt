@@ -1,0 +1,9 @@
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.CrystalWarmStartTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:37:58.772Z" hostname="WORMZ-PC" time="0.027">
+LS, energy +0 J: cold LIQUID_SOLID 166.247833929 K 493 kernel evaluations; warm 166.247833929 K 162 kernel evaluations; crystal 0.039016947421 / 0.039016947421 mol
+LS, energy -100 J: cold LIQUID_SOLID 166.163578356 K 493 kernel evaluations; warm 166.163578356 K 378 kernel evaluations; crystal 0.042361673487 / 0.042361673487 mol
+LS, energy +100 J: cold LIQUID_SOLID 166.331917421 K 439 kernel evaluations; warm 166.331917421 K 378 kernel evaluations; crystal 0.035662302359 / 0.035662302358 mol
+VS, energy +0 J: cold VAPOR_SOLID 191.506866043 K 1629 kernel evaluations; warm 191.506866043 K 228 kernel evaluations; crystal 1.481377744696 / 1.481377744696 mol
+VS, energy -100 J: cold VAPOR_SOLID 191.499004905 K 1629 kernel evaluations; warm 191.499004905 K 380 kernel evaluations; crystal 1.485130075090 / 1.485130074797 mol
+VS, energy +100 J: cold VAPOR_SOLID 191.514723587 K 1629 kernel evaluations; warm 191.514723587 K 380 kernel evaluations; crystal 1.477625073942 / 1.477625074246 mol
+resting vapour-solid vessel: 229 checkpoints (kernel evaluations and calls) for its equilibration
+

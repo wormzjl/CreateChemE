@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:pilot_cryogenic",
+  "model": "pr78",
+  "source": "E-PPR78 group-contribution kij(T) (Jaubert et al. 2022) for all six pilot pairs, resolved at load from the group matrix createcheme:eppr78_2022 (Clapeyron.jl transcription, third-party; P3 WP2) and the E-PPR78 group counts of each component's reference spine (ethane is the C2H6 group). No constant pair is listed; the package sets missing_interactions to error.",
+  "rule": {
+    "type": "eppr78",
+    "group_interactions": "createcheme:eppr78_2022"
+  },
+  "pairs": []
+}

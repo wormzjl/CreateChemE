@@ -1,0 +1,22 @@
+===== science.thermo.qualification.G5F1PureCarbonDioxideMeltingTest.xml tests="3" skipped="0" failures="0" errors="0"
+P MPa | T_m model K | T_m Span-Wagner 3.10 K | model - SW K | fluid at the onset
+0.6 | 216.608656 | 216.609544 | -0.0009 | SINGLE_LIQUID
+1.0 | 216.689762 | 216.695030 | -0.0053 | SINGLE_LIQUID
+2.0 | 216.891837 | 216.908435 | -0.0166 | SINGLE_LIQUID
+3.0 | 217.092945 | 217.121400 | -0.0285 | SINGLE_FLUID
+4.0 | 217.293106 | 217.333929 | -0.0408 | SINGLE_FLUID
+5.0 | 217.492338 | 217.546023 | -0.0537 | SINGLE_FLUID
+6.0 | 217.690661 | 217.757685 | -0.0670 | SINGLE_FLUID
+7.0 | 217.888093 | 217.968918 | -0.0808 | SINGLE_FLUID
+8.0 | 218.084651 | 218.179725 | -0.0951 | SINGLE_FLUID
+9.0 | 218.280351 | 218.390108 | -0.1098 | SINGLE_FLUID
+10.0 | 218.475210 | 218.600069 | -0.1249 | SINGLE_FLUID
+pure CO2 melting to 10 MPa: worst |T_model - T_SW| 0.1249 K (declared 0.13 K, D16)
+P MPa | T_m K | fusion enthalpy h_L - h_s J/mol | PH liquid fraction checks
+1.0 | 216.689762 | 9014.97
+5.0 | 217.492338 | 8983.71
+10.0 | 218.475210 | 8949.58
+pure CO2 UV in the triple triangle: EquilibriumResult[UV CONVERGED, VAPOR_LIQUID_SOLID, 3 phases, ESTIMATED_DECLARED_ERROR, converged; pure CarbonDioxide at its family's triple point (216.5916137702717 K, 516047.8195487201 Pa): vapour 0.08305840611249045, liquid 0.6468995567735285, createcheme:crystal_carbon_dioxide_i 0.270042037113981 mol from the mole, energy and volume balances] (98 TP equilibria)
+pure CO2 UV above it: EquilibriumResult[UV CONVERGED, VAPOR_LIQUID, 2 phases, ESTIMATED_DECLARED_ERROR, converged; pure coexistence at the equal-fugacity point (224.2108620144423 K, 707412.9589014265 Pa): vapour fraction 0.11150886578052757 from the volume balance]
+family triple point 216.591614 K, 516047.82 Pa; melting just above 216.591614 K, sublimation just below 216.591599 K
+

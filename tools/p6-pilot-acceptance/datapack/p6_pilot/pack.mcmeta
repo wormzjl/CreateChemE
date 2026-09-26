@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "pack_format": 48,
+    "description": "P6 dev override: selects createcheme:pilot_cryogenic as the fluid network package (batch 2026-09-24-coolprop-low-temperature); no bundled record is changed"
+  }
+}

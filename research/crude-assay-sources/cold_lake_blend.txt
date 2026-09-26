@@ -1,0 +1,150 @@
+                                                                                                   
+                                                                                                   
+                                                                                                   
+                                                                                                   
+                                                                                                   
+                          Reference: CLKBL23B                                                      
+                             Crude: Cold Lake Blend                                                
+                                                                                                   
+       Crude  Summary   Report                                                                     
+                                                                                                   
+                                                                                                   
+       General Information                Molecules (%wt on crude) Whole Crude Properties          
+       Reference:      CLKBL23B           methane + ethane     0.00 Density @ 15°C (g/cc) 0.9367   
+       Name:           Cold Lake Blend    propane              0.01 API Gravity       19.5         
+                                          isobutane            0.41 Total Sulfur (% wt) 3.87       
+       Origin:         Alberta            n-butane             1.05 Pour Point (°C)    -20         
+                                          isopentane           1.41 Viscosity @ 20°C (cSt) 1019.3  
+       Assay Date:     10/26/2023         n-pentane            1.84 Viscosity @ 40°C (cSt) 173.8   
+                                          cyclopentane         0.12 Nickel (ppm)      55.8         
+       Comments:       Summer             C6 paraffins         2.42 Vanadium (ppm)    145.2        
+                                          C6 naphthenes        0.75 Total Nitrogen (ppm) 3062      
+                                          benzene              0.14 Total Acid Number (mgKOH/g) 1.12
+                                          C7 paraffins         1.14 Mercaptan Sulfur (ppm) 69.3    
+                                          C7 naphthenes        0.88 Hydrogen Sulfide (ppm) 0.0     
+                                          toluene              0.30 Reid Vapor Pressure (kPa) 51.9 
+       Cut Data                              Atmospheric Cuts               Vacuum Cuts            
+       Start (°C)         IBP  C5   65  100  150 200  250 300  350 370  370  450 500   550         
+       End (°C)           FBP   65  100 150  200 250  300 350  370 FBP  450  500 550  FBP          
+       Yield (% wt)            4.4  2.4 2.8  2.7 3.5  5.6  7.3 3.2 66.7 13.9 8.5 8.0  36.2         
+       Yield (% vol)           6.4  3.0 3.5  3.1 3.9  6.0  7.5 3.2 61.1 13.6 8.2 7.6  31.6         
+       Cumulative Yield (% wt) 1.4  5.8 8.2 11.0 13.7 17.2 22.9 30.1 33.3 33.3 47.2 55.7 63.8      
+       Volume Average B.P. (°C) 423 37.8 81 125 175 227 276 325 360 568 410  475 525   671         
+       Density @ 15°C (g/cc) 0.9367 0.6307 0.7397 0.7616 0.8001 0.8406 0.8774 0.9052 0.9326 1.0210 0.9533 0.9724 0.9832 1.0720
+       API Gravity        19.5 92.8 59.7 54.2 45.3 36.8 29.7 24.7 20.1 7.0 16.9 13.9 12.3 0.4      
+       UOPK               11.50        11.74 11.63 11.48 11.35 11.32 11.19 11.24 11.23 11.35 11.47 11.13
+       Molecular Weight (g/mol)         109  137 169  203 243  271 578  321  411 519  1008         
+       Total Sulfur (% wt) 3.9 0.024 0.026 0.081 0.344 0.79 1.39 2.18 2.78 5.26 3.14 3.47 4.13 6.74
+       Mercaptan Sulfur (ppm) 69.3 112.9 19.7 1.0 17.9 26.6                                        
+       Total Nitrogen (ppm) 3062                  17  42  127  309 4558 1038 2071 2638 6918        
+       Basic Nitrogen (ppm) 809                   4   23   70  151 1197 311  516 800  1784         
+       Total Acid Number (mgKOH/g) 1.12 0.00 0.01 0.02 0.04 0.11 0.38 0.99 1.53 1.46 2.08 2.28 2.03 0.90
+       Viscosity @ 20°C (cSt) 1019          1.51                                                   
+       Viscosity @ 40°C (cSt) 174           1.12 1.87 3.65 8.90 20.2                               
+       Viscosity @ 50°C (cSt) 88.1               1.58 2.92 6.54 13.6 65885 50.6 323 1725           
+       Viscosity @ 60°C (cSt)                                     20568 31.4 166 764               
+       Viscosity @ 100°C (cSt)                                     717  7.99 25.3 74.3 1040038     
+       Viscosity @ 130°C (cSt)                                                        45231        
+       Viscosity @ 150°C (cSt)                                                        9216         
+       RON (Clear)             75.7 40.1 65.3 30.5                                                 
+       MON (Clear)             73.0 56.0 62.4 30.2                                                 
+       Paraffins (% wt)   15.1 97.3 64.3 34.0 41.1                                                 
+       Naphthenes (%wt)   21.6 2.6 31.6 44.9 47.3                                                  
+       Aromatics (% wt)   62.7 0.0  4.2 21.2 11.4                                                  
+       Pour Point (°C)     -20                   -66  -47  -24 -10  46   1    8   12   75          
+       Cloud Point (°C)                          -65  -45  -21                                     
+       Freeze Point (°C)                     -67 -59  -40                                          
+       Smoke Point (mm)                      25   20  14                                           
+       Cetane Index (D4737A)                 34   37  38   41  40                                  
+       Naphthalenes (% vol)                  0.1 0.8  4.7  7.6                                     
+       Aniline Point (°C)               52.9 54.6 58.3 58.1 54.9 54.4   58.6 64.7 68.9             
+       Hydrogen (% wt)    12.1 16.6 15.3 13.8 14.2 13.3 12.9 12.2 11.6  11.6 11.6 11.5             
+       Total Wax (% wt)    0.8                                      0.2 0.6  0.3 0.1   0.0         
+       C7 Asphaltenes (% wt) 9.9                                   14.8      0.0 0.0  27.2         
+       Micro Carbon Residue (% wt) 10.7                            16.0      0.4 2.9  28.7         
+       Vanadium (ppm)     145.2                                    217.7     0.0 0.0  400.6        
+       Nickel (ppm)       55.8                                     83.6      0.0 0.0  153.8        
+       Iron (ppm)          8.8                                     13.3      0.0 0.0  24.4         
+       Sodium (ppm)        4.8                                                                     
+       Mercury (ppb)       9.8                                                                     
+       Arsenic (ppb)      134                                                                      
+       This assay information is provided to you courtesy of ExxonMobil Technology & Engineering Company (EMTEC) and is based on a range of data and information.
+       While care has been taken in preparing these materials, no representations, warranties or guarantees are made as to their accuracy, reliability, quality, correctness
+       or completeness. Each user must make its own determination and judgment on applying any information in this assay. Any and all use of this information shall be
+       the sole responsibility of the user, and the user releases EMTEC, its parent and its affiliates from any and all claims arising from its use and shall defend and hold
+       EMTEC, its parent and its affiliates harmless from any third party claims arising from the user's application or use of the assay information.
+
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                             Reference: CLKBL23B                                                        
+                                Crude: Cold Lake Blend                                                  
+                                                                                                        
+            Yield Distribution                                                                          
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                 Cumulative Yield                                       
+                                                                                                        
+                 700                                                                                    
+                          Weight Yield                                                                  
+                          Volume Yield                                                                  
+                                                                                                        
+                                                                                                        
+                 600                                                                                    
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                 500                                                                                    
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                 400                                                                                    
+                                                                                                        
+              C                                                                                         
+              P                                                                                         
+              °                                                                                         
+              B                                                                                         
+              T                                                                                         
+                 300                                                                                    
+                                                                                                        
+                                                                                                        
+                 200                                                                                    
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                 100                                                                                    
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                  0                                                                                     
+                   0      10     20     30     40    50     60     70     80     90     100             
+                                                   % distilled                                          
+                                                                                                        
+                           Cumulative Volume % Distilled at 10 Degree C (TBP) Intervals                 
+                                   0   10   20   30   40   50   60  70   80   90                        
+                              0                  4.9 6.0  6.9  8.1  9.1 10.1 10.9                       
+                             100 11.7 12.4 13.1 13.8 14.5 15.1 15.8 16.4 17.0 17.6                      
+                             200 18.3 18.9 19.6 20.4 21.3 22.2 23.2 24.3 25.5 26.8                      
+                             300 28.2 29.6 31.1 32.6 34.1 35.7 37.3 38.9 40.6 42.2                      
+                             400 43.9 45.7 47.4 49.1 50.8 52.5 54.2 55.9 57.5 59.2                      
+                             500 60.7 62.3 63.9 65.4 66.9 68.4 69.8 71.3 72.7 74.1                      
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        
+                                                                                                        

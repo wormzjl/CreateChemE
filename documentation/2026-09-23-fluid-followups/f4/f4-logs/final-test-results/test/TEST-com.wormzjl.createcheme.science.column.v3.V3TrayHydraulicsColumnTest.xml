@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:17.570Z" hostname="WORMZ-PC" time="3.865">
+  <properties/>
+  <testcase name="theDefaultPresetPublishesItsMarchedProfileAfterOneCorrection()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" time="1.617"/>
+  <testcase name="anUndersizedColumnStillPublishesAndCarriesTheFloodingWarning()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" time="1.71"/>
+  <testcase name="theShippedPresetsAllAuthorTheDefaultDiameter()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" time="0.0"/>
+  <testcase name="theDigestSeparatesADiameterFromThePrescribedDropItWouldOtherwiseShare()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" time="0.005"/>
+  <testcase name="prescribedDropModePublishesNoHydraulicsAndKeepsItsDigest()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" time="0.108"/>
+  <testcase name="aNominalProfileWithinTheToleranceRunsNoCorrection()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" time="0.223"/>
+  <testcase name="aCorrectionThatCannotRunPublishesTheFirstSolveWithAHydraulicMismatchWarning()" classname="com.wormzjl.createcheme.science.column.v3.V3TrayHydraulicsColumnTest" time="0.202"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

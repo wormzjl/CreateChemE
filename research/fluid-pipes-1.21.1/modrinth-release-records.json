@@ -1,0 +1,221 @@
+[
+  {
+    "mod": "integrated-tunnels",
+    "version": {
+      "game_versions": [
+        "1.21.1"
+      ],
+      "loaders": [
+        "neoforge"
+      ],
+      "environment": "client_and_server",
+      "id": "cG3qHVfX",
+      "project_id": "Etqy1Omb",
+      "author_id": "nJY7PIen",
+      "featured": false,
+      "name": "1.12.0 for NeoForge 1.21.1",
+      "version_number": "1.21.1-1.12.0",
+      "changelog": "# Changelog for Minecraft 1.21.1\nAll notable changes to this project will be documented in this file.\n\n<a name=\"1.21.1-1.12.0\"></a>\n## [1.21.1-1.12.0](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.11.1...1.21.1-1.12.0) - 2026-09-11 21:58:34\n\n\n### Added\n* Support Wrench copy-pasting of the interface channel (#388)\n\n<a name=\"1.21.1-1.11.1\"></a>\n## [1.21.1-1.11.1](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.11.0...1.21.1-1.11.1) - 2026-09-07 16:40:27 +0200\n\n\n### Fixed\n* Fix interfaces without filter not being closable with escape (#387), Closes CyclopsMC/IntegratedDynamics#1726\n\n<a name=\"1.21.1-1.11.0\"></a>\n## [1.21.1-1.11.0](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.10.0...1.21.1-1.11.0) - 2026-09-05 13:53:59 +0200\n\n\n### Added\n* Add match block option to world block importer aspects (#380), Closes #347\n\n### Changed\n* Improve overall performance\n  * Avoid constructing block place contexts for unused replaceability checks\n  * Improve ingredient predicate hashing and equality performance\n  * Improve interface performance by skipping redundant target capability checks\n\n### Fixed\n* Fix server crash when a filtered interface ticks while detached from its network (#385), Closes CyclopsMC/IntegratedDynamics#1711\n* Fix interfaces not respecting the target side configuration (#382), Closes #381\n* Fix grammar in new matchblock aspect property description (#383)\n\n<a name=\"1.21.1-1.10.0\"></a>\n## [1.21.1-1.10.0](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.9.4...1.21.1-1.10.0) - 2026-08-24 19:44:52 +0200\n\n\n### Added\n* Add option to ignore aspect filter during passive interaction (#377), Closes #310\n* Add 'Craft' checkbox to export items aspect (#373), Closes #344\n* Add export/import item slot option for world item exporters/importers (#372), Closes CyclopsMC/IntegratedDynamics#1560\n\n### Changed\n* Auto-save interface settings when closing the gui (#378), Closes #161\n\n### Fixed\n* Fix memory leak in per-level FakePlayer cache\n* Prevent Player Simulator crashes from fake-player dimension transitions (#366), Closes #365\n\n<a name=\"1.21.1-1.9.4\"></a>\n## [1.21.1-1.9.4](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.9.3...1.21.1-1.9.4) - 2026-03-09 16:16:19 +0100\n\n\n### Fixed\n* Set blockImporterBlacklist default value to mutable ArrayList (#358), Closes #357\n* Fix ItemPredicate field name in click_sword advancement causing it to trigger for any item (#355), Closes CyclopsMC/IntegratedDynamics#1606\n\n<a name=\"1.21.1-1.9.3\"></a>\n## [1.21.1-1.9.3](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.9.2...1.21.1-1.9.3) - 2026-02-17 11:04:39 +0100\n\n\n### Added\n* Add block importer blacklist config option, Closes #189\n* Add translations through Crowdin (#351)\n\n<a name=\"1.21.1-1.9.2\"></a>\n## [1.21.1-1.9.2](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.9.1...1.21.1-1.9.2) - 2025-11-21 15:53:26 +0100\n\n\n### Added\n* * Add translations through Crowdin (#350)\n\n### Changed\n* Optimize predicate-based transfer using slotless index\n\nBy default, predicate-based aspects used the slot-based index to be able\nto handle cases such as #271. Since slot-based transfer can be a lot\nslower than slotless transfer, this is not great.\nSince the use case of #271 is quite exotic, the slot-based behaviour\nhas been hidden behind an aspect property, while the predicate-based\naspects will now always use the more performant slotless index by\ndefault.\n\nCloses CyclopsMC/ColossalChests#192\n\n<a name=\"1.21.1-1.9.1\"></a>\n## [1.21.1-1.9.1](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.9.0...1.21.1-1.9.1) - 2025-11-11 14:44:12 +0100\n\n\n### Fixed\n* Disallow taming from Player Simulator, Closes CyclopsMC/IntegratedDynamics#1562\n* Fix broken Player Simulator item-based aspects\n* Fix Player Simulator locking villager trades, Closes #1561\n* Fix slot option not working for entities in World Item Exporter/Importer\n  Closes CyclopsMC/IntegratedDynamics#1559\n\n<a name=\"1.21.1-1.9.0\"></a>\n## [1.21.1-1.9.0](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.44...1.21.1-1.9.0) - 2025-10-07 07:49:11 +0200\n\n\n### Added\n* Add missing PASSIVE_IO property\n\n### Fixed\n* Fix passive fluid interaction consuming too much\n\nInternal changes: (required for Integrated Mekanism)\n* Make PositionedOperatorIngredientIndex better extensible\n\n<a name=\"1.21.1-1.8.44\"></a>\n## [1.21.1-1.8.44](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.43...1.21.1-1.8.44) - 2025-08-08 22:06:22 +0200\n\n\n### Fixed\n* Fix logical flaw in IEnergyTarget\n\n<a name=\"1.21.1-1.8.43\"></a>\n## [1.21.1-1.8.43](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.42...1.21.1-1.8.43) - 2025-08-08 21:47:42 +0200\n\n\n### Fixed\n* Fix fluid transfer with Cauldrons not working, Closes #346\n\n<a name=\"1.21.1-1.8.42\"></a>\n## [1.21.1-1.8.42](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.41...1.21.1-1.8.42) - 2025-07-30 16:51:04 +0200\n\n\n### Added\n* Add translations through Crowdin (#343)\n* Add PT_BR localization (#345)\n\n### Fixed\n* Fix Player Simulator dupe with Inventory Pets, Closes #339\n* Fix some spelling and grammar typos in lang\n\n<a name=\"1.21.1-1.8.41\"></a>\n## [1.21.1-1.8.41](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.40...1.21.1-1.8.41) - 2025-06-16 18:47:03 +0200\n\n\n### Fixed\n* Fix Player Simulator duping placed items, regression due to #339 fix\n* Fix player simulator not consuming PASSed items, Closes #339\n\n<a name=\"1.21.1-1.8.40\"></a>\n## [1.21.1-1.8.40](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.39...1.21.1-1.8.40) - 2025-05-31 21:39:36 +0200\n\n\n### Fixed\n* Fix aspect icons in Network Reader not loading\n\n<a name=\"1.21.1-1.8.39\"></a>\n## [1.21.1-1.8.39](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.38...1.21.1-1.8.39) - 2025-05-31 21:06:31 +0200\n\n\n### Fixed\n* Fix aspect icons in Network Reader not loading\n\n<a name=\"1.21.1-1.8.38\"></a>\n## [1.21.1-1.8.38](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.37...1.21.1-1.8.38) - 2025-05-25 07:02:00 +0200\n\n\n### Fixed\n* Fix cursor centering on gui switching, Closes CyclopsMC/IntegratedDynamics#1514\n\n<a name=\"1.21.1-1.8.37\"></a>\n## [1.21.1-1.8.37](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.36...1.21.1-1.8.37) - 2025-03-29 14:26:41 +0100\n\n\n### Added\n* Update ru_ru.json (#327)\n\n### Fixed\n* Fix fluid lists not always matching correctly, Closes #333\n* Fix data components being lost with World Block Exporter, Closes #328\n\n<a name=\"1.21.1-1.8.36\"></a>\n## [1.21.1-1.8.36](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.35...1.21.1-1.8.36) - 2025-03-10 07:23:54 +0100\n\n\n### Fixed\n* Fix data components being lost with World Block Exporter, Closes #328\n\n<a name=\"1.21.1-1.8.35\"></a>\n## [1.21.1-1.8.35](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.34...1.21.1-1.8.35) - 2025-02-22 17:13:01 +0100\n\n\n### Fixed\n* Fix world block exporter not passing item to use context\n  This could lead to issues with certain modded blocks.\n  Closes CyclopsMC/IntegratedDynamics#1467\n\n<a name=\"1.21.1-1.8.34\"></a>\n## [1.21.1-1.8.34](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.33...1.21.1-1.8.34) - 2025-02-15 10:20:34 +0100\n\n\n### Added\n* Add tr_tr translations through Crowdin (#325)\n\n### Fixed\n* Fix broken advancement icons\n\n<a name=\"1.21.1-1.8.33\"></a>\n## [1.21.1-1.8.33](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.32...1.21.1-1.8.33) - 2025-02-03 17:02:09 +0100\n\n\n### Fixed\n* Fix Player Simulator not using Brush correctly, Closes #324\n* Fix world fluid exporter voiding non-placable fluids, Closes #323\n* Fix world offset not being configurable to zero, Closes #322\n\n<a name=\"1.21.1-1.8.32\"></a>\n## [1.21.1-1.8.32](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.31...1.21.1-1.8.32) - 2025-01-08 17:28:01 +0100\n\n\n### Fixed\n* Fix chained world block exporter/exporter not able to work every tick\n  This is done by making the exporter/importer sleep optimization only\n  take effect if these parts were unable to move anything for at least\n  three ticks.\n  Closes #319\n* Disallow Player Simulator from sleeping in beds, Closes CyclopsMC/IntegratedDynamics/issues/1454\n* Fix player simulator not ticking fast enough with snowballs, #319\n\n<a name=\"1.21.1-1.8.31\"></a>\n## [1.21.1-1.8.31](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.30...1.21.1-1.8.31) - 2025-01-05 15:45:41 +0100\n\n\n### Fixed\n* Fix broken Export Enchantable Items advancement\n  Closes CyclopsMC/IntegratedDynamics#1453\n\n<a name=\"1.21.1-1.8.30\"></a>\n## [1.21.1-1.8.30](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.29...1.21.1-1.8.30) - 2024-11-22 07:13:29 +0100\n\n\n### Fixed\n* Fix unable to clear part IDs, Closes CyclopsMC/IntegratedTunnels#309\n\n<a name=\"1.21.1-1.8.29\"></a>\n## [1.21.1-1.8.29](https://github.com/CyclopsMC/IntegratedTunnels/compare/1.21.1-1.8.28...1.21.1-1.8.29) - 2024-11-19 15:30:59 +0100\n\n\n### Fixed\n* Fix passive import/export ignoring active aspect channel, Closes #308\n\n<a name=\"1.21.1-1.8.28\"></a>\n## [1.21.1-1.8.28] - 2024-08-09 21:09:30 +0200\n\n\n### Fixed\n* Fix list aspects considering apples instead of empty, Closes #301\n",
+      "changelog_url": null,
+      "date_published": "2026-09-11T20:04:40.193361Z",
+      "downloads": 134,
+      "version_type": "release",
+      "status": "listed",
+      "requested_status": null,
+      "files": [
+        {
+          "id": "IkJlbv8Z",
+          "hashes": {
+            "sha1": "fe669d770a766fe5759655edcb86ee883c2d5680",
+            "sha512": "003dfb31d54b3f2f3a7f6df328b8ce1512ab5f3a7075ee5c4a121c11b09461cc57d9c0425d3d94b520c8e874e10c7d4ea56fc76aab5edc37cf59a65e84ad53d7"
+          },
+          "url": "https://cdn.modrinth.com/data/Etqy1Omb/versions/cG3qHVfX/integratedtunnels-1.21.1-neoforge-1.12.0.jar",
+          "filename": "integratedtunnels-1.21.1-neoforge-1.12.0.jar",
+          "primary": true,
+          "size": 733867,
+          "file_type": null
+        }
+      ],
+      "dependencies": [
+        {
+          "version_id": null,
+          "project_id": "yYzdQHJI",
+          "file_name": null,
+          "dependency_type": "required"
+        },
+        {
+          "version_id": null,
+          "project_id": "Z9DM0LJ4",
+          "file_name": null,
+          "dependency_type": "required"
+        }
+      ]
+    }
+  },
+  {
+    "mod": "enderio",
+    "version": {
+      "game_versions": [
+        "1.21.1"
+      ],
+      "loaders": [
+        "neoforge"
+      ],
+      "environment": "client_and_server",
+      "id": "2bHl1dCW",
+      "project_id": "49ZofO4f",
+      "author_id": "mn5uiknm",
+      "featured": true,
+      "name": "Ender IO - v8.2.12-beta",
+      "version_number": "v8.2.12-beta",
+      "changelog": "## Ender IO 8.2.12-beta\r\n\r\n### Features\r\n\r\n- Added tooltips to item, fluid and redstone filter slots\r\n- Travel anchors render full-block icons as blocks instead of items\r\n- Crowdin translation updates\r\n\r\n### Bug Fixes\r\n\r\n- Coldfire not going out or generating grains\r\n- Prevent powered spawner putting too many items in the output\r\n- Avoid crashes when checking for valid souls\r\n- ME conduit not listening for capability invalidation\r\n- Conduit inventories not dropping if the last conduit in a bundle is broken\r\n- Farming station GUI background width incorrect\r\n- Prevent self-feeding energy conduits\r\n- Farming station blocks when out of seeds, even when there are other tasks to perform\r\n- Machines can dupe items under specific conditions\r\n\r\n### Experiments\r\n\r\nExperiments are new features locked behind feature flags, these are work-in-progress and shouldn't be enabled on your primary world.\r\n\r\n- The Ender IO\r\n  - Early work in progress",
+      "changelog_url": null,
+      "date_published": "2026-09-07T19:45:28.654035Z",
+      "downloads": 2908,
+      "version_type": "beta",
+      "status": "listed",
+      "requested_status": null,
+      "files": [
+        {
+          "id": "XtfKVHMf",
+          "hashes": {
+            "sha512": "c4415c1e835fa7eaf7f4528fd685412151968b092e9be91528add11dd981943ba6243eee41ff73923df64d59d8f907901cb006edcb5c02783e73ab656524c995",
+            "sha1": "4e1d16a227eb36a6ac16d9f615765480027b8e82"
+          },
+          "url": "https://cdn.modrinth.com/data/49ZofO4f/versions/2bHl1dCW/enderio-8.2.12-beta.jar",
+          "filename": "enderio-8.2.12-beta.jar",
+          "primary": true,
+          "size": 6598496,
+          "file_type": null
+        },
+        {
+          "id": "q5q8pzy9",
+          "hashes": {
+            "sha512": "54272e11d661e9fb955cd7ba12a09c473cdf0df28eb77ed041257d7bb540574464ce494be10ee45430916fe77a39fd0232d9b7365392d468c0291109b1c3db12",
+            "sha1": "5fb9ebc72e2ef80d57a3670df39d39725ea3fdc6"
+          },
+          "url": "https://cdn.modrinth.com/data/49ZofO4f/versions/2bHl1dCW/enderio-8.2.12-beta-api.jar",
+          "filename": "enderio-8.2.12-beta-api.jar",
+          "primary": false,
+          "size": 251390,
+          "file_type": null
+        },
+        {
+          "id": "8CexemP6",
+          "hashes": {
+            "sha512": "57bfedd3332df239039470422d4937ea659f65a34b7573a50e24db10c8445f6946c28d046e57f5ec2a498b1b0779f1a0344a7941a60d3e743582ed5f2ee25b17",
+            "sha1": "4cc30df690d73bc7b6f903fc595ba32d17945171"
+          },
+          "url": "https://cdn.modrinth.com/data/49ZofO4f/versions/2bHl1dCW/enderio-8.2.12-beta-sources.jar",
+          "filename": "enderio-8.2.12-beta-sources.jar",
+          "primary": false,
+          "size": 955245,
+          "file_type": null
+        }
+      ],
+      "dependencies": [
+        {
+          "version_id": null,
+          "project_id": "XxWD5pD3",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "b1ZV3DIJ",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "u6dRKJwZ",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "gu7yAYhd",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "Ce6I4WUE",
+          "file_name": null,
+          "dependency_type": "optional"
+        }
+      ]
+    }
+  },
+  {
+    "mod": "modern-industrialization",
+    "version": {
+      "game_versions": [
+        "1.21.1"
+      ],
+      "loaders": [
+        "neoforge"
+      ],
+      "environment": "client_and_server",
+      "id": "s5PDXbfR",
+      "project_id": "Gov5Dboq",
+      "author_id": "twx512Yz",
+      "featured": false,
+      "name": "Modern Industrialization v2.5.8",
+      "version_number": "2.5.8",
+      "changelog": "## What's Changed\r\n* Fix #1360: Jade outdated in dev causes crash in production on newer versions by @Swedz in https://github.com/AztechMC/Modern-Industrialization/pull/1361\r\n\r\n\r\n**Full Changelog**: https://github.com/AztechMC/Modern-Industrialization/compare/2.5.7...2.5.8",
+      "changelog_url": null,
+      "date_published": "2026-09-12T09:29:40.578606Z",
+      "downloads": 732,
+      "version_type": "release",
+      "status": "listed",
+      "requested_status": null,
+      "files": [
+        {
+          "id": "QGfhiD5u",
+          "hashes": {
+            "sha1": "cac089420244924b1a60d95610a518a193b9731f",
+            "sha512": "dc1d33e49539bbbc1c14acc76289c71b8d5c68057908855eb3af1cf70f3fbae65758bd8b9e4b88772b0f38bcac82b15934d7383bb685c1ec8bacc3edf81e8c93"
+          },
+          "url": "https://cdn.modrinth.com/data/Gov5Dboq/versions/s5PDXbfR/Modern-Industrialization-2.5.8.jar",
+          "filename": "Modern-Industrialization-2.5.8.jar",
+          "primary": true,
+          "size": 7137881,
+          "file_type": null
+        }
+      ],
+      "dependencies": [
+        {
+          "version_id": null,
+          "project_id": "nfn13YXA",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "fRiHVvU7",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "nvQzSEkH",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "u6dRKJwZ",
+          "file_name": null,
+          "dependency_type": "optional"
+        },
+        {
+          "version_id": null,
+          "project_id": "Ck4E7v7R",
+          "file_name": null,
+          "dependency_type": "required"
+        }
+      ]
+    }
+  }
+]

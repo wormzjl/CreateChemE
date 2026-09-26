@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionSeedProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-24T15:45:55.434Z" hostname="WORMZ-PC" time="0.069">
+  <properties/>
+  <testcase name="comparePressureGuesses()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionSeedProbe" time="0.069"/>
+  <system-out><![CDATA[CASE ports=4 pressure=102325.0 seed=1.0 PASS conservation
+CASE ports=4 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=4 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=5 pressure=102325.0 seed=1.0 PASS conservation
+CASE ports=5 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=5 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=6 pressure=102325.0 seed=1.0 PASS conservation
+CASE ports=6 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=6 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=4 pressure=150000.0 seed=1.0 PASS conservation
+CASE ports=4 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=4 pressure=150000.0 seed=0.0 PASS conservation
+CASE ports=5 pressure=150000.0 seed=1.0 PASS conservation
+CASE ports=5 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=5 pressure=150000.0 seed=0.0 PASS conservation
+CASE ports=6 pressure=150000.0 seed=1.0 PASS conservation
+CASE ports=6 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=6 pressure=150000.0 seed=0.0 PASS conservation
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

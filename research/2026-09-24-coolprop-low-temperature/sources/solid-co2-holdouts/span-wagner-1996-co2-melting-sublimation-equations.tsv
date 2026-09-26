@@ -1,0 +1,23 @@
+# Span R., Wagner W. (1996). A New Equation of State for Carbon Dioxide Covering the Fluid Region from the Triple-Point
+# Temperature to 1100 K at Pressures up to 800 MPa. J. Phys. Chem. Ref. Data 25(6), 1509-1596. DOI 10.1063/1.555991.
+# Source copy: NIST SRD reprint https://www.nist.gov/system/files/documents/srd/jpcrd516.pdf (scanned, no text layer),
+# raw/span-wagner-1996-jpcrd-25-1509-nist-jpcrd516.pdf (sha256 85d732b0be26dc4736e8a768903e49e49e8ae6386447a93fd58bff6381544d34).
+# Section 3.3, eq. (3.10), journal p.1520 (PDF page 12): melting pressure  p_m/p_t = 1 + a1 (T/T_t - 1) + a2 (T/T_t - 1)^2
+# Section 3.4, eq. (3.12), journal p.1521 (PDF page 13): sublimation pressure
+#   ln(p_sub/p_t) = (T_t/T) [a1 (1 - T/T_t) + a2 (1 - T/T_t)^1.9 + a3 (1 - T/T_t)^2.9]
+# T_t = 216.592 K, p_t = 0.51795 MPa for both. Both are constrained to the triple point by their form.
+# Stated uncertainties: eq. (3.10) dp_m/p_m <= +-1.5 % for T_t <= T <= 225 K and <= +-0.5 % for 225 K < T <= 270 K;
+# eq. (3.12) dp_sub <= +-250 Pa for 185 K <= T <= T_t, <= +-100 Pa for 170 K <= T <= 185 K, <= +-50 Pa for T <= 170 K.
+# Eq. (3.12) was fitted to data above 154 K; below, the Bryson et al. data (70 to 103 K) deviate by no more than 0.01 Pa
+# (T > 85 K) and 0.0001 Pa (T <= 85 K). Normal sublimation temperature from eq. (3.12): 194.6855 K (Bedford et al.:
+# 194.6857 K +- 0.0030 K). Melting data: Michels et al. 1942 (217-266 K, to 284 MPa) and Clusius et al. 1960
+# (217-222 K, to 24 MPa), temperatures corrected per eqs. (3.8)-(3.9).
+# Local cross-check: CoolProp 8.0.0 CarbonDioxide.json (../coolprop/fluids/, identical to the worktree test resource
+# src/test/resources/science/thermo/coolprop/CarbonDioxide.json, sha256 08e27e1a...5217) carries the melting line only:
+# ANCILLARIES.melting_line {BibTeX Span-JPCRD-1996, type polynomial_in_Theta, T_0 216.592, p_0 517950 Pa,
+# a [1955.539, 2055.4593], t [1, 2], T_min 216.592, T_max 330}. It has NO sublimation_line; eq. (3.12) is local only here.
+# Digits verbatim from a 170 dpi render. Role: pure-CO2 holdouts for P4/P5 (G4 sublimation, G5 melting), not inputs.
+# Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+equation	quantity	T_t_K	p_t_MPa	a1	a2	a3	exponent_a1	exponent_a2	exponent_a3	stated_range
+3.10	melting pressure p_m	216.592	0.51795	1955.5390	2055.4593		1	2		T_t to 270 K (uncertainty stated to 270 K; data to 266 K)
+3.12	sublimation pressure p_sub	216.592	0.51795	-14.740846	2.4327015	-5.3061778	1	1.9	2.9	fitted above 154 K to T_t

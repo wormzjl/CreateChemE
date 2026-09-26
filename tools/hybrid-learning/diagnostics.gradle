@@ -1,0 +1,19 @@
+// Post-campaign diagnostic classes never overwrite benchmark classes.
+gradle.projectsEvaluated {
+    def p=gradle.rootProject
+    def destination=p.layout.buildDirectory.dir('neural-hybrid-learning/diagnostic-classes-v1')
+    p.tasks.register('compileHybridDiagnostics',JavaCompile) {
+        source=p.fileTree('tools/hybrid-learning/diagnostic-java') { include '**/*.java' }
+        classpath=p.files(p.layout.buildDirectory.dir('neural-hybrid-learning/classes-v1')) + p.files(p.sourceSets.neuralMvp.runtimeClasspath.files)
+        destinationDirectory=destination
+        javaCompiler=p.javaToolchains.compilerFor { languageVersion=JavaLanguageVersion.of(21) }
+        options.encoding='UTF-8'
+    }
+    p.tasks.register('hybridDiagnostics',JavaExec) {
+        dependsOn p.tasks.named('compileHybridDiagnostics')
+        classpath=p.files(destination)+p.files(p.layout.buildDirectory.dir('neural-hybrid-learning/classes-v1')) + p.files(p.sourceSets.neuralMvp.runtimeClasspath.files)
+        mainClass='com.wormzjl.createcheme.science.column.v3.V3HybridProfileDiagnostics'
+        maxHeapSize='4g'
+        args p.providers.gradleProperty('diagnosticArgs').get().split(',').toList()
+    }
+}

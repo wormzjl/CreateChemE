@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3BoundedSolvePathTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:50.939Z" hostname="WORMZ-PC" time="1.703">
+  <properties/>
+  <testcase name="aLongPressureLadderIsReducedToItsEndsAndKeepsEverythingAroundIt()" classname="com.wormzjl.createcheme.science.column.v3.V3BoundedSolvePathTest" time="0.005"/>
+  <testcase name="aCompressedLadderThatIsStillTooLongIsClampedAsWell()" classname="com.wormzjl.createcheme.science.column.v3.V3BoundedSolvePathTest" time="0.0"/>
+  <testcase name="aLongContinuationPathPublishesTheSolvesOwnOutcome()" classname="com.wormzjl.createcheme.science.column.v3.V3BoundedSolvePathTest" time="1.697"/>
+  <testcase name="aPathInsideTheContractIsReturnedUntouched()" classname="com.wormzjl.createcheme.science.column.v3.V3BoundedSolvePathTest" time="0.0"/>
+  <testcase name="aPathThatIsStillTooLongKeepsItsHeadAndItsTail()" classname="com.wormzjl.createcheme.science.column.v3.V3BoundedSolvePathTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

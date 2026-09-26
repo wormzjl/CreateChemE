@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3NeuralRegistryTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:21.635Z" hostname="WORMZ-PC" time="0.166">
+  <properties/>
+  <testcase name="deterministicPriorityAndSecondFixtureModelNeedNoProductionConstants()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralRegistryTest" time="0.052"/>
+  <testcase name="identityProjectionIsExplicitAndNeverDiscardsNonzeroFeed()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralRegistryTest" time="0.033"/>
+  <testcase name="admissionSnapshotSurvivesReloadAndAssayEditsDoNotChangePhysicsEligibility()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralRegistryTest" time="0.037"/>
+  <testcase name="boundedRegistryRejectsPathsAndMismatchedPipelineAndAcceptsEmptyFallback()" classname="com.wormzjl.createcheme.science.column.v3.V3NeuralRegistryTest" time="0.044"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

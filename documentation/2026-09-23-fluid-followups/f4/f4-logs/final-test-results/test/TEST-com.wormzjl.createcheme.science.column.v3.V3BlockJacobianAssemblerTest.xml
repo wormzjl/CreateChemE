@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" tests="19" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:49.956Z" hostname="WORMZ-PC" time="0.98">
+  <properties/>
+  <testcase name="everyProbeOfTheRealCrudeFixtureDecodesAndEvaluatesBitwiseAsTheWholeVectorProbeDid()" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.168"/>
+  <testcase name="[1] plain" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.098"/>
+  <testcase name="[2] draw" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.081"/>
+  <testcase name="[3] heat" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.045"/>
+  <testcase name="[4] steam" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.057"/>
+  <testcase name="[5] wet" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.059"/>
+  <testcase name="[6] capped-condenser" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.05"/>
+  <testcase name="localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleWithPrescribedStageHeat()" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.015"/>
+  <testcase name="[1] 0" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.012"/>
+  <testcase name="[2] 1" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.013"/>
+  <testcase name="[3] 2" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.013"/>
+  <testcase name="[4] 4" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.012"/>
+  <testcase name="anInadmissibleProbeStepIsRefusedIdenticallyByBothDecodes()" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.076"/>
+  <testcase name="analyticStageBlocksMatchTheColoredReferenceOnAVaporOnlyCondenser()" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.061"/>
+  <testcase name="localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleOnWetTrays()" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.013"/>
+  <testcase name="[1] TWO_PHASE" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.075"/>
+  <testcase name="[2] LIQUID_ONLY" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.08"/>
+  <testcase name="localStageBlocksMatchTheWholeSystemFiniteDifferenceOracleWithSumpSteam()" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.018"/>
+  <testcase name="everyProbeOfAWetFixtureDecodesAndEvaluatesBitwiseAsTheWholeVectorProbeDid()" classname="com.wormzjl.createcheme.science.column.v3.V3BlockJacobianAssemblerTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

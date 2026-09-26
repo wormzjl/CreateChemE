@@ -1,0 +1,71 @@
+
+| metric | off (rest100-wp2-off-r03) | on (rest100-wp2-on-r02) |
+|---|---|---|
+| profile | rest100 | rest100 |
+| restDetection | false | true |
+| integrity | true | true |
+| held | 0.000 | 0.000 |
+| approximate | 0.000 | 0.000 |
+| balance | 4.73e-7 | 4.81e-7 |
+| energyBalance | 0.000 | 2.43e-10 |
+| measuredSeconds | 120.001 | 120.049 |
+| fullSolves | 2400 | 18.000 |
+| fullSolvesPerSecond | 20.000 | 0.150 |
+| replayedIntervals | 0.000 | 200.000 |
+| replayedSeconds | 0.000 | 15050 |
+| restedIntervals | 0.000 | 0.000 |
+| identityAdvancedSeconds | 0.000 | 0.000 |
+| finalKinds | {"AWAKE":100} | {"STEADY":100} |
+| certifiedFirst | 0.000 | 94.000 |
+| certifiedLast | 0.000 | 100.000 |
+| certifiedMin | 0.000 | 94.000 |
+| certifiedMax | 0.000 | 100.000 |
+| meanActiveWorkers | 0.000 | 0.000 |
+| lastActiveWorkers | 0.000 | 0.000 |
+| zeroActiveWorkerSamples | 120/120 | 120/120 |
+| meanEligible | 6.200 | 0.000 |
+| lastEligible | 0.000 | 0.000 |
+| zeroDemandSamples | 96/120 | 120/120 |
+| meanWorkerCpuOccupancy | 0.003 | 0.000 |
+| realtime | 1.000 | 0.007 |
+| realtimeInclCertified | 1.000 | 1.261 |
+| readyToPubP50 | 8.456 | 3.442 |
+| readyToPubP95 | 55.365 | 4.115 |
+| readyToPubMax | 64.653 | 4.115 |
+| workerP50 | 1.601 | 2.011 |
+| workerP95 | 2.930 | 3.239 |
+| engineP50 | 0.020 | 0.010 |
+| engineP95 | 0.092 | 0.015 |
+| engineMax | 5.659 | 0.539 |
+| wholeTickP50 | 0.215 | 0.232 |
+| wholeTickP95 | 0.442 | 0.432 |
+| solvesPerSecond | 20.000 | 0.150 |
+| visitsPerSecond | 80.000 | 0.600 |
+| pumpsPerSecond | 18.433 | 0.183 |
+| deadlinesPerSecond | 20.000 | 0.183 |
+| materialisationsPerSecond | 0.000 | 0.000 |
+| certificatesIssued | 0.000 | 6.000 |
+| certificatesRenewed | 0.000 | 0.000 |
+| certificateWakes | 0.000 | 0.000 |
+| idleTicks | 2279/2399 | 2389/2400 |
+| idleTicksWithVisit | 0.000 | 0.000 |
+| heapAfterForcedGcMiB | 1000 | 331.372 |
+| heapAfterLastGcEndMiB | 671.001 | 626.235 |
+| heapUsedMedianMiB | 2222 | 2307 |
+| gcCountInWindow | 2.000 | 0.000 |
+
+[islands on the reference grid in both runs]
+
+Reference tick 2500: 95 islands compared (0 interpolated), 0 missing.
+  max relative inventory deviation (component with base > 1e-12 mol): 2.379e-8 at 10145/node13/c11 base 1.5088e+1
+  max relative internal-energy deviation (scale max(|U|,1 J)): 2.335e-8
+  max island boundary-ledger deviation (relative to that island's largest ledger component): 0.000e+0 at null
+  summed boundary ledger deviation (relative to its largest component): 0.000e+0
+
+[all islands, shifted grids interpolated]
+
+Reference tick 2500: 100 islands compared (5 interpolated), 0 missing.
+  max relative inventory deviation (component with base > 1e-12 mol): 2.379e-8 at 10145/node13/c11 base 1.5088e+1
+  max relative internal-energy deviation (scale max(|U|,1 J)): 2.335e-8
+  max island boundary-ledger deviation (relative to that island's largest ledger component): 0.000e+0 at null
+  summed boundary ledger deviation (relative to its largest component): 0.000e+0

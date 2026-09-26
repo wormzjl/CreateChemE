@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.ScratchTransientFixtureTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-23T03:55:44.024Z" hostname="WORMZ-PC" time="4.686">
+  <properties/>
+  <testcase name="probe()" classname="com.wormzjl.createcheme.runtime.fluid.ScratchTransientFixtureTest" time="4.686"/>
+  <system-out><![CDATA[candidate Pgen=200000 d=0.200 V=1000 islands=1 reservoirs=21 pipes=29
+  reservoir mass 38488.9 kg vapor 957.2 m3 liquid 42.45 water 0.39
+  t=  5 s mean P=150017.586 dP/dt=3.5172e+00 Pa/s tau=14211 s maxRelInventoryChange=0.000e+00 substeps=22/7
+  t= 10 s mean P=150035.141 dP/dt=3.5109e+00 Pa/s tau=14231 s maxRelInventoryChange=1.874e-04 substeps=4/0
+  t= 15 s mean P=150052.673 dP/dt=3.5065e+00 Pa/s tau=14244 s maxRelInventoryChange=1.872e-04 substeps=3/0
+  t= 20 s mean P=150070.189 dP/dt=3.5031e+00 Pa/s tau=14253 s maxRelInventoryChange=1.869e-04 substeps=3/0
+  t= 25 s mean P=150087.690 dP/dt=3.5003e+00 Pa/s tau=14260 s maxRelInventoryChange=1.868e-04 substeps=3/0
+  t= 30 s mean P=150105.179 dP/dt=3.4977e+00 Pa/s tau=14265 s maxRelInventoryChange=1.866e-04 substeps=3/0
+  t= 35 s mean P=150122.657 dP/dt=3.4955e+00 Pa/s tau=14269 s maxRelInventoryChange=1.864e-04 substeps=3/0
+  t= 40 s mean P=150140.124 dP/dt=3.4934e+00 Pa/s tau=14272 s maxRelInventoryChange=1.863e-04 substeps=3/0
+  t= 45 s mean P=150157.581 dP/dt=3.4915e+00 Pa/s tau=14275 s maxRelInventoryChange=1.862e-04 substeps=3/0
+  t= 50 s mean P=150175.030 dP/dt=3.4897e+00 Pa/s tau=14278 s maxRelInventoryChange=1.860e-04 substeps=3/0
+  t= 55 s mean P=150192.470 dP/dt=3.4880e+00 Pa/s tau=14280 s maxRelInventoryChange=1.859e-04 substeps=3/0
+  t= 60 s mean P=150209.902 dP/dt=3.4864e+00 Pa/s tau=14281 s maxRelInventoryChange=1.858e-04 substeps=3/0
+  wall 1.6 s
+candidate Pgen=200000 d=0.300 V=1000 islands=1 reservoirs=21 pipes=29
+  reservoir mass 38488.9 kg vapor 957.2 m3 liquid 42.45 water 0.39
+  t=  5 s mean P=150050.775 dP/dt=1.0155e+01 Pa/s tau=4919 s maxRelInventoryChange=0.000e+00 substeps=28/5
+  t= 10 s mean P=150101.392 dP/dt=1.0123e+01 Pa/s tau=4929 s maxRelInventoryChange=5.403e-04 substeps=5/0
+  t= 15 s mean P=150151.912 dP/dt=1.0104e+01 Pa/s tau=4934 s maxRelInventoryChange=5.390e-04 substeps=3/0
+  t= 20 s mean P=150202.356 dP/dt=1.0089e+01 Pa/s tau=4936 s maxRelInventoryChange=5.379e-04 substeps=3/0
+  t= 25 s mean P=150252.734 dP/dt=1.0076e+01 Pa/s tau=4937 s maxRelInventoryChange=5.369e-04 substeps=3/0
+  t= 30 s mean P=150303.054 dP/dt=1.0064e+01 Pa/s tau=4938 s maxRelInventoryChange=5.360e-04 substeps=3/0
+  t= 35 s mean P=150353.321 dP/dt=1.0053e+01 Pa/s tau=4938 s maxRelInventoryChange=5.352e-04 substeps=3/0
+  t= 40 s mean P=150403.538 dP/dt=1.0043e+01 Pa/s tau=4938 s maxRelInventoryChange=5.344e-04 substeps=3/0
+  t= 45 s mean P=150453.709 dP/dt=1.0034e+01 Pa/s tau=4938 s maxRelInventoryChange=5.336e-04 substeps=3/0
+  t= 50 s mean P=150503.835 dP/dt=1.0025e+01 Pa/s tau=4937 s maxRelInventoryChange=5.329e-04 substeps=3/0
+  t= 55 s mean P=150553.919 dP/dt=1.0017e+01 Pa/s tau=4936 s maxRelInventoryChange=5.322e-04 substeps=3/0
+  t= 60 s mean P=150603.962 dP/dt=1.0009e+01 Pa/s tau=4935 s maxRelInventoryChange=5.315e-04 substeps=3/0
+  wall 1.0 s
+candidate Pgen=200000 d=0.400 V=1000 islands=1 reservoirs=21 pipes=29
+  reservoir mass 38488.9 kg vapor 957.2 m3 liquid 42.45 water 0.39
+  t=  5 s mean P=150107.477 dP/dt=2.1495e+01 Pa/s tau=2321 s maxRelInventoryChange=0.000e+00 substeps=31/6
+  t= 10 s mean P=150214.490 dP/dt=2.1403e+01 Pa/s tau=2326 s maxRelInventoryChange=1.142e-03 substeps=5/0
+  t= 15 s mean P=150321.216 dP/dt=2.1345e+01 Pa/s tau=2327 s maxRelInventoryChange=1.137e-03 substeps=3/0
+  t= 20 s mean P=150427.708 dP/dt=2.1299e+01 Pa/s tau=2327 s maxRelInventoryChange=1.134e-03 substeps=3/0
+  t= 25 s mean P=150533.997 dP/dt=2.1258e+01 Pa/s tau=2327 s maxRelInventoryChange=1.130e-03 substeps=3/0
+  t= 30 s mean P=150640.099 dP/dt=2.1220e+01 Pa/s tau=2326 s maxRelInventoryChange=1.127e-03 substeps=3/0
+  t= 35 s mean P=150746.027 dP/dt=2.1186e+01 Pa/s tau=2325 s maxRelInventoryChange=1.124e-03 substeps=3/0
+  t= 40 s mean P=150851.789 dP/dt=2.1152e+01 Pa/s tau=2324 s maxRelInventoryChange=1.121e-03 substeps=3/0
+  t= 45 s mean P=150957.390 dP/dt=2.1120e+01 Pa/s tau=2322 s maxRelInventoryChange=1.118e-03 substeps=3/0
+  t= 50 s mean P=151062.836 dP/dt=2.1089e+01 Pa/s tau=2320 s maxRelInventoryChange=1.116e-03 substeps=3/0
+  t= 55 s mean P=151168.129 dP/dt=2.1059e+01 Pa/s tau=2319 s maxRelInventoryChange=1.113e-03 substeps=3/0
+  t= 60 s mean P=151273.272 dP/dt=2.1029e+01 Pa/s tau=2317 s maxRelInventoryChange=1.110e-03 substeps=3/0
+  wall 0.8 s
+candidate Pgen=175000 d=0.300 V=1000 islands=1 reservoirs=21 pipes=29
+  reservoir mass 38488.9 kg vapor 957.2 m3 liquid 42.45 water 0.39
+  t=  5 s mean P=150033.156 dP/dt=6.6312e+00 Pa/s tau=3765 s maxRelInventoryChange=0.000e+00 substeps=27/10
+  t= 10 s mean P=150066.203 dP/dt=6.6095e+00 Pa/s tau=3772 s maxRelInventoryChange=3.377e-04 substeps=5/0
+  t= 15 s mean P=150099.183 dP/dt=6.5959e+00 Pa/s tau=3775 s maxRelInventoryChange=3.369e-04 substeps=3/0
+  t= 20 s mean P=150132.108 dP/dt=6.5851e+00 Pa/s tau=3776 s maxRelInventoryChange=3.362e-04 substeps=3/0
+  t= 25 s mean P=150164.987 dP/dt=6.5757e+00 Pa/s tau=3777 s maxRelInventoryChange=3.357e-04 substeps=3/0
+  t= 30 s mean P=150197.823 dP/dt=6.5672e+00 Pa/s tau=3777 s maxRelInventoryChange=3.351e-04 substeps=3/0
+  t= 35 s mean P=150230.620 dP/dt=6.5594e+00 Pa/s tau=3776 s maxRelInventoryChange=3.347e-04 substeps=3/0
+  t= 40 s mean P=150263.380 dP/dt=6.5521e+00 Pa/s tau=3775 s maxRelInventoryChange=3.342e-04 substeps=3/0
+  t= 45 s mean P=150296.106 dP/dt=6.5452e+00 Pa/s tau=3774 s maxRelInventoryChange=3.338e-04 substeps=3/0
+  t= 50 s mean P=150328.800 dP/dt=6.5386e+00 Pa/s tau=3773 s maxRelInventoryChange=3.333e-04 substeps=3/0
+  t= 55 s mean P=150361.461 dP/dt=6.5323e+00 Pa/s tau=3772 s maxRelInventoryChange=3.329e-04 substeps=3/0
+  t= 60 s mean P=150394.092 dP/dt=6.5262e+00 Pa/s tau=3770 s maxRelInventoryChange=3.325e-04 substeps=3/0
+  wall 0.8 s
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

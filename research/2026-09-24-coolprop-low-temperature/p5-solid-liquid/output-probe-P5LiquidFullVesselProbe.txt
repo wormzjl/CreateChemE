@@ -1,0 +1,76 @@
+===== science.fluid.network.P5LiquidFullVesselProbe.xml tests="1" skipped="0" failures="0" errors="0"
+(1) pure CH4 liquid-full: charged 150.000 K 5000000.0 Pa, liquid true vapour false
+(1) pure CH4 liquid-full interval 1: 148.642711 K 3862269.5 Pa, liquid 23.120219 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 2: 147.286688 K 2723933.9 Pa, liquid 23.120219 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 3: 145.931950 K 1584991.1 Pa, liquid 23.120219 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 4: 144.802924 K 820593.4 Pa, liquid 23.119034 mol (x_CO2 0.000000), vapour 1.185e-03 mol, crystal 0.000000e+00 mol, substeps 4 rejected 0
+(1) pure CH4 liquid-full interval 5: 144.113855 K 793495.7 Pa, liquid 23.115714 mol (x_CO2 0.000000), vapour 4.505e-03 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 6: 143.422698 K 766974.4 Pa, liquid 23.112674 mol (x_CO2 0.000000), vapour 7.545e-03 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 7: 142.729455 K 741026.1 Pa, liquid 23.109898 mol (x_CO2 0.000000), vapour 1.032e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 8: 142.034131 K 715647.2 Pa, liquid 23.107371 mol (x_CO2 0.000000), vapour 1.285e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 9: 141.336732 K 690834.1 Pa, liquid 23.105078 mol (x_CO2 0.000000), vapour 1.514e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 10: 140.637262 K 666582.9 Pa, liquid 23.103007 mol (x_CO2 0.000000), vapour 1.721e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 11: 139.935726 K 642889.6 Pa, liquid 23.101145 mol (x_CO2 0.000000), vapour 1.907e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(1) pure CH4 liquid-full interval 12: 139.232129 K 619750.1 Pa, liquid 23.099479 mol (x_CO2 0.000000), vapour 2.074e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed: charged 170.000 K 9000000.0 Pa, liquid true vapour false
+(2) CH4 + 3 % CO2 compressed interval 1: 168.490230 K 8000447.1 Pa, liquid 21.373537 mol (x_CO2 0.030000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 2: 167.080968 K 7069253.0 Pa, liquid 21.368511 mol (x_CO2 0.029772), vapour 0.000e+00 mol, crystal 5.025773e-03 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 3: 166.247834 K 6538640.7 Pa, liquid 21.334520 mol (x_CO2 0.028226), vapour 0.000e+00 mol, crystal 3.901695e-02 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 4: 165.397493 K 5997453.3 Pa, liquid 21.301521 mol (x_CO2 0.026721), vapour 0.000e+00 mol, crystal 7.201627e-02 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 5: 164.529694 K 5445461.2 Pa, liquid 21.269523 mol (x_CO2 0.025256), vapour 0.000e+00 mol, crystal 1.040144e-01 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 6: 163.644202 K 4882439.5 Pa, liquid 21.238535 mol (x_CO2 0.023834), vapour 0.000e+00 mol, crystal 1.350026e-01 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 7: 162.740795 K 4308169.1 Pa, liquid 21.208564 mol (x_CO2 0.022455), vapour 0.000e+00 mol, crystal 1.649731e-01 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 8: 161.819273 K 3722438.5 Pa, liquid 21.179618 mol (x_CO2 0.021119), vapour 0.000e+00 mol, crystal 1.939190e-01 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 9: 160.879454 K 3125045.6 Pa, liquid 21.151703 mol (x_CO2 0.019827), vapour 0.000e+00 mol, crystal 2.218346e-01 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 10: 159.921179 K 2515798.8 Pa, liquid 21.124822 mol (x_CO2 0.018580), vapour 0.000e+00 mol, crystal 2.487152e-01 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 11: 158.944318 K 1894519.3 Pa, liquid 21.098980 mol (x_CO2 0.017378), vapour 0.000e+00 mol, crystal 2.745575e-01 mol, substeps 3 rejected 0
+(2) CH4 + 3 % CO2 compressed interval 12: refused Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 1.3760324546474578E-8; active-set pass=1
+(3) CH4 + 2 % CO2 liquid-full: charged 172.000 K 5000000.0 Pa, liquid true vapour false
+(3) CH4 + 2 % CO2 liquid-full interval 1: 170.345906 K 4099098.2 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(3) CH4 + 2 % CO2 liquid-full interval 2: 168.692815 K 3197246.5 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(3) CH4 + 2 % CO2 liquid-full interval 3: 167.040763 K 2294445.5 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(3) CH4 + 2 % CO2 liquid-full interval 4: refused Nonconvergence: Interval substep limit; no partial interval may commit: advanced=1.526731038282378 of 5.0 s, accepted=491, rejected=533, reasons={Newton iteration limit at residual #; active-set pass=#=533}, last=Newton iteration limit at residual 2.156015610488282E-8; active-set pass=1
+(4) CH4 + 2 % C2H6 liquid-full: charged 172.000 K 5000000.0 Pa, liquid true vapour false
+(4) CH4 + 2 % C2H6 liquid-full interval 1: 170.358831 K 4098127.7 Pa, liquid 19.707450 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(4) CH4 + 2 % C2H6 liquid-full interval 2: 168.718732 K 3195339.8 Pa, liquid 19.707450 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(4) CH4 + 2 % C2H6 liquid-full interval 3: 167.079740 K 2291638.0 Pa, liquid 19.707450 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(4) CH4 + 2 % C2H6 liquid-full interval 4: refused Nonconvergence: Interval substep limit; no partial interval may commit: advanced=1.5487495749569007 of 5.0 s, accepted=491, rejected=533, reasons={Newton iteration limit at residual #; active-set pass=#=11, Phase/device active-set cycle=522}, last=Phase/device active-set cycle
+(5) CH4 + 2 % N2 liquid-full: charged 160.000 K 5000000.0 Pa, liquid true vapour false
+(5) CH4 + 2 % N2 liquid-full interval 1: 158.505751 K 3993327.5 Pa, liquid 21.483587 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(5) CH4 + 2 % N2 liquid-full interval 2: 157.012770 K 2985921.7 Pa, liquid 21.483587 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(5) CH4 + 2 % N2 liquid-full interval 3: 155.521083 K 1977781.2 Pa, liquid 21.483587 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(5) CH4 + 2 % N2 liquid-full interval 4: refused Nonconvergence: Interval substep limit; no partial interval may commit: advanced=2.6320890654051254 of 5.0 s, accepted=491, rejected=533, reasons={Newton iteration limit at residual #; active-set pass=#=27, Phase/device active-set cycle=504, Newton line search stalled at residual #; active-set pass=#=2}, last=Phase/device active-set cycle
+(6) pure CH4 liquid-full at 172 K: charged 172.000 K 5000000.0 Pa, liquid true vapour false
+(6) pure CH4 liquid-full at 172 K interval 1: 170.317251 K 4119274.7 Pa, liquid 19.429085 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 2: 168.635715 K 3237678.2 Pa, liquid 19.429085 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 3: 166.955431 K 2355211.8 Pa, liquid 19.429085 mol (x_CO2 0.000000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 4: 165.918255 K 2019930.4 Pa, liquid 19.417284 mol (x_CO2 0.000000), vapour 1.180e-02 mol, crystal 0.000000e+00 mol, substeps 4 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 5: 165.208107 K 1966432.3 Pa, liquid 19.400848 mol (x_CO2 0.000000), vapour 2.824e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 6: 164.494834 K 1913725.0 Pa, liquid 19.386001 mol (x_CO2 0.000000), vapour 4.308e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 7: 163.778430 K 1861810.0 Pa, liquid 19.372617 mol (x_CO2 0.000000), vapour 5.647e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 8: 163.058892 K 1810688.5 Pa, liquid 19.360581 mol (x_CO2 0.000000), vapour 6.850e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 9: 162.336213 K 1760361.7 Pa, liquid 19.349787 mol (x_CO2 0.000000), vapour 7.930e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 10: 161.610388 K 1710830.3 Pa, liquid 19.340140 mol (x_CO2 0.000000), vapour 8.894e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 11: 160.881413 K 1662095.3 Pa, liquid 19.331552 mol (x_CO2 0.000000), vapour 9.753e-02 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(6) pure CH4 liquid-full at 172 K interval 12: 160.149282 K 1614157.2 Pa, liquid 19.323942 mol (x_CO2 0.000000), vapour 1.051e-01 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(7) CH4 + 0.5 % CO2 liquid-full: charged 172.000 K 5000000.0 Pa, liquid true vapour false
+(7) CH4 + 0.5 % CO2 liquid-full interval 1: 170.324516 K 4114253.5 Pa, liquid 19.510270 mol (x_CO2 0.005000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(7) CH4 + 0.5 % CO2 liquid-full interval 2: 168.650191 K 3227616.3 Pa, liquid 19.510270 mol (x_CO2 0.005000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(7) CH4 + 0.5 % CO2 liquid-full interval 3: 166.977063 K 2340089.4 Pa, liquid 19.510270 mol (x_CO2 0.005000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(7) CH4 + 0.5 % CO2 liquid-full interval 4: refused Nonconvergence: Interval substep limit; no partial interval may commit: advanced=1.655130172296822 of 5.0 s, accepted=491, rejected=533, reasons={Phase/device active-set cycle=529, Newton iteration limit at residual #; active-set pass=#=4}, last=Phase/device active-set cycle
+(8) CH4 + 2 % CO2 liquid-full, -50 W: charged 172.000 K 5000000.0 Pa, liquid true vapour false
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 1: 171.586384 K 4774863.6 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 2: 171.172830 K 4549667.9 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 3: 170.759337 K 4324412.7 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 4: 170.345906 K 4099098.2 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 5: 169.932538 K 3873724.3 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 6: 169.519233 K 3648291.0 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 7: 169.105992 K 3422798.5 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 8: 168.692815 K 3197246.5 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 9: 168.279704 K 2971635.3 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 10: 167.866657 K 2745964.7 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 11: 167.453677 K 2520234.8 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 12: 167.040763 K 2294445.5 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 13: 166.627916 K 2068596.9 Pa, liquid 19.751711 mol (x_CO2 0.020000), vapour 0.000e+00 mol, crystal 0.000000e+00 mol, substeps 3 rejected 0
+(8) CH4 + 2 % CO2 liquid-full, -50 W interval 14: refused Nonconvergence: Interval substep limit; no partial interval may commit: advanced=1.1069241468130713 of 5.0 s, accepted=492, rejected=532, reasons={Newton iteration limit at residual #; active-set pass=#=532}, last=Newton iteration limit at residual 2.1562586327572575E-8; active-set pass=1
+

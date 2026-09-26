@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.material.Cdu17TestCatalogTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:58.077Z" hostname="WORMZ-PC" time="0.011">
+  <properties/>
+  <testcase name="editingProductionPropertiesCannotAlterTheReference()" classname="com.wormzjl.createcheme.science.material.Cdu17TestCatalogTest" time="0.01"/>
+  <testcase name="referenceLoadsWithoutAnyProductionResources()" classname="com.wormzjl.createcheme.science.material.Cdu17TestCatalogTest" time="0.0"/>
+  <testcase name="scopeRestoresTheEnclosingCatalogOnFailure()" classname="com.wormzjl.createcheme.science.material.Cdu17TestCatalogTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

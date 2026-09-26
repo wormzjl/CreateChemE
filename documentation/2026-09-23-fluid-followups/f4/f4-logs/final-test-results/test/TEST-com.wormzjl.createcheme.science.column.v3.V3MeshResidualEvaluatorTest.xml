@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:13.803Z" hostname="WORMZ-PC" time="0.005">
+  <properties/>
+  <testcase name="residualsExposeAConservedFlowCorruptionInsteadOfRepairingIt()" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.001"/>
+  <testcase name="[1] 1" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.001"/>
+  <testcase name="[2] 2" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.0"/>
+  <testcase name="[3] 4" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.0"/>
+  <testcase name="completeManufacturedDryMeshStateClosesMaterialVleAndEnergyInLedgerOrder()" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.001"/>
+  <testcase name="affinePhaseEnthalpiesCloseEveryEnergyRowWhenComponentBalancesAreClosed()" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.0"/>
+  <testcase name="[1] 1" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.001"/>
+  <testcase name="[2] 2" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.0"/>
+  <testcase name="[3] 4" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.0"/>
+  <testcase name="evaluatorRejectsThermoBasisAndAbsentPhaseViolationsBeforeProducingResiduals()" classname="com.wormzjl.createcheme.science.column.v3.V3MeshResidualEvaluatorTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,109 @@
+{
+  "runId": "pilot-rest100-r01",
+  "scenario": "rest100",
+  "kind": "server",
+  "worktree": "D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/agent-ae139e4fc1b184b36",
+  "warmupSeconds": 60,
+  "windowSeconds": 60,
+  "events": [
+    {
+      "t": 1790165940074,
+      "iso": "2026-09-23T12:19:00.074Z",
+      "what": "machine",
+      "endfield": 0,
+      "freeMiB": 26308
+    },
+    {
+      "t": 1790165940506,
+      "iso": "2026-09-23T12:19:00.506Z",
+      "what": "launch"
+    },
+    {
+      "t": 1790165952609,
+      "iso": "2026-09-23T12:19:12.609Z",
+      "what": "server ready"
+    },
+    {
+      "t": 1790165953041,
+      "iso": "2026-09-23T12:19:13.041Z",
+      "what": "jvm",
+      "pid": 9080
+    },
+    {
+      "t": 1790165953048,
+      "iso": "2026-09-23T12:19:13.048Z",
+      "what": "forceload",
+      "reply": "Running function createcheme_bench:forceload\n"
+    },
+    {
+      "t": 1790165958050,
+      "iso": "2026-09-23T12:19:18.050Z",
+      "what": "place start"
+    },
+    {
+      "t": 1790165959017,
+      "iso": "2026-09-23T12:19:19.017Z",
+      "what": "place done",
+      "reply": "Running function createcheme_bench:rest100\n",
+      "placementMillis": 966
+    },
+    {
+      "t": 1790166019473,
+      "iso": "2026-09-23T12:20:19.473Z",
+      "what": "jfr start",
+      "reply": "9080:\r\nStarted recording 1. No limit specified, using maxsize=250MB as default.\n\nUse jcmd 9080 JFR.dump name=wp5window to copy recording data to file."
+    },
+    {
+      "t": 1790166019607,
+      "iso": "2026-09-23T12:20:19.607Z",
+      "what": "window start"
+    },
+    {
+      "t": 1790166079584,
+      "iso": "2026-09-23T12:21:19.584Z",
+      "what": "window end"
+    },
+    {
+      "t": 1790166079697,
+      "iso": "2026-09-23T12:21:19.697Z",
+      "what": "jfr stop",
+      "reply": "9080:\r\nStopped recording \"wp5window\", 626.0 kB written to:\n\nD:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\documentation\\fluid-scheduler\\wp5-logs\\pilot-rest100-r01\\window.jfr"
+    },
+    {
+      "t": 1790166080271,
+      "iso": "2026-09-23T12:21:20.271Z",
+      "what": "live heap"
+    },
+    {
+      "t": 1790166080273,
+      "iso": "2026-09-23T12:21:20.273Z",
+      "what": "stop",
+      "reply": "Stopping the server\n"
+    },
+    {
+      "t": 1790166081045,
+      "iso": "2026-09-23T12:21:21.045Z",
+      "what": "gradle exit",
+      "code": 0
+    },
+    {
+      "t": 1790166084734,
+      "iso": "2026-09-23T12:21:24.734Z",
+      "what": "done",
+      "endfield": 0,
+      "freeMiB": 26194
+    }
+  ],
+  "machineBefore": {
+    "endfield": 0,
+    "freeMiB": 26308
+  },
+  "pid": 9080,
+  "placementMillis": 966,
+  "windowStart": 1790166019474,
+  "windowEnd": 1790166079485,
+  "machineAfter": {
+    "endfield": 0,
+    "freeMiB": 26194
+  }
+}

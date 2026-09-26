@@ -1,0 +1,118 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index c418c56..1dfb01a 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -125,12 +125,13 @@ public final class PassiveStepSolver {
+     }
+     public Result solveRate(PassiveNetwork graph,Runnable checkpoint,Acceptance acceptance){return solve(graph,1,checkpoint,acceptance,true);}
+     public Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance) {return solve(graph,dt,checkpoint,acceptance,false);}
+-    private Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance,boolean rateOnly) {
++    private Result solve(PassiveNetwork inputGraph,double dt,Runnable checkpoint,Acceptance acceptance,boolean rateOnly) {
+         this.rateOnly=rateOnly;
+         Objects.requireNonNull(acceptance);SolverDiagnostics.count(SolverDiagnostics.implicitSolves);
+         ownership.check("Each executing island job needs its own step workspace");
+         lastSolve=null;
+         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
++        var graph=seedBoundaryJunctions(inputGraph,checkpoint);
+         if(graph.pipes().isEmpty()&&graph.scheduledTransfers().isEmpty())return new Result(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),new double[0],dt,
+                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
+                 graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList(),List.of(),List.of());
+@@ -822,6 +823,80 @@ public final class PassiveStepSolver {
+         for(int c=0;c<a.length;c++)if(a[c]>0!=b[c]>0)return false;
+         return true;
+     }
++    /** Candidate cold-guess repair for passive stars with fixed pressure boundaries. */
++    private PassiveNetwork seedBoundaryJunctions(PassiveNetwork graph,Runnable checkpoint) {
++        List<PassiveNetwork.Reservoir> nodes=null;
++        for(int node=0;node<graph.reservoirs().size();node++) {
++            var junction=graph.reservoirs().get(node);
++            if(!junction.junction()||!junction.state().solids().empty())continue;
++            double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;int degree=0;boolean eligible=true;
++            for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
++                degree++;int other=pipe.first()==node?pipe.second():pipe.first();
++                if(!graph.reservoirs().get(other).fixed()||!(pipe.control() instanceof FlowControl.Passive)
++                        ||pipe.filter()!=null||pipe.blockedDirections()!=0){eligible=false;break;}
++                double pressure=graph.reservoirs().get(other).state().pressure();
++                low=Math.min(low,pressure);high=Math.max(high,pressure);
++            }
++            if(!eligible||degree<3||!(high>low))continue;
++            double pressure=junction.state().pressure();
++            if(pressure>low&&pressure<high)continue; // Keep an already interior/settled guess.
++            var seed=balancedBoundarySeed(graph,node,low,high,checkpoint);
++            if(nodes==null)nodes=new ArrayList<>(graph.reservoirs());
++            nodes.set(node,new PassiveNetwork.Reservoir(junction.id(),junction.elevation(),seed,
++                junction.kind(),junction.inventory()));
++        }
++        return nodes==null?graph:new PassiveNetwork(nodes,graph.pipes(),graph.scheduledTransfers());
++    }
++
++    // Investigation prototype: bounded scalar pressure and enthalpy solves; not a production policy.
++    private FluidThermodynamics.State balancedBoundarySeed(PassiveNetwork graph,int node,double low,double high,Runnable checkpoint) {
++        var junction=graph.reservoirs().get(node);var seed=junction.state();
++        double stock=PhaseLayout.sum(PhaseLayout.totalAmounts(seed));
++        for(int sweep=0;sweep<8;sweep++) {
++            checkpoint.run();
++            var nodes=new ArrayList<>(graph.reservoirs());
++            nodes.set(node,new PassiveNetwork.Reservoir(junction.id(),junction.elevation(),seed,junction.kind(),junction.inventory()));
++            var trial=new PassiveNetwork(nodes,graph.pipes());
++            double lo=low,hi=high;
++            for(int k=0;k<36;k++) {
++                double pressure=lo+(hi-lo)*.5,net=0;
++                for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
++                    double flow=initialMassFlow(trial,pipe,pipe.first()==node?pressure:nodes.get(pipe.first()).state().pressure(),
++                        pipe.second()==node?pressure:nodes.get(pipe.second()).state().pressure());
++                    if(boundaryAllowed(trial,pipe,flow))net+=pipe.first()==node?-flow:flow;
++                }
++                if(net>0)lo=pressure;else hi=pressure;
++            }
++            double pressure=lo+(hi-lo)*.5,mass=0,heat=0,tLow=Double.POSITIVE_INFINITY,tHigh=0;
++            var amounts=new double[model.hydrocarbon.componentCount()+1];
++            for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
++                double flow=initialMassFlow(trial,pipe,pipe.first()==node?pressure:nodes.get(pipe.first()).state().pressure(),
++                    pipe.second()==node?pressure:nodes.get(pipe.second()).state().pressure());
++                int donor=flow>=0?pipe.first():pipe.second();
++                if(donor==node||!boundaryAllowed(trial,pipe,flow))continue;
++                var source=nodes.get(donor);double rate=Math.abs(flow);var n=PhaseLayout.totalAmounts(source.state());
++                for(int c=0;c<n.length;c++)amounts[c]+=rate*n[c]/source.state().mass();
++                mass+=rate;heat+=rate*(source.state().enthalpy()/source.state().mass()+GRAVITY*(source.elevation()-junction.elevation()));
++                tLow=Math.min(tLow,source.state().temperature());tHigh=Math.max(tHigh,source.state().temperature());
++            }
++            if(!(mass>0))return seed;
++            double total=PhaseLayout.sum(amounts);for(int c=0;c<amounts.length;c++)amounts[c]*=stock/total;
++            double lower=Math.max(tLow-20,model.domain().envelope().minimumTemperature());
++            double upper=Math.min(tHigh+20,model.domain().envelope().maximumTemperature());
++            for(int c=0;c<amounts.length;c++)if(amounts[c]>0) {
++                var range=model.domain().range(c);lower=Math.max(lower,range[0]);upper=Math.min(upper,range[1]);
++            }
++            if(!(lower<upper))return seed;
++            for(int k=0;k<30;k++) {
++                double t=lower+(upper-lower)*.5;
++                var point=model.flashTP(t,pressure,amounts,checkpoint);
++                if(point.enthalpy()/point.mass()<heat/mass)lower=t;else upper=t;
++            }
++            seed=model.flashTP(lower+(upper-lower)*.5,pressure,amounts,checkpoint);
++        }
++        return seed;
++    }
++
+     /** The mass of a conserved amount vector, water last. */
+     private double molarMass(double[] amounts) {
+         double mass=0;for(int c=0;c<amounts.length;c++)mass+=amounts[c]*model.molecularWeight(c);
+@@ -998,11 +1073,15 @@ public final class PassiveStepSolver {
+         return drop;
+     }
+     private double initialMassFlow(PassiveNetwork graph,PassiveNetwork.Pipe pipe) {
++        return initialMassFlow(graph,pipe,graph.reservoirs().get(pipe.first()).state().pressure(),
++                graph.reservoirs().get(pipe.second()).state().pressure());
++    }
++    private double initialMassFlow(PassiveNetwork graph,PassiveNetwork.Pipe pipe,double firstPressure,double secondPressure) {
+         var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
+         if(pipe.control() instanceof FlowControl.Pump pump)
+             return Math.min(pump.targetVolumeFlow()*a.state().mass()/a.state().volume(),massFlowLimit(pipe,a.state()));
+-        var upstream=a.state().pressure()>=b.state().pressure()?a.state():b.state();double rho=upstream.mass()/upstream.volume(),mu=viscosity(upstream);
+-        double driving=a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation());
++        var upstream=firstPressure>=secondPressure?a.state():b.state();double rho=upstream.mass()/upstream.volume(),mu=viscosity(upstream);
++        double driving=firstPressure-secondPressure-rho*GRAVITY*(b.elevation()-a.elevation());
+         double lo=0,hi=1;while(pipe.pressureDrop(hi,rho,mu)<Math.abs(driving)&&hi<1e6)hi*=2;
+         for(int j=0;j<50;j++){double mid=(lo+hi)/2;if(pipe.pressureDrop(mid,rho,mu)>Math.abs(driving))hi=mid;else lo=mid;}
+         var donor=graph.reservoirs().get(driving>=0?pipe.first():pipe.second()).state();

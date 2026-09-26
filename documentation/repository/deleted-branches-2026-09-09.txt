@@ -1,0 +1,19 @@
+# Deleted Claude branches - 2026-09-09T06:30Z
+# main was cf9ce35 (== origin/main). Restore with: git branch <name> <sha>
+87b544d5911eb33b38b4099508aaf1431a2bceb7 claude/angry-elion-929b6c
+db46e8894f49651362bb73355bf126ddfcf638a0 claude/convergence-time-optimization-7f5b84
+2d0d1cf6ac398e2d8af3d52fdd567c415ed09d23 claude/keen-wu-71e53d
+2dcb0f80f3c1a75b3a7728066f2a7e0459b1cdf0 claude/reaction-enthalpy-kinetics-tool-9e044c
+e8d8937eacc1d58692f1a4f289f0633ec25b4cd1 claude/v3-literature-cdu-handoff-3179dc
+56771fc3e4fab6239a36ee8d641802cf0409eb1e claude/cool-chatelet-2cee99
+56771fc3e4fab6239a36ee8d641802cf0409eb1e claude/heuristic-payne-6b7d3e
+56771fc3e4fab6239a36ee8d641802cf0409eb1e claude/recursing-lamarr-6cb268
+56771fc3e4fab6239a36ee8d641802cf0409eb1e claude/vigilant-hypatia-eb88a3
+1e388f5a6438f79d318f04996cbf987ae8dfe5b6 worktree-agent-a2630ff04426e87c4
+979773107af1d1dc811e2b31129b48551795d652 worktree-agent-a51c386912985225f
+db46e8894f49651362bb73355bf126ddfcf638a0 worktree-agent-a557795da42c49f7f
+e8d8937eacc1d58692f1a4f289f0633ec25b4cd1 worktree-agent-a5fa3d38f2e873e1d
+1e388f5a6438f79d318f04996cbf987ae8dfe5b6 worktree-agent-acf7be2374b92fb29
+5a50e6119f68d2c4707ef649829dde37916333ac worktree-agent-adbe5e863616c8523
+6a5ab338ce20963f601d322cbb0c80c5e3b60f78 worktree-agent-aed13112a62af9bd4
+f5cb1b246811e0749dc978fc15163c2ceb25fe2a worktree-agent-af20169e56bbe8be5

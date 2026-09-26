@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T03:10:13.190Z" hostname="WORMZ-PC" time="53.961">
+  <properties/>
+  <testcase name="aSixTankChainPassesTheStartThatHeldItForever()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="22.989"/>
+  <testcase name="everyPumpedChainCommitsItsFirstTickFromAColdSolver()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="4.168"/>
+  <testcase name="aPumpedFillPassesTheSecondTanksBackflowWithoutAHold()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="1.842"/>
+  <testcase name="aPumpedThreeTankChainFillsToThePumpsShutoffAndCertifies()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="7.689"/>
+  <testcase name="aGasTransferStopsAtTheModelsTemperatureFloorAndItsRetriesBackOff()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="9.49"/>
+  <testcase name="aVentedChainReachesThroughFlowAtThePumpsTarget()" classname="com.wormzjl.createcheme.runtime.FluidPumpedFillLineTest" time="7.765"/>
+  <system-out><![CDATA[six-tank fill: online 907, committed 66, 16 jobs, 23.4 s of work, SOLVING, Optional.empty [101431.8 Pa, 297.76 K, liquid 0.0323] [101340.3 Pa, 289.18 K, liquid 0.0006] [101327.8 Pa, 281.75 K, liquid 0.0000] [101322.2 Pa, 297.82 K, liquid 0.0000] [101319.8 Pa, 298.14 K, liquid 0.0000] [101319.1 Pa, 298.15 K, liquid 0.0000]
+GUPRPRPR: first tick accepted=45 rejected=17 reasons={Newton line search stalled at residual #; active-set pass=#=1, Newton iteration limit at residual #; active-set pass=#=1, Embedded pipe error #=6, Step refinement error #=9}
+GUPRPRPRPRPRPR: first tick accepted=44 rejected=19 reasons={Newton iteration limit at residual #; active-set pass=#=6, Embedded pipe error #=7, Step refinement error #=6}
+GUPRPRPRPRPRPRPV: first tick accepted=44 rejected=19 reasons={Newton iteration limit at residual #; active-set pass=#=6, Embedded pipe error #=7, Step refinement error #=6}
+three-tank fill, 0.6 s: accepted=161 rejected=73 reasons={Negative/nonfinite inventory=4, Embedded pipe error #=46, Step refinement error #=20, Newton line search stalled at residual #; active-set pass=#=2, Newton iteration limit at residual #; active-set pass=#=1}
+three-tank fill: online 5280, committed 5280, 58 jobs, 8.2 s of work, STEADY: replaying 1.459e-09 kg/s since 264.0 s, next check at 13909.0 s, Optional[Certified[STEADY, since 5280, base 5280, horizon 278180, largest flow 1.459161774900692E-9]] [601325.0 Pa, 298.17 K, liquid 0.9799] [601325.0 Pa, 298.19 K, liquid 0.8923] [601325.0 Pa, 298.31 K, liquid 0.6200]
+gas transfer: online 24000, committed 437, 23 jobs, 7.3 s of work, HELD: Interval substep limit; no partial interval may commit: advanced=0.007998625381105576 of 0.05 s, accepted=492, rejected=532, reasons={Newton line search stalled at residual #; active-set pass=#=32, Newton iteration limit at residual #; active-set pass=#=500}, last=Newton iteration limit at residual 0.08203862378840619; active-set pass=0, Optional.empty [74602.6 Pa, 273.17 K, liquid 0.0000] [130585.2 Pa, 321.15 K, liquid 0.0000] deferred=9
+vented three-tank chain: online 12000, committed 11904, 126 jobs, 8.3 s of work, FULL, Optional.empty [116687.1 Pa, 298.15 K, liquid 0.9977] [111436.6 Pa, 298.15 K, liquid 0.9829] [106263.0 Pa, 298.15 K, liquid 0.9367]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

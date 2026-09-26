@@ -1,0 +1,4 @@
+gradle.projectsEvaluated {
+    gradle.rootProject.sourceSets.test.java.srcDir('D:/Minecraft/Modding/1.21/CreateChemE/tools/pipe-junction-probe')
+    gradle.rootProject.tasks.withType(Test).configureEach { systemProperty 'junction.coldEachStep', gradle.rootProject.findProperty('coldEachStep') ?: 'false'; systemProperty 'junction.trace', gradle.rootProject.findProperty('junctionTrace') ?: 'false' }
+}

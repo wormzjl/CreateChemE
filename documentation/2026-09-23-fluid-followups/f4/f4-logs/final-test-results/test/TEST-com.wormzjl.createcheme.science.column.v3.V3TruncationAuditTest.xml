@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3TruncationAuditTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:21.438Z" hostname="WORMZ-PC" time="0.001">
+  <properties/>
+  <testcase name="auditRejectsAnOversizedDefectEvenWhenAllRetainedMeshRowsClose()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationAuditTest" time="0.0"/>
+  <testcase name="digestIncludesTheRequestedCutoffButNotPathDependentSupportAndPreservesZeroEncoding()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationAuditTest" time="0.0"/>
+  <testcase name="auditConsumesFrozenSupportAndAcceptsTheRecomputedSmallDefect()" classname="com.wormzjl.createcheme.science.column.v3.V3TruncationAuditTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

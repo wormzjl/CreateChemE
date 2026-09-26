@@ -1,0 +1,5 @@
+JDK 21.0.11, 16 processors
+case | classification | T K | P Pa | crystal mol | engine UV cold median us | warm mean us | warm p95 us | TP equilibria | network rest cold us | rest warm mean us | rest checkpoints | step -100 J warm mean us | step checkpoints
+VS  10 % CO2 in N2 | VAPOR_SOLID | 191.506866 | 1124071.5 | 1.481377745 | 1010.7 | 345.6 | 367.0 | 17 | 98.1 | 53.1 | 229 (split stands) | 92.1 | 381 (moved)
+VLS 2 % CO2 in CH4 | VAPOR_LIQUID_SOLID | 156.409233 | 1361776.3 | 0.006615872 | 1492.0 | 1272.2 | 1526.3 | 21 | 1408.2 | 1230.8 | 5399 (split stands) | 1293.5 | 5469 (moved)
+LS  3 % CO2 in liquid CH4 | LIQUID_SOLID | 166.247834 | 6538640.7 | 0.039016947 | 115.9 | 137.3 | 165.2 | 9 | 72.7 | 43.8 | 163 (split stands) | 124.0 | 379 (moved)

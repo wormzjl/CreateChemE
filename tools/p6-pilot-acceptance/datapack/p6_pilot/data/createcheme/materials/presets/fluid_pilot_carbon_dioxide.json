@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "id": "carbon_dioxide",
+  "kind": "fluid",
+  "label": "Carbon dioxide",
+  "component": "CarbonDioxide"
+}

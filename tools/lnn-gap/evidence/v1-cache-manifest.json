@@ -1,0 +1,86 @@
+{
+ "committedEvidence": [
+  {
+   "path": "tools/lnn-gap/evidence/v1-validation-case-evidence.jsonl.gz",
+   "sha256": "c9534599e56842adae8cd1537c751f7bc59cc20197e4cf0bdccbd2b748631a94"
+  },
+  {
+   "path": "tools/lnn-gap/evidence/v1-validation-analysis.json",
+   "sha256": "6d052341375ce2d988778321b4d6bbac0e273bc0e3985fdd1de37e12d78216bf"
+  },
+  {
+   "path": "tools/lnn-gap/evidence/v1-preflight-parity.json",
+   "sha256": "aeb121120467b5577ac46fb79c8e2e961c398e0356748b520ac758acb14a7bb5"
+  },
+  {
+   "path": "tools/lnn-gap/evidence/v1-study-plan.json",
+   "sha256": "7c466b256ff2aa81444469d27fcfd736801041c3d79fcdbd2612217dff25ab4e"
+  }
+ ],
+ "nativeCore": {
+  "path": "build/lnn-gap/v1/native-core-build.json",
+  "sha256": "f346b405028e13946360aac15bdc1bb9549c8c4fdf0c1e1acf50a31674725443"
+ },
+ "note": "Raw evaluation journals are bound by hash here and are not committed.",
+ "revision": "lnn-gap-seal-v1",
+ "round": "v1",
+ "runs": [
+  {
+   "path": "build/lnn-gap/v1/validation/block-1/E1a/run.json",
+   "sha256": "df9b2c53eea968063506eefa9d2cab4b5f33cf42d92bd801c99391cba0fc57e1"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-1/E1b/run.json",
+   "sha256": "82db513f6db42d8d35fbbb3902ba0daacc81537fa0a2f34ef2c0540078d9eb92"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-1/E2a/run.json",
+   "sha256": "93090ab79213fa2d4d58db78c6038e3b627b7813d17da81a6fd755dce62e2ce1"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-1/E2b/run.json",
+   "sha256": "79d3d2b5708cd1db2568cf08f0846543913caee35b27477e75ba7f40d1b2c93c"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-1/E3/run.json",
+   "sha256": "2ea5ecf5fe1ece085a1f0a2d35fd8aeaaf9db1a491e11f2c1d048e3d219d2a58"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-1/E4/run.json",
+   "sha256": "d7c55a00f9f68f8cd8ee1dbaef2007d3da6d14c27759af0765628ad294b85766"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-1/baseline/run.json",
+   "sha256": "59647c5a7ff5fec309b72314eb0a8f69e078f89a9efcbfb847b59333632e288d"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-2/E1a/run.json",
+   "sha256": "634a6f0f0d5417c1d51dab7bdf9111c71c3415b6bff835ba9e94028896b137be"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-2/E1b/run.json",
+   "sha256": "5526bdd364337c804e0119b34def046d0f5a146e56d5ee2699938c70d5e2924c"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-2/E2a/run.json",
+   "sha256": "c5c6450a4df142e09d5aabcdfad30f265d7a8b910b8a967f97a759d18b491a53"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-2/E2b/run.json",
+   "sha256": "3d945e933c8680f124d5676cf5c198ad887f36475fa2ddbb44d07c11be0cc449"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-2/E3/run.json",
+   "sha256": "065a28f0aa0ae1b4b6c837969fae5dd9b55cdb698193d7e1e3c8d1ffed7cefaf"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-2/E4/run.json",
+   "sha256": "14864e324b2034e46f6eda31e4ff33cb5be19d5a92d5619e9aaf325e49b71e99"
+  },
+  {
+   "path": "build/lnn-gap/v1/validation/block-2/baseline/run.json",
+   "sha256": "20757377985bd266253faf6ad9d0cb427e35848292c37cf6a38a5fce4798e6f8"
+  }
+ ],
+ "totalBytesAllRounds": 434652
+}

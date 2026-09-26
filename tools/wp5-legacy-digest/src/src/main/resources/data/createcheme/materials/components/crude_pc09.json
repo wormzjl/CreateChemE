@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "crude_pc09",
+  "kind": "petroleum_fraction",
+  "translation_key": "material.createcheme.crude_pc09",
+  "fallback": "Crude oil",
+  "cut": {
+    "estimated": true,
+    "series": "crude-tia-juana-r1",
+    "derivation": "constrained_mass_cdf_cut_edges_pchip",
+    "lower_kelvin": 723.15,
+    "upper_kelvin": 823.15
+  },
+  "appearance": {
+    "color": "#7C6D4C",
+    "transparency": 0.125,
+    "estimated": true
+  }
+}

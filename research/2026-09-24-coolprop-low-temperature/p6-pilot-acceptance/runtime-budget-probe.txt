@@ -1,0 +1,14 @@
+(1) pilot  closed vessel, 10 % CO2 in N2 at 170 K, 1 MPa | slices 3 | checkpoints first 3403 mean 1444 max 3403 | worker ms mean 11.71 max 33.00 | committed tick 1200 | status RESTING: no flow since 15.0 s | crystals 1.481378 mol | wall 51 ms
+  counters: solvesDispatched=3 completionsRouted=3 deadlinesFired=3 numericalHolds=0 budgetHolds=0 retriesDeferred=0 domainHolds=0 certificatesIssued=1 certificatesRenewed=0 certificateWakes=0 restedTicks=0 replayedTicks=0 materialisations=0 islandVisits=13 readinessPumps=6
+  slices (tick:checkpoints:ms): 100:3403:33.00 200:464:1.10 300:464:1.03
+(1) bundled closed vessel, N2 at 170 K, 1 MPa | slices 2 | checkpoints first 17 mean 11 max 17 | worker ms mean 0.22 max 0.34 | committed tick 1200 | status RESTING: no flow since 10.0 s | crystals 0.000000 mol | wall 2 ms
+  counters: solvesDispatched=2 completionsRouted=2 deadlinesFired=2 numericalHolds=0 budgetHolds=0 retriesDeferred=0 domainHolds=0 certificatesIssued=1 certificatesRenewed=0 certificateWakes=0 restedTicks=0 replayedTicks=0 materialisations=0 islandVisits=9 readinessPumps=4
+  slices (tick:checkpoints:ms): 100:17:0.34 200:5:0.09
+  held slice at tick 700: HELD: Substep refinement exhausted: Phase/device active-set cycle
+(2) pilot  chain, 10 % CO2 in the warm vessel | slices 13 | checkpoints first 3796 mean 5469 max 27300 | worker ms mean 15.54 max 65.01 | committed tick 1150 | status FULL | crystals 0.307292 mol | wall 210 ms
+  counters: solvesDispatched=13 completionsRouted=13 deadlinesFired=12 numericalHolds=1 budgetHolds=0 retriesDeferred=0 domainHolds=0 certificatesIssued=0 certificatesRenewed=0 certificateWakes=0 restedTicks=0 replayedTicks=0 materialisations=0 islandVisits=52 readinessPumps=25
+  slices (tick:checkpoints:ms): 100:3796:59.49 200:1130:6.03 300:1279:4.34 400:1165:3.33 500:1108:3.61 600:2421:10.24 700:27300:65.01 800:23096:36.35 800:4794:6.57 850:1939:2.49 950:1094:2.14 1050:986:1.36 1150:986:1.13
+(2) bundled chain, N2 only | slices 9 | checkpoints first 820 mean 657 max 3730 | worker ms mean 3.47 max 17.30 | committed tick 1200 | status STEADY: replaying 8.616e-10 kg/s since 45.0 s, next check at 935.0 s | crystals 0.000000 mol | wall 38 ms
+  counters: solvesDispatched=9 completionsRouted=9 deadlinesFired=9 numericalHolds=0 budgetHolds=0 retriesDeferred=0 domainHolds=0 certificatesIssued=1 certificatesRenewed=0 certificateWakes=0 restedTicks=0 replayedTicks=0 materialisations=0 islandVisits=37 readinessPumps=18
+  slices (tick:checkpoints:ms): 100:820:5.24 200:132:0.62 300:136:0.89 400:136:0.77 500:149:0.63 600:149:0.61 700:3730:17.30 800:512:4.46 900:153:0.73
+

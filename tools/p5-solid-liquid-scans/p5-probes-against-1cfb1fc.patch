@@ -1,0 +1,305 @@
+diff --git a/src/test/java/com/wormzjl/createcheme/science/fluid/network/P5LiquidFullVesselProbe.java b/src/test/java/com/wormzjl/createcheme/science/fluid/network/P5LiquidFullVesselProbe.java
+new file mode 100644
+index 0000000..6d74459
+--- /dev/null
++++ b/src/test/java/com/wormzjl/createcheme/science/fluid/network/P5LiquidFullVesselProbe.java
+@@ -0,0 +1,69 @@
++package com.wormzjl.createcheme.science.fluid.network;
++
++import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
++import com.wormzjl.createcheme.science.material.MaterialCatalog;
++import java.util.Arrays;
++import java.util.List;
++import java.util.Locale;
++import org.junit.jupiter.api.Test;
++
++/**
++ * P5 probe (batch 2026-09-24-coolprop-low-temperature; detached to tools/p5-solid-liquid-scans/ after the run): liquid-full
++ * pilot vessels cooled through the network's energy input, 5 s intervals of -Q W carried by a methane trace. (1) pure
++ * liquid methane cooled to its bubble point; (2) methane with 3 % CO2, compressed, cooled below its liquidus while still
++ * liquid-full; (3) methane with 2 % CO2 at 2.45 MPa liquid-full. Prints every interval or the refusal.
++ */
++class P5LiquidFullVesselProbe {
++    static final String PILOT = "createcheme:pilot_cryogenic";
++    static final String CO2_I = "createcheme:crystal_carbon_dioxide_i";
++    final FluidThermodynamics model = new FluidThermodynamics(MaterialCatalog.bundled(), PILOT);
++
++    FluidThermodynamics.State charge(double t, double p, double[] z, double volume) {
++        var unit = model.flashTP(t, p, z, () -> {});
++        double[] n = z.clone();
++        for (int i = 0; i < n.length; i++) n[i] *= volume / unit.volume();
++        return model.flashTP(t, p, n, () -> {});
++    }
++
++    PassiveIntervalSolver.Result heat(PassiveNetwork graph, double watts) {
++        double[] rate = new double[5];
++        rate[1] = 1e-12;
++        var withHeat = new PassiveNetwork(graph.reservoirs(), graph.pipes(), List.of(new ScheduledTransfer.Injection(100, 0, rate, watts)));
++        var r = new PassiveIntervalSolver(model).solve(withHeat, 5, PassiveIntervalSolver.Settings.defaults(), () -> {}, 1);
++        return r;
++    }
++
++    void run(String name, double t, double p, double[] z, double watts, int intervals) {
++        var state = charge(t, p, z, 1e-3);
++        var graph = new PassiveNetwork(List.of(new PassiveNetwork.Reservoir(1, 0, state)), List.of());
++        System.out.printf(Locale.ROOT, "%s: charged %.3f K %.1f Pa, liquid %s vapour %s%n", name, state.temperature(), state.pressure(),
++                state.liquidProperties() != null, state.vaporProperties() != null);
++        for (int k = 0; k < intervals; k++) {
++            try {
++                var r = heat(graph, watts);
++                graph = new PassiveNetwork(r.graph().reservoirs(), r.graph().pipes());
++                var node = graph.reservoirs().getFirst();
++                double[] l = node.state().liquidView(), v = node.state().vaporView();
++                double ls = Arrays.stream(l).sum(), vs = Arrays.stream(v).sum();
++                System.out.printf(Locale.ROOT, "%s interval %d: %.6f K %.1f Pa, liquid %.6f mol (x_CO2 %.6f), vapour %.3e mol, crystal %.6e mol, substeps %d rejected %d%n",
++                        name, k + 1, node.state().temperature(), node.state().pressure(), ls, ls > 0 ? l[3] / ls : 0, vs, node.inventory().crystals().moles(CO2_I),
++                        r.acceptedSubsteps(), r.rejectedSubsteps());
++            } catch (RuntimeException e) {
++                System.out.printf(Locale.ROOT, "%s interval %d: refused %s: %s%n", name, k + 1, e.getClass().getSimpleName(), e.getMessage());
++                break;
++            }
++        }
++    }
++
++    @Test
++    void liquidFullVessels() {
++        run("(1) pure CH4 liquid-full", 150, 5e6, new double[] {0, 1, 0, 0, 0}, -200, 12);
++        run("(2) CH4 + 3 % CO2 compressed", 170, 9e6, new double[] {0, .97, 0, .03, 0}, -200, 12);
++        run("(3) CH4 + 2 % CO2 liquid-full", 172, 5e6, new double[] {0, .98, 0, .02, 0}, -200, 12);
++        run("(4) CH4 + 2 % C2H6 liquid-full", 172, 5e6, new double[] {0, .98, .02, 0, 0}, -200, 12);
++        run("(5) CH4 + 2 % N2 liquid-full", 160, 5e6, new double[] {.02, .98, 0, 0, 0}, -200, 12);
++        run("(6) pure CH4 liquid-full at 172 K", 172, 5e6, new double[] {0, 1, 0, 0, 0}, -200, 12);
++        run("(7) CH4 + 0.5 % CO2 liquid-full", 172, 5e6, new double[] {0, .995, 0, .005, 0}, -200, 12);
++        run("(8) CH4 + 2 % CO2 liquid-full, -50 W", 172, 5e6, new double[] {0, .98, 0, .02, 0}, -50, 40);
++    }
++}
+diff --git a/src/test/java/com/wormzjl/createcheme/science/thermo/qualification/P5FusionEnthalpyProbe.java b/src/test/java/com/wormzjl/createcheme/science/thermo/qualification/P5FusionEnthalpyProbe.java
+new file mode 100644
+index 0000000..f6ccb89
+--- /dev/null
++++ b/src/test/java/com/wormzjl/createcheme/science/thermo/qualification/P5FusionEnthalpyProbe.java
+@@ -0,0 +1,224 @@
++package com.wormzjl.createcheme.science.thermo.qualification;
++
++import static com.wormzjl.createcheme.science.thermo.qualification.G5Support.BASIS;
++import static org.junit.jupiter.api.Assertions.assertEquals;
++
++import com.wormzjl.createcheme.science.thermo.phase.DepositionOnset;
++import com.wormzjl.createcheme.science.thermo.phase.EquilibriumRequest;
++import com.wormzjl.createcheme.science.thermo.phase.FluidTpEquilibrium;
++import com.wormzjl.createcheme.science.thermo.phase.PhaseCompetition;
++import com.wormzjl.createcheme.science.thermo.phase.SolidCarbonDioxideReferences;
++import java.util.ArrayList;
++import java.util.LinkedHashMap;
++import java.util.List;
++import java.util.Locale;
++import java.util.Map;
++import org.junit.jupiter.api.Test;
++
++/**
++ * P5 probe (batch 2026-09-24-coolprop-low-temperature, D16 revisit; detached to tools/p5-solid-liquid-scans/ after the
++ * run): every CO2-I family on the pilot scored with the crystal record's anchor fusion enthalpy at 9019 J/mol (the
++ * record, r2) and at 8875 J/mol (Jaeger and Span 2012, Maltby et al. 2025): the pure sublimation line and enthalpy, pure
++ * melting, the frost points in methane-rich gas (G4F1) and in nitrogen (G4F2), the liquidus (G5F2), the three-phase line
++ * and its compositions (G5F3), the N2 ternaries (G5F4) and the report-only sets (G5F5).
++ */
++class P5FusionEnthalpyProbe {
++    static final double[] VALUES = {9019, 8875};
++
++    @Test
++    void fusionEnthalpyOnEveryFamily() {
++        // The 9019 J/mol service through the edit path reproduces the bundled one (sanity: the probe's catalog is the bundled one).
++        var same = G5Support.withFusionEnthalpy(9019);
++        var ws0 = same.newWorkspace();
++        var bundled = G5Support.SERVICE.freezingTemperature(null, 3e6, BASIS, G5Support.z(0, .97, 0, .03), G5Support.SERVICE.newWorkspace());
++        assertEquals(bundled.temperature(), same.freezingTemperature(null, 3e6, BASIS, G5Support.z(0, .97, 0, .03), ws0).temperature(), 0.0);
++        Map<String, double[]> rows = new LinkedHashMap<>();
++        for (int k = 0; k < VALUES.length; k++) {
++            double h = VALUES[k];
++            var service = k == 0 ? same : G5Support.withFusionEnthalpy(h);
++            System.out.printf(Locale.ROOT, "%n===== anchor fusion enthalpy %.0f J/mol =====%n", h);
++            for (var e : families(service).entrySet()) rows.computeIfAbsent(e.getKey(), x -> new double[VALUES.length])[k] = e.getValue();
++        }
++        System.out.println();
++        System.out.println("SUMMARY | quantity | 9019 J/mol | 8875 J/mol | better");
++        for (var e : rows.entrySet()) {
++            double a = e.getValue()[0], b = e.getValue()[1];
++            String better = !Double.isFinite(a) || !Double.isFinite(b) ? "-" : Math.abs(a) < Math.abs(b) ? "9019" : Math.abs(a) > Math.abs(b) ? "8875" : "equal";
++            if (e.getKey().contains("bias") || e.getKey().contains("count")) better = "-";
++            System.out.printf(Locale.ROOT, "SUMMARY | %s | %.4f | %.4f | %s%n", e.getKey(), a, b, better);
++        }
++    }
++
++    static Map<String, Double> families(FluidTpEquilibrium service) {
++        Map<String, Double> out = new LinkedHashMap<>();
++        var ws = service.newWorkspace();
++        double[] pure = G5Support.z(0, 0, 0, 1);
++        // Pure sublimation line against Span-Wagner 3.12 and Fray-Schmitt.
++        System.out.println("T K | p_sub model Pa | vs SW 3.12 % | vs Fray-Schmitt %");
++        double worst150 = 0, worst130 = 0;
++        for (double t : new double[] {130, 140, 150, 160, 170, 180, 190, 194.6855, 200, 210, 216}) {
++            DepositionOnset onset = service.depositionPressure(null, t, BASIS, pure, ws);
++            double sw = 100 * (onset.pressure() / SolidCarbonDioxideReferences.spanWagnerSublimationPressure(t) - 1);
++            double fs = 100 * (onset.pressure() / fraySchmitt(t) - 1);
++            if (t >= 150) worst150 = Math.max(worst150, Math.abs(sw));
++            else worst130 = Math.max(worst130, Math.max(Math.abs(sw), Math.abs(fs)));
++            System.out.printf(Locale.ROOT, "%.4f | %.4f | %+.3f | %+.3f%n", t, onset.pressure(), sw, fs);
++            if (t == 150) out.put("sublimation p vs SW at 150 K, %", sw);
++        }
++        out.put("sublimation p worst vs SW 150 K to T_t, %", worst150);
++        out.put("sublimation p worst vs SW/FS 130-140 K, %", worst130);
++        // Sublimation enthalpy at 194.67 K against Giauque-Egan's calorimetric 25,236 J/mol.
++        double t = 194.67;
++        double ps = service.depositionPressure(null, t, BASIS, pure, ws).pressure();
++        double hv = service.tp(EquilibriumRequest.tp(t, ps * (1 - 1e-7), BASIS, pure, PhaseCompetition.FLUID_AND_CRYSTALS), ws).enthalpy();
++        double hs = service.tp(EquilibriumRequest.tp(t, ps * (1 + 1e-7), BASIS, pure, PhaseCompetition.FLUID_AND_CRYSTALS), ws).enthalpy();
++        double dh = hv - hs;
++        System.out.printf(Locale.ROOT, "sublimation enthalpy at 194.67 K: %.2f J/mol (%+.3f %% against 25,236)%n", dh, 100 * (dh / 25236 - 1));
++        out.put("sublimation enthalpy 194.67 K vs 25,236, %", 100 * (dh / 25236 - 1));
++        // Pure melting to 10 MPa.
++        double worstMelt = 0;
++        for (double p : new double[] {0.6e6, 1e6, 2e6, 5e6, 1e7}) {
++            double tm = service.freezingTemperature(null, p, BASIS, pure, ws).temperature();
++            double d = tm - G5F1PureCarbonDioxideMeltingTest.spanWagnerMeltingTemperature(p);
++            worstMelt = Math.max(worstMelt, Math.abs(d));
++            System.out.printf(Locale.ROOT, "melting at %.1f MPa: %.5f K (%+.4f K against SW 3.10)%n", p / 1e6, tm, d);
++        }
++        out.put("melting worst |dT| to 10 MPa, K", worstMelt);
++        // G4F1: CO2 frost points in methane-rich gas (the whole-feed onset; condensed-first points apart).
++        List<G4F1CarbonDioxideFrostPointHoldoutTest.Point> binary = new ArrayList<>(), ternary = new ArrayList<>();
++        for (var p : G4F1CarbonDioxideFrostPointHoldoutTest.leTrebble()) (p.set() == 1 ? binary : ternary).add(p);
++        binary.addAll(G4F1CarbonDioxideFrostPointHoldoutTest.zhang());
++        for (var p : G4F1CarbonDioxideFrostPointHoldoutTest.xiong()) (p.set() == 3 ? binary : ternary).add(p);
++        g4(service, "G4F1 binary", binary, out);
++        g4(service, "G4F1 ternary", ternary, out);
++        // G4F2: CO2 + N2 frost points (vapour carrier and dense carrier).
++        List<Double> vapour = new ArrayList<>(), dense = new ArrayList<>();
++        List<G4F2CarbonDioxideNitrogenFrostPointHoldoutTest.Point> n2 = new ArrayList<>(G4F2CarbonDioxideNitrogenFrostPointHoldoutTest.sonntag());
++        n2.addAll(G4F2CarbonDioxideNitrogenFrostPointHoldoutTest.smith());
++        for (var point : n2) {
++            DepositionOnset onset = service.depositionTemperature(null, point.pressure(), BASIS, point.feed(), ws);
++            if (!onset.converged()) continue;
++            double d = onset.temperature() - point.temperature();
++            (G4F2CarbonDioxideNitrogenFrostPointHoldoutTest.denseCarrier(onset) ? dense : vapour).add(d);
++        }
++        out.put("G4F2 vapour carrier MAD, K", mad(vapour));
++        out.put("G4F2 vapour carrier bias, K", bias(vapour));
++        out.put("G4F2 vapour carrier max, K", max(vapour));
++        out.put("G4F2 dense carrier MAD, K", mad(dense));
++        out.put("G4F2 dense carrier bias, K", bias(dense));
++        List<Double> all = new ArrayList<>(vapour);
++        all.addAll(dense);
++        out.put("G4F2 all scored MAD, K", mad(all));
++        System.out.printf(Locale.ROOT, "G4F2: vapour carrier %d MAD %.3f bias %+.3f max %.3f; dense %d MAD %.3f bias %+.3f; all %d MAD %.3f%n", vapour.size(), mad(vapour),
++                bias(vapour), max(vapour), dense.size(), mad(dense), bias(dense), all.size(), mad(all));
++        // G5F2: the liquidus.
++        List<G5Support.Point> liquidus = new ArrayList<>(G5Support.shen());
++        liquidus.addAll(G5Support.davisCrystalPoints());
++        var f2 = G5Support.summary("G5F2", G5Support.score(service, liquidus, false), 2.0);
++        for (var e : f2.entrySet()) {
++            out.put("G5F2 " + e.getKey() + " MAD, K", e.getValue().mad());
++            out.put("G5F2 " + e.getKey() + " bias, K", e.getValue().bias());
++            out.put("G5F2 " + e.getKey() + " max, K", e.getValue().max());
++        }
++        // G5F3: the three-phase line and its compositions.
++        line(service, "Davis 1962", G5Support.davisLine(), out);
++        line(service, "Souza 2020", G5Support.souzaLine(), out);
++        for (boolean isVapour : new boolean[] {true, false}) {
++            List<Double> dev = new ArrayList<>();
++            for (double[] r : G5Support.davisCompositions(isVapour)) {
++                double[] three = G5Support.threePhase(service, r[0], 1, ws);
++                if (three == null) continue;
++                dev.add(100 * Math.log((isVapour ? three[2] : three[1]) / r[1]));
++            }
++            out.put("G5F3 Davis " + (isVapour ? "y" : "x") + " |ln| MAD, %", mad(dev));
++            out.put("G5F3 Davis " + (isVapour ? "y" : "x") + " ln bias, %", bias(dev));
++        }
++        // G5F4: the N2 ternaries.
++        List<G5Support.Point> ternaries = new ArrayList<>(G5Support.campestrini());
++        ternaries.addAll(G5Support.rivaStringari());
++        var f4 = G5Support.summary("G5F4", G5Support.score(service, ternaries, false), 2.0);
++        for (var e : f4.entrySet()) {
++            out.put("G5F4 " + e.getKey() + " MAD, K", e.getValue().mad());
++            out.put("G5F4 " + e.getKey() + " max, K", e.getValue().max());
++        }
++        // G5F5: report only.
++        List<G5Support.Point> report = new ArrayList<>(G5Support.gao());
++        report.addAll(G5Support.sampson());
++        var f5scores = G5Support.score(service, report, false);
++        G5Support.summary("G5F5", f5scores, Double.NaN);
++        for (var e : f5scores.entrySet()) out.put("G5F5 " + e.getKey() + " MAD, K", e.getValue().mad());
++        return out;
++    }
++
++    static void g4(FluidTpEquilibrium service, String name, List<G4F1CarbonDioxideFrostPointHoldoutTest.Point> points, Map<String, Double> out) {
++        var ws = service.newWorkspace();
++        Map<String, List<Double>> byDataset = new LinkedHashMap<>();
++        List<Double> all = new ArrayList<>();
++        int apart = 0;
++        for (var point : points) {
++            DepositionOnset onset = service.depositionTemperature(null, point.pressure(), BASIS, G4F1CarbonDioxideFrostPointHoldoutTest.feed(point.z()), ws);
++            if (!onset.converged()) continue;
++            if (G4F1CarbonDioxideFrostPointHoldoutTest.condensed(onset)) {
++                apart++;
++                continue;
++            }
++            double d = onset.temperature() - point.temperature();
++            byDataset.computeIfAbsent(point.dataset() + " set " + point.set(), x -> new ArrayList<>()).add(d);
++            all.add(d);
++        }
++        for (var e : byDataset.entrySet()) {
++            System.out.printf(Locale.ROOT, "%s %s: %d points, MAD %.3f K, bias %+.3f K, max %.3f K%n", name, e.getKey(), e.getValue().size(), mad(e.getValue()),
++                    bias(e.getValue()), max(e.getValue()));
++            out.put(name + " " + e.getKey() + " MAD, K", mad(e.getValue()));
++        }
++        System.out.printf(Locale.ROOT, "%s pooled: %d points (%d condensed first apart), MAD %.3f K, bias %+.3f K, max %.3f K%n", name, all.size(), apart, mad(all), bias(all),
++                max(all));
++        out.put(name + " pooled MAD, K", mad(all));
++        out.put(name + " pooled bias, K", bias(all));
++        out.put(name + " pooled max, K", max(all));
++    }
++
++    static void line(FluidTpEquilibrium service, String name, double[][] line, Map<String, Double> out) {
++        var ws = service.newWorkspace();
++        List<Double> pressure = new ArrayList<>(), equivalent = new ArrayList<>();
++        for (double[] point : line) {
++            double[] three = G5Support.threePhase(service, point[0], 1, ws);
++            if (three == null) {
++                System.out.printf(Locale.ROOT, "G5F3 %s at %.2f K: no three-phase point between 1 kPa and 10 MPa%n", name, point[0]);
++                out.merge("G5F3 " + name + " points without a three-phase point, count", 1.0, Double::sum);
++                continue;
++            }
++            double[] next = G5Support.threePhase(service, point[0] + 0.05, 1, ws);
++            double step = 0.05;
++            if (next == null) {
++                next = G5Support.threePhase(service, point[0] - 0.05, 1, ws);
++                step = -0.05;
++            }
++            double slope = (Math.log(next[0]) - Math.log(three[0])) / step;
++            pressure.add(100 * (three[0] / point[1] - 1));
++            if (Math.abs(slope) > 0.01) equivalent.add(-Math.log(three[0] / point[1]) / slope);
++        }
++        System.out.printf(Locale.ROOT, "G5F3 %s: |dP/P| MAD %.3f %%, bias %+.3f %%, max %.3f %%; T-equivalent MAD %.3f K, max %.3f K%n", name, mad(pressure), bias(pressure),
++                max(pressure), mad(equivalent), max(equivalent));
++        out.put("G5F3 " + name + " |dP/P| MAD, %", mad(pressure));
++        out.put("G5F3 " + name + " dP/P bias, %", bias(pressure));
++        out.put("G5F3 " + name + " |dP/P| max, %", max(pressure));
++        out.put("G5F3 " + name + " T-equivalent MAD, K", mad(equivalent));
++        out.put("G5F3 " + name + " T-equivalent max, K", max(equivalent));
++    }
++
++    /** Fray and Schmitt 2009 (the package-private reference of the phase tests), by reflection. */
++    static double fraySchmitt(double t) {
++        try {
++            var m = SolidCarbonDioxideReferences.class.getDeclaredMethod("fraySchmittSublimationPressure", double.class);
++            m.setAccessible(true);
++            return (double) m.invoke(null, t);
++        } catch (ReflectiveOperationException e) {
++            throw new IllegalStateException(e);
++        }
++    }
++
++    static double mad(List<Double> v) { return v.stream().mapToDouble(Math::abs).average().orElse(Double.NaN); }
++    static double bias(List<Double> v) { return v.stream().mapToDouble(d -> d).average().orElse(Double.NaN); }
++    static double max(List<Double> v) { return v.stream().mapToDouble(Math::abs).max().orElse(Double.NaN); }
++}

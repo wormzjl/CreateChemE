@@ -1,0 +1,14 @@
+(a) 10% CO2 in N2, 0.1 m3 charged at 170 K, 1 MPa: 191.506866 K, 1124071.526 Pa, crystal 1.481377745 mol of 7.522070360 mol CO2 (19.694 %), gas y_CO2 8.191955e-02
+sublimation enthalpy on the network datum at 194.466712376 K, 100000 Pa: 25200.6415 J/mol; crystal volume 2.800412e-05 m3/mol
+(c) interval 1: warm 247.730 K 1259155.6 Pa crystal [] | junction 247.285 K | cold 144.431 K 1050641.4 Pa crystal 9.522897e-02 mol, gas y_CO2 5.004e-04
+(c) interval 2: warm 245.840 K 1225881.8 Pa crystal [] | junction 245.536 K | cold 148.034 K 1092659.7 Pa crystal 1.818378e-01 mol, gas y_CO2 8.144e-04
+(c) interval 3: warm 244.355 K 1200174.0 Pa crystal [] | junction 244.176 K | cold 150.653 K 1124300.9 Pa crystal 2.407501e-01 mol, gas y_CO2 1.141e-03
+(c) interval 4: warm 243.273 K 1181696.2 Pa crystal [] | junction 243.186 K | cold 152.441 K 1146555.8 Pa crystal 2.782087e-01 mol, gas y_CO2 1.426e-03
+(c) interval 5: warm 242.593 K 1170197.5 Pa crystal [] | junction 242.566 K | cold 153.514 K 1160189.9 Pa crystal 2.993256e-01 mol, gas y_CO2 1.626e-03
+(c) interval 6: warm 242.325 K 1165683.6 Pa crystal [] | junction 242.325 K | cold 153.927 K 1165496.4 Pa crystal 3.071444e-01 mol, gas y_CO2 1.709e-03
+(d) the engine at 200 K, 2 MPa: Unsupported phases: NOT_IMPLEMENTED (SOLID_LIQUID) at 200.0 K, 2000000.0 Pa (package createcheme:pilot_cryogenic): a crystal beside a liquid (SOLID_LIQUID: the fluid left by the deposition of createcheme:crystal_carbon_dioxide_i is SINGLE_FLUID; a crystal with a liquid is P5's competition, not answered); the fluid network carries a crystal only beside a gas
+(d) unsupported-phases: a crystal beside a liquid the network does not carry / Unsupported phases: NOT_IMPLEMENTED (SOLID_LIQUID) at 200.0 K, 2000000.0 Pa (package createcheme:pilot_cryogenic) at node 1: a crystal beside a liquid (SOLID_LIQUID: the fluid left by the deposition of createcheme:crystal_carbon_dioxide_i is SINGLE_FLUID; a crystal with a liquid is P5's competition, not answered); the fluid network carries a crystal only beside a gas
+withdrawal: 1.705444 mol out, its y_CO2 8.154821e-02 (gas before 8.191955e-02, vessel's CO2 share with its crystal 1.000000e-01); crystal 1.481377745 -> 1.573403402 mol
+(b) cooled by 3000 J: 163.922352 K, 742345.696863 Pa, crystal 0.09265646 mol (3 substeps, 0 rejected)
+(b) warmed back by 3000 J: 200.000000002241 K, 1000000.000022 Pa, crystals CrystalInventory[stocks=[]]
+

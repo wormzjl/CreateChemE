@@ -1,0 +1,48 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index c418c56..6116840 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -863,6 +863,25 @@ public final class PassiveStepSolver {
+         }
+         boolean[] interior=new boolean[nodes];boolean any=false;
+         for(int i=0;i<nodes;i++)any|=interior[i]=graph.reservoirs().get(i).junction()&&degree[i]==2&&!actuated[i];
++        // Candidate: give a multiport passive junction a pressure-interior flow guess before
++        // deciding which species reach it. Restrict this experiment to fixed-boundary stars.
++        for(int node=0;node<nodes;node++)if(graph.reservoirs().get(node).junction()&&degree[node]>=3) {
++            double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;boolean eligible=true;
++            for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
++                int other=pipe.first()==node?pipe.second():pipe.first();
++                if(!graph.reservoirs().get(other).fixed()||!(pipe.control() instanceof FlowControl.Passive)
++                        ||pipe.filter()!=null||pipe.blockedDirections()!=0){eligible=false;break;}
++                double pressure=graph.reservoirs().get(other).state().pressure();
++                low=Math.min(low,pressure);high=Math.max(high,pressure);
++            }
++            if(eligible&&high>low)for(int edge=0;edge<edges;edge++) {
++                var pipe=graph.pipes().get(edge);if(pipe.first()!=node&&pipe.second()!=node)continue;
++                double guess=low+(high-low)*.5;
++                q[edge]=initialMassFlow(graph,pipe,
++                    pipe.first()==node?guess:graph.reservoirs().get(pipe.first()).state().pressure(),
++                    pipe.second()==node?guess:graph.reservoirs().get(pipe.second()).state().pressure());
++            }
++        }
+         if(!any)return q;
+         int[][] nodeEdges=new int[nodes][];
+         for(int i=0;i<nodes;i++)nodeEdges[i]=new int[degree[i]];
+@@ -998,11 +1017,15 @@ public final class PassiveStepSolver {
+         return drop;
+     }
+     private double initialMassFlow(PassiveNetwork graph,PassiveNetwork.Pipe pipe) {
++        return initialMassFlow(graph,pipe,graph.reservoirs().get(pipe.first()).state().pressure(),
++                graph.reservoirs().get(pipe.second()).state().pressure());
++    }
++    private double initialMassFlow(PassiveNetwork graph,PassiveNetwork.Pipe pipe,double firstPressure,double secondPressure) {
+         var a=graph.reservoirs().get(pipe.first());var b=graph.reservoirs().get(pipe.second());
+         if(pipe.control() instanceof FlowControl.Pump pump)
+             return Math.min(pump.targetVolumeFlow()*a.state().mass()/a.state().volume(),massFlowLimit(pipe,a.state()));
+-        var upstream=a.state().pressure()>=b.state().pressure()?a.state():b.state();double rho=upstream.mass()/upstream.volume(),mu=viscosity(upstream);
+-        double driving=a.state().pressure()-b.state().pressure()-rho*GRAVITY*(b.elevation()-a.elevation());
++        var upstream=firstPressure>=secondPressure?a.state():b.state();double rho=upstream.mass()/upstream.volume(),mu=viscosity(upstream);
++        double driving=firstPressure-secondPressure-rho*GRAVITY*(b.elevation()-a.elevation());
+         double lo=0,hi=1;while(pipe.pressureDrop(hi,rho,mu)<Math.abs(driving)&&hi<1e6)hi*=2;
+         for(int j=0;j<50;j++){double mid=(lo+hi)/2;if(pipe.pressureDrop(mid,rho,mu)>Math.abs(driving))hi=mid;else lo=mid;}
+         var donor=graph.reservoirs().get(driving>=0?pipe.first():pipe.second()).state();

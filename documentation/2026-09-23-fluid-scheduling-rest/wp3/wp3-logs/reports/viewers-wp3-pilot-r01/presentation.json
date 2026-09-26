@@ -1,0 +1,789 @@
+{
+ "runId": "viewers-wp3-pilot-r01",
+ "manifest": {
+  "artifactSha256": "0ac78e9c65997cb42e12e518016f2fa76ac373ba369164ed238e2428ba181153",
+  "fixtureClassesSha256": "2832cb03a27fbef96c7f4cfdcffdfbae1fcd368a799df821a782b3524bdd37e5"
+ },
+ "warmupTicks": 400,
+ "measuredSeconds": 40.0292902,
+ "presentation": {
+  "note": "Presentation over the measurement window (online ticks start, end]. Consumers are the open menus and the loaded, bound devices. An edit's reply must be on the first delivery its menu receives after the tick the edit arrived in; an ACCEPTED edit's event must later be reported Applied. Latency is the delivery tick minus the arrival tick.",
+  "windowStartTick": 439,
+  "windowEndTick": 1229,
+  "windowTicks": 790,
+  "openMenus": 16,
+  "loadedDevices": 10803,
+  "dirtyDevicesAtEnd": 6355,
+  "menus": [
+   {
+    "network": 0,
+    "device": 1,
+    "kind": "GENERATOR",
+    "role": "ACCEPTED",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 2,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     4,
+     7
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 304,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 1,
+    "device": 58,
+    "kind": "GENERATOR",
+    "role": "INVALID",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     5
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 305,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 2,
+    "device": 181,
+    "kind": "GENERATOR",
+    "role": "ACCEPTED",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 2,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     5,
+     8
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 306,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 3,
+    "device": 265,
+    "kind": "PIPE",
+    "role": "ACCEPTED",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 2,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     7,
+     6,
+     9
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 307,
+    "lastStatus": "RESTING: no flow since 55.8 s"
+   },
+   {
+    "network": 4,
+    "device": 412,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     8
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 308,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 5,
+    "device": 524,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     9
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 309,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 6,
+    "device": 592,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     10
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 310,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 7,
+    "device": 730,
+    "kind": "RESERVOIR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     11
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 311,
+    "lastStatus": "STEADY: replaying 6.527e-09 kg/s since 30.0 s, next check at 15370.0 s"
+   },
+   {
+    "network": 8,
+    "device": 812,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     12
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 312,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 9,
+    "device": 979,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     13
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 313,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 10,
+    "device": 1102,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     14
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 314,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 11,
+    "device": 1185,
+    "kind": "RESERVOIR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     15
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 315,
+    "lastStatus": "STEADY: replaying 4.791e-09 kg/s since 20.0 s, next check at 33310.0 s"
+   },
+   {
+    "network": 12,
+    "device": 1322,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     16
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 316,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 13,
+    "device": 1423,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     17
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 317,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 14,
+    "device": 1480,
+    "kind": "GENERATOR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     18
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 318,
+    "lastStatus": "FULL"
+   },
+   {
+    "network": 15,
+    "device": 1618,
+    "kind": "RESERVOIR",
+    "role": "STALE",
+    "deliveriesInWindow": 8,
+    "staticInWindow": 0,
+    "deliveriesPer100Ticks": 1.0126582278481011,
+    "buckets": [
+     19
+    ],
+    "totalDeliveries": 10,
+    "firstDeliveryTick": 319,
+    "lastStatus": "STEADY: replaying 6.272e-09 kg/s since 15.0 s, next check at 15370.0 s"
+   }
+  ],
+  "livePacketsPer100TicksPerMenu": 1.0126582278481011,
+  "staticPacketsPer100TicksPerMenu": 0.04746835443037974,
+  "menuPacketsPer100TicksPerMenu": 1.060126582278481,
+  "viewBuildsPer100TicksPerConsumer": 0.864676653004969,
+  "devicePresentationsPer100TicksPerLoadedDevice": 0.8656878012085251,
+  "bucketFlushes": 677,
+  "bucketFlushesPer100Ticks": 85.69620253164557,
+  "deliveriesOffTheirBucket": 0,
+  "edits": [
+   {
+    "network": 0,
+    "role": "ACCEPTED",
+    "receivedTick": 446,
+    "revision": 0,
+    "replyTick": 504,
+    "latencyTicks": 58,
+    "reply": "Applied",
+    "appliedReplyTick": 504
+   },
+   {
+    "network": 1,
+    "role": "INVALID",
+    "receivedTick": 469,
+    "revision": 0,
+    "replyTick": 505,
+    "latencyTicks": 36,
+    "reply": "Not applied: Failed to invoke constructor 'com.wormzjl.createcheme.network.FluidNetwork$Controls(double, double, double, double, double, double, double[], SlurryFeed)' with args [350.0, 3000000.0, 0.05, 4.5E-5, 0.01, 500000.0, [D@79d1b6d, SlurryFeed[volumeFraction=0.0, grades=[]]]"
+   },
+   {
+    "network": 2,
+    "role": "ACCEPTED",
+    "receivedTick": 492,
+    "revision": 0,
+    "replyTick": 505,
+    "latencyTicks": 13,
+    "reply": "Applied",
+    "appliedReplyTick": 505
+   },
+   {
+    "network": 3,
+    "role": "ACCEPTED",
+    "receivedTick": 515,
+    "revision": 0,
+    "replyTick": 606,
+    "latencyTicks": 91,
+    "reply": "Applied",
+    "appliedReplyTick": 606
+   },
+   {
+    "network": 4,
+    "role": "STALE",
+    "receivedTick": 538,
+    "revision": 7,
+    "replyTick": 608,
+    "latencyTicks": 70,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 5,
+    "role": "STALE",
+    "receivedTick": 561,
+    "revision": 7,
+    "replyTick": 609,
+    "latencyTicks": 48,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 6,
+    "role": "STALE",
+    "receivedTick": 584,
+    "revision": 7,
+    "replyTick": 610,
+    "latencyTicks": 26,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 7,
+    "role": "STALE",
+    "receivedTick": 607,
+    "revision": 7,
+    "replyTick": 611,
+    "latencyTicks": 4,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 8,
+    "role": "STALE",
+    "receivedTick": 630,
+    "revision": 7,
+    "replyTick": 712,
+    "latencyTicks": 82,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 9,
+    "role": "STALE",
+    "receivedTick": 653,
+    "revision": 7,
+    "replyTick": 713,
+    "latencyTicks": 60,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 10,
+    "role": "STALE",
+    "receivedTick": 676,
+    "revision": 7,
+    "replyTick": 714,
+    "latencyTicks": 38,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 11,
+    "role": "STALE",
+    "receivedTick": 699,
+    "revision": 7,
+    "replyTick": 715,
+    "latencyTicks": 16,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 12,
+    "role": "STALE",
+    "receivedTick": 722,
+    "revision": 7,
+    "replyTick": 816,
+    "latencyTicks": 94,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 13,
+    "role": "STALE",
+    "receivedTick": 745,
+    "revision": 7,
+    "replyTick": 817,
+    "latencyTicks": 72,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 14,
+    "role": "STALE",
+    "receivedTick": 768,
+    "revision": 7,
+    "replyTick": 818,
+    "latencyTicks": 50,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 15,
+    "role": "STALE",
+    "receivedTick": 791,
+    "revision": 7,
+    "replyTick": 819,
+    "latencyTicks": 28,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 0,
+    "role": "ACCEPTED",
+    "receivedTick": 846,
+    "revision": 1,
+    "replyTick": 907,
+    "latencyTicks": 61,
+    "reply": "Applied",
+    "appliedReplyTick": 907
+   },
+   {
+    "network": 1,
+    "role": "INVALID",
+    "receivedTick": 869,
+    "revision": 0,
+    "replyTick": 905,
+    "latencyTicks": 36,
+    "reply": "Not applied: Failed to invoke constructor 'com.wormzjl.createcheme.network.FluidNetwork$Controls(double, double, double, double, double, double, double[], SlurryFeed)' with args [350.0, 3000000.0, 0.05, 4.5E-5, 0.01, 500000.0, [D@5a3fe3d3, SlurryFeed[volumeFraction=0.0, grades=[]]]"
+   },
+   {
+    "network": 2,
+    "role": "ACCEPTED",
+    "receivedTick": 892,
+    "revision": 1,
+    "replyTick": 908,
+    "latencyTicks": 16,
+    "reply": "Applied",
+    "appliedReplyTick": 908
+   },
+   {
+    "network": 3,
+    "role": "ACCEPTED",
+    "receivedTick": 915,
+    "revision": 1,
+    "replyTick": 1009,
+    "latencyTicks": 94,
+    "reply": "Applied",
+    "appliedReplyTick": 1009
+   },
+   {
+    "network": 4,
+    "role": "STALE",
+    "receivedTick": 938,
+    "revision": 7,
+    "replyTick": 1008,
+    "latencyTicks": 70,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 5,
+    "role": "STALE",
+    "receivedTick": 961,
+    "revision": 7,
+    "replyTick": 1009,
+    "latencyTicks": 48,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 6,
+    "role": "STALE",
+    "receivedTick": 984,
+    "revision": 7,
+    "replyTick": 1010,
+    "latencyTicks": 26,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 7,
+    "role": "STALE",
+    "receivedTick": 1007,
+    "revision": 7,
+    "replyTick": 1011,
+    "latencyTicks": 4,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 8,
+    "role": "STALE",
+    "receivedTick": 1030,
+    "revision": 7,
+    "replyTick": 1112,
+    "latencyTicks": 82,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 9,
+    "role": "STALE",
+    "receivedTick": 1053,
+    "revision": 7,
+    "replyTick": 1113,
+    "latencyTicks": 60,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 10,
+    "role": "STALE",
+    "receivedTick": 1076,
+    "revision": 7,
+    "replyTick": 1114,
+    "latencyTicks": 38,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 11,
+    "role": "STALE",
+    "receivedTick": 1099,
+    "revision": 7,
+    "replyTick": 1115,
+    "latencyTicks": 16,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   },
+   {
+    "network": 12,
+    "role": "STALE",
+    "receivedTick": 1122,
+    "revision": 7,
+    "replyTick": 1216,
+    "latencyTicks": 94,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 13,
+    "role": "STALE",
+    "receivedTick": 1145,
+    "revision": 7,
+    "replyTick": 1217,
+    "latencyTicks": 72,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 14,
+    "role": "STALE",
+    "receivedTick": 1168,
+    "revision": 7,
+    "replyTick": 1218,
+    "latencyTicks": 50,
+    "reply": "Not applied: Stale fluid controls"
+   },
+   {
+    "network": 15,
+    "role": "STALE",
+    "receivedTick": 1191,
+    "revision": 7,
+    "replyTick": 1219,
+    "latencyTicks": 28,
+    "reply": "Not applied: Reservoir initialization is fixed; existing fluid is conserved."
+   }
+  ],
+  "editCount": 32,
+  "replyTexts": {
+   "Applied": 6,
+   "Not applied: Failed to invoke constructor 'com.wormzjl.createcheme.network.FluidNetwork$Controls(double, double, double, double, double, double, double[], SlurryFeed)' with args [#.#, #.#, #.#, #.#E-#, #.#, #.#, [D@#a#fe#d#, SlurryFeed[volumeFraction=#.#, grades=[]]]": 1,
+   "Not applied: Failed to invoke constructor 'com.wormzjl.createcheme.network.FluidNetwork$Controls(double, double, double, double, double, double, double[], SlurryFeed)' with args [#.#, #.#, #.#, #.#E-#, #.#, #.#, [D@#d#b#d, SlurryFeed[volumeFraction=#.#, grades=[]]]": 1,
+   "Not applied: Reservoir initialization is fixed; existing fluid is conserved.": 6,
+   "Not applied: Stale fluid controls": 18
+  },
+  "latencyTicks": {
+   "count": 32,
+   "median": 48,
+   "p95": 94,
+   "max": 94
+  },
+  "latencyHistogramTenTickBins": {
+   "0": 2,
+   "10": 4,
+   "20": 4,
+   "30": 4,
+   "40": 2,
+   "50": 3,
+   "60": 3,
+   "70": 4,
+   "80": 2,
+   "90": 4
+  },
+  "latencyMinimumTicks": 4,
+  "unanswered": 0,
+  "repliesNotOnTheFollowingBucket": 0,
+  "wrongReplies": 2,
+  "repliesAtTheInputTick": 0,
+  "acceptedEditsNeverApplied": 0,
+  "passed": false
+ },
+ "runtimeCounters": {
+  "note": "Server-thread scheduling counters over the measurement window. A tick's counts cover its tick hooks and the mailbox work since the previous tick. Idle ticks routed no completion, dispatched no solve, published no island and fired no current scheduler deadline.",
+  "measuredSeconds": 40.0292902,
+  "ticks": 790,
+  "idleTicks": 107,
+  "totals": {
+   "islandVisits": 2661,
+   "moduleScans": 0,
+   "topologySnapshots": 12,
+   "islandSnapshots": 2827,
+   "viewBuilds": 73904,
+   "menuPackets": 134,
+   "readinessPumps": 656,
+   "solvesDispatched": 663,
+   "completionsRouted": 663,
+   "islandsPublished": 663,
+   "deadlinesFired": 660,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 13,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 132,
+   "replayedTicks": 8442,
+   "restedTicks": 286,
+   "bucketFlushes": 677,
+   "devicePresentations": 73881,
+   "staticPayloads": 6,
+   "queuedInputs": 32,
+   "inputReplies": 32
+  },
+  "perSecond": {
+   "islandVisits": 66.47632238055523,
+   "moduleScans": 0,
+   "topologySnapshots": 0.29978048424151177,
+   "islandSnapshots": 70.62328574589614,
+   "viewBuilds": 1846.2480756153902,
+   "menuPackets": 3.3475487406968814,
+   "readinessPumps": 16.387999805202643,
+   "solvesDispatched": 16.562871754343522,
+   "completionsRouted": 16.562871754343522,
+   "islandsPublished": 16.562871754343522,
+   "deadlinesFired": 16.487926633283145,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0.32476219126163774,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 3.297585326656629,
+   "replayedTicks": 210.8955706639035,
+   "restedTicks": 7.14476820775603,
+   "bucketFlushes": 16.912615652625288,
+   "devicePresentations": 1845.6734963539275,
+   "staticPayloads": 0.14989024212075588,
+   "queuedInputs": 0.7994146246440313,
+   "inputReplies": 0.7994146246440313
+  },
+  "perTick": {
+   "islandVisits": 3.368354430379747,
+   "moduleScans": 0,
+   "topologySnapshots": 0.015189873417721518,
+   "islandSnapshots": 3.578481012658228,
+   "viewBuilds": 93.5493670886076,
+   "menuPackets": 0.16962025316455695,
+   "readinessPumps": 0.830379746835443,
+   "solvesDispatched": 0.839240506329114,
+   "completionsRouted": 0.839240506329114,
+   "islandsPublished": 0.839240506329114,
+   "deadlinesFired": 0.8354430379746836,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0.016455696202531647,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0.1670886075949367,
+   "replayedTicks": 10.686075949367089,
+   "restedTicks": 0.3620253164556962,
+   "bucketFlushes": 0.8569620253164557,
+   "devicePresentations": 93.52025316455696,
+   "staticPayloads": 0.007594936708860759,
+   "queuedInputs": 0.04050632911392405,
+   "inputReplies": 0.04050632911392405
+  },
+  "maximumPerTick": {
+   "islandVisits": 192,
+   "moduleScans": 0,
+   "topologySnapshots": 2,
+   "islandSnapshots": 245,
+   "viewBuilds": 216,
+   "menuPackets": 3,
+   "readinessPumps": 63,
+   "solvesDispatched": 64,
+   "completionsRouted": 64,
+   "islandsPublished": 64,
+   "deadlinesFired": 88,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 3,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 21,
+   "replayedTicks": 3801,
+   "restedTicks": 94,
+   "bucketFlushes": 1,
+   "devicePresentations": 216,
+   "staticPayloads": 1,
+   "queuedInputs": 1,
+   "inputReplies": 2
+  },
+  "idleTickTotals": {
+   "islandVisits": 0,
+   "moduleScans": 0,
+   "topologySnapshots": 0,
+   "islandSnapshots": 0,
+   "viewBuilds": 0,
+   "menuPackets": 0,
+   "readinessPumps": 0,
+   "solvesDispatched": 0,
+   "completionsRouted": 0,
+   "islandsPublished": 0,
+   "deadlinesFired": 0,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 0,
+   "devicePresentations": 0,
+   "staticPayloads": 0,
+   "queuedInputs": 2,
+   "inputReplies": 0
+  },
+  "idleTickPerTick": {
+   "islandVisits": 0,
+   "moduleScans": 0,
+   "topologySnapshots": 0,
+   "islandSnapshots": 0,
+   "viewBuilds": 0,
+   "menuPackets": 0,
+   "readinessPumps": 0,
+   "solvesDispatched": 0,
+   "completionsRouted": 0,
+   "islandsPublished": 0,
+   "deadlinesFired": 0,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 0,
+   "devicePresentations": 0,
+   "staticPayloads": 0,
+   "queuedInputs": 0.018691588785046728,
+   "inputReplies": 0
+  },
+  "idleTicksWithAny": {
+   "islandVisits": 0,
+   "moduleScans": 0,
+   "topologySnapshots": 0,
+   "islandSnapshots": 0,
+   "viewBuilds": 0,
+   "menuPackets": 0,
+   "readinessPumps": 0,
+   "solvesDispatched": 0,
+   "completionsRouted": 0,
+   "islandsPublished": 0,
+   "deadlinesFired": 0,
+   "drainContinuations": 0,
+   "drainContinuationsDeferred": 0,
+   "certificatesIssued": 0,
+   "certificatesRenewed": 0,
+   "certificateWakes": 0,
+   "materialisations": 0,
+   "replayedTicks": 0,
+   "restedTicks": 0,
+   "bucketFlushes": 0,
+   "devicePresentations": 0,
+   "staticPayloads": 0,
+   "queuedInputs": 2,
+   "inputReplies": 0
+  }
+ }
+}

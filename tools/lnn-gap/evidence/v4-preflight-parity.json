@@ -1,0 +1,66 @@
+{
+ "allArmsReproducePromotionSeeds": true,
+ "arms": {
+  "E3-2500": {
+   "candidatesOffered": {
+    "distribution": {
+     "1": 330
+    },
+    "maximum": 1,
+    "total": 330
+   },
+   "cases": 330,
+   "comparableToPromotion": 330,
+   "decodeRule": "10.0:SINGLE",
+   "distinctAlternateIds": [],
+   "distinctAlternateSeeds": 0,
+   "mismatchedCases": 0,
+   "mismatchedIds": [],
+   "reproducesPromotionSeeds": true,
+   "supported": 330
+  },
+  "E3-4000": {
+   "candidatesOffered": {
+    "distribution": {
+     "1": 330
+    },
+    "maximum": 1,
+    "total": 330
+   },
+   "cases": 330,
+   "comparableToPromotion": 330,
+   "decodeRule": "10.0:SINGLE",
+   "distinctAlternateIds": [],
+   "distinctAlternateSeeds": 0,
+   "mismatchedCases": 0,
+   "mismatchedIds": [],
+   "reproducesPromotionSeeds": true,
+   "supported": 330
+  },
+  "baseline": {
+   "candidatesOffered": {
+    "distribution": {
+     "1": 330
+    },
+    "maximum": 1,
+    "total": 330
+   },
+   "cases": 330,
+   "comparableToPromotion": 330,
+   "decodeRule": "10.0:SINGLE",
+   "distinctAlternateIds": [],
+   "distinctAlternateSeeds": 0,
+   "mismatchedCases": 0,
+   "mismatchedIds": [],
+   "reproducesPromotionSeeds": true,
+   "supported": 330
+  }
+ },
+ "firstCandidateIsInvariantAcrossArms": true,
+ "population": "321d9501b4b909c556970860b40377b0a6402bb807d54a0312dc4c4e3f3d346d",
+ "revision": "lnn-gap-preflight-v1",
+ "studyPlan": {
+  "path": "build/lnn-gap/v4/study-plan.json",
+  "sha256": "8e281e0bf85cb49bf57515ed391be7d7529f74d466f298f38d475dd8576fac22"
+ }
+}

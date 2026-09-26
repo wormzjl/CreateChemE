@@ -1,0 +1,20 @@
+# Fray N., Schmitt B. (2009). Sublimation of ices of astrophysical interest: A bibliographic review.
+# Planetary and Space Science 57, 2053-2080. DOI 10.1016/j.pss.2009.09.011 (paywalled; not read).
+# Reproduced in: Lisse C.M. et al. (2020), "On the Origin & Thermal Stability of Arrokoth's and Pluto's Ices",
+# arXiv:2009.02277v1, Supplementary Online Material, Appendix, "Table 2 - Coefficients of the polynomials of
+# extrapolations ln(Psat) = A0 + sum Ai/T^i, from Fray & Schmitt 2009", printed page 35 (PDF page 35 of 36).
+# Local copy: ../fray-schmitt-2009/arxiv-2009.02277.pdf (sha256 a5d1b01a00c9126ae48fe64f9dbe2b27cc3f9286b8b222c1a2c872091c4641ea).
+# Functional form: ln(Psat) = A0 + A1/T + A2/T^2 + A3/T^3 + A4/T^4 + A5/T^5 + A6/T^6, T in K.
+# Units of A_i: K^i as printed. The pressure unit is NOT printed in the reproduction. Fray and Schmitt work in bar, and
+# CO2-1 gives 1.008 bar at 194.6855 K (the normal sublimation temperature from Span and Wagner 1996), so Psat is in bar.
+# Temperature ranges are NOT printed in the reproduction. Numerical comparison with Span and Wagner (1996) eq. (3.12)
+# (this survey, 2026-09-25): CO2-1 is within 0.52 % of it from 145 to 195 K, -0.93 % at 200 K, -3.9 % at the triple point,
+# +11 % at 120 K; CO2-2 is within 0.62 % from 195 K to the triple point, +1.1 % at 190 K, +19 % at 160 K. CO2-1 is the
+# low-temperature branch and CO2-2 the branch near the triple point; the exact limits must be read from the original
+# paper (owner request list). No uncertainty is stated for the fits.
+# Digits verbatim from a 170 dpi render of the page (the text layer agrees for these two rows).
+# Role: holdout for the P4 solid CO2 model (G4 sublimation-pressure target), not a model input.
+# Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+species	designation	A0	A1_K	A2_K2	A3_K3	A4_K4	A5_K5	A6_K6
+CO2	CO2-1	1.476x10+1	-2.571x10+3	-7.781x10+4	4.325x10+6	-1.207x10+8	1.350x10+9	0
+CO2	CO2-2	1.861x10+1	-4.154x10+3	1.041x10+5	0	0	0	0

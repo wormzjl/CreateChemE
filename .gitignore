@@ -39,7 +39,6 @@ logs/
 benchmarks/
 scripts/
 design/
-research/
 docs/
 
 # Local petroleum research (keep reports, source extracts and screening results off Git)

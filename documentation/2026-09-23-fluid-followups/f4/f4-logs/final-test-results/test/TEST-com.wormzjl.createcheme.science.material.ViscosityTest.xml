@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.material.ViscosityTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:45:48.575Z" hostname="WORMZ-PC" time="0.199">
+  <properties/>
+  <testcase name="malformedFitsFailCatalogLoadingWithAFieldPath()" classname="com.wormzjl.createcheme.science.material.ViscosityTest" time="0.067"/>
+  <testcase name="validityLimitsAndMissingDataAreExplicit()" classname="com.wormzjl.createcheme.science.material.ViscosityTest" time="0.01"/>
+  <testcase name="liquidAndGasFitsLoadForTheSameComponentWithoutChangingEquilibriumData()" classname="com.wormzjl.createcheme.science.material.ViscosityTest" time="0.032"/>
+  <testcase name="tableNodesAreExactAndMalformedTablesAreRejected()" classname="com.wormzjl.createcheme.science.material.ViscosityTest" time="0.002"/>
+  <testcase name="liquidWaterMatchesIndependentIapwsTableEight()" classname="com.wormzjl.createcheme.science.material.ViscosityTest" time="0.001"/>
+  <testcase name="unchangedChemicalCurvesMatchIndependentDwsimApiCheckPoints()" classname="com.wormzjl.createcheme.science.material.ViscosityTest" time="0.018"/>
+  <testcase name="transportFingerprintAndSnapshotTrackViscosityWithoutInvalidatingPrSeeds()" classname="com.wormzjl.createcheme.science.material.ViscosityTest" time="0.067"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

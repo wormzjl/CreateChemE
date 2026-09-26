@@ -1,0 +1,8 @@
+interval 1: warm 247.730 K 1259156 Pa | cold 144.431 K 1050641 Pa liquid false crystal 9.522897e-02 | substeps 3 rejected 0
+interval 2: warm 245.840 K 1225882 Pa | cold 148.034 K 1092660 Pa liquid false crystal 1.818378e-01 | substeps 1 rejected 0
+interval 3: warm 244.355 K 1200174 Pa | cold 150.653 K 1124301 Pa liquid false crystal 2.407501e-01 | substeps 1 rejected 0
+interval 4: warm 243.273 K 1181696 Pa | cold 152.441 K 1146556 Pa liquid false crystal 2.782087e-01 | substeps 1 rejected 0
+interval 5: warm 242.593 K 1170198 Pa | cold 153.514 K 1160190 Pa liquid false crystal 2.993256e-01 | substeps 1 rejected 0
+interval 6: warm 242.325 K 1165684 Pa | cold 153.927 K 1165496 Pa liquid false crystal 3.071444e-01 | substeps 2 rejected 1
+interval 7: warm 242.320 K 1165597 Pa | cold 153.935 K 1165597 Pa liquid false crystal 3.072911e-01 | substeps 31 rejected 17
+interval 8 refused: Substep refinement exhausted: Phase/device active-set cycle

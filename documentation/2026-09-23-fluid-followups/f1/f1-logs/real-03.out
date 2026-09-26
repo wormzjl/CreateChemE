@@ -1,0 +1,56 @@
+=== GUPRPRPR at 1000 ns per checkpoint, 18000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [0,12) HELD: Substep refinement exhausted: Newton line search stalled at residual 0.10479353009252752; active-set pass=0 work=1.62 s
+ tick 399 committed=0 status=HELD: Substep refinement exhausted: Newton line search stalled at residual 0.10479353009252752; active-set pass=0
+  slice [386,486) FULL work=0.00 s
+ tick 506 committed=486 status=FULL
+  slice [5486,5586) FULL work=0.00 s
+ tick 5585 committed=5586 status=STEADY: replaying 1.533e-08 kg/s since 279.3 s, next check at 7239.3 s
+ END online=18000 committed=18000 status=STEADY: replaying 1.533e-08 kg/s since 279.3 s, next check at 7239.3 s certificate=Optional[Certified[STEADY, since 5586, base 5586, horizon 144786, largest flow 1.5332306733905695E-8]] jobs=63 work=9.8 s
+ tanks [P=601325.0 T=298.17 liq=0.9799] [P=601325.0 T=298.19 liq=0.8923] [P=601325.0 T=298.31 liq=0.6200]
+ last modes=[PASSIVE, CLOSED, PASSIVE, PASSIVE] flows=[0.0, 0.0, 4.229133833563414E-12, 1.5332306733905695E-8]
+=== GUPRPRPRPRPRPR at 1000 ns per checkpoint, 18000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [1,3) HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain work=1.71 s
+ tick 700 committed=1 status=HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain
+  slice [4,8) HELD: wall deadline work=2.00 s
+ tick 802 committed=4 status=HELD: wall deadline
+  slice [5,7) HELD: soft budget; approximate fallback refused: Coupled flow-error estimate exceeds the fallback trust profile work=1.52 s
+ tick 1003 committed=5 status=HELD: soft budget; approximate fallback refused: Coupled flow-error estimate exceeds the fallback trust profile
+  slice [1048,1148) FULL work=0.01 s
+ tick 1220 committed=1148 status=FULL
+  slice [10248,10348) FULL work=0.00 s
+ tick 10347 committed=10348 status=STEADY: replaying 6.796e-11 kg/s since 517.4 s, next check at 86917.4 s
+ END online=18000 committed=18000 status=STEADY: replaying 6.796e-11 kg/s since 517.4 s, next check at 86917.4 s certificate=Optional[Certified[STEADY, since 10348, base 10348, horizon 1738348, largest flow 6.795649663697493E-11]] jobs=125 work=31.7 s
+ tanks [P=601325.0 T=298.16 liq=0.9986] [P=601325.0 T=298.17 liq=0.9904] [P=601325.0 T=298.17 liq=0.9633] [P=601325.0 T=298.19 liq=0.8935] [P=601325.0 T=298.26 liq=0.7326] [P=601325.0 T=298.53 liq=0.4057]
+ last modes=[PASSIVE, CLOSED, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[0.0, 0.0, 4.345856571365323E-12, 9.420328897530468E-13, 5.507037135631222E-11, 6.795649663697493E-11, 5.0903225420216553E-11]
+=== GUPRPRPRPV at 1000 ns per checkpoint, 18000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [0,12) HELD: Substep refinement exhausted: Newton line search stalled at residual 0.10479353009252752; active-set pass=0 work=1.62 s
+ tick 399 committed=0 status=HELD: Substep refinement exhausted: Newton line search stalled at residual 0.10479353009252752; active-set pass=0
+  slice [386,486) FULL work=0.00 s
+ tick 506 committed=486 status=FULL
+ END online=18000 committed=17986 status=FULL certificate=Optional.empty jobs=187 work=9.8 s
+ tanks [P=117075.2 T=298.15 liq=0.9999] [P=111812.9 T=298.15 liq=0.9988] [P=106556.1 T=298.16 liq=0.9938]
+ last modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 9.958914646743098, 9.948184394396273, 9.897893646128004]
+=== GUPRPRPRPRPRPRPV at 1000 ns per checkpoint, 18000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [1,3) HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain work=1.71 s
+ tick 700 committed=1 status=HELD: soft budget; approximate fallback refused: Substep refinement exhausted: Linearized error estimate does not contract inside the supported domain
+  slice [4,8) HELD: wall deadline work=2.00 s
+ tick 802 committed=4 status=HELD: wall deadline
+  slice [5,7) HELD: soft budget; approximate fallback refused: Coupled flow-error estimate exceeds the fallback trust profile work=1.52 s
+ tick 1003 committed=5 status=HELD: soft budget; approximate fallback refused: Coupled flow-error estimate exceeds the fallback trust profile
+  slice [1048,1148) FULL work=0.00 s
+ tick 1220 committed=1148 status=FULL
+ END online=18000 committed=17948 status=FULL certificate=Optional.empty jobs=201 work=32.2 s
+ tanks [P=131905.1 T=298.15 liq=0.9999] [P=126642.8 T=298.15 liq=0.9989] [P=121385.6 T=298.16 liq=0.9944] [P=116151.9 T=298.16 liq=0.9801] [P=110991.9 T=298.16 liq=0.9463] [P=106002.5 T=298.16 liq=0.8831]
+ last modes=[PASSIVE, PUMP_TARGET, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE, PASSIVE] flows=[9.9600560504597, 9.9600560504597, 9.95901202378435, 9.949253208387013, 9.90340744239296, 9.760023284794105, 9.425711677015187, 8.809561975954365]

@@ -1,0 +1,860 @@
+{
+  "reference": "TR-BDF2 step-doubling with 0.5/0.25 s ceilings and 1e-5 tolerance; refinement \u003c\u003d0.1%",
+  "scope": "Fixed 1/5/20 s and production clock with injected CPU observations; not aggregate-load performance qualification",
+  "trajectoryDigests": {
+    "nitrogen/adaptive-controlled-cpu": "f89198497e49f9b0ca81efb1f1b33cfb40bcf4f02082a1c9208c5a07c42995cd",
+    "nitrogen/fixed-1": "93c1b6e6f6dd1425e814ab2edb2bbc5df651c6f38a8ec032dd4f653cfd3ef966",
+    "nitrogen/fixed-20": "b5d6806378dc2cdc71efb0700412307f8714b17e4bc3f1c27b3bc533b9418fe6",
+    "nitrogen/fixed-5": "a0b9beb2d60d3b3b9eb0ac086b3457de7e9de6aecb7a87d9e5afb98d1aa39471",
+    "water/adaptive-controlled-cpu": "57572c0fcac57128efa1ed0e4559d2d13b12ded2441e484dc0057605b395db88",
+    "water/fixed-1": "37c5b91a8a95a473ef3c03ab2261c8332b7355970c907f0cf2bce36bd4ad80d6",
+    "water/fixed-20": "fd9fdec8af361df07cb878856932be4bf27c9c9d01c776125f4c7147cbe77ae5",
+    "water/fixed-5": "7d7cfa94fd0aa7fdf7e1dad39177d5e3c1b473884dfd21989a80b6b8363054a9",
+    "wet-crude/adaptive-controlled-cpu": "6b1e530b51ce73b02be9624087528e582c85459a60b4ecbea336987ebaafe797",
+    "wet-crude/fixed-1": "299017de7ff4eff8485c94016c15047c2e6de1c4cba35ea0cd9dc5a99f2f8cad",
+    "wet-crude/fixed-20": "5618172e806b79bdadfd8fae025fb8683a1d1eadd12bd88933cab8b7c570282c",
+    "wet-crude/fixed-5": "cd01f1d40b8895838c0cb9b910a0097ff1b7e6d39628246114f7207b988ff4bf"
+  },
+  "rows": [
+    {
+      "fluid": "nitrogen",
+      "cadence": "reference-refinement",
+      "tick": 400,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 4.668682270696177E-10,
+      "maximumTemperatureErrorK": 7.887206265877467E-8,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 3.578195691134045E-10,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "reference-refinement",
+      "tick": 800,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 8.256847246029355E-10,
+      "maximumTemperatureErrorK": 1.4087714816923835E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 6.340450942055043E-10,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "reference-refinement",
+      "tick": 1200,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 1.1190311894912555E-9,
+      "maximumTemperatureErrorK": 1.9166583342666854E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 8.739987900074908E-10,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "reference-refinement",
+      "tick": 1600,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 1.3446271569139427E-9,
+      "maximumTemperatureErrorK": 2.3173208774096565E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.0597785010668659E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-1",
+      "tick": 400,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 9.806563336297014E-9,
+      "maximumTemperatureErrorK": 1.655365849728696E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 7.472678833359003E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-1",
+      "tick": 800,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 1.7628608784362607E-8,
+      "maximumTemperatureErrorK": 2.986968127061118E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.3651020383531609E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-1",
+      "tick": 1200,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 2.378624466029177E-8,
+      "maximumTemperatureErrorK": 4.051435496421618E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.8654476852120183E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-1",
+      "tick": 1600,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 2.8514881141972353E-8,
+      "maximumTemperatureErrorK": 4.892055756045011E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.2559547119271883E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-5",
+      "tick": 400,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 3.3748780374322245E-8,
+      "maximumTemperatureErrorK": 5.690918158052227E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.5737742350567805E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-5",
+      "tick": 800,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 6.065209433010842E-8,
+      "maximumTemperatureErrorK": 1.026664881464967E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 4.703833746816377E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-5",
+      "tick": 1200,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 8.186132460222239E-8,
+      "maximumTemperatureErrorK": 1.3926672522757144E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 6.427721731261382E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-5",
+      "tick": 1600,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 9.818271729967285E-8,
+      "maximumTemperatureErrorK": 1.6819996517369873E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 7.777800871411333E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-20",
+      "tick": 400,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 3.5482906329570365E-7,
+      "maximumTemperatureErrorK": 5.966002385093816E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.713685475462524E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-20",
+      "tick": 800,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 6.38300531340302E-7,
+      "maximumTemperatureErrorK": 1.0767118374133133E-4,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 4.963745235675443E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-20",
+      "tick": 1200,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 8.615252932990529E-7,
+      "maximumTemperatureErrorK": 1.4603070235352789E-4,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 6.786766012373269E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "fixed-20",
+      "tick": 1600,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 1.033465146528642E-6,
+      "maximumTemperatureErrorK": 1.763459902122122E-4,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 8.217224124473788E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 400,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 3.3748780374322245E-8,
+      "maximumTemperatureErrorK": 5.690918158052227E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.5737742350567805E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 800,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 8.926968253352213E-8,
+      "maximumTemperatureErrorK": 1.4977965747675626E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 6.975580450763186E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 1200,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 1.3338256263962255E-7,
+      "maximumTemperatureErrorK": 2.2434885977418162E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.0581759135597224E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "nitrogen",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 1600,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 1.562971559474387E-7,
+      "maximumTemperatureErrorK": 2.6604425954701583E-5,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.2452734654555542E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "reference-refinement",
+      "tick": 400,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 8.066600549640984E-7,
+      "maximumTemperatureErrorK": 1.0694634511310142E-8,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 8.228660434289603E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "reference-refinement",
+      "tick": 800,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 6.07276674038361E-7,
+      "maximumTemperatureErrorK": 9.458290151087567E-9,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 7.272778305283945E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "reference-refinement",
+      "tick": 1200,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 3.778312099412599E-7,
+      "maximumTemperatureErrorK": 6.276252406678395E-9,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 4.8214448877814675E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "reference-refinement",
+      "tick": 1600,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 2.1685551163288319E-7,
+      "maximumTemperatureErrorK": 3.711704721354181E-9,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.841106892803591E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-1",
+      "tick": 400,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 1.6987255321375386E-5,
+      "maximumTemperatureErrorK": 2.251893533866678E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.732860239411771E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-1",
+      "tick": 800,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 1.2786968030581312E-5,
+      "maximumTemperatureErrorK": 1.9909134607587475E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.5315278750413497E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-1",
+      "tick": 1200,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 7.955934082028347E-6,
+      "maximumTemperatureErrorK": 1.3210365068516694E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.0153061518747286E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-1",
+      "tick": 1600,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 4.564859435318174E-6,
+      "maximumTemperatureErrorK": 7.799411605446949E-8,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 5.983029274653218E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-5",
+      "tick": 400,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 5.862412275956402E-5,
+      "maximumTemperatureErrorK": 7.771090508867928E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 5.980238064494381E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-5",
+      "tick": 800,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 4.412572618158207E-5,
+      "maximumTemperatureErrorK": 6.869856292723853E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 5.285094485163455E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-5",
+      "tick": 1200,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 2.745270366991048E-5,
+      "maximumTemperatureErrorK": 4.5578707386084716E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 3.50347041488952E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-5",
+      "tick": 1600,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 1.5750232814276616E-5,
+      "maximumTemperatureErrorK": 2.6904842798103346E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.0644191145169355E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-20",
+      "tick": 400,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 2.632546742520357E-4,
+      "maximumTemperatureErrorK": 3.4892345297521388E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.685549405349874E-5,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-20",
+      "tick": 800,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 2.1664910597164475E-4,
+      "maximumTemperatureErrorK": 3.3720949659254984E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 2.5949398063551676E-5,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-20",
+      "tick": 1200,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 1.3357003215943837E-4,
+      "maximumTemperatureErrorK": 2.216753557604534E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.704658243401047E-5,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "fixed-20",
+      "tick": 1600,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 9.96762405131423E-5,
+      "maximumTemperatureErrorK": 1.7002709000735194E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 1.3066339568060248E-5,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 400,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 5.862412275956402E-5,
+      "maximumTemperatureErrorK": 7.771090508867928E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 5.980238064494381E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 800,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 6.483917043032005E-5,
+      "maximumTemperatureErrorK": 1.0091373496834422E-6,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 7.766238376720469E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 1200,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 4.4632770892669336E-5,
+      "maximumTemperatureErrorK": 7.405389510495297E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 5.696277692854301E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "water",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 1600,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 2.508880964872236E-5,
+      "maximumTemperatureErrorK": 4.281204724065901E-7,
+      "maximumPhaseVolumeFractionError": 0.0,
+      "cumulativeMassAbsoluteErrorKg": 3.288694726225061E-6,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "reference-refinement",
+      "tick": 400,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 1.0013331867846586E-12,
+      "maximumTemperatureErrorK": 2.204956217610743E-10,
+      "maximumPhaseVolumeFractionError": 8.393286066166183E-14,
+      "cumulativeMassAbsoluteErrorKg": 1.5232998196168523E-10,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "reference-refinement",
+      "tick": 800,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 1.0755012580728146E-12,
+      "maximumTemperatureErrorK": 2.156070877390448E-10,
+      "maximumPhaseVolumeFractionError": 8.93729534823251E-14,
+      "cumulativeMassAbsoluteErrorKg": 1.556581530337553E-10,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "reference-refinement",
+      "tick": 1200,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 1.2045049991145807E-12,
+      "maximumTemperatureErrorK": 2.1111645764904097E-10,
+      "maximumPhaseVolumeFractionError": 9.869882688917642E-14,
+      "cumulativeMassAbsoluteErrorKg": 1.5952666965191042E-10,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "reference-refinement",
+      "tick": 1600,
+      "intervals": 4,
+      "cadenceTicksObserved": [],
+      "maximumPressureRelativeError": 1.775641648689151E-12,
+      "maximumTemperatureErrorK": 2.1111645764904097E-10,
+      "maximumPhaseVolumeFractionError": 1.3988810110276972E-13,
+      "cumulativeMassAbsoluteErrorKg": 1.8855095262892974E-10,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-1",
+      "tick": 400,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 3.11118015822791E-11,
+      "maximumTemperatureErrorK": 2.0253310140105896E-10,
+      "maximumPhaseVolumeFractionError": 2.185807090882008E-12,
+      "cumulativeMassAbsoluteErrorKg": 1.8290809977727918E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-1",
+      "tick": 800,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 4.32408690651395E-11,
+      "maximumTemperatureErrorK": 2.929141373897437E-10,
+      "maximumPhaseVolumeFractionError": 3.0602187450767815E-12,
+      "cumulativeMassAbsoluteErrorKg": 2.578043889478465E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-1",
+      "tick": 1200,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 5.418344671113061E-11,
+      "maximumTemperatureErrorK": 3.751665644813329E-10,
+      "maximumPhaseVolumeFractionError": 3.854139229986231E-12,
+      "cumulativeMassAbsoluteErrorKg": 3.2592635812456194E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-1",
+      "tick": 1600,
+      "intervals": 80,
+      "cadenceTicksObserved": [
+        20
+      ],
+      "maximumPressureRelativeError": 6.44248191165994E-11,
+      "maximumTemperatureErrorK": 4.5639581003342755E-10,
+      "maximumPhaseVolumeFractionError": 4.601208303256499E-12,
+      "cumulativeMassAbsoluteErrorKg": 3.901386658178296E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-5",
+      "tick": 400,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 6.781050799267979E-11,
+      "maximumTemperatureErrorK": 4.704929779109079E-10,
+      "maximumPhaseVolumeFractionError": 4.8082648973490905E-12,
+      "cumulativeMassAbsoluteErrorKg": 4.0279532209641644E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-5",
+      "tick": 800,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 1.1285074158197947E-10,
+      "maximumTemperatureErrorK": 9.21716036828002E-10,
+      "maximumPhaseVolumeFractionError": 8.047784660902835E-12,
+      "cumulativeMassAbsoluteErrorKg": 6.808745844910646E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-5",
+      "tick": 1200,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 1.5401200363998837E-10,
+      "maximumTemperatureErrorK": 1.3343424143386073E-9,
+      "maximumPhaseVolumeFractionError": 1.1025846902157355E-11,
+      "cumulativeMassAbsoluteErrorKg": 9.36826427544446E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-5",
+      "tick": 1600,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100
+      ],
+      "maximumPressureRelativeError": 1.9202439023894421E-10,
+      "maximumTemperatureErrorK": 1.7158754417323507E-9,
+      "maximumPhaseVolumeFractionError": 1.3793743924850332E-11,
+      "cumulativeMassAbsoluteErrorKg": 1.1748283790247172E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-20",
+      "tick": 400,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 5.415032530512119E-10,
+      "maximumTemperatureErrorK": 5.126594260218553E-9,
+      "maximumPhaseVolumeFractionError": 3.86424225951032E-11,
+      "cumulativeMassAbsoluteErrorKg": 3.289807345985274E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-20",
+      "tick": 800,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 1.0216939320633542E-9,
+      "maximumTemperatureErrorK": 9.878306173050078E-9,
+      "maximumPhaseVolumeFractionError": 7.31462668213112E-11,
+      "cumulativeMassAbsoluteErrorKg": 6.243393213534176E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-20",
+      "tick": 1200,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 1.4638778388062808E-9,
+      "maximumTemperatureErrorK": 1.4254396774049383E-8,
+      "maximumPhaseVolumeFractionError": 1.0511014281178177E-10,
+      "cumulativeMassAbsoluteErrorKg": 8.981377053185469E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "fixed-20",
+      "tick": 1600,
+      "intervals": 4,
+      "cadenceTicksObserved": [
+        400
+      ],
+      "maximumPressureRelativeError": 1.8717575351248357E-9,
+      "maximumTemperatureErrorK": 1.8292041659151437E-8,
+      "maximumPhaseVolumeFractionError": 1.3477707838660535E-10,
+      "cumulativeMassAbsoluteErrorKg": 1.1523746912267541E-7,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 400,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 6.781050799267979E-11,
+      "maximumTemperatureErrorK": 4.704929779109079E-10,
+      "maximumPhaseVolumeFractionError": 4.8082648973490905E-12,
+      "cumulativeMassAbsoluteErrorKg": 4.0279532209641644E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 800,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 1.5551473858737307E-10,
+      "maximumTemperatureErrorK": 1.344517386314692E-9,
+      "maximumPhaseVolumeFractionError": 1.110245229085649E-11,
+      "cumulativeMassAbsoluteErrorKg": 9.464110883872223E-9,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 1200,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 2.367945399979898E-10,
+      "maximumTemperatureErrorK": 2.1538539840548765E-9,
+      "maximumPhaseVolumeFractionError": 1.6970203020605368E-11,
+      "cumulativeMassAbsoluteErrorKg": 1.4486823241011137E-8,
+      "status": "PASS"
+    },
+    {
+      "fluid": "wet-crude",
+      "cadence": "adaptive-controlled-cpu",
+      "tick": 1600,
+      "intervals": 16,
+      "cadenceTicksObserved": [
+        100,
+        112,
+        125
+      ],
+      "maximumPressureRelativeError": 2.944575594979935E-10,
+      "maximumTemperatureErrorK": 2.7288820092508104E-9,
+      "maximumPhaseVolumeFractionError": 2.1170287745064797E-11,
+      "cumulativeMassAbsoluteErrorKg": 1.8071618201886963E-8,
+      "status": "PASS"
+    }
+  ]
+}

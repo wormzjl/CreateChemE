@@ -1,0 +1,5 @@
+===== runtime.fluid.CrystalIslandRuntimeTest.xml tests="2" skipped="0" failures="0" errors="0"
+menu deliveries [Seen[tick=1, committed=0, crystal=0.0], Seen[tick=101, committed=100, crystal=1.4813777446957035], Seen[tick=201, committed=200, crystal=1.4813777446957035], Seen[tick=301, committed=301, crystal=1.4813777446957035], Seen[tick=401, committed=401, crystal=1.4813777446957035]]
+block-entity presentations [Seen[tick=1, committed=0, crystal=0.0], Seen[tick=101, committed=100, crystal=1.4813777446957035], Seen[tick=201, committed=200, crystal=1.4813777446957035], Seen[tick=301, committed=301, crystal=1.4813777446957035]]
+held island: HELD: Unsupported phases: NOT_IMPLEMENTED (CRYSTAL_PHASES) at 95.0 K, 2000000.0 Pa (package createcheme:pilot_cryogenic) at node 101: a crystal beside a phase set the engine does not implement (CRYSTAL_PHASES: the fluid left by the crystal createcheme:crystal_carbon_dioxide_i is two liquids (createcheme:crystal_carbon_dioxide_i: (mu - mu_s)/RT = 7.986485815199563); that phase set beside a crystal is not implemented) | solves 3
+

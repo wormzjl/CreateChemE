@@ -1,0 +1,52 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index c418c56..68b99c1 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -125,12 +125,13 @@ public final class PassiveStepSolver {
+     }
+     public Result solveRate(PassiveNetwork graph,Runnable checkpoint,Acceptance acceptance){return solve(graph,1,checkpoint,acceptance,true);}
+     public Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance) {return solve(graph,dt,checkpoint,acceptance,false);}
+-    private Result solve(PassiveNetwork graph,double dt,Runnable checkpoint,Acceptance acceptance,boolean rateOnly) {
++    private Result solve(PassiveNetwork inputGraph,double dt,Runnable checkpoint,Acceptance acceptance,boolean rateOnly) {
+         this.rateOnly=rateOnly;
+         Objects.requireNonNull(acceptance);SolverDiagnostics.count(SolverDiagnostics.implicitSolves);
+         ownership.check("Each executing island job needs its own step workspace");
+         lastSolve=null;
+         if(!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Positive finite substep required");
++        var graph=seedBoundaryJunctions(inputGraph,checkpoint);
+         if(graph.pipes().isEmpty()&&graph.scheduledTransfers().isEmpty())return new Result(graph.reservoirs().stream().map(PassiveNetwork.Reservoir::state).toList(),new double[0],dt,
+                 new SparseNewton.Result(new double[0],0,0,0,0,0),List.of(),new double[0],0,new double[model.hydrocarbon.componentCount()+1],0,
+                 graph.reservoirs().stream().map(PassiveNetwork.Reservoir::inventory).toList(),List.of(),List.of());
+@@ -822,6 +823,32 @@ public final class PassiveStepSolver {
+         for(int c=0;c<a.length;c++)if(a[c]>0!=b[c]>0)return false;
+         return true;
+     }
++    /** Candidate cold-guess repair for passive stars with fixed pressure boundaries. */
++    private PassiveNetwork seedBoundaryJunctions(PassiveNetwork graph,Runnable checkpoint) {
++        List<PassiveNetwork.Reservoir> nodes=null;
++        for(int node=0;node<graph.reservoirs().size();node++) {
++            var junction=graph.reservoirs().get(node);
++            if(!junction.junction()||!junction.state().solids().empty())continue;
++            double low=Double.POSITIVE_INFINITY,high=Double.NEGATIVE_INFINITY;int degree=0;boolean eligible=true;
++            for(var pipe:graph.pipes())if(pipe.first()==node||pipe.second()==node) {
++                degree++;int other=pipe.first()==node?pipe.second():pipe.first();
++                if(!graph.reservoirs().get(other).fixed()||!(pipe.control() instanceof FlowControl.Passive)
++                        ||pipe.filter()!=null||pipe.blockedDirections()!=0){eligible=false;break;}
++                double pressure=graph.reservoirs().get(other).state().pressure();
++                low=Math.min(low,pressure);high=Math.max(high,pressure);
++            }
++            if(!eligible||degree<3||!(high>low))continue;
++            double pressure=junction.state().pressure();
++            if(pressure>low&&pressure<high)continue; // Keep an already interior/settled guess.
++            var seed=model.flashTP(junction.state().temperature(),low+(high-low)*.5,
++                PhaseLayout.totalAmounts(junction.state()),checkpoint);
++            if(nodes==null)nodes=new ArrayList<>(graph.reservoirs());
++            nodes.set(node,new PassiveNetwork.Reservoir(junction.id(),junction.elevation(),seed,
++                junction.kind(),junction.inventory()));
++        }
++        return nodes==null?graph:new PassiveNetwork(nodes,graph.pipes(),graph.scheduledTransfers());
++    }
++
+     /** The mass of a conserved amount vector, water last. */
+     private double molarMass(double[] amounts) {
+         double mass=0;for(int c=0;c<amounts.length;c++)mass+=amounts[c]*model.molecularWeight(c);

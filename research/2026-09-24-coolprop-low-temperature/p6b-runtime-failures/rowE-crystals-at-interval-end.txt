@@ -1,0 +1,2 @@
+interval 1 refused after 407.6 ms, 133596 checkpoints (UV 0 calls 0 kernel 0 failed, warm 0/0; TP 149 calls 83945 kernel): Substep refinement exhausted: Newton line search stalled at residual 1.0106438654705618E-9; active-set pass=0
+total 0.0 ms

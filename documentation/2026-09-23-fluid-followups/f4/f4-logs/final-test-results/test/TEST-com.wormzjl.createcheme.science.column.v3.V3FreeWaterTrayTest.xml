@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:07.679Z" hostname="WORMZ-PC" time="0.007">
+  <properties/>
+  <testcase name="theSaturationRowIsZeroWhenTheTrayVaporSitsExactlyOnTheWaterSaturationLine()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.0"/>
+  <testcase name="aWetTrayAddsExactlyOneUnknownAndOneRowToItsOwnStageBlock()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.001"/>
+  <testcase name="aParametricWetTrayCarriesItsFreeWaterThroughTheRowsWithoutAnUnknownOrASaturationRow()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.001"/>
+  <testcase name="aSupersaturatedDryTrayDoesNotDowngradeAnInconsistentWetTrayToAWarning()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.0"/>
+  <testcase name="aStateCannotCarryFreeWaterOnANodeThatIsNotAnEquilibriumTray()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.001"/>
+  <testcase name="theFreeWaterCoordinateRoundTripsThroughTheScaledLogFlowMap()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.0"/>
+  <testcase name="aColumnWithoutSteamHasNoWetTraysAndNoFreeWaterCoordinate()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.001"/>
+  <testcase name="aConsistentWetTrayLeavesTheSupersaturatedDryTrayAsAPassingWarning()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.0"/>
+  <testcase name="aWetTrayStaysWetUntilItsFreeWaterFallsBelowTheDryFloorAndADryTrayNeedsTheEntryHysteresis()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.001"/>
+  <testcase name="theTrayEnergyRowsCarryTheFreeWaterLatentHeatFromTheTrayBelowToTheWetTray()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.0"/>
+  <testcase name="theWetSetIsDerivedFromTheSaturationRatioAndCascadesDownward()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.001"/>
+  <testcase name="aTraysOwnFreeWaterNeverChangesTheWaterRisingOutOfIt()" classname="com.wormzjl.createcheme.science.column.v3.V3FreeWaterTrayTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,178 @@
+  A attempt=0 t=0.0 step=0.05
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET] closed=[false, false] phases=[2, 2, 2] start=[4.440892098500626E-16, 0.0011453530861832012] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-0.00115 1:0.00 2:0.00 3:-6.66e-19 4:-0.873 5:0.00
+      N it=0 fresh=true norm=0.8733439675757629 worst=4 alpha=1.0 bt=0 next=1.2177855674522926E-10 nextWorst=4 descent=true
+    P conv pass=0 it=1 flows=[0.0011453511197571683, 0.001145351119757072] heads=[0.0, 698675.3480232622] changed=true nextModes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false]
+    P pass=1 dt=1.0 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453511197571683, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101324.83 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00115 1:-4.31e-15 2:0.00 3:-2.33e-12 4:-1.00 5:0.00
+      N it=0 fresh=true norm=1.0 worst=4 alpha=1.0 bt=0 next=0.8735726088624958 nextWorst=4 descent=true
+      N it=1 fresh=true norm=0.8735726088624958 worst=4 alpha=0.125 bt=3 next=0.7643760327579191 nextWorst=4 descent=true
+  bt=0      N it=2 fresh=true norm=0.7643760327579191 alpha=1.0 DOMAIN Fluid state outside domain
+      N it=2 fresh=true norm=0.7643760327579191 worst=4 alpha=0.5 bt=1 next=0.2679004165920889 nextWorst=3 descent=true
+      N it=3 fresh=false norm=0.2679004165920889 worst=3 alpha=0.03125 bt=5 next=0.26540863214528176 nextWorst=3 descent=true
+      N it=4 fresh=true norm=0.26540863214528176 worst=3 alpha=1.0 bt=0 next=0.002235845481148204 nextWorst=3 descent=true
+      N it=5 fresh=false norm=0.002235845481148204 worst=3 alpha=1.0 bt=0 next=5.492616664292336E-4 nextWorst=3 descent=true
+      N it=6 fresh=false norm=5.492616664292336E-4 worst=3 alpha=1.0 bt=0 next=6.330910674519146E-6 nextWorst=4 descent=true
+      N it=7 fresh=false norm=6.330910674519146E-6 worst=4 alpha=1.0 bt=0 next=1.93727437450918E-6 nextWorst=3 descent=true
+      N it=8 fresh=false norm=1.93727437450918E-6 worst=3 alpha=1.0 bt=0 next=6.644759740785582E-8 nextWorst=3 descent=true
+      N it=9 fresh=false norm=6.644759740785582E-8 worst=3 alpha=1.0 bt=0 next=5.688962807542509E-9 nextWorst=3 descent=true
+      N it=10 fresh=false norm=5.688962807542509E-9 worst=3 alpha=1.0 bt=0 next=3.8552281601643117E-10 nextWorst=3 descent=true
+    P conv pass=1 it=11 flows=[-1.5067665647501218, -1.5067665647501218] heads=[0.0, 100000.0] changed=true nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=2 dt=1.0 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[-1.5067665647501218, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=299.5655 P=681128.21 l=0.000 w=0.000 v=0.1493] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-1.51 1:1.56e-14 2:0.00 3:-3.86e-10 4:-0.149 5:0.00
+      N it=0 fresh=true norm=1.5067665647501218 worst=0 alpha=1.0 bt=0 next=0.9999999998170056 nextWorst=3 descent=true
+      N it=1 fresh=false norm=0.9999999998170056 worst=3 alpha=0.5 bt=1 next=0.9999999998492195 nextWorst=3 descent=true
+      N it=2 fresh=false norm=0.9999999998492195 worst=3 alpha=0.25 bt=2 next=0.9999999998548367 nextWorst=3 descent=true
+  bt=0      N it=3 fresh=true norm=0.9999999998548367 alpha=1.0 DOMAIN Invalid prepared temperature
+  bt=23      N it=3 fresh=true norm=0.9999999998548367 alpha=1.1920928955078125E-7 DOMAIN Fluid state outside domain
+    P FAIL pass=2: Newton line search stalled at residual 0.9999999998548367
+  A REJ t=0.0 step=0.05 Nonconvergence: Newton line search stalled at residual 0.9999999998548367; active-set pass=2
+  A attempt=1 t=0.0 step=0.025
+    P pass=0 dt=1.0 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[-1.5067665647501218, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-1.51 1:0.00 2:0.00 3:1.47 4:-0.873 5:0.00
+      N it=0 fresh=true norm=1.5067665647501218 worst=0 alpha=1.0 bt=0 next=1.000000000813773 nextWorst=3 descent=true
+      N it=1 fresh=false norm=1.000000000813773 worst=3 alpha=1.0 bt=0 next=1.0 nextWorst=3 descent=true
+      N it=2 fresh=false norm=1.0 worst=3 alpha=0.5 bt=1 next=0.016857035337662547 nextWorst=3 descent=true
+      N it=3 fresh=false norm=0.016857035337662547 worst=3 alpha=1.0 bt=0 next=0.009906413601686833 nextWorst=3 descent=true
+      N it=4 fresh=false norm=0.009906413601686833 worst=3 alpha=1.0 bt=0 next=0.005867868720690193 nextWorst=3 descent=true
+      N it=5 fresh=false norm=0.005867868720690193 worst=3 alpha=1.0 bt=0 next=0.0034833462557065996 nextWorst=3 descent=true
+      N it=6 fresh=false norm=0.0034833462557065996 worst=3 alpha=1.0 bt=0 next=0.0020704994100880047 nextWorst=3 descent=true
+      N it=7 fresh=false norm=0.0020704994100880047 worst=3 alpha=1.0 bt=0 next=0.001231648030469766 nextWorst=3 descent=true
+      N it=8 fresh=true norm=0.001231648030469766 worst=3 alpha=1.0 bt=0 next=7.578498515149483E-7 nextWorst=3 descent=true
+      N it=9 fresh=false norm=7.578498515149483E-7 worst=3 alpha=1.0 bt=0 next=9.323474200837205E-10 nextWorst=3 descent=true
+    P conv pass=0 it=10 flows=[0.0, 0.0] heads=[0.0, 698675.0] changed=true nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=1 dt=1.0 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=6 offsets=[0, 0, 3] edgeOffset=3 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.75e-12 2:0.00 3:-9.32e-10 4:-0.873 5:0.00
+      N it=0 fresh=true norm=0.8733437498819123 worst=4 alpha=1.0 bt=0 next=6.536106229759752E-10 nextWorst=4 descent=true
+    P conv pass=1 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.007322330470336311 tol=1.0E-9 modes=[PASSIVE, PUMP_TARGET] closed=[false, false] phases=[2, 2, 2] start=[-3.8324898810060404E-13, 0.0011453530861832018] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-2.43e-15 1:0.00 2:0.00 3:-0.00115 4:0.00 5:0.00 6:-9.26e-07 7:2.70e-09 8:2.22e-16 9:3.47e-19 10:-0.873 11:0.00
+      N it=0 fresh=true norm=0.8733439675757626 worst=10 alpha=1.0 bt=0 next=6.598828958145897E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0011453393759652724, 0.001145339375965176] heads=[0.0, 698679.515349204] changed=true nextModes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false]
+    P pass=1 dt=0.007322330470336311 tol=1.0E-9 modes=[PASSIVE, PUMP_HEAD_LIMIT] closed=[false, false] phases=[2, 2, 2] start=[0.0011453393759652724, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1491 P=101323.96 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101323.79 l=0.000 w=0.000 v=1.000] [n2 T=298.1509 P=800003.13 l=0.000 w=0.000 v=1.000]
+      F0 0:1.93e-14 1:-6.98e-12 2:-2.02e-11 3:0.00115 4:1.02e-05 5:0.00 6:9.26e-07 7:6.25e-06 8:-6.00e-12 9:-2.85e-11 10:-1.00 11:0.00
+      N it=0 fresh=true norm=1.0 worst=10 alpha=1.0 bt=0 next=0.8735509228772158 nextWorst=10 descent=true
+      N it=1 fresh=true norm=0.8735509228772158 worst=10 alpha=0.125 bt=3 next=0.7643399179883713 nextWorst=10 descent=true
+  bt=0      N it=2 fresh=true norm=0.7643399179883713 alpha=1.0 DOMAIN Fluid state outside domain
+      N it=2 fresh=true norm=0.7643399179883713 worst=10 alpha=0.5 bt=1 next=0.26883729886116614 nextWorst=9 descent=true
+      N it=3 fresh=false norm=0.26883729886116614 worst=9 alpha=0.0625 bt=4 next=0.2632812633412768 nextWorst=9 descent=true
+      N it=4 fresh=true norm=0.2632812633412768 worst=9 alpha=1.0 bt=0 next=0.001682863652258498 nextWorst=10 descent=true
+      N it=5 fresh=false norm=0.001682863652258498 worst=10 alpha=1.0 bt=0 next=5.233546969498337E-4 nextWorst=9 descent=true
+      N it=6 fresh=false norm=5.233546969498337E-4 worst=9 alpha=1.0 bt=0 next=8.528911653761617E-6 nextWorst=9 descent=true
+      N it=7 fresh=false norm=8.528911653761617E-6 worst=9 alpha=1.0 bt=0 next=1.706968592809486E-6 nextWorst=9 descent=true
+      N it=8 fresh=false norm=1.706968592809486E-6 worst=9 alpha=1.0 bt=0 next=7.545716903544554E-8 nextWorst=9 descent=true
+      N it=9 fresh=false norm=7.545716903544554E-8 worst=9 alpha=1.0 bt=0 next=4.32968093498816E-9 nextWorst=9 descent=true
+      N it=10 fresh=false norm=4.32968093498816E-9 worst=9 alpha=1.0 bt=0 next=3.893891733694228E-10 nextWorst=9 descent=true
+    P conv pass=1 it=11 flows=[-1.498388845878228, -1.498388845878228] heads=[0.0, 100000.0] changed=true nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=2 dt=0.007322330470336311 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[-1.498388845878228, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=299.2977 P=102690.19 l=0.000 w=0.000 v=1.000] [n1 T=300.6952 P=679946.28 l=0.000 w=0.000 v=0.1501] [n2 T=298.0036 P=798632.37 l=0.000 w=0.000 v=1.000]
+      F0 0:-1.72e-16 1:3.17e-13 2:7.64e-14 3:-1.50 4:0.0134 5:0.00 6:-0.00121 7:2.96e-05 8:8.88e-16 9:-3.89e-10 10:-0.149 11:0.00
+      N it=0 fresh=true norm=1.498388845878228 worst=3 alpha=1.0 bt=0 next=0.9999999999811935 nextWorst=9 descent=true
+      N it=1 fresh=false norm=0.9999999999811935 worst=9 alpha=0.5 bt=1 next=0.9999999999845036 nextWorst=9 descent=true
+      N it=2 fresh=false norm=0.9999999999845036 worst=9 alpha=0.25 bt=2 next=0.9999999999850806 nextWorst=9 descent=true
+    P FAIL pass=2: Singular Newton Jacobian: Sparse LU rejected a singular matrix
+  A REJ t=0.0 step=0.025 Nonconvergence: Singular Newton Jacobian: Sparse LU rejected a singular matrix; active-set pass=2
+  A attempt=2 t=0.0 step=0.0125
+    P pass=0 dt=0.0036611652351681554 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[-1.498388845878228, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:-0.00479 1:1.42e-05 2:0.00 3:-1.50 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:1.46 10:-0.873 11:0.00
+      N it=0 fresh=true norm=1.498388845878228 worst=3 alpha=1.0 bt=0 next=1.0000000000829392 nextWorst=9 descent=true
+      N it=1 fresh=false norm=1.0000000000829392 worst=9 alpha=1.0 bt=0 next=1.0 nextWorst=9 descent=true
+      N it=2 fresh=false norm=1.0 worst=9 alpha=0.5 bt=1 next=0.02368449921915851 nextWorst=9 descent=true
+      N it=3 fresh=false norm=0.02368449921915851 worst=9 alpha=1.0 bt=0 next=0.013820279814492515 nextWorst=9 descent=true
+      N it=4 fresh=false norm=0.013820279814492515 worst=9 alpha=1.0 bt=0 next=0.008131238770828702 nextWorst=9 descent=true
+      N it=5 fresh=false norm=0.008131238770828702 worst=9 alpha=1.0 bt=0 next=0.0047991608792785564 nextWorst=9 descent=true
+      N it=6 fresh=false norm=0.0047991608792785564 worst=9 alpha=1.0 bt=0 next=0.00283770429723321 nextWorst=9 descent=true
+      N it=7 fresh=false norm=0.00283770429723321 worst=9 alpha=1.0 bt=0 next=0.0016797156659497893 nextWorst=9 descent=true
+      N it=8 fresh=true norm=0.0016797156659497893 worst=9 alpha=1.0 bt=0 next=1.408408408354468E-6 nextWorst=9 descent=true
+      N it=9 fresh=false norm=1.408408408354468E-6 worst=9 alpha=1.0 bt=0 next=2.361470154403183E-9 nextWorst=9 descent=true
+      N it=10 fresh=false norm=2.361470154403183E-9 worst=9 alpha=1.0 bt=0 next=3.960935820363756E-12 nextWorst=9 descent=true
+    P conv pass=0 it=11 flows=[0.0, 0.0] heads=[0.0, 698675.0] changed=true nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=1 dt=0.0036611652351681554 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:0.00 2:0.00 3:0.00 4:-1.08e-14 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:-3.96e-12 10:-0.873 11:0.00
+      N it=0 fresh=true norm=0.8733437499994983 worst=10 alpha=1.0 bt=0 next=6.536107684951274E-10 nextWorst=10 descent=true
+    P conv pass=1 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228884] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.0036611652351681554 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:-2.22e-16 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=0.0125 step=0.0125 err=1.938656363733017E-16 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=3 t=0.0125 step=0.025
+    P pass=0 dt=0.007322330470336311 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.007322330470336311 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=0.037500000000000006 step=0.025 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=4 t=0.037500000000000006 step=0.05
+    P pass=0 dt=0.014644660940672622 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.014644660940672622 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=0.08750000000000001 step=0.05 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=5 t=0.08750000000000001 step=0.1
+    P pass=0 dt=0.029289321881345243 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.029289321881345243 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=0.1875 step=0.1 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=6 t=0.1875 step=0.2
+    P pass=0 dt=0.05857864376269049 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.05857864376269049 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=0.3875 step=0.2 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=7 t=0.3875 step=0.4
+    P pass=0 dt=0.11715728752538097 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.11715728752538097 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=0.7875000000000001 step=0.4 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=8 t=0.7875000000000001 step=0.8
+    P pass=0 dt=0.23431457505076195 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.23431457505076195 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=1.5875000000000001 step=0.8 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=9 t=1.5875000000000001 step=1.6
+    P pass=0 dt=0.4686291501015239 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.4686291501015239 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=3.1875 step=1.6 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+  A attempt=10 t=3.1875 step=1.8125
+    P pass=0 dt=0.5308689590993825 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:-2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:-3.33e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.8733437500000001 worst=10 alpha=1.0 bt=0 next=6.536109140142797E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228885] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+    P pass=0 dt=0.5308689590993825 tol=1.0E-9 modes=[PASSIVE, CLOSED] closed=[false, false] phases=[2, 2, 2] start=[0.0, 0.0] size=12 offsets=[0, 3, 6] edgeOffset=9 [n0 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n1 T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [n2 T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+      F0 0:0.00 1:2.86e-16 2:0.00 3:0.00 4:0.00 5:0.00 6:0.00 7:0.00 8:2.22e-16 9:0.00 10:-0.873 11:0.00
+      N it=0 fresh=false norm=0.87334375 worst=10 alpha=1.0 bt=0 next=6.536107684951278E-10 nextWorst=10 descent=true
+    P conv pass=0 it=1 flows=[0.0, 0.0] heads=[0.0, 698675.0005228888] changed=false nextModes=[PASSIVE, CLOSED] closed=[false, false]
+  A OK t=5.0 step=1.8125 err=0.0 modes=[PASSIVE, CLOSED] flows=[0.0, 0.0] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=101325.00 l=0.000 w=0.000 v=1.000] [T=298.1500 P=800000.00 l=0.000 w=0.000 v=1.000]
+OK [PASSIVE, CLOSED] [0.0, 0.0]

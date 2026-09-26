@@ -1,0 +1,4 @@
+fluidScienceTest: F4 final (d02b1d9) 50 classes {"tests":182,"fail":0,"skip":0}; cleanup final 50 classes {"tests":182,"fail":0,"skip":0}; test cases only before 0, only after 0
+fluidRuntimeTest: F4 final (d02b1d9) 44 classes {"tests":226,"fail":0,"skip":0}; cleanup final 44 classes {"tests":226,"fail":0,"skip":0}; test cases only before 0, only after 0
+fluidNetworkBenchmark: F4 final (d02b1d9) 1 classes {"tests":1,"fail":0,"skip":0}; cleanup final 1 classes {"tests":1,"fail":0,"skip":0}; test cases only before 0, only after 0
+fluidSolverRegression: F4 final (d02b1d9) 1 classes {"tests":1,"fail":0,"skip":0}; cleanup final 1 classes {"tests":1,"fail":0,"skip":0}; test cases only before 0, only after 0

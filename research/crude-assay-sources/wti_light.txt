@@ -1,0 +1,134 @@
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                          Reference: WTLEX26Y                                       
+                            Crude: WTI Light - Export                               
+                                                                                    
+      Crude Summary Report                                                          
+                                                                                    
+      General Information               Molecules (%wt on crude) Whole Crude Properties
+      Reference:   WTLEX26Y             methane + ethane 0.02Density @ 15°C (g/cc) 0.7906
+      Name:        WTI Light - Export   propane          0.44API Gravity     47.4   
+                                        isobutane        0.32Total Sulfur (% wt) 0.07
+      Origin:      Texas                n-butane         1.39Pour Point (°C) -25    
+                                        isopentane       1.34Viscosity @ 20°C (cSt) 2.6
+      Assay Date:  2/27/2026            n-pentane        2.02Viscosity @ 40°C (cSt) 1.8
+                                        cyclopentane     0.18Nickel (ppm)    0.1    
+      Comments:                         C6 paraffins     3.68Vanadium (ppm)  0.1    
+                                        C6 naphthenes    2.49Total Nitrogen (ppm) 113
+                                        benzene          0.33Total Acid Number (mgKOH/g) 0.05
+                                        C7 paraffins     3.65Mercaptan Sulfur (ppm) 17.5
+                                        C7 naphthenes    4.48Hydrogen Sulfide (ppm) 0.0
+                                        toluene          1.04Reid Vapor Pressure (kPa) 54.8
+      Cut Data                          Atmospheric Cuts            Vacuum Cuts     
+      Start (°C)      IBP IBP C5  65  100 150 200 250 300 350 370 370 450 500 550   
+      End (°C)        FBP  C4  65 100 150 200 250 300 350 370 FBP 450 500 550 FBP   
+      Yield (% wt)        2.2 6.0 10.2 15.8 12.2 10.2 9.6 8.3 3.0 22.4 9.9 4.5 3.3 4.7
+      Yield (% vol)       3.0 7.4 11.0 16.5 12.3 10.0 9.1 7.8 2.7 20.1 9.0 4.0 2.9 4.1
+      Cumulative Yield (% wt) 2.2 8.2 18.4 34.2 46.5 56.7 66.3 74.6 77.6 100.0 87.4 92.0 95.3 100.0
+      Volume Average B.P. (°C) 234 42.6 84 124 174 225 275 324 360 481 408 474 524 619
+      Density @ 15°C (g/cc) 0.7906 0.6440 0.7274 0.7552 0.7808 0.8051 0.8301 0.8409 0.8566 0.8816 0.8676 0.8825 0.8899 0.9055
+      API Gravity     47.4    88.2 63.0 55.8 49.7 44.2 38.9 36.7 33.6 28.9 31.5 28.8 27.4 24.7
+      UOPK            12.26          11.84 11.91 11.97 11.98 12.18 12.19 12.56 12.33 12.50 12.67 12.93
+      Molecular Weight (g/mol)        109 138 172 212 261 299 472 358 469 599 982   
+      Total Sulfur (% wt) 0.07 0.003 0.003 0.007 0.018 0.019 0.027 0.096 0.145 0.220 0.134 0.163 0.244 0.437
+      Mercaptan Sulfur (ppm) 17.5 7.4 7.6 18.5 18.0 10.1                            
+      Total Nitrogen (ppm) 113                1   4  36  93  477 186 353 485 1199   
+      Basic Nitrogen (ppm) 32                 1   3  10  20  133 49 103 147  327    
+      Total Acid Number (mgKOH/g) 0.05 0.00 0.00 0.00 0.00 0.01 0.03 0.08 0.12 0.15 0.16 0.18 0.16 0.07
+      Viscosity @ 20°C (cSt) 2.56        1.36                                       
+      Viscosity @ 40°C (cSt) 1.76        1.05 1.64 2.91 5.86 10.4                   
+      Viscosity @ 50°C (cSt) 1.50            1.43 2.43 4.63 7.83 48.9 16.5 47.3 101 
+      Viscosity @ 60°C (cSt)                                32.9 12.0 31.8 64.2     
+      Viscosity @ 100°C (cSt)                               10.0 4.70 9.72 16.6 63.6
+      Viscosity @ 130°C (cSt)                                                25.4   
+      Viscosity @ 150°C (cSt)                                                15.7   
+      RON (Clear)             75.0 42.8 60.7 29.6                                   
+      MON (Clear)             72.6 60.3 58.4 28.5                                   
+      Paraffins (% wt) 42.6   96.6 56.0 32.8 50.0                                   
+      Naphthenes (%wt) 44.8   3.4 40.6 52.5 37.0                                    
+      Aromatics (% wt) 12.4   0.0 3.3 14.7 13.0                                     
+      Pour Point (°C)  -25                    -46 -24 -1 10  18  25  42  51  12     
+      Cloud Point (°C)                        -44 -21 1                             
+      Freeze Point (°C)                   -55 -39 -17                               
+      Smoke Point (mm)                    31  29  25                                
+      Cetane Index (D4737A)               42  52  58 70  74                         
+      Naphthalenes (% vol)                0.0 0.9 2.6 3.4                           
+      Aniline Point (°C)             55.7 59.6 65.5 74.5 83.4 89.4 97.9 106.2 110.5 
+      Hydrogen (% wt) 14.4    16.6 15.2 14.1 14.4 14.3 14.1 14.0 13.8 13.6 13.6 13.6
+      Total Wax (% wt) 11.5                                 15.7 20.4 18.2 13.6 4.9 
+      C7 Asphaltenes (% wt) 0.0                              0.1     0.0 0.0 0.7    
+      Micro Carbon Residue (% wt) 0.1                        0.5     0.0 0.1 2.4    
+      Vanadium (ppm)   0.1                                   0.5     0.0 0.0 2.5    
+      Nickel (ppm)     0.1                                   0.3     0.0 0.0 1.6    
+      Iron (ppm)       1.0                                   3.7     0.0 0.0 17.8   
+      Sodium (ppm)     0.1                                                          
+      Mercury (ppb)    1.0                                                          
+      Arsenic (ppb)    5                                                            
+      This assay information is provided to you courtesy of ExxonMobil Technology & Engineering Company (EMTEC) and is based on a range of data and information.
+      While care has been taken in preparing these materials, no representations, warranties or guarantees are made as to their accuracy, reliability, quality, correctness
+      or completeness. Each user must make its own determination and judgment on applying any information in this assay. Any and all use of this information shall be
+      the sole responsibility of the user, and the user releases EMTEC, its parent and its affiliates from any and all claims arising from its use and shall defend and hold
+      EMTEC, its parent and its affiliates harmless from any third party claims arising from the user's application or use of the assay information.
+
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                        Reference: WTLEX26Y                                         
+                          Crude: WTI Light - Export                                 
+          Yield Distribution                                                        
+                                                                                    
+                                                                                    
+                                   Cumulative Yield                                 
+                                                                                    
+              700                                                                   
+                     Weight Yield                                                   
+                     Volume Yield                                                   
+                                                                                    
+              600                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+              500                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+              400                                                                   
+           C                                                                        
+           P                                                                        
+           °                                                                        
+           B                                                                        
+           T                                                                        
+              300                                                                   
+                                                                                    
+              200                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+              100                                                                   
+                                                                                    
+                                                                                    
+                                                                                    
+               0                                                                    
+                0    10    20   30    40   50    60    70   80    90   100          
+                                         % distilled                                
+                                                                                    
+                      Cumulative Volume % Distilled at 10 Degree C (TBP) Intervals  
+                            0   10  20  30  40  50  60  70 80  90                   
+                        0              4.6 5.8 7.0 8.8 11.2 14.2 17.5               
+                       100 21.1 24.7 28.3 31.7 34.8 37.8 40.6 43.3 45.8 48.1        
+                       200 50.3 52.4 54.4 56.4 58.4 60.3 62.2 64.1 65.9 67.7        
+                       300 69.4 71.1 72.7 74.3 75.8 77.2 78.6 79.9 81.2 82.5        
+                       400 83.7 84.8 85.9 87.0 88.0 88.9 89.8 90.7 91.5 92.2        
+                       500 92.9 93.6 94.3 94.8 95.4 95.9 96.4 96.8 97.2 97.5        
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    

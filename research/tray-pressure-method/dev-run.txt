@@ -1,0 +1,53 @@
+WARMUP 0 SUCCESS 571 ms
+WARMUP 1 SUCCESS 246 ms
+CASE P075-S01 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-7.5, oneShot%=0.5, ladderRaw%=-1.3, ladderTriggered%=-1.3}
+CASE P075-S02 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-52.0, oneShot%=4.1, ladderRaw%=0.0, ladderTriggered%=0.0}
+CASE P075-S03 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-63.7, oneShot%=7.9, ladderRaw%=0.2, ladderTriggered%=0.2}
+CASE P075-S04 {fixed=NONCONVERGENCE, ladder=NONCONVERGENCE}
+CASE P075-S05 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-63.3, oneShot%=10.6, ladderRaw%=0.4, ladderTriggered%=0.4}
+CASE P075-S06 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-31.9, oneShot%=1.2, ladderRaw%=-3.5, ladderTriggered%=-3.5}
+CASE P075-S07 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-63.3, oneShot%=1.3, ladderRaw%=-1.8, ladderTriggered%=-1.8}
+CASE P075-S08 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-73.2, oneShot%=1.8, ladderRaw%=0.0, ladderTriggered%=0.0}
+CASE P075-S09 {fixed=NONCONVERGENCE, ladder=NONCONVERGENCE}
+CASE P075-S10 {fixed=INVALID_INPUT, ladder=INVALID_INPUT}
+CASE P100-S01 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=16.1, oneShot%=-0.1, ladderRaw%=0.7, ladderTriggered%=0.7}
+CASE P100-S02 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-41.3, oneShot%=2.6, ladderRaw%=-0.6, ladderTriggered%=-0.6}
+CASE P100-S03 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-57.4, oneShot%=6.1, ladderRaw%=-0.2, ladderTriggered%=-0.2}
+CASE P100-S04 {fixed=NONCONVERGENCE, ladder=SUCCESS, ladderRaw%=0.8, ladderTriggered%=0.8}
+CASE P100-S05 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-58.6, oneShot%=9.4, ladderRaw%=0.0, ladderTriggered%=0.0}
+CASE P100-S06 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-14.6, oneShot%=0.5, ladderRaw%=-4.3, ladderTriggered%=-4.3}
+CASE P100-S07 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-58.1, oneShot%=2.7, ladderRaw%=-3.4, ladderTriggered%=-3.4}
+CASE P100-S08 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-71.5, oneShot%=4.3, ladderRaw%=-3.3, ladderTriggered%=-3.3}
+CASE P100-S09 {fixed=NONCONVERGENCE, ladder=SUCCESS, ladderRaw%=-16.0, ladderTriggered%=1.8}
+CASE P100-S10 {fixed=INVALID_INPUT, ladder=SUCCESS, ladderRaw%=0.5, ladderTriggered%=0.5}
+CASE P150-S01 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=47.3, oneShot%=-0.3, ladderRaw%=-5.7, ladderTriggered%=0.0}
+CASE P150-S02 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-17.0, oneShot%=0.8, ladderRaw%=-0.8, ladderTriggered%=-0.8}
+CASE P150-S03 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-42.5, oneShot%=3.2, ladderRaw%=-1.2, ladderTriggered%=-1.2}
+CASE P150-S04 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-54.6, oneShot%=4.5, ladderRaw%=0.1, ladderTriggered%=0.1}
+CASE P150-S05 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-47.2, oneShot%=6.0, ladderRaw%=1.2, ladderTriggered%=1.2}
+CASE P150-S06 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=18.3, oneShot%=0.0, ladderRaw%=-0.4, ladderTriggered%=-0.4}
+CASE P150-S07 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-44.3, oneShot%=1.5, ladderRaw%=-4.4, ladderTriggered%=-4.4}
+CASE P150-S08 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-64.4, oneShot%=3.7, ladderRaw%=-4.5, ladderTriggered%=-4.5}
+CASE P150-S09 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-64.2, oneShot%=5.9, ladderRaw%=2.7, ladderTriggered%=2.7}
+CASE P150-S10 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-61.9, oneShot%=7.1, ladderRaw%=2.9, ladderTriggered%=2.9}
+CASE P250-S01 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=105.9, oneShot%=-0.4, ladderRaw%=-4.5, ladderTriggered%=-4.5}
+CASE P250-S02 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=16.3, oneShot%=-0.2, ladderRaw%=-0.9, ladderTriggered%=-0.9}
+CASE P250-S03 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-18.1, oneShot%=0.5, ladderRaw%=-3.1, ladderTriggered%=-3.1}
+CASE P250-S04 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-34.3, oneShot%=1.9, ladderRaw%=0.0, ladderTriggered%=0.0}
+CASE P250-S05 {fixed=SUCCESS, ladder=NONCONVERGENCE, oneShot=SUCCESS, fixed%=-23.2, oneShot%=1.0}
+CASE P250-S06 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=55.2, oneShot%=-0.2, ladderRaw%=-3.9, ladderTriggered%=-3.9}
+CASE P250-S07 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-15.0, oneShot%=0.4, ladderRaw%=-5.8, ladderTriggered%=0.1}
+CASE P250-S08 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-48.1, oneShot%=1.7, ladderRaw%=-6.1, ladderTriggered%=0.2}
+CASE P250-S09 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-51.0, oneShot%=0.6, ladderRaw%=1.7, ladderTriggered%=1.7}
+CASE P250-S10 {fixed=SUCCESS, ladder=TIMEOUT, oneShot=SUCCESS, fixed%=-51.0, oneShot%=2.4}
+CASE P350-S01 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=148.4, oneShot%=-0.2, ladderRaw%=-3.0, ladderTriggered%=-3.0}
+CASE P350-S02 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=47.1, oneShot%=-0.3, ladderRaw%=-0.9, ladderTriggered%=-0.9}
+CASE P350-S03 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=5.0, oneShot%=0.0, ladderRaw%=-3.3, ladderTriggered%=-3.3}
+CASE P350-S04 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-13.0, oneShot%=0.6, ladderRaw%=-0.2, ladderTriggered%=-0.2}
+CASE P350-S05 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-2.9, oneShot%=0.3, ladderRaw%=-0.5, ladderTriggered%=-0.5}
+CASE P350-S06 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=90.3, oneShot%=-0.2, ladderRaw%=-4.5, ladderTriggered%=-4.5}
+CASE P350-S07 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=3.5, oneShot%=0.0, ladderRaw%=-3.3, ladderTriggered%=-3.3}
+CASE P350-S08 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-31.5, oneShot%=0.8, ladderRaw%=-2.6, ladderTriggered%=-2.6}
+CASE P350-S09 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-40.0, oneShot%=1.0, ladderRaw%=1.0, ladderTriggered%=1.0}
+CASE P350-S10 {fixed=SUCCESS, ladder=SUCCESS, oneShot=SUCCESS, fixed%=-37.4, oneShot%=1.7, ladderRaw%=-8.8, ladderTriggered%=0.4}
+COMPLETE -> D:\Minecraft\Modding\1.21\CreateChemE\.claude\worktrees\tray-pressure-study-method-a19e2d\experiments\tray-pressure-method\dev\cases.jsonl

@@ -1,0 +1,764 @@
+{
+  "runId": "srv-rest1000-f2after-r01",
+  "scenario": "rest1000",
+  "kind": "server",
+  "worktree": "D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/agent-ae139e4fc1b184b36",
+  "warmupSeconds": 60,
+  "windowSeconds": 60,
+  "events": [
+    {
+      "t": 1790213652175,
+      "iso": "2026-09-24T01:34:12.175Z",
+      "what": "machine",
+      "endfield": 0,
+      "freeMiB": 28097
+    },
+    {
+      "t": 1790213652559,
+      "iso": "2026-09-24T01:34:12.559Z",
+      "what": "launch"
+    },
+    {
+      "t": 1790213664175,
+      "iso": "2026-09-24T01:34:24.175Z",
+      "what": "server ready"
+    },
+    {
+      "t": 1790213664567,
+      "iso": "2026-09-24T01:34:24.567Z",
+      "what": "jvm",
+      "pid": 9284
+    },
+    {
+      "t": 1790213664575,
+      "iso": "2026-09-24T01:34:24.575Z",
+      "what": "forceload",
+      "reply": "Running function createcheme_bench:forceload\n"
+    },
+    {
+      "t": 1790213669578,
+      "iso": "2026-09-24T01:34:29.578Z",
+      "what": "place start"
+    },
+    {
+      "t": 1790213670218,
+      "iso": "2026-09-24T01:34:30.218Z",
+      "what": "place done",
+      "reply": "Running function createcheme_bench:rest1000\n",
+      "placementMillis": 638
+    },
+    {
+      "t": 1790213674287,
+      "iso": "2026-09-24T01:34:34.287Z",
+      "what": "devices registered",
+      "onlineTick": 200,
+      "devices": 5000,
+      "islands": 1000,
+      "kinds": "{AWAKE=1000}",
+      "statuses": "{FULL=988, SOLVING=12}"
+    },
+    {
+      "t": 1790213734754,
+      "iso": "2026-09-24T01:35:34.754Z",
+      "what": "jfr start",
+      "reply": "9284:\r\nStarted recording 1. No limit specified, using maxsize=250MB as default.\n\nUse jcmd 9284 JFR.dump name=wp5window to copy recording data to file."
+    },
+    {
+      "t": 1790213734872,
+      "iso": "2026-09-24T01:35:34.872Z",
+      "what": "window start"
+    },
+    {
+      "t": 1790213794879,
+      "iso": "2026-09-24T01:36:34.879Z",
+      "what": "window end"
+    },
+    {
+      "t": 1790213794992,
+      "iso": "2026-09-24T01:36:34.992Z",
+      "what": "jfr stop",
+      "reply": "9284:\r\nStopped recording \"wp5window\", 656.0 kB written to:\n\nD:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\documentation\\fluid-followups\\f2-logs\\rig\\srv-rest1000-f2after-r01\\window.jfr"
+    },
+    {
+      "t": 1790213795648,
+      "iso": "2026-09-24T01:36:35.648Z",
+      "what": "live heap"
+    },
+    {
+      "t": 1790213846215,
+      "iso": "2026-09-24T01:37:26.215Z",
+      "what": "marginal done",
+      "commands": 90
+    },
+    {
+      "t": 1790213849228,
+      "iso": "2026-09-24T01:37:29.228Z",
+      "what": "stop",
+      "reply": "Stopping the server\n"
+    },
+    {
+      "t": 1790213850172,
+      "iso": "2026-09-24T01:37:30.172Z",
+      "what": "gradle exit",
+      "code": 0
+    },
+    {
+      "t": 1790213853673,
+      "iso": "2026-09-24T01:37:33.673Z",
+      "what": "done",
+      "endfield": 0,
+      "freeMiB": 28099
+    }
+  ],
+  "machineBefore": {
+    "endfield": 0,
+    "freeMiB": 28097
+  },
+  "pid": 9284,
+  "placementMillis": 638,
+  "placedState": {
+    "onlineTick": 200,
+    "devices": 5000,
+    "islands": 1000,
+    "kinds": "{AWAKE=1000}",
+    "statuses": "{FULL=988, SOLVING=12}"
+  },
+  "windowStart": 1790213734764,
+  "windowEnd": 1790213794778,
+  "marginal": [
+    {
+      "op": "noop",
+      "t0": 1790213800656,
+      "t1": 1790213800658,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213801158,
+      "t1": 1790213801159,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213801663,
+      "t1": 1790213801663,
+      "rttMs": 0,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213802170,
+      "t1": 1790213802171,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213802678,
+      "t1": 1790213802679,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213803181,
+      "t1": 1790213803182,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213803687,
+      "t1": 1790213803688,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213804193,
+      "t1": 1790213804194,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213804694,
+      "t1": 1790213804695,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "noop",
+      "t0": 1790213805198,
+      "t1": 1790213805199,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:noop\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213805702,
+      "t1": 1790213805708,
+      "rttMs": 6,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213806209,
+      "t1": 1790213806212,
+      "rttMs": 3,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213806716,
+      "t1": 1790213806719,
+      "rttMs": 3,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213807223,
+      "t1": 1790213807224,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213807731,
+      "t1": 1790213807733,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213808238,
+      "t1": 1790213808239,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213808744,
+      "t1": 1790213808745,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213809249,
+      "t1": 1790213809250,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213809754,
+      "t1": 1790213809755,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213810258,
+      "t1": 1790213810259,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213810774,
+      "t1": 1790213810775,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213811279,
+      "t1": 1790213811280,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213811795,
+      "t1": 1790213811796,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213812300,
+      "t1": 1790213812301,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213812806,
+      "t1": 1790213812807,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213813309,
+      "t1": 1790213813310,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213813815,
+      "t1": 1790213813816,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213814323,
+      "t1": 1790213814324,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_tank",
+      "t0": 1790213814827,
+      "t1": 1790213814828,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_tank\n"
+    },
+    {
+      "op": "minus_tank",
+      "t0": 1790213815334,
+      "t1": 1790213815335,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_tank\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213815838,
+      "t1": 1790213815839,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213816347,
+      "t1": 1790213816348,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213816855,
+      "t1": 1790213816856,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213817370,
+      "t1": 1790213817371,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213817880,
+      "t1": 1790213817881,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213818384,
+      "t1": 1790213818385,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213818887,
+      "t1": 1790213818888,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213819395,
+      "t1": 1790213819396,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213819899,
+      "t1": 1790213819900,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213820407,
+      "t1": 1790213820408,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213820913,
+      "t1": 1790213820914,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213821416,
+      "t1": 1790213821417,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213821919,
+      "t1": 1790213821920,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213822427,
+      "t1": 1790213822428,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213822942,
+      "t1": 1790213822943,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213823448,
+      "t1": 1790213823449,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213823953,
+      "t1": 1790213823953,
+      "rttMs": 0,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213824460,
+      "t1": 1790213824461,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "plus_pipe",
+      "t0": 1790213824967,
+      "t1": 1790213824968,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:plus_pipe\n"
+    },
+    {
+      "op": "minus_pipe",
+      "t0": 1790213825470,
+      "t1": 1790213825471,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus_pipe\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213825974,
+      "t1": 1790213825976,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213826480,
+      "t1": 1790213826481,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213826988,
+      "t1": 1790213826989,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213827495,
+      "t1": 1790213827496,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213828000,
+      "t1": 1790213828000,
+      "rttMs": 0,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213828505,
+      "t1": 1790213828506,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213829009,
+      "t1": 1790213829010,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213829516,
+      "t1": 1790213829517,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213830020,
+      "t1": 1790213830021,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213830523,
+      "t1": 1790213830524,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213831027,
+      "t1": 1790213831028,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213831529,
+      "t1": 1790213831530,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213832030,
+      "t1": 1790213832031,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213832534,
+      "t1": 1790213832535,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213833037,
+      "t1": 1790213833037,
+      "rttMs": 0,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213833539,
+      "t1": 1790213833540,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213834045,
+      "t1": 1790213834046,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213834550,
+      "t1": 1790213834551,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "edit_pipe",
+      "t0": 1790213835057,
+      "t1": 1790213835058,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_pipe\n"
+    },
+    {
+      "op": "edit_back",
+      "t0": 1790213835564,
+      "t1": 1790213835565,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:edit_back\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213836070,
+      "t1": 1790213836073,
+      "rttMs": 3,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213836588,
+      "t1": 1790213836591,
+      "rttMs": 3,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213837104,
+      "t1": 1790213837107,
+      "rttMs": 3,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213837607,
+      "t1": 1790213837609,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213838110,
+      "t1": 1790213838113,
+      "rttMs": 3,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213838615,
+      "t1": 1790213838616,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213839132,
+      "t1": 1790213839134,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213839636,
+      "t1": 1790213839637,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213840138,
+      "t1": 1790213840140,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213840642,
+      "t1": 1790213840643,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213841149,
+      "t1": 1790213841151,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213841656,
+      "t1": 1790213841657,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213842164,
+      "t1": 1790213842166,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213842670,
+      "t1": 1790213842670,
+      "rttMs": 0,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213843175,
+      "t1": 1790213843177,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213843693,
+      "t1": 1790213843693,
+      "rttMs": 0,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213844198,
+      "t1": 1790213844200,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213844703,
+      "t1": 1790213844705,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:minus20\n"
+    },
+    {
+      "op": "plus20",
+      "t0": 1790213845209,
+      "t1": 1790213845211,
+      "rttMs": 2,
+      "reply": "Running function createcheme_bench:plus20\n"
+    },
+    {
+      "op": "minus20",
+      "t0": 1790213845710,
+      "t1": 1790213845711,
+      "rttMs": 1,
+      "reply": "Running function createcheme_bench:minus20\n"
+    }
+  ],
+  "machineAfter": {
+    "endfield": 0,
+    "freeMiB": 28099
+  }
+}

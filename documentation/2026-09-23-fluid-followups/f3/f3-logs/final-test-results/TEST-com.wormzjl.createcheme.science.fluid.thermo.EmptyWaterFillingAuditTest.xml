@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.thermo.EmptyWaterFillingAuditTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-24T03:10:09.355Z" hostname="WORMZ-PC" time="0.005">
+  <properties/>
+  <testcase name="identifyWhetherAnInitiallyEvacuatedVesselNeedsAnAdditionalEnergyStore()" classname="com.wormzjl.createcheme.science.fluid.thermo.EmptyWaterFillingAuditTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

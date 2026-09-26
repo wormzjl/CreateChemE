@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashCheckpointTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:57.621Z" hostname="WORMZ-PC" time="0.039">
+  <properties/>
+  <testcase name="cancellationEscapesUnchangedAtEveryFlashBoundary()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashCheckpointTest" time="0.009"/>
+  <testcase name="oneShotThermoFailureDuringReducedWorkEscapesInsteadOfBecomingFallback()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashCheckpointTest" time="0.009"/>
+  <testcase name="unrelatedRuntimeFailureEscapesUnchangedAtEveryFlashBoundary()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashCheckpointTest" time="0.009"/>
+  <testcase name="thermoFailuresBeforeAndAfterTheReferencePreserveTheirIdentity()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashCheckpointTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

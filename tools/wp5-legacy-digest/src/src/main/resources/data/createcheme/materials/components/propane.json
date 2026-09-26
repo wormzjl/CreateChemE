@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "Propane",
+  "kind": "chemical",
+  "translation_key": "material.createcheme.propane",
+  "fallback": "Propane",
+  "appearance": {
+    "color": "#F3F4EA",
+    "transparency": 0.85,
+    "estimated": true
+  }
+}

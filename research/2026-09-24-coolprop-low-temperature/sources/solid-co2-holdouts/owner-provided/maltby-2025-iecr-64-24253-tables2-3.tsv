@@ -1,0 +1,113 @@
+# Maltby T.W., Aasen A., Hammer M., Wilhelmsen O. (2025). Review of Experimental Data and Evaluation of Equations of State
+# for Modeling Formation of Solid CO2 in CCS and Natural Gas Applications. Ind. Eng. Chem. Res. 64(50), 24253-24263.
+# doi:10.1021/acs.iecr.5c04028. CC BY 4.0 (stated on the article's first page). Local copy maltby-2025-iecr-64-24253.pdf
+# (sha256 744c2ba3bab6a828ce233f1cb2be23101f0a61af84ad80182aace81baa9874e9). Transcribed from the PDF text layer (the
+# publisher's PDF has one; columns aligned cleanly for these two tables).
+# block T2 = Table 2, "Overview of the Experimental Data for the CO2 Mixtures", p. 24256: mixture, SFE type, reference
+#   number(s) of the article's reference list, marker (a) = pressure assumed constant, (b) = pressure assumed equal to the
+#   SVLE curve, year, Npoints, xCO2 range in % (NA for SVLE-locus sets), T range K, p range MPa. 47 rows.
+# block T3 = Table 3, "Comparison of MAPD Values across Different EoS Models", p. 24257: MAPD in % of the equilibrium
+#   temperature (eq. 8: predicted T at the measured composition and pressure), solid EoS = Trusler 2011 + erratum, fluid EoS
+#   columns EoS-CG, GERG(-2008), tc-PR* (alpha refitted with sublimation data, their Table 1), PR, SRK, SAFT-VR Mie,
+#   PC-SAFT, PCP-SAFT; kij regressed on the same VLE data for all EoS (SI Table SI.1). The last four rows are the
+#   averages per SFE type and overall (each data set weighted equally). 37 data rows + 4 average rows. Table 3 has no rows
+#   for the SVLE-locus sets without compositions (the NA rows of Table 2).
+# Reference numbers (article list): 4 Sampson 2023; 19 Lovseth 2018; 41 Pikaar 1959 (thesis; two SVE sets); 42 Donnelly and
+#   Katz 1954; 43 Davis, Rodewald, Kurata 1962; 44 Sterner 1961; 45 Kurata and Im 1971; 46 Agrawal and Laverman 1974;
+#   47 Le and Trebble 2007; 48 Zhang 2012 (NTNU thesis); 49 Shen 2012; 50 Gao 2012; 51 Xiong 2015; 52 GPSA 1998;
+#   53 ZareNezhad 2006; 54 Smith, Sonntag, Van Wylen 1963 (Adv. Cryog. Eng. 8, 162); 55 Sonntag, Van Wylen 1962
+#   (Adv. Cryog. Eng. 7, 99); 56 Kurata 1974 (GPA RR-10); 57 Yakimenko 1975; 58 De Stefani 2002; 59 Zaitsev 1986;
+#   60 Sobocinski and Kurata 1959; 61 Klemenc and Bankowski 1932; 62 Thiel and Schulte 1920; 63 Riva and Stringari 2018;
+#   64 He 2022; 65 Souza 2020; 66 Lange 2015; 67 Jensen and Kurata 1971; 68 Fandino 2015.
+# Sanity check: T2 ranges have min <= max in every row; T3 average rows lie within the spread of their block.
+# Digits as printed, one sanity check, not re-verified (owner: not looking for 100 % correct data).
+# Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+block	mixture	sfe	ref	marker	year	Npoints	xCO2_range_pct	T_range_K	p_range_MPa	EoS_CG	GERG	tc_PR_star	PR	SRK	VR_Mie	PC_SAFT	PCP_SAFT
+T2	CO2/CH4	SVE	48		2011	17	10.8000,54.2000	191.1,210.3	0.2930,4.4460								
+T2	CO2/CH4	SVE	47		2007	55	1.0000,2.9300	168.6,187.7	0.9621,3.0082								
+T2	CO2/C2H6/CH4	SVE	47		2007	24	1.9500,1.9600	173.6,183.6	1.2677,2.2503								
+T2	CO2/N2/CH4	SVE	47		2007	24	1.9400,1.9400	173.9,183.5	1.2437,2.2615								
+T2	CO2/CH4	SVE	41		1959	38	1.0000,20.0000	158.2,210.5	0.1966,4.8322								
+T2	CO2/CH4	SVE	52,53		1998	43	2.0000,16.0000	170.1,199.8	0.6893,2.7571								
+T2	CO2/CH4	SVE	46		1974	42	0.1200,10.6700	137.5,198.1	0.1724,2.7855								
+T2	CO2/N2/CH4	SVE	46		1974	19	0.9300,0.9600	154.1,172.8	0.1724,2.4407								
+T2	CO2/CH4	SVE	51		2015	64	0.1000,34.0700	153.2,193.2	0.2190,3.0380								
+T2	CO2/CH4/N2	SVE	51		2015	77	0.1200,34.7900	153.2,193.2	0.2670,2.2000								
+T2	CO2/CH4/C2H6	SVE	51		2015	53	0.6500,33.6500	153.2,193.2	0.2720,2.1950								
+T2	CO2/CH4	SVE	41		1959	66	0.0265,58.0000	132.6,210.1	0.1560,4.7896								
+T2	CO2/N2	SVE	54,55		1963	125	0.0180,7.7800	140.0,190.0	0.5066,20.2650								
+T2	CO2/Ar	SVE	19		2018	4	13.1320,42.3570	213.1,213.1	1.0495,6.8449								
+T2	CO2/CH4	SLE	4		2023	6	0.0052,0.0500	106.3,122.8	6.9800,10.1000								
+T2	CO2/CH4	SLE	56	a	1974	11	0.1600,20.5000	129.7,201.3	5.0000,5.0000								
+T2	CO2/CH4	SLE	49		2012	9	0.0213,2.8960	112.0,169.9	0.0930,2.3150								
+T2	CO2/CH4/N2	SLE	49		2012	27	0.0225,2.7700	112.0,169.9	0.1550,3.1500								
+T2	CO2/CH4/C2H6	SLE	49		2012	27	0.0577,3.3100	120.0,169.9	0.1620,2.2280								
+T2	CO2/CH4/N2	SLE	50		2012	32	0.0003,0.0900	83.1,123.1	0.1240,2.0230								
+T2	CO2/CH4	SLE	41		1959	23	0.0320,20.0000	113.5,201.3	1.0132,9.7272								
+T2	CO2/Ar	SLE	19		2018	3	78.6300,86.6210	213.1,213.1	6.8455,16.1441								
+T2	CO2/N2	SLE	57		1975	29	0.0002,0.0214	78.0,115.0	3.6477,9.1192								
+T2	CO2/O2	SLE	58	a	2002	12	0.0004,0.0098	90.77,110.4	5.8900,5.8900								
+T2	CO2/O2	SLE	59		1986	14	0.00001,0.2068	77.4,140.0	5.8900,9.5000								
+T2	CO2/H2S	SLE	60	b	1959	12	12.3473,99.7893	178.4,216.8	0.0214,0.4176								
+T2	CO2/H2S	SLE	61		1932	9	9.7900,25.0100	177.9,191.1	0.0338,0.1018								
+T2	CO2/H2S	SLE	62		1920	1	25.4000,25.4000	191.1,191.1	0.1000,0.1000								
+T2	CO2/SO2	SLE	62		1920	1	33.6000,33.6000	194.5,194.5	0.1000,0.1000								
+T2	CO2/CH4/C2H6	SVLE	45		1971	10	3.3600,64.4600	166.5,208.2	0.9025,3.0489								
+T2	CO2/CH4/C3H8	SVLE	45		1971	12	1.0300,62.0100	150.2,208.2	0.4571,2.3649								
+T2	CO2/CH4/C4H10	SVLE	45		1971	13	10.4800,78.1200	185.2,210.2	1.2755,3.3302								
+T2	CO2/C2H6/C3H8	SVLE	45		1971	8	11.8300,63.2000	190.2,208.2	0.1207,0.4619								
+T2	CO2/CH4/C2H6/C3H8	SVLE	45		1971	20	14.7700,67.4100	190.2,208.2	1.3790,2.7579								
+T2	CO2/CH4/N2	SVLE	63		2018	6	0.0532,0.6909	124.5,145.9	0.5200,2.0400								
+T2	CO2/CH4/N2/O2	SVLE	63		2018	6	0.0356,0.6948	125.0,146.5	0.5800,2.1100								
+T2	CO2/CH4/C2H6	SVLE	64		2022	53	0.6195,38.8250	148.2,203.16	0.2200,3.868								
+T2	CO2/CH4	SVLE	65		2020	7	NA	204.0,216.0	0.9640,4.8580								
+T2	CO2/CH4	SVLE	66		2015	15	NA	190.4,210.4	3.9790,4.5670								
+T2	CO2/CH4	SVLE	43		1962	30	NA	97.5,211.7	0.0283,4.8677								
+T2	CO2/CH4	SVLE	42		1954	20	NA	194.5,215.7	0.9170,4.8539								
+T2	CO2/CH4	SVLE	44		1961	5	NA	166.4,199.6	1.9351,5.0314								
+T2	CO2/C2H6	SVLE	67		1971	13	NA	99.8,214.8	0.0005,0.5664								
+T2	CO2/C3H8	SVLE	67		1971	11	NA	141.5,213.7	0.0009,0.4489								
+T2	CO2/C4H10	SVLE	67		1971	12	NA	141.5,210.9	0.0008,0.3557								
+T2	CO2/N2	SVLE	68		2015	4	NA	212.7,214.9	4.8230,13.0180								
+T2	CO2/H2	SVLE	68		2015	3	NA	217.0,217.9	4.3000,13.7420								
+T3	CO2/CH4	SVE	48							0.34	0.34	0.36	0.34	0.37	0.32	0.77	0.33
+T3	CO2/CH4	SVE	47							1.38	1.38	1.26	1.29	1.25	1.33	1.93	1.40
+T3	CO2/C2H6/CH4	SVE	47							1.00	1.00	0.96	0.95	0.96	0.96	1.38	0.93
+T3	CO2/N2/CH4	SVE	47							0.95	0.95	0.92	0.91	0.92	0.93	1.38	0.93
+T3	CO2/CH4	SVE	41							0.32	0.32	0.34	0.37	0.36	0.39	1.27	0.51
+T3	CO2/CH4	SVE	52,53							0.64	2.03	0.74	0.67	0.77	0.58	0.45	0.39
+T3	CO2/CH4	SVE	46							0.99	0.99	1.04	0.97	1.06	0.95	1.04	0.85
+T3	CO2/N2/CH4	SVE	46							0.68	0.68	0.78	0.69	0.81	0.64	0.77	0.49
+T3	CO2/CH4	SVE	51							0.48	0.48	0.48	0.45	0.48	0.43	1.26	0.48
+T3	CO2/CH4/N2	SVE	51							0.58	0.58	0.57	0.57	0.57	0.56	1.37	0.63
+T3	CO2/CH4/C2H6	SVE	51							0.59	0.59	0.63	0.56	0.64	0.49	0.58	0.37
+T3	CO2/CH4	SVE	41							0.21	0.21	0.37	0.30	0.42	0.26	0.86	0.25
+T3	CO2/N2	SVE	54,55							0.93	0.93	0.38	0.36	0.36	1.52	1.89	1.67
+T3	CO2/Ar	SVE	19							0.03	0.09	0.09	0.04	0.19	0.10	0.92	0.10
+T3	CO2/CH4	SLE	4							2.97	2.98	5.75	5.12	5.72	10.32	8.53	3.67
+T3	CO2/CH4	SLE	56	a						0.50	0.50	0.88	0.85	0.94	2.08	2.67	0.67
+T3	CO2/CH4/N2	SLE	49							0.63	0.63	0.68	0.43	0.81	3.56	4.10	0.79
+T3	CO2/CH4/C2H6	SLE	49							0.36	0.36	0.93	0.65	1.02	3.75	4.01	0.50
+T3	CO2/CH4	SLE	49							0.45	0.45	0.81	0.59	0.94	3.79	4.01	0.90
+T3	CO2/CH4/N2	SLE	50							1.22	1.21	1.42	1.00	1.60	4.38	4.65	1.73
+T3	CO2/CH4	SLE	41							0.70	0.70	1.03	1.00	1.00	1.63	2.22	0.79
+T3	CO2/Ar	SLE	19							0.03	0.09	0.24	0.45	0.15	0.25	0.26	0.30
+T3	CO2/O2	SLE	58	a						11.98	6.20	3.30	2.45	2.82	11.58	14.00	0.74
+T3	CO2/O2	SLE	59							11.57	6.02	3.06	2.33	2.57	10.90	13.53	0.64
+T3	CO2/N2	SLE	57							2.45	2.45	1.23	0.57	1.87	1.74	2.68	6.22
+T3	CO2/H2S	SLE	60	b						0.60	1.56	0.51	0.52	0.54	5.28	3.10	1.99
+T3	CO2/H2S	SLE	61							1.95	1.98	1.26	1.32	1.40	18.38	6.65	6.79
+T3	CO2/H2S	SLE	62							0.42	0.41	1.73	1.76	1.81	8.39	4.36	4.64
+T3	CO2/SO2	SLE	62							3.61	3.65	1.36	1.22	6.22	8.53	27.37	6.25
+T3	CO2/CH4/C2H6	SVLE	45							0.32	0.32	0.40	0.37	0.40	0.89	1.55	1.65
+T3	CO2/CH4/C3H8	SVLE	45							1.04	3.25	1.59	1.49	1.50	2.74	8.75	1.17
+T3	CO2/CH4/C4H10	SVLE	45							0.35	0.35	0.78	0.75	0.78	1.19	1.68	1.70
+T3	CO2/C2H6/C3H8	SVLE	45							0.83	1.10	1.05	1.04	1.03	1.57	5.11	1.20
+T3	CO2/CH4/C2H6/C3H8	SVLE	45							0.48	0.48	0.77	0.50	0.51	0.65	3.16	0.69
+T3	CO2/CH4/N2	SVLE	63							2.80	2.80	3.13	2.85	3.23	5.26	6.15	2.46
+T3	CO2/CH4/N2/O2	SVLE	63							3.92	3.76	5.89	3.94	4.24	6.33	7.34	3.39
+T3	CO2/CH4/C2H6	SVLE	64							0.68	0.67	0.60	0.55	0.65	2.01	2.90	2.06
+T3	MAPD	SVE								0.65	0.76	0.64	0.60	0.65	0.68	1.13	0.67
+T3	MAPD	SLE								2.63	1.95	1.61	1.35	1.96	6.30	6.81	2.44
+T3	MAPD	SVLE								1.30	1.59	1.78	1.44	1.54	2.58	4.58	1.79
+T3	MAPD	all								1.59	1.42	1.28	1.09	1.38	3.37	4.18	1.63

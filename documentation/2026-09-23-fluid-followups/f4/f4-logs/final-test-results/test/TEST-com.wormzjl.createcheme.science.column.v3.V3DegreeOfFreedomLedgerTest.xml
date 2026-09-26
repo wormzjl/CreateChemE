@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:06.607Z" hostname="WORMZ-PC" time="0.012">
+  <properties/>
+  <testcase name="duplicateAndMissingControlsAreIndependentContractFailures()" classname="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" time="0.001"/>
+  <testcase name="zeroRefluxTwoPhaseCondenserKeepsExternalLiquidAndTheFullEquationMap()" classname="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" time="0.0"/>
+  <testcase name="vaporOnlyCondenserRemovesOnlyTheMatchingCondenserLiquidAndVleFamilies()" classname="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" time="0.001"/>
+  <testcase name="vaporOnlyCandidateRejectsPositiveRefluxInsteadOfCreatingDummyLiquidVariables()" classname="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" time="0.002"/>
+  <testcase name="handAuditedTwoComponentFourTrayTwoPhaseContractIsSquareAndFullRank()" classname="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" time="0.001"/>
+  <testcase name="liquidOnlyCondenserRemovesOnlyCondenserVaporAndVleFamilies()" classname="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" time="0.0"/>
+  <testcase name="everySmallSupportedTopologyHasAnIndependentFullStructuralMatching()" classname="com.wormzjl.createcheme.science.column.v3.V3DegreeOfFreedomLedgerTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

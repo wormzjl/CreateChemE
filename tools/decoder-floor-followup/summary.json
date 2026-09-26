@@ -1,0 +1,1119 @@
+{
+  "analysis": {
+    "path": "build/neural-decoder-floor/v1/validation-analysis.json",
+    "sha256": "b578ce1b60f408b1889d497f0f00fb32d7e4702977240437c812837fa9bd1c27"
+  },
+  "anyVariantPasses": false,
+  "automaticPromotion": false,
+  "baseCommit": "fe7793df969ba92e005c7a7c21ebb323ab8d281c",
+  "blocks": 2,
+  "cases": 405,
+  "classicalStableAcrossEveryRun": true,
+  "classicalStrictUnionCases": 110,
+  "contrasts": {
+    "F0-lift-p002-k10": {
+      "neural": {
+        "allCaseMeanMillis": {
+          "candidate": 832.4619062962962,
+          "reference": 844.8802677777778
+        },
+        "blocks": {
+          "1": {
+            "candidateStrict": 134,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 134
+          },
+          "2": {
+            "candidateStrict": 134,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 134
+          }
+        },
+        "reproducedAcrossBlocks": true,
+        "stableBothSuccessCases": 134,
+        "stableCommonSuccessCosts": {
+          "candidate": {
+            "meanMillis": 212.0650828358209,
+            "medianMillis": 120.32595
+          },
+          "reference": {
+            "meanMillis": 217.0598246268657,
+            "medianMillis": 121.88745
+          }
+        },
+        "stablePairedMillis": {
+          "meanMillis": -4.994741791044778,
+          "medianMillis": -3.3192999999999984
+        }
+      },
+      "neuralFirst": {
+        "allCaseMeanMillis": {
+          "candidate": 3952.650327654321,
+          "reference": 4023.8947619753085
+        },
+        "blocks": {
+          "1": {
+            "candidateStrict": 168,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 168
+          },
+          "2": {
+            "candidateStrict": 168,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 168
+          }
+        },
+        "reproducedAcrossBlocks": true,
+        "stableBothSuccessCases": 168,
+        "stableCommonSuccessCosts": {
+          "candidate": {
+            "meanMillis": 809.3853803571428,
+            "medianMillis": 173.60335
+          },
+          "reference": {
+            "meanMillis": 829.7030056547619,
+            "medianMillis": 183.171
+          }
+        },
+        "stablePairedMillis": {
+          "meanMillis": -20.31762529761905,
+          "medianMillis": -2.7761500000000012
+        }
+      }
+    },
+    "F0-lift-p050-k1": {
+      "neural": {
+        "allCaseMeanMillis": {
+          "candidate": 831.6239451851851,
+          "reference": 844.8802677777778
+        },
+        "blocks": {
+          "1": {
+            "candidateStrict": 134,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 134
+          },
+          "2": {
+            "candidateStrict": 134,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 134
+          }
+        },
+        "reproducedAcrossBlocks": true,
+        "stableBothSuccessCases": 134,
+        "stableCommonSuccessCosts": {
+          "candidate": {
+            "meanMillis": 211.92786268656715,
+            "medianMillis": 121.55355
+          },
+          "reference": {
+            "meanMillis": 217.0598246268657,
+            "medianMillis": 121.88745
+          }
+        },
+        "stablePairedMillis": {
+          "meanMillis": -5.13196194029851,
+          "medianMillis": -2.451099999999993
+        }
+      },
+      "neuralFirst": {
+        "allCaseMeanMillis": {
+          "candidate": 3955.753969876543,
+          "reference": 4023.8947619753085
+        },
+        "blocks": {
+          "1": {
+            "candidateStrict": 168,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 168
+          },
+          "2": {
+            "candidateStrict": 168,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 168
+          }
+        },
+        "reproducedAcrossBlocks": true,
+        "stableBothSuccessCases": 168,
+        "stableCommonSuccessCosts": {
+          "candidate": {
+            "meanMillis": 814.2433232142857,
+            "medianMillis": 178.79194999999999
+          },
+          "reference": {
+            "meanMillis": 829.7030056547619,
+            "medianMillis": 183.171
+          }
+        },
+        "stablePairedMillis": {
+          "meanMillis": -15.459682440476183,
+          "medianMillis": -2.4924500000000016
+        }
+      }
+    },
+    "F0-lift-p050-k10": {
+      "neural": {
+        "allCaseMeanMillis": {
+          "candidate": 838.4186097530863,
+          "reference": 844.8802677777778
+        },
+        "blocks": {
+          "1": {
+            "candidateStrict": 134,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 134
+          },
+          "2": {
+            "candidateStrict": 134,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 134
+          }
+        },
+        "reproducedAcrossBlocks": true,
+        "stableBothSuccessCases": 134,
+        "stableCommonSuccessCosts": {
+          "candidate": {
+            "meanMillis": 215.1486291044776,
+            "medianMillis": 124.1515
+          },
+          "reference": {
+            "meanMillis": 217.0598246268657,
+            "medianMillis": 121.88745
+          }
+        },
+        "stablePairedMillis": {
+          "meanMillis": -1.9111955223880612,
+          "medianMillis": -1.3734500000000018
+        }
+      },
+      "neuralFirst": {
+        "allCaseMeanMillis": {
+          "candidate": 3974.937711481481,
+          "reference": 4023.8947619753085
+        },
+        "blocks": {
+          "1": {
+            "candidateStrict": 168,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 168
+          },
+          "2": {
+            "candidateStrict": 168,
+            "gained": 0,
+            "gainedIds": [],
+            "lost": 0,
+            "lostIds": [],
+            "referenceStrict": 168
+          }
+        },
+        "reproducedAcrossBlocks": true,
+        "stableBothSuccessCases": 168,
+        "stableCommonSuccessCosts": {
+          "candidate": {
+            "meanMillis": 813.9839529761905,
+            "medianMillis": 172.55525
+          },
+          "reference": {
+            "meanMillis": 829.7030056547619,
+            "medianMillis": 183.171
+          }
+        },
+        "stablePairedMillis": {
+          "meanMillis": -15.719052678571437,
+          "medianMillis": -2.1582500000000024
+        }
+      }
+    }
+  },
+  "decodeLiftEffect": {
+    "F0-lift-p002-k10": {
+      "changedCaseIds": [
+        "gd-s03-w0-p0-d2-r00",
+        "gd-s03-w0-p2-d3-r01",
+        "gd-s03-w1-p1-d3-r00",
+        "gd-s03-w1-p2-d3-r00",
+        "gd-s10-w0-p0-d0-r00",
+        "gd-s10-w1-p0-d2-r00",
+        "gd-s10-w1-p0-d2-r01",
+        "gd-s10-w1-p2-d0-r00",
+        "gd-s10-w1-p2-d0-r01",
+        "gd-s10-w1-p2-d3-r00",
+        "gd-s10-w1-p4-d3-r00",
+        "gd-s17-w1-p3-d1-r00",
+        "gd-s17-w1-p4-d3-r00",
+        "gd-s24-w0-p1-d0-r00",
+        "gd-s24-w0-p2-d0-r00",
+        "gd-s24-w0-p4-d0-r00",
+        "gd-s24-w0-p4-d0-r01",
+        "gd-s24-w1-p1-d1-r00",
+        "gd-s24-w1-p1-d3-r01",
+        "gd-s24-w1-p2-d0-r00",
+        "gd-s24-w1-p3-d1-r00",
+        "gd-s24-w1-p3-d2-r00",
+        "gd-s24-w1-p4-d3-r00",
+        "gd-s31-w0-p1-d1-r00",
+        "gd-s31-w0-p3-d3-r00",
+        "gd-s31-w0-p4-d0-r00",
+        "gd-s31-w1-p1-d2-r00",
+        "gd-s31-w1-p2-d3-r00",
+        "gd-s31-w1-p4-d3-r01",
+        "gd-s38-w0-p4-d1-r00",
+        "gd-s38-w1-p3-d3-r00",
+        "gd-s38-w1-p4-d0-r00",
+        "gd-s38-w1-p4-d2-r00",
+        "gd-s45-w0-p0-d2-r00",
+        "gd-s45-w0-p3-d0-r00",
+        "gd-s45-w0-p4-d2-r00",
+        "gd-s45-w1-p0-d0-r00",
+        "gd-s45-w1-p2-d0-r00",
+        "gd-s45-w1-p4-d0-r01",
+        "gd-s45-w1-p4-d2-r00",
+        "gd-s52-w1-p0-d2-r00",
+        "gd-s52-w1-p3-d3-r00",
+        "gd-s52-w1-p4-d0-r00",
+        "gd-s52-w1-p4-d3-r00",
+        "gd-s59-w0-p3-d0-r00",
+        "gd-s59-w1-p1-d0-r01"
+      ],
+      "changedCases": 46,
+      "liftedEntries": 82
+    },
+    "F0-lift-p050-k1": {
+      "changedCaseIds": [
+        "gd-s03-w0-p2-d3-r01",
+        "gd-s03-w1-p1-d3-r00",
+        "gd-s24-w1-p1-d3-r01",
+        "gd-s24-w1-p3-d1-r00",
+        "gd-s31-w0-p3-d3-r00",
+        "gd-s45-w0-p3-d0-r00",
+        "gd-s52-w1-p3-d3-r00",
+        "gd-s52-w1-p4-d3-r00"
+      ],
+      "changedCases": 8,
+      "liftedEntries": 13
+    },
+    "F0-lift-p050-k10": {
+      "changedCaseIds": [
+        "gd-s03-w0-p2-d3-r01",
+        "gd-s03-w1-p1-d3-r00",
+        "gd-s24-w1-p1-d3-r01",
+        "gd-s24-w1-p3-d1-r00",
+        "gd-s31-w0-p3-d3-r00",
+        "gd-s45-w0-p3-d0-r00",
+        "gd-s52-w1-p3-d3-r00",
+        "gd-s52-w1-p4-d3-r00"
+      ],
+      "changedCases": 8,
+      "liftedEntries": 13
+    }
+  },
+  "measuredRequests": 9720,
+  "model": "F-20260911-s4160",
+  "parity": {
+    "decodeSeedsReproduceArchive": true,
+    "perBlock": {
+      "1": {
+        "current": {
+          "archiveOnlyIds": [],
+          "archived": 110,
+          "identical": true,
+          "study": 110,
+          "studyOnlyIds": []
+        },
+        "neural": {
+          "archiveOnlyIds": [],
+          "archived": 134,
+          "identical": true,
+          "study": 134,
+          "studyOnlyIds": []
+        },
+        "neuralFirst": {
+          "archiveOnlyIds": [],
+          "archived": 168,
+          "identical": true,
+          "study": 168,
+          "studyOnlyIds": []
+        }
+      },
+      "2": {
+        "current": {
+          "archiveOnlyIds": [],
+          "archived": 110,
+          "identical": true,
+          "study": 110,
+          "studyOnlyIds": []
+        },
+        "neural": {
+          "archiveOnlyIds": [],
+          "archived": 134,
+          "identical": true,
+          "study": 134,
+          "studyOnlyIds": []
+        },
+        "neuralFirst": {
+          "archiveOnlyIds": [],
+          "archived": 168,
+          "identical": true,
+          "study": 168,
+          "studyOnlyIds": []
+        }
+      }
+    },
+    "strictIdentitySetsReproduceArchive": true
+  },
+  "pipelines": {
+    "F0-baseline": {
+      "aboveFloorOmissions": 819,
+      "allCaseFirstMeanMillis": [
+        4017.401164197531,
+        4030.388359753086
+      ],
+      "allCaseOnlyMeanMillis": [
+        844.5783800000002,
+        845.1821555555557
+      ],
+      "classical": [
+        110,
+        110
+      ],
+      "decoder": {
+        "rule": "prune"
+      },
+      "elapsedSeconds": [
+        394.9863302,
+        394.3507265
+      ],
+      "first": [
+        168,
+        168
+      ],
+      "firstAdvisory": [
+        9,
+        9
+      ],
+      "firstFailed": [
+        228,
+        228
+      ],
+      "only": [
+        134,
+        134
+      ]
+    },
+    "F0-lift-p002-k10": {
+      "aboveFloorOmissions": 819,
+      "allCaseFirstMeanMillis": [
+        3919.8262138271602,
+        3985.474441481482
+      ],
+      "allCaseOnlyMeanMillis": [
+        824.5184212345679,
+        840.4053913580245
+      ],
+      "classical": [
+        110,
+        110
+      ],
+      "decoder": {
+        "liftFactor": 10.0,
+        "liftPresenceProbability": 0.02,
+        "rule": "presence-floor-lift"
+      },
+      "elapsedSeconds": [
+        384.4632751,
+        391.7322525
+      ],
+      "first": [
+        168,
+        168
+      ],
+      "firstAdvisory": [
+        9,
+        9
+      ],
+      "firstFailed": [
+        228,
+        228
+      ],
+      "only": [
+        134,
+        134
+      ]
+    },
+    "F0-lift-p050-k1": {
+      "aboveFloorOmissions": 819,
+      "allCaseFirstMeanMillis": [
+        3979.9194540740737,
+        3931.588485679012
+      ],
+      "allCaseOnlyMeanMillis": [
+        833.6012227160493,
+        829.6466676543209
+      ],
+      "classical": [
+        110,
+        110
+      ],
+      "decoder": {
+        "liftFactor": 1.0,
+        "liftPresenceProbability": 0.5,
+        "rule": "presence-floor-lift"
+      },
+      "elapsedSeconds": [
+        390.9493578,
+        386.0995816
+      ],
+      "first": [
+        168,
+        168
+      ],
+      "firstAdvisory": [
+        9,
+        9
+      ],
+      "firstFailed": [
+        228,
+        228
+      ],
+      "only": [
+        134,
+        134
+      ]
+    },
+    "F0-lift-p050-k10": {
+      "aboveFloorOmissions": 819,
+      "allCaseFirstMeanMillis": [
+        3951.7566901234572,
+        3998.118732839506
+      ],
+      "allCaseOnlyMeanMillis": [
+        834.8043819753085,
+        842.0328375308642
+      ],
+      "classical": [
+        110,
+        110
+      ],
+      "decoder": {
+        "liftFactor": 10.0,
+        "liftPresenceProbability": 0.5,
+        "rule": "presence-floor-lift"
+      },
+      "elapsedSeconds": [
+        388.3298152,
+        392.4829295
+      ],
+      "first": [
+        168,
+        168
+      ],
+      "firstAdvisory": [
+        9,
+        9
+      ],
+      "firstFailed": [
+        228,
+        228
+      ],
+      "only": [
+        134,
+        134
+      ]
+    }
+  },
+  "productionDefaultChanged": false,
+  "qualification": {
+    "F0-lift-p002-k10": {
+      "candidate": "F0-lift-p002-k10",
+      "classicalMissedIds": {
+        "1": [],
+        "2": []
+      },
+      "improvesStrictFirstBothBlocks": false,
+      "noPooledMeanLatencyRegression": true,
+      "passed": false,
+      "pooledFirstMeanMillis": 3952.650327654321,
+      "preservesClassicalUnionBothBlocks": true,
+      "reference": "F0-baseline",
+      "referencePooledFirstMeanMillis": 4023.8947619753085,
+      "referenceStrictFirstCounts": [
+        168,
+        168
+      ],
+      "strictFirstCounts": [
+        168,
+        168
+      ]
+    },
+    "F0-lift-p050-k1": {
+      "candidate": "F0-lift-p050-k1",
+      "classicalMissedIds": {
+        "1": [],
+        "2": []
+      },
+      "improvesStrictFirstBothBlocks": false,
+      "noPooledMeanLatencyRegression": true,
+      "passed": false,
+      "pooledFirstMeanMillis": 3955.753969876543,
+      "preservesClassicalUnionBothBlocks": true,
+      "reference": "F0-baseline",
+      "referencePooledFirstMeanMillis": 4023.8947619753085,
+      "referenceStrictFirstCounts": [
+        168,
+        168
+      ],
+      "strictFirstCounts": [
+        168,
+        168
+      ]
+    },
+    "F0-lift-p050-k10": {
+      "candidate": "F0-lift-p050-k10",
+      "classicalMissedIds": {
+        "1": [],
+        "2": []
+      },
+      "improvesStrictFirstBothBlocks": false,
+      "noPooledMeanLatencyRegression": true,
+      "passed": false,
+      "pooledFirstMeanMillis": 3974.937711481481,
+      "preservesClassicalUnionBothBlocks": true,
+      "reference": "F0-baseline",
+      "referencePooledFirstMeanMillis": 4023.8947619753085,
+      "referenceStrictFirstCounts": [
+        168,
+        168
+      ],
+      "strictFirstCounts": [
+        168,
+        168
+      ]
+    }
+  },
+  "revision": "decoder-floor-summary-v1",
+  "strategies": [
+    "current",
+    "neural",
+    "neuralFirst"
+  ],
+  "studyPlan": {
+    "path": "build/neural-decoder-floor/v1/study-plan.json",
+    "sha256": "a1fe1a51ce87c15f0347ce62a898cd77245c37d4c21bb5a9672336ac15a4956f"
+  },
+  "transitions": {
+    "F0-lift-p002-k10": {
+      "classicalOnlyLossesRecoveredByFirst": {
+        "1": 0,
+        "2": 0
+      },
+      "classicalOnlyLossesRecoveredByOnly": {
+        "1": 0,
+        "2": 0
+      },
+      "classicalOnlyLossesRecoveredByOnlyIds": {
+        "1": [],
+        "2": []
+      },
+      "iterationCappedOnlyEscapedCap": {
+        "1": 3,
+        "2": 2
+      },
+      "iterationCappedOnlyEscapedIds": {
+        "1": [
+          "gd-s38-w0-p3-d0-r00",
+          "gd-s38-w1-p0-d1-r00",
+          "gd-s59-w0-p0-d2-r00"
+        ],
+        "2": [
+          "gd-s24-w0-p2-d0-r00",
+          "gd-s59-w1-p4-d0-r00"
+        ]
+      },
+      "iterationCappedOnlyNowStrict": {
+        "1": 0,
+        "2": 0
+      },
+      "iterationCappedOnlyNowStrictIds": {
+        "1": [],
+        "2": []
+      }
+    },
+    "F0-lift-p050-k1": {
+      "classicalOnlyLossesRecoveredByFirst": {
+        "1": 0,
+        "2": 0
+      },
+      "classicalOnlyLossesRecoveredByOnly": {
+        "1": 0,
+        "2": 0
+      },
+      "classicalOnlyLossesRecoveredByOnlyIds": {
+        "1": [],
+        "2": []
+      },
+      "iterationCappedOnlyEscapedCap": {
+        "1": 3,
+        "2": 1
+      },
+      "iterationCappedOnlyEscapedIds": {
+        "1": [
+          "gd-s31-w0-p0-d2-r00",
+          "gd-s31-w1-p4-d3-r01",
+          "gd-s59-w0-p0-d2-r00"
+        ],
+        "2": [
+          "gd-s59-w1-p4-d0-r00"
+        ]
+      },
+      "iterationCappedOnlyNowStrict": {
+        "1": 0,
+        "2": 0
+      },
+      "iterationCappedOnlyNowStrictIds": {
+        "1": [],
+        "2": []
+      }
+    },
+    "F0-lift-p050-k10": {
+      "classicalOnlyLossesRecoveredByFirst": {
+        "1": 0,
+        "2": 0
+      },
+      "classicalOnlyLossesRecoveredByOnly": {
+        "1": 0,
+        "2": 0
+      },
+      "classicalOnlyLossesRecoveredByOnlyIds": {
+        "1": [],
+        "2": []
+      },
+      "iterationCappedOnlyEscapedCap": {
+        "1": 2,
+        "2": 2
+      },
+      "iterationCappedOnlyEscapedIds": {
+        "1": [
+          "gd-s31-w0-p0-d2-r00",
+          "gd-s59-w0-p0-d2-r00"
+        ],
+        "2": [
+          "gd-s38-w0-p3-d0-r00",
+          "gd-s59-w1-p4-d0-r00"
+        ]
+      },
+      "iterationCappedOnlyNowStrict": {
+        "1": 0,
+        "2": 0
+      },
+      "iterationCappedOnlyNowStrictIds": {
+        "1": [],
+        "2": []
+      }
+    },
+    "baseline": {
+      "classicalOnlyFirstLossCount": {
+        "1": 0,
+        "2": 0
+      },
+      "classicalOnlyOnlyLossCount": {
+        "1": 34,
+        "2": 34
+      },
+      "classicalOnlyOnlyLossIds": {
+        "1": [
+          "gd-s03-w0-p1-d1-r01",
+          "gd-s03-w0-p1-d3-r00",
+          "gd-s03-w1-p0-d2-r00",
+          "gd-s03-w1-p1-d1-r00",
+          "gd-s17-w0-p0-d0-r00",
+          "gd-s17-w0-p0-d2-r00",
+          "gd-s17-w0-p1-d1-r00",
+          "gd-s17-w0-p2-d0-r00",
+          "gd-s17-w0-p3-d0-r00",
+          "gd-s17-w1-p1-d0-r00",
+          "gd-s17-w1-p4-d1-r00",
+          "gd-s24-w0-p0-d0-r00",
+          "gd-s24-w0-p0-d2-r00",
+          "gd-s31-w0-p0-d0-r00",
+          "gd-s31-w0-p2-d0-r00",
+          "gd-s31-w0-p2-d1-r00",
+          "gd-s38-w1-p0-d0-r01",
+          "gd-s45-w0-p1-d1-r00",
+          "gd-s45-w0-p3-d1-r00",
+          "gd-s45-w1-p0-d0-r00",
+          "gd-s45-w1-p0-d0-r01",
+          "gd-s45-w1-p0-d1-r00",
+          "gd-s52-w0-p0-d0-r00",
+          "gd-s52-w0-p0-d1-r00",
+          "gd-s52-w0-p1-d0-r01",
+          "gd-s52-w1-p0-d0-r00",
+          "gd-s52-w1-p2-d0-r00",
+          "gd-s52-w1-p3-d2-r00",
+          "gd-s52-w1-p4-d1-r00",
+          "gd-s59-w0-p0-d0-r00",
+          "gd-s59-w1-p1-d0-r01",
+          "gd-s59-w1-p2-d0-r00",
+          "gd-s59-w1-p2-d0-r01",
+          "gd-s59-w1-p4-d1-r00"
+        ],
+        "2": [
+          "gd-s03-w0-p1-d1-r01",
+          "gd-s03-w0-p1-d3-r00",
+          "gd-s03-w1-p0-d2-r00",
+          "gd-s03-w1-p1-d1-r00",
+          "gd-s17-w0-p0-d0-r00",
+          "gd-s17-w0-p0-d2-r00",
+          "gd-s17-w0-p1-d1-r00",
+          "gd-s17-w0-p2-d0-r00",
+          "gd-s17-w0-p3-d0-r00",
+          "gd-s17-w1-p1-d0-r00",
+          "gd-s17-w1-p4-d1-r00",
+          "gd-s24-w0-p0-d0-r00",
+          "gd-s24-w0-p0-d2-r00",
+          "gd-s31-w0-p0-d0-r00",
+          "gd-s31-w0-p2-d0-r00",
+          "gd-s31-w0-p2-d1-r00",
+          "gd-s38-w1-p0-d0-r01",
+          "gd-s45-w0-p1-d1-r00",
+          "gd-s45-w0-p3-d1-r00",
+          "gd-s45-w1-p0-d0-r00",
+          "gd-s45-w1-p0-d0-r01",
+          "gd-s45-w1-p0-d1-r00",
+          "gd-s52-w0-p0-d0-r00",
+          "gd-s52-w0-p0-d1-r00",
+          "gd-s52-w0-p1-d0-r01",
+          "gd-s52-w1-p0-d0-r00",
+          "gd-s52-w1-p2-d0-r00",
+          "gd-s52-w1-p3-d2-r00",
+          "gd-s52-w1-p4-d1-r00",
+          "gd-s59-w0-p0-d0-r00",
+          "gd-s59-w1-p1-d0-r01",
+          "gd-s59-w1-p2-d0-r00",
+          "gd-s59-w1-p2-d0-r01",
+          "gd-s59-w1-p4-d1-r00"
+        ]
+      },
+      "iterationCappedOnlyFailureCount": {
+        "1": 138,
+        "2": 137
+      },
+      "iterationCappedOnlyFailureIds": {
+        "1": [
+          "gd-s03-w0-p0-d3-r00",
+          "gd-s03-w0-p1-d1-r01",
+          "gd-s03-w0-p1-d3-r00",
+          "gd-s03-w0-p2-d0-r00",
+          "gd-s03-w0-p2-d1-r00",
+          "gd-s03-w0-p2-d3-r01",
+          "gd-s03-w0-p4-d1-r00",
+          "gd-s03-w0-p4-d3-r00",
+          "gd-s03-w1-p0-d2-r00",
+          "gd-s03-w1-p1-d1-r00",
+          "gd-s03-w1-p4-d0-r00",
+          "gd-s03-w1-p4-d2-r00",
+          "gd-s10-w0-p0-d2-r00",
+          "gd-s10-w0-p1-d0-r00",
+          "gd-s10-w0-p2-d3-r00",
+          "gd-s10-w0-p3-d3-r00",
+          "gd-s10-w0-p4-d0-r00",
+          "gd-s10-w0-p4-d3-r00",
+          "gd-s10-w1-p1-d1-r01",
+          "gd-s10-w1-p1-d2-r00",
+          "gd-s10-w1-p2-d1-r00",
+          "gd-s10-w1-p2-d3-r00",
+          "gd-s10-w1-p3-d1-r00",
+          "gd-s10-w1-p4-d1-r01",
+          "gd-s17-w0-p0-d0-r00",
+          "gd-s17-w0-p1-d1-r00",
+          "gd-s17-w0-p1-d2-r00",
+          "gd-s17-w0-p2-d0-r00",
+          "gd-s17-w0-p2-d2-r00",
+          "gd-s17-w0-p3-d0-r00",
+          "gd-s17-w0-p3-d1-r00",
+          "gd-s17-w0-p4-d0-r00",
+          "gd-s17-w0-p4-d2-r00",
+          "gd-s17-w0-p4-d2-r01",
+          "gd-s17-w1-p0-d0-r00",
+          "gd-s17-w1-p0-d3-r00",
+          "gd-s17-w1-p1-d0-r00",
+          "gd-s17-w1-p1-d2-r00",
+          "gd-s17-w1-p2-d0-r00",
+          "gd-s17-w1-p2-d3-r00",
+          "gd-s17-w1-p3-d0-r00",
+          "gd-s17-w1-p3-d1-r00",
+          "gd-s17-w1-p3-d3-r00",
+          "gd-s17-w1-p4-d1-r00",
+          "gd-s17-w1-p4-d2-r00",
+          "gd-s17-w1-p4-d3-r00",
+          "gd-s24-w0-p0-d0-r00",
+          "gd-s24-w0-p0-d2-r00",
+          "gd-s24-w0-p0-d3-r00",
+          "gd-s24-w0-p1-d2-r00",
+          "gd-s24-w0-p1-d3-r00",
+          "gd-s24-w0-p2-d0-r00",
+          "gd-s24-w0-p2-d1-r00",
+          "gd-s24-w0-p4-d0-r01",
+          "gd-s24-w0-p4-d2-r00",
+          "gd-s24-w0-p4-d3-r00",
+          "gd-s24-w1-p1-d1-r00",
+          "gd-s24-w1-p1-d2-r00",
+          "gd-s24-w1-p1-d3-r01",
+          "gd-s24-w1-p2-d0-r00",
+          "gd-s24-w1-p2-d2-r00",
+          "gd-s24-w1-p3-d0-r00",
+          "gd-s24-w1-p3-d1-r00",
+          "gd-s24-w1-p3-d2-r00",
+          "gd-s24-w1-p3-d3-r00",
+          "gd-s24-w1-p4-d0-r00",
+          "gd-s24-w1-p4-d2-r00",
+          "gd-s24-w1-p4-d3-r00",
+          "gd-s31-w0-p0-d2-r00",
+          "gd-s31-w0-p1-d1-r00",
+          "gd-s31-w0-p1-d2-r00",
+          "gd-s31-w0-p1-d3-r00",
+          "gd-s31-w0-p2-d0-r00",
+          "gd-s31-w0-p2-d1-r00",
+          "gd-s31-w0-p2-d2-r00",
+          "gd-s31-w0-p2-d3-r00",
+          "gd-s31-w0-p3-d2-r00",
+          "gd-s31-w0-p4-d1-r00",
+          "gd-s31-w0-p4-d2-r00",
+          "gd-s31-w1-p0-d1-r00",
+          "gd-s31-w1-p1-d1-r00",
+          "gd-s31-w1-p1-d3-r00",
+          "gd-s31-w1-p3-d2-r00",
+          "gd-s31-w1-p4-d0-r00",
+          "gd-s31-w1-p4-d3-r01",
+          "gd-s38-w0-p0-d3-r00",
+          "gd-s38-w0-p1-d2-r00",
+          "gd-s38-w0-p2-d0-r00",
+          "gd-s38-w0-p3-d0-r00",
+          "gd-s38-w1-p0-d1-r00",
+          "gd-s38-w1-p1-d0-r00",
+          "gd-s38-w1-p1-d1-r00",
+          "gd-s38-w1-p2-d1-r00",
+          "gd-s38-w1-p3-d0-r00",
+          "gd-s38-w1-p4-d1-r00",
+          "gd-s45-w0-p0-d2-r00",
+          "gd-s45-w0-p1-d1-r00",
+          "gd-s45-w0-p2-d3-r00",
+          "gd-s45-w0-p3-d0-r00",
+          "gd-s45-w0-p4-d0-r00",
+          "gd-s45-w0-p4-d1-r00",
+          "gd-s45-w0-p4-d3-r00",
+          "gd-s45-w1-p0-d0-r00",
+          "gd-s45-w1-p0-d1-r00",
+          "gd-s45-w1-p3-d2-r00",
+          "gd-s45-w1-p3-d3-r00",
+          "gd-s45-w1-p4-d0-r00",
+          "gd-s45-w1-p4-d2-r01",
+          "gd-s52-w0-p0-d0-r00",
+          "gd-s52-w0-p0-d3-r00",
+          "gd-s52-w0-p1-d0-r01",
+          "gd-s52-w0-p1-d1-r00",
+          "gd-s52-w0-p1-d3-r00",
+          "gd-s52-w0-p3-d0-r00",
+          "gd-s52-w0-p4-d2-r00",
+          "gd-s52-w1-p0-d3-r00",
+          "gd-s52-w1-p2-d0-r00",
+          "gd-s52-w1-p3-d0-r00",
+          "gd-s52-w1-p3-d1-r00",
+          "gd-s52-w1-p3-d2-r00",
+          "gd-s52-w1-p4-d0-r00",
+          "gd-s52-w1-p4-d0-r01",
+          "gd-s52-w1-p4-d1-r00",
+          "gd-s52-w1-p4-d3-r00",
+          "gd-s59-w0-p0-d1-r00",
+          "gd-s59-w0-p0-d2-r00",
+          "gd-s59-w0-p1-d2-r01",
+          "gd-s59-w0-p3-d0-r00",
+          "gd-s59-w0-p3-d1-r00",
+          "gd-s59-w0-p3-d3-r00",
+          "gd-s59-w1-p0-d1-r00",
+          "gd-s59-w1-p1-d0-r01",
+          "gd-s59-w1-p2-d0-r00",
+          "gd-s59-w1-p2-d0-r01",
+          "gd-s59-w1-p3-d1-r00",
+          "gd-s59-w1-p3-d2-r00",
+          "gd-s59-w1-p3-d2-r01",
+          "gd-s59-w1-p4-d1-r00"
+        ],
+        "2": [
+          "gd-s03-w0-p0-d3-r00",
+          "gd-s03-w0-p1-d1-r01",
+          "gd-s03-w0-p1-d3-r00",
+          "gd-s03-w0-p2-d0-r00",
+          "gd-s03-w0-p2-d1-r00",
+          "gd-s03-w0-p2-d3-r01",
+          "gd-s03-w0-p4-d1-r00",
+          "gd-s03-w0-p4-d3-r00",
+          "gd-s03-w1-p0-d2-r00",
+          "gd-s03-w1-p1-d1-r00",
+          "gd-s03-w1-p4-d0-r00",
+          "gd-s03-w1-p4-d2-r00",
+          "gd-s10-w0-p0-d2-r00",
+          "gd-s10-w0-p1-d0-r00",
+          "gd-s10-w0-p2-d3-r00",
+          "gd-s10-w0-p3-d3-r00",
+          "gd-s10-w0-p4-d0-r00",
+          "gd-s10-w0-p4-d3-r00",
+          "gd-s10-w1-p1-d1-r01",
+          "gd-s10-w1-p1-d2-r00",
+          "gd-s10-w1-p2-d1-r00",
+          "gd-s10-w1-p2-d3-r00",
+          "gd-s10-w1-p3-d1-r00",
+          "gd-s10-w1-p4-d1-r01",
+          "gd-s17-w0-p0-d0-r00",
+          "gd-s17-w0-p1-d1-r00",
+          "gd-s17-w0-p1-d2-r00",
+          "gd-s17-w0-p2-d0-r00",
+          "gd-s17-w0-p2-d2-r00",
+          "gd-s17-w0-p3-d0-r00",
+          "gd-s17-w0-p3-d1-r00",
+          "gd-s17-w0-p4-d0-r00",
+          "gd-s17-w0-p4-d2-r00",
+          "gd-s17-w0-p4-d2-r01",
+          "gd-s17-w1-p0-d0-r00",
+          "gd-s17-w1-p0-d3-r00",
+          "gd-s17-w1-p1-d0-r00",
+          "gd-s17-w1-p1-d2-r00",
+          "gd-s17-w1-p2-d0-r00",
+          "gd-s17-w1-p2-d3-r00",
+          "gd-s17-w1-p3-d0-r00",
+          "gd-s17-w1-p3-d1-r00",
+          "gd-s17-w1-p3-d3-r00",
+          "gd-s17-w1-p4-d1-r00",
+          "gd-s17-w1-p4-d2-r00",
+          "gd-s17-w1-p4-d3-r00",
+          "gd-s24-w0-p0-d0-r00",
+          "gd-s24-w0-p0-d2-r00",
+          "gd-s24-w0-p0-d3-r00",
+          "gd-s24-w0-p1-d2-r00",
+          "gd-s24-w0-p1-d3-r00",
+          "gd-s24-w0-p2-d0-r00",
+          "gd-s24-w0-p2-d1-r00",
+          "gd-s24-w0-p4-d0-r01",
+          "gd-s24-w0-p4-d2-r00",
+          "gd-s24-w0-p4-d3-r00",
+          "gd-s24-w1-p1-d1-r00",
+          "gd-s24-w1-p1-d2-r00",
+          "gd-s24-w1-p1-d3-r01",
+          "gd-s24-w1-p2-d0-r00",
+          "gd-s24-w1-p2-d2-r00",
+          "gd-s24-w1-p3-d0-r00",
+          "gd-s24-w1-p3-d1-r00",
+          "gd-s24-w1-p3-d2-r00",
+          "gd-s24-w1-p3-d3-r00",
+          "gd-s24-w1-p4-d0-r00",
+          "gd-s24-w1-p4-d2-r00",
+          "gd-s24-w1-p4-d3-r00",
+          "gd-s31-w0-p1-d1-r00",
+          "gd-s31-w0-p1-d2-r00",
+          "gd-s31-w0-p1-d3-r00",
+          "gd-s31-w0-p2-d0-r00",
+          "gd-s31-w0-p2-d1-r00",
+          "gd-s31-w0-p2-d2-r00",
+          "gd-s31-w0-p2-d3-r00",
+          "gd-s31-w0-p3-d2-r00",
+          "gd-s31-w0-p4-d1-r00",
+          "gd-s31-w0-p4-d2-r00",
+          "gd-s31-w1-p0-d1-r00",
+          "gd-s31-w1-p1-d1-r00",
+          "gd-s31-w1-p1-d3-r00",
+          "gd-s31-w1-p3-d2-r00",
+          "gd-s31-w1-p4-d0-r00",
+          "gd-s31-w1-p4-d3-r01",
+          "gd-s38-w0-p0-d3-r00",
+          "gd-s38-w0-p1-d2-r00",
+          "gd-s38-w0-p2-d0-r00",
+          "gd-s38-w0-p3-d0-r00",
+          "gd-s38-w1-p1-d0-r00",
+          "gd-s38-w1-p1-d1-r00",
+          "gd-s38-w1-p2-d1-r00",
+          "gd-s38-w1-p3-d0-r00",
+          "gd-s38-w1-p4-d1-r00",
+          "gd-s45-w0-p0-d2-r00",
+          "gd-s45-w0-p1-d1-r00",
+          "gd-s45-w0-p2-d3-r00",
+          "gd-s45-w0-p3-d0-r00",
+          "gd-s45-w0-p3-d1-r00",
+          "gd-s45-w0-p4-d0-r00",
+          "gd-s45-w0-p4-d1-r00",
+          "gd-s45-w0-p4-d3-r00",
+          "gd-s45-w1-p0-d0-r00",
+          "gd-s45-w1-p3-d2-r00",
+          "gd-s45-w1-p3-d3-r00",
+          "gd-s45-w1-p4-d0-r00",
+          "gd-s45-w1-p4-d2-r01",
+          "gd-s52-w0-p0-d0-r00",
+          "gd-s52-w0-p0-d3-r00",
+          "gd-s52-w0-p1-d0-r01",
+          "gd-s52-w0-p1-d1-r00",
+          "gd-s52-w0-p1-d3-r00",
+          "gd-s52-w0-p3-d0-r00",
+          "gd-s52-w0-p4-d2-r00",
+          "gd-s52-w1-p0-d3-r00",
+          "gd-s52-w1-p2-d0-r00",
+          "gd-s52-w1-p3-d0-r00",
+          "gd-s52-w1-p3-d1-r00",
+          "gd-s52-w1-p3-d2-r00",
+          "gd-s52-w1-p4-d0-r00",
+          "gd-s52-w1-p4-d0-r01",
+          "gd-s52-w1-p4-d1-r00",
+          "gd-s52-w1-p4-d3-r00",
+          "gd-s59-w0-p0-d1-r00",
+          "gd-s59-w0-p1-d2-r01",
+          "gd-s59-w0-p3-d0-r00",
+          "gd-s59-w0-p3-d1-r00",
+          "gd-s59-w0-p3-d3-r00",
+          "gd-s59-w1-p0-d1-r00",
+          "gd-s59-w1-p1-d0-r01",
+          "gd-s59-w1-p2-d0-r00",
+          "gd-s59-w1-p2-d0-r01",
+          "gd-s59-w1-p3-d1-r00",
+          "gd-s59-w1-p3-d2-r00",
+          "gd-s59-w1-p3-d2-r01",
+          "gd-s59-w1-p4-d0-r00",
+          "gd-s59-w1-p4-d1-r00",
+          "gd-s59-w1-p4-d3-r00"
+        ]
+      }
+    }
+  },
+  "warmupRequests": 48,
+  "weightsSha256": "7f909d025e12cbc7e8457b459adfbc63e48f52fb9e98ce45b91e64e84ddd1962",
+  "workers": 10
+}

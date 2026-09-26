@@ -1,0 +1,55 @@
+package com.wormzjl.createcheme.runtime.fluid;
+
+import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+import com.wormzjl.createcheme.science.fluid.network.*;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidMaterialCatalog;
+import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
+import com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind;
+import com.wormzjl.createcheme.science.material.MaterialCatalog;
+import com.wormzjl.createcheme.science.material.MaterialRuntime;
+import org.junit.jupiter.api.Test;
+import java.util.*;
+
+/** Throwaway probe: how fast do the benchmark ladders become stationary to 1e-9? Not committed. */
+class ScratchStationarityProbeTest {
+    @Test void probe() {
+        var catalog=MaterialCatalog.bundled();
+        var model=FluidThermodynamics.forNetwork(catalog,FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
+        var composition=Arrays.copyOf(MaterialRuntime.with(catalog,FluidPresetCatalog.NETWORK_PACKAGE,()->V3PengRobinsonThermo.fromRegisteredPackage(FluidPresetCatalog.NETWORK_PACKAGE).crudeFeed("createcheme:tia_juana_light_methane").moleFractions()),FluidMaterialCatalog.conservedCount());
+        composition[FluidMaterialCatalog.nitrogenIndex()]=.1;composition[FluidMaterialCatalog.waterIndex()]=.2;
+        for(boolean through:new boolean[]{false,true})run(model,composition,through);
+    }
+    private void run(FluidThermodynamics model,double[] composition,boolean through) {
+        var devices=new ArrayList<PhysicalFluidTopology.Device>();var stocks=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();long[] next={1};var random=new Random(2026091603L);
+        class B {
+            void add(int x,int z,Kind kind,double pressure) {
+                long id=next[0]++;var device=new PhysicalFluidTopology.Device(id,new PhysicalFluidTopology.Position("minecraft:overworld",x,80,z),kind,PhysicalFluidTopology.Direction.EAST,new PipeResistance.Geometry(1,.05,.000045,0),new FlowControl.Passive());devices.add(device);
+                if(kind==Kind.PIPE)return;
+                if(kind==Kind.RESERVOIR){var amounts=composition.clone();var unit=model.flashTP(350,pressure,amounts,()->{});for(int c=0;c<model.componentCount();c++)amounts[c]=amounts[c]/unit.volume();var state=model.flashTP(350,pressure,amounts,()->{});stocks.put(id,new PassiveNetwork.Reservoir(id,80,state,PassiveNetwork.NodeKind.RESERVOIR,new PassiveNetwork.Inventory(1,amounts,state.internalEnergy())));}
+                else stocks.put(id,new FluidDeviceSpec(1,350,pressure,composition).initialize(device,model,()->{}));
+            }
+        }
+        var b=new B();int count=20,columns=count/2;
+        if(through){b.add(-8,0,Kind.GENERATOR,150100);for(int x=-7;x<0;x++)b.add(x,0,Kind.PIPE,150090);}
+        for(int c=0;c<columns;c++){double p=150100-100*(c+.5)/columns;for(int row=0;row<2;row++){b.add(4*c,4*row,Kind.RESERVOIR,p+4*(random.nextDouble()-.5));if(c+1<columns)for(int dx=1;dx<4;dx++)b.add(4*c+dx,4*row,Kind.PIPE,p);}for(int dz=1;dz<4;dz++)b.add(4*c,dz,Kind.PIPE,p);}
+        if(through){int end=4*(columns-1);for(int dx=1;dx<4;dx++)b.add(end+dx,4,Kind.PIPE,150010);b.add(end+4,4,Kind.VOID,150000);}
+        var graph=PhysicalFluidTopology.compile(devices,stocks).islands().getFirst().graph();
+        System.out.printf(Locale.ROOT,"== %s ladder: nodes=%d pipes=%d%n",through?"THROUGH":"CLOSED",graph.reservoirs().size(),graph.pipes().size());
+        double[][] previousDelta=null;double[] previousFlow=null;var solver=new RetainedSolver();
+        for(int interval=1;interval<=300;interval++) {
+            var before=graph;var result=solver.solve(model,graph,5,PassiveIntervalSolver.Settings.defaults(),()->{});graph=result.graph();
+            var q=result.averageMassFlows();double qref=0,qmax=0;for(double v:q){qref=Math.max(qref,Math.abs(v));}
+            double[][] delta=new double[graph.reservoirs().size()][];double relDelta=0,relChange=0,flowChange=0;boolean zeroDelta=true,zeroFlow=true;int worstC=-1;
+            for(double v:q)if(v!=0)zeroFlow=false;
+            for(int n=0;n<graph.reservoirs().size();n++){var a=before.reservoirs().get(n);var z=graph.reservoirs().get(n);if(z.kind()!=PassiveNetwork.NodeKind.RESERVOIR)continue;
+                var m0=a.inventory().moles();var m1=z.inventory().moles();delta[n]=new double[m1.length+1];
+                for(int c=0;c<m1.length;c++){delta[n][c]=m1[c]-m0[c];if(delta[n][c]!=0)zeroDelta=false;if(m1[c]>0)relDelta=Math.max(relDelta,Math.abs(delta[n][c])/m1[c]);}
+                delta[n][m1.length]=z.inventory().internalEnergy()-a.inventory().internalEnergy();
+                if(previousDelta!=null&&previousDelta[n]!=null)for(int c=0;c<m1.length;c++){double change=Math.abs(delta[n][c]-previousDelta[n][c]);double scale=m1[c];double r=scale>0?change/scale:(change>0?Double.POSITIVE_INFINITY:0);if(r>relChange){relChange=r;worstC=c;}}
+            }
+            if(previousFlow!=null&&qref>0)for(int i=0;i<q.length;i++)flowChange=Math.max(flowChange,Math.abs(q[i]-previousFlow[i])/qref);
+            if(interval<=6||interval%10==0)System.out.printf(Locale.ROOT,"  t=%4d s qmax=%.3e maxRelDelta=%.3e maxRelChange=%.3e (c%d) flowChange=%.3e zeroFlow=%b zeroDelta=%b substeps=%d modes=%s%n",interval*5,qref,relDelta,relChange,worstC,flowChange,zeroFlow,zeroDelta,result.acceptedSubsteps(),new HashSet<>(result.endpointModes()));
+            previousDelta=delta;previousFlow=q;
+        }
+    }
+}

@@ -1,0 +1,119 @@
+diff --git a/build.gradle b/build.gradle
+index dbd8b97..0f669a8 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -360,6 +360,27 @@ tasks.register('fluidServerBenchmark') {
+         if (!matches.isEmpty()) throw new GradleException("Benchmark had ${matches.size()} runtime errors; numerical gates cannot qualify this run")
+     }
+ }
++tasks.register('fluidStressProfile', Test) {
++    group = 'verification'
++    description = 'Read-only replay of an unadvanced stress island; never qualification evidence.'
++    testClassesDirs = sourceSets.test.output.classesDirs
++    classpath = sourceSets.test.runtimeClasspath
++    filter { includeTestsMatching 'com.wormzjl.createcheme.fluid.benchmark.FluidStressProfileTest'; failOnNoMatchingTests = true }
++    systemProperty 'fluid.profile.snapshot', providers.gradleProperty('fluidProfileSnapshot').getOrElse(layout.projectDirectory.file('run/fluid-benchmark/stress100-baseline-auto-r01/world/data/createcheme_fluid_core.dat').asFile.absolutePath)
++    outputs.upToDateWhen { false }
++}
++tasks.register('fluidModuleProfile', Test) {
++    group = 'verification'
++    description = 'Read-only replay of a saved deferred receiver, excluded from ordinary tests and M9 acceptance.'
++    testClassesDirs = sourceSets.test.output.classesDirs
++    classpath = sourceSets.test.runtimeClasspath
++    filter { includeTestsMatching 'com.wormzjl.createcheme.fluid.benchmark.FluidModuleProfileTest'; failOnNoMatchingTests = true }
++    systemProperty 'fluid.profile.snapshot', providers.gradleProperty('fluidProfileSnapshot').getOrElse(layout.projectDirectory.file('run/fluid-benchmark/pilot-module-warm-01/world/data/createcheme_fluid_core.dat').asFile.absolutePath)
++    outputs.upToDateWhen { false }
++    if (providers.gradleProperty('fluidProfile').getOrElse('false').toBoolean()) {
++        jvmArgs "-XX:StartFlightRecording=filename=${layout.buildDirectory.file('reports/fluid/M9/module-receiver.jfr').get().asFile.absolutePath},settings=profile,dumponexit=true"
++    }
++}
+ tasks.register('fluidSolverRegression', Test) {
+     group = 'verification'
+     description = 'Replays saved islands against the captured solver reference states and reports solver cost.'
+diff --git a/src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidModuleProfileTest.java b/src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidModuleProfileTest.java
+new file mode 100644
+index 0000000..c00ae74
+--- /dev/null
++++ b/src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidModuleProfileTest.java
+@@ -0,0 +1,39 @@
++package com.wormzjl.createcheme.fluid.benchmark;
++
++import com.google.gson.GsonBuilder;
++import com.wormzjl.createcheme.runtime.fluid.*;
++import com.wormzjl.createcheme.science.fluid.network.*;
++import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
++import com.wormzjl.createcheme.science.material.MaterialCatalog;
++import net.minecraft.nbt.*;
++import org.junit.jupiter.api.Test;
++import java.nio.file.*;
++import java.util.*;
++import static org.junit.jupiter.api.Assertions.*;
++
++/** Replays a preserved failing world read-only; this is a profiler, never an M9 acceptance run. */
++class FluidModuleProfileTest {
++    @Test void profileActualDeferredReceiver() throws Exception {
++        var source=Path.of(System.getProperty("fluid.profile.snapshot"));var tag=NbtIo.readCompressed(source,NbtAccounter.unlimitedHeap()).getCompound("data");
++        var models=new HashMap<FluidCheckpointCodec.PackageKey,FluidThermodynamics>();var catalog=MaterialCatalog.bundled();
++        java.util.function.Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> resolve=key->models.computeIfAbsent(key,k->FluidThermodynamics.forNetwork(catalog,k.packageId(),k.compressibility()));
++        var saved=FluidSavedData.load(tag,resolve,FluidCheckpointStore.directory(source.getParent(),Runnable::run,false)).checkpoint();var module=saved.modules().getFirst();var binding=saved.moduleBindings().stream().filter(b->b.buffer().equals(module.definition().firstProduct())).findFirst().orElseThrow();
++        var island=saved.islands().stream().filter(i->i.snapshot().id()==binding.island()).findFirst().orElseThrow();var graph=island.snapshot().graph();long startTick=island.snapshot().clock().committedTick();var model=resolve.apply(new FluidCheckpointCodec.PackageKey(island.packageId(),island.compressibility()));
++        var inputs=saved.transfers().pending().values().stream().filter(p->p.receiver().equals(binding.buffer())&&p.dueTick()<=startTick).sorted(Comparator.comparingLong(PendingTransfers.Pending::dueTick)).map(p->new ModuleTransferPlanner.Input(p.id(),binding.reservoir(),p.dueTick(),p.remaining(),p.remaining().massKg())).toList();assertFalse(inputs.isEmpty());
++        var rows=new ArrayList<Map<String,Object>>();int index=-1;for(int i=0;i<graph.reservoirs().size();i++)if(graph.reservoirs().get(i).id()==binding.reservoir())index=i;final int receivingIndex=index;
++        for(String mode:List.of("baseline","one-input","planner")) {
++            var row=new LinkedHashMap<String,Object>();rows.add(row);row.put("mode",mode);row.put("startTick",startTick);row.put("inputCount",inputs.size());long started=System.nanoTime();
++            Runnable checkpoint=()->{if(System.nanoTime()-started>15_000_000_000L)throw new java.util.concurrent.CancellationException("Profiling ceiling 15 s");};
++            try {
++                PassiveIntervalSolver.Result result;
++                if(mode.equals("planner"))result=new ModuleTransferPlanner(model).prepare(graph,startTick,100,inputs,List.of(),checkpoint).candidate();
++                else if(mode.equals("one-input")){var p=inputs.getFirst().remaining();var rates=p.moles();for(int c=0;c<rates.length;c++)rates[c]/=5;result=new PassiveIntervalSolver(model).solve(new PassiveNetwork(graph.reservoirs(),graph.pipes(),List.of(new ScheduledTransfer.Injection(Long.MIN_VALUE,receivingIndex,rates,p.energyJoule()/5))),5,PassiveIntervalSolver.Settings.defaults(),checkpoint);}
++                else result=new PassiveIntervalSolver(model).solve(graph,5,PassiveIntervalSolver.Settings.defaults(),checkpoint);
++                row.put("status","CONVERGED");row.put("accepted",result.acceptedSubsteps());row.put("rejected",result.rejectedSubsteps());row.put("rejectionReasons",result.rejectionReasons());
++            }catch(RuntimeException failure){row.put("status","FAILED");row.put("error",failure.toString());}
++            row.put("milliseconds",(System.nanoTime()-started)/1e6);System.out.println(row);
++            var output=Path.of("build/reports/fluid/M9/module-receiver-profile.json");Files.createDirectories(output.getParent());Files.writeString(output,new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("source",source.toString(),"qualification",false,"rows",rows)));
++        }
++        assertTrue(rows.stream().allMatch(r->r.get("status").equals("CONVERGED")),rows.toString());
++    }
++}
+diff --git a/src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidStressProfileTest.java b/src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidStressProfileTest.java
+new file mode 100644
+index 0000000..120bf07
+--- /dev/null
++++ b/src/test/java/com/wormzjl/createcheme/fluid/benchmark/FluidStressProfileTest.java
+@@ -0,0 +1,36 @@
++package com.wormzjl.createcheme.fluid.benchmark;
++
++import com.google.gson.GsonBuilder;
++import com.wormzjl.createcheme.runtime.fluid.*;
++import com.wormzjl.createcheme.science.fluid.network.*;
++import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
++import com.wormzjl.createcheme.science.material.MaterialCatalog;
++import net.minecraft.nbt.*;
++import org.junit.jupiter.api.Test;
++import java.nio.file.*;
++import java.util.*;
++
++/** Read-only saved stress-state diagnostics. No qualification or deadline relaxation in production. */
++class FluidStressProfileTest {
++    @Test void replayAnUnadvancedLargeIsland() throws Exception {
++        var source=Path.of(System.getProperty("fluid.profile.snapshot"));
++        var tag=NbtIo.readCompressed(source,NbtAccounter.unlimitedHeap()).getCompound("data");
++        var model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),FluidPresetCatalog.NETWORK_PACKAGE,1e-9);
++        var saved=FluidSavedData.load(tag,key->model,FluidCheckpointStore.directory(source.getParent(),Runnable::run,false)).checkpoint();
++        var entry=saved.islands().stream().filter(i->i.snapshot().clock().committedTick()==0)
++                .max(Comparator.comparingInt(i->i.snapshot().graph().reservoirs().size())).orElseThrow();
++        var graph=entry.snapshot().graph();var rows=new ArrayList<Map<String,Object>>();
++        for(double duration:new double[]{.01,.1,1,5}) {
++            var row=new LinkedHashMap<String,Object>();rows.add(row);row.put("durationSeconds",duration);long started=System.nanoTime();
++            try {
++                var result=new PassiveIntervalSolver(model).solve(graph,duration,PassiveIntervalSolver.Settings.defaults(),()->{
++                    if(System.nanoTime()-started>20_000_000_000L)throw new java.util.concurrent.CancellationException("20 s profile ceiling");
++                });
++                row.put("status","CONVERGED");row.put("accepted",result.acceptedSubsteps());row.put("rejected",result.rejectedSubsteps());row.put("reasons",result.rejectionReasons());
++            }catch(RuntimeException failure){row.put("status","FAILED");row.put("error",failure.toString());}
++            row.put("milliseconds",(System.nanoTime()-started)/1e6);System.out.println(row);
++            var output=Path.of("build/reports/fluid/stress-island-profile.json");Files.createDirectories(output.getParent());
++            Files.writeString(output,new GsonBuilder().setPrettyPrinting().create().toJson(Map.of("source",source.toString(),"island",entry.snapshot().id(),"nodes",graph.reservoirs().size(),"pipes",graph.pipes().size(),"rows",rows)));
++        }
++    }
++}

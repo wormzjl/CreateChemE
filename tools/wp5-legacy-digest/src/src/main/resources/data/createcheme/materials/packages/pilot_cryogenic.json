@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:pilot_cryogenic",
+  "revision": "pilot-cryogenic-p3-r1",
+  "model": "pr78",
+  "interactions": "createcheme:pilot_cryogenic",
+  "missing_interactions": "error",
+  "water_model": "createcheme:water",
+  "temperature_min_kelvin": 216.592,
+  "temperature_max_kelvin": 1200,
+  "pressure_min_pascal": 100,
+  "pressure_max_pascal": 10000000,
+  "fluid_domain": {
+    "temperature_min_kelvin": 63.151,
+    "temperature_max_kelvin": 1200,
+    "pressure_min_pascal": 100,
+    "pressure_max_pascal": 10000000,
+    "evidence": "Pilot envelope of batch 2026-09-24-coolprop-low-temperature (P3 design sections 1.3 and 8.1, decision D9): the nitrogen triple point 63.151 K to 1200 K (1143 K target, 1200 K provisional) and 100 Pa to 10 MPa; every component's own range lies inside, and a state is valid only inside the range of every component it carries. Qualified at G3 (WP9); the declared critical band is research-only. Selected only by a test or dev datapack override of networks/default.json in P3."
+  },
+  "aliases": {},
+  "advisory_evidence": [
+    "P3_PILOT_PACKAGE: bundled pilot of batch 2026-09-24-coolprop-low-temperature (D9); not a column package; selected by a networks/default.json override only",
+    "SPINE_IDEAL_GAS: the reference spines are the only ideal-gas source (no shifted_polynomial_5 fits, D6); methane above 375 K carries its declared CEA/JANAF conflict",
+    "EPPR78_KIJ: all six pairs kij(T) from the E-PPR78 rule and the Clapeyron.jl transcription createcheme:eppr78_2022 (Table S4 not yet acquired)",
+    "TR08_ANCHORS: each liquid is translated at its Tr = 0.8 saturated liquid from the Java Helmholtz oracle (volume_translation)",
+    "COLUMN_RANGE: temperature_min/max here are the column-style intersection of the property ranges (216.592..1200 K); the fluid network uses fluid_domain",
+    "CO2_CRYSTAL_RESEARCH_ONLY: the CO2-I crystal record is incomplete (Cp ends at 189.78 K, no expansion or compressibility) and refuses evaluation"
+  ],
+  "components": [
+    "Nitrogen",
+    "Methane",
+    "Ethane",
+    "CarbonDioxide"
+  ],
+  "properties": [
+    "createcheme:pilot_nitrogen",
+    "createcheme:pilot_methane",
+    "createcheme:pilot_ethane",
+    "createcheme:pilot_carbon_dioxide"
+  ],
+  "spine": [
+    "createcheme:spine_nitrogen",
+    "createcheme:spine_methane",
+    "createcheme:spine_ethane",
+    "createcheme:spine_carbon_dioxide"
+  ],
+  "crystals": [
+    "createcheme:crystal_carbon_dioxide_i"
+  ]
+}

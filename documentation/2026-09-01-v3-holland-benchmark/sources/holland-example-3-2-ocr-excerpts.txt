@@ -1,0 +1,1315 @@
+0=1/8 + (3/2) Ax + (5/2) Ay 
+Solution of these equations for Ax and Ay yields 
+
+Ax = - 1/24 x 2 = 3/4 - 1/24 = 17/24 = 0.7083 
+Av = - 1/40 y 2 = 5/4 - 1/40 = 49/40 = 1.225 
+These values compare well with the solution set of values which are 
+
+x = -L = 0.707 1 and y = ^3/2 = 1 .2247 
+
+Convergence Characteristics of the 9 Method of Convergence 
+for Complex Columns 
+
+To demonstrate some of the numerical characteristics of the 9 method for com- 
+plex columns, Example 3-2 was selected. The statement of this example is given 
+in Table 3-1 and the geometry of the column is depicted in Fig. 3-4. In addition 
+to the distillate and bottoms, the column has one sidestream withdrawn. Thus, 
+the 9 method has two 9 multipliers, 9 and 9 l9 which are defined by the first two 
+expressions given by Eq. (3-10). Since D and W x are specified (see Table 3-1) the 
+two g functions to be used for computing these 0's are given by Eqs. (3-21) and 
+(3-22). 
+
+The convergence characteristics of this example are presented in Table 3-2, 
+and the solution sets of 7}'s, Vfs, d t -'s, w u 's and fc/s are presented in Table 3-3. To 
+
+
+
+APPLICATION OF THETA METHOD OF CONVERGENCE TO COMPLEX COLUMNS 99 
+
+Table 3-1 Statement of Example 3-2, a complex distillation problem 
+
+
+
+Component 
+
+
+
+FXi 
+
+(lb mol/h) 
+
+
+
+CH 4 
+
+C 2 H 6 
+
+C 3 H 6 
+
+C 3 H 8 
+
+i-C 4 H 10 
+
+rt-C 4 H 10 
+
+«-C 5 H 12 
+
+«-C 6 H 14 
+
+n-C 7 H l6 
+
+w-C 8 H 17 
+
+400 
+
+
+
+2.0 
+
+10.0 
+
+6.0 
+
+12.5 
+
+3.5 
+
+15.0 
+
+15.2 
+
+11.3 
+
+9.0 
+
+8.5 
+
+7.0 
+
+
+
+Other specifications 
+
+
+
+The column pressure is 300 lb/in 2 abs. The K values and enthalpies are given in Tables B-l 
+and B-2. The feed enters the column on plate / = 6 at its bubble-point temperature at the 
+column pressure. The column has 1 1 plates, a reboiler, and a partial condenser. The distillate is 
+withdrawn at the rate D = 32.298 lb mol/h. The sidestream is withdrawn from plate p = 10 as a 
+liquid at the rate W x = 25.0 lb mol/h. A reflux ratio LJD = 2.25 is to be use d. Take ;^ imtud 
+temperatures to be linear between T 2 = 200°F and T l2 = 300'F, and take T =200 F and 
+T 13 = 300°F. Take the initial values of LJVj = 1 for ; = 2, 3, ..., 12, and take V l3 /B = 1.0. 
+
+
+
+Table 3-2 Convergence characteristics exhibited by the method in the solution 
+of Example 3-2 
+
+
+
+
+
+
+
+
+
+Temp, of 
+
+
+Temp, of 
+
+
+Calculated 
+
+
+Calculated 
+
+
+Trial 
+
+
+0o 
+
+
+«i 
+
+
+D, °F 
+
+
+B, °F 
+
+
+value of D 
+
+
+value of W v 
+
+
+1 
+
+
+0.7365 
+
+
+0.8632 
+
+
+125.79 
+
+
+410.82 
+
+
+31.9304 
+
+
+24.4257 
+
+
+2 
+
+
+1.16464 
+
+
+1.16219 
+
+
+115.13 
+
+
+443.44 
+
+
+32.6193 
+
+
+24.7670 
+
+
+3 
+
+
+0.984057 
+
+
+0.962613 
+
+
+114.25 
+
+
+441.59 
+
+
+32.2084 
+
+
+24.7236 
+
+
+4 
+
+
+1.03172 
+
+
+1.02741 
+
+
+114.13 
+
+
+446.36 
+
+
+32.3555 
+
+
+25.0021 
+
+
+5 
+
+
+0.984476 
+
+
+0.989619 
+
+
+114.13 
+
+
+445.68 
+
+
+32.22745 
+
+
+24.95864 
+
+
+6 
+
+
+1.00754 
+
+
+1.006039 
+
+
+114.13 
+
+
+446.53 
+
+
+32.3110 
+
+
+25.00688 
+
+
+7 
+
+
+0.996285 
+
+
+0.997367 
+
+
+114.13 
+
+
+446.28 
+
+
+32.29217 
+
+
+24.99218 
+
+
+8 
+
+
+1.001739 
+
+
+1.001348 
+
+
+114.13 
+
+
+446.45 
+
+
+32.30094 
+
+
+25.00218 
+
+
+9 
+
+
+0.9991422 
+
+
+0.999384 
+
+
+114.13 
+
+
+446.39 
+
+
+32.29664 
+
+
+24.99829 
+
+
+10 
+
+
+1.000344 
+
+
+1.000269 
+
+
+114.13 
+
+
+446.42 
+
+
+32.29861 
+
+
+25.00039 
+
+
+11 
+
+
+0.9998121 
+
+
+0.9998789 
+
+
+114.13 
+
+
+446.41 
+
+
+32.29772 
+
+
+24.99945 
+
+
+12 
+
+
+1.0000 
+
+
+1.0000 
+
+
+114.13 
+
+
+446.41 
+
+
+32.29811 
+
+
+24.99993 
+
+
+
+Convergence criterion: (1) For each trial, values of O and 6 X were found such that both \g \ 
+and \g x \ were equal to or less than 10" 5 . (2) Convergence for the problem was said to have been 
+achieved when |^ (1, 1)1 and 1^(1, 1)| were each equal to or less than 10 5 . 
+
+The convergence criteria were satisfied at the end of the 12th trial and 2.81 seconds on an 
+AMDAHL 470 V/6 computer with the WATFIV compiler. 
+
+
+
+100 FUNDAMENTALS OF MULTICOMPONENT DISTILLATION 
+
+Table 3-3 Solution of Example 3-2 
+
+
+
+
+
+1. Final temperature, 
+
+
+liquid, and vapor 
+
+
+profiles 
+
+
+
+
+T J 
+
+
+Lj 
+
+
+Vj 
+
+
+Stage 
+
+
+(°F) 
+
+
+(lb mol/h) 
+
+
+(lb mol/h) 
+
+
+1 
+
+
+114.13 
+
+
+72.671 
+
+
+32.298 
+
+
+2 
+
+
+145.45 
+
+
+61.302 
+
+
+104.97 
+
+
+3 
+
+
+165.40 
+
+
+68.080 
+
+
+103.60 
+
+
+4 
+
+
+183.47 
+
+
+58.993 
+
+
+100.38 
+
+
+5 
+
+
+217.13 
+
+
+194.95 
+
+
+91.291 
+
+
+6 
+
+
+239.30 
+
+
+212.35 
+
+
+127.25 
+
+
+7 
+
+
+253.55 
+
+
+222.45 
+
+
+144.65 
+
+
+8 
+
+
+264.68 
+
+
+227.36 
+
+
+154.75 
+
+
+9 
+
+
+276.18 
+
+
+227.38 
+
+
+159.66 
+
+
+10 
+
+
+292.27 
+
+
+196.97 
+
+
+159.67 
+
+
+11 
+
+
+319.29 
+
+
+186.10 
+
+
+154.27 
+
+
+12 
+
+
+363.18 
+
+
+164.71 
+
+
+143.39 
+
+
+13 
+
+
+456.41 
+
+
+42.702 
+
+
+122.01 
+
+
+2. Final product flow rates 
+
+
+
+
+4 
+
+
+*ll 
+
+
+*>i 
+
+
+Component 
+
+
+(lb mol/h) 
+
+
+(lb mol/h) 
+
+
+(lb mol/h) 
+
+
+CH 4 
+
+
+0.20000 x 10 1 
+
+
+0.32125 x 10" 
+
+
+6 0.30273 x 10" 9 
+
+
+C 2 H 6 
+
+
+0.99985 x 10 1 
+
+
+0.15077 x 10- 
+
+
+2 0.19926 x 10" 4 
+
+
+C 3 H 6 
+
+
+0.59356 x 10 1 
+
+
+0.61044 x 10" 
+
+
+1 0.33848 x 10" 2 
+
+
+C 3 H 8 
+
+
+0.12224 x 10 2 
+
+
+0.24742 
+
+
+0.18230 x 10" ' 
+
+
+i'-C 4 H 10 
+
+
+0.11119 x 10 1 
+
+
+0.19577 x 10 1 
+
+
+0.43043 
+
+
+n-C 4 H 10 
+
+
+0.10242 x 10 1 
+
+
+0.10428 x 10 2 
+
+
+0.35483 x 10 1 
+
+
+n-C 5 H 12 
+
+
+0.36429 x 10" 2 
+
+
+0.64835 x 10 1 
+
+
+0.87129 x 10 1 
+
+
+n-C 6 H 14 
+
+
+0.18929 x 10" 4 
+
+
+0.25252 x 10 1 
+
+
+0.87747 x 10 1 
+
+
+n-C 7 H 16 
+
+
+0.15019 x 10" 6 
+
+
+0.13819 x 10 1 
+
+
+0.76181 x 10 1 
+
+
+n-C 8 H 17 
+
+
+0.12374 x 10" 8 
+
+
+0.10969 x 10 1 
+
+
+0.74031 x 10 1 
+
+
+400 
+
+
+0.14162 x 10" " 
+
+
+0.80727 
+
+
+0.61927 x 10 1 
+
+
+
+Q c = 0.47243 x 10 6 Btu/h 
+Q R = 0.15519 x 10 7 Btu/h 
+
+
+
+satisfy the convergence criterion stated in Table 3-2, a total of 12 complete trials 
+and 2.81 seconds of computer time (AMDAHL 470 V/6 WATFIV) were 
+required. 
+
+
+
+Exact Solutions Given by the 9 Method of Convergence 
+for Complex Columns 
+
+For a distillation column such as the one shown in Fig. 3-4, the 6 method 
+constitutes an exact solution at total reflux; that is, the sets ofbjd^s and w u /i/s 
+at two different sets of values for D and W x are related by the single multipliers 
+
+
+
+APPLICATION OF THETA METHOD OF CONVERGENCE TO COMPLEX COLUMNS 101 
+
+O and t as indicated by the first two expressions of Eq. (3-15). The proof of this 
+statement is established by solving Probs. 3-3 and 3-4. That the method is an 
+exact solution to certain problems at total reflux is further illustrated by solving 
+Probs. 3-5 and 3-6. 
+
+
+
+3-2 SYSTEMS OF INTERCONNECTED 
+DISTILLATION COLUMNS 
+
+The particular difficulty associated with the solution of problems involving 
+systems of distillation columns becomes apparent upon close examination of the 
+system shown in Fig. 3-8. First observe that the composition of the recycled 
+bottoms from the second column to the first is not known until a solution to the 
+
+===== APPENDIX B: TABLES B-1 AND B-2 (OCR, VERIFY AGAINST PAGE SCANS) =====
+Table B-l Equilibrium datat 
+
+P = 300 lb/in 2 abs, (KJT) m = a u + a 2i T + a 3| .r 2 + a 4l -T 3 (T in °R) 
+
+
+
+Component 
+
+
+a { x 10 2 
+
+
+a 2 x 10 5 
+
+
+a 3 x 10 8 
+
+
+a A x 10 12 
+
+
+CH 4 
+
+
+32.718139 
+
+
+-9.6951405 
+
+
+6.9229334 
+
+
+-47.361298 
+
+
+C 2 H 4 
+
+
+-5.177995 
+
+
+62.124576 
+
+
+-37.562082 
+
+
+8.0145501 
+
+
+C 2 H 6 
+
+
+-9.8400210 
+
+
+67.545943 
+
+
+-37.459290 
+
+
+-9.0732459 
+
+
+C,H 6 
+
+
+-25.098770 
+
+
+102.39287 
+
+
+-75.221710 
+
+
+153.84709 
+
+
+C 3 H 8 
+
+
+-14.512474 
+
+
+53.638924 
+
+
+-5.3051604 
+
+
+- 173.58329 
+
+
+<-C 4 H, 
+
+
+-10.104481 
+
+
+21.400418 
+
+
+38.564266 
+
+
+-353.65419 
+
+
+<-QH 10 
+
+
+-18.967651 
+
+
+61.239667 
+
+
+-17.891649 
+
+
+-90.855512 
+
+
+n-C 4 H 10 
+
+
+-14.181715 
+
+
+36.866353 
+
+
+16.521412 
+
+
+-248.23843 
+
+
+i-C 5 H 12 
+
+
+-7.5488400 
+
+
+3.2623631 
+
+
+58.507340 
+
+
+-414.92323 
+
+
+n-C 5 H 12 
+
+
+-7.5435390 
+
+
+2.0584231 
+
+
+59.138344 
+
+
+-413.12409 
+
+
+"- C 6 H 14 
+
+
+1.1506919 
+
+
+-33.885839 
+
+
+97.795401 
+
+
+-542.35941 
+
+
+n-C 7 H 16 
+
+
+5.5692758 
+
+
+-50.705967 
+
+
+112.17338 
+
+
+-574.89350 
+
+
+n-C 8 H 18 
+
+
+7.1714400 
+
+
+-52.608530 
+
+
+103.72034 
+
+
+-496.46551 
+
+
+400 
+
+
+2.5278960 
+
+
+-17.311330 
+
+
+33.502879 
+
+
+- 126.25039 
+
+
+500 
+
+
+3.3123291 
+
+
+- 16.652384 
+
+
+24.310911 
+
+
+-64.148982 
+
+
+
+t Taken from S. T. Hadden: " Vapor- Liquid Equilibria in Hydrocarbon System," Chem. 
+Eng.Prog., 44:37(1948). 
+
+
+
+596 
+
+
+
+Table B-2 Enthalpy datat 
+
+P = 300 lb/in 2 abs; (J,,) 1 ' 2 = c u + c 2i T + c 3l 7 2 (7 in °R); 
+(tf,) 1 2 = <-„ + t' 2l 7 + * 3l . 7 2 (Tin °R), Btu/lb mol 
+
+
+
+EQUILIBRIUM AND ENTHALPY DATA 597 
+
+
+
+Component 
+
+
+<"l 
+
+
+c 2 x 10 
+
+
+c 2 x 10 4 
+
+
+*i 
+
+
+e 2 x 10 4 
+
+
+e 3 x 10 6 
+
+
+CH 4 
+
+
+-17.899210 
+
+
+1.7395763 
+
+
+-3.7596114 
+
+
+44.445874 
+
+
+501.04559 
+
+
+7.3207219 
+
+
+C 2 H 4 
+
+
+-7.2915000 
+
+
+1.5411962 
+
+
+-1.6088376 
+
+
+56.79638 
+
+
+615.93154 
+
+
+2.4088730 
+
+
+C 2 H 6 
+
+
+-8.4857000 
+
+
+1.6286636 
+
+
+-1.9498601 
+
+
+61.334520 
+
+
+588.75430 
+
+
+11.948654 
+
+
+C 3 H 6 
+
+
+- 12.427900 
+
+
+1.8834652 
+
+
+-2.4839140 
+
+
+71.828480 
+
+
+658.55130 
+
+
+11.299585 
+
+
+C 3 H 8 
+
+
+- 14.500060 
+
+
+1.9802223 
+
+
+-2.9048837 
+
+
+81.795910 
+
+
+389.81919 
+
+
+36.470900 
+
+
+i-C 4 H 8 
+
+
+- 16.553450 
+
+
+2.161865 
+
+
+-3.1476209 
+
+
+139.17444 
+
+
+-822.39488 
+
+
+120.39298 
+
+
+<-C 4 H 10 
+
+
+- 16.5534050 
+
+
+2.1618650 
+
+
+-3.1476209 
+
+
+147.65414 
+
+
+-1185.2942 
+
+
+152.87778 
+
+
+n-C 4 H 10 
+
+
+-20.298110 
+
+
+2.3005743 
+
+
+-3.8663417 
+
+
+152.66798 
+
+
+-1153.4842 
+
+
+146.64125 
+
+
+/-C 5 H 12 
+
+
+-23.356460 
+
+
+2.5017453 
+
+
+-4.3917897 
+
+
+130.96679 
+
+
+- 197.98604 
+
+
+82.549947 
+
+
+n-C 5 H 12 
+
+
+-24.371540 
+
+
+2.5636200 
+
+
+-4.6499694 
+
+
+128.90152 
+
+
+2.0509603 
+
+
+64.501496 
+
+
+h-C 6 H 10 
+
+
+-23.870410 
+
+
+2.6768089 
+
+
+-4.4197793 
+
+
+85.834950 
+

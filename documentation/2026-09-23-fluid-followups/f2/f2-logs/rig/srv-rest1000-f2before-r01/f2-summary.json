@@ -1,0 +1,149 @@
+{
+  "runId": "srv-rest1000-f2before-r01",
+  "scenario": "rest1000",
+  "devices": 5000,
+  "placement": {
+    "rconMs": 48442,
+    "tickLoopGapMs": 48481,
+    "firstTickAfter": {
+      "tickMs": 15.1396,
+      "engineMs": 10.7778
+    },
+    "next5s": {
+      "maxTickMs": 15.1396,
+      "maxEngineMs": 15.3449,
+      "engineMsSum": 209.02269999999996
+    },
+    "cantKeepUp": [
+      "[09:41:08] Can't keep up! Is the server overloaded? Running 48416ms or 968 ticks behind"
+    ]
+  },
+  "window": {
+    "ticks": {
+      "count": 1200,
+      "tickMs": {
+        "p50": 0.1659,
+        "p95": 0.2813,
+        "p99": 0.6079,
+        "max": 1.4124,
+        "mean": 0.18693908333333328
+      },
+      "engineMs": {
+        "p50": 0.0071,
+        "p95": 0.0193,
+        "p99": 0.0371,
+        "max": 0.1418,
+        "mean": 0.008818916666666655
+      },
+      "ticksPerSecond": 19.997333688841486
+    },
+    "endState": {
+      "onlineTick": 2600,
+      "devices": 5000,
+      "islands": 1000,
+      "kinds": {
+        "REST": 1000
+      },
+      "statuses": {
+        "RESTING": 1000
+      },
+      "workersActive": 0,
+      "workersLimit": 1
+    },
+    "placementGap": {
+      "t": 1790214068725,
+      "ms": 48465.5,
+      "devices": 5000
+    },
+    "heldLines": 0,
+    "processCores": 0.07868365394299527
+  },
+  "marginal": {
+    "windowMs": 450,
+    "noopRttMs": 1,
+    "noopEngineMsInWindow": 0.062400000000000004,
+    "ops": {
+      "noop": {
+        "n": 10,
+        "rttMs": 1,
+        "rttMax": 2,
+        "engineMsInWindow": 0.062400000000000004,
+        "maxTickMs": 0.18465,
+        "costMs": -0.00015000000000000083,
+        "costMsMax": 1.002
+      },
+      "plus_tank": {
+        "n": 10,
+        "rttMs": 29.5,
+        "rttMax": 208,
+        "engineMsInWindow": 0.8473999999999999,
+        "maxTickMs": 0.3789,
+        "costMs": 29.258499999999998,
+        "costMsMax": 207.9531
+      },
+      "minus_tank": {
+        "n": 10,
+        "rttMs": 3,
+        "rttMax": 7,
+        "engineMsInWindow": 27.560299999999998,
+        "maxTickMs": 27.72015,
+        "costMs": 28.997899999999994,
+        "costMsMax": 121.9191
+      },
+      "plus_pipe": {
+        "n": 10,
+        "rttMs": 3,
+        "rttMax": 38,
+        "engineMsInWindow": 25.677750000000003,
+        "maxTickMs": 25.21635,
+        "costMs": 28.52385,
+        "costMsMax": 37.506
+      },
+      "minus_pipe": {
+        "n": 10,
+        "rttMs": 3,
+        "rttMax": 3,
+        "engineMsInWindow": 26.1632,
+        "maxTickMs": 25.908250000000002,
+        "costMs": 28.00575,
+        "costMsMax": 32.667199999999994
+      },
+      "edit_pipe": {
+        "n": 10,
+        "rttMs": 3,
+        "rttMax": 4,
+        "engineMsInWindow": 27.97255,
+        "maxTickMs": 27.79975,
+        "costMs": 29.299950000000003,
+        "costMsMax": 32.311899999999994
+      },
+      "edit_back": {
+        "n": 10,
+        "rttMs": 2,
+        "rttMax": 4,
+        "engineMsInWindow": 27.1179,
+        "maxTickMs": 26.85445,
+        "costMs": 28.24205,
+        "costMsMax": 30.078700000000005
+      },
+      "plus20": {
+        "n": 10,
+        "rttMs": 477.5,
+        "rttMax": 496,
+        "engineMsInWindow": 0.35239999999999994,
+        "maxTickMs": 0.21425,
+        "costMs": 476.80869999999993,
+        "costMsMax": 495.05929999999995
+      },
+      "minus20": {
+        "n": 10,
+        "rttMs": 43,
+        "rttMax": 55,
+        "engineMsInWindow": 372.2732,
+        "maxTickMs": 372.3043,
+        "costMs": 412.9944,
+        "costMsMax": 450.5761
+      }
+    }
+  }
+}

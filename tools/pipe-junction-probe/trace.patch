@@ -1,0 +1,34 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index c418c56..8f65e8a 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -243,6 +243,7 @@ public final class PassiveStepSolver {
+             SolverDiagnostics.count(workspace==null?SolverDiagnostics.workspaceBuilds:SolverDiagnostics.workspaceReuses);
+             if(workspace==null){if(workspaces.size()>=4)workspaces.remove(workspaces.keySet().iterator().next());var previous=structures.get(structure);workspace=previous==null?new SparseNewton.Workspace(ownership):previous.forkPreconditioner();workspaces.put(key,workspace);}
+             if(structures.size()>=4&&!structures.containsKey(structure))structures.remove(structures.keySet().iterator().next());structures.put(structure,workspace);
++            if(Boolean.getBoolean("junction.trace"))System.out.println("PASS "+pass+" offsets="+Arrays.toString(equations.offsets)+" edgeOffset="+equations.edgeOffset+" donors="+Arrays.toString(equations.junctionDonorFirst));
+             SparseNewton.Result numerical;
+             // Small headspaces amplify inventory roundoff into pressure/flow errors; solve these
+             // more tightly - but only a node that holds a finite inventory has a headspace at all.
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+index ea59905..e181dcd 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/solver/SparseNewton.java
+@@ -143,6 +143,8 @@ public final class SparseNewton {
+         ThermoDomainViolation domain=null;
+         for(int iteration=0;iteration<=settings.iterations();iteration++) {
+             checkpoint.run();
++            if(Boolean.getBoolean("junction.trace")&&(iteration<3||iteration%10==0))
++                System.out.println("ITER "+iteration+" norm="+norm+" x="+Arrays.toString(x)+" f="+Arrays.toString(f));
+             if(norm<=settings.tolerance())return new Result(x,norm,iteration,calls,lastNonzeros,pattern.groups.size());
+             if(iteration==settings.iterations())break;
+             domain=null;
+@@ -182,6 +184,8 @@ public final class SparseNewton {
+                         descent=nextMerit<merit*(1-1e-4*alpha);reduction=nextMerit/merit;
+                     }
+                     if(descent) {
++                        if(Boolean.getBoolean("junction.trace")&&(iteration<3||iteration%10==0))
++                            System.out.println("STEP "+iteration+" alpha="+alpha+" direction="+Arrays.toString(direction));
+                         // Residual evaluation and triangular solves are much cheaper than a new
+                         // colored Jacobian. Keep a contracting chord iteration a little longer;
+                         // stalled searches still force a fresh Jacobian immediately.

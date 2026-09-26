@@ -1,0 +1,390 @@
+diff --git a/benchmarks/V3LowPressureLinearProbe.java b/benchmarks/V3LowPressureLinearProbe.java
+index a549f49..eb64524 100644
+--- a/benchmarks/V3LowPressureLinearProbe.java
++++ b/benchmarks/V3LowPressureLinearProbe.java
+@@ -49,6 +49,12 @@ public final class V3LowPressureLinearProbe {
+     private V3LowPressureLinearProbe() {}
+ 
+     public static void main(String[] args) throws Exception {
++        long conditioningFlags = java.util.Arrays.stream(args).filter("--conditioning"::equals).count();
++        if (conditioningFlags > 0) {
++            if (conditioningFlags != 1) throw new IllegalArgumentException("--conditioning may be supplied only once");
++            V3ConditioningCensus.main(java.util.Arrays.stream(args).filter(arg -> !arg.equals("--conditioning")).toArray(String[]::new));
++            return;
++        }
+         Map<String, String> options = new LinkedHashMap<>();
+         for (String arg : args) {
+             String[] pair = arg.split("=", 2);
+@@ -330,7 +336,7 @@ public final class V3LowPressureLinearProbe {
+         return result;
+     }
+ 
+-    private static Map<String, Object> bandLoss(V3FiniteDifferenceJacobian.Jacobian jacobian, V3BandedMatrix band) {
++    static Map<String, Object> bandLoss(V3FiniteDifferenceJacobian.Jacobian jacobian, V3BandedMatrix band) {
+         long lost = 0, changed = 0;
+         double maximumLost = 0.0, maximumDifference = 0.0;
+         for (int row = 0; row < band.size(); row++) {
+@@ -382,7 +388,7 @@ public final class V3LowPressureLinearProbe {
+         return entries.stream().limit(10).toList();
+     }
+ 
+-    private static Map<String, Object> coordinate(V3ColumnProblem problem, V3DegreeOfFreedomLedger.UnknownId id, int column) {
++    static Map<String, Object> coordinate(V3ColumnProblem problem, V3DegreeOfFreedomLedger.UnknownId id, int column) {
+         Map<String, Object> result = new LinkedHashMap<>();
+         result.put("coordinate", column); result.put("family", id.family()); result.put("node", id.node());
+         result.put("activeComponent", id.component());
+@@ -391,7 +397,7 @@ public final class V3LowPressureLinearProbe {
+         return result;
+     }
+ 
+-    private static V3DryMeshState readState(JsonArray rows, V3ColumnProblem problem) {
++    static V3DryMeshState readState(JsonArray rows, V3ColumnProblem problem) {
+         int count = problem.activeComponentBasis().componentCount();
+         if (rows == null || rows.size() != problem.topology().nodeCount()) throw new IllegalArgumentException("Stored node count differs");
+         double[][] liquid = new double[rows.size()][count], vapor = new double[rows.size()][count];
+@@ -425,13 +431,13 @@ public final class V3LowPressureLinearProbe {
+         return Map.of("minimumKelvin", number(minimum), "maximumKelvin", number(maximum));
+     }
+ 
+-    private static Map<String, Double> familyMaxima(V3MeshResidual residual) {
++    static Map<String, Double> familyMaxima(V3MeshResidual residual) {
+         Map<String, Double> result = new LinkedHashMap<>();
+         for (V3MeshResidual.Row row : residual.rows()) result.merge(row.equation().family().name(), Math.abs(row.scaledValue()), Math::max);
+         return result;
+     }
+ 
+-    private static Map<String, Object> failure(RuntimeException failure) {
++    static Map<String, Object> failure(RuntimeException failure) {
+         Map<String, Object> result = new LinkedHashMap<>();
+         result.put("type", failure.getClass().getName()); result.put("message", failure.getMessage());
+         if (failure instanceof V3ThermoException thermo) { result.put("thermoCode", thermo.code()); result.put("phase", thermo.phase()); }
+diff --git a/benchmarks/V3LowPressureProbe.java b/benchmarks/V3LowPressureProbe.java
+index c865f99..0ba5527 100644
+--- a/benchmarks/V3LowPressureProbe.java
++++ b/benchmarks/V3LowPressureProbe.java
+@@ -38,9 +38,17 @@ public final class V3LowPressureProbe {
+ 
+     public static void main(String[] args) throws Exception {
+         if (args.length < 1 || args.length > 2 || !args[0].startsWith("--report=")
+-                || (args.length == 2 && !List.of("--smallSteps", "--adaptive", "--truncated").contains(args[1]))) throw new IllegalArgumentException("--report=path [--smallSteps|--adaptive|--truncated] required");
++                || (args.length == 2 && !List.of("--smallSteps", "--adaptive", "--truncated", "--remask", "--remask-p0b").contains(args[1]))) throw new IllegalArgumentException("--report=path [--smallSteps|--adaptive|--truncated|--remask|--remask-p0b] required");
+         Path output = Path.of(args[0].substring("--report=".length())).toAbsolutePath().normalize();
+         if (Files.exists(output)) throw new IllegalArgumentException("Refusing to overwrite " + output);
++        if (args.length == 2 && args[1].equals("--remask-p0b")) {
++            V3RemaskP0bProbe.run(output);
++            return;
++        }
++        if (args.length == 2 && args[1].equals("--remask")) {
++            V3RemaskProbe.run(output);
++            return;
++        }
+         new V3LowPressureProbe(output, args.length == 2 ? args[1] : "--all").run();
+     }
+ 
+diff --git a/benchmarks/V3PressureContinuationAccess.java b/benchmarks/V3PressureContinuationAccess.java
+index 4fc94fe..25e5a49 100644
+--- a/benchmarks/V3PressureContinuationAccess.java
++++ b/benchmarks/V3PressureContinuationAccess.java
+@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
+ import java.lang.reflect.Field;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
++import java.util.List;
+ import java.util.Objects;
+ 
+ /**
+@@ -23,6 +24,13 @@ public final class V3PressureContinuationAccess {
+     private static final Class<?> CORRECTION_CLASS = nestedClass("PhaseCorrection");
+     private static final Object OFF = staticField(POLICY_CLASS, "OFF");
+     private static final Object PRESSURE_PREDICTOR = enumConstant(JACOBIAN_POLICY_CLASS, "PRESSURE_LOCAL_PREDICTOR");
++    private static final double ANCHOR_PRESSURE_PASCAL =
++            (double) staticField(V3ColumnCalculator.class, "PRESSURE_CONTINUATION_ANCHOR_PASCAL");
++    private static final Constructor<?> PREPARED_CONSTRUCTOR = constructor(PREPARED_CLASS,
++            V3ColumnProblem.class, V3TruncationSupport.class, V3DryMeshState.class);
++    private static final Constructor<?> PASS_CONSTRUCTOR = constructor(PASS_CLASS,
++            V3SimultaneousColumnSolver.Attempt.class, V3AcceptanceAudit.class, double.class, String.class,
++            V3DryMeshState.class, int.class, boolean.class, boolean.class, boolean.class, List.class, PREPARED_CLASS);
+ 
+     private static final Method PREFERRED = method(V3ColumnCalculator.class, "preferredCondenserBranch",
+             V3ColumnInput.class, V3SolveControl.class);
+@@ -32,6 +40,9 @@ public final class V3PressureContinuationAccess {
+     private static final Method CONTINUATION = method(V3ColumnCalculator.class, "solveDwsimPressureContinuation",
+             V3ColumnInput.class, V3PengRobinsonThermo.class, V3SolveControl.class, V3CondenserPhaseBranch.class,
+             POLICY_CLASS, V3ColumnCalculator.CondenserAttempts.class);
++    private static final Method STAGE_CONTINUATION = method(V3ColumnCalculator.class, "solveDwsimStageContinuation",
++            V3ColumnInput.class, V3PengRobinsonThermo.class, V3SolveControl.class, V3CondenserPhaseBranch.class,
++            POLICY_CLASS, V3ColumnCalculator.CondenserAttempts.class);
+     private static final Method PREDICT = method(V3ColumnCalculator.class, "solveSingleProblem",
+             V3ColumnProblem.class, V3PengRobinsonThermo.class, V3DryMeshState.class, V3SolveControl.class,
+             String.class, JACOBIAN_POLICY_CLASS, int.class, POLICY_CLASS);
+@@ -42,6 +53,8 @@ public final class V3PressureContinuationAccess {
+             PASS_CLASS, V3PengRobinsonThermo.class, V3SolveControl.class, POLICY_CLASS,
+             V3ColumnCalculator.CondenserAttempts.class);
+     private static final Method CORRECTED_PASS = method(CORRECTION_CLASS, "pass");
++    private static final Method CORRECTION_ATTEMPTED = method(CORRECTION_CLASS, "attempted");
++    private static final Method PHASE_MISMATCH = method(V3ColumnCalculator.class, "hasCondenserPhaseMismatch", PASS_CLASS);
+     private static final Method PASS_PREPARED = method(PASS_CLASS, "prepared");
+     private static final Method PASS_ATTEMPT = method(PASS_CLASS, "attempt");
+     private static final Method PASS_AUDIT = method(PASS_CLASS, "audit");
+@@ -53,7 +66,7 @@ public final class V3PressureContinuationAccess {
+ 
+     private V3PressureContinuationAccess() {}
+ 
+-    /** One diagnostic chain using the original request's exact inputs and one fixed truncation policy. */
++    /** One thread-confined diagnostic chain using the original request's exact inputs and one fixed truncation policy. */
+     public static final class Session {
+         private final V3ColumnInput originalInput;
+         private final V3SolveControl control;
+@@ -87,6 +100,14 @@ public final class V3PressureContinuationAccess {
+         public V3ColumnInput originalInput() { return originalInput; }
+         public V3CondenserPhaseBranch preferredBranch() { return preferredBranch; }
+ 
++        /** Executes only the real 150 kPa stage-continuation anchor, with fresh condenser-attempt history. */
++        public CapturedPass anchor() {
++            control.checkpoint();
++            resetCondenserAttempts();
++            return capture(invoke(STAGE_CONTINUATION, null, withPressure(ANCHOR_PRESSURE_PASCAL),
++                    thermo, control, preferredBranch, policy, condenserAttempts));
++        }
++
+         /**
+          * Executes the actual anchor/stage/pressure controller through the requested prefix, with fresh attempt
+          * history. The preferred branch still comes from the original input, not this prefix's target pressure.
+@@ -98,6 +119,68 @@ public final class V3PressureContinuationAccess {
+             return capture(invoke(CONTINUATION, null, prefixInput, thermo, control, preferredBranch, policy, condenserAttempts));
+         }
+ 
++        /**
++         * Adopts an externally solved and freshly audited benchmark probe as this chain's prior accepted state.
++         * Only top pressure and frozen support may differ from the original request; this method neither solves
++         * nor manufactures acceptance evidence. The caller must supply the audit of this exact attempt and problem.
++         */
++        public CapturedPass adoptAuditedProbe(
++                V3ColumnProblem problem, V3DryMeshState seed, V3SimultaneousColumnSolver.Attempt attempt,
++                V3AcceptanceAudit audit, double feedEnthalpy) {
++            Objects.requireNonNull(attempt, "attempt");
++            Objects.requireNonNull(audit, "audit");
++            control.checkpoint();
++            if (!(attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged)
++                    || !attempt.evidence().convergenceEvidence().satisfiesGates()
++                    || attempt.evidence().maximumScaledResidual() > V3ColumnCalculator.SCALED_RESIDUAL_TOLERANCE
++                    || !audit.accepted()) {
++                throw new IllegalArgumentException("An adopted probe must have converged with final-step evidence and an accepted audit");
++            }
++            CapturedPass adopted = captureProbe(problem, seed, attempt, audit, feedEnthalpy,
++                    "benchmark/remask-audited", "benchmark adopted probe: supplied converged attempt and fresh accepted audit");
++            control.checkpoint();
++            condenserAttempts.recordAttempt(problem.topology().condenserPhaseBranch());
++            return adopted;
++        }
++
++        /**
++         * Routes an independently solved probe through the actual production phase-correction gate, even when
++         * that probe failed convergence or auditing. This is not adoption: a returned unaccepted pass cannot be
++         * used as the prior state of another pressure leg. The supplied audit must belong to this exact attempt.
++         */
++        public Correction correctProbe(
++                V3ColumnProblem problem, V3DryMeshState seed, V3SimultaneousColumnSolver.Attempt attempt,
++                V3AcceptanceAudit audit, double feedEnthalpy) {
++            CapturedPass probe = captureProbe(problem, seed, attempt, audit, feedEnthalpy,
++                    "benchmark/probe-phase-correction", "benchmark probe: supplied attempt and fresh audit; production phase gate required");
++            control.checkpoint();
++            condenserAttempts.recordAttempt(problem.topology().condenserPhaseBranch());
++            return correctWithEvidence(probe);
++        }
++
++        private CapturedPass captureProbe(
++                V3ColumnProblem problem, V3DryMeshState seed, V3SimultaneousColumnSolver.Attempt attempt,
++                V3AcceptanceAudit audit, double feedEnthalpy, String path, String event) {
++            Objects.requireNonNull(problem, "problem");
++            Objects.requireNonNull(seed, "seed");
++            Objects.requireNonNull(attempt, "attempt");
++            Objects.requireNonNull(audit, "audit");
++            control.checkpoint();
++            if (!Double.isFinite(feedEnthalpy)
++                    || !problem.input().equals(withPressure(problem.input().topPressurePascal()))) {
++                throw new IllegalArgumentException("A captured probe must preserve the session input apart from top pressure and have finite feed enthalpy");
++            }
++            problem.truncationSupport().requireCompatible(problem);
++            requireCompatibleState(problem, seed);
++            requireCompatibleState(problem, attempt.state());
++            boolean atRequestedPressure = Double.compare(problem.input().topPressurePascal(), originalInput.topPressurePascal()) == 0;
++            Object prepared = construct(PREPARED_CONSTRUCTOR, problem, problem.truncationSupport(), seed);
++            Object raw = construct(PASS_CONSTRUCTOR, attempt, audit, feedEnthalpy, path, seed,
++                    problem.input().stageCount(), atRequestedPressure, atRequestedPressure, false,
++                    List.of(event), prepared);
++            return capture(raw);
++        }
++
+         /** Executes the actual single pressure-predictor path; phase correction remains an explicit separate call. */
+         public CapturedPass predict(CapturedPass previous, double pressurePascal, int maximumIterations) {
+             requireOwned(previous);
+@@ -121,12 +204,67 @@ public final class V3PressureContinuationAccess {
+ 
+         /** Invokes the production conditional warm phase-correction gate, preserving this session's branch history. */
+         public CapturedPass correct(CapturedPass pass) {
++            return correctWithEvidence(pass).pass();
++        }
++
++        /** Exposes the real correction's attempted flag, including an attempted-but-unavailable phase correction. */
++        public Correction correctWithEvidence(CapturedPass pass) {
+             requireOwned(pass);
++            control.checkpoint();
+             Object correction = invoke(CORRECT, null, pass.raw, thermo, control, policy, condenserAttempts);
+-            return capture(invoke(CORRECTED_PASS, correction));
++            boolean attempted = (boolean) invoke(CORRECTION_ATTEMPTED, correction);
++            CapturedPass corrected = new CapturedPass(this, invoke(CORRECTED_PASS, correction), pass.raw, attempted);
++            return new Correction(corrected, attempted);
++        }
++
++        /** Calls the current production predicate rather than inferring phase failure from event text. */
++        public boolean hasCondenserPhaseMismatch(CapturedPass pass) {
++            requireOwned(pass);
++            control.checkpoint();
++            return (boolean) invoke(PHASE_MISMATCH, null, pass.raw);
++        }
++
++        /**
++         * Matches the production pressure controller's inner recovery gate. The caller separately checks whether
++         * the corrected pass already succeeded. The second pass must come from correcting this exact predictor.
++         */
++        public boolean recoveryAllowed(CapturedPass predictor, CapturedPass corrected) {
++            requireOwned(predictor);
++            requireOwned(corrected);
++            control.checkpoint();
++            if (corrected.correctionSource != predictor.raw) {
++                throw new IllegalArgumentException("Recovery requires the actual correction result of the supplied predictor");
++            }
++            return !corrected.phaseCorrectionAttempted && !hasCondenserPhaseMismatch(corrected);
++        }
++
++        private void requireCompatibleState(V3ColumnProblem problem, V3DryMeshState state) {
++            if (state.nodeCount() != problem.topology().nodeCount()
++                    || state.componentCount() != problem.activeComponentBasis().componentCount()) {
++                throw new IllegalArgumentException("Captured probe state differs from its topology or active component basis");
++            }
++            for (int node = 0; node < state.nodeCount(); node++) {
++                control.checkpoint();
++                for (int component = 0; component < state.componentCount(); component++) {
++                    boolean retained = problem.truncationSupport().retains(node, component);
++                    boolean liquidPresent = retained && problem.condenserComponentPhases().hasLiquid(problem.topology(), node, component);
++                    boolean vaporPresent = retained && problem.topology().hasVaporPhase(node);
++                    double liquid = state.liquidFlow(node, component), vapor = state.vaporFlow(node, component);
++                    if ((liquidPresent ? !(liquid > 0.0) : liquid != 0.0)
++                            || (vaporPresent ? !(vapor > 0.0) : vapor != 0.0)) {
++                        throw new IllegalArgumentException("Captured probe state violates its frozen support or structural phases");
++                    }
++                }
++            }
++            for (double coordinate : new V3DryMeshCoordinateMap(problem).encode(state)) {
++                if (!Double.isFinite(coordinate)) throw new IllegalArgumentException("Captured probe has no finite log-coordinate representation");
++            }
+         }
+ 
+         private V3ColumnProblem nextProblem(CapturedPass previous, double pressurePascal) {
++            if (!previous.accepted()) {
++                throw new IllegalArgumentException("A pressure leg requires a converged and audited prior pass");
++            }
+             return V3ColumnProblemResolver.resolve(withPressure(pressurePascal),
+                     previous.problem().topology().condenserPhaseBranch());
+         }
+@@ -154,10 +292,22 @@ public final class V3PressureContinuationAccess {
+         private CapturedPass capture(Object raw) { return new CapturedPass(this, raw); }
+     }
+ 
++    /** Immutable observation of the actual production phase-correction result. */
++    public record Correction(CapturedPass pass, boolean attempted) {
++        public Correction {
++            Objects.requireNonNull(pass, "pass");
++            if (pass.correctionSource == null || attempted != pass.phaseCorrectionAttempted) {
++                throw new IllegalArgumentException("Correction evidence must match an actual captured phase-correction result");
++            }
++        }
++    }
++
+     /** Immutable diagnostic view; raw reflection and session references are excluded from JSON serialization. */
+     public static final class CapturedPass {
+         private final transient Session owner;
+         private final transient Object raw;
++        private final transient Object correctionSource;
++        private final transient boolean phaseCorrectionAttempted;
+         private final V3ColumnProblem problem;
+         private final V3DryMeshState seed;
+         private final V3DryMeshState state;
+@@ -168,8 +318,14 @@ public final class V3PressureContinuationAccess {
+         private final String path;
+ 
+         private CapturedPass(Session owner, Object raw) {
++            this(owner, raw, null, false);
++        }
++
++        private CapturedPass(Session owner, Object raw, Object correctionSource, boolean phaseCorrectionAttempted) {
+             this.owner = Objects.requireNonNull(owner, "owner");
+             this.raw = Objects.requireNonNull(raw, "raw");
++            this.correctionSource = correctionSource;
++            this.phaseCorrectionAttempted = phaseCorrectionAttempted;
+             Object prepared = invoke(PASS_PREPARED, raw);
+             this.problem = (V3ColumnProblem) invoke(PREPARED_PROBLEM, prepared);
+             this.seed = (V3DryMeshState) invoke(PREPARED_SEED, prepared);
+@@ -191,7 +347,9 @@ public final class V3PressureContinuationAccess {
+         public String path() { return path; }
+         public boolean accepted() {
+             return attempt instanceof V3SimultaneousColumnSolver.Attempt.Converged
+-                    && attempt.evidence().convergenceEvidence().satisfiesGates() && audit.accepted();
++                    && attempt.evidence().convergenceEvidence().satisfiesGates()
++                    && attempt.evidence().maximumScaledResidual() <= V3ColumnCalculator.SCALED_RESIDUAL_TOLERANCE
++                    && audit.accepted();
+         }
+     }
+ 
+@@ -213,6 +371,29 @@ public final class V3PressureContinuationAccess {
+         }
+     }
+ 
++    private static Constructor<?> constructor(Class<?> declaringClass, Class<?>... parameters) {
++        try {
++            Constructor<?> constructor = declaringClass.getDeclaredConstructor(parameters);
++            constructor.setAccessible(true);
++            return constructor;
++        } catch (ReflectiveOperationException missing) {
++            throw new IllegalStateException("Calculator diagnostic bridge no longer matches constructor " + declaringClass.getSimpleName(), missing);
++        }
++    }
++
++    private static Object construct(Constructor<?> constructor, Object... arguments) {
++        try {
++            return constructor.newInstance(arguments);
++        } catch (InvocationTargetException invocation) {
++            Throwable cause = invocation.getCause();
++            if (cause instanceof RuntimeException runtime) throw runtime;
++            if (cause instanceof Error error) throw error;
++            throw new IllegalStateException("Unexpected checked failure from calculator diagnostic construction", cause);
++        } catch (ReflectiveOperationException inaccessible) {
++            throw new IllegalStateException("Could not construct calculator diagnostic type " + constructor.getDeclaringClass().getSimpleName(), inaccessible);
++        }
++    }
++
+     private static Object truncationPolicy(double requestedCutoff) {
+         try {
+             Constructor<?> constructor = POLICY_CLASS.getDeclaredConstructor(double.class, double.class);
+diff --git a/build.gradle b/build.gradle
+index 6b4e19d..81386ac 100644
+--- a/build.gradle
++++ b/build.gradle
+@@ -284,6 +284,8 @@ tasks.register('v3LowPressureProbe', JavaExec) {
+     if (providers.gradleProperty('v3SmallSteps').isPresent()) args '--smallSteps'
+     if (providers.gradleProperty('v3Adaptive').isPresent()) args '--adaptive'
+     if (providers.gradleProperty('v3TruncatedProbe').isPresent()) args '--truncated'
++    if (providers.gradleProperty('v3RemaskProbe').isPresent()) args '--remask'
++    if (providers.gradleProperty('v3RemaskP0bProbe').isPresent()) args '--remask-p0b'
+ }
+ 
+ tasks.register('v3LowPressureLinearProbe', JavaExec) {
+@@ -293,6 +295,7 @@ tasks.register('v3LowPressureLinearProbe', JavaExec) {
+     mainClass = 'com.wormzjl.createcheme.science.column.v3.V3LowPressureLinearProbe'
+     minHeapSize = '512m'
+     maxHeapSize = '2g'
++    if (providers.gradleProperty('v3ConditioningCensus').isPresent()) args '--conditioning'
+     args '--input=' + providers.gradleProperty('v3LinearInput').getOrElse('benchmarks/results/v3-low-pressure/replay-counterfactuals.json')
+     args '--report=' + providers.gradleProperty('v3Report').getOrElse('build/reports/benchmarks/v3-low-pressure-linear.json')
+ }

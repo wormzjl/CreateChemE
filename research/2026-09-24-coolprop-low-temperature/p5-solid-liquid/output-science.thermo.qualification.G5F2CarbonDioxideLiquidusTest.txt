@@ -1,0 +1,91 @@
+===== science.thermo.qualification.G5F2CarbonDioxideLiquidusTest.xml tests="1" skipped="0" failures="0" errors="0"
+dataset | group | T K | P kPa | x_CO2 | kind | model T K | model - measured K | fluid at the onset
+Shen 2012 | CH4 | 112.00 | 93.0 | 0.000213000 | liquidus | 109.954 | -2.046 | SINGLE_LIQUID
+Shen 2012 | CH4 | 124.00 | 241.0 | 0.000823000 | liquidus | 121.456 | -2.544 | SINGLE_LIQUID
+Shen 2012 | CH4 | 129.70 | 350.0 | 0.00141300 | liquidus | 126.775 | -2.925 | SINGLE_LIQUID
+Shen 2012 | CH4 | 135.20 | 489.0 | 0.00247900 | liquidus | 132.829 | -2.371 | SINGLE_LIQUID
+Shen 2012 | CH4 | 139.40 | 617.0 | 0.00367800 | liquidus | 137.434 | -1.966 | SINGLE_LIQUID
+Shen 2012 | CH4 | 144.50 | 800.0 | 0.00566500 | liquidus | 142.848 | -1.652 | SINGLE_LIQUID
+Shen 2012 | CH4 | 150.40 | 1055.0 | 0.00822500 | liquidus | 147.861 | -2.539 | SINGLE_LIQUID
+Shen 2012 | CH4 | 162.00 | 1718.0 | 0.0176400 | liquidus | 159.214 | -2.786 | SINGLE_LIQUID
+Shen 2012 | CH4 | 169.90 | 2315.0 | 0.0289600 | liquidus | 167.447 | -2.453 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 112.00 | 318.0 | 0.000254000 | liquidus | 111.668 | -0.332 | VAPOR_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 112.00 | 268.0 | 0.000238000 | liquidus | 110.967 | -1.033 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 112.00 | 155.0 | 0.000225000 | liquidus | 110.434 | -1.566 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 124.00 | 580.0 | 0.000917000 | liquidus | 122.893 | -1.107 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 124.00 | 418.0 | 0.000909000 | liquidus | 122.581 | -1.419 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 124.00 | 326.0 | 0.000889000 | liquidus | 122.254 | -1.746 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 129.70 | 748.0 | 0.00159100 | liquidus | 128.470 | -1.230 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 129.70 | 545.0 | 0.00157700 | liquidus | 128.119 | -1.581 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 129.70 | 446.0 | 0.00150100 | liquidus | 127.474 | -2.226 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 135.20 | 968.0 | 0.00265200 | liquidus | 134.131 | -1.069 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 135.20 | 725.0 | 0.00256000 | liquidus | 133.428 | -1.772 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 135.20 | 596.0 | 0.00249500 | liquidus | 132.988 | -2.212 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 139.40 | 1146.0 | 0.00376800 | liquidus | 138.330 | -1.070 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 139.40 | 880.0 | 0.00374500 | liquidus | 137.919 | -1.481 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 139.40 | 724.0 | 0.00370100 | liquidus | 137.608 | -1.792 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 144.50 | 1397.0 | 0.00536600 | liquidus | 142.834 | -1.666 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 144.50 | 1095.0 | 0.00542300 | liquidus | 142.589 | -1.911 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 144.50 | 929.0 | 0.00550200 | liquidus | 142.583 | -1.917 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 150.40 | 1678.0 | 0.00815600 | liquidus | 148.577 | -1.823 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 150.40 | 1385.0 | 0.00820400 | liquidus | 148.194 | -2.206 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 150.40 | 1168.0 | 0.00821000 | liquidus | 147.974 | -2.426 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 162.00 | 2448.0 | 0.0159000 | liquidus | 158.725 | -3.275 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 162.00 | 2097.0 | 0.0161600 | liquidus | 158.333 | -3.667 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 162.00 | 1845.0 | 0.0174500 | liquidus | 159.247 | -2.753 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.9 CH4) | 169.90 | 3150.0 | 0.0252100 | liquidus | 166.532 | -3.368 | SINGLE_FLUID
+Shen 2012 | CH4 + N2 (0.95 CH4) | 169.90 | 2685.0 | 0.0267800 | liquidus | 166.788 | -3.112 | SINGLE_LIQUID
+Shen 2012 | CH4 + N2 (0.98 CH4) | 169.90 | 2421.0 | 0.0277100 | liquidus | 166.955 | -2.945 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 120.00 | 162.0 | 0.000624000 | liquidus | 118.612 | -1.388 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 120.00 | 171.0 | 0.000601000 | liquidus | 118.385 | -1.615 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 120.00 | 175.0 | 0.000577000 | liquidus | 118.121 | -1.879 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 124.00 | 218.0 | 0.000956000 | liquidus | 122.492 | -1.508 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 124.00 | 229.0 | 0.000945000 | liquidus | 122.534 | -1.466 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 124.00 | 233.0 | 0.000821000 | liquidus | 121.334 | -2.666 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 129.70 | 315.0 | 0.00158700 | liquidus | 127.450 | -2.250 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 129.70 | 331.0 | 0.00156600 | liquidus | 127.526 | -2.174 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 129.70 | 342.0 | 0.00154800 | liquidus | 127.581 | -2.119 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 135.20 | 437.0 | 0.00273400 | liquidus | 133.235 | -1.965 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 135.20 | 459.0 | 0.00266800 | liquidus | 133.252 | -1.948 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 135.20 | 473.0 | 0.00263000 | liquidus | 133.319 | -1.881 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 139.40 | 548.0 | 0.00394600 | liquidus | 137.436 | -1.964 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 139.40 | 578.0 | 0.00388500 | liquidus | 137.603 | -1.797 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 139.40 | 590.0 | 0.00384200 | liquidus | 137.746 | -1.654 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 144.50 | 708.0 | 0.00623400 | liquidus | 143.039 | -1.461 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 144.50 | 745.0 | 0.00603700 | liquidus | 143.070 | -1.430 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 144.50 | 770.0 | 0.00574300 | liquidus | 142.764 | -1.736 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 150.40 | 930.0 | 0.00922500 | liquidus | 148.188 | -2.212 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 150.40 | 982.0 | 0.00872700 | liquidus | 147.962 | -2.438 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 150.40 | 1012.0 | 0.00854400 | liquidus | 148.076 | -2.324 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 162.00 | 1488.0 | 0.0197500 | liquidus | 159.167 | -2.833 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 162.00 | 1588.0 | 0.0193300 | liquidus | 159.605 | -2.395 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 162.00 | 1632.0 | 0.0186400 | liquidus | 159.633 | -2.367 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 169.90 | 2006.0 | 0.0331100 | liquidus | 167.371 | -2.529 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 169.90 | 2155.0 | 0.0319200 | liquidus | 167.740 | -2.160 | SINGLE_LIQUID
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 169.90 | 2228.0 | 0.0302600 | liquidus | 167.603 | -2.297 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 129.65 | 361.2 | 0.00160000 | liquidus | 128.066 | -1.584 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 135.21 | 506.3 | 0.00250000 | liquidus | 132.924 | -2.286 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 139.43 | 635.7 | 0.00370000 | liquidus | 137.505 | -1.925 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 144.54 | 815.1 | 0.00580000 | liquidus | 143.155 | -1.385 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 150.37 | 1062.2 | 0.00930000 | liquidus | 149.593 | -0.777 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 162.04 | 1688.0 | 0.0183000 | liquidus | 159.812 | -2.228 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 169.87 | 2244.3 | 0.0294000 | liquidus | 167.738 | -2.132 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 182.15 | 3289.4 | 0.0585000 | liquidus | 180.385 | -1.765 | SINGLE_LIQUID
+Davis 1962 | CH4 (Table 4) | 189.26 | 3942.9 | 0.100800 | liquidus | 191.990 | +2.730 | VAPOR_LIQUID
+Davis 1962 | CH4 (Table 4) | 196.93 | 4545.5 | 0.153900 | liquidus | 199.716 | +2.786 | VAPOR_LIQUID
+Davis 1962 | CH4 (Table 4) | 201.26 | 4819.4 | 0.205000 | liquidus | 202.580 | +1.320 | VAPOR_LIQUID
+G5F2 liquidus: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Shen 2012 | CH4 | 9 | 0 | 0 | 0 | 2.365 | -2.365 | 2.925 | 2.0
+Shen 2012 | CH4 + N2 (0.9 CH4) | 9 | 0 | 0 | 0 | 1.660 | -1.660 | 3.368 | 2.0
+Shen 2012 | CH4 + N2 (0.95 CH4) | 9 | 0 | 0 | 0 | 2.020 | -2.020 | 3.667 | 2.0
+Shen 2012 | CH4 + N2 (0.98 CH4) | 9 | 0 | 0 | 0 | 2.176 | -2.176 | 2.945 | 2.0
+Shen 2012 | CH4 + C2H6 (0.9 CH4) | 9 | 0 | 0 | 0 | 2.012 | -2.012 | 2.833 | 2.0
+Shen 2012 | CH4 + C2H6 (0.95 CH4) | 9 | 0 | 0 | 0 | 1.936 | -1.936 | 2.438 | 2.0
+Shen 2012 | CH4 + C2H6 (0.98 CH4) | 9 | 0 | 0 | 0 | 2.103 | -2.103 | 2.666 | 2.0
+Davis 1962 | CH4 (Table 4) | 11 | 0 | 0 | 0 | 1.902 | -0.659 | 2.786 | 2.0
+Shen 2012 (dataset) | all | 63 | 0 | 0 | 0 | 2.039 | -2.039 | 3.667 | 2.0
+Davis 1962 (dataset) | all | 11 | 0 | 0 | 0 | 1.902 | -0.659 | 2.786 | 2.0
+G5F2 pooled: 74 points, MAD 2.018 K, bias -1.834 K, max 3.667 K (P0 target 2.0 K: missed)
+  Shen 2012: MAD 2.039 K against the P0 target 2.0 K: missed
+  Davis 1962: MAD 1.902 K against the P0 target 2.0 K: met
+

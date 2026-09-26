@@ -1,0 +1,17 @@
+2026-09-23T14:13:07.732Z gate ok {"endfield":0,"freeMiB":27289} for srv-mixed100-wp5-r02
+2026-09-23T14:13:07.733Z start srv-mixed100-wp5-r02 (server wp5 mixed100 warmup 60 s window 60 s)
+2026-09-23T14:15:38.427Z end srv-mixed100-wp5-r02 status=0
+2026-09-23T14:15:38.859Z analyzed srv-mixed100-wp5-r02
+2026-09-23T14:15:39.288Z gate ok {"endfield":0,"freeMiB":27237} for srv-mixed100-base-r02
+2026-09-23T14:15:39.289Z start srv-mixed100-base-r02 (server base mixed100 warmup 60 s window 60 s)
+2026-09-23T14:18:09.616Z end srv-mixed100-base-r02 status=0
+2026-09-23T14:18:10.023Z analyzed srv-mixed100-base-r02
+2026-09-23T14:18:10.457Z gate ok {"endfield":0,"freeMiB":27177} for srv-fill100-base-r02
+2026-09-23T14:18:10.458Z start srv-fill100-base-r02 (server base fill100 warmup 60 s window 60 s)
+2026-09-23T14:20:40.006Z end srv-fill100-base-r02 status=0
+2026-09-23T14:20:40.514Z analyzed srv-fill100-base-r02
+2026-09-23T14:20:40.977Z gate ok {"endfield":0,"freeMiB":27082} for srv-fill100-wp5-r02
+2026-09-23T14:20:40.977Z start srv-fill100-wp5-r02 (server wp5 fill100 warmup 60 s window 60 s)
+2026-09-23T14:23:09.368Z end srv-fill100-wp5-r02 status=0
+2026-09-23T14:23:09.885Z analyzed srv-fill100-wp5-r02
+2026-09-23T14:23:09.885Z campaign done

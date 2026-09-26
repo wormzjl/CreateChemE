@@ -1,0 +1,103 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalRegistry.java b/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalRegistry.java
+index 7e867db..2ad2188 100644
+--- a/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalRegistry.java
++++ b/src/main/java/com/wormzjl/createcheme/runtime/fluid/PhysicalRegistry.java
+@@ -27,6 +27,9 @@ public final class PhysicalRegistry {
+         void committed(Map<Long,WorldTopologyLedger.Registration> active);
+     }
+     private record ChunkKey(String dimension,long chunk) {}
++    static final long[] PHASES=new long[32];static final String[] PHASE_NAMES=new String[32];
++    static{String[] n={"s.copy","s.positions","s.bfs","s.queue","s.fence+commit","a.ready","a.filterStock","a.activeCopy","a.boundaries","a.selected","a.edits","a.compile","a.owners","a.replacements","a.applyReady","a.inverse","a.chunkIndex","a.topology","a.fences","a.commit(in topology)"};System.arraycopy(n,0,PHASE_NAMES,0,n.length);}
++    private static long lapAt;private static void begin(){lapAt=System.nanoTime();}private static void lap(int i){long now=System.nanoTime();PHASES[i]+=now-lapAt;lapAt=now;}
+     private final WorldTopologyLedger topology;
+     private final FluidThermodynamics model;
+     private final double[] weights;
+@@ -91,7 +94,7 @@ public final class PhysicalRegistry {
+ 
+     /** Queues edits as one ledger event, fenced on the islands it touches; {@link #applyPending()} applies it. */
+     public WorldTopologyLedger.Event submit(List<WorldTopologyLedger.Edit> edits,long nextId,WorldTopologyLedger.Recovery recovery) {
+-        var prospective=new HashMap<>(registrations());var starts=new HashSet<PhysicalFluidTopology.Position>();var touched=new HashSet<Long>();
++        begin();var prospective=new HashMap<>(registrations());var starts=new HashSet<PhysicalFluidTopology.Position>();var touched=new HashSet<Long>();
+         for(var edit:edits) {
+             var old=prospective.get(edit.id());if(old!=null)starts.add(old.device().position());touched.add(edit.id());
+             if(edit.replacement()==null)prospective.remove(edit.id());
+@@ -100,7 +103,7 @@ public final class PhysicalRegistry {
+                 if(record.device().boundary()&&(old==null||!record.spec().equals(old.spec()))){var initialized=record.spec().initialize(record.device(),model,()->{});MaterialRuntime.active().solids().validate(initialized.inventory().solids());}
+             }
+         }
+-        var positions=new HashMap<PhysicalFluidTopology.Position,WorldTopologyLedger.Registration>();for(var r:prospective.values())positions.put(r.device().position(),r);
++        lap(0);var positions=new HashMap<PhysicalFluidTopology.Position,WorldTopologyLedger.Registration>();for(var r:prospective.values())positions.put(r.device().position(),r);lap(1);
+         var queue=new ArrayDeque<PhysicalFluidTopology.Position>(starts);var seen=new HashSet<PhysicalFluidTopology.Position>();
+         // Include both sides of a removed link, then traverse actual connection faces in the proposed registry.
+         for(var start:starts)for(var d:PhysicalFluidTopology.Direction.values())queue.add(start.offset(d));
+@@ -110,8 +113,8 @@ public final class PhysicalRegistry {
+                 var neighbor=positions.get(position.offset(d));if(neighbor!=null&&record.device().connects(d)&&neighbor.device().connects(d)&&!(record.device().boundary()&&neighbor.device().boundary()))queue.add(neighbor.device().position());
+             }
+         }
+-        var prepared=topology.queue(edits,touched,nextId,recovery);var affected=new HashSet<Long>();for(long id:touched)if(owners.containsKey(id))affected.add(owners.get(id));
+-        host.coordinator().fence(prepared.event().id(),prepared.event().tick(),affected);topology.commit(prepared);registrationsChanged();
++        lap(2);var prepared=topology.queue(edits,touched,nextId,recovery);lap(3);var affected=new HashSet<Long>();for(long id:touched)if(owners.containsKey(id))affected.add(owners.get(id));
++        host.coordinator().fence(prepared.event().id(),prepared.event().tick(),affected);topology.commit(prepared);registrationsChanged();lap(4);
+         return prepared.event();
+     }
+     /** Applies ready events whose owners are aligned, at most sixteen; returns whether one queued a solid recovery. */
+@@ -122,9 +125,9 @@ public final class PhysicalRegistry {
+             // queue, their owners from the coordinator's fence index, and state from the live ledger.
+             // Snapshot validation remains at actual capture/transactions.
+             if(!topology.hasPendingEvents())break;
+-            var selectedEvent=nextReadyEvent();if(selectedEvent==null)break;
++            begin();var selectedEvent=nextReadyEvent();lap(5);if(selectedEvent==null)break;PHASES[31]++;
+             var event=selectedEvent.event();var affected=selectedEvent.affected();var registered=topology.active();
+-            var cakes=filterStock();RecoveredSolid recovered=null;
++            var cakes=filterStock();lap(6);RecoveredSolid recovered=null;
+             if(event.recovery()!=null){var request=event.recovery();var cake=cakes.get(request.filterId());var record=registered.get(request.filterId());
+                 if(record!=null&&cake!=null&&!cake.captured().empty()&&(request.player()==null||host.acceptsRecovery(request.player()))){
+                     recovered=new RecoveredSolid(record.device().position(),request.player(),cake.captured(),cake.energyJoule());cakes.put(request.filterId(),cake.cleared());
+@@ -132,8 +135,8 @@ public final class PhysicalRegistry {
+                 // the recovery input on its menu's next bucket, never as a message pushed from here.
+                 }else if(request.player()!=null)host.refused(event.id(),"Filter unchanged: inventory full or no captured solids");
+             }
+-            var active=new HashMap<>(registered);var stock=boundaries();var additions=new HashMap<Long,PassiveNetwork.Reservoir>();var removed=new HashMap<Long,PassiveNetwork.Reservoir>();
+-            var selected=new HashSet<Long>(event.touched());for(var entry:owners.entrySet())if(affected.contains(entry.getValue()))selected.add(entry.getKey());
++            var active=new HashMap<>(registered);lap(7);var stock=boundaries();lap(8);var additions=new HashMap<Long,PassiveNetwork.Reservoir>();var removed=new HashMap<Long,PassiveNetwork.Reservoir>();
++            var selected=new HashSet<Long>(event.touched());for(var entry:owners.entrySet())if(affected.contains(entry.getValue()))selected.add(entry.getKey());lap(9);
+             for(var edit:event.edits()) {
+                 var old=active.get(edit.id());var replacement=edit.replacement();
+                 if(replacement==null) {active.remove(edit.id());var previous=stock.remove(edit.id());if(previous!=null&&previous.kind()==PassiveNetwork.NodeKind.RESERVOIR)removed.put(edit.id(),previous);}
+@@ -145,27 +148,27 @@ public final class PhysicalRegistry {
+                     }
+                 }
+             }
+-            var nextCompiled=PhysicalFluidTopology.compile(active.values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock,cakes,model.initialNitrogenCharge(1,298.15,101325,()->{}));
+-            var replacements=new ArrayList<IslandCoordinator.Replacement>();var nextOwners=new HashMap<>(owners);nextOwners.entrySet().removeIf(e->affected.contains(e.getValue())||!active.containsKey(e.getKey()));
++            lap(10);var nextCompiled=PhysicalFluidTopology.compile(active.values().stream().map(WorldTopologyLedger.Registration::device).toList(),stock,cakes,model.initialNitrogenCharge(1,298.15,101325,()->{}));
++            lap(11);var replacements=new ArrayList<IslandCoordinator.Replacement>();var nextOwners=new HashMap<>(owners);nextOwners.entrySet().removeIf(e->affected.contains(e.getValue())||!active.containsKey(e.getKey()));lap(12);
+             long nextId=topology.nextIdentity();String dimension=null;
+             for(var island:nextCompiled.islands())if(island.physicalIds().stream().anyMatch(selected::contains)) {
+                 long id=nextId++;replacements.add(new IslandCoordinator.Replacement(id,island.graph()));
+                 for(long physical:island.physicalIds()){nextOwners.put(physical,id);dimension=active.get(physical).device().position().dimension();}
+             }
+             if(dimension==null){var edit=event.edits().getFirst();var record=edit.replacement()!=null?edit.replacement():registered.get(edit.id());dimension=record.device().position().dimension();}
+-            var preparation=topology.applyReady(event.id(),additions.values(),removed.values(),weights,nextId);
++            lap(13);var preparation=topology.applyReady(event.id(),additions.values(),removed.values(),weights,nextId);
+             var prepared=recovered==null?preparation:topology.withRecovery(preparation,recovered);
+-            var nextMembers=inverse(nextOwners);
+-            var nextChunks=chunkIndex(active);
++            lap(14);var nextMembers=inverse(nextOwners);lap(15);
++            var nextChunks=chunkIndex(active);lap(16);
+             host.topology(dimension,event.id(),affected,replacements,event.tick(),topology.onlineTick(),additions,removed.keySet(),recovered==null?Map.of():Map.of(PhysicalFluidTopology.filterIdentity(event.recovery().filterId()),filterStock().get(event.recovery().filterId())),()->{
+-                topology.commit(prepared);compiled=nextCompiled;owners=nextOwners;members=nextMembers;chunkMembers=nextChunks;registrationsChanged();
+-                host.committed(active);
+-            });
++                long c0=System.nanoTime();topology.commit(prepared);compiled=nextCompiled;owners=nextOwners;members=nextMembers;chunkMembers=nextChunks;registrationsChanged();
++                host.committed(active);PHASES[19]+=System.nanoTime()-c0;
++            });lap(17);
+             for(var future:topology.events())for(var replacement:replacements) {
+                 boolean touches=future.touched().stream().anyMatch(id->Objects.equals(owners.get(id),replacement.id()));
+                 if(touches&&!coordinator.hasFence(replacement.id(),future.id()))coordinator.fence(future.id(),future.tick(),List.of(replacement.id()));
+             }
+-            queuedRecovery|=recovered!=null;
++            lap(18);queuedRecovery|=recovered!=null;
+         }
+         return queuedRecovery;
+     }

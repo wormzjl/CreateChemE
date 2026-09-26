@@ -1,0 +1,24 @@
+DYNAMIC_METRICS bore=0.05 ports=4 unequal=false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.05 ports=4 unequal=false FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 1.3351756362421356E-4; active-set pass=0
+DYNAMIC_METRICS bore=0.05 ports=4 unequal=true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.05 ports=4 unequal=true FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.042505619902637244; active-set pass=0
+DYNAMIC_METRICS bore=0.05 ports=5 unequal=false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.05 ports=5 unequal=false FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 0.13496694456310954; active-set pass=0
+DYNAMIC_METRICS bore=0.05 ports=5 unequal=true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.05 ports=5 unequal=true FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.07949123471588422; active-set pass=0
+DYNAMIC_METRICS bore=0.05 ports=6 unequal=false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.05 ports=6 unequal=false FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 1.689138769446193E-7; active-set pass=0
+DYNAMIC_METRICS bore=0.05 ports=6 unequal=true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.05 ports=6 unequal=true FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.1269422556791421; active-set pass=0
+DYNAMIC_METRICS bore=0.02 ports=4 unequal=false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.02 ports=4 unequal=false FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 1.0586848006195136E-5; active-set pass=0
+DYNAMIC_METRICS bore=0.02 ports=4 unequal=true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.02 ports=4 unequal=true FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.03276529143958879; active-set pass=0
+DYNAMIC_METRICS bore=0.02 ports=5 unequal=false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.02 ports=5 unequal=false FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 2.759818640050401E-5; active-set pass=0
+DYNAMIC_METRICS bore=0.02 ports=5 unequal=true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.02 ports=5 unequal=true FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.06109694846254569; active-set pass=0
+DYNAMIC_METRICS bore=0.02 ports=6 unequal=false maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.02 ports=6 unequal=false FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.35517736562224067; active-set pass=0
+DYNAMIC_METRICS bore=0.02 ports=6 unequal=true maxComponentError=0.0 maxEnergyError=0.0 reversedEdges=0 methaneInTank2=0.0
+DYNAMIC bore=0.02 ports=6 unequal=true FAIL step=0 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.09810167134766774; active-set pass=0

@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "createcheme:block/pressure_control_valve"
+    },
+    "facing=east": {
+      "model": "createcheme:block/pressure_control_valve",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "createcheme:block/pressure_control_valve",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "createcheme:block/pressure_control_valve",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "createcheme:block/pressure_control_valve",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "createcheme:block/pressure_control_valve",
+      "x": 90
+    }
+  }
+}

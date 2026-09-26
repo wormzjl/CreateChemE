@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-24T05:32:36.271Z" hostname="WORMZ-PC" time="4.391">
+  <properties/>
+  <testcase name="diluteGasSmallSignalMatchesAnalyticAdiabaticPoiseuilleRelaxation()" classname="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" time="0.005"/>
+  <testcase name="freeWaterDisappearanceMatchesRefinedTrajectoriesAcrossThreeIntervals()" classname="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" time="3.687"/>
+  <testcase name="liquidCompressionWetCrudeReversalAndPumpMatchRefinedTrajectories()" classname="com.wormzjl.createcheme.science.fluid.network.TransientQualificationTest" time="0.691"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

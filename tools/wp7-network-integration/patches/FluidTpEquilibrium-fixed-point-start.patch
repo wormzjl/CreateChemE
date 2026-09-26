@@ -1,0 +1,45 @@
+--- src/main/java/com/wormzjl/createcheme/science/thermo/phase/FluidTpEquilibrium.java	2026-09-25 02:33:02.599669000 +0800
++++ build/wp7/engine-fp/src/FluidTpEquilibrium.java	2026-09-25 03:38:26.491518500 +0800
+@@ -2657,6 +2657,7 @@
+             var split = new EquilibriumResult.FreeWater(Classification.NONE, saturation, p, p, 0.0, water);
+             return converged(competition, Classification.FREE_WATER, List.of(gas), List.of(), diagnostics(w, null, false), null, split);
+         }
++        double saturatedPc = Double.NaN, saturatedGas = 0.0;
+         if (p > saturation + SATURATION_MARGIN) {
+             double pc = p - saturation;
+             setBranches(t, p, pc, w);
+@@ -2664,6 +2665,7 @@
+             if (outcome == FAILED) return failed(t, p, competition, w);
+             double gasVolume = hydrocarbonVapour(t, outcome, w);
+             double required = saturation * gasVolume / (R * t);
++            saturatedPc = pc;saturatedGas = gasVolume;
+             if (required <= water) {
+                 double partial = gasVolume > 0.0 ? required * R * t / gasVolume : 0.0;
+                 if (required > 0.0) {
+@@ -2673,6 +2675,26 @@
+                 return wetResult(t, p, pc, outcome, required, water - required, saturation, partial, competition, w);
+             }
+         }
++        // WP7 scratch: the fixed-point start of the WP4 runtime diagnosis (section 2.6), accepted on the bisection's tests.
++        if (Boolean.getBoolean("wp7.fixedPoint") && saturatedGas > 0.0) {
++            double guess = p / (1.0 + water * R * t / (saturatedGas * saturatedPc));
++            for (int fixed = 0; fixed < 3; fixed++) {
++                setBranches(t, p, guess, w);
++                int trial = hydrocarbon(t, w);
++                if (trial == FAILED) break;
++                double gas = hydrocarbonVapour(t, trial, w);
++                if (!(gas > 0.0)) break;
++                double residual = guess + water * R * t / gas - p;
++                if (Math.abs(residual) < PARTIAL_PRESSURE_TOLERANCE * p) {
++                    double partial = water * R * t / gas;
++                    if (Math.abs(guess + partial - p) > PARTIAL_PRESSURE_ACCEPTANCE * p) break;
++                    ThermoDomainViolation steam = steamViolation(t, partial);
++                    if (steam != null) return EquilibriumResult.outOfDomain(Specification.TP, contract.identity(), competition, steam);
++                    return wetResult(t, p, guess, trial, water, 0.0, saturation, partial, competition, w);
++                }
++                guess = p - water * R * t / gas;
++            }
++        }
+         // All water is steam; the hydrocarbon partial pressure closes the gas volume (the network's bisection).
+         double low = PARTIAL_PRESSURE_FLOOR;
+         double high = p;

@@ -1,0 +1,10 @@
+transient100-wp2-off-r02 transient100 false
+transient100-wp2-on-r03 transient100 true
+stress100-wp2-on-r02 stress100 true
+stress100-wp2-off-r03 stress100 false
+stress100-wp2-tol8-r01 stress100 true 1e-8
+stress100-wp2-tol7-r01 stress100 true 1e-7
+rest100-wp2-off-r03 rest100 false - memory
+rest100-wp2-on-r02 rest100 true - memory
+mixed100-wp2-off-r02 mixed100 false
+mixed100-wp2-on-r02 mixed100 true

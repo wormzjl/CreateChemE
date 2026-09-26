@@ -1,0 +1,51 @@
+[
+  {
+    "id": "laserio",
+    "repo": "Direwolf20-MC/LaserIO",
+    "sha": "4d278a6351a434d343fbf70d942baeeaf2607536",
+    "path": "src/main/java/com/direwolf20/laserio/common/blockentities/LaserNodeBE.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/laserio/src/main/java/com/direwolf20/laserio/common/blockentities/LaserNodeBE.java"
+  },
+  {
+    "id": "mi",
+    "repo": "AztechMC/Modern-Industrialization",
+    "sha": "e0b405a1f24917db38cb5e82836511f3ad357afe",
+    "path": "src/main/java/aztech/modern_industrialization/pipes/api/PipeNetwork.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/mi/src/main/java/aztech/modern_industrialization/pipes/api/PipeNetwork.java"
+  },
+  {
+    "id": "oritech",
+    "repo": "Rearth/Oritech",
+    "sha": "bf0d3e96b9a21e3b132d06a6be3c505b00588f00",
+    "path": "wiki/content/logistics/fluid_pipe.mdx",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/oritech/wiki/content/logistics/fluid_pipe.mdx"
+  },
+  {
+    "id": "oritech",
+    "repo": "Rearth/Oritech",
+    "sha": "bf0d3e96b9a21e3b132d06a6be3c505b00588f00",
+    "path": "common/src/main/java/rearth/oritech/block/entity/pipes/FluidPipeInterfaceEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/oritech/common/src/main/java/rearth/oritech/block/entity/pipes/FluidPipeInterfaceEntity.java"
+  },
+  {
+    "id": "gt",
+    "repo": "GregTechCEu/GregTech-Modern",
+    "sha": "f6200e018582c3e26e8db06c289d9e01c8250ac8",
+    "path": "src/main/java/com/gregtechceu/gtceu/api/material/material/properties/FluidPipeProperties.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/gt/src/main/java/com/gregtechceu/gtceu/api/material/material/properties/FluidPipeProperties.java"
+  },
+  {
+    "id": "gt",
+    "repo": "GregTechCEu/GregTech-Modern",
+    "sha": "f6200e018582c3e26e8db06c289d9e01c8250ac8",
+    "path": "src/main/java/com/gregtechceu/gtceu/common/blockentity/FluidPipeBlockEntity.java",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/gt/src/main/java/com/gregtechceu/gtceu/common/blockentity/FluidPipeBlockEntity.java"
+  },
+  {
+    "id": "gt",
+    "repo": "GregTechCEu/GregTech-Modern",
+    "sha": "f6200e018582c3e26e8db06c289d9e01c8250ac8",
+    "path": "gradle.properties",
+    "dest": "D:/Minecraft/Modding/1.21/CreateChemE/research/fluid-pipes-1.21.1/source/gt/gradle.properties"
+  }
+]

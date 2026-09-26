@@ -1,0 +1,100 @@
+solved to tick 400, 47 solves; rest certified 6/6
+island 1000 rest100 CLOSED ladder 0 [STEADY]: nodes 10 pipes 13 unit 15972 B (gzip 11895)
+island 1001 rest100 CLOSED ladder 1 [STEADY]: nodes 22 pipes 31 unit 46541 B (gzip 38566)
+island 1002 rest100 CLOSED ladder 2 [STEADY]: nodes 14 pipes 19 unit 28448 B (gzip 22645)
+island 1003 rest100 CLOSED ladder 3 [STEADY]: nodes 28 pipes 40 unit 59595 B (gzip 49240)
+island 1004 rest100 CLOSED ladder 4 [STEADY]: nodes 20 pipes 28 unit 36015 B (gzip 27927)
+island 1005 rest100 CLOSED ladder 5 [STEADY]: nodes 12 pipes 16 unit 19294 B (gzip 14443)
+island 2000 stress100 THROUGH ladder 0 [AWAKE]: nodes 12 pipes 15 unit 13431 B (gzip 11084)
+island 2001 stress100 THROUGH ladder 1 [AWAKE]: nodes 25 pipes 34 unit 28169 B (gzip 22883)
+island 2002 stress100 THROUGH ladder 2 [AWAKE]: nodes 17 pipes 22 unit 18973 B (gzip 15621)
+island 2003 stress100 THROUGH ladder 3 [AWAKE]: nodes 30 pipes 42 unit 35261 B (gzip 28430)
+island 2004 stress100 THROUGH ladder 4 [AWAKE]: nodes 22 pipes 30 unit 26065 B (gzip 21377)
+island 2005 stress100 THROUGH ladder 5 [AWAKE]: nodes 14 pipes 18 unit 15731 B (gzip 12973)
+island 3000 in-game rest line (N2) [REST]: nodes 2 pipes 1 unit 406 B (gzip 226)
+island 3001 lone tank [REST]: nodes 1 pipes 0 unit 243 B (gzip 177)
+core record: 9318 bytes for 14 islands, 3131 with none: 132.9 bytes per index row; string table 4 entries, 1683 bytes; package table 2644 bytes
+
+## rest100 CLOSED (6 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| header (identity, revision, generation) | 30 | 0.1 % |
+| dimension and package | 10 | 0.0 % |
+| status | 71 | 0.2 % |
+| allowance | 3 | 0.0 % |
+| fences | 1 | 0.0 % |
+| graph topology (nodes and pipes, once) | 1522 | 4.4 % |
+| graph state (inventories, phases, pipe masks and filters) | 9041 | 26.4 % |
+| anchor | 28 | 0.1 % |
+| history: scalars and flows | 219 | 0.6 % |
+| history: boundaries | 1 | 0.0 % |
+| history: reasons, modes, heads | 32 | 0.1 % |
+| history: pipe transfers | 14276 | 41.6 % |
+| certificate signature | 35 | 0.1 % |
+| certificate: interval start graph | 9042 | 26.4 % |
+| unit | 34311 | 100 % |
+| gzip of the unit | 27453 | |
+| nodes / pipes | 17.7 / 24.5 | |
+
+## stress100 THROUGH (6 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| header (identity, revision, generation) | 30 | 0.1 % |
+| dimension and package | 10 | 0.0 % |
+| status | 5 | 0.0 % |
+| allowance | 3 | 0.0 % |
+| fences | 1 | 0.0 % |
+| graph topology (nodes and pipes, once) | 1683 | 7.3 % |
+| graph state (inventories, phases, pipe masks and filters) | 9842 | 42.9 % |
+| anchor | 30 | 0.1 % |
+| history: scalars and flows | 239 | 1.0 % |
+| history: boundaries | 1521 | 6.6 % |
+| history: reasons, modes, heads | 35 | 0.2 % |
+| history: pipe transfers | 9540 | 41.6 % |
+| certificate: interval start graph | 1 | 0.0 % |
+| unit | 22938 | 100 % |
+| gzip of the unit | 18728 | |
+| nodes / pipes | 20.0 / 26.8 | |
+
+## in-game rest line (1 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| header (identity, revision, generation) | 30 | 7.4 % |
+| dimension and package | 10 | 2.5 % |
+| status | 30 | 7.4 % |
+| allowance | 3 | 0.7 % |
+| fences | 1 | 0.2 % |
+| graph topology (nodes and pipes, once) | 96 | 23.6 % |
+| graph state (inventories, phases, pipe masks and filters) | 156 | 38.4 % |
+| anchor | 4 | 1.0 % |
+| history: scalars and flows | 21 | 5.2 % |
+| history: boundaries | 1 | 0.2 % |
+| history: reasons, modes, heads | 6 | 1.5 % |
+| history: pipe transfers | 12 | 3.0 % |
+| certificate signature | 35 | 8.6 % |
+| certificate: interval start graph | 1 | 0.2 % |
+| unit | 406 | 100 % |
+| gzip of the unit | 226 | |
+| nodes / pipes | 2.0 / 1.0 | |
+
+## lone tank (1 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| header (identity, revision, generation) | 30 | 12.3 % |
+| dimension and package | 10 | 4.1 % |
+| status | 30 | 12.3 % |
+| allowance | 3 | 1.2 % |
+| fences | 1 | 0.4 % |
+| graph topology (nodes and pipes, once) | 27 | 11.1 % |
+| graph state (inventories, phases, pipe masks and filters) | 77 | 31.7 % |
+| anchor | 3 | 1.2 % |
+| history: scalars and flows | 20 | 8.2 % |
+| history: boundaries | 1 | 0.4 % |
+| history: reasons, modes, heads | 4 | 1.6 % |
+| history: pipe transfers | 1 | 0.4 % |
+| certificate signature | 35 | 14.4 % |
+| certificate: interval start graph | 1 | 0.4 % |
+| unit | 243 | 100 % |
+| gzip of the unit | 177 | |
+| nodes / pipes | 1.0 / 0.0 | |
+

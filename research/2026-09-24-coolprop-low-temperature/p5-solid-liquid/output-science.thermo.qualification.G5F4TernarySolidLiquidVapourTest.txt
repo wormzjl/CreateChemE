@@ -1,0 +1,97 @@
+===== science.thermo.qualification.G5F4TernarySolidLiquidVapourTest.xml tests="1" skipped="0" failures="0" errors="0"
+dataset | group | T K | P kPa | x_CO2 | kind | model T K | model - measured K | fluid at the onset
+Campestrini 2022 | SVE 0 % N2 | 205.42 | 4010.0 | 0.105600 | frost | 204.750 | -0.673 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 202.43 | 4010.0 | 0.0872000 | frost | 201.749 | -0.684 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 199.45 | 4152.0 | 0.0727000 | frost | 198.860 | -0.585 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 196.46 | 4009.0 | 0.0597000 | frost | 195.890 | -0.571 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 194.46 | 4008.0 | 0.0526000 | frost | 193.927 | -0.531 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 193.50 | 4004.0 | 0.0496000 | frost | 193.014 | -0.483 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 193.27 | 4019.0 | 0.0486000 | frost | 192.666 | -0.602 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 191.53 | 4005.0 | 0.0441000 | frost | 191.134 | -0.398 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 190.82 | 3982.0 | 0.0419000 | frost | 190.359 | -0.464 | SINGLE_FLUID
+Campestrini 2022 | SVE 0 % N2 | 190.56 | 4011.0 | 0.0417000 | frost | 190.182 | -0.373 | VAPOR_LIQUID
+Campestrini 2022 | SVE 0 % N2 | 190.54 | 4015.0 | 0.0419000 | frost | 190.249 | -0.294 | VAPOR_LIQUID
+Campestrini 2022 | SVE 0 % N2 | 190.41 | 4007.0 | 0.0414000 | frost | 190.073 | -0.333 | VAPOR_LIQUID
+Campestrini 2022 | SLE 0 % N2 | 189.64 | 3969.0 | 0.0941000 | liquidus | 189.967 | +0.324 | VAPOR_LIQUID
+Campestrini 2022 | SLE 0 % N2 | 188.76 | 3996.0 | 0.0897000 | liquidus | 188.759 | +0.003 | SINGLE_FLUID
+Campestrini 2022 | SLE 0 % N2 | 185.51 | 3984.0 | 0.0756000 | liquidus | 185.034 | -0.479 | SINGLE_FLUID
+Campestrini 2022 | SLE 0 % N2 | 182.55 | 3993.0 | 0.0640000 | liquidus | 181.620 | -0.933 | SINGLE_FLUID
+Campestrini 2022 | SLE 0 % N2 | 179.59 | 4006.0 | 0.0533000 | liquidus | 178.041 | -1.549 | SINGLE_FLUID
+Campestrini 2022 | SLE 0 % N2 | 176.61 | 3931.0 | 0.0449000 | liquidus | 174.847 | -1.765 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 205.48 | 3999.0 | 0.104100 | frost | 204.644 | -0.836 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 202.42 | 3995.0 | 0.0856000 | frost | 201.608 | -0.807 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 199.41 | 4000.0 | 0.0709000 | frost | 198.729 | -0.677 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 196.42 | 3996.0 | 0.0582000 | frost | 195.746 | -0.677 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 193.46 | 4006.0 | 0.0482000 | frost | 192.905 | -0.553 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 190.46 | 4002.0 | 0.0400000 | frost | 190.082 | -0.380 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 189.51 | 3997.0 | 0.0381000 | frost | 189.341 | -0.173 | SINGLE_FLUID
+Campestrini 2022 | SVE 5 % N2 | 188.51 | 3999.0 | 0.0362000 | frost | 188.543 | +0.034 | SINGLE_FLUID
+Campestrini 2022 | SLE 5 % N2 | 182.57 | 4002.0 | 0.0603000 | liquidus | 181.987 | -0.578 | SINGLE_FLUID
+Campestrini 2022 | SLE 5 % N2 | 181.58 | 4002.0 | 0.0573000 | liquidus | 180.846 | -0.730 | SINGLE_FLUID
+Campestrini 2022 | SLE 5 % N2 | 179.55 | 4001.0 | 0.0510000 | liquidus | 178.385 | -1.166 | SINGLE_FLUID
+Campestrini 2022 | SLE 5 % N2 | 177.55 | 3998.0 | 0.0459000 | liquidus | 176.259 | -1.289 | SINGLE_FLUID
+Campestrini 2022 | SLE 5 % N2 | 176.56 | 4001.0 | 0.0432000 | liquidus | 175.052 | -1.506 | SINGLE_FLUID
+Campestrini 2022 | SLE 5 % N2 | 175.77 | 4000.0 | 0.0417000 | liquidus | 174.371 | -1.396 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 205.41 | 3995.0 | 0.104500 | frost | 204.814 | -0.594 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 202.42 | 3993.0 | 0.0855086 | frost | 201.722 | -0.696 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 199.41 | 4000.0 | 0.0704000 | frost | 198.780 | -0.633 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 196.85 | 3993.0 | 0.0591000 | frost | 196.168 | -0.677 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 196.44 | 3997.0 | 0.0577000 | frost | 195.811 | -0.627 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 193.47 | 4010.0 | 0.0474000 | frost | 192.906 | -0.561 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 190.58 | 3994.0 | 0.0390000 | frost | 190.059 | -0.520 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 190.48 | 4004.0 | 0.0386961 | frost | 189.930 | -0.549 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 187.50 | 3999.0 | 0.0318000 | frost | 187.039 | -0.457 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 186.50 | 4001.0 | 0.0298000 | frost | 186.056 | -0.445 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 185.51 | 4001.0 | 0.0282000 | frost | 185.212 | -0.294 | SINGLE_FLUID
+Campestrini 2022 | SVE 10 % N2 | 184.52 | 3999.0 | 0.0266000 | frost | 184.310 | -0.211 | VAPOR_LIQUID
+Campestrini 2022 | SLE 10 % N2 | 178.77 | 4003.0 | 0.0462462 | liquidus | 178.019 | -0.746 | SINGLE_FLUID
+Campestrini 2022 | SLE 10 % N2 | 178.50 | 3992.0 | 0.0456000 | liquidus | 177.718 | -0.778 | SINGLE_FLUID
+Campestrini 2022 | SLE 10 % N2 | 177.57 | 4007.0 | 0.0435000 | liquidus | 176.637 | -0.936 | SINGLE_FLUID
+Campestrini 2022 | SLE 10 % N2 | 176.65 | 3995.0 | 0.0416000 | liquidus | 175.682 | -0.970 | SINGLE_FLUID
+Campestrini 2022 | SLE 10 % N2 | 175.72 | 3996.0 | 0.0395000 | liquidus | 174.613 | -1.108 | SINGLE_FLUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 183.56 | 4002.0 | 0.0247000 | frost | 183.328 | -0.232 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 183.54 | 4040.0 | 0.0246000 | frost | 183.162 | -0.375 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 183.52 | 4014.0 | 0.0246000 | frost | 183.260 | -0.261 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 182.57 | 3998.0 | 0.0229000 | frost | 182.390 | -0.181 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 182.53 | 4025.0 | 0.0585000 | liquidus | 182.090 | -0.443 | SINGLE_FLUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 182.53 | 4025.0 | 0.0227000 | frost | 182.207 | -0.326 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 181.54 | 4000.0 | 0.0553000 | liquidus | 181.150 | -0.390 | SINGLE_FLUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 181.54 | 4000.0 | 0.0212000 | frost | 181.444 | -0.096 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 181.52 | 4006.0 | 0.0554000 | liquidus | 181.194 | -0.327 | SINGLE_FLUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 181.52 | 4006.0 | 0.0210000 | frost | 181.299 | -0.222 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 181.06 | 4003.0 | 0.0203000 | frost | 180.894 | -0.161 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 181.04 | 3997.0 | 0.0535000 | liquidus | 180.586 | -0.453 | SINGLE_FLUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 181.04 | 3997.0 | 0.0203000 | frost | 180.912 | -0.127 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 180.54 | 3998.0 | 0.0518000 | liquidus | 180.039 | -0.502 | SINGLE_FLUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 180.54 | 3998.0 | 0.0195000 | frost | 180.418 | -0.123 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 180.06 | 3998.0 | 0.0188000 | frost | 179.984 | -0.074 | VAPOR_LIQUID
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 180.04 | 3998.0 | 0.0502000 | liquidus | 179.523 | -0.520 | SINGLE_FLUID
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 180.04 | 3998.0 | 0.0188000 | frost | 179.989 | -0.054 | VAPOR_LIQUID
+Riva-Stringari 2018 | N2 series liquid | 145.90 | 2040.0 | 0.00690900 | liquidus | 148.032 | +2.132 | VAPOR_LIQUID
+Riva-Stringari 2018 | N2 series vapour | 145.90 | 2040.0 | 0.000470000 | frost | 145.887 | -0.013 | SINGLE_FLUID
+Riva-Stringari 2018 | N2 series liquid | 132.10 | 1360.0 | 0.00163200 | liquidus | 130.054 | -2.046 | VAPOR_LIQUID
+Riva-Stringari 2018 | N2 series vapour | 132.10 | 1360.0 | 4.80000e-05 | frost | 130.508 | -1.592 | SINGLE_VAPOR
+Riva-Stringari 2018 | N2 series liquid | 124.90 | 770.0 | 0.000749000 | liquidus | 122.344 | -2.556 | VAPOR_LIQUID
+Riva-Stringari 2018 | N2 series vapour | 124.90 | 770.0 | 1.60000e-05 | frost | 123.246 | -1.654 | SINGLE_VAPOR
+Riva-Stringari 2018 | N2 series liquid | 145.80 | 1120.0 | 0.00572200 | liquidus | 143.818 | -1.982 | VAPOR_LIQUID
+Riva-Stringari 2018 | N2 series vapour | 145.80 | 1120.0 | 0.000572000 | frost | 145.394 | -0.406 | SINGLE_VAPOR
+Riva-Stringari 2018 | N2 series liquid | 132.10 | 770.0 | 0.00118500 | liquidus | 125.405 | -6.695 | SINGLE_LIQUID
+Riva-Stringari 2018 | N2 series vapour | 132.10 | 770.0 | 5.10000e-05 | frost | 129.129 | -2.971 | VAPOR_LIQUID
+Riva-Stringari 2018 | N2 series liquid | 124.50 | 520.0 | 0.000532000 | liquidus | 117.769 | -6.731 | SINGLE_LIQUID
+Riva-Stringari 2018 | N2 series vapour | 124.50 | 520.0 | 1.50000e-05 | frost | 121.578 | -2.922 | VAPOR_LIQUID
+G5F4 ternaries: dataset | group | scored | holds | out of domain | failures | MAD K | bias K | max K | target K
+Campestrini 2022 | SVE 0 % N2 | 12 | 0 | 0 | 0 | 0.499 | -0.499 | 0.684 | 2.0
+Campestrini 2022 | SLE 0 % N2 | 6 | 0 | 0 | 0 | 0.842 | -0.733 | 1.765 | 2.0
+Campestrini 2022 | SVE 5 % N2 | 8 | 0 | 0 | 0 | 0.517 | -0.509 | 0.836 | 2.0
+Campestrini 2022 | SLE 5 % N2 | 6 | 0 | 0 | 0 | 1.111 | -1.111 | 1.506 | 2.0
+Campestrini 2022 | SVE 10 % N2 | 12 | 0 | 0 | 0 | 0.522 | -0.522 | 0.696 | 2.0
+Campestrini 2022 | SLE 10 % N2 | 5 | 0 | 0 | 0 | 0.907 | -0.907 | 1.108 | 2.0
+Campestrini 2022 | SLVE 5 or 10 % N2 vapor | 12 | 0 | 0 | 0 | 0.186 | -0.186 | 0.375 | 2.0
+Campestrini 2022 | SLVE 5 or 10 % N2 liquid | 6 | 0 | 0 | 0 | 0.439 | -0.439 | 0.520 | 2.0
+Riva-Stringari 2018 | N2 series liquid | 6 | 0 | 0 | 0 | 3.690 | -2.980 | 6.731 | 2.0
+Riva-Stringari 2018 | N2 series vapour | 6 | 0 | 0 | 0 | 1.593 | -1.593 | 2.971 | 2.0
+Campestrini 2022 (dataset) | all | 67 | 0 | 0 | 0 | 0.560 | -0.549 | 1.765 | 2.0
+Riva-Stringari 2018 (dataset) | all | 12 | 0 | 0 | 0 | 2.642 | -2.286 | 6.731 | 2.0
+  Campestrini 2022: MAD 0.560 K against the P0 target 2.0 K: met
+  Riva-Stringari 2018: MAD 2.642 K against the P0 target 2.0 K: missed
+

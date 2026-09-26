@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionSeedProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-24T15:43:17.617Z" hostname="WORMZ-PC" time="0.348">
+  <properties/>
+  <testcase name="comparePressureGuesses()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionSeedProbe" time="0.348"/>
+  <system-out><![CDATA[CASE ports=4 pressure=102325.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 5.816801548255438E-6; active-set pass=0
+CASE ports=4 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=4 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=5 pressure=102325.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 0.004542962423006871; active-set pass=0
+CASE ports=5 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=5 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=6 pressure=102325.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 0.009040201543816268; active-set pass=0
+CASE ports=6 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=6 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=4 pressure=150000.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 1.3351756362421356E-4; active-set pass=0
+CASE ports=4 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=4 pressure=150000.0 seed=0.0 PASS conservation
+CASE ports=5 pressure=150000.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 0.13496694456310954; active-set pass=0
+CASE ports=5 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=5 pressure=150000.0 seed=0.0 PASS conservation
+CASE ports=6 pressure=150000.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 1.689138769446193E-7; active-set pass=0
+CASE ports=6 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=6 pressure=150000.0 seed=0.0 PASS conservation
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

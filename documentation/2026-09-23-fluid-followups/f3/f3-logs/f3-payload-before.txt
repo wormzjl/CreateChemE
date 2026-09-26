@@ -1,0 +1,168 @@
+solved to tick 400 in 6.3 s, 47 solves; rest certified 6/6; through certified 0/6; rest line true; lone tank true
+island 1000 rest100 CLOSED ladder 0 [STEADY]: nodes 10 pipes 13 payload 73740 B (gzip 18745) envelope 1046 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+island 1001 rest100 CLOSED ladder 1 [STEADY]: nodes 22 pipes 31 payload 187759 B (gzip 63591) envelope 1046 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+island 1002 rest100 CLOSED ladder 2 [STEADY]: nodes 14 pipes 19 payload 116789 B (gzip 33258) envelope 1046 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+island 1003 rest100 CLOSED ladder 3 [STEADY]: nodes 28 pipes 40 payload 240291 B (gzip 81277) envelope 1046 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+island 1004 rest100 CLOSED ladder 4 [STEADY]: nodes 20 pipes 28 payload 157656 B (gzip 51195) envelope 1046 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+island 1005 rest100 CLOSED ladder 5 [STEADY]: nodes 12 pipes 16 payload 89137 B (gzip 22508) envelope 1046 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+island 2000 stress100 THROUGH ladder 0 [AWAKE]: nodes 12 pipes 15 payload 67133 B (gzip 16137) envelope 170 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: false
+island 2001 stress100 THROUGH ladder 1 [AWAKE]: nodes 25 pipes 34 payload 141431 B (gzip 44800) envelope 170 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: false
+island 2002 stress100 THROUGH ladder 2 [AWAKE]: nodes 17 pipes 22 payload 95062 B (gzip 22072) envelope 170 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: false
+island 2003 stress100 THROUGH ladder 3 [AWAKE]: nodes 30 pipes 42 payload 174854 B (gzip 55022) envelope 170 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: false
+island 2004 stress100 THROUGH ladder 4 [AWAKE]: nodes 22 pipes 30 payload 128535 B (gzip 41246) envelope 170 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: false
+island 2005 stress100 THROUGH ladder 5 [AWAKE]: nodes 14 pipes 18 payload 78662 B (gzip 18634) envelope 170 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: false
+island 3000 in-game rest line (N2) [REST]: nodes 2 pipes 1 payload 6675 B (gzip 1244) envelope 1044 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+island 3001 lone tank [REST]: nodes 1 pipes 0 payload 3526 B (gzip 1015) envelope 1044 B; anchor graph == graph: true; anchor topology == graph topology: true; certifiedFrom topology == graph topology: true
+
+## rest100 CLOSED (6 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| identity (dimension, package, compressibility) | 108 | 0.1 % |
+| propertyRevision | 317 | 0.2 % |
+| energy reference | 449 | 0.3 % |
+| graph.nodes identity (id, elevation, kind, volume) | 1074 | 0.7 % |
+| graph.nodes inventory (moles, energy, solids) | 8478 | 5.9 % |
+| graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 15695 | 10.9 % |
+| graph.pipes identity (id, ends, sections, control) | 4871 | 3.4 % |
+| graph.pipes state (blocked mask, filter) | 882 | 0.6 % |
+| allowance | 79 | 0.1 % |
+| anchor.revision | 547 | 0.4 % |
+| anchor.graph.nodes identity (id, elevation, kind, volume) | 1074 | 0.7 % |
+| anchor.graph.nodes inventory (moles, energy, solids) | 8478 | 5.9 % |
+| anchor.graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 15695 | 10.9 % |
+| anchor.graph.pipes identity (id, ends, sections, control) | 4871 | 3.4 % |
+| anchor.graph.pipes state (blocked mask, filter) | 882 | 0.6 % |
+| anchor.modes | 266 | 0.2 % |
+| history.scalars (seconds, accepted, rejected, pumpWork, acceptance) | 87 | 0.1 % |
+| history.flows | 558 | 0.4 % |
+| history.heads | 108 | 0.1 % |
+| history.modes | 255 | 0.2 % |
+| history.boundaries | 16 | 0.0 % |
+| history.rejectionReasons | 22 | 0.0 % |
+| history.pipes (pipe transfers) | 48237 | 33.4 % |
+| status | 82 | 0.1 % |
+| fences | 12 | 0.0 % |
+| certifiedFrom.nodes identity (id, elevation, kind, volume) | 1074 | 0.7 % |
+| certifiedFrom.nodes inventory (moles, energy, solids) | 8471 | 5.9 % |
+| certifiedFrom.nodes phase (T, P, liquid, vapor, water, hc pressure) | 15691 | 10.9 % |
+| certifiedFrom.pipes identity (id, ends, sections, control) | 4871 | 3.4 % |
+| certifiedFrom.pipes state (blocked mask, filter) | 882 | 0.6 % |
+| sum of sections | 144132 | |
+| payload (JSON as written) | 144229 | 100 % |
+| gzip of the payload | 45096 | |
+| NBT island envelope (scalars, certificate strings, digest) | 1046 | |
+| nodes / pipes | 17.7 / 24.5 | |
+
+## stress100 THROUGH (6 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| identity (dimension, package, compressibility) | 108 | 0.1 % |
+| propertyRevision | 317 | 0.3 % |
+| energy reference | 449 | 0.4 % |
+| graph.nodes identity (id, elevation, kind, volume) | 1221 | 1.1 % |
+| graph.nodes inventory (moles, energy, solids) | 9292 | 8.1 % |
+| graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 17252 | 15.1 % |
+| graph.pipes identity (id, ends, sections, control) | 5336 | 4.7 % |
+| graph.pipes state (blocked mask, filter) | 966 | 0.8 % |
+| allowance | 79 | 0.1 % |
+| anchor.revision | 547 | 0.5 % |
+| anchor.graph.nodes identity (id, elevation, kind, volume) | 1221 | 1.1 % |
+| anchor.graph.nodes inventory (moles, energy, solids) | 9292 | 8.1 % |
+| anchor.graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 17252 | 15.1 % |
+| anchor.graph.pipes identity (id, ends, sections, control) | 5336 | 4.7 % |
+| anchor.graph.pipes state (blocked mask, filter) | 966 | 0.8 % |
+| anchor.modes | 289 | 0.3 % |
+| history.scalars (seconds, accepted, rejected, pumpWork, acceptance) | 87 | 0.1 % |
+| history.flows | 568 | 0.5 % |
+| history.heads | 117 | 0.1 % |
+| history.modes | 278 | 0.2 % |
+| history.boundaries | 4508 | 3.9 % |
+| history.rejectionReasons | 22 | 0.0 % |
+| history.pipes (pipe transfers) | 38668 | 33.8 % |
+| status | 16 | 0.0 % |
+| fences | 12 | 0.0 % |
+| certifiedFrom (null) | 21 | 0.0 % |
+| sum of sections | 114220 | |
+| payload (JSON as written) | 114280 | 100 % |
+| gzip of the payload | 32985 | |
+| NBT island envelope (scalars, certificate strings, digest) | 170 | |
+| nodes / pipes | 20.0 / 26.8 | |
+
+## in-game rest line (1 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| identity (dimension, package, compressibility) | 108 | 1.6 % |
+| propertyRevision | 317 | 4.7 % |
+| energy reference | 449 | 6.7 % |
+| graph.nodes identity (id, elevation, kind, volume) | 124 | 1.9 % |
+| graph.nodes inventory (moles, energy, solids) | 374 | 5.6 % |
+| graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 624 | 9.3 % |
+| graph.pipes identity (id, ends, sections, control) | 198 | 3.0 % |
+| graph.pipes state (blocked mask, filter) | 36 | 0.5 % |
+| allowance | 79 | 1.2 % |
+| anchor.revision | 547 | 8.2 % |
+| anchor.graph.nodes identity (id, elevation, kind, volume) | 124 | 1.9 % |
+| anchor.graph.nodes inventory (moles, energy, solids) | 374 | 5.6 % |
+| anchor.graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 624 | 9.3 % |
+| anchor.graph.pipes identity (id, ends, sections, control) | 198 | 3.0 % |
+| anchor.graph.pipes state (blocked mask, filter) | 36 | 0.5 % |
+| anchor.modes | 31 | 0.5 % |
+| history.scalars (seconds, accepted, rejected, pumpWork, acceptance) | 87 | 1.3 % |
+| history.flows | 14 | 0.2 % |
+| history.heads | 14 | 0.2 % |
+| history.modes | 20 | 0.3 % |
+| history.boundaries | 16 | 0.2 % |
+| history.rejectionReasons | 22 | 0.3 % |
+| history.pipes (pipe transfers) | 751 | 11.3 % |
+| status | 41 | 0.6 % |
+| fences | 12 | 0.2 % |
+| certifiedFrom.nodes identity (id, elevation, kind, volume) | 124 | 1.9 % |
+| certifiedFrom.nodes inventory (moles, energy, solids) | 374 | 5.6 % |
+| certifiedFrom.nodes phase (T, P, liquid, vapor, water, hc pressure) | 624 | 9.3 % |
+| certifiedFrom.pipes identity (id, ends, sections, control) | 198 | 3.0 % |
+| certifiedFrom.pipes state (blocked mask, filter) | 36 | 0.5 % |
+| sum of sections | 6576 | |
+| payload (JSON as written) | 6675 | 100 % |
+| gzip of the payload | 1244 | |
+| NBT island envelope (scalars, certificate strings, digest) | 1044 | |
+| nodes / pipes | 2.0 / 1.0 | |
+
+## lone tank (1 islands, mean per island)
+| section | bytes | share |
+|---|---|---|
+| identity (dimension, package, compressibility) | 108 | 3.1 % |
+| propertyRevision | 317 | 9.0 % |
+| energy reference | 449 | 12.7 % |
+| graph.nodes identity (id, elevation, kind, volume) | 61 | 1.7 % |
+| graph.nodes inventory (moles, energy, solids) | 187 | 5.3 % |
+| graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 312 | 8.8 % |
+| graph.pipes identity (id, ends, sections, control) | 0 | 0.0 % |
+| graph.pipes state (blocked mask, filter) | 0 | 0.0 % |
+| allowance | 79 | 2.2 % |
+| anchor.revision | 547 | 15.5 % |
+| anchor.graph.nodes identity (id, elevation, kind, volume) | 61 | 1.7 % |
+| anchor.graph.nodes inventory (moles, energy, solids) | 187 | 5.3 % |
+| anchor.graph.nodes phase (T, P, liquid, vapor, water, hc pressure) | 312 | 8.8 % |
+| anchor.graph.pipes identity (id, ends, sections, control) | 0 | 0.0 % |
+| anchor.graph.pipes state (blocked mask, filter) | 0 | 0.0 % |
+| anchor.modes | 22 | 0.6 % |
+| history.scalars (seconds, accepted, rejected, pumpWork, acceptance) | 87 | 2.5 % |
+| history.flows | 11 | 0.3 % |
+| history.heads | 11 | 0.3 % |
+| history.modes | 11 | 0.3 % |
+| history.boundaries | 16 | 0.5 % |
+| history.rejectionReasons | 22 | 0.6 % |
+| history.pipes (pipe transfers) | 11 | 0.3 % |
+| status | 41 | 1.2 % |
+| fences | 12 | 0.3 % |
+| certifiedFrom.nodes identity (id, elevation, kind, volume) | 61 | 1.7 % |
+| certifiedFrom.nodes inventory (moles, energy, solids) | 187 | 5.3 % |
+| certifiedFrom.nodes phase (T, P, liquid, vapor, water, hc pressure) | 312 | 8.8 % |
+| certifiedFrom.pipes identity (id, ends, sections, control) | 0 | 0.0 % |
+| certifiedFrom.pipes state (blocked mask, filter) | 0 | 0.0 % |
+| sum of sections | 3424 | |
+| payload (JSON as written) | 3526 | 100 % |
+| gzip of the payload | 1015 | |
+| NBT island envelope (scalars, certificate strings, digest) | 1044 | |
+| nodes / pipes | 1.0 / 0.0 | |
+

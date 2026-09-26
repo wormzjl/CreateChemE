@@ -1,0 +1,121 @@
+# Le T.T., Trebble M.A. (2007). Measurement of Carbon Dioxide Freezing in Mixtures of Methane, Ethane, and Nitrogen in the
+# Solid-Vapor Equilibrium Region. J. Chem. Eng. Data 52(3), 683-686. DOI 10.1021/je060194j (paywalled; not read).
+# Frost points (solid CO2 + vapour), non-sampling visual observation. TRC files the frost temperature as
+# 'Solid-liquid equilibrium temperature' between a fluid and crystal CO2. Set 1: CH4 + CO2, 55 points, x_CO2 0.01 to 0.0293,
+# 962.1 to 3008.2 kPa, 168.6 to 187.7 K. Set 2: + C2H6, 24 points. Set 3: + N2, 24 points (x_CO2 = 0.0194 as a constraint).
+# DEFECT IN THE TRC FILE (sets 2 and 3): the column labelled Mole fraction[C2H6] (set 2) or [N2] (set 3) holds 0.9605 to
+# 0.9706, which is physically the CH4 fraction (the paper adds 1 to 2 % C2H6 or N2 at 2 % CO2; Riva 2016 thesis Table 3.11
+# gives y_N2 = 0.01 to 0.02). The C2H6 or N2 fraction is then 1 - x_CO2 - value. Verify against the paper before use.
+# Holdout role: P5 context (CO2 frost points in CH4-rich gas) and P4 context (N2 as a minor component); no CO2 + N2 binary.
+# Source: NIST TRC ThermoML Archive (IUPAC ThermoML), https://trc.nist.gov/ThermoML/10.1021/je060194j.xml, retrieved 2026-09-25;
+# archive DOI 10.18434/mds2-2422. TRC terms: no warranty by the publisher, editors or NIST/TRC; TRC requests that works
+# using ThermoML Archive data cite them. The XML is TRC's compilation of the paper's tables, not the paper itself.
+# Flattened with thermoml_to_tsv.py (this folder): one row per property value, digits exactly as in the XML.
+# U95 = nCombExpandUncertValue, expanded uncertainty at 95 % assessed by the TRC data-file compiler (not the authors' own
+# statement unless the paper gives the same number). Labels abbreviated: fluid/liquid/gas/crystal, CO2/CH4/N2/C2H6.
+# Transcribed 2026-09-25, batch 2026-09-24-coolprop-low-temperature.
+# XML file: thermoml/le-trebble-2007-jced-52-683-je060194j.xml (sha256 451eea612430b0660acad39f1057be6ac578e5ec958ed71077dfb1dcd7efd9d9)
+set	system	phases	property	method	value	U95	Mole fraction[CO2]@fluid	Pressure, kPa@fluid	Mole fraction[C2H6]@fluid	constraint:Mole fraction[CO2]@fluid	Mole fraction[N2]@fluid
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	168.6	1.2	0.01	962.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	171	1.6	0.01	1103.8			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	170.5	1.6	0.01	1109.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	170.7	1.2	0.01	1141.3			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	171.1	1.3	0.01	1149.3			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.4	1.2	0.01	1319			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.7	1.2	0.01	1426			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.6	1.2	0.01	1435.2			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175.1	1.2	0.01	1694.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175.2	1.2	0.01	1708.3			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175.5	1.2	0.01	1809.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.3	1.3	0.01	1931			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175.6	1.2	0.01	1951.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.2	1.5	0.01	2009.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175.9	1.5	0.01	2012.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.9	1.3	0.01	2098.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177	1.3	0.01	2129.2			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177.6	1.3	0.01	2193.9			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177.7	1.3	0.01	2299.3			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177.8	1.3	0.01	2464.2			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.7	1.2	0.0191	1313.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.8	1.3	0.0191	1375.9			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	174.5	1.3	0.0191	1398.6			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.9	1.6	0.0191	1705.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.4	1.6	0.0191	1715.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.7	1.3	0.0191	1802.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179	1.3	0.0191	1930.2			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.9	1.3	0.0191	1943.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.9	1.3	0.0191	1955.2			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	181	1.3	0.0191	2135.3			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	181.1	1.3	0.0191	2207.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	181.9	1.3	0.0191	2235.4			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.2	1.3	0.0191	2345.2			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.3	1.3	0.0191	2496.6			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.4	1.3	0.0191	2651			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.5	1.3	0.0293	1199			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.7	1.3	0.0293	1212.9			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.9	1.3	0.0293	1252.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.1	1.3	0.0293	1421.4			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.6	1.4	0.0293	1469.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.6	1.4	0.0293	1476.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	181.8	1.4	0.0293	1644.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	181.9	1.4	0.0293	1683.6			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.1	1.4	0.0293	1757.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.8	1.3	0.0293	1957.9			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.8	1.3	0.0293	1971.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183	1.3	0.0293	1982.4			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	184.6	1.3	0.0293	2274.1			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	184.6	1.3	0.0293	2292.2			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	185.3	1.3	0.0293	2428.4			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	186.5	1.3	0.0293	2576.9			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	186.3	1.3	0.0293	2651.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	187.5	1.3	0.0293	2998			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	187.6	1.3	0.0293	2999.5			
+1	CH4 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	187.7	1.3	0.0293	3008.2			
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.6	1.2	0.0195	1267.7	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.9	1.2	0.0195	1292.5	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	174.2	1.2	0.0195	1344.7	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.3	1.2	0.0195	1566.5	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.7	1.2	0.0195	1593.1	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.7	1.2	0.0195	1603	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.9	1.2	0.0195	1778.6	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.4	1.2	0.0195	1809.6	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.9	1.2	0.0195	1825.4	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.9	1.2	0.0195	2179.2	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.4	1.2	0.0195	2229.9	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183	1.2	0.0195	2237.2	0.97053		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175.3	1.2	0.0196	1307.3	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	174.8	1.2	0.0196	1314.6	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175.1	1.2	0.0196	1320.7	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177.4	1.2	0.0196	1624	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177	1.2	0.0196	1636.4	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177.4	1.2	0.0196	1652	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.9	1.2	0.0196	1831.6	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.6	1.2	0.0196	1838.5	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	180.2	1.2	0.0196	1848.1	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183.3	1.2	0.0196	2220.2	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183.6	1.2	0.0196	2222.7	0.9605		
+2	CH4 + C2H6 + CO2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183.6	1.2	0.0196	2250.3	0.9605		
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	174.5	1.2		1315.4		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	174.4	1.3		1320.7		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	175	1.2		1331.1		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.7	1.2		1635.9		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.4	1.2		1667		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.3	1.2		1690.8		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.4	1.2		1837.9		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.6	1.2		1852.6		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	179.7	1.2		1874.4		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183.4	1.2		2236		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183.5	1.2		2253.2		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183.5	1.2		2261.5		0.0194	0.9611
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	173.9	1.2		1243.7		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	174.4	1.2		1304		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	174.5	1.2		1340.5		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.6	1.2		1590.8		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	176.7	1.2		1606.4		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	177.2	1.2		1649		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178.6	1.2		1841		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178	1.2		1860.5		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	178	1.2		1869.2		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	182.4	1.2		2210.7		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183	1.2		2212.1		0.0194	0.9706
+3	CH4 + CO2 + N2	fluid | crystal[CO2]	Solid-liquid equilibrium temperature, K @fluid	VISOBS:UFactor:8	183.1	1.2		2239.1		0.0194	0.9706

@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:dalia",
+  "package": "createcheme:dalia_tjl20",
+  "basis": "mass",
+  "provenance": {
+    "source_reference": "DALIA26Y",
+    "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/dalia.pdf",
+    "source_pdf_sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+    "source_whole_crude": {
+      "density_15c_kg_per_m3": 917.8,
+      "sulfur_mass_percent": 0.52,
+      "nitrogen_mass_ppm": 2338.0,
+      "nickel_mass_ppm": 20.3,
+      "vanadium_mass_ppm": 8.4,
+      "iron_mass_ppm": 6.3,
+      "sodium_mass_ppm": 1.0,
+      "mercury_mass_ppb": 1.0,
+      "arsenic_mass_ppb": 135.0
+    },
+    "residual_mass_rounding_scale": 1.0012070006035003,
+    "tail": {
+      "model": "exponential_survival_constrained_by_residue_vabp",
+      "estimated_above_celsius": 590,
+      "scale_celsius": 89.3793103448276,
+      "remaining_at_590_volume_percent": 17.400000000000006,
+      "residue_550_plus_mean_celsius": 653.0,
+      "estimated_mass_percent_above_590": 19.170709415922396
+    }
+  },
+  "appearance": {
+    "color": "#201A16",
+    "transparency": 0.01,
+    "estimated": true
+  },
+  "revision": "crude-regrouped-r1",
+  "amounts_by_component": {
+    "Isobutane": 0.0004,
+    "N-butane": 0.0014000000000000002,
+    "Isopentane": 0.0013,
+    "N-pentane": 0.0015,
+    "crude_pc01": 0.0044000226896855,
+    "crude_pc02": 0.02401985072743516,
+    "crude_pc03": 0.03693307704727691,
+    "crude_pc04": 0.055848807942953986,
+    "crude_pc05": 0.07898762716331209,
+    "crude_pc06": 0.09777189759767997,
+    "crude_pc07": 0.10625360656274474,
+    "crude_pc08": 0.15566006500638904,
+    "crude_pc09": 0.18322088111044058,
+    "crude_pc10": 0.1543330815498998,
+    "crude_pc11": 0.0659675849279804,
+    "crude_pc12": 0.032003497674201846
+  }
+}

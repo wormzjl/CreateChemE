@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:57.660Z" hostname="WORMZ-PC" time="0.063">
+  <properties/>
+  <testcase name="explicitOffPreservesUnrestrictedValuesAndInputExactly()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationTest" time="0.012"/>
+  <testcase name="singlePhaseClassificationIsNotOverriddenByComponentIdentityOrTruncation()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationTest" time="0.009"/>
+  <testcase name="cancellationEscapesUnchangedAndLeavesTheWorkspaceReusable()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationTest" time="0.01"/>
+  <testcase name="hotCrudeRetainsPc12WhenItsVaporCompositionExceedsTheCutoff()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationTest" time="0.009"/>
+  <testcase name="stateQualifiedHeavyVaporOmissionPreservesEveryComponentAndAuditsItsReferenceErrors()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationTest" time="0.011"/>
+  <testcase name="reusedWorkspaceAndReturnedArraysCannotCarryTruncationIntoTheDefaultFlash()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3FlashTruncationTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

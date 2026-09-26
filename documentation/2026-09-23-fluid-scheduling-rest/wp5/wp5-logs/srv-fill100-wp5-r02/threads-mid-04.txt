@@ -1,0 +1,974 @@
+# epoch_ms=1790173364018 took_ms=148
+2516:
+2026-09-23 22:22:44
+Full thread dump Java HotSpot(TM) 64-Bit Server VM (21.0.11+9-LTS-211 mixed mode, sharing):
+
+Threads class SMR info:
+_java_thread_list=0x0000019f25072380, length=74, elements={
+0x0000019edf3af7b0, 0x0000019edf3b0210, 0x0000019edf3b47f0, 0x0000019edf3b55e0,
+0x0000019edf3b90b0, 0x0000019edf3baab0, 0x0000019edf3d84b0, 0x0000019edf3fc1a0,
+0x0000019edf55b710, 0x0000019edf6e7b80, 0x0000019f251f9b80, 0x0000019f251fa1f0,
+0x0000019f2639a2a0, 0x0000019f2639a910, 0x0000019f25010080, 0x0000019f250106f0,
+0x0000019f25010d60, 0x0000019f26512780, 0x0000019f26512e10, 0x0000019f265134a0,
+0x0000019f26514850, 0x0000019f26513b30, 0x0000019f26515570, 0x0000019f265141c0,
+0x0000019f263836b0, 0x0000019f29a7cb50, 0x0000019f29a80660, 0x0000019f29a7d1e0,
+0x0000019f29a7d870, 0x0000019f29a80cf0, 0x0000019f29a81380, 0x0000019f26382300,
+0x0000019f2e5d9500, 0x0000019f2e5d7ac0, 0x0000019f2e5da220, 0x0000019f2e5d8e70,
+0x0000019f2e5dd010, 0x0000019f2e5dbc60, 0x0000019f2e5de3c0, 0x0000019f2e5dc2f0,
+0x0000019f29a820a0, 0x0000019f29a82730, 0x0000019f29a82dc0, 0x0000019f29a7f940,
+0x0000019f29a83ae0, 0x0000019f26383d40, 0x0000019f263850f0, 0x0000019f26384a60,
+0x0000019f26385780, 0x0000019f26382990, 0x0000019f26388c00, 0x0000019f26514ee0,
+0x0000019f265120f0, 0x0000019f2e5d87e0, 0x0000019f2e5dc980, 0x0000019f29a84170,
+0x0000019f2e5dd6a0, 0x0000019f2ab66500, 0x0000019f2ab67220, 0x0000019f26df2f60,
+0x0000019f29a81a10, 0x0000019f25e12810, 0x0000019f25e14f70, 0x0000019f25e15600,
+0x0000019f25e13bc0, 0x0000019f25e15c90, 0x0000019f25e13530, 0x0000019f25e16320,
+0x0000019f25e12ea0, 0x0000019f25e169b0, 0x0000019f25e17040, 0x0000019f25e176d0,
+0x0000019f2ab67f40, 0x0000019f2ab68c60
+}
+
+"Reference Handler" #9 [28168] daemon prio=10 os_prio=2 cpu=0.00ms elapsed=121.62s tid=0x0000019edf3af7b0 nid=28168 waiting on condition  [0x000000432ceff000]
+   java.lang.Thread.State: RUNNABLE
+	at java.lang.ref.Reference.waitForReferencePendingList(java.base@21.0.11/Native Method)
+	at java.lang.ref.Reference.processPendingReferences(java.base@21.0.11/Reference.java:246)
+	at java.lang.ref.Reference$ReferenceHandler.run(java.base@21.0.11/Reference.java:208)
+
+"Finalizer" #10 [20780] daemon prio=8 os_prio=1 cpu=0.00ms elapsed=121.62s tid=0x0000019edf3b0210 nid=20780 in Object.wait()  [0x000000432cfff000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait0(java.base@21.0.11/Native Method)
+	- waiting on <0x0000000700c99ba0> (a java.lang.ref.NativeReferenceQueue$Lock)
+	at java.lang.Object.wait(java.base@21.0.11/Object.java:366)
+	at java.lang.Object.wait(java.base@21.0.11/Object.java:339)
+	at java.lang.ref.NativeReferenceQueue.await(java.base@21.0.11/NativeReferenceQueue.java:48)
+	at java.lang.ref.ReferenceQueue.remove0(java.base@21.0.11/ReferenceQueue.java:158)
+	at java.lang.ref.NativeReferenceQueue.remove(java.base@21.0.11/NativeReferenceQueue.java:89)
+	- locked <0x0000000700c99ba0> (a java.lang.ref.NativeReferenceQueue$Lock)
+	at java.lang.ref.Finalizer$FinalizerThread.run(java.base@21.0.11/Finalizer.java:173)
+
+"Signal Dispatcher" #11 [34116] daemon prio=9 os_prio=2 cpu=0.00ms elapsed=121.62s tid=0x0000019edf3b47f0 nid=34116 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Attach Listener" #12 [38724] daemon prio=5 os_prio=2 cpu=109.38ms elapsed=121.62s tid=0x0000019edf3b55e0 nid=38724 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Service Thread" #13 [42536] daemon prio=9 os_prio=0 cpu=78.12ms elapsed=121.62s tid=0x0000019edf3b90b0 nid=42536 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Monitor Deflation Thread" #14 [43420] daemon prio=9 os_prio=0 cpu=15.62ms elapsed=121.61s tid=0x0000019edf3baab0 nid=43420 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"C2 CompilerThread0" #15 [24616] daemon prio=9 os_prio=2 cpu=17015.62ms elapsed=121.61s tid=0x0000019edf3d84b0 nid=24616 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"C1 CompilerThread0" #23 [19836] daemon prio=9 os_prio=2 cpu=1484.38ms elapsed=121.61s tid=0x0000019edf3fc1a0 nid=19836 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+   No compile task
+
+"Common-Cleaner" #27 [15952] daemon prio=8 os_prio=1 cpu=0.00ms elapsed=121.57s tid=0x0000019edf55b710 nid=15952 waiting on condition  [0x000000432d8fe000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000700c96968> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@21.0.11/LockSupport.java:269)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@21.0.11/AbstractQueuedSynchronizer.java:1852)
+	at java.lang.ref.ReferenceQueue.await(java.base@21.0.11/ReferenceQueue.java:71)
+	at java.lang.ref.ReferenceQueue.remove0(java.base@21.0.11/ReferenceQueue.java:143)
+	at java.lang.ref.ReferenceQueue.remove(java.base@21.0.11/ReferenceQueue.java:218)
+	at jdk.internal.ref.CleanerImpl.run(java.base@21.0.11/CleanerImpl.java:140)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+	at jdk.internal.misc.InnocuousThread.run(java.base@21.0.11/InnocuousThread.java:186)
+
+"Notification Thread" #28 [32724] daemon prio=9 os_prio=0 cpu=0.00ms elapsed=121.55s tid=0x0000019edf6e7b80 nid=32724 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"ForkJoinPool.commonPool-worker-1" #41 [23296] daemon prio=5 os_prio=0 cpu=109.38ms elapsed=121.12s tid=0x0000019f251f9b80 nid=23296 waiting on condition  [0x000000432eeff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-2" #42 [11964] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f251fa1f0 nid=11964 waiting on condition  [0x000000432effe000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-3" #43 [34444] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f2639a2a0 nid=34444 waiting on condition  [0x000000432f0ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-5" #45 [4812] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f2639a910 nid=4812 waiting on condition  [0x000000432f2fe000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-6" #46 [40908] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f25010080 nid=40908 waiting on condition  [0x000000432f3ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-7" #47 [17472] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f250106f0 nid=17472 waiting on condition  [0x000000432f4fe000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-8" #48 [42016] daemon prio=5 os_prio=0 cpu=15.62ms elapsed=121.12s tid=0x0000019f25010d60 nid=42016 waiting on condition  [0x000000432f5ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-9" #49 [34664] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f26512780 nid=34664 waiting on condition  [0x000000432f6ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-10" #50 [29300] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f26512e10 nid=29300 waiting on condition  [0x000000432f7ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-11" #51 [41084] daemon prio=5 os_prio=0 cpu=109.38ms elapsed=121.12s tid=0x0000019f265134a0 nid=41084 waiting on condition  [0x000000432f8fe000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.parkUntil(java.base@21.0.11/LockSupport.java:449)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1889)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-12" #52 [16224] daemon prio=5 os_prio=0 cpu=15.62ms elapsed=121.12s tid=0x0000019f26514850 nid=16224 waiting on condition  [0x000000432f9ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-13" #53 [16712] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f26513b30 nid=16712 waiting on condition  [0x000000432faff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-14" #54 [13776] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f26515570 nid=13776 waiting on condition  [0x000000432fbff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool.commonPool-worker-15" #55 [45052] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=121.12s tid=0x0000019f265141c0 nid=45052 waiting on condition  [0x000000432fcff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007020013f0> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"JNA Cleaner" #72 [22000] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=119.33s tid=0x0000019f263836b0 nid=22000 waiting on condition  [0x00000043309fe000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007ffc56f80> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@21.0.11/LockSupport.java:269)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@21.0.11/AbstractQueuedSynchronizer.java:1852)
+	at java.lang.ref.ReferenceQueue.await(java.base@21.0.11/ReferenceQueue.java:71)
+	at java.lang.ref.ReferenceQueue.remove0(java.base@21.0.11/ReferenceQueue.java:143)
+	at java.lang.ref.ReferenceQueue.remove(java.base@21.0.11/ReferenceQueue.java:218)
+	at com.sun.jna.internal.Cleaner$CleanerThread.run(com.sun.jna@5.14.0/Cleaner.java:154)
+
+"Timer hack thread" #73 [37104] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=116.02s tid=0x0000019f29a7cb50 nid=37104 waiting on condition  [0x000000432edff000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleep0(java.base@21.0.11/Native Method)
+	at java.lang.Thread.sleep(java.base@21.0.11/Thread.java:509)
+	at net.minecraft.Util$7.run(minecraft@1.21.1/Util.java:762)
+
+"modloading-worker-0" #74 [18092] daemon prio=5 os_prio=0 cpu=562.50ms elapsed=115.99s tid=0x0000019f29a80660 nid=18092 waiting on condition  [0x000000432fdff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b738130> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"modloading-worker-0" #75 [38708] daemon prio=5 os_prio=0 cpu=296.88ms elapsed=115.99s tid=0x0000019f29a7d1e0 nid=38708 waiting on condition  [0x000000432feff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b738130> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"modloading-worker-0" #76 [18576] daemon prio=5 os_prio=0 cpu=31.25ms elapsed=115.99s tid=0x0000019f29a7d870 nid=18576 waiting on condition  [0x000000432ffff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b738130> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"modloading-worker-0" #77 [26812] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=115.99s tid=0x0000019f29a80cf0 nid=26812 waiting on condition  [0x00000043300ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b738130> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"kubejs-background-thread" #78 [35576] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=115.91s tid=0x0000019f29a81380 nid=35576 waiting on condition  [0x00000043301ff000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleep0(java.base@21.0.11/Native Method)
+	at java.lang.Thread.sleep(java.base@21.0.11/Thread.java:509)
+	at dev.latvian.mods.kubejs.script.KubeJSBackgroundThread.run(kubejs@2101.7.2-build.368/KubeJSBackgroundThread.java:25)
+
+"modloading-sync-worker" #83 [40776] daemon prio=5 os_prio=0 cpu=1015.62ms elapsed=115.39s tid=0x0000019f26382300 nid=40776 waiting on condition  [0x00000043304ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b82db68> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@21.0.11/AbstractQueuedSynchronizer.java:519)
+	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@21.0.11/ForkJoinPool.java:3778)
+	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@21.0.11/ForkJoinPool.java:3723)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@21.0.11/AbstractQueuedSynchronizer.java:1712)
+	at java.util.concurrent.LinkedBlockingQueue.take(java.base@21.0.11/LinkedBlockingQueue.java:435)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@21.0.11/ThreadPoolExecutor.java:1070)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1130)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"FileSystemWatchService" #84 [20364] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=114.37s tid=0x0000019f2e5d9500 nid=20364 runnable  [0x000000432ecfe000]
+   java.lang.Thread.State: RUNNABLE
+	at sun.nio.fs.WindowsNativeDispatcher.GetQueuedCompletionStatus0(java.base@21.0.11/Native Method)
+	at sun.nio.fs.WindowsNativeDispatcher.GetQueuedCompletionStatus(java.base@21.0.11/WindowsNativeDispatcher.java:1075)
+	at sun.nio.fs.WindowsWatchService$Poller.run(java.base@21.0.11/WindowsWatchService.java:587)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"config-file-watcher-0-0" #85 [26460] daemon prio=5 os_prio=0 cpu=62.50ms elapsed=114.37s tid=0x0000019f2e5d7ac0 nid=26460 waiting on condition  [0x00000043305fe000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007107cd890> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@21.0.11/LockSupport.java:269)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@21.0.11/AbstractQueuedSynchronizer.java:1763)
+	at java.util.concurrent.LinkedBlockingDeque.pollFirst(java.base@21.0.11/LinkedBlockingDeque.java:515)
+	at java.util.concurrent.LinkedBlockingDeque.poll(java.base@21.0.11/LinkedBlockingDeque.java:677)
+	at sun.nio.fs.AbstractWatchService.poll(java.base@21.0.11/AbstractWatchService.java:108)
+	at com.electronwill.nightconfig.core.file.FileWatcher$FsWatcher.run(com.electronwill.nightconfig.core@3.8.3/FileWatcher.java:531)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"modloading-worker-0" #87 [35772] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=114.35s tid=0x0000019f2e5da220 nid=35772 waiting on condition  [0x0000004330dff000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b738130> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.parkUntil(java.base@21.0.11/LockSupport.java:449)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1889)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"modloading-worker-0" #88 [40780] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=114.35s tid=0x0000019f2e5d8e70 nid=40780 waiting on condition  [0x0000004330fff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b738130> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Yggdrasil Key Fetcher" #93 [36396] daemon prio=5 os_prio=0 cpu=62.50ms elapsed=114.26s tid=0x0000019f2e5dd010 nid=36396 waiting on condition  [0x00000043311ff000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007107d7880> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@21.0.11/LockSupport.java:269)
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@21.0.11/AbstractQueuedSynchronizer.java:1763)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@21.0.11/ScheduledThreadPoolExecutor.java:1182)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@21.0.11/ScheduledThreadPoolExecutor.java:899)
+	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@21.0.11/ThreadPoolExecutor.java:1070)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1130)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"Worker-Main-1" #99 [38752] daemon prio=5 os_prio=0 cpu=31.25ms elapsed=113.88s tid=0x0000019f2e5dbc60 nid=38752 waiting on condition  [0x00000043319ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-2" #100 [28576] daemon prio=5 os_prio=0 cpu=15.62ms elapsed=113.88s tid=0x0000019f2e5de3c0 nid=28576 waiting on condition  [0x0000004331aff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-3" #101 [44812] daemon prio=5 os_prio=0 cpu=203.12ms elapsed=113.88s tid=0x0000019f2e5dc2f0 nid=44812 waiting on condition  [0x0000004331bff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-4" #104 [25340] daemon prio=5 os_prio=0 cpu=78.12ms elapsed=113.74s tid=0x0000019f29a820a0 nid=25340 waiting on condition  [0x0000004331dfe000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-5" #105 [40628] daemon prio=5 os_prio=0 cpu=93.75ms elapsed=113.74s tid=0x0000019f29a82730 nid=40628 waiting on condition  [0x0000004331eff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-6" #106 [35336] daemon prio=5 os_prio=0 cpu=78.12ms elapsed=113.74s tid=0x0000019f29a82dc0 nid=35336 waiting on condition  [0x0000004331fff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-7" #107 [29468] daemon prio=5 os_prio=0 cpu=15.62ms elapsed=113.74s tid=0x0000019f29a7f940 nid=29468 waiting on condition  [0x00000043320ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-9" #109 [39320] daemon prio=5 os_prio=0 cpu=31.25ms elapsed=113.74s tid=0x0000019f29a83ae0 nid=39320 waiting on condition  [0x00000043322ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-10" #110 [28916] daemon prio=5 os_prio=0 cpu=31.25ms elapsed=113.74s tid=0x0000019f26383d40 nid=28916 waiting on condition  [0x00000043323ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-11" #111 [34048] daemon prio=5 os_prio=0 cpu=62.50ms elapsed=113.74s tid=0x0000019f263850f0 nid=34048 waiting on condition  [0x00000043324ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-12" #112 [24020] daemon prio=5 os_prio=0 cpu=78.12ms elapsed=113.74s tid=0x0000019f26384a60 nid=24020 waiting on condition  [0x00000043325ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-13" #113 [20212] daemon prio=5 os_prio=0 cpu=93.75ms elapsed=113.74s tid=0x0000019f26385780 nid=20212 waiting on condition  [0x00000043326fe000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.parkUntil(java.base@21.0.11/LockSupport.java:449)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1889)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-14" #114 [36160] daemon prio=5 os_prio=0 cpu=31.25ms elapsed=113.74s tid=0x0000019f26382990 nid=36160 waiting on condition  [0x00000043327ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Worker-Main-15" #115 [23564] daemon prio=5 os_prio=0 cpu=140.62ms elapsed=113.74s tid=0x0000019f26388c00 nid=23564 waiting on condition  [0x00000043328ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x0000000705646190> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool-3-worker-4" #117 [19200] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=112.90s tid=0x0000019f26514ee0 nid=19200 waiting on condition  [0x00000043306fe000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b800080> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool-3-worker-3" #116 [44388] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=112.90s tid=0x0000019f265120f0 nid=44388 waiting on condition  [0x00000043312ff000]
+   java.lang.Thread.State: WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b800080> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.park(java.base@21.0.11/LockSupport.java:371)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1891)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"ForkJoinPool-3-worker-5" #118 [16820] daemon prio=5 os_prio=0 cpu=0.00ms elapsed=112.90s tid=0x0000019f2e5d87e0 nid=16820 waiting on condition  [0x00000043315ff000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x000000070b800080> (a java.util.concurrent.ForkJoinPool)
+	at java.util.concurrent.locks.LockSupport.parkUntil(java.base@21.0.11/LockSupport.java:449)
+	at java.util.concurrent.ForkJoinPool.awaitWork(java.base@21.0.11/ForkJoinPool.java:1889)
+	at java.util.concurrent.ForkJoinPool.runWorker(java.base@21.0.11/ForkJoinPool.java:1807)
+	at java.util.concurrent.ForkJoinWorkerThread.run(java.base@21.0.11/ForkJoinWorkerThread.java:188)
+
+"Server thread" #120 [46152] prio=8 os_prio=1 cpu=2906.25ms elapsed=112.56s tid=0x0000019f2e5dc980 nid=46152 runnable  [0x000000432dcfe000]
+   java.lang.Thread.State: TIMED_WAITING (parking)
+	at jdk.internal.misc.Unsafe.park(java.base@21.0.11/Native Method)
+	- parking to wait for  <0x00000007083bfae0> (a java.lang.String)
+	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@21.0.11/LockSupport.java:269)
+	at net.minecraft.util.thread.BlockableEventLoop.waitForTasks(minecraft@1.21.1/BlockableEventLoop.java:146)
+	at net.minecraft.server.MinecraftServer.waitForTasks(minecraft@1.21.1/MinecraftServer.java:842)
+	at net.minecraft.util.thread.BlockableEventLoop.managedBlock(minecraft@1.21.1/BlockableEventLoop.java:136)
+	at net.minecraft.server.MinecraftServer.managedBlock(minecraft@1.21.1/MinecraftServer.java:830)
+	at net.minecraft.server.MinecraftServer.waitUntilNextTick(minecraft@1.21.1/MinecraftServer.java:835)
+	at net.minecraft.server.MinecraftServer.runServer(minecraft@1.21.1/MinecraftServer.java:718)
+	at net.minecraft.server.MinecraftServer.lambda$spin$2(minecraft@1.21.1/MinecraftServer.java:267)
+	at net.minecraft.server.MinecraftServer$$Lambda/0x0000019ee2591770.run(minecraft@1.21.1/Unknown Source)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"DestroyJavaVM" #123 [13136] prio=5 os_prio=0 cpu=6031.25ms elapsed=112.56s tid=0x0000019f29a84170 nid=13136 waiting on condition  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"Netty Server IO #0" #124 [37532] daemon prio=8 os_prio=1 cpu=0.00ms elapsed=112.48s tid=0x0000019f2e5dd6a0 nid=37532 runnable  [0x000000432ebff000]
+   java.lang.Thread.State: RUNNABLE
+	at sun.nio.ch.WEPoll.wait(java.base@21.0.11/Native Method)
+	at sun.nio.ch.WEPollSelectorImpl.doSelect(java.base@21.0.11/WEPollSelectorImpl.java:114)
+	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@21.0.11/SelectorImpl.java:130)
+	- locked <0x00000007083cc828> (a io.netty.channel.nio.SelectedSelectionKeySet)
+	- locked <0x00000007083cc7c8> (a sun.nio.ch.WEPollSelectorImpl)
+	at sun.nio.ch.SelectorImpl.select(java.base@21.0.11/SelectorImpl.java:147)
+	at io.netty.channel.nio.SelectedSelectionKeySetSelector.select(io.netty.transport@4.1.97.Final/SelectedSelectionKeySetSelector.java:68)
+	at io.netty.channel.nio.NioEventLoop.select(io.netty.transport@4.1.97.Final/NioEventLoop.java:879)
+	at io.netty.channel.nio.NioEventLoop.run(io.netty.transport@4.1.97.Final/NioEventLoop.java:526)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(io.netty.common@4.1.97.Final/SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(io.netty.common@4.1.97.Final/ThreadExecutorMap.java:74)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"RCON Listener #1" #127 [41432] prio=8 os_prio=1 cpu=31.25ms elapsed=112.27s tid=0x0000019f2ab66500 nid=41432 runnable  [0x0000004332cfe000]
+   java.lang.Thread.State: RUNNABLE
+	at sun.nio.ch.Net.poll(java.base@21.0.11/Native Method)
+	at sun.nio.ch.NioSocketImpl.park(java.base@21.0.11/NioSocketImpl.java:191)
+	at sun.nio.ch.NioSocketImpl.timedAccept(java.base@21.0.11/NioSocketImpl.java:703)
+	at sun.nio.ch.NioSocketImpl.accept(java.base@21.0.11/NioSocketImpl.java:745)
+	at java.net.ServerSocket.implAccept(java.base@21.0.11/ServerSocket.java:698)
+	at java.net.ServerSocket.platformImplAccept(java.base@21.0.11/ServerSocket.java:663)
+	at java.net.ServerSocket.implAccept(java.base@21.0.11/ServerSocket.java:639)
+	at java.net.ServerSocket.implAccept(java.base@21.0.11/ServerSocket.java:585)
+	at java.net.ServerSocket.accept(java.base@21.0.11/ServerSocket.java:543)
+	at net.minecraft.server.rcon.thread.RconThread.run(minecraft@1.21.1/RconThread.java:39)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"LanServerPinger #1" #128 [29480] daemon prio=8 os_prio=1 cpu=15.62ms elapsed=112.27s tid=0x0000019f2ab67220 nid=29480 waiting on condition  [0x0000004332dfe000]
+   java.lang.Thread.State: TIMED_WAITING (sleeping)
+	at java.lang.Thread.sleep0(java.base@21.0.11/Native Method)
+	at java.lang.Thread.sleep(java.base@21.0.11/Thread.java:509)
+	at net.minecraft.client.server.LanServerPinger.run(minecraft@1.21.1/LanServerPinger.java:52)
+
+"RCON Client /127.0.0.1 #2" #129 [2824] prio=8 os_prio=1 cpu=0.00ms elapsed=111.63s tid=0x0000019f26df2f60 nid=2824 runnable  [0x0000004332efe000]
+   java.lang.Thread.State: RUNNABLE
+	at sun.nio.ch.SocketDispatcher.read0(java.base@21.0.11/Native Method)
+	at sun.nio.ch.SocketDispatcher.read(java.base@21.0.11/SocketDispatcher.java:46)
+	at sun.nio.ch.NioSocketImpl.tryRead(java.base@21.0.11/NioSocketImpl.java:256)
+	at sun.nio.ch.NioSocketImpl.implRead(java.base@21.0.11/NioSocketImpl.java:307)
+	at sun.nio.ch.NioSocketImpl.read(java.base@21.0.11/NioSocketImpl.java:346)
+	at sun.nio.ch.NioSocketImpl$1.read(java.base@21.0.11/NioSocketImpl.java:796)
+	at java.net.Socket$SocketInputStream.read(java.base@21.0.11/Unknown Source)
+	at java.io.BufferedInputStream.fill(java.base@21.0.11/BufferedInputStream.java:291)
+	at java.io.BufferedInputStream.read1(java.base@21.0.11/BufferedInputStream.java:347)
+	at java.io.BufferedInputStream.implRead(java.base@21.0.11/BufferedInputStream.java:420)
+	at java.io.BufferedInputStream.read(java.base@21.0.11/BufferedInputStream.java:399)
+	at net.minecraft.server.rcon.thread.RconClient.run(minecraft@1.21.1/RconClient.java:48)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-0" #130 [20668] daemon prio=8 os_prio=1 cpu=97468.75ms elapsed=101.65s tid=0x0000019f29a81a10 nid=20668 runnable  [0x000000432defc000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.thermo.GlobalLiquidResponse.logFugacity(createcheme@0.2.0/GlobalLiquidResponse.java:50)
+	at com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel.phase(createcheme@0.2.0/HydrocarbonModel.java:104)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:270)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:130)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-1" #131 [25072] daemon prio=8 os_prio=1 cpu=97484.38ms elapsed=101.65s tid=0x0000019f25e12810 nid=25072 runnable  [0x00000043313fc000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.thermo.PengRobinsonKernel.evaluatePrepared(createcheme@0.2.0/PengRobinsonKernel.java:269)
+	at com.wormzjl.createcheme.science.thermo.PengRobinsonKernel.evaluate(createcheme@0.2.0/PengRobinsonKernel.java:176)
+	at com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.evaluate(createcheme@0.2.0/TranslatedPengRobinson.java:205)
+	at com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel.phase(createcheme@0.2.0/HydrocarbonModel.java:96)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:271)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.phaseCorrection(createcheme@0.2.0/PassiveStepSolver.java:1050)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:256)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(createcheme@0.2.0/TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:139)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-2" #132 [17004] daemon prio=8 os_prio=1 cpu=97015.62ms elapsed=101.65s tid=0x0000019f25e14f70 nid=17004 runnable  [0x00000043316fd000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:273)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.phaseCorrection(createcheme@0.2.0/PassiveStepSolver.java:1050)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:256)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-3" #133 [42184] daemon prio=8 os_prio=1 cpu=97234.38ms elapsed=101.65s tid=0x0000019f25e15600 nid=42184 runnable  [0x00000043318fd000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:273)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-4" #134 [26616] daemon prio=8 os_prio=1 cpu=97265.62ms elapsed=101.65s tid=0x0000019f25e13bc0 nid=26616 runnable  [0x0000004331cfd000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.transport.MixtureViscosity.vapor(createcheme@0.2.0/MixtureViscosity.java:166)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.viscosity(createcheme@0.2.0/PassiveStepSolver.java:1221)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver$Equations.differentiateEntries(createcheme@0.2.0/PassiveStepSolver.java:1812)
+	at com.wormzjl.createcheme.science.fluid.solver.SparseNewton.differentiate0(createcheme@0.2.0/SparseNewton.java:229)
+	at com.wormzjl.createcheme.science.fluid.solver.SparseNewton.differentiate(createcheme@0.2.0/SparseNewton.java:217)
+	at com.wormzjl.createcheme.science.fluid.solver.SparseNewton.solve(createcheme@0.2.0/SparseNewton.java:128)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:235)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:130)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(createcheme@0.2.0/TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:139)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-5" #135 [21860] daemon prio=8 os_prio=1 cpu=97531.25ms elapsed=101.65s tid=0x0000019f25e15c90 nid=21860 runnable  [0x00000043329fd000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.thermo.PengRobinsonKernel.evaluatePrepared(createcheme@0.2.0/PengRobinsonKernel.java:269)
+	at com.wormzjl.createcheme.science.thermo.PengRobinsonKernel.evaluate(createcheme@0.2.0/PengRobinsonKernel.java:176)
+	at com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.evaluate(createcheme@0.2.0/TranslatedPengRobinson.java:205)
+	at com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel.phase(createcheme@0.2.0/HydrocarbonModel.java:96)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:271)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-6" #136 [31340] daemon prio=8 os_prio=1 cpu=97593.75ms elapsed=101.65s tid=0x0000019f25e13530 nid=31340 runnable  [0x0000004332ffd000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:273)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:130)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(createcheme@0.2.0/TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:140)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-7" #137 [28356] daemon prio=8 os_prio=1 cpu=97171.88ms elapsed=101.65s tid=0x0000019f25e16320 nid=28356 runnable  [0x00000043330fc000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.thermo.GlobalLiquidResponse.logFugacity(createcheme@0.2.0/GlobalLiquidResponse.java:50)
+	at com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel.phase(createcheme@0.2.0/HydrocarbonModel.java:104)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:270)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-8" #138 [33368] daemon prio=8 os_prio=1 cpu=97984.38ms elapsed=101.65s tid=0x0000019f25e12ea0 nid=33368 runnable  [0x00000043331fd000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.thermo.PengRobinsonKernel.evaluatePrepared(createcheme@0.2.0/PengRobinsonKernel.java:276)
+	at com.wormzjl.createcheme.science.thermo.PengRobinsonKernel.evaluate(createcheme@0.2.0/PengRobinsonKernel.java:176)
+	at com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.evaluate(createcheme@0.2.0/TranslatedPengRobinson.java:205)
+	at com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel.phase(createcheme@0.2.0/HydrocarbonModel.java:96)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:271)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.phaseCorrection(createcheme@0.2.0/PassiveStepSolver.java:1050)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:256)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-9" #139 [23456] daemon prio=8 os_prio=1 cpu=97375.00ms elapsed=101.65s tid=0x0000019f25e169b0 nid=23456 runnable  [0x00000043332fc000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:273)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.solve(createcheme@0.2.0/TrBdf2StepSolver.java:60)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:140)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-10" #140 [21956] daemon prio=8 os_prio=1 cpu=96890.62ms elapsed=101.65s tid=0x0000019f25e17040 nid=21956 runnable  [0x00000043333fc000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.fill(createcheme@0.2.0/TranslatedPengRobinson.java:281)
+	at com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.evaluate(createcheme@0.2.0/TranslatedPengRobinson.java:206)
+	at com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel.phase(createcheme@0.2.0/HydrocarbonModel.java:96)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:271)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:142)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"createcheme-cpu-solve-11" #141 [2052] daemon prio=8 os_prio=1 cpu=97421.88ms elapsed=101.65s tid=0x0000019f25e176d0 nid=2052 runnable  [0x00000043334fc000]
+   java.lang.Thread.State: RUNNABLE
+	at com.wormzjl.createcheme.science.thermo.PengRobinsonKernel.mixtureSecondTemperatureDerivative(createcheme@0.2.0/PengRobinsonKernel.java:432)
+	at com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.fill(createcheme@0.2.0/TranslatedPengRobinson.java:254)
+	at com.wormzjl.createcheme.science.fluid.thermo.TranslatedPengRobinson.evaluate(createcheme@0.2.0/TranslatedPengRobinson.java:206)
+	at com.wormzjl.createcheme.science.fluid.thermo.HydrocarbonModel.phase(createcheme@0.2.0/HydrocarbonModel.java:96)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.splitHydrocarbon(createcheme@0.2.0/FluidThermodynamics.java:271)
+	at com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.flashTP(createcheme@0.2.0/FluidThermodynamics.java:244)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(createcheme@0.2.0/PassiveStepSolver.java:696)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:158)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(createcheme@0.2.0/PassiveStepSolver.java:92)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(createcheme@0.2.0/TrBdf2StepSolver.java:130)
+	at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(createcheme@0.2.0/TrBdf2StepSolver.java:54)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.run(createcheme@0.2.0/PassiveIntervalSolver.java:121)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.integrate(createcheme@0.2.0/PassiveIntervalSolver.java:83)
+	at com.wormzjl.createcheme.science.fluid.network.PassiveIntervalSolver.solve(createcheme@0.2.0/PassiveIntervalSolver.java:51)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$Leased.solve(createcheme@0.2.0/RetainedSolver.java:76)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.lambda$solve$0(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver$$Lambda/0x0000019ee26bac70.apply(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.run(createcheme@0.2.0/RetainedSolver.java:60)
+	at com.wormzjl.createcheme.runtime.fluid.RetainedSolver.solve(createcheme@0.2.0/RetainedSolver.java:65)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:407)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$FluidIslandCommand.solve(createcheme@0.2.0/ProcessSolveServices.java:395)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices.solveCommand(createcheme@0.2.0/ProcessSolveServices.java:291)
+	at com.wormzjl.createcheme.runtime.ProcessSolveServices$$Lambda/0x0000019ee26b7d48.solve(createcheme@0.2.0/Unknown Source)
+	at com.wormzjl.createcheme.runtime.BoundedCpuSolveService$WorkerTask.run(createcheme@0.2.0/BoundedCpuSolveService.java:797)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@21.0.11/ThreadPoolExecutor.java:1144)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@21.0.11/ThreadPoolExecutor.java:642)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+"JFR Recorder Thread" #142 [39488] daemon prio=5 os_prio=0 cpu=109.38ms elapsed=41.45s tid=0x0000019f2ab67f40 nid=39488 runnable  [0x0000000000000000]
+   java.lang.Thread.State: RUNNABLE
+
+"JFR Periodic Tasks" #143 [29944] daemon prio=5 os_prio=0 cpu=3312.50ms elapsed=41.31s tid=0x0000019f2ab68c60 nid=29944 in Object.wait()  [0x0000004330eff000]
+   java.lang.Thread.State: TIMED_WAITING (on object monitor)
+	at java.lang.Object.wait0(java.base@21.0.11/Native Method)
+	- waiting on <0x000000070b65ffb0> (a jdk.jfr.internal.JVM$ChunkRotationMonitor)
+	at java.lang.Object.wait(java.base@21.0.11/Object.java:366)
+	at jdk.jfr.internal.PlatformRecorder.takeNap(jdk.jfr@21.0.11/PlatformRecorder.java:559)
+	- locked <0x000000070b65ffb0> (a jdk.jfr.internal.JVM$ChunkRotationMonitor)
+	at jdk.jfr.internal.PlatformRecorder.periodicTask(jdk.jfr@21.0.11/PlatformRecorder.java:527)
+	at jdk.jfr.internal.PlatformRecorder.lambda$startDiskMonitor$1(jdk.jfr@21.0.11/PlatformRecorder.java:446)
+	at jdk.jfr.internal.PlatformRecorder$$Lambda/0x0000019ee27128d0.run(jdk.jfr@21.0.11/Unknown Source)
+	at java.lang.Thread.runWith(java.base@21.0.11/Thread.java:1596)
+	at java.lang.Thread.run(java.base@21.0.11/Thread.java:1583)
+
+os_prio=0 cpu=531.25ms elapsed=41.23s tid=0x0000019f29a61ca0 nid=20188 runnable  
+"G1 Conc#2" os_prio=2 cpu=1750.00ms elapsed=120.29s tid=0x0000019f26fa6770 nid=7448 runnable  
+
+"G1 Conc#1" os_prio=2 cpu=1671.88ms elapsed=120.29s tid=0x0000019f26fa6010 nid=35952 runnable  
+
+"GC Thread#12" os_prio=2 cpu=921.88ms elapsed=121.29s tid=0x0000019f2538f0b0 nid=11044 runnable  
+
+"GC Thread#11" os_prio=2 cpu=890.62ms elapsed=121.29s tid=0x0000019f2538ed00 nid=46620 runnable  
+
+"GC Thread#10" os_prio=2 cpu=890.62ms elapsed=121.29s tid=0x0000019f2538e950 nid=22828 runnable  
+
+"GC Thread#9" os_prio=2 cpu=828.12ms elapsed=121.29s tid=0x0000019f258809d0 nid=33008 runnable  
+
+"GC Thread#8" os_prio=2 cpu=875.00ms elapsed=121.29s tid=0x0000019f25880620 nid=34000 runnable  
+
+"GC Thread#7" os_prio=2 cpu=921.88ms elapsed=121.29s tid=0x0000019f25880270 nid=45432 runnable  
+
+"GC Thread#4" os_prio=2 cpu=921.88ms elapsed=121.29s tid=0x0000019f25411fd0 nid=46452 runnable  
+
+"GC Thread#5" os_prio=2 cpu=937.50ms elapsed=121.29s tid=0x0000019f25412380 nid=28116 runnable  
+
+"GC Thread#6" os_prio=2 cpu=921.88ms elapsed=121.29s tid=0x0000019f25412730 nid=25704 runnable  
+
+"GC Thread#3" os_prio=2 cpu=906.25ms elapsed=121.29s tid=0x0000019f253d9640 nid=21820 runnable  
+
+"GC Thread#2" os_prio=2 cpu=890.62ms elapsed=121.29s tid=0x0000019f253d9290 nid=8884 runnable  
+
+"GC Thread#1" os_prio=2 cpu=890.62ms elapsed=121.29s tid=0x0000019f258757a0 nid=27496 runnable  
+
+"VM Thread" os_prio=2 cpu=562.50ms elapsed=121.62s tid=0x0000019edf38f150 nid=24644 runnable  
+
+"VM Periodic Task Thread" os_prio=2 cpu=171.88ms elapsed=121.63s tid=0x0000019edf37c0c0 nid=26284 waiting on condition  
+
+"G1 Service" os_prio=2 cpu=31.25ms elapsed=121.63s tid=0x0000019ede69f500 nid=28656 runnable  
+
+"G1 Refine#0" os_prio=2 cpu=15.62ms elapsed=121.63s tid=0x0000019ede69eb70 nid=41668 runnable  
+
+"G1 Conc#0" os_prio=2 cpu=1734.38ms elapsed=121.63s tid=0x0000019ebf55e960 nid=16352 runnable  
+
+"G1 Main Marker" os_prio=2 cpu=0.00ms elapsed=121.63s tid=0x0000019ebf55d7a0 nid=46168 runnable  
+
+"GC Thread#0" os_prio=2 cpu=843.75ms elapsed=121.63s tid=0x0000019ebf54ba20 nid=37420 runnable  
+
+JNI global refs: 55, weak refs: 51
+

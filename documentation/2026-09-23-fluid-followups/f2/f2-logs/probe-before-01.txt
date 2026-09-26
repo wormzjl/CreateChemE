@@ -1,0 +1,43 @@
+PlacementProfileProbe 2026-09-24T03:14:33.001204400 java 21.0.11
+N=  500 built 500 devices in 0.69 s (100 islands)
+(build phases)
+N=  500 phases over 500 events (ms per event): s.copy=0.0658 s.positions=0.0106 s.bfs=0.0077 s.queue=0.0641 s.fence+commit=0.0074 a.ready=0.0104 a.filterStock=0.0385 a.activeCopy=0.0081 a.boundaries=0.0158 a.selected=0.0051 a.edits=0.0399 a.compile=0.8951 a.owners=0.0140 a.replacements=0.0156 a.applyReady=0.0543 a.inverse=0.0100 a.chunkIndex=0.0178 a.topology=0.0577 a.fences=0.0002 a.commit(in topology)=0.0007
+N=  500 place lone tank            median    1.725 ms (submit   0.214, apply   1.538)  p90    2.150 ms  runs 30
+N=  500 remove lone tank           median    1.319 ms (submit   0.063, apply   1.250)  p90    1.836 ms  runs 30
+N=  500 extend line (pipe)         median    1.592 ms (submit   0.075, apply   1.505)  p90    2.356 ms  runs 30
+N=  500 remove extension (pipe)    median    1.360 ms (submit   0.063, apply   1.287)  p90    2.311 ms  runs 30
+N=  500 merge two lines (pipe)     median    1.833 ms (submit   0.077, apply   1.749)  p90    2.636 ms  runs 30
+N=  500 split two lines (remove)   median    1.381 ms (submit   0.066, apply   1.318)  p90    1.790 ms  runs 30
+N=  500 edit (pipe facing)         median    1.646 ms (submit   0.062, apply   1.584)  p90    2.084 ms  runs 30
+N=  500 at(position)               first after an event median    0.017 ms, warm   0.0001 ms
+N=  500 load (server start)        median    2.196 ms (5 runs)
+N=  500 next 100 blocks (20 lines)    1.685 ms per block (submit 0.111, apply 1.568)
+N=  500 phases over 600 events (ms per event): s.copy=0.0230 s.positions=0.0132 s.bfs=0.0025 s.queue=0.0494 s.fence+commit=0.0029 a.ready=0.0047 a.filterStock=0.0288 a.activeCopy=0.0045 a.boundaries=0.0149 a.selected=0.0092 a.edits=0.0152 a.compile=1.3883 a.owners=0.0127 a.replacements=0.0229 a.applyReady=0.0490 a.inverse=0.0101 a.chunkIndex=0.0209 a.topology=0.0190 a.fences=0.0002 a.commit(in topology)=0.0002
+N= 2000 built 1400 devices in 4.58 s (400 islands)
+(build phases)
+N= 2000 phases over 1400 events (ms per event): s.copy=0.0357 s.positions=0.0259 s.bfs=0.0017 s.queue=0.0988 s.fence+commit=0.0023 a.ready=0.0023 a.filterStock=0.0665 a.activeCopy=0.0109 a.boundaries=0.0254 a.selected=0.0048 a.edits=0.0241 a.compile=2.7161 a.owners=0.0232 a.replacements=0.0256 a.applyReady=0.0965 a.inverse=0.0225 a.chunkIndex=0.0237 a.topology=0.0140 a.fences=0.0001 a.commit(in topology)=0.0001
+N= 2000 place lone tank            median    5.201 ms (submit   0.328, apply   4.866)  p90    5.286 ms  runs 30
+N= 2000 remove lone tank           median    5.058 ms (submit   0.250, apply   4.810)  p90    5.130 ms  runs 30
+N= 2000 extend line (pipe)         median    5.214 ms (submit   0.299, apply   4.897)  p90    6.030 ms  runs 30
+N= 2000 remove extension (pipe)    median    5.044 ms (submit   0.245, apply   4.798)  p90    5.149 ms  runs 30
+N= 2000 merge two lines (pipe)     median    5.091 ms (submit   0.274, apply   4.816)  p90    5.169 ms  runs 30
+N= 2000 split two lines (remove)   median    5.046 ms (submit   0.243, apply   4.805)  p90    5.160 ms  runs 30
+N= 2000 edit (pipe facing)         median    5.024 ms (submit   0.207, apply   4.816)  p90    5.254 ms  runs 30
+N= 2000 at(position)               first after an event median    0.069 ms, warm   0.0001 ms
+N= 2000 load (server start)        median    5.672 ms (5 runs)
+N= 2000 next 100 blocks (20 lines)    5.376 ms per block (submit 0.312, apply 5.058)
+N= 2000 phases over 600 events (ms per event): s.copy=0.0426 s.positions=0.0415 s.bfs=0.0030 s.queue=0.1500 s.fence+commit=0.0036 a.ready=0.0026 a.filterStock=0.1061 a.activeCopy=0.0164 a.boundaries=0.0402 a.selected=0.0064 a.edits=0.0143 a.compile=4.4150 a.owners=0.0359 a.replacements=0.0399 a.applyReady=0.1464 a.inverse=0.0366 a.chunkIndex=0.0393 a.topology=0.0151 a.fences=0.0001 a.commit(in topology)=0.0002
+N= 5000 built 2900 devices in 34.66 s (1000 islands)
+(build phases)
+N= 5000 phases over 2900 events (ms per event): s.copy=0.0605 s.positions=0.0644 s.bfs=0.0031 s.queue=0.2761 s.fence+commit=0.0045 a.ready=0.0046 a.filterStock=0.2684 a.activeCopy=0.0300 a.boundaries=0.0807 a.selected=0.0119 a.edits=0.0266 a.compile=10.1857 a.owners=0.1448 a.replacements=0.1258 a.applyReady=0.3454 a.inverse=0.0609 a.chunkIndex=0.0734 a.topology=0.0485 a.fences=0.0002 a.commit(in topology)=0.0004
+N= 5000 place lone tank            median   19.302 ms (submit   0.780, apply  18.468)  p90   23.675 ms  runs 30
+N= 5000 remove lone tank           median   18.785 ms (submit   0.619, apply  18.137)  p90   20.477 ms  runs 30
+N= 5000 extend line (pipe)         median   19.256 ms (submit   0.716, apply  18.530)  p90   20.884 ms  runs 30
+N= 5000 remove extension (pipe)    median   18.880 ms (submit   0.617, apply  18.262)  p90   22.268 ms  runs 30
+N= 5000 merge two lines (pipe)     median   18.904 ms (submit   0.705, apply  18.163)  p90   20.453 ms  runs 30
+N= 5000 split two lines (remove)   median   18.920 ms (submit   0.616, apply  18.292)  p90   24.951 ms  runs 30
+N= 5000 edit (pipe facing)         median   19.250 ms (submit   0.523, apply  18.727)  p90   22.266 ms  runs 30
+N= 5000 at(position)               first after an event median    0.181 ms, warm   0.0003 ms
+N= 5000 load (server start)        median   21.680 ms (5 runs)
+N= 5000 next 100 blocks (20 lines)   20.602 ms per block (submit 0.795, apply 19.801)
+N= 5000 phases over 600 events (ms per event): s.copy=0.0958 s.positions=0.0893 s.bfs=0.0042 s.queue=0.4071 s.fence+commit=0.0044 a.ready=0.0062 a.filterStock=0.4493 a.activeCopy=0.0448 a.boundaries=0.1294 a.selected=0.0178 a.edits=0.0166 a.compile=17.2561 a.owners=0.3005 a.replacements=0.2190 a.applyReady=0.5769 a.inverse=0.0897 a.chunkIndex=0.1075 a.topology=0.0555 a.fences=0.0002 a.commit(in topology)=0.0004

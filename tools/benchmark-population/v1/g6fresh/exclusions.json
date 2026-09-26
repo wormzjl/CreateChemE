@@ -1,0 +1,572 @@
+{
+ "revision": "benchmark-population-exclusions-v1",
+ "population": "g6fresh",
+ "rule": {
+  "REQUEST_ONLY_TYPED": "V3ColumnCalculator.requestOnlyAdmission types INFEASIBLE_SPECIFICATION at ratio 0.3",
+  "STATE_GATE_NEVER_SOLVED": "archived classical control typed INFEASIBLE_SPECIFICATION (pre-fix state gates) and no archived arm reached strict or advisory"
+ },
+ "counts": {
+  "population": 252,
+  "excluded": 46,
+  "excludedByReason": {
+   "REQUEST_ONLY_TYPED": 10,
+   "STATE_GATE_NEVER_SOLVED": 36
+  },
+  "cleaned": 206,
+  "openSet": 119,
+  "openSetNeverConverged": 113,
+  "openSetAdvisoryOnly": 6,
+  "strictCeilingOnCleaned": 87,
+  "classicalControlTypedInfeasible": 54,
+  "archivedArms": 21,
+  "everSolvedAnyArm": 93,
+  "everStrictAnyArm": 87,
+  "stateGateUnderStrictOnlyReading": 36,
+  "stateGateStrictOnlyTotalIncludingRequestOnly": 38,
+  "advisoryRescuedFromStateGate": [],
+  "advisoryRescueEvidence": {}
+ },
+ "classicalControl": {
+  "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+  "sha256": "3ca95440cb3402d882c5dc620c2da5464f5b180ff1295c952c48daf61a89b5ed",
+  "note": "generation comparison transformer journal, 'current' mode",
+  "blockDisagreements": []
+ },
+ "archivedArms": [
+  "checkpoint:20260911:current",
+  "checkpoint:20260911:neural",
+  "checkpoint:20260911:neuralFirst",
+  "generation:gen2:current",
+  "generation:gen2:current:test",
+  "generation:gen2:neural",
+  "generation:gen2:neural:test",
+  "generation:gen2:neuralFirst",
+  "generation:gen2:neuralFirst:test",
+  "generation:gen3:current",
+  "generation:gen3:current:test",
+  "generation:gen3:neural",
+  "generation:gen3:neural:test",
+  "generation:gen3:neuralFirst",
+  "generation:gen3:neuralFirst:test",
+  "generation:transformer:current",
+  "generation:transformer:current:test",
+  "generation:transformer:neural",
+  "generation:transformer:neural:test",
+  "generation:transformer:neuralFirst",
+  "generation:transformer:neuralFirst:test"
+ ],
+ "armSources": [
+  {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/tools/neural/generation-comparison-case-map.jsonl",
+   "sha256": "8c84c7542de5d775557c5c4e7c2ab3af09787172c5b5d2b54e60e4eb41cf4062",
+   "arms": 18,
+   "note": "generation comparison test fold, 3 models x 3 modes"
+  },
+  {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/checkpoint-selection-v2/study.zip!build/neural-transformer/selection-v2/test/20260911/evaluation.jsonl",
+   "sha256": "3ca95440cb3402d882c5dc620c2da5464f5b180ff1295c952c48daf61a89b5ed",
+   "arms": 3,
+   "note": "checkpoint selection v2 test fold, all three modes"
+  },
+  {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/gen2/evaluation.jsonl",
+   "sha256": "f737b4c487c7c52abe4417847afe2aa04bf03852363e75820ef9bf1a9a1036a2",
+   "arms": 3,
+   "note": "generation comparison gen2 test journal"
+  },
+  {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/gen3/evaluation.jsonl",
+   "sha256": "c915c2c8a84750d183f8fc7410f66cc7e8bb535ec85c0b8bad5e73e37268f619",
+   "arms": 3,
+   "note": "generation comparison gen3 test journal"
+  },
+  {
+   "path": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "sha256": "3ca95440cb3402d882c5dc620c2da5464f5b180ff1295c952c48daf61a89b5ed",
+   "arms": 3,
+   "note": "generation comparison transformer test journal"
+  }
+ ],
+ "exclusions": [
+  {
+   "id": "g6fresh-s06-w0-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s59-w0-p1-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s40-w0-p2-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s06-w0-p2-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s35-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s24-w0-p4-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s13-w1-p4-d1-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3342 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 7; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.3341695589330232,
+   "liquidSupplyLimitingTray": 7,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s23-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s47-w1-p4-d1-r01",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s61-w0-p1-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s50-w0-p4-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s02-w0-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s64-w0-p4-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s13-w0-p3-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s63-w0-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s30-w0-p3-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s60-w0-p2-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s48-w0-p3-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3478 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 6; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.3477642016637459,
+   "liquidSupplyLimitingTray": 6,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": true,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s53-w0-p2-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s46-w0-p2-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s62-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s17-w0-p1-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3301 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 11; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.33014024119540436,
+   "liquidSupplyLimitingTray": 11,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s51-w0-p1-d1-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 3.688 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 38; no liquid balance closes at or above 1.000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 3.6884252360731344,
+   "liquidSupplyLimitingTray": 38,
+   "necessaryTier": true,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s13-w0-p0-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3611 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 9; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.3610929959551216,
+   "liquidSupplyLimitingTray": 9,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s38-w0-p4-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s06-w1-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s43-w0-p4-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s31-w1-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s32-w0-p2-d2-r01",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s62-w1-p0-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.4077 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 35; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.40773429455404353,
+   "liquidSupplyLimitingTray": 35,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s51-w1-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s36-w0-p3-d1-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s31-w1-p3-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s18-w0-p1-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 1.947 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 9; no liquid balance closes at or above 1.000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 1.9474214144639235,
+   "liquidSupplyLimitingTray": 9,
+   "necessaryTier": true,
+   "alsoClassicalTypedInfeasible": true,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s39-w0-p0-d3-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.6420 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 36; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.6419714251917641,
+   "liquidSupplyLimitingTray": 36,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s64-w0-p1-d2-r01",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.3651 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 19; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.3651486840319965,
+   "liquidSupplyLimitingTray": 19,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s20-w0-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s09-w0-p4-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s04-w0-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s26-w0-p2-d2-r00",
+   "reason": "REQUEST_ONLY_TYPED",
+   "gate": "liquidSupplyScreen",
+   "detail": "V3 authored side draws withdraw 0.8249 of the liquid that reflux, feed and authored pumparound condensation can deliver to tray 6; the solver's demonstrated liquid-supply envelope is 0.3000",
+   "evidenceSource": "build/benchmark-population/v1/admission/g6fresh/admission.jsonl",
+   "liquidSupplyRatio": 0.8248936696439151,
+   "liquidSupplyLimitingTray": 6,
+   "necessaryTier": false,
+   "alsoClassicalTypedInfeasible": false,
+   "alsoNeverSolvedByAnyArm": true
+  },
+  {
+   "id": "g6fresh-s18-w1-p4-d3-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s38-w0-p2-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s15-w0-p3-d3-r01",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s11-w0-p3-d2-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s10-w0-p4-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  },
+  {
+   "id": "g6fresh-s26-w0-p1-d0-r00",
+   "reason": "STATE_GATE_NEVER_SOLVED",
+   "gate": "retiredStateDependentHeatBound",
+   "detail": "classical control status INFEASIBLE_SPECIFICATION; no archived arm reached strict or advisory",
+   "evidenceSource": "C:/Users/wormz/.codex/worktrees/8848/CreateChemE/.neural-cache/generation-comparison-v1/study.zip!build/neural-generations/comparison-v1/test/transformer/evaluation.jsonl",
+   "archivedArmsChecked": 21,
+   "solvedByArms": [],
+   "strictAnywhere": false
+  }
+ ]
+}

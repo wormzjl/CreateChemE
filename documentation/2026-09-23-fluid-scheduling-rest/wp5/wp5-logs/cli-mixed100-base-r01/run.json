@@ -1,0 +1,223 @@
+{
+  "runId": "cli-mixed100-base-r01",
+  "scenario": "mixed100",
+  "kind": "client",
+  "worktree": "D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/fluid-baseline-eb28fc5",
+  "warmupSeconds": 60,
+  "windowSeconds": 60,
+  "events": [
+    {
+      "t": 1790171963914,
+      "iso": "2026-09-23T13:59:23.914Z",
+      "what": "machine",
+      "endfield": 0,
+      "freeMiB": 27497
+    },
+    {
+      "t": 1790171964364,
+      "iso": "2026-09-23T13:59:24.364Z",
+      "what": "launch"
+    },
+    {
+      "t": 1790171980549,
+      "iso": "2026-09-23T13:59:40.549Z",
+      "what": "bridge up",
+      "ok": true,
+      "type": "minecraft-mod",
+      "version": "unknown",
+      "loader": "unknown",
+      "pid": 5488,
+      "port": 9876,
+      "uptime": 6.1
+    },
+    {
+      "t": 1790171981029,
+      "iso": "2026-09-23T13:59:41.029Z",
+      "what": "jvm",
+      "pid": 5488
+    },
+    {
+      "t": 1790171981030,
+      "iso": "2026-09-23T13:59:41.030Z",
+      "what": "joined"
+    },
+    {
+      "t": 1790171985059,
+      "iso": "2026-09-23T13:59:45.059Z",
+      "what": "control",
+      "reply": {
+        "control_mode": true,
+        "platform": "internal",
+        "hook": false
+      }
+    },
+    {
+      "t": 1790171986648,
+      "iso": "2026-09-23T13:59:46.648Z",
+      "what": "command",
+      "command": "/function createcheme_bench:view",
+      "reply": "[CHAT] Running function createcheme_bench:view\r"
+    },
+    {
+      "t": 1790171986652,
+      "iso": "2026-09-23T13:59:46.652Z",
+      "what": "view",
+      "reply": {
+        "result": "yaw=0.0,pitch=90.0"
+      }
+    },
+    {
+      "t": 1790171988234,
+      "iso": "2026-09-23T13:59:48.234Z",
+      "what": "command",
+      "command": "/function createcheme_bench:forceload",
+      "reply": "[CHAT] Running function createcheme_bench:forceload\r"
+    },
+    {
+      "t": 1790171993246,
+      "iso": "2026-09-23T13:59:53.246Z",
+      "what": "place start"
+    },
+    {
+      "t": 1790171996379,
+      "iso": "2026-09-23T13:59:56.379Z",
+      "what": "command",
+      "command": "/function createcheme_bench:mixed100",
+      "reply": "[CHAT] [Dev] createcheme_bench mixed100 placed 700 devices"
+    },
+    {
+      "t": 1790171996380,
+      "iso": "2026-09-23T13:59:56.380Z",
+      "what": "place done",
+      "placementMillisIncludingChatRoundTrip": 3133
+    },
+    {
+      "t": 1790171998406,
+      "iso": "2026-09-23T13:59:58.406Z",
+      "what": "devices registered",
+      "onlineTick": 400,
+      "devices": 700,
+      "islands": 100,
+      "kinds": "{AWAKE=100}",
+      "statuses": "{WAITING=100}"
+    },
+    {
+      "t": 1790172059242,
+      "iso": "2026-09-23T14:00:59.242Z",
+      "what": "jfr start",
+      "reply": "5488:\r\nStarted recording 1. No limit specified, using maxsize=250MB as default.\n\nUse jcmd 5488 JFR.dump name=wp5window to copy recording data to file."
+    },
+    {
+      "t": 1790172060414,
+      "iso": "2026-09-23T14:01:00.414Z",
+      "what": "window start"
+    },
+    {
+      "t": 1790172119384,
+      "iso": "2026-09-23T14:01:59.384Z",
+      "what": "window end"
+    },
+    {
+      "t": 1790172119594,
+      "iso": "2026-09-23T14:01:59.594Z",
+      "what": "jfr stop",
+      "reply": "5488:\r\nStopped recording \"wp5window\", 62.2 MB written to:\n\nD:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\documentation\\fluid-scheduler\\wp5-logs\\cli-mixed100-base-r01\\window.jfr"
+    },
+    {
+      "t": 1790172120186,
+      "iso": "2026-09-23T14:02:00.186Z",
+      "what": "live heap"
+    },
+    {
+      "t": 1790172120187,
+      "iso": "2026-09-23T14:02:00.187Z",
+      "what": "end state",
+      "onlineTick": 2800,
+      "devices": 700,
+      "islands": 100,
+      "kinds": "{AWAKE=100}",
+      "statuses": "{FULL=81, HELD=16, SOLVING=3}"
+    },
+    {
+      "t": 1790172120360,
+      "iso": "2026-09-23T14:02:00.360Z",
+      "what": "screenshot",
+      "file": "D:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\documentation\\fluid-scheduler\\wp5-logs\\cli-mixed100-base-r01\\view.png",
+      "size": 12063
+    },
+    {
+      "t": 1790172122746,
+      "iso": "2026-09-23T14:02:02.746Z",
+      "what": "f3 on",
+      "out": "tapped F3"
+    },
+    {
+      "t": 1790172125362,
+      "iso": "2026-09-23T14:02:05.362Z",
+      "what": "screenshot f3",
+      "file": "D:\\Minecraft\\Modding\\1.21\\CreateChemE\\.claude\\worktrees\\agent-ae139e4fc1b184b36\\documentation\\fluid-scheduler\\wp5-logs\\cli-mixed100-base-r01\\view-f3.png",
+      "size": 43986
+    },
+    {
+      "t": 1790172130395,
+      "iso": "2026-09-23T14:02:10.395Z",
+      "what": "save and quit",
+      "clicked": true,
+      "screen": "PauseScreen",
+      "gui": [
+        213,
+        192
+      ],
+      "results": {
+        "keyPressed": false,
+        "mouseReleased": true
+      },
+      "widget": "Button",
+      "callback": "onPress.onPress(widget)"
+    },
+    {
+      "t": 1790172135396,
+      "iso": "2026-09-23T14:02:15.396Z",
+      "what": "close client"
+    },
+    {
+      "t": 1790172135857,
+      "iso": "2026-09-23T14:02:15.857Z",
+      "what": "gradle exit",
+      "code": 1
+    },
+    {
+      "t": 1790172138623,
+      "iso": "2026-09-23T14:02:18.623Z",
+      "what": "done",
+      "endfield": 0,
+      "freeMiB": 27401
+    }
+  ],
+  "machineBefore": {
+    "endfield": 0,
+    "freeMiB": 27497
+  },
+  "pid": 5488,
+  "placementMillis": 3133,
+  "placedState": {
+    "onlineTick": 400,
+    "devices": 700,
+    "islands": 100,
+    "kinds": "{AWAKE=100}",
+    "statuses": "{WAITING=100}"
+  },
+  "windowStart": 1790172059244,
+  "windowEnd": 1790172119259,
+  "endState": {
+    "onlineTick": 2800,
+    "devices": 700,
+    "islands": 100,
+    "kinds": "{AWAKE=100}",
+    "statuses": "{FULL=81, HELD=16, SOLVING=3}"
+  },
+  "machineAfter": {
+    "endfield": 0,
+    "freeMiB": 27401
+  }
+}

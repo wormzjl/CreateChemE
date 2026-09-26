@@ -1,0 +1,20 @@
+<testsuite name="com.wormzjl.createcheme.science.fluid.network.LiquidFullBubblePointTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-09-25T15:37:59.001Z" hostname="WORMZ-PC" time="0.05">
+CH4 + 2 % N2 interval 1: 158.505751 K 3993327.5 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 2 % N2 interval 2: 157.012770 K 2985921.7 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 2 % N2 interval 3: 155.521083 K 1977781.2 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 2 % N2 interval 4: 154.406245 K 1427650.8 Pa, vapour 4.007e-03 mol, substeps 4 rejected 0
+CH4 + 2 % N2 interval 5: 153.707315 K 1387755.8 Pa, vapour 1.195e-02 mol, substeps 3 rejected 0
+CH4 + 2 % N2 interval 6: 153.005848 K 1348542.2 Pa, vapour 1.923e-02 mol, substeps 3 rejected 0
+CH4 + 0.5 % CO2 interval 1: 170.324516 K 4114253.5 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 0.5 % CO2 interval 2: 168.650191 K 3227616.3 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 0.5 % CO2 interval 3: 166.977063 K 2340089.4 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 0.5 % CO2 interval 4: 165.950384 K 2010112.4 Pa, vapour 1.166e-02 mol, substeps 6 rejected 3
+CH4 + 0.5 % CO2 interval 5: 165.240610 K 1956972.4 Pa, vapour 2.771e-02 mol, substeps 3 rejected 0
+CH4 + 0.5 % CO2 interval 6: 164.527749 K 1904617.0 Pa, vapour 4.222e-02 mol, substeps 3 rejected 0
+CH4 + 2 % C2H6 interval 1: 170.358831 K 4098127.7 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 2 % C2H6 interval 2: 168.718732 K 3195339.8 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 2 % C2H6 interval 3: 167.079740 K 2291638.0 Pa, vapour 0.000e+00 mol, substeps 3 rejected 0
+CH4 + 2 % C2H6 interval 4: 166.079220 K 1975002.0 Pa, vapour 1.083e-02 mol, substeps 4 rejected 0
+CH4 + 2 % C2H6 interval 5: 165.362565 K 1922741.5 Pa, vapour 2.531e-02 mol, substeps 3 rejected 0
+CH4 + 2 % C2H6 interval 6: 164.643159 K 1871264.2 Pa, vapour 3.844e-02 mol, substeps 3 rejected 0
+

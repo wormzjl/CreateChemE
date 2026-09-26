@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "priority": 100,
+      "modelId": "regrouped-seed-17041-epoch-160",
+      "payload": "/data/createcheme/neural/v3-column-transformer-regrouped.payload.json",
+      "sidecar": "/data/createcheme/neural/v3-column-transformer-regrouped.sidecar.json",
+      "pipelineSha256": "609be438951126053b6c7b37e88016c462fcbe76014a640c3558aab472a8e86a"
+    }
+  ]
+}

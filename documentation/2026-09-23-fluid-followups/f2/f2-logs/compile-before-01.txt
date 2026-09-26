@@ -1,0 +1,5 @@
+CompileProfile 2026-09-24T03:17:08.299883600
+devices   500 islands  100: PhysicalFluidTopology.compile median    1.852 ms, of which TopologyCompiler.compile about    0.610 ms
+devices  2000 islands  400: PhysicalFluidTopology.compile median    9.606 ms, of which TopologyCompiler.compile about    2.354 ms
+devices  5000 islands 1000: PhysicalFluidTopology.compile median   16.473 ms, of which TopologyCompiler.compile about    3.689 ms
+devices 10000 islands 2000: PhysicalFluidTopology.compile median   52.158 ms, of which TopologyCompiler.compile about    8.227 ms

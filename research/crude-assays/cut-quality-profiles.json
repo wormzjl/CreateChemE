@@ -1,0 +1,5172 @@
+{
+  "wti_light_export": {
+    "schema_version": 1,
+    "revision": "assay-cut-quality-r1",
+    "source": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/wti_light.pdf (WTLEX26Y)",
+    "source_pdf_sha256": "96ea254f6666fb85b3b12d050ed34f04a6f74187dd5b7c1efc51990c11b65c9c",
+    "components": [
+      {
+        "component": "Methane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7486754347690581,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.2513245652309419,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Ethane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7988693049551048,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.20113069504489525,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Propane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8171304170351725,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.18286958296482753,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isobutane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-butane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isopentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-pentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc01",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.15602467830929176,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 4.295770570699276e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc02",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14437907492885482,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 5.777499822133085e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc03",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14296529879319245,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.00014221490826633594,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc04",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14336485040164468,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0001865534464878675,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 6.347193119356648e-07,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc05",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14176161353898412,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.00023979504480122686,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 2.855643804706692e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc06",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14041706587442399,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0006729530413959984,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 2.263854498505147e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc07",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13857215897881472,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0012192988978874198,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 8.214830455903422e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc08",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.136,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0013414521679815494,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.00018587399303366707,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc09",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.136,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0016926713796733927,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.00033781667652283754,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc10",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13997934609096696,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.003479649975621487,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0008676349036723643,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 1.1404009020231545e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 1.1404009020231545e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 1.1404009020231545e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.0037570890913131132,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.013344721300028803,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc11",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14341409691379797,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.004374735801551769,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0011981877292869185,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 2.124731705888845e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 2.124731705888845e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.1247317058888447e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.006999999999999999,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.024,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc12",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14341409691379797,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.004374735801551769,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0011981877292869185,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 2.124731705888845e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 2.124731705888845e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.124731705888845e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.006999999999999999,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.024,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc13",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14341409691379797,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.004374735801551769,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0011981877292869185,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 2.124731705888845e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 2.124731705888845e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.124731705888845e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.006999999999999998,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.024,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      }
+    ],
+    "reconciliation": {
+      "H": {
+        "reported_whole_mass_fraction": 0.14400000000000002,
+        "factor": 1,
+        "estimated_550_plus_mass_fraction": 0.14341409691379797,
+        "rounding_only_half_width_mass_fraction": 0.02051727555072082,
+        "method": "whole_hydrogen_balance_after_pure_light_end_subtraction"
+      },
+      "S": {
+        "reported_whole_mass_fraction": 0.0007000000000000001,
+        "unreconciled_whole_mass_fraction": 0.0006992422259910959,
+        "factor": 1.0010837074489174,
+        "assumed_zero_source_cut_indices": [],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "N": {
+        "reported_whole_mass_fraction": 0.000113,
+        "unreconciled_whole_mass_fraction": 0.0001130766045155819,
+        "factor": 0.9993225431917585,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Ni": {
+        "reported_whole_mass_fraction": 1e-07,
+        "unreconciled_whole_mass_fraction": 7.530362518549924e-08,
+        "factor": 1.3279573161805283,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "V": {
+        "reported_whole_mass_fraction": 1e-07,
+        "unreconciled_whole_mass_fraction": 1.1766191435234256e-07,
+        "factor": 0.849892682355538,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Fe": {
+        "reported_whole_mass_fraction": 1e-06,
+        "unreconciled_whole_mass_fraction": 8.377528301886791e-07,
+        "factor": 1.1936694976903623,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      }
+    },
+    "limitations": [
+      "Reported source numbers may themselves be estimated; no measurement method or analytical uncertainty is supplied.",
+      "Pseudocomponent carbon, oxygen, sodium, mercury and arsenic partitioning are unresolved; absent fields are not zero.",
+      "Missing nitrogen/metals in source cuts are assumed zero for this estimated profile; reported source zeros are not detection limits.",
+      "550+ elemental concentrations are uniform across the estimated heavy tail; no invented NBP enrichment law.",
+      "Asphaltenes and micro carbon residue are analytical indicators, not extra mass, elemental carbon or a complete SARA model.",
+      "These profiles describe unreacted assay cuts. Reaction, blending and separation must carry updated elemental inventories."
+    ]
+  },
+  "upper_zakum": {
+    "schema_version": 1,
+    "revision": "assay-cut-quality-r1",
+    "source": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/upper_zakum.pdf (UPZAK26B)",
+    "source_pdf_sha256": "bf6be49db1d61e5279e4b04ac3e40635d5b02190101b34270fa51d53142e71ea",
+    "components": [
+      {
+        "component": "Methane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7486754347690581,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.2513245652309419,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Ethane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7988693049551048,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.20113069504489525,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Propane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8171304170351725,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.18286958296482753,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isobutane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-butane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isopentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-pentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc01",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.1605399863906971,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.00027598625204342187,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc02",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14690905016803346,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0004117047049706246,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc03",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14229894376077834,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0008298902542369205,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc04",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14007488484699748,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0019422331896188118,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc05",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13648242436625363,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.005565421652796902,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 4.405918536389419e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc06",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13257729431234797,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.01155591940027389,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 6.757011404154038e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc07",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.1282042651139468,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.01742957896022732,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0002782294533888215,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc08",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12400000000000003,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.022754223619465445,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0006520238523397223,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc09",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12110107992542347,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.029199539091101012,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.001086214025883948,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc10",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11811166587428824,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.04756714747081034,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0024322421577789933,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 3.175852461920734e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 3.521737383516061e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 9.433225134418022e-07,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.053751589250935074,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.16225432424091638,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc11",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11817866011633547,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.05449037761503568,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0030041098963627696,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 5.081213700494107e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 5.634613212429109e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 1.5092713961863685e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.086,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.25,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc12",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11817866011633547,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.05449037761503568,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0030041098963627696,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 5.081213700494107e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 5.6346132124291094e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 1.5092713961863685e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.086,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.25,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc13",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11817866011633549,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.05449037761503568,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0030041098963627696,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 5.081213700494107e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 5.634613212429109e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 1.5092713961863685e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.086,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.25,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      }
+    ],
+    "reconciliation": {
+      "H": {
+        "reported_whole_mass_fraction": 0.132,
+        "factor": 1,
+        "estimated_550_plus_mass_fraction": 0.11817866011633547,
+        "rounding_only_half_width_mass_fraction": 0.004480276447580297,
+        "method": "whole_hydrogen_balance_after_pure_light_end_subtraction"
+      },
+      "S": {
+        "reported_whole_mass_fraction": 0.0209,
+        "unreconciled_whole_mass_fraction": 0.020942046099624058,
+        "factor": 0.9979922640116424,
+        "assumed_zero_source_cut_indices": [],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "N": {
+        "reported_whole_mass_fraction": 0.000873,
+        "unreconciled_whole_mass_fraction": 0.0008729680639097743,
+        "factor": 1.0000365833431324,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Ni": {
+        "reported_whole_mass_fraction": 1.01e-05,
+        "unreconciled_whole_mass_fraction": 1.011746465121136e-05,
+        "factor": 0.9982738114919661,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "V": {
+        "reported_whole_mass_fraction": 1.12e-05,
+        "unreconciled_whole_mass_fraction": 1.1151075971177944e-05,
+        "factor": 1.0043873818946718,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Fe": {
+        "reported_whole_mass_fraction": 3e-07,
+        "unreconciled_whole_mass_fraction": 2.7827997076023385e-07,
+        "factor": 1.0780509972759775,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      }
+    },
+    "limitations": [
+      "Reported source numbers may themselves be estimated; no measurement method or analytical uncertainty is supplied.",
+      "Pseudocomponent carbon, oxygen, sodium, mercury and arsenic partitioning are unresolved; absent fields are not zero.",
+      "Missing nitrogen/metals in source cuts are assumed zero for this estimated profile; reported source zeros are not detection limits.",
+      "550+ elemental concentrations are uniform across the estimated heavy tail; no invented NBP enrichment law.",
+      "Asphaltenes and micro carbon residue are analytical indicators, not extra mass, elemental carbon or a complete SARA model.",
+      "These profiles describe unreacted assay cuts. Reaction, blending and separation must carry updated elemental inventories."
+    ]
+  },
+  "bonga": {
+    "schema_version": 1,
+    "revision": "assay-cut-quality-r1",
+    "source": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2025/bonga.pdf (BONGA25Y)",
+    "source_pdf_sha256": "0ee57146598b561ee885c67959173f6f3f630443a7bcc1dc0bab22b30dcdecd7",
+    "components": [
+      {
+        "component": "Methane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7486754347690581,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.2513245652309419,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Ethane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7988693049551048,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.20113069504489525,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Propane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8171304170351725,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.18286958296482753,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isobutane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-butane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isopentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-pentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc01",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.15312613056717847,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 1.274981044338691e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc02",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.1400486391462194,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 8.377325402022398e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc03",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13699999999999998,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0002880622991761233,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc04",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13202236789288802,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0007005908897409007,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 1.4939114192931988e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc05",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12935328017728118,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0014359195705384775,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 5.20642213592117e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc06",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.1259876755516123,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.002356367352093964,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0001672713977499315,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc07",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12190377264133197,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0029802262253022177,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0004901710660606921,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc08",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11800000000000001,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.003220662202648159,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.001270528812144476,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc09",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11605285100902032,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.004052970566624181,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0026561983568436044,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc10",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11668128475741175,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0059768641918041595,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0065408078508371525,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 2.138157931435371e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 1.832706798373175e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 4.520676769320499e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.08801673758965198,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc11",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11557037713909384,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.006697401522326447,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.008536553034668357,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 3.939377678115748e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 3.3766094383849262e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 8.328969948016153e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.147,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc12",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11557037713909384,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.006697401522326447,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.008536553034668357,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 3.939377678115748e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 3.3766094383849262e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 8.328969948016153e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.14700000000000002,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc13",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11557037713909384,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.006697401522326447,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.008536553034668357,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 3.939377678115748e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 3.3766094383849262e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 8.328969948016153e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.147,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      }
+    ],
+    "reconciliation": {
+      "H": {
+        "reported_whole_mass_fraction": 0.126,
+        "factor": 1,
+        "estimated_550_plus_mass_fraction": 0.11557037713909384,
+        "rounding_only_half_width_mass_fraction": 0.010711952060229561,
+        "method": "whole_hydrogen_balance_after_pure_light_end_subtraction"
+      },
+      "S": {
+        "reported_whole_mass_fraction": 0.0026000000000000003,
+        "unreconciled_whole_mass_fraction": 0.0026398297819030235,
+        "factor": 0.9849119885774187,
+        "assumed_zero_source_cut_indices": [],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "N": {
+        "reported_whole_mass_fraction": 0.001462,
+        "unreconciled_whole_mass_fraction": 0.0014613914948265368,
+        "factor": 1.0004163875153356,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Ni": {
+        "reported_whole_mass_fraction": 3.5e-06,
+        "unreconciled_whole_mass_fraction": 3.5449761716372487e-06,
+        "factor": 0.9873127012821424,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "V": {
+        "reported_whole_mass_fraction": 3e-07,
+        "unreconciled_whole_mass_fraction": 3.376167782511666e-07,
+        "factor": 0.8885814311539281,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Fe": {
+        "reported_whole_mass_fraction": 7.4e-06,
+        "unreconciled_whole_mass_fraction": 7.4275691215256635e-06,
+        "factor": 0.9962882712937984,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      }
+    },
+    "limitations": [
+      "Reported source numbers may themselves be estimated; no measurement method or analytical uncertainty is supplied.",
+      "Pseudocomponent carbon, oxygen, sodium, mercury and arsenic partitioning are unresolved; absent fields are not zero.",
+      "Missing nitrogen/metals in source cuts are assumed zero for this estimated profile; reported source zeros are not detection limits.",
+      "550+ elemental concentrations are uniform across the estimated heavy tail; no invented NBP enrichment law.",
+      "Asphaltenes and micro carbon residue are analytical indicators, not extra mass, elemental carbon or a complete SARA model.",
+      "These profiles describe unreacted assay cuts. Reaction, blending and separation must carry updated elemental inventories."
+    ]
+  },
+  "dalia": {
+    "schema_version": 1,
+    "revision": "assay-cut-quality-r1",
+    "source": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/dalia.pdf (DALIA26Y)",
+    "source_pdf_sha256": "02553213cde6cbb7dd0b4fea42029250485781dba2e2d39d092c5e5d6f8dfabc",
+    "components": [
+      {
+        "component": "Methane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7486754347690581,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.2513245652309419,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Ethane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7988693049551048,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.20113069504489525,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Propane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8171304170351725,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.18286958296482753,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isobutane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-butane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isopentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-pentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc01",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.15168150720499793,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.00013603943567894866,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc02",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14340207249383946,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.00018395363748727534,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc03",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.1397981653405175,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.00034314351110238255,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc04",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13342744876524773,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0006406962919636458,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 2.0896578846976445e-06,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc05",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13034406805291032,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0012652474654030795,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 1.2838679209237042e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc06",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12814440598645102,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.002624497571347155,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 6.253279514233909e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc07",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12468095009224206,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.004047859085424002,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.00026489344260534537,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc08",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.123,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.00503419372291946,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.000789981540766472,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc09",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12219221811601183,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.005949717285398571,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0016657130684216324,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc10",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.1223411416239341,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.008539408679090107,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.005368048302161795,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 4.980316036364547e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 2.060820428840502e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 1.5456153216303766e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.016712793506768728,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.11975273044902257,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc11",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12255112413388526,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0095022933725789,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.007124833516406472,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 8.045844216730293e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 3.32931484830219e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.4969861362266426e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.027000000000000007,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.18300000000000002,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc12",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12255112413388528,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.009502293372578902,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.007124833516406473,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 8.045844216730294e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 3.3293148483021906e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.4969861362266433e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.02700000000000001,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.18300000000000002,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc13",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12255112413388526,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0095022933725789,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.007124833516406472,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 8.045844216730293e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 3.32931484830219e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.4969861362266423e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.027000000000000003,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.18300000000000002,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      }
+    ],
+    "reconciliation": {
+      "H": {
+        "reported_whole_mass_fraction": 0.126,
+        "factor": 1,
+        "estimated_550_plus_mass_fraction": 0.12255112413388526,
+        "rounding_only_half_width_mass_fraction": 0.003459909631925907,
+        "method": "whole_hydrogen_balance_after_pure_light_end_subtraction"
+      },
+      "S": {
+        "reported_whole_mass_fraction": 0.005200000000000001,
+        "unreconciled_whole_mass_fraction": 0.005144021351840676,
+        "factor": 1.0108822736786063,
+        "assumed_zero_source_cut_indices": [],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "N": {
+        "reported_whole_mass_fraction": 0.002338,
+        "unreconciled_whole_mass_fraction": 0.002338054631261316,
+        "factor": 0.9999766338816102,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Ni": {
+        "reported_whole_mass_fraction": 2.03e-05,
+        "unreconciled_whole_mass_fraction": 2.02852547978274e-05,
+        "factor": 1.0007268926281458,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "V": {
+        "reported_whole_mass_fraction": 8.4e-06,
+        "unreconciled_whole_mass_fraction": 8.42695908267954e-06,
+        "factor": 0.9968008527850869,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Fe": {
+        "reported_whole_mass_fraction": 6.3e-06,
+        "unreconciled_whole_mass_fraction": 6.2823736873868435e-06,
+        "factor": 1.002805677199455,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      }
+    },
+    "limitations": [
+      "Reported source numbers may themselves be estimated; no measurement method or analytical uncertainty is supplied.",
+      "Pseudocomponent carbon, oxygen, sodium, mercury and arsenic partitioning are unresolved; absent fields are not zero.",
+      "Missing nitrogen/metals in source cuts are assumed zero for this estimated profile; reported source zeros are not detection limits.",
+      "550+ elemental concentrations are uniform across the estimated heavy tail; no invented NBP enrichment law.",
+      "Asphaltenes and micro carbon residue are analytical indicators, not extra mass, elemental carbon or a complete SARA model.",
+      "These profiles describe unreacted assay cuts. Reaction, blending and separation must carry updated elemental inventories."
+    ]
+  },
+  "cold_lake_blend": {
+    "schema_version": 1,
+    "revision": "assay-cut-quality-r1",
+    "source": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2024/cold_lake_blend.pdf (CLKBL23B)",
+    "source_pdf_sha256": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+    "components": [
+      {
+        "component": "Methane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7486754347690581,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.2513245652309419,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Ethane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.7988693049551048,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.20113069504489525,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Propane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8171304170351725,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.18286958296482753,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isobutane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-butane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.8265776615511664,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.17342233844883354,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "Isopentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "N-pentane",
+        "elements": {
+          "C": {
+            "mass_fraction": 0.832351595958476,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "H": {
+            "mass_fraction": 0.16764840404152404,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "O": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "S": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "N": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Ni": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "V": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Fe": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Na": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "Hg": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          },
+          "As": {
+            "mass_fraction": 0,
+            "estimated": false,
+            "method": "chemical_formula"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc01",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.15672042810172737,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0005536329055469303,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc02",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14292231234070224,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0006295584161587127,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc03",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.14073263835537123,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.0026068886103342193,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc04",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13589709946346443,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.006464769895705943,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 1.1539979370605333e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc05",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.13029516220183177,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.011958077292539632,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 3.39413493021433e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc06",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.12461386045266437,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.01885136540602795,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 9.536172931703282e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc07",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11844485249298972,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.025995828192021044,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0003646040056126878,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc08",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11599999999999999,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.031402154899963564,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0010391055920609034,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc09",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.1158292519484833,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.03521316333469183,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.0019770314622472316,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 0.0,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {}
+      },
+      {
+        "component": "tjl19_pc10",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11209500590791045,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.058776908282751714,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.00550914533679409,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.00010316033013696889,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0002684387085284566,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 1.6269012638088282e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.18209279541231205,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.20172037211903127,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc11",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11066068283339159,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.06740462548590904,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.006925368483504172,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0001540951125151342,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.000400978679878091,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.4301738174429768e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.272,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.287,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc12",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11066068283339157,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.06740462548590904,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.006925368483504172,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0001540951125151342,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.0004009786798780911,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.430173817442977e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.272,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.287,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      },
+      {
+        "component": "tjl19_pc13",
+        "elements": {
+          "H": {
+            "mass_fraction": 0.11066068283339159,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; 550_plus_hydrogen_from_whole_balance"
+          },
+          "S": {
+            "mass_fraction": 0.06740462548590904,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "N": {
+            "mass_fraction": 0.006925368483504172,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Ni": {
+            "mass_fraction": 0.0001540951125151342,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "V": {
+            "mass_fraction": 0.000400978679878091,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          },
+          "Fe": {
+            "mass_fraction": 2.4301738174429768e-05,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_composition_within_source_cut; whole_total_reconciliation; missing_source_cuts_assumed_zero"
+          }
+        },
+        "indicators": {
+          "c7_asphaltenes": {
+            "mass_fraction": 0.272,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          },
+          "micro_carbon_residue": {
+            "mass_fraction": 0.287,
+            "estimated": true,
+            "method": "source_cut_mass_rebin; uniform_within_source_cut; not_a_conserved_element"
+          }
+        }
+      }
+    ],
+    "reconciliation": {
+      "H": {
+        "reported_whole_mass_fraction": 0.121,
+        "factor": 1,
+        "estimated_550_plus_mass_fraction": 0.11066068283339159,
+        "rounding_only_half_width_mass_fraction": 0.0022412778156616613,
+        "method": "whole_hydrogen_balance_after_pure_light_end_subtraction"
+      },
+      "S": {
+        "reported_whole_mass_fraction": 0.038700000000000005,
+        "unreconciled_whole_mass_fraction": 0.038697344302362206,
+        "factor": 1.0000686273873745,
+        "assumed_zero_source_cut_indices": [],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "N": {
+        "reported_whole_mass_fraction": 0.003062,
+        "unreconciled_whole_mass_fraction": 0.0030587420800000003,
+        "factor": 1.0010651175923926,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Ni": {
+        "reported_whole_mass_fraction": 5.5799999999999994e-05,
+        "unreconciled_whole_mass_fraction": 5.569313562204725e-05,
+        "factor": 1.0019188069904694,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "V": {
+        "reported_whole_mass_fraction": 0.00014519999999999998,
+        "unreconciled_whole_mass_fraction": 0.00014506287470866143,
+        "factor": 1.0009452817725688,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      },
+      "Fe": {
+        "reported_whole_mass_fraction": 8.8e-06,
+        "unreconciled_whole_mass_fraction": 8.835581984251968e-06,
+        "factor": 0.9959728760012202,
+        "assumed_zero_source_cut_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "method": "reported_cut_pattern_scaled_to_whole_total; unreported_cut_concentrations_assumed_zero"
+      }
+    },
+    "limitations": [
+      "Reported source numbers may themselves be estimated; no measurement method or analytical uncertainty is supplied.",
+      "Pseudocomponent carbon, oxygen, sodium, mercury and arsenic partitioning are unresolved; absent fields are not zero.",
+      "Missing nitrogen/metals in source cuts are assumed zero for this estimated profile; reported source zeros are not detection limits.",
+      "550+ elemental concentrations are uniform across the estimated heavy tail; no invented NBP enrichment law.",
+      "Asphaltenes and micro carbon residue are analytical indicators, not extra mass, elemental carbon or a complete SARA model.",
+      "These profiles describe unreacted assay cuts. Reaction, blending and separation must carry updated elemental inventories."
+    ]
+  }
+}

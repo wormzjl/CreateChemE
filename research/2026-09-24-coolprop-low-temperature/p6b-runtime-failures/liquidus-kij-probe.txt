@@ -1,0 +1,14 @@
+(1) engine solubility at 150.40 K (Shen 2012 binary: x_CO2 0.008225 at 1.055 MPa)
+    P 1.055 MPa: LIQUID_SOLID liquid x_CO2 0.009838, ratio to Shen 1.196
+    P 2.000 MPa: LIQUID_SOLID liquid x_CO2 0.009889, ratio to Shen 1.202
+    P 5.000 MPa: LIQUID_SOLID liquid x_CO2 0.009998, ratio to Shen 1.216
+(2) pure CO2 sublimation pressure at 150.40 K: model 916.33 Pa, Span-Wagner 1996 891.51 Pa, ratio 1.0278
+(3) CH4/CO2 k_ij of the engine at 150.40 K (E-PPR78): 0.10734 (constant twin matches ln phi_CO2 to 3.6e-15)
+    k_ij -0.02 (0.08734): x_CO2 0.012239, ratio to Shen 1.488
+    k_ij -0.01 (0.09734): x_CO2 0.010971, ratio to Shen 1.334
+    k_ij +0.00 (0.10734): x_CO2 0.009838, ratio to Shen 1.196
+    k_ij +0.01 (0.11734): x_CO2 0.008825, ratio to Shen 1.073
+    k_ij +0.02 (0.12734): x_CO2 0.007918, ratio to Shen 0.963
+    k_ij +0.03 (0.13734): x_CO2 0.007107, ratio to Shen 0.864
+    k_ij +0.04 (0.14734): x_CO2 0.006380, ratio to Shen 0.776
+    k_ij +0.05 (0.15734): x_CO2 0.005730, ratio to Shen 0.697

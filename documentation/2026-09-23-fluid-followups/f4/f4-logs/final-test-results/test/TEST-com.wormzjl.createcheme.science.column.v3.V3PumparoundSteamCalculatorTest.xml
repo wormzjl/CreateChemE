@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:28.361Z" hostname="WORMZ-PC" time="4.236">
+  <properties/>
+  <testcase name="sumpSteamWithOneUniformPumparoundConverges()" classname="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" time="0.873"/>
+  <testcase name="sumpSteamWithThreePumparoundsAndThreeSideDrawsExercisesTheWholeRungOrder()" classname="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" time="0.805"/>
+  <testcase name="tjl19SolvesSumpSteamWithThreePumparounds()" classname="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" time="0.969"/>
+  <testcase name="sumpSteamOnlyIsTheWetBaseline()" classname="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" time="0.01"/>
+  <testcase name="sumpSteamCarriesTheColumnWithZeroReboilerDutyAndAPumparound()" classname="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" time="0.555"/>
+  <testcase name="tjl19WithSumpSteamAndSideDrawsConverges()" classname="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" time="0.647"/>
+  <testcase name="wetCoolingAboveTheWetBaseCondenserDutyIsATypedPathDependentStop()" classname="com.wormzjl.createcheme.science.column.v3.V3PumparoundSteamCalculatorTest" time="0.377"/>
+  <system-out><![CDATA[wet pumparound case wet-uniform-5-MW                          0.49 s  SUCCESS iter=3 residual=3.4638958368304884E-14 path=cold/stage-continuation/4-8-15-30/fine-fd/heat-ramp-1.0/liquid-only-condenser/steam-1/heat-1
+  ledger: feed=60.6966 MW steam=2.69931 MW reboiler=8.000 MW stage heat=-5.000 MW condenser=-89.9122 MW -> products=-23.5162 MW; closure=-4.098e-08 W (-4.6e-16 relative)
+wet pumparound case wet-baseline                              0.37 s  SUCCESS iter=3 residual=2.7533531010703882E-14 path=cold/stage-continuation/4-8-15-30/fine-fd/wet-ramp-1.0/liquid-only-condenser/steam-1
+  wet pumparound: Q_cond0=-94.74 MW, Q_cond=-89.91 MW, removed 4.826 MW of the authored 5 MW
+wet pumparound case wet-three-pumparounds-three-draws         0.79 s  SUCCESS iter=8 residual=7.405187574249794E-14 path=cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/steam-1/heat-3
+  ledger: feed=60.6966 MW steam=2.69931 MW reboiler=8.000 MW stage heat=-15.00 MW condenser=-75.0446 MW -> products=-18.6486 MW; closure=-4.470e-08 W (-6.0e-16 relative)
+wet pumparound case tjl19-wet-three-pumparounds               0.95 s  SUCCESS iter=2 residual=8.701896861086546E-12 path=cold/stage-continuation/4-8-15-30/fine-fd/heat-ramp-1.0/liquid-only-condenser/steam-1/heat-3
+  ledger: feed=99.6248 MW steam=2.69931 MW reboiler=8.000 MW stage heat=-15.00 MW condenser=-98.2712 MW -> products=-2.94710 MW; closure=0.01510 W (1.5e-10 relative)
+  ledger: feed=60.6966 MW steam=2.69931 MW reboiler=8.000 MW stage heat=0.000 MW condenser=-94.7381 MW -> products=-23.3422 MW; closure=3.725e-08 W (3.9e-16 relative)
+wet pumparound case wet-zero-reboiler-5-MW                    0.54 s  SUCCESS iter=3 residual=4.1300296516055823E-14 path=cold/stage-continuation/4-8-15-30/fine-fd/heat-ramp-1.0/liquid-only-condenser/steam-1/heat-1
+  ledger: feed=60.6966 MW steam=2.69931 MW reboiler=0.000 MW stage heat=-5.000 MW condenser=-89.0335 MW -> products=-30.6376 MW; closure=-4.098e-08 W (-4.6e-16 relative)
+wet pumparound case tjl19-wet-three-pumparounds-three-draws    0.64 s  SUCCESS iter=3 residual=2.0761170560490427E-14 path=cold/stage-continuation/4-8-15-30/fine-fd/draw-ramp-1.0/liquid-only-condenser/draws-3/steam-1/heat-3
+  ledger: feed=99.6248 MW steam=2.69931 MW reboiler=8.000 MW stage heat=-15.00 MW condenser=-91.0418 MW -> products=4.28233 MW; closure=-1.118e-08 W (-1.1e-16 relative)
+wet pumparound case wet-over-condenser-bound                  0.37 s  FAILED NONCONVERGENCE maximumScaledResidual=0.0 path=cold/heat-condenser-bound/heat-1
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,53 @@
+mixed100-wp2-on-r02 (restDetection true) vs mixed100-wp3-on-r01 (restDetection true)
+  fingerprints: 100 islands, 96 identical on every common publication, 4 parted
+    island 10805: first differing publication ends at tick 50 (S), 36 common publications
+    island 10807: first differing publication ends at tick 50 (S), 6 common publications
+    island 10812: first differing publication ends at tick 50 (S), 36 common publications
+    island 10815: first differing publication ends at tick 50 (S), 5 common publications
+  held at startup: 4 / 5 islands; held in one run only: 1
+  reference grid tick 2500: 97 islands exact in both, 2 not bitwise equal; worst inventory 5.460e-9 (island 10815), energy 5.359e-9, ledger 0.000e+0
+  ledger deviation against the island's own inventory: worst 0.000e+0 (null); conservation (ledger deviation minus inventory deviation, against inventory): worst 3.492e-15 (10815/c10); energy 2.830e-16
+
+mixed100-wp3-on-r01 (restDetection true) vs viewers-wp3-on-r01 (restDetection true)
+  fingerprints: 100 islands, 96 identical on every common publication, 4 parted
+    island 10805: first differing publication ends at tick 50 (S), 36 common publications
+    island 10807: first differing publication ends at tick 50 (S), 5 common publications
+    island 10812: first differing publication ends at tick 50 (S), 36 common publications
+    island 10815: first differing publication ends at tick 50 (S), 8 common publications
+  held at startup: 5 / 4 islands; held in one run only: 1
+  reference grid tick 2500: 94 islands exact in both, 1 not bitwise equal; worst inventory 8.658e-9 (island 10815), energy 8.497e-9, ledger 0.000e+0
+  ledger deviation against the island's own inventory: worst 0.000e+0 (null); conservation (ledger deviation minus inventory deviation, against inventory): worst 3.152e-15 (10815/c17); energy 1.415e-16
+
+mixed100-wp2-on-r02 (restDetection true) vs viewers-wp3-on-r01 (restDetection true)
+  fingerprints: 100 islands, 96 identical on every common publication, 4 parted
+    island 10805: first differing publication ends at tick 50 (S), 36 common publications
+    island 10807: first differing publication ends at tick 50 (S), 5 common publications
+    island 10812: first differing publication ends at tick 50 (S), 36 common publications
+    island 10815: first differing publication ends at tick 50 (S), 5 common publications
+  held at startup: 4 / 4 islands; held in one run only: 0
+  reference grid tick 2500: 95 islands exact in both, 1 not bitwise equal; worst inventory 4.167e-9 (island 10815), energy 4.089e-9, ledger 0.000e+0
+  ledger deviation against the island's own inventory: worst 0.000e+0 (null); conservation (ledger deviation minus inventory deviation, against inventory): worst 2.529e-15 (10815/c10); energy 1.415e-16
+
+mixed100-wp2-off-r02 (restDetection false) vs viewers-wp3-off-r01 (restDetection false)
+  fingerprints: 100 islands, 95 identical on every common publication, 5 parted
+    island 10805: first differing publication ends at tick 50 (S), 36 common publications
+    island 10807: first differing publication ends at tick 50 (S), 13 common publications
+    island 10810: first differing publication ends at tick 50 (S), 36 common publications
+    island 10812: first differing publication ends at tick 50 (S), 36 common publications
+    island 10815: first differing publication ends at tick 50 (S), 36 common publications
+  held at startup: 5 / 6 islands; held in one run only: 1
+  reference grid tick 2500: 92 islands exact in both, 0 not bitwise equal; worst inventory 0.000e+0 (island null), energy 0.000e+0, ledger 0.000e+0
+  ledger deviation against the island's own inventory: worst 0.000e+0 (null); conservation (ledger deviation minus inventory deviation, against inventory): worst 0.000e+0 (null); energy 0.000e+0
+
+mixed100-wp2-off-r01 (restDetection false) vs mixed100-wp2-off-r02 (restDetection false)
+  (one report has no publication fingerprints)
+  held at startup: 10 / 5 islands; held in one run only: 5
+  reference grid tick 2500: 90 islands exact in both, 0 not bitwise equal; worst inventory 0.000e+0 (island null), energy 0.000e+0, ledger 0.000e+0
+  ledger deviation against the island's own inventory: worst 0.000e+0 (null); conservation (ledger deviation minus inventory deviation, against inventory): worst 0.000e+0 (null); energy 0.000e+0
+
+mixed100-wp2-on-r01 (restDetection true) vs mixed100-wp2-on-r02 (restDetection true)
+  (one report has no publication fingerprints)
+  held at startup: 4 / 4 islands; held in one run only: 0
+  reference grid tick 2500: 98 islands exact in both, 16 not bitwise equal; worst inventory 1.405e-8 (island 10815), energy 1.379e-8, ledger 0.000e+0
+  ledger deviation against the island's own inventory: worst 0.000e+0 (null); conservation (ledger deviation minus inventory deviation, against inventory): worst 4.215e-15 (10815/c10); energy 6.570e-16
+

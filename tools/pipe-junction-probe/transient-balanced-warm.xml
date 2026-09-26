@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.runtime.fluid.JunctionTransientProbe" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-09-24T15:52:41.983Z" hostname="WORMZ-PC" time="2.603">
+  <properties/>
+  <testcase name="finiteTanksChangePressureCompositionAndMayReverse()" classname="com.wormzjl.createcheme.runtime.fluid.JunctionTransientProbe" time="2.603"/>
+  <system-out><![CDATA[TRAJECTORY ports=4 unequal=false time=1.0 P=[116516.67064120175, 114820.33106382255] q=[0.13497079016147367, 0.22796718932041665, -0.18146898974094516, -0.18146898974094516]
+DYNAMIC ports=4 unequal=false FAIL step=16 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.004103230521212475; active-set pass=0
+TRAJECTORY ports=4 unequal=true time=1.0 P=[116516.95507839016, 101534.76852628891] q=[0.13497094444804525, 5.789442875856315E-4, -0.06777494436781546, -0.06777494436781546]
+DYNAMIC ports=4 unequal=true FAIL step=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Interval substep limit; no partial interval may commit: advanced=0.09660028261602502 of 0.1 s, accepted=516, rejected=509, reasons={Negative/nonfinite inventory=1, Step refinement error #=5, Embedded pipe error #=5, Embedded state error #=11, Newton line search stalled at residual #; active-set pass=#=487}, last=Newton line search stalled at residual 0.0029460372526380896; active-set pass=0
+TRAJECTORY ports=5 unequal=false time=1.0 P=[116516.67064299685, 113928.31292477343] q=[0.13497079020329547, 0.23525320436309483, -0.12374961324771008, -0.12374961324771008, -0.12272476807097013]
+DYNAMIC ports=5 unequal=false FAIL step=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 2.7039147965659144E-4; active-set pass=0
+TRAJECTORY ports=5 unequal=true time=1.0 P=[116516.88545792758, 101423.46448483995] q=[0.13497090677309992, 2.6350365972220775E-4, -0.045544719971094244, -0.045544719971094244, -0.044144970490633664]
+DYNAMIC ports=5 unequal=true FAIL step=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 5.54712847600225E-8; active-set pass=0
+TRAJECTORY ports=6 unequal=false time=1.0 P=[116516.67064299685, 113928.31292477343] q=[0.13497079020329547, 0.23525320436309483, -0.09256059977892601, -0.09256059977892601, -0.09121083808566262, -0.09389195692287564]
+DYNAMIC ports=6 unequal=false FAIL step=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 2.5199684933613353E-6; active-set pass=0
+TRAJECTORY ports=6 unequal=true time=1.0 P=[116516.81846206643, 101381.07778294556] q=[0.13497087039584565, 1.5216914508910868E-4, -0.033803023407630084, -0.033803023407630084, -0.03194334226341255, -0.03557365046226202]
+DYNAMIC ports=6 unequal=true FAIL step=15 com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton iteration limit at residual 2.1804509518429105E-4; active-set pass=0
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

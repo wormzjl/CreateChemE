@@ -1,0 +1,257 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java
+index f9e1b4c..aa960d5 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnCalculator.java
+@@ -132,6 +132,18 @@ public final class V3ColumnCalculator {
+      * eight to eighteen e-folds too high rather than two.</p>
+      */
+     private static final double OVERSIZED_SEED_FACTOR = 3.0;
++    /**
++     * EXPERIMENT (seed-prep study, 2026-09-18): the mirror of {@link #capOversizedPoint} for learned seeds,
++     * lifting a fully retained point that sits far below the material its neighbours deliver. Thread-local so
++     * only the learned correction of the request that asked for it sees the rule; the classical restart that
++     * follows it on the same worker thread does not.
++     */
++    private static final ThreadLocal<Boolean> EXPERIMENT_LIFT_UNDERSIZED = ThreadLocal.withInitial(() -> false);
++    private static final ThreadLocal<int[]> EXPERIMENT_LIFT_COUNT = ThreadLocal.withInitial(() -> new int[1]);
++    private static final double EXPERIMENT_UNDERSIZED_FACTOR =
++            Double.parseDouble(System.getProperty("createcheme.experiment.undersizedFactor", "3.0"));
++    private static final double EXPERIMENT_OVERSIZED_FACTOR =
++            Double.parseDouble(System.getProperty("createcheme.experiment.oversizedFactor", "3.0"));
+     /**
+      * Calibrated ratio of the request-only liquid-supply screen every existing entry point uses.
+      *
+@@ -390,7 +402,50 @@ public final class V3ColumnCalculator {
+             return terminalFailure(V3SolverFailureCode.PROPERTY_OUT_OF_RANGE, "Requested pressure outside property coverage",
+                     "initialization/admission", thermo.advisoryEvidence());
+         V3DryMeshState state = seed.stateFor(problem);
++        // EXPERIMENT (seed-prep study, 2026-09-18): optional mechanistic preparation of the learned seed
++        // before the correction; selected by a system property, absent in production.
++        String seedPrep = System.getProperty("createcheme.experiment.seedPrep", "none");
++        String seedPrepEvent = null;
++        boolean liftUndersized = "liftUnder".equals(seedPrep);
++        boolean liftSelect = "liftSelect".equals(seedPrep);
++        if (!"none".equals(seedPrep) && !liftUndersized && !liftSelect) {
++            control.checkpoint();
++            try {
++                V3DryMeshState prepared = experimentalSeedPrep(seedPrep, problem, thermo, state);
++                if (!isLogCoordinateFeasible(problem, prepared))
++                    throw new IllegalArgumentException("prepared seed is not log-coordinate feasible");
++                state = prepared;
++                seedPrepEvent = "experiment: seedPrep=" + seedPrep + " applied";
++            } catch (V3ThermoException | IllegalArgumentException declined) {
++                String why = String.valueOf(declined.getMessage());
++                seedPrepEvent = "experiment: seedPrep=" + seedPrep + " declined: " + declined.getClass().getSimpleName()
++                        + ": " + why.substring(0, Math.min(120, why.length()));
++            }
++            control.checkpoint();
++        }
++        EXPERIMENT_LIFT_UNDERSIZED.set(liftUndersized);
++        EXPERIMENT_LIFT_COUNT.get()[0] = 0;
++        try {
+         V3WetTraySet wet = seed.wetSetFor(problem, options.wetStart());
++        String liftSelectNote = null;
++        if (liftSelect) {
++            // EXPERIMENT: the lift is kept only when it lowers the corrector's starting residual, the
++            // quantity the failure partition found decisive (P(strict | start <= 0.3) = 78 %, else 3 %).
++            try {
++                EXPERIMENT_LIFT_UNDERSIZED.set(false);
++                double rawResidual = experimentalStartingResidual(problem, thermo, state, policy, wet, control);
++                EXPERIMENT_LIFT_UNDERSIZED.set(true);
++                double liftedResidual = experimentalStartingResidual(problem, thermo, state, policy, wet, control);
++                boolean useLift = liftedResidual < rawResidual;
++                EXPERIMENT_LIFT_UNDERSIZED.set(useLift);
++                liftSelectNote = "experiment: seedPrep=liftSelect rawMerit=" + rawResidual + " liftedMerit=" + liftedResidual
++                        + (useLift ? " -> lifted" : " -> raw");
++            } catch (V3ThermoException | IllegalArgumentException | IllegalStateException declined) {
++                EXPERIMENT_LIFT_UNDERSIZED.set(false);
++                liftSelectNote = "experiment: seedPrep=liftSelect declined: " + declined.getClass().getSimpleName();
++            }
++            EXPERIMENT_LIFT_COUNT.get()[0] = 0;
++        }
+         boolean fixedWaterRefined = false;
+         if (wet.hasWetTrays()) {
+             // Near an aqueous phase boundary, releasing the weakly determined water coordinate before
+@@ -418,6 +473,10 @@ public final class V3ColumnCalculator {
+         List<String> events = fixedWaterRefined ? mergedEvents(List.of(
+                 "wet seed refinement: fixed-water warm pass; final certificate releases every wet coordinate"), pass.solverEvents())
+                 : pass.solverEvents();
++        if (liftUndersized) seedPrepEvent = "experiment: seedPrep=liftUnder applied; lifted points="
++                + EXPERIMENT_LIFT_COUNT.get()[0];
++        if (liftSelectNote != null) seedPrepEvent = liftSelectNote + "; lifted points=" + EXPERIMENT_LIFT_COUNT.get()[0];
++        if (seedPrepEvent != null) events = mergedEvents(List.of(seedPrepEvent), events);
+         V3SolverDiagnostics diagnostics = diagnostics(pass.attempt(), pass.audit(), pass.solvePath(), events, policy);
+         if (publishesSuccess(pass.attempt(), pass.audit()) && pass.reachedRequestedProblem()
+                 && publishesRequestedGeometry(pass, input)) {
+@@ -425,6 +484,62 @@ public final class V3ColumnCalculator {
+         }
+         return new V3ColumnOutcome.Failure(V3SolverFailureCode.INITIALIZATION_FAILURE,
+                 "Learned seed did not reach an audited requested solution", diagnostics);
++        } finally {
++            EXPERIMENT_LIFT_UNDERSIZED.set(false);
++        }
++    }
++
++    /**
++     * EXPERIMENT (seed-prep study, 2026-09-18). Modes: {@code project1} = one undamped material-balance
++     * projection at the seed's temperatures and K-values; {@code project3} = three half-damped sweeps, no
++     * temperature update; {@code project3T} = the production recovery projection (three sweeps with
++     * bubble-point temperature updates); {@code anchorFlows} = the classical material-closed flows under the
++     * learned temperatures and free water, then {@code project1}.
++     */
++    private static V3DryMeshState experimentalSeedPrep(String mode, V3ColumnProblem problem,
++            V3PengRobinsonThermo thermo, V3DryMeshState state) {
++        var workspace = thermo.newWorkspace();
++        switch (mode) {
++            case "project1":
++                return V3ColumnInitializer.experimentalProjectMaterialBalances(problem, thermo, workspace, state, 1, 1.0, false);
++            case "project3":
++                return V3ColumnInitializer.experimentalProjectMaterialBalances(problem, thermo, workspace, state, 3, 0.5, false);
++            case "project3T":
++                return V3ColumnInitializer.projectMaterialBalancesAtFixedTemperature(problem, thermo, workspace, state);
++            case "project1c":
++                return V3ColumnInitializer.experimentalProjectMaterialBalances(problem, thermo, workspace, state, 1, 1.0, false, true);
++            case "project3c":
++                return V3ColumnInitializer.experimentalProjectMaterialBalances(problem, thermo, workspace, state, 3, 0.5, false, true);
++            case "anchorFlows": {
++                V3DryMeshState anchor = V3ColumnInitializer.initialize(problem, thermo, workspace,
++                        V3ColumnInitializer.Mode.MATERIAL_CLOSED).state();
++                V3DryMeshState merged = new V3DryMeshState(problem.topology(), state.componentCount(),
++                        V3ColumnInitializer.flows(anchor, true), V3ColumnInitializer.flows(anchor, false),
++                        V3ColumnInitializer.temperatures(state), V3ColumnInitializer.freeWaterFlows(state));
++                return V3ColumnInitializer.experimentalProjectMaterialBalances(problem, thermo, workspace, merged, 1, 1.0, false);
++            }
++            default:
++                throw new IllegalArgumentException("unknown seedPrep mode " + mode);
++        }
++    }
++
++    /**
++     * EXPERIMENT (seed-prep study): the maximum scaled residual the corrector would start from for this seed,
++     * computed exactly as {@link #solveSingleProblem} prepares its first attempt (floor support, lift rules
++     * as currently enabled, wet set as given).
++     */
++    private static double experimentalStartingResidual(V3ColumnProblem problem, V3PengRobinsonThermo thermo,
++            V3DryMeshState state, SolvePolicy policy, V3WetTraySet wet, V3SolveControl control) {
++        V3FlashResult feedFlash = feedFlash(problem, thermo, control, policy);
++        PreparedAttempt prepared = prepareAttempt(problem, thermo, state, policy, wet, false);
++        control.checkpoint();
++        V3MeshResidual residual = new V3MeshResidualEvaluator(prepared.problem(), thermo,
++                feedFlash.referenceMolarEnthalpyJoulesPerMol()).evaluate(prepared.seed(), thermo.newWorkspace());
++        // Merit (root of the sum of squared scaled rows) rather than the maximum row: the lift moves many
++        // component-balance rows at once, and the maximum is usually a row it never touches.
++        double merit = 0.0;
++        for (V3MeshResidual.Row row : residual.rows()) merit += row.scaledValue() * row.scaledValue();
++        return Math.sqrt(merit);
+     }
+ 
+     /** An audited pass may publish only when it solved the authored request itself, every wet row included. */
+@@ -2644,6 +2759,21 @@ public final class V3ColumnCalculator {
+                         if (node != topology.feedTrayNumber()) {
+                             capOversizedPoint(equilibrium.node(node), liquid, vapor, node, component, inflow,
+                                     floor, hasLiquid, hasVapor);
++                            // EXPERIMENT (seed-prep study): a retained point seeded far below its own material
++                            // row crawls one e-fold per iteration exactly as an oversized one does; lift it to
++                            // the equilibrium split of what feeds it, the same value a reinsertion uses.
++                            if (EXPERIMENT_LIFT_UNDERSIZED.get()
++                                    && (!hasLiquid || liquid[node][component] >= floor)
++                                    && (!hasVapor || vapor[node][component] >= floor)
++                                    && inflow >= V3TruncationSupport.FLOOR_REINSERTION_FACTOR * floor) {
++                                double total = (hasLiquid ? liquid[node][component] : 0.0)
++                                        + (hasVapor ? vapor[node][component] : 0.0);
++                                if (total * EXPERIMENT_UNDERSIZED_FACTOR < inflow) {
++                                    reinsertRemovedPoint(equilibrium.node(node), liquid, vapor, node, component,
++                                            inflow, hasLiquid, hasVapor);
++                                    EXPERIMENT_LIFT_COUNT.get()[0]++;
++                                }
++                            }
+                         }
+                         continue;
+                     }
+@@ -2714,7 +2844,9 @@ public final class V3ColumnCalculator {
+         boolean capVapor = hasVapor && vapor[node][component] >= floor;
+         double total = (capLiquid ? liquid[node][component] : 0.0) + (capVapor ? vapor[node][component] : 0.0);
+         double supply = Math.max(inflow, floor);
+-        if (!(total > OVERSIZED_SEED_FACTOR * supply)) return;
++        // EXPERIMENT (seed-prep study): a tighter cap under the same thread-local gate as the undersized lift.
++        double oversizedFactor = EXPERIMENT_LIFT_UNDERSIZED.get() ? EXPERIMENT_OVERSIZED_FACTOR : OVERSIZED_SEED_FACTOR;
++        if (!(total > oversizedFactor * supply)) return;
+         if (!capLiquid || !capVapor) {
+             if (capLiquid) liquid[node][component] = Math.max(floor, Math.min(liquid[node][component], supply));
+             if (capVapor) vapor[node][component] = Math.max(floor, Math.min(vapor[node][component], supply));
+diff --git a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java
+index 2789b28..2c22abd 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java
++++ b/src/main/java/com/wormzjl/createcheme/science/column/v3/V3ColumnInitializer.java
+@@ -166,6 +166,54 @@ final class V3ColumnInitializer {
+                 freeWaterFlows(state));
+     }
+ 
++    /**
++     * EXPERIMENT (seed-prep study, 2026-09-18): the same projection with its sweep count, damping and
++     * bubble-point update exposed, so a learned seed can be projected onto its material rows without moving
++     * its temperatures. Not a production entry point.
++     */
++    static V3DryMeshState experimentalProjectMaterialBalances(
++            V3ColumnProblem problem, V3ThermoModel thermo, V3ThermoWorkspace workspace, V3DryMeshState state,
++            int sweeps, double damping, boolean updateTemperatures) {
++        return experimentalProjectMaterialBalances(problem, thermo, workspace, state, sweeps, damping,
++                updateTemperatures, false);
++    }
++
++    /** EXPERIMENT: thread-local so the classical route's own projection in the same JVM is untouched. */
++    private static final ThreadLocal<Boolean> EXPERIMENT_LENIENT_TRIDIAGONAL = ThreadLocal.withInitial(() -> false);
++    private static final double EXPERIMENT_LENIENT_FLOOR = 1.0e-300;
++
++    static V3DryMeshState experimentalProjectMaterialBalances(
++            V3ColumnProblem problem, V3ThermoModel thermo, V3ThermoWorkspace workspace, V3DryMeshState state,
++            int sweeps, double damping, boolean updateTemperatures, boolean lenient) {
++        if (state.nodeCount() != problem.topology().nodeCount()
++                || state.componentCount() != problem.activeComponentBasis().componentCount()) {
++            throw new IllegalArgumentException("V3 material projection state does not match its problem");
++        }
++        V3ColumnTopology topology = problem.topology();
++        double[][] liquid = flows(state, true);
++        double[][] vapor = flows(state, false);
++        double[] temperatures = temperatures(state);
++        double[] fixedTotalVaporToLiquidRatios = totalPhaseFlowRatios(liquid, vapor);
++        EXPERIMENT_LENIENT_TRIDIAGONAL.set(lenient);
++        try {
++            for (int sweep = 0; sweep < sweeps; sweep++) {
++                double[][] updatedLiquid = copyFlows(liquid);
++                double[][] updatedVapor = copyFlows(vapor);
++                double[][] phaseFlowRatios = phaseFlowRatios(
++                        phaseRatios(problem, thermo, workspace, liquid, vapor, temperatures),
++                        fixedTotalVaporToLiquidRatios);
++                solveMaterialBalancesWithPhaseFlowRatios(problem, phaseFlowRatios, updatedLiquid, updatedVapor);
++                blendFlows(liquid, updatedLiquid, damping);
++                blendFlows(vapor, updatedVapor, damping);
++                if (updateTemperatures) updateBubblePointTemperatures(problem, thermo, workspace, liquid, vapor, temperatures);
++            }
++        } finally {
++            EXPERIMENT_LENIENT_TRIDIAGONAL.set(false);
++        }
++        return new V3DryMeshState(topology, state.componentCount(), liquid, vapor, temperatures,
++                freeWaterFlows(state));
++    }
++
+     private static double[][] copyFlows(double[][] source) {
+         double[][] copy = new double[source.length][];
+         for (int node = 0; node < source.length; node++) copy[node] = source[node].clone();
+@@ -899,8 +947,15 @@ final class V3ColumnInitializer {
+         for (int row = size - 2; row >= 0; row--) {
+             solution[row] = transformedRightHandSide[row] - transformedUpper[row] * solution[row + 1];
+         }
+-        for (double value : solution) {
++        for (int row = 0; row < solution.length; row++) {
++            double value = solution[row];
+             if (!Double.isFinite(value) || value <= 0.0) {
++                // EXPERIMENT (seed-prep study): a trace flow that underflowed across many trays is floored
++                // instead of declining the whole projection; the support derivation truncates it afterwards.
++                if (EXPERIMENT_LENIENT_TRIDIAGONAL.get() && Double.isFinite(value)) {
++                    solution[row] = EXPERIMENT_LENIENT_FLOOR;
++                    continue;
++                }
+                 throw new IllegalArgumentException("V3 sequential material preconditioner generated a nonpositive flow");
+             }
+         }

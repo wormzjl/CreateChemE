@@ -1,0 +1,180 @@
+island 46 committed 9619 status HELD: Substep refinement exhausted: Negative/nonfinite inventory
+  [0] GENERATOR id 7: 120.0000 K 1200000.0 Pa L 2.619e+04 V 0.000e+00 W 0.000e+00 (Lv 1.000e+00 Vv 0.000e+00 Wv 0.000e+00 m3) liq [0.0, 26194.54386732246, 0.0, 0.0] vap [0.0, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [0.0, 26194.54386732246, 0.0, 0.0, 0.0] U -3.706539e+08 vol 1.0000e+00
+  [1] RESERVOIR id 11: 298.1500 K 101325.0 Pa L 0.000e+00 V 4.089e+01 W 0.000e+00 (Lv 0.000e+00 Vv 1.000e+00 Wv 0.000e+00 m3) liq [0.0, 0.0, 0.0, 0.0] vap [40.88681104154507, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [40.88681104154507, 0.0, 0.0, 0.0, 0.0] U -1.016289e+05 vol 1.0000e+00
+  [2] GENERATOR id 15: 298.1500 K 101325.0 Pa L 0.000e+00 V 0.000e+00 W 5.534e+04 (Lv 0.000e+00 Vv 0.000e+00 Wv 1.000e+00 m3) liq [0.0, 0.0, 0.0, 0.0] vap [0.0, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [0.0, 0.0, 0.0, 0.0, 55344.57593619075] U -2.467122e+09 vol 1.0000e+00
+  [3] VOID id 34: 298.1500 K 101325.0 Pa L 0.000e+00 V 4.089e+01 W 0.000e+00 (Lv 0.000e+00 Vv 1.000e+00 Wv 0.000e+00 m3) liq [0.0, 0.0, 0.0, 0.0] vap [40.88681104154507, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [40.88681104154507, 0.0, 0.0, 0.0, 0.0] U -1.016289e+05 vol 1.0000e+00
+  pipe 6563131777617597099: 0 -> 1 Passive[] blocked 0 sections [Geometry[length=1.0, diameter=0.05, roughness=4.5E-5, minorLoss=0.0]]
+  pipe 3195888037053008840: 1 -> 3 Passive[] blocked 0 sections [Geometry[length=1.0, diameter=0.05, roughness=4.5E-5, minorLoss=0.0]]
+  pipe 5076312340462336275: 1 -> 2 Passive[] blocked 0 sections [Geometry[length=1.0, diameter=0.05, roughness=4.5E-5, minorLoss=0.0]]
+  interval 0 refused after 111.2 ms, 4819 checkpoints: Substep refinement exhausted: Negative/nonfinite inventory
+    typed domain cause: none (a numerical hold)
+    step 1.000e+00 s ok
+    step 2.500e-01 s ok
+    step 6.250e-02 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 120.19 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 11; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 1.563e-02 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 111.71 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 11; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 3.906e-03 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 178.06 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 11; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 9.766e-04 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 258.78 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 11; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 2.441e-04 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 6.104e-05 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 1.526e-05 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 3.815e-06 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 9.537e-07 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 2.384e-07 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+island 62 committed 17406 status HELD: Substep refinement exhausted: Negative/nonfinite inventory
+  [0] GENERATOR id 48: 115.0000 K 200000.0 Pa L 2.661e+04 V 0.000e+00 W 0.000e+00 (Lv 1.000e+00 Vv 0.000e+00 Wv 0.000e+00 m3) liq [0.0, 26613.950278534667, 0.0, 0.0] vap [0.0, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [0.0, 26613.950278534667, 0.0, 0.0, 0.0] U -3.836667e+08 vol 1.0000e+00
+  [1] RESERVOIR id 52: 298.1500 K 101325.0 Pa L 0.000e+00 V 4.089e+01 W 0.000e+00 (Lv 0.000e+00 Vv 1.000e+00 Wv 0.000e+00 m3) liq [0.0, 0.0, 0.0, 0.0] vap [40.88681104154507, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [40.88681104154507, 0.0, 0.0, 0.0, 0.0] U -1.016289e+05 vol 1.0000e+00
+  [2] VOID id 56: 298.1500 K 101325.0 Pa L 0.000e+00 V 4.089e+01 W 0.000e+00 (Lv 0.000e+00 Vv 1.000e+00 Wv 0.000e+00 m3) liq [0.0, 0.0, 0.0, 0.0] vap [40.88681104154507, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [40.88681104154507, 0.0, 0.0, 0.0, 0.0] U -1.016289e+05 vol 1.0000e+00
+  [3] GENERATOR id 60: 298.1500 K 101325.0 Pa L 0.000e+00 V 0.000e+00 W 5.534e+04 (Lv 0.000e+00 Vv 0.000e+00 Wv 1.000e+00 m3) liq [0.0, 0.0, 0.0, 0.0] vap [0.0, 0.0, 0.0, 0.0] crystals [] solids 0 pops mass 0.0 moles [0.0, 0.0, 0.0, 0.0, 55344.57593619075] U -2.467122e+09 vol 1.0000e+00
+  pipe 2422336860222322803: 0 -> 1 Passive[] blocked 0 sections [Geometry[length=1.0, diameter=0.05, roughness=4.5E-5, minorLoss=0.0]]
+  pipe 2949763634244081351: 1 -> 3 Passive[] blocked 0 sections [Geometry[length=1.0, diameter=0.05, roughness=4.5E-5, minorLoss=0.0]]
+  pipe 1210894648770440859: 1 -> 2 Passive[] blocked 0 sections [Geometry[length=1.0, diameter=0.05, roughness=4.5E-5, minorLoss=0.0]]
+  interval 0 refused after 27.5 ms, 4477 checkpoints: Substep refinement exhausted: Negative/nonfinite inventory
+    typed domain cause: none (a numerical hold)
+    step 1.000e+00 s: com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton line search stalled at residual 60.949715433349354; active-set pass=0
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:307)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:130)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 2.500e-01 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 136.92 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 52; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 6.250e-02 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 131.73 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 52; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 1.563e-02 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 144.79 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 52; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 3.906e-03 s: com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation: Thermo domain: Water at 242.76 K is below its valid range 273.16..900 K (package createcheme:pilot_cryogenic) at node 52; the state cannot be evaluated
+        at com.wormzjl.createcheme.science.fluid.thermo.ThermoDomainViolation.at(ThermoDomainViolation.java:63)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.initialPhaseSeeds(PassiveStepSolver.java:787)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:193)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 9.766e-04 s: com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Newton line search stalled at residual 0.051803293825256475; active-set pass=0
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:307)
+        at com.wormzjl.createcheme.science.fluid.network.PassiveStepSolver.solve(PassiveStepSolver.java:127)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:142)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 2.441e-04 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 6.104e-05 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 1.526e-05 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 3.815e-06 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 9.537e-07 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)
+    step 2.384e-07 s: java.lang.IllegalArgumentException: Negative/nonfinite inventory
+        at com.wormzjl.createcheme.science.fluid.network.PassiveNetwork$Inventory.<init>(PassiveNetwork.java:56)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.integrate(TrBdf2StepSolver.java:189)
+        at com.wormzjl.createcheme.science.fluid.network.TrBdf2StepSolver.trial(TrBdf2StepSolver.java:54)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.trace(P6bWorldProbe.java:99)
+        at com.wormzjl.createcheme.runtime.fluid.P6bWorldProbe.main(P6bWorldProbe.java:68)

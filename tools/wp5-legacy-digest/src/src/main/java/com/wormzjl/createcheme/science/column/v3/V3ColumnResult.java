@@ -1,0 +1,164 @@
+package com.wormzjl.createcheme.science.column.v3;
+
+import com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonThermo;
+import java.util.Objects;
+import java.util.List;
+import java.util.Optional;
+
+/** Minimal immutable accepted-result envelope; physical profiles are added with the MESH solver. */
+public final class V3ColumnResult {
+    private final V3ColumnProblem problem;
+    private final V3InputDigest inputDigest;
+    private final V3AcceptanceAudit acceptanceAudit;
+    private final V3ConvergenceEvidence convergenceEvidence;
+    private final List<V3ColumnStreamProperties> streams;
+    private final String formulationRevision;
+    private final V3ColumnDutyLedger dutyLedger;
+    private final String datasetRevision;
+    private final V3TrayHydraulicsSummary trayHydraulics;
+
+    /** Scientific identity captured during the solve; never reconstructed from a later live catalog. */
+    public String datasetRevision() { return datasetRevision; }
+
+    private V3ColumnResult(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision) {
+        this(problem, inputDigest, acceptanceAudit, convergenceEvidence, streams, formulationRevision, null);
+    }
+
+    private V3ColumnResult(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision,
+            V3ColumnDutyLedger dutyLedger) {
+        this(problem, inputDigest, acceptanceAudit, convergenceEvidence, streams, formulationRevision, dutyLedger, null);
+    }
+
+    private V3ColumnResult(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, List<V3ColumnStreamProperties> streams, String formulationRevision,
+            V3ColumnDutyLedger dutyLedger, V3TrayHydraulicsSummary trayHydraulics) {
+        this.trayHydraulics = trayHydraulics;
+        this.dutyLedger = dutyLedger;
+        this.problem = Objects.requireNonNull(problem, "problem");
+        var catalogPackage = com.wormzjl.createcheme.science.material.MaterialRuntime.current().packages().get(problem.input().packageId());
+        this.datasetRevision = V3HollandExample32.isPackage(problem.input().packageId())
+                ? V3HollandExample32.DATASET_REVISION
+                : catalogPackage == null ? "unregistered-test-model" : catalogPackage.scientificRevision();
+        this.inputDigest = Objects.requireNonNull(inputDigest, "inputDigest");
+        this.acceptanceAudit = Objects.requireNonNull(acceptanceAudit, "acceptanceAudit");
+        this.convergenceEvidence = Objects.requireNonNull(convergenceEvidence, "convergenceEvidence");
+        this.streams = List.copyOf(Objects.requireNonNull(streams, "streams"));
+        this.formulationRevision = Objects.requireNonNull(formulationRevision, "formulationRevision");
+        if (formulationRevision.isBlank() || formulationRevision.length() > 128) {
+            throw new IllegalArgumentException("V3 result formulation revision is outside the bounded contract");
+        }
+        if (this.streams.size() > V3ColumnStreamProperties.MAX_STREAMS) {
+            throw new IllegalArgumentException("V3 result exceeds the bounded accepted stream contract");
+        }
+        if (!acceptanceAudit.accepted() || !convergenceEvidence.satisfiesGates()) {
+            throw new IllegalArgumentException("A V3 result requires a passing acceptance audit and convergence evidence");
+        }
+    }
+
+    /** Package-private until the independent numerical audit owns the accepted-result gate. */
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence, List.of(),
+                V3ColumnCalculator.formulationRevision(problem.input(), problem.truncationSupport().cutoffMoleFraction()));
+    }
+
+    /** Extracts product properties only from the rigorously accepted final MESH state. */
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo) {
+        return accepted(problem, inputDigest, acceptanceAudit, convergenceEvidence, state, thermo,
+                V3ColumnCalculator.formulationRevision(problem.truncationSupport().cutoffMoleFraction()));
+    }
+
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
+            String formulationRevision) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
+                V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision);
+    }
+
+    /** Publication path that also carries the recomputed boundary duties of the accepted state. */
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
+            String formulationRevision, V3ColumnDutyLedger dutyLedger) {
+        return accepted(problem, inputDigest, acceptanceAudit, convergenceEvidence, state, thermo,
+                formulationRevision, dutyLedger, null);
+    }
+
+    /** The same publication, carrying the tray hydraulics of a request that authored a column diameter. */
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state, V3PengRobinsonThermo thermo,
+            String formulationRevision, V3ColumnDutyLedger dutyLedger, V3TrayHydraulicsSummary trayHydraulics) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
+                V3ColumnStreamProperties.fromAccepted(problem, state, thermo), formulationRevision,
+                Objects.requireNonNull(dutyLedger, "dutyLedger"), trayHydraulics);
+    }
+
+    static V3ColumnResult accepted(
+            V3ColumnProblem problem, V3InputDigest inputDigest, V3AcceptanceAudit acceptanceAudit,
+            V3ConvergenceEvidence convergenceEvidence, V3DryMeshState state,
+            double[] molecularWeightsKgPerMol, String formulationRevision) {
+        return new V3ColumnResult(problem, inputDigest, acceptanceAudit, convergenceEvidence,
+                V3ColumnStreamProperties.fromAccepted(problem, state, molecularWeightsKgPerMol),
+                formulationRevision);
+    }
+
+    public V3ColumnProblem problem() {
+        return problem;
+    }
+
+    public V3InputDigest inputDigest() {
+        return inputDigest;
+    }
+
+    /** Revision used for this result's digest, including a cutoff-enabled request's untruncated retry. */
+    public String formulationRevision() {
+        return formulationRevision;
+    }
+
+    public V3AcceptanceAudit acceptanceAudit() {
+        return acceptanceAudit;
+    }
+
+    public V3ConvergenceEvidence convergenceEvidence() {
+        return convergenceEvidence;
+    }
+
+    /**
+     * Relative convergence closure this result was accepted at.
+     *
+     * <p>Read from the certificate itself rather than stored twice: the closure a state was solved to is a
+     * property of its final Newton step, and a second copy could disagree with the gate that admitted it.</p>
+     */
+    public double closureTolerance() {
+        return convergenceEvidence.closureTolerance();
+    }
+
+    public List<V3ColumnStreamProperties> streams() {
+        return streams;
+    }
+
+    /** Recomputed boundary duties; absent only on the result paths that carry no property model. */
+    public Optional<V3ColumnDutyLedger> dutyLedger() {
+        return Optional.ofNullable(dutyLedger);
+    }
+
+    /**
+     * Tray hydraulics of the published pressure profile; present exactly for a request that authored a diameter.
+     *
+     * <p>The profile itself is {@code problem().nodePressuresPascal()}; this is the operator-facing reading of
+     * it — total and mean drop, and how close the worst tray came to flooding.</p>
+     */
+    public Optional<V3TrayHydraulicsSummary> trayHydraulics() {
+        return Optional.ofNullable(trayHydraulics);
+    }
+}

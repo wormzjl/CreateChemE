@@ -1,0 +1,8 @@
+# epoch_ms=1790186165297 gc_run_ms=131
+11468:
+Command executed successfully
+11468:
+ garbage-first heap   total 1093632K, used 410991K [0x0000000700000000, 0x0000000800000000)
+  region size 2048K, 48 young (98304K), 0 survivors (0K)
+ Metaspace       used 140946K, committed 142848K, reserved 1179648K
+  class space    used 22874K, committed 23744K, reserved 1048576K

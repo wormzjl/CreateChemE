@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3RegroupedTransformerTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:32.962Z" hostname="WORMZ-PC" time="0.11">
+  <properties/>
+  <testcase name="rejectsRetiredEncodingAndWrongTensors()" classname="com.wormzjl.createcheme.science.column.v3.V3RegroupedTransformerTest" time="0.019"/>
+  <testcase name="sidecarPinsPayloadAndRejectsOverlappingFields()" classname="com.wormzjl.createcheme.science.column.v3.V3RegroupedTransformerTest" time="0.029"/>
+  <testcase name="cancellationAndSharedWeightsAreDeterministic()" classname="com.wormzjl.createcheme.science.column.v3.V3RegroupedTransformerTest" time="0.013"/>
+  <testcase name="widthsFollowBothActiveHydrocarbonAxes()" classname="com.wormzjl.createcheme.science.column.v3.V3RegroupedTransformerTest" time="0.027"/>
+  <testcase name="editedPhysicsIsExcludedWhileCapturedCatalogRemainsEligible()" classname="com.wormzjl.createcheme.science.column.v3.V3RegroupedTransformerTest" time="0.021"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

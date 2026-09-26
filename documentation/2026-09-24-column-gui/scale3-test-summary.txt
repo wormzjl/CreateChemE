@@ -1,0 +1,6 @@
+Full suite: {'tests': 1071, 'failures': 0, 'errors': 0, 'skipped': 0}
+BUILD SUCCESSFUL in 4m 6s
+Final targeted checks, including 2/3-stage wire and pot persistence: {'tests': 49, 'failures': 0, 'errors': 0, 'skipped': 0}
+BUILD SUCCESSFUL in 7s
+Final steam-location/editor checks: {'tests': 21, 'failures': 0, 'errors': 0, 'skipped': 0}
+BUILD SUCCESSFUL in 3s

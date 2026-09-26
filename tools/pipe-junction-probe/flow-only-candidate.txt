@@ -1,0 +1,18 @@
+CASE ports=4 pressure=102325.0 seed=1.0 PASS conservation
+CASE ports=4 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=4 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=5 pressure=102325.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.02342030830751156; active-set pass=0
+CASE ports=5 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=5 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=6 pressure=102325.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.09938828088433013; active-set pass=0
+CASE ports=6 pressure=102325.0 seed=0.5 PASS conservation
+CASE ports=6 pressure=102325.0 seed=0.0 PASS conservation
+CASE ports=4 pressure=150000.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.006090872331463842; active-set pass=0
+CASE ports=4 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=4 pressure=150000.0 seed=0.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.008770303443246075; active-set pass=0
+CASE ports=5 pressure=150000.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.16016994642485932; active-set pass=0
+CASE ports=5 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=5 pressure=150000.0 seed=0.0 PASS conservation
+CASE ports=6 pressure=150000.0 seed=1.0 FAIL com.wormzjl.createcheme.science.fluid.solver.SparseNewton$Nonconvergence: Substep refinement exhausted: Newton line search stalled at residual 0.19273765407976598; active-set pass=0
+CASE ports=6 pressure=150000.0 seed=0.5 PASS conservation
+CASE ports=6 pressure=150000.0 seed=0.0 PASS conservation

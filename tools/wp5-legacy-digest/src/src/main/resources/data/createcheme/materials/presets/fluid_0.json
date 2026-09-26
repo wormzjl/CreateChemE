@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "id": "water",
+  "kind": "fluid",
+  "label": "Water",
+  "component": "Water"
+}

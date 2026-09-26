@@ -1,0 +1,9 @@
+2026-09-23T13:22:42.693Z gate ok {"endfield":0,"freeMiB":27233} for srv-rest100-wp5-soak-r01
+2026-09-23T13:22:42.694Z start srv-rest100-wp5-soak-r01 (server wp5 rest100 warmup 60 s window 300 s)
+2026-09-23T13:29:11.317Z end srv-rest100-wp5-soak-r01 status=0
+2026-09-23T13:29:11.630Z analyzed srv-rest100-wp5-soak-r01
+2026-09-23T13:29:12.114Z gate ok {"endfield":0,"freeMiB":27219} for srv-fill100-wp5-soak-r01
+2026-09-23T13:29:12.114Z start srv-fill100-wp5-soak-r01 (server wp5 fill100 warmup 60 s window 300 s)
+2026-09-23T13:35:41.601Z end srv-fill100-wp5-soak-r01 status=0
+2026-09-23T13:35:42.481Z analyzed srv-fill100-wp5-soak-r01
+2026-09-23T13:35:42.482Z campaign done

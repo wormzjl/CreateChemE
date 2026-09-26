@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:46:08.095Z" hostname="WORMZ-PC" time="0.003">
+  <properties/>
+  <testcase name="anOutOfRangeScreenRatioIsRejected()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.001"/>
+  <testcase name="theCalibratedTierFiresAndNamesTheRatioTheTrayAndTheThreshold()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.0"/>
+  <testcase name="authoredCoolingAboveTheDrawRaisesTheSupplyAndAdmitsTheRequest()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.001"/>
+  <testcase name="aDisabledCalibratedTierAdmitsARequestBetweenTheTwoThresholds()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.0"/>
+  <testcase name="aRequestWithoutSideDrawsIsNeverScreened()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.0"/>
+  <testcase name="theVerdictPrecedesEveryThermodynamicEvaluation()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.0"/>
+  <testcase name="theLearnedRouteIsScreenedAtTheSameEntryAsTheClassicalOne()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.001"/>
+  <testcase name="theNecessaryTierFiresEvenWithTheCalibratedRatioDisabled()" classname="com.wormzjl.createcheme.science.column.v3.V3LiquidSupplyScreenTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

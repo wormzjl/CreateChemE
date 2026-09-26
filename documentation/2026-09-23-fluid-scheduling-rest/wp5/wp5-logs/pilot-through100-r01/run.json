@@ -1,0 +1,115 @@
+{
+  "runId": "pilot-through100-r01",
+  "scenario": "through100",
+  "kind": "server",
+  "worktree": "D:/Minecraft/Modding/1.21/CreateChemE/.claude/worktrees/agent-ae139e4fc1b184b36",
+  "warmupSeconds": 60,
+  "windowSeconds": 60,
+  "events": [
+    {
+      "t": 1790165609016,
+      "iso": "2026-09-23T12:13:29.016Z",
+      "what": "machine",
+      "endfield": 0,
+      "freeMiB": 26723
+    },
+    {
+      "t": 1790165609432,
+      "iso": "2026-09-23T12:13:29.432Z",
+      "what": "launch"
+    },
+    {
+      "t": 1790165619543,
+      "iso": "2026-09-23T12:13:39.543Z",
+      "what": "server ready"
+    },
+    {
+      "t": 1790165619941,
+      "iso": "2026-09-23T12:13:39.941Z",
+      "what": "jvm",
+      "pid": 27940
+    },
+    {
+      "t": 1790165619949,
+      "iso": "2026-09-23T12:13:39.949Z",
+      "what": "forceload",
+      "reply": "Running function createcheme_bench:forceload\n"
+    },
+    {
+      "t": 1790165624956,
+      "iso": "2026-09-23T12:13:44.956Z",
+      "what": "place start"
+    },
+    {
+      "t": 1790165626114,
+      "iso": "2026-09-23T12:13:46.114Z",
+      "what": "place done",
+      "reply": "Running function createcheme_bench:through100\n",
+      "placementMillis": 1157
+    },
+    {
+      "t": 1790165686553,
+      "iso": "2026-09-23T12:14:46.553Z",
+      "what": "jfr start",
+      "reply": "JFR profiling started\n"
+    },
+    {
+      "t": 1790165686696,
+      "iso": "2026-09-23T12:14:46.696Z",
+      "what": "window start"
+    },
+    {
+      "t": 1790165746656,
+      "iso": "2026-09-23T12:15:46.656Z",
+      "what": "window end"
+    },
+    {
+      "t": 1790165746886,
+      "iso": "2026-09-23T12:15:46.886Z",
+      "what": "jfr stop",
+      "reply": "JFR profiling stopped and dumped to debug\\server-2026-09-23-201446.jfr\n"
+    },
+    {
+      "t": 1790165747537,
+      "iso": "2026-09-23T12:15:47.537Z",
+      "what": "live heap"
+    },
+    {
+      "t": 1790165747539,
+      "iso": "2026-09-23T12:15:47.539Z",
+      "what": "stop",
+      "reply": "Stopping the server\n"
+    },
+    {
+      "t": 1790165748309,
+      "iso": "2026-09-23T12:15:48.309Z",
+      "what": "gradle exit",
+      "code": 0
+    },
+    {
+      "t": 1790165751562,
+      "iso": "2026-09-23T12:15:51.562Z",
+      "what": "jfr file",
+      "file": "server-2026-09-23-201446.jfr"
+    },
+    {
+      "t": 1790165752009,
+      "iso": "2026-09-23T12:15:52.009Z",
+      "what": "done",
+      "endfield": 0,
+      "freeMiB": 26670
+    }
+  ],
+  "machineBefore": {
+    "endfield": 0,
+    "freeMiB": 26723
+  },
+  "pid": 27940,
+  "placementMillis": 1157,
+  "windowStart": 1790165686554,
+  "windowEnd": 1790165746556,
+  "machineAfter": {
+    "endfield": 0,
+    "freeMiB": 26670
+  }
+}

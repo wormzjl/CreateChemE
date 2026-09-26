@@ -1,0 +1,19 @@
+{
+  "type": "nasa9",
+  "temperature_min_kelvin": 425.0,
+  "temperature_max_kelvin": 1500.0,
+  "source": "NASA 9 fit to the ideal-gas Cp of 12CH4 from the ExoMol MM line list (Yurchenko, Owens, Kefala and Tennyson 2024, MNRAS 528, 3719; states file version 20240113, CC BY-SA 4.0) by direct summation plus a power-law density-of-states tail; tools/methane-ideal-gas/methane_cp.py (batch 2026-09-24-coolprop-low-temperature, WP10); b1 and b2 continue h and s of the Setzmann-Wagner segment at the join and are not used by the loader",
+  "revision": "exomol-mm-20240113-methane-nasa9-r1",
+  "gas_constant_j_per_mol_kelvin": 8.314462618,
+  "coefficients": [
+    204773.8659944918,
+    -1031.6888606479426,
+    3.414360328348465,
+    0.0069105256512519515,
+    7.043489332394865e-07,
+    -1.8557468380421482e-09,
+    4.087167193449258e-13,
+    -3725.696224967224,
+    -1.425957616202421
+  ]
+}

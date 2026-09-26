@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:tjl20",
+  "model": "pr78",
+  "source": "Frozen production binary interaction matrix",
+  "pairs": [
+    {
+      "first": "Ethane",
+      "second": "Propane",
+      "kij": 0.0011
+    },
+    {
+      "first": "Ethane",
+      "second": "Isobutane",
+      "kij": -0.0067
+    },
+    {
+      "first": "Ethane",
+      "second": "N-butane",
+      "kij": 0.0089
+    },
+    {
+      "first": "Ethane",
+      "second": "N-pentane",
+      "kij": 0.0078
+    },
+    {
+      "first": "Propane",
+      "second": "Isobutane",
+      "kij": -0.0078
+    },
+    {
+      "first": "Propane",
+      "second": "N-butane",
+      "kij": 0.0033
+    },
+    {
+      "first": "Propane",
+      "second": "Isopentane",
+      "kij": 0.0111
+    },
+    {
+      "first": "Propane",
+      "second": "N-pentane",
+      "kij": 0.0267
+    },
+    {
+      "first": "Isobutane",
+      "second": "N-butane",
+      "kij": -0.0004
+    },
+    {
+      "first": "N-butane",
+      "second": "N-pentane",
+      "kij": 0.0174
+    },
+    {
+      "first": "Isopentane",
+      "second": "N-pentane",
+      "kij": 0.06
+    }
+  ]
+}

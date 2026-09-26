@@ -1,0 +1,4 @@
+held island: HELD: Unsupported phases: NOT_IMPLEMENTED (SOLID_LIQUID) at 200.0 K, 2000000.0 Pa (package createcheme:pilot_cryogenic) at node 101: a crystal beside a liquid (SOLID_LIQUID: the fluid left by the deposition of createcheme:crystal_carbon_dioxide_i is SINGLE_FLUID; a crystal with a liquid is P5's competition, not answered); the fluid network carries a crystal only beside a gas | solves 3
+menu deliveries [Seen[tick=1, committed=0, crystal=0.0], Seen[tick=101, committed=100, crystal=1.4813777446957035], Seen[tick=201, committed=200, crystal=1.4813777446957035], Seen[tick=301, committed=301, crystal=1.4813777446957035], Seen[tick=401, committed=401, crystal=1.4813777446957035]]
+block-entity presentations [Seen[tick=1, committed=0, crystal=0.0], Seen[tick=101, committed=100, crystal=1.4813777446957035], Seen[tick=201, committed=200, crystal=1.4813777446957035], Seen[tick=301, committed=301, crystal=1.4813777446957035]]
+

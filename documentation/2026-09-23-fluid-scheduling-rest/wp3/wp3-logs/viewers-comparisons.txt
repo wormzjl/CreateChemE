@@ -1,0 +1,28 @@
+mixed100-wp3-on-r01 vs viewers-wp3-on-r01: 100 fixture islands
+  identical solved publications, same count: 93
+  startup-held (either run) and parted: 5 [{"id":"10805","at":"50","lengths":"36/36"},{"id":"10807","at":"50","lengths":"5/5"},{"id":"10810","at":"50","lengths":"36/36"},{"id":"10812","at":"50","lengths":"36/36"},{"id":"10815","at":"50","lengths":"7/11"}]
+  parted without a startup hold: 0 []
+  replaced by scripted edits: 2 [{"id":"10804","commonBeforeReplacement":12,"lastSolvedPlain":3600,"lastSolvedViewers":1260,"firstDifferenceAt":"1300"},{"id":"10806","commonBeforeReplacement":13,"lastSolvedPlain":3600,"lastSolvedViewers":1306,"firstDifferenceAt":"1400"}]
+  replacement islands only in the viewers run: 15
+  held at startup: 10805,10807,10810,10812,10815 / 10805,10807,10812,10815
+mixed100-wp2-on-r02 vs viewers-wp3-on-r01: 100 fixture islands
+  identical solved publications, same count: 94
+  startup-held (either run) and parted: 4 [{"id":"10805","at":"50","lengths":"36/36"},{"id":"10807","at":"50","lengths":"5/5"},{"id":"10812","at":"50","lengths":"36/36"},{"id":"10815","at":"50","lengths":"4/11"}]
+  parted without a startup hold: 0 []
+  replaced by scripted edits: 2 [{"id":"10804","commonBeforeReplacement":12,"lastSolvedPlain":3600,"lastSolvedViewers":1260,"firstDifferenceAt":"1300"},{"id":"10806","commonBeforeReplacement":13,"lastSolvedPlain":3600,"lastSolvedViewers":1306,"firstDifferenceAt":"1400"}]
+  replacement islands only in the viewers run: 15
+  held at startup: 10805,10807,10812,10815 / 10805,10807,10812,10815
+mixed100-wp2-off-r02 vs viewers-wp3-off-r01: 100 fixture islands
+  identical solved publications, same count: 92
+  startup-held (either run) and parted: 5 [{"id":"10805","at":"50","lengths":"36/36"},{"id":"10810","at":"50","lengths":"36/36"},{"id":"10811","at":"100","lengths":"36/36"},{"id":"10812","at":"50","lengths":"36/36"},{"id":"10815","at":"50","lengths":"36/36"}]
+  parted without a startup hold: 0 []
+  replaced by scripted edits: 3 [{"id":"10804","commonBeforeReplacement":12,"lastSolvedPlain":3600,"lastSolvedViewers":1254,"firstDifferenceAt":"1300"},{"id":"10806","commonBeforeReplacement":13,"lastSolvedPlain":3600,"lastSolvedViewers":1300,"firstDifferenceAt":null},{"id":"10807","commonBeforeReplacement":0,"lastSolvedPlain":3550,"lastSolvedViewers":1323,"firstDifferenceAt":"50"}]
+  replacement islands only in the viewers run: 15
+  held at startup: 10805,10807,10810,10812,10815 / 10805,10807,10810,10811,10812,10815
+mixed100-wp2-on-r02 vs mixed100-wp3-on-r01: 100 fixture islands
+  identical solved publications, same count: 95
+  startup-held (either run) and parted: 5 [{"id":"10805","at":"50","lengths":"36/36"},{"id":"10807","at":"50","lengths":"5/5"},{"id":"10810","at":"100","lengths":"36/36"},{"id":"10812","at":"50","lengths":"36/36"},{"id":"10815","at":"50","lengths":"4/7"}]
+  parted without a startup hold: 0 []
+  replaced by scripted edits: 0 []
+  replacement islands only in the viewers run: 0
+  held at startup: 10805,10807,10812,10815 / 10805,10807,10810,10812,10815

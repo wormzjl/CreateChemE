@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-09-24T04:47:57.730Z" hostname="WORMZ-PC" time="0.172">
+  <properties/>
+  <testcase name="rankOneMixingDerivativesMatchTheGeneralQuadraticPath()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.01"/>
+  <testcase name="[1] createcheme:tjl19_dwsim" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.011"/>
+  <testcase name="[2] createcheme:cdu17_tjl_acs2018" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.01"/>
+  <testcase name="[1] createcheme:tjl19_dwsim" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.011"/>
+  <testcase name="[2] createcheme:cdu17_tjl_acs2018" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.015"/>
+  <testcase name="derivativesRefuseTheSameStatesTheValuesRefuse()" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.015"/>
+  <testcase name="[1] createcheme:tjl19_dwsim" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.023"/>
+  <testcase name="[2] createcheme:cdu17_tjl_acs2018" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.018"/>
+  <testcase name="[1] createcheme:tjl19_dwsim" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.016"/>
+  <testcase name="[2] createcheme:cdu17_tjl_acs2018" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.011"/>
+  <testcase name="[1] createcheme:tjl19_dwsim" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.016"/>
+  <testcase name="[2] createcheme:cdu17_tjl_acs2018" classname="com.wormzjl.createcheme.science.column.v3.thermo.V3PengRobinsonDerivativesTest" time="0.011"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

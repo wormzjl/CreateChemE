@@ -1,0 +1,193 @@
+{
+  "runId": "srv-probe2-base-r01",
+  "scenario": "probe2",
+  "kind": "server",
+  "windowSeconds": 60.01,
+  "configuredWindowSeconds": 60,
+  "warmupSeconds": 60,
+  "windowStartIso": "2026-09-23T17:57:32.746Z",
+  "placementMillis": 776,
+  "jfrRssMiB": {
+    "samples": 55,
+    "mean": 1935.5469460227273,
+    "max": 2022.65234375,
+    "last": 1962.76953125
+  },
+  "mcServerTickTimeMs": {
+    "samples": 55,
+    "p50": 0.221635,
+    "p95": 0.439066,
+    "max": 4.692529,
+    "mean": 0.3092964000000001
+  },
+  "jfrCpuCores": {
+    "samples": 55,
+    "jvm": 7.464455421643637,
+    "user": 7.365243519999998,
+    "system": 0.09921190164363636,
+    "machine": 7.926606373818182
+  },
+  "gc": {
+    "count": 532,
+    "pauseMsTotal": 446.2028999999999,
+    "longestPauseMs": 18.2777,
+    "names": [
+      "G1New",
+      "G1Old"
+    ],
+    "heapInspectionGcs": 0
+  },
+  "heapMiB": {
+    "afterGcMean": 413.8874634620839,
+    "afterGcLast": 444.80384063720703,
+    "afterGcSamples": 532,
+    "afterFullGcAtJfrStartEnd": [],
+    "committedMax": 1390
+  },
+  "allocationMiBPerSecond": 7459.376429850031,
+  "process": {
+    "samples": 59,
+    "cpuCores": 7.58854095737437,
+    "userCores": 7.473635605338417,
+    "kernelCores": 0.11197952131281493,
+    "workingSetMiB": {
+      "mean": 1937.2997881355932,
+      "last": 1962.76953125,
+      "max": 2028.265625
+    },
+    "privateMiB": {
+      "mean": 2001.7369570974577,
+      "last": 2018.4609375
+    },
+    "threads": {
+      "mean": 98.38983050847457,
+      "last": 91
+    }
+  },
+  "threadDumps": 7,
+  "threadCores": {
+    "jvmOther": 0.0039053491084819194,
+    "observation": 0.06275004165972338,
+    "jit": 0.13877887018830193,
+    "other": 0.0005207465422429595,
+    "server": 0.009373437760373271,
+    "fluidWorkers": 6.919679720046659,
+    "gc": 0.06925895684052659
+  },
+  "threadCoresTotal": 7.204267122146309,
+  "threadCoresUnattributed": 0.38427383522806124,
+  "topThreads": [
+    "createcheme-cpu-solve-1=0.6033",
+    "createcheme-cpu-solve-2=0.6033",
+    "createcheme-cpu-solve-11=0.5903",
+    "createcheme-cpu-solve-4=0.5884",
+    "createcheme-cpu-solve-3=0.5817",
+    "createcheme-cpu-solve-7=0.5804",
+    "createcheme-cpu-solve-10=0.5788",
+    "createcheme-cpu-solve-0=0.5754",
+    "createcheme-cpu-solve-9=0.5720",
+    "createcheme-cpu-solve-6=0.5666",
+    "createcheme-cpu-solve-8=0.5562",
+    "createcheme-cpu-solve-5=0.5234"
+  ],
+  "threadNames": [
+    "Attach Listener",
+    "C1 CompilerThread#",
+    "C2 CompilerThread#",
+    "Common-Cleaner",
+    "DestroyJavaVM",
+    "FileSystemWatchService",
+    "Finalizer",
+    "ForkJoinPool-3-worker#",
+    "ForkJoinPool.commonPool-worker#",
+    "G1 Conc#",
+    "G1 Main Marker",
+    "G1 Refine#",
+    "G1 Service",
+    "GC Thread#",
+    "JFR Periodic Tasks",
+    "JFR Recorder Thread",
+    "JNA Cleaner",
+    "LanServerPinger #",
+    "Monitor Deflation Thread",
+    "Netty Server IO #",
+    "Notification Thread",
+    "RCON Client /127.0.0.1 #",
+    "RCON Listener #",
+    "Reference Handler",
+    "Server thread",
+    "Service Thread",
+    "Signal Dispatcher",
+    "Timer hack thread",
+    "VM Periodic Task Thread",
+    "VM Thread",
+    "Worker-Main#",
+    "Yggdrasil Key Fetcher",
+    "config-file-watcher-0#",
+    "createcheme-cpu-solve#",
+    "kubejs-background-thread",
+    "modloading-sync-worker",
+    "modloading-worker#"
+  ],
+  "ticks": {
+    "count": 1200,
+    "tickMs": {
+      "p50": 0.303,
+      "p95": 1.0286,
+      "p99": 12.9178,
+      "max": 109.3765,
+      "mean": 0.8474414166666647
+    },
+    "engineMs": {
+      "p50": 0.1279,
+      "p95": 1.3194,
+      "p99": 4.3728,
+      "max": 31.7973,
+      "mean": 0.3922322499999998
+    },
+    "ticksPerSecond": 19.996667222129645
+  },
+  "diagCountersInWindow": {
+    "islandVisits": 4248,
+    "islandSnapshots": 1723,
+    "viewBuilds": 4411,
+    "readinessPumps": 1486,
+    "solvesDispatched": 1241,
+    "completionsRouted": 1251,
+    "islandsPublished": 1251,
+    "deadlinesFired": 591,
+    "bucketFlushes": 382,
+    "devicePresentations": 4411,
+    "certificatesIssued": 3,
+    "materialisations": 3,
+    "restedTicks": 98,
+    "replayedTicks": 100
+  },
+  "diagPeriodsInWindow": 6,
+  "endState": {
+    "onlineTick": 2600,
+    "devices": 528,
+    "islands": 63,
+    "kinds": {
+      "AWAKE": 44,
+      "REST": 17,
+      "STEADY": 2
+    },
+    "statuses": {
+      "FULL": 30,
+      "HELD": 14,
+      "RESTING": 17,
+      "STEADY": 2
+    },
+    "workersActive": 0,
+    "workersLimit": 12
+  },
+  "placementGap": {
+    "t": 1790186188081,
+    "ms": 798.9,
+    "devices": 528
+  },
+  "heldLines": 634,
+  "liveHeapMiB": 448.818359375,
+  "committedHeapAfterFullGcMiB": 1088
+}

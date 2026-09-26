@@ -1,0 +1,439 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.143'
+    id 'idea'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    exclude '**/*.bbmodel'
+    exclude 'src/generated/**/.cache'
+}
+
+sourceSets {
+    mcpCompat {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+    fluidGameTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+    // Exercise the actual Minecraft wire/NBT codecs in regression tests as well as the pure science layer.
+    test {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.createmod.net' }
+    maven { url = 'https://maven.ithundxr.dev/snapshots' }
+    maven { url = 'https://maven.blamejared.com' }
+    maven {
+        url = 'https://maven.latvian.dev/releases'
+        content {
+            includeGroup 'dev.latvian.mods'
+            includeGroup 'dev.latvian.apps'
+        }
+    }
+    maven {
+        url = 'https://jitpack.io'
+        content {
+            includeGroup 'com.github.rtyley'
+        }
+    }
+}
+
+neoForge {
+    version = neo_version
+    addModdingDependenciesTo sourceSets.fluidGameTest
+    addModdingDependenciesTo sourceSets.mcpCompat
+
+    parchment {
+        minecraftVersion = parchment_minecraft_version
+        mappingsVersion = parchment_mappings_version
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        fluidGameTestServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.fluidGameTest
+            def fixtureRun = providers.gradleProperty('fluidGameTestRunId').getOrElse('')
+            if (!(fixtureRun ==~ /[A-Za-z0-9_-]*/)) throw new GradleException('Invalid fluidGameTestRunId')
+            gameDirectory = layout.projectDirectory.dir(fixtureRun.isEmpty() ? 'run/fluid-gametest' : "run/fluid-gametest-${fixtureRun}")
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'createcheme_fluid_test'
+            systemProperty 'createcheme.fluid.testFailure', providers.gradleProperty('fluidGameTestDeliberateFailure').getOrElse('false')
+            // Re-derive every island's schedule from scratch at each pump and tick; any drift fails the run.
+            systemProperty 'createcheme.fluid.scheduler.verify', 'true'
+        }
+        columnGameTestServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.fluidGameTest
+            def fixtureRun = providers.gradleProperty('columnGameTestRunId').getOrElse('manual')
+            if (!(fixtureRun ==~ /[A-Za-z0-9_-]+/)) throw new GradleException('Invalid columnGameTestRunId')
+            gameDirectory = layout.projectDirectory.dir("run/column-gametest-${fixtureRun}")
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'createcheme_column_test'
+        }
+        fluidBenchmarkServer {
+            type = 'gameTestServer'
+            sourceSet = sourceSets.fluidGameTest
+            def runId = providers.gradleProperty('fluidBenchmarkRunId').getOrElse('manual')
+            if (!(runId ==~ /[A-Za-z0-9_-]+/)) throw new GradleException('Use an alphanumeric fluidBenchmarkRunId')
+            gameDirectory = layout.projectDirectory.dir("run/fluid-benchmark/${runId}")
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'createcheme_fluid_benchmark'
+            systemProperty 'createcheme.fluid.benchmark', 'true'
+            systemProperty 'createcheme.fluid.benchmark.profile', providers.gradleProperty('fluidBenchmarkProfile').getOrElse('one')
+            systemProperty 'createcheme.fluid.benchmark.pilot', providers.gradleProperty('fluidBenchmarkPilot').getOrElse('false')
+            systemProperty 'createcheme.fluid.benchmark.pilotWarmupSeconds', providers.gradleProperty('fluidBenchmarkPilotWarmupSeconds').getOrElse('5')
+            systemProperty 'createcheme.fluid.stress.warmupSeconds', providers.gradleProperty('fluidStressWarmupSeconds').getOrElse('60')
+            systemProperty 'createcheme.fluid.stress.measurementSeconds', providers.gradleProperty('fluidStressMeasurementSeconds').getOrElse('120')
+            systemProperty 'createcheme.fluid.stress.profile', providers.gradleProperty('fluidStressProfile').getOrElse('false')
+            systemProperty 'createcheme.fluid.benchmark.memory', providers.gradleProperty('fluidBenchmarkMemory').getOrElse('false')
+            systemProperty 'createcheme.fluid.benchmark.diagnostics', providers.gradleProperty('fluidBenchmarkDiagnostics').getOrElse('false')
+            if (providers.gradleProperty('fluidBenchmarkHeapMiB').isPresent()) {
+                def heapMiB = providers.gradleProperty('fluidBenchmarkHeapMiB').get().toInteger()
+                if (heapMiB < 512 || heapMiB > 16384) throw new GradleException('fluidBenchmarkHeapMiB must be between 512 and 16384')
+                jvmArguments.addAll("-Xms${heapMiB}m", "-Xmx${heapMiB}m")
+            }
+            systemProperty 'createcheme.fluid.benchmark.testFailure', providers.gradleProperty('fluidBenchmarkTestFailure').getOrElse('false')
+            systemProperty 'createcheme.fluid.benchmark.output', layout.buildDirectory.file("reports/fluid/M9/${runId}/report.json").get().asFile.absolutePath
+            systemProperty 'createcheme.fluid.benchmark.manifest', layout.projectDirectory.file("run/fluid-benchmark/${runId}/manifest.json").asFile.absolutePath
+        }
+
+        mcpClient {
+            client()
+            sourceSet = sourceSets.mcpCompat
+            gameDirectory = layout.projectDirectory.dir('run/mcp-client')
+            programArguments.addAll('--username', 'FluidMcpTester', '--width', '2560', '--height', '1440')
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+
+        data {
+            data()
+            programArguments.addAll(
+                '--mod', mod_id,
+                '--all',
+                '--output', file('src/generated/resources').absolutePath,
+                '--existing', file('src/main/resources').absolutePath
+            )
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+        createcheme_fluid_test {
+            sourceSet sourceSets.fluidGameTest
+        }
+        createcheme_mcp_compat {
+            sourceSet sourceSets.mcpCompat
+        }
+    }
+    runs.configureEach {
+        loadedMods = name in ['fluidGameTestServer', 'fluidBenchmarkServer', 'columnGameTestServer'] ? [mods.createcheme, mods.createcheme_fluid_test]
+                : name == 'mcpClient' ? [mods.createcheme, mods.createcheme_mcp_compat] : [mods.createcheme]
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+    fluidGameTestImplementation.extendsFrom implementation
+    fluidGameTestRuntimeOnly.extendsFrom runtimeOnly
+    mcpCompatImplementation.extendsFrom implementation
+    mcpCompatRuntimeOnly.extendsFrom runtimeOnly
+}
+
+// Optional MCP test-client tooling never enters the production jar or ordinary test runtime.
+def prepareMcpControlMod = tasks.register('prepareMcpControlMod', Copy) {
+    from layout.projectDirectory.file('run/mcp-client-mods/minecraft-mcp-1.21.1-neoforge-v0.3.0.jar')
+    into layout.projectDirectory.dir('run/mcp-client/mods')
+    doFirst {
+        def jar = inputs.files.singleFile
+        if (!jar.isFile()) throw new GradleException('Download the pinned Minecraft MCP control mod listed in documentation/FLUID_NETWORK_PROGRESS.md first.')
+        def digest = java.security.MessageDigest.getInstance('SHA-256').digest(jar.bytes).encodeHex().toString()
+        if (digest != 'c6cc12c960490e72a83fd5c2f8169294cd1adda4d838ad69d188e8b7d3b73695') {
+            throw new GradleException('Minecraft MCP control mod checksum mismatch')
+        }
+    }
+}
+tasks.matching { it.name == 'runMcpClient' }.configureEach { dependsOn prepareMcpControlMod }
+
+dependencies {
+    // Sequential sparse LU for the fluid solver; package its runtime graph with the mod.
+    implementation('org.ejml:ejml-dsparse:0.44.0')
+    additionalRuntimeClasspath('org.ejml:ejml-dsparse:0.44.0')
+    ['ejml-core', 'ejml-ddense', 'ejml-dsparse'].each { module ->
+        jarJar("org.ejml:${module}:[0.44.0,0.45.0)") {
+            version { prefer '0.44.0' }
+        }
+    }
+    // Create's slim development jar deliberately excludes its companion libraries.
+    implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") {
+        transitive = false
+    }
+    implementation("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
+    runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
+    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    // JEI is an optional client integration: APIs at compile time, full mod only in dev runs.
+    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+
+    // Milestone 1 requires the KubeJS preset adapter. Its POM supplies Rhino and runtime helpers.
+    api("dev.latvian.mods:kubejs-neoforge:${kubejs_version}")
+
+    testImplementation(platform("org.junit:junit-bom:${junit_version}"))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+}
+
+def metadataProperties = [
+    minecraft_version      : minecraft_version,
+    minecraft_version_range: minecraft_version_range,
+    neo_version            : neo_version,
+    loader_version_range   : loader_version_range,
+    mod_id                 : mod_id,
+    mod_name               : mod_name,
+    mod_license            : mod_license,
+    mod_version            : mod_version,
+    mod_authors            : mod_authors,
+    mod_description        : mod_description,
+    create_version_range   : create_version_range,
+    jei_version_range      : jei_version_range,
+    kubejs_version_range   : kubejs_version_range
+]
+
+def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    inputs.properties metadataProperties
+    expand metadataProperties
+    from 'src/main/templates'
+    into layout.buildDirectory.dir('generated/sources/modMetadata')
+}
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+def configuredTestForks = providers.gradleProperty('testForks').getOrElse('1').toInteger()
+if (configuredTestForks < 1 || configuredTestForks > 8) throw new GradleException('testForks must be between 1 and 8')
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    maxParallelForks = configuredTestForks
+    dependsOn tasks.named('jar')
+    systemProperty 'fluid.modJar', tasks.named('jar', Jar).flatMap { it.archiveFile }.get().asFile.absolutePath
+}
+
+['fluidScienceTest': 'com.wormzjl.createcheme.science.fluid.*',
+ 'fluidRuntimeTest': 'com.wormzjl.createcheme.runtime.fluid.*'].each { taskName, pattern ->
+    tasks.register(taskName, Test) {
+        group = 'verification'
+        description = "Runs the discovered ${taskName} checkpoint tests; no matching tests is a failure."
+        testClassesDirs = sourceSets.test.output.classesDirs
+        classpath = sourceSets.test.runtimeClasspath
+        filter {
+            includeTestsMatching pattern
+            if (taskName == 'fluidRuntimeTest') includeTestsMatching 'com.wormzjl.createcheme.runtime.Fluid*Test'
+            failOnNoMatchingTests = true
+        }
+        // Re-derive every island's schedule from scratch at each pump and tick; any drift fails the test.
+        systemProperty 'createcheme.fluid.scheduler.verify', 'true'
+    }
+}
+
+// Milestone-specific fixtures arrive in M1/M2/M9. Missing fixtures fail instead of reporting an empty benchmark.
+['fluidPropertyBenchmark': 'FluidPropertyBenchmarkTest',
+ 'fluidNetworkBenchmark': 'FluidNetworkBenchmarkTest'].each { taskName, fixture ->
+    tasks.register(taskName, Test) {
+        group = 'verification'
+        description = "Runs ${fixture}; fails until that milestone supplies an executable fixture."
+        testClassesDirs = sourceSets.test.output.classesDirs
+        classpath = sourceSets.test.runtimeClasspath
+        filter {
+            includeTestsMatching "com.wormzjl.createcheme.fluid.benchmark.${fixture}"
+            failOnNoMatchingTests = true
+        }
+        outputs.upToDateWhen { false }
+        if (taskName == 'fluidNetworkBenchmark' && providers.gradleProperty('fluidProfile').getOrElse('false').toBoolean()) {
+            jvmArgs "-XX:StartFlightRecording=filename=${layout.buildDirectory.file('reports/fluid/network-profile.jfr').get().asFile.absolutePath},settings=profile,dumponexit=true"
+        }
+    }
+}
+def fluidBenchmarkRunId = providers.gradleProperty('fluidBenchmarkRunId').getOrElse('manual')
+def fluidBenchmarkDirectory = layout.projectDirectory.dir("run/fluid-benchmark/${fluidBenchmarkRunId}").asFile
+def fluidBenchmarkWorkerCount = providers.gradleProperty('fluidBenchmarkWorkers').getOrElse('2').toInteger()
+// Rest and steady-flow certificates: on by default, as in a world; -PfluidRestDetection=false is the baseline side.
+// -PfluidCertificateTolerance overrides eps_s for a sensitivity run only; unset, the world default applies.
+def fluidBenchmarkRestDetection = providers.gradleProperty('fluidRestDetection').getOrElse('true')
+def fluidBenchmarkCertificateTolerance = providers.gradleProperty('fluidCertificateTolerance').getOrElse('')
+def fluidBenchmarkArtifact = tasks.named('jar', Jar).flatMap { it.archiveFile }.get().asFile
+def fluidBenchmarkClasses = sourceSets.fluidGameTest.output.classesDirs.files.toList()
+def prepareFluidBenchmark = tasks.register('prepareFluidBenchmark') {
+    dependsOn tasks.named('jar'), tasks.named('compileFluidGameTestJava')
+    doLast {
+        def runId = fluidBenchmarkRunId
+        if (!(runId ==~ /[A-Za-z0-9_-]+/)) throw new GradleException('Invalid benchmark run id')
+        def directory = fluidBenchmarkDirectory
+        if (new File(directory, 'world').exists()) throw new GradleException('Benchmark runs require a fresh world; choose a new fluidBenchmarkRunId')
+        def workers = fluidBenchmarkWorkerCount
+        if (workers < 0 || workers > 32) throw new GradleException('Invalid benchmark worker count')
+        def config = new File(directory, 'config/createcheme-common.toml')
+        config.parentFile.mkdirs()
+        def restDetection = fluidBenchmarkRestDetection
+        if (!(restDetection in ['true', 'false'])) throw new GradleException('fluidRestDetection must be true or false')
+        def tolerance = fluidBenchmarkCertificateTolerance
+        if (tolerance && !(tolerance.toDouble() >= 0 && tolerance.toDouble() <= 1e-6)) throw new GradleException('fluidCertificateTolerance must lie in [0, 1e-6]')
+        config.text = "[solver]\nworkers = ${workers}\n[fluid]\ninitialIntervalSeconds = 5\nadaptiveCadence = false\nwallBudgetMilliseconds = 2000\nrestDetection = ${restDetection}\n" +
+                (tolerance ? "certificateStationaryTolerance = ${tolerance}\n" : "")
+        def digest = { byte[] bytes -> java.security.MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
+        def classHashes = new TreeMap<String,String>()
+        fluidBenchmarkClasses.each { root ->
+            if (root.exists()) root.eachFileRecurse { entry -> if (entry.isFile()) classHashes[root.toPath().relativize(entry.toPath()).toString().replace('\\','/')] = digest(entry.bytes) }
+        }
+        def manifest = [runId:runId, configuredWorkers:workers, artifact:fluidBenchmarkArtifact.name,
+                artifactSha256:digest(fluidBenchmarkArtifact.bytes), fixtureClassesSha256:digest(groovy.json.JsonOutput.toJson(classHashes).getBytes('UTF-8')),
+                configSha256:digest(config.bytes), fixtureClassHashes:classHashes]
+        new File(directory,'manifest.json').text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest))
+    }
+}
+tasks.named('runFluidBenchmarkServer') { dependsOn prepareFluidBenchmark }
+def fluidBenchmarkReportFile = layout.buildDirectory.file("reports/fluid/M9/${fluidBenchmarkRunId}/report.json").get().asFile
+tasks.register('fluidServerBenchmark') {
+    group = 'verification'
+    description = 'Runs one fresh-JVM paced server replicate; explicit pilot runs are never qualification passes.'
+    dependsOn tasks.named('runFluidBenchmarkServer')
+    doLast {
+        def logFile = new File(fluidBenchmarkDirectory, 'logs/latest.log')
+        if (!logFile.isFile() || !fluidBenchmarkReportFile.isFile()) throw new GradleException('Missing benchmark report/runtime log')
+        def patterns = ['Error executing task on Server', 'process_solver lifecycle=DRAIN_FAILED',
+                'Encountered an unexpected exception', 'Game test server crashed', 'process_solver lifecycle=STOPPED_WITH_FAULT',
+                'OutOfMemoryError', 'fluid_presentation device=']
+        def matches = logFile.readLines('UTF-8').findAll { line -> patterns.any { line.contains(it) } }
+        def report = new groovy.json.JsonSlurper().parse(fluidBenchmarkReportFile)
+        def digest = { byte[] bytes -> java.security.MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
+        def audit = [status:matches.isEmpty() ? 'PASS' : 'FAILED_RUNTIME_ERRORS', errorCount:matches.size(),
+                patterns:patterns, examples:matches.take(25), artifactSha256:report.manifest.artifactSha256,
+                reportSha256:digest(fluidBenchmarkReportFile.bytes), logSha256:digest(logFile.bytes)]
+        new File(fluidBenchmarkReportFile.parentFile, 'runtime-audit.json').text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(audit))
+        if (!matches.isEmpty()) throw new GradleException("Benchmark had ${matches.size()} runtime errors; numerical gates cannot qualify this run")
+    }
+}
+tasks.register('fluidSolverRegression', Test) {
+    group = 'verification'
+    description = 'Replays saved islands against the captured solver reference states and reports solver cost.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter { includeTestsMatching 'com.wormzjl.createcheme.fluid.benchmark.FluidSolverRegressionTest'; failOnNoMatchingTests = true }
+    maxParallelForks = 1
+    testLogging { showStandardStreams = true }
+    if (providers.gradleProperty('fluidRegressionSnapshot').isPresent())
+        systemProperty 'fluid.regression.snapshot', providers.gradleProperty('fluidRegressionSnapshot').get()
+    if (providers.gradleProperty('fluidRegressionReferences').isPresent())
+        systemProperty 'fluid.regression.references', providers.gradleProperty('fluidRegressionReferences').get()
+    systemProperty 'fluid.regression.capture', providers.gradleProperty('fluidRegressionCapture').getOrElse('false')
+    systemProperty 'fluid.regression.mode', providers.gradleProperty('fluidRegressionMode').getOrElse('declared')
+    if (providers.gradleProperty('fluidRegressionTraceCutoff').isPresent())
+        systemProperty 'fluid.regression.traceCutoff', providers.gradleProperty('fluidRegressionTraceCutoff').get()
+    outputs.upToDateWhen { false }
+}
+tasks.named('test', Test) {
+    exclude '**/fluid/benchmark/**'
+    systemProperty 'createcheme.fluid.scheduler.verify', 'true'
+}
+
+tasks.register('v3HollandBenchmark', Test) {
+    group = 'verification'
+    description = 'Runs the scan-verified Holland Example 3-2 independent-oracle and V3 accuracy benchmark.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter {
+        includeTestsMatching 'com.wormzjl.createcheme.science.column.v3.HollandExample32BenchmarkTest'
+    }
+    def hollandReport = providers.gradleProperty('v3HollandReport').getOrElse(
+            layout.buildDirectory.file('reports/benchmarks/v3-holland-example-3-2.json').get().asFile.absolutePath)
+    systemProperty 'v3HollandReport', hollandReport
+    outputs.file(hollandReport)
+    outputs.upToDateWhen { false }
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+// Local research tooling is optional and is not distributed with the mod sources.
+if (file('tools/development.gradle').isFile()) {
+    apply from: 'tools/development.gradle'
+}
+
+// A missing, duplicate or stale standalone material index is a build failure.
+def bundledMaterialFiles = fileTree('src/main/resources/data') { include '**/materials/**/*.json' }
+def bundledMaterialRoot = layout.projectDirectory.dir('src/main/resources').asFile
+def bundledMaterialIndex = layout.projectDirectory.file('src/main/resources/materials-index.json').asFile
+tasks.register('verifyMaterialIndex') {
+    inputs.files(bundledMaterialFiles)
+    inputs.file(bundledMaterialIndex)
+    doLast {
+        def indexed = new groovy.json.JsonSlurper().parse(bundledMaterialIndex)
+        def actual = bundledMaterialFiles.files.collect { bundledMaterialRoot.toPath().relativize(it.toPath()).toString().replace('\\', '/') }.sort()
+        if (!(indexed instanceof List) || indexed.size() != indexed.toSet().size() || indexed.sort() != actual)
+            throw new GradleException('materials-index.json must list each bundled material JSON exactly once')
+    }
+}
+tasks.named('processResources').configure { dependsOn tasks.named('verifyMaterialIndex') }

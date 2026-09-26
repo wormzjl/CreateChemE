@@ -1,0 +1,357 @@
+{
+  "activeTestCases": 252,
+  "allEntriesVerified": true,
+  "dependencyArchive": {
+    "bytes": 21730126,
+    "entries": [
+      {
+        "bytes": 674047,
+        "entry": "build/neural-gen3/factorized-v1/factorized-model.json",
+        "sha256": "19ed50603c2955841a9dd8e5a539aa076b1d8d59a09304b2bc0c613cc520e512"
+      },
+      {
+        "bytes": 10200649,
+        "entry": "build/neural-gen3/nearest-k1/model.json",
+        "sha256": "4975ef506cce65efd888e412b81a572cd8f87316c507ff3fdc627b7c04005eec"
+      },
+      {
+        "bytes": 991955,
+        "entry": "build/neural-transformer/data-v2/fresh-holdout.jsonl",
+        "sha256": "29ec169eb278bba62b1612166942efcc4fce9e38dd73a20cd0a90298de714082"
+      },
+      {
+        "bytes": 1680069,
+        "entry": "build/neural-transformer/native-v1/benchmark-gen3-factorized/evaluation.jsonl",
+        "sha256": "9845949f996a0a35d83be772a78e874574ab1a5f4f8f1e3f354f40c2ffa6ca3e"
+      },
+      {
+        "bytes": 1633,
+        "entry": "build/neural-transformer/native-v1/benchmark-gen3-factorized/run.json",
+        "sha256": "464bef7526bdaaad111bb610efadca7a69352d94be7862156a15c14d690ed920"
+      },
+      {
+        "bytes": 1966001,
+        "entry": "build/neural-transformer/native-v1/benchmark-mlp/evaluation.jsonl",
+        "sha256": "66dc2c9d9d7ba61c48235ff0f8079a6c124f345fbaea6eb3ede35f34f8c0a0a7"
+      },
+      {
+        "bytes": 1639,
+        "entry": "build/neural-transformer/native-v1/benchmark-mlp/run.json",
+        "sha256": "004174737daf23fdd5e93dbfbcd7446239f4126427e18b9a757ed57fde152e2a"
+      },
+      {
+        "bytes": 919013,
+        "entry": "build/neural-transformer/native-v1/benchmark-nearest-k1/evaluation.jsonl",
+        "sha256": "c2bcd68bea64c83cf9641b54befe584a4a88508d9eeded8b29461a17a53971c2"
+      },
+      {
+        "bytes": 2165191,
+        "entry": "build/neural-transformer/native-v1/benchmark-transformer/evaluation.jsonl",
+        "sha256": "1beb5c60a5ab9399ed369ae976a638e45f66de85722af4bec913bcc24bc5dac0"
+      },
+      {
+        "bytes": 1645,
+        "entry": "build/neural-transformer/native-v1/benchmark-transformer/run.json",
+        "sha256": "777051e818438f2bb712fb0c0d110bd4688368c94d8e912814bffc222f06e10b"
+      },
+      {
+        "bytes": 1586,
+        "entry": "build/neural-transformer/native-v1/candidates.json",
+        "sha256": "9ab3a562e677529a11f8244b181889372a1899baa161bdae6b98afa87f28485f"
+      },
+      {
+        "bytes": 3781580,
+        "entry": "build/neural-transformer/native-v1/fresh-current/cases.jsonl",
+        "sha256": "791b36020124e523716560684f05edfe7924eb8874ec5a6ace0465fc788dcf71"
+      },
+      {
+        "bytes": 1485,
+        "entry": "build/neural-transformer/native-v1/fresh-current/run.json",
+        "sha256": "b37e8f91e39904ac6225473d48bfd660b52e7ac753f0b71b41531e82f88d3b59"
+      },
+      {
+        "bytes": 2647074,
+        "entry": "build/neural-transformer/native-v1/fresh-gen3-factorized/evaluation.jsonl",
+        "sha256": "ebe8b5d3154ce750f0b9c5d5eae1e3ec7a9244b5d7ca8c7f65aaf47d66cc1f0c"
+      },
+      {
+        "bytes": 1612,
+        "entry": "build/neural-transformer/native-v1/fresh-gen3-factorized/run.json",
+        "sha256": "747cdd67ebb0f6d6120114a0c028d3dbea6d8cc0c54dad1efeed729e66c7a568"
+      },
+      {
+        "bytes": 3174460,
+        "entry": "build/neural-transformer/native-v1/fresh-mlp/evaluation.jsonl",
+        "sha256": "ec1a2a32619c5166feb643d023f688efd901d61746ec0b98d794a59f3c1db613"
+      },
+      {
+        "bytes": 1616,
+        "entry": "build/neural-transformer/native-v1/fresh-mlp/run.json",
+        "sha256": "1a7b1e079e63fd71ea3cb0ac961bb36c948e0718bb7c87ecac533144572a6901"
+      },
+      {
+        "bytes": 3166097,
+        "entry": "build/neural-transformer/native-v1/fresh-nearest-k1/evaluation.jsonl",
+        "sha256": "de01c7db33349da57bb3f12353fb0c2a29e6f227274c9346b6fa981fe737cd17"
+      },
+      {
+        "bytes": 1612,
+        "entry": "build/neural-transformer/native-v1/fresh-nearest-k1/run.json",
+        "sha256": "fe80ac2cec3532bc9fb8bf6867278984a27e388a56cc1dd4595be7cb464efa6e"
+      },
+      {
+        "bytes": 3863749,
+        "entry": "build/neural-transformer/native-v1/fresh-transformer/evaluation.jsonl",
+        "sha256": "abb62dbcaee8c3f6f8abbc1ee95892c8d00a0773bf9d5d4eb0922d2d3b9864dd"
+      },
+      {
+        "bytes": 1623,
+        "entry": "build/neural-transformer/native-v1/fresh-transformer/run.json",
+        "sha256": "53f2c9b8a838577df848c065ff38e059b104f263128a27b5f009e236fd0148fc"
+      },
+      {
+        "bytes": 1159897,
+        "entry": "build/neural-transformer/native-v1/mlp/fixture.json",
+        "sha256": "0425613bbf798e2d7e012a5a77aec3f5c5fdd20436b995dd6ad215782f5875ca"
+      },
+      {
+        "bytes": 269908,
+        "entry": "build/neural-transformer/native-v1/mlp/java-parity.json",
+        "sha256": "8f342b5a36905bb7feee482c2e280706f5700db51342b8797bcb1d92b73d24a4"
+      },
+      {
+        "bytes": 1825101,
+        "entry": "build/neural-transformer/native-v1/mlp/model.json",
+        "sha256": "9569e44056b95e1792e68895080326fc286d436af2237004a08ba53c5f897f9e"
+      },
+      {
+        "bytes": 580,
+        "entry": "build/neural-transformer/native-v1/parity.json",
+        "sha256": "cd3b50b80c2dc0cf330d577ea72813af13d8b07ecce1bf36fd6b8814acc2ff24"
+      },
+      {
+        "bytes": 27333,
+        "entry": "build/neural-transformer/native-v1/selection.json",
+        "sha256": "570c23ddf1fac0982d0332d37c109203db643ce823099b7485f5e4eef68c5241"
+      },
+      {
+        "bytes": 1164510,
+        "entry": "build/neural-transformer/native-v1/transformer/fixture.json",
+        "sha256": "32921c9489cc9b8ffcfe693ef62526ab22da060deb85919d04920923abc516cf"
+      },
+      {
+        "bytes": 266131,
+        "entry": "build/neural-transformer/native-v1/transformer/java-parity.json",
+        "sha256": "687ee2f88e5ca31782abc2f3ef7b04b2d5e609eb29d0f13589170c0d4f80a0c1"
+      },
+      {
+        "bytes": 1827240,
+        "entry": "build/neural-transformer/native-v1/transformer/model.json",
+        "sha256": "2b94646bc26cc78df54654817a2a0a9c2c731e29c14dd9bbea1b08feb1ad1102"
+      },
+      {
+        "bytes": 4826088,
+        "entry": "build/neural-transformer/native-v1/validation-gen3-factorized/evaluation.jsonl",
+        "sha256": "49b65ecb6c4c9ef595901c2ec591c368f281a55fa0ffecf64d4067c5f029da1e"
+      },
+      {
+        "bytes": 1610,
+        "entry": "build/neural-transformer/native-v1/validation-gen3-factorized/run.json",
+        "sha256": "3269df52a65634e2a4d7a5b61d2a74336d11f27034e0a098c9cd1287b3db481e"
+      },
+      {
+        "bytes": 5233160,
+        "entry": "build/neural-transformer/native-v1/validation-mlp/evaluation.jsonl",
+        "sha256": "2197ac8c29fbda9b7e58ea8f681edd7786d7f1b691583f338a2b4c03993be2d7"
+      },
+      {
+        "bytes": 1615,
+        "entry": "build/neural-transformer/native-v1/validation-mlp/run.json",
+        "sha256": "360164cd72b4eec5d02f09f0166c815e710a108bd2b338ea6efb3521e5e7fbfb"
+      },
+      {
+        "bytes": 5257391,
+        "entry": "build/neural-transformer/native-v1/validation-nearest-k1/evaluation.jsonl",
+        "sha256": "ca9e1bfab94eab02c99d3f4c6d35cc601737ad8a9084b576614625efd4bf740b"
+      },
+      {
+        "bytes": 1609,
+        "entry": "build/neural-transformer/native-v1/validation-nearest-k1/run.json",
+        "sha256": "5070f84c232ef5337909afcd20df88fa94fe39f23ac67a63b93b319443f31280"
+      },
+      {
+        "bytes": 5889217,
+        "entry": "build/neural-transformer/native-v1/validation-transformer/evaluation.jsonl",
+        "sha256": "866d4e3bbeb6f3692cc4da550d28e1d890f621058db6282c22baebb192d41d03"
+      },
+      {
+        "bytes": 1623,
+        "entry": "build/neural-transformer/native-v1/validation-transformer/run.json",
+        "sha256": "0fa991fb9ea549160436b63507df095ade6404060e20469574862659bd6a5cf1"
+      },
+      {
+        "bytes": 8190914,
+        "entry": "build/neural-transformer/native-v1/validation.jsonl",
+        "sha256": "aa3cf527b38f5bc5fd933bbf2fce841186bf4e8a752c7a59517d9fd1381f575e"
+      },
+      {
+        "bytes": 21858,
+        "entry": "build.gradle",
+        "sha256": "578b836236b374b1ba4024d62ca4930b1b5965d2d02fb4c6381f46aecfb8e29f"
+      },
+      {
+        "bytes": 1005,
+        "entry": "gradle.properties",
+        "sha256": "c68c200e11349e66c118e781d3af0009123694fa20aeba9f109eadc0f26d1887"
+      },
+      {
+        "bytes": 15599,
+        "entry": "tools/neural/analyze_transformer_native.py",
+        "sha256": "db8ebf38457c5c885188de0750ab36bdc59399e40df2e0b5b7b01ee8abccbb82"
+      },
+      {
+        "bytes": 2295,
+        "entry": "tools/neural/check_transformer_parity.py",
+        "sha256": "e4e54d85ed2300eca55a5d1499f8c5c28eca75bc49175c9718e6c0b27b0ecfce"
+      },
+      {
+        "bytes": 5658,
+        "entry": "tools/neural/export_transformer.py",
+        "sha256": "015796f556c0c4130275c8e4613017855757c8fc7581f242cf79cefd366aec2b"
+      },
+      {
+        "bytes": 5806,
+        "entry": "tools/neural/seal_unified_evaluation.py",
+        "sha256": "18f0684b0fe33add597192886277a26fb97ba01aa052bea01f61ebd9bd25cebc"
+      },
+      {
+        "bytes": 2387,
+        "entry": "tools/neural/test_unified_column_evaluation.py",
+        "sha256": "47d071645cbc4c176ec4231f5138515edeb3ea119154e80fc1157a7fbe6c11f4"
+      },
+      {
+        "bytes": 5812,
+        "entry": "tools/neural/unified-evaluation-findings.md",
+        "sha256": "e62b21627ad2dd10eb822b83eb6b0527a9f0614cf8f16ec79cb9ecc17a37d734"
+      },
+      {
+        "bytes": 3413,
+        "entry": "tools/neural/unified-evaluation.json",
+        "sha256": "e68ef9f37591ea2dd15668d1afb00c19f8c31ed2612a93cf83d0465eda5d3d6d"
+      },
+      {
+        "bytes": 2210,
+        "entry": "tools/neural/unified-evaluation.md",
+        "sha256": "ea7948cf19b8e720b638c4c911f13ff6ce13f84bca3f0c253e544f19d1619b48"
+      },
+      {
+        "bytes": 11800,
+        "entry": "tools/neural/unified_column_evaluation.py",
+        "sha256": "7a36d89073e9c9b0bc0774f3d8f08f513f0c0b4e7800cf96554eff237c9fe507"
+      },
+      {
+        "bytes": 2203,
+        "entry": "tools/neural/V3CandidateModels.java",
+        "sha256": "3ee6666a97de988c437410d3c2f2dd8b6e8ebdde88a720d30d0901296cf095ac"
+      },
+      {
+        "bytes": 13718,
+        "entry": "tools/neural/V3ColumnTransformerInitializer.java",
+        "sha256": "43e393bf811c54a1e12e370f4b3b5ff9183ee6af5e7645804ed41a388bde89d2"
+      },
+      {
+        "bytes": 23632,
+        "entry": "tools/neural/V3GeneralTrainingProbe.java",
+        "sha256": "e4abf47119aaab57c32c48feb66aaa9448d99d66f6ce1960964616c041dbe3ef"
+      },
+      {
+        "bytes": 5814,
+        "entry": "tools/neural/V3TransformerParityCheck.java",
+        "sha256": "bd939434b9a65eb9687179bad6f5f8d1aaf55bf9a4c10d40d8799c5e495cf8ac"
+      }
+    ],
+    "path": ".neural-cache/unified-evaluation-v1/dependencies.zip",
+    "sha256": "785f4842e771bc909ea3abb21afa3e2fb01e62c5c268f19b525889bc2a7ab6d0"
+  },
+  "gen3CacheManifestSha256": "2a93c8a72f593eaa07181e4d2a5984cfd3d5abd059cec7938a4f9ea5a9989b07",
+  "gpuPilotCacheManifestSha256": "62fc664a3064220093249fbe01bf5bba24aabf3c4e57525763fab1250719434b",
+  "historicalIncompleteRun": "native-v1/benchmark-nearest-k1 was interrupted when the user switched to unified evaluation; preserved bytes are not a completed benchmark",
+  "historicalRawFilesPreserved": [
+    "build/neural-transformer/native-v1/benchmark-gen3-factorized/evaluation.jsonl",
+    "build/neural-transformer/native-v1/benchmark-gen3-factorized/run.json",
+    "build/neural-transformer/native-v1/benchmark-mlp/evaluation.jsonl",
+    "build/neural-transformer/native-v1/benchmark-mlp/run.json",
+    "build/neural-transformer/native-v1/benchmark-nearest-k1/evaluation.jsonl",
+    "build/neural-transformer/native-v1/benchmark-transformer/evaluation.jsonl",
+    "build/neural-transformer/native-v1/benchmark-transformer/run.json",
+    "build/neural-transformer/native-v1/fresh-current/cases.jsonl",
+    "build/neural-transformer/native-v1/fresh-current/run.json",
+    "build/neural-transformer/native-v1/fresh-gen3-factorized/evaluation.jsonl",
+    "build/neural-transformer/native-v1/fresh-gen3-factorized/run.json",
+    "build/neural-transformer/native-v1/fresh-mlp/evaluation.jsonl",
+    "build/neural-transformer/native-v1/fresh-mlp/run.json",
+    "build/neural-transformer/native-v1/fresh-nearest-k1/evaluation.jsonl",
+    "build/neural-transformer/native-v1/fresh-nearest-k1/run.json",
+    "build/neural-transformer/native-v1/fresh-transformer/evaluation.jsonl",
+    "build/neural-transformer/native-v1/fresh-transformer/run.json"
+  ],
+  "historicalTestResultsPooled": false,
+  "planSha256": "e68ef9f37591ea2dd15668d1afb00c19f8c31ed2612a93cf83d0465eda5d3d6d",
+  "revision": "unified-evaluation-complete-cache-v1",
+  "studyArchive": {
+    "bytes": 9748780,
+    "entries": [
+      {
+        "entry": "gen3-factorized/evaluation.jsonl",
+        "sha256": "f2b495c161b1c61c045aa79130723ef96fb1ca0d2e65d09debb27cb52e57e2ec"
+      },
+      {
+        "entry": "gen3-factorized/run.json",
+        "sha256": "1145fa2a07413dd5f9f390568503cb2714c4142d949d678b1beb89cd12d2c373"
+      },
+      {
+        "entry": "mlp/evaluation.jsonl",
+        "sha256": "1ecbfaef2fd118ce3cab8bf0009720e698aa9f340459b0bc8f3551f5c7c53ede"
+      },
+      {
+        "entry": "mlp/run.json",
+        "sha256": "6d1dd69a76394920ffe23f92a76555bbd66b96297cd8cf84264ec58343cb4ec1"
+      },
+      {
+        "entry": "nearest-k1/evaluation.jsonl",
+        "sha256": "97b0ef30454e06ffe1d31bc16ae552595ec4adfded9c704cb48542aa41fd1f45"
+      },
+      {
+        "entry": "nearest-k1/run.json",
+        "sha256": "a5003f912fc638e5ab1ba4ff32e6e44e5e3c7f8ecc19575b298072eff17ccc07"
+      },
+      {
+        "entry": "report.md",
+        "sha256": "1df961145c3b707b2841bc6ac16f75024aeb3d78afb993b767706fa7a943a356"
+      },
+      {
+        "entry": "summary.json",
+        "sha256": "ff3ebca94fc379a1095bdf05e5029acd4fbc2523975abf17d35614a6502d3aa6"
+      },
+      {
+        "entry": "transformer/evaluation.jsonl",
+        "sha256": "39c759f490508bb106bfdc7cd78230e81cdbb703fae81fb33eb03c6b5b0eba1f"
+      },
+      {
+        "entry": "transformer/run.json",
+        "sha256": "96bddd9535f922c5c3501c8aa7e2ffaf3c5c12d98ca3377bdda4546060fa4187"
+      },
+      {
+        "entry": "unified-evaluation.json",
+        "sha256": "e68ef9f37591ea2dd15668d1afb00c19f8c31ed2612a93cf83d0465eda5d3d6d"
+      },
+      {
+        "entry": "unified_column_evaluation.py",
+        "sha256": "7a36d89073e9c9b0bc0774f3d8f08f513f0c0b4e7800cf96554eff237c9fe507"
+      }
+    ],
+    "path": ".neural-cache/unified-evaluation-v1/study.zip",
+    "sha256": "a6ca6fe37ff722aa97be125c9a3ba9473c09e24a2f770fdb2db514369d7914e1"
+  },
+  "validationSelectionCases": 405
+}

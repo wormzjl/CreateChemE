@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "createcheme:cold_lake_blend",
+  "package": "createcheme:cold_lake_blend_tjl20",
+  "basis": "mass",
+  "provenance": {
+    "source_reference": "CLKBL23B",
+    "source_url": "https://corporate.exxonmobil.com/-/media/global/files/crude-oils/pdf/2024/cold_lake_blend.pdf",
+    "source_pdf_sha256": "b15cf7217f38cfde936d27cc3848133b43e602d2db65174f2cb672f14e7921f1",
+    "source_whole_crude": {
+      "density_15c_kg_per_m3": 936.6999999999999,
+      "sulfur_mass_percent": 3.87,
+      "nitrogen_mass_ppm": 3062.0,
+      "nickel_mass_ppm": 55.8,
+      "vanadium_mass_ppm": 145.2,
+      "iron_mass_ppm": 8.8,
+      "sodium_mass_ppm": 4.8,
+      "mercury_mass_ppb": 9.8,
+      "arsenic_mass_ppb": 134.0
+    },
+    "residual_mass_rounding_scale": 1.0003149606299213,
+    "tail": {
+      "model": "exponential_survival_constrained_by_residue_vabp",
+      "estimated_above_celsius": 590,
+      "scale_celsius": 103.2471042471042,
+      "remaining_at_590_volume_percent": 25.900000000000006,
+      "residue_550_plus_mean_celsius": 671.0,
+      "estimated_mass_percent_above_590": 29.67959812618361
+    }
+  },
+  "appearance": {
+    "color": "#171615",
+    "transparency": 0.0,
+    "estimated": true
+  },
+  "revision": "crude-regrouped-r1",
+  "amounts_by_component": {
+    "Propane": 0.0001,
+    "Isobutane": 0.0040999999999999995,
+    "N-butane": 0.0105,
+    "Isopentane": 0.0141,
+    "N-pentane": 0.0184,
+    "crude_pc01": 0.02579194630663413,
+    "crude_pc02": 0.029617893348702583,
+    "crude_pc03": 0.025596988449303724,
+    "crude_pc04": 0.02957961353140091,
+    "crude_pc05": 0.04618135366169674,
+    "crude_pc06": 0.06638670791291484,
+    "crude_pc07": 0.07712282281185652,
+    "crude_pc08": 0.12535668972552208,
+    "crude_pc09": 0.16505196850393702,
+    "crude_pc10": 0.1961261195660196,
+    "crude_pc11": 0.10297340588110285,
+    "crude_pc12": 0.06301449030090911
+  }
+}

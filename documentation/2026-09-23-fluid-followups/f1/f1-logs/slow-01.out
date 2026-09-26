@@ -1,0 +1,60 @@
+=== GUPRPRPR at 3000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [0,50) HELD: wall deadline work=2.00 s
+ tick 199 committed=0 status=HELD: wall deadline
+  slice [0,25) HELD: wall deadline work=2.00 s
+ tick 299 committed=0 status=HELD: wall deadline
+  slice [0,12) HELD: wall deadline work=2.00 s
+ tick 399 committed=0 status=HELD: wall deadline
+  slice [0,6) HELD: wall deadline work=2.00 s
+ tick 499 committed=0 status=HELD: wall deadline
+  slice [0,3) HELD: wall deadline work=2.00 s
+ tick 599 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 699 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 799 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 999 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 1399 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 2199 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 3799 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 6999 committed=0 status=HELD: wall deadline
+ END online=12000 committed=0 status=HELD: wall deadline certificate=Optional.empty jobs=13 work=26.0 s
+ tanks [P=101325.0 T=298.15 liq=0.0000] [P=101325.0 T=298.15 liq=0.0000] [P=101325.0 T=298.15 liq=0.0000]
+=== GUPRPRPR at 5000 ns per checkpoint, 12000 online ticks
+ tick 0 committed=0 status=READY
+  slice [0,100) HELD: wall deadline work=2.00 s
+ tick 99 committed=0 status=HELD: wall deadline
+  slice [0,50) HELD: wall deadline work=2.00 s
+ tick 199 committed=0 status=HELD: wall deadline
+  slice [0,25) HELD: wall deadline work=2.00 s
+ tick 299 committed=0 status=HELD: wall deadline
+  slice [0,12) HELD: wall deadline work=2.00 s
+ tick 399 committed=0 status=HELD: wall deadline
+  slice [0,6) HELD: wall deadline work=2.00 s
+ tick 499 committed=0 status=HELD: wall deadline
+  slice [0,3) HELD: wall deadline work=2.00 s
+ tick 599 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 699 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 799 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 999 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 1399 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 2199 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 3799 committed=0 status=HELD: wall deadline
+  slice [0,1) HELD: wall deadline work=2.00 s
+ tick 6999 committed=0 status=HELD: wall deadline
+ END online=12000 committed=0 status=HELD: wall deadline certificate=Optional.empty jobs=13 work=26.0 s
+ tanks [P=101325.0 T=298.15 liq=0.0000] [P=101325.0 T=298.15 liq=0.0000] [P=101325.0 T=298.15 liq=0.0000]
