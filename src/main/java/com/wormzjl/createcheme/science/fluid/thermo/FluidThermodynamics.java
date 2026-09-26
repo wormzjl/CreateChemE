@@ -182,22 +182,24 @@ public final class FluidThermodynamics {
      * <li>The vapour stream is the hydrocarbon vapour and the water vapour: {@code moles} are {@code vapor} with the
      * water vapour in the last slot, its volume is the gas volume, its enthalpy {@code n_v h_v + n_wv h_wv(T)}, and it
      * carries no solid.</li>
-     * <li>The condensed ("liquid") stream is the hydrocarbon liquid, the free water and every solid (the whole condensed
-     * phase; a port draws its two liquids one after the other, {@link #phaseStream}, decision D11): {@code moles} are
-     * {@code liquid} with the free water last, its volume is the two liquid volumes plus the
-     * solid volume, its enthalpy {@code n_l h_l + n_wl h_wl(T,P) + H_solids(T,P)}.</li>
+     * <li>The condensed phase is the hydrocarbon liquid, the free water and every solid; a port draws its two liquids
+     * one after the other (decision D11), so each liquid is its own stream ({@link #phaseStream}): {@code moles} are
+     * {@code liquid} with a zero water slot (OIL) or only the free water in the last slot (WATER), its volume the
+     * liquid's volume plus its volume share of the solids, its enthalpy {@code n_l h_l} or {@code n_wl h_wl(T,P)} plus
+     * that share of {@code H_solids(T,P)}. {@link #liquidMass}, {@link #liquidStreamVolume} and {@link #liquidDensity}
+     * state the whole condensed phase (the level head's mass and a level's volume).</li>
      * </ul>
-     * The two streams partition the state: their moles, masses, volumes and enthalpies add up to the state's own. The
+     * The streams partition the state: their moles, masses, volumes and enthalpies add up to the state's own. The
      * velocity limit is {@link #isothermalAcousticBound}'s formula restricted to the stream's phases,
      * {@code V_s / sqrt(M_s * compliance_s)}, i.e. {@code sqrt(stiffness/rho_v)} for the vapour and
-     * {@code sqrt(1/(kappa rho))} (solids incompressible) for the condensed stream, capped by the configured maximum as
+     * {@code sqrt(1/(kappa rho))} (solids incompressible) for a liquid, capped by the configured maximum as
      * {@link #velocityLimit} caps the bulk: a vapour drawn off a wet tank is limited by the vapour's own acoustic bound,
      * not by the far lower bound of the two-phase mixture. The viscosity is the stream's own terms of the volume
-     * average the step solver states for the bulk (the slurry correction over the condensed stream's liquids).
+     * average the step solver states for the bulk (the slurry correction over the liquid's share of the solids).
      *
-     * <p>A stream whose phase the state does not hold (no gas volume; no liquid and no free water) is not built: the
-     * builders return {@code null}, and what an absent stream means is the reader's rule (the step solver's: a port
-     * draws the next phase of its priority order, decision D11).
+     * <p>A stream whose phase the state does not hold is not built: the builders return {@code null}, and what an
+     * absent stream means is the reader's rule (the step solver's: a port draws the next phase of its priority order,
+     * decision D11).
      */
     public record PhaseStream(double[] moles,double mass,double volume,double viscosity,double specificEnthalpy,double velocityLimit,
                               SolidInventory.Moments solidMoments) {
@@ -216,17 +218,17 @@ public final class FluidThermodynamics {
         for(int i=0;i<v.length;i++)mass+=v[i]*hydrocarbon.molecularWeight(i);
         return mass+state.waterVapor()*waterMolecularWeight;
     }
-    /** Mass of the condensed stream: hydrocarbon liquid, free water, then every solid. */
+    /** Mass of the condensed phase: hydrocarbon liquid, free water, then every solid (the level head's mass). */
     public double liquidMass(State state) {
         double mass=0;var l=state.liquidView();
         for(int i=0;i<l.length;i++)mass+=l[i]*hydrocarbon.molecularWeight(i);
         return mass+state.waterLiquid()*waterMolecularWeight+state.solidMoments().mass();
     }
-    /** Volume of the condensed stream: the two liquid volumes and the solid volume. */
+    /** Volume of the condensed phase: the two liquid volumes and the solid volume. */
     public static double liquidStreamVolume(State state){return state.liquidVolume()+state.waterVolume()+state.solidMoments().volume();}
     /** The vapour stream's density, for a state that {@link #holdsVapor}. */
     public double vaporDensity(State state){return vaporMass(state)/state.vaporVolume();}
-    /** The condensed stream's density, for a state that {@link #holdsLiquid}. */
+    /** The condensed phase's density (its mass over its volume), for a state that {@link #holdsLiquid}. */
     public double liquidDensity(State state){return liquidMass(state)/liquidStreamVolume(state);}
     /** The vapour stream's specific enthalpy (J/kg); {@code prepared} as for {@link #state}, or null. */
     public double vaporSpecificEnthalpy(State state,Prepared prepared) {
@@ -235,24 +237,11 @@ public final class FluidThermodynamics {
         if(state.waterVapor()>0)h+=state.waterVapor()*(prepared==null?vaporWaterEnthalpy(state.temperature()):match(prepared,state.temperature()).vaporEnthalpy());
         return h/vaporMass(state);
     }
-    /** The condensed stream's specific enthalpy (J/kg), solids included; {@code prepared} as for {@link #state}, or null. */
-    public double liquidSpecificEnthalpy(State state,Prepared prepared) {
-        double h=0,t=state.temperature(),p=state.pressure();
-        if(state.liquidProperties()!=null)h+=total(state.liquidView())*state.liquidProperties().molarEnthalpy();
-        if(state.waterLiquid()>0)h+=state.waterLiquid()*waterLiquid(t,p,prepared).molarEnthalpy;
-        h+=state.solidMoments().enthalpy(t,p);
-        return h/liquidMass(state);
-    }
     /** The vapour stream's velocity limit: {@code min(maximum, V_v/sqrt(M_v V_v/stiffness))}. */
     public double vaporVelocityLimit(State state) {
         double stiffness=state.waterPartialPressure();
         if(state.vaporProperties()!=null){var gas=state.vaporProperties();stiffness+=-gas.molarVolume()/gas.volumePressureDerivative();}
         return Math.min(maximumVelocity,acoustic(state.vaporVolume(),vaporMass(state),state.vaporVolume()/stiffness));
-    }
-    /** The condensed stream's velocity limit: {@code min(maximum, V/sqrt(M (V_l+V_w) kappa))}, solids incompressible. */
-    public double liquidVelocityLimit(State state) {
-        return Math.min(maximumVelocity,acoustic(liquidStreamVolume(state),liquidMass(state),
-                (state.liquidVolume()+state.waterVolume())*liquidResponse.compressibilityPerPascal()));
     }
     private static double acoustic(double volume,double mass,double compliance) {
         double speed=volume/Math.sqrt(mass*compliance);
@@ -264,25 +253,6 @@ public final class FluidThermodynamics {
         var terms=prepared==null?null:match(prepared,state.temperature()).viscosities();
         return viscosity.vapor(state.temperature(),state.vaporView(),state.waterVapor(),scratch,terms);
     }
-    /** The condensed stream's viscosity: the liquid and free-water terms of the solver's volume average, with the slurry
-     * correction for the solids they carry, over the condensed stream's volume. */
-    public double liquidViscosity(State state,Prepared prepared) {
-        var terms=prepared==null?null:match(prepared,state.temperature()).viscosities();
-        double value=0,t=state.temperature();
-        if(state.liquidVolume()>0)value+=state.liquidVolume()*viscosity.liquid(t,state.liquidView(),terms).pascalSeconds();
-        if(state.waterVolume()>0)value+=state.waterVolume()*viscosity.waterLiquid(t,terms);
-        double liquidVolume=state.liquidVolume()+state.waterVolume(),solidVolume=state.solidMoments().volume();
-        if(solidVolume>0){double phi=solidVolume/(liquidVolume+solidVolume);value=com.wormzjl.createcheme.science.fluid.transport.SlurryTransport.effectiveViscosity(value/liquidVolume,Math.min(phi,0.62-1e-9))*(liquidVolume+solidVolume);}
-        return value/(liquidVolume+solidVolume);
-    }
-    /** The carrier viscosity of the condensed stream (the liquids' volume average, no slurry correction), which an inline
-     * filter's cake resistance scales with. */
-    public double liquidCarrierViscosity(State state) {
-        double value=0,t=state.temperature();
-        if(state.liquidVolume()>0)value+=state.liquidVolume()*viscosity.liquid(t,state.liquidView()).pascalSeconds();
-        if(state.waterVolume()>0)value+=state.waterVolume()*viscosity.waterLiquid(t);
-        return value/(state.liquidVolume()+state.waterVolume());
-    }
     /** The vapour stream of {@code state}, or null when it holds no gas. */
     public PhaseStream vaporStream(State state,Prepared prepared,MixtureViscosity.Workspace scratch) {
         if(!holdsVapor(state))return null;
@@ -290,22 +260,15 @@ public final class FluidThermodynamics {
         return new PhaseStream(n,vaporMass(state),state.vaporVolume(),vaporViscosity(state,scratch,prepared),
                 vaporSpecificEnthalpy(state,prepared),vaporVelocityLimit(state),SolidInventory.Moments.ZERO);
     }
-    /** The condensed stream of {@code state}, or null when it holds no liquid and no free water. */
-    public PhaseStream liquidStream(State state,Prepared prepared) {
-        if(!holdsLiquid(state))return null;
-        var l=state.liquidView();double[] n=Arrays.copyOf(l,l.length+1);n[l.length]=state.waterLiquid();
-        return new PhaseStream(n,liquidMass(state),liquidStreamVolume(state),liquidViscosity(state,prepared),
-                liquidSpecificEnthalpy(state,prepared),liquidVelocityLimit(state),state.solidMoments());
-    }
     /*
      * The three phases a vessel port can draw one after another (decision D11 of
      * documentation/2026-09-26-phase-ports-and-compressor: ports carry mixed phases by priority). GAS is the vapour stream
-     * above. The condensed stream splits into the hydrocarbon liquid (OIL) and the free water (WATER), each carrying its
+     * above. The condensed phase splits into the hydrocarbon liquid (OIL) and the free water (WATER), each carrying its
      * volume share of every solid population: the solids are held as a uniform suspension in the combined liquid, the
      * carrier the solid mobility check already reads (volume-averaged density and viscosity of both liquids), so a phase
-     * of the liquid draws its share of them. The OIL and WATER streams partition the condensed stream (moles, mass,
-     * volume, enthalpy and solids add up to liquidStream's), and with one liquid present its stream is the condensed
-     * stream to the bit (a share of exactly 1.0). All read the state's own amounts and molar properties: no flash.
+     * of the liquid draws its share of them. The OIL and WATER streams partition the condensed phase (moles, mass,
+     * volume, enthalpy and solids add up to the condensed phase's), and with one liquid present its stream carries every
+     * solid (a share of exactly 1.0). All read the state's own amounts and molar properties: no flash.
      */
     public static final int GAS=0,OIL=1,WATER=2;
     /** Whether {@code state} holds {@code phase} ({@link #GAS}, {@link #OIL} or {@link #WATER}) to draw: a positive

@@ -83,7 +83,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * the start-of-solve closures do not reach a generator edge ({@code closeDeadHeads} skips runs ending at a junction, and
  * {@code closeIllegalStarts} waits for an accepted solve on the structure), so pass 0 solved every generator as a two-way
  * fixed-pressure boundary, a through-flow network between generators 10 to 90 kPa apart. At 100 m/s a half block of 50 mm
- * nitrogen saturates at a few kilopascals of driving pressure ({@link #capDrop}), so most of that network is on the cap's
+ * nitrogen saturates at a few kilopascals of driving pressure (the reproduction's {@code capDrop}), so most of that network is on the cap's
  * branch, whose row does not depend on the end pressures; a junction whose connections are all capped has a (near) empty
  * pressure column, the Newton step in its pressure leaves the domain, and the pass never reaches the point at which the
  * active set would close the low generators. Evidence: equal generator pressures pass whatever the tanks hold; the same
@@ -97,15 +97,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p>Owner decision D12 (a generator only pushes when its pressure allows and never receives, from the cold start's first
  * pass): the cold start's rate seed now closes before its pass 0 the generator runs that a one-way pressure estimate of the
  * island shows receiving, and starts its junctions from that estimate ({@code PassiveStepSolver.closeColdReceivingGenerators}),
- * so the seed converges and the first step's {@code closeIllegalStarts} starts it with one-way generators. With
- * {@link #FULL_CASES_OPEN_DEFECT} now false, {@link #theFullCasesHoldOnTheirFirstIntervalOpenDefect} is the regression: the
- * full fixtures at the default cap run every oracle of the passing cases.
+ * so the seed converges and the first step's {@code closeIllegalStarts} starts it with one-way generators.
+ * {@link #theFullCasesIntegrateAtTheDefaultCap} is the regression: the full fixtures at the default cap run every oracle of
+ * the passing cases. The reproduction of the hold (a {@code FULL_CASES_OPEN_DEFECT} flag that made that test assert the
+ * first-interval failure, and {@code capDrop}, the drop at which the cap saturates) was detached at the batch's close to
+ * tools/phase-ports-probes/extreme/ (local, with a patch that re-attaches it).
  */
 class ExtremeTopologyIslandTest {
-    /** True while the full fixtures reproduced the first-interval hold described in the class comment; false since
-     * decision D12 (the flagged test then runs every oracle on them). Setting it true on a tree without D12 reproduces the
-     * recorded failure. */
-    static final boolean FULL_CASES_OPEN_DEFECT=false;
     private static final String DIMENSION="minecraft:overworld";
     private static final int Y=64;
     /** The world's default block; see FluidWorldAuthority.place. */
@@ -361,14 +359,6 @@ class ExtremeTopologyIslandTest {
         return String.format(Locale.ROOT,"EXTREME_TOPOLOGY_CADENCE case=%s pressure=%.3g temperature=%.3g K moles=%.3g supplied=%.3g generatorSplit=%.3g",
                 coarse.c.name(),pressure,temperature,moles,total,split);
     }
-    /** The drop at which the default cap saturates a compiled connection of {@code blocks} pipe blocks (a generator or tank
-     * stub is half a block), in nitrogen at 350 K and {@code pressure}. */
-    private double capDrop(double pressure,double blocks) {
-        var state=defaultModel.flashTP(TEMPERATURE,pressure,nitrogen(defaultModel),()->{});
-        double density=state.mass()/state.volume(),viscosity=defaultModel.viscosity.vapor(TEMPERATURE,state.vaporView(),state.waterVapor());
-        var pipe=new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(blocks,.05,.000045,0));
-        return pipe.pressureDrop(density*pipe.minimumArea()*defaultModel.velocityLimit(state),density,viscosity);
-    }
 
     /* ---------------- the tests ---------------- */
 
@@ -399,25 +389,16 @@ class ExtremeTopologyIslandTest {
      * each, every interval a full accepted interval, with every oracle of {@link #assertIntegrates} (ledgers, no generator
      * receiving, the tank bounds and the monotone lowest tank, directions, rest, cadence).
      *
-     * <p>History: written while the defect was open. With {@link #FULL_CASES_OPEN_DEFECT} true it reproduced the open
-     * defect of the class comment exactly - the first interval, at both slice lengths, failing in pass 0 of the step's
-     * active set - and was to fail once the solver integrated them; decision D12 made it fail as intended, and the flag was
-     * set false, so the same test runs every oracle instead. The reproduction branch is kept for a tree without D12.
+     * <p>History: written while the defect was open, as {@code theFullCasesHoldOnTheirFirstIntervalOpenDefect}: with a
+     * {@code FULL_CASES_OPEN_DEFECT} flag true it reproduced the open defect of the class comment exactly - the first
+     * interval, at both slice lengths, failing in pass 0 of the step's active set - and was to fail once the solver
+     * integrated them; decision D12 made it fail as intended, the flag was set false and the test ran every oracle
+     * instead. At the batch's close the flag and the reproduction branch were detached to
+     * tools/phase-ports-probes/extreme/ and the test renamed for what it asserts.
      */
     @ParameterizedTest @EnumSource(Geometry.class)
-    void theFullCasesHoldOnTheirFirstIntervalOpenDefect(Geometry geometry) {
-        var c=Case.full(geometry);
-        if(!FULL_CASES_OPEN_DEFECT){assertIntegrates(c,defaultModel,"");return;}
-        System.out.println(String.format(Locale.ROOT,"EXTREME_TOPOLOGY_CAP nitrogen 350 K 150 kPa: saturates at %.0f Pa over a half-block stub, %.0f Pa over a one-block run",
-                capDrop(150e3,.5),capDrop(150e3,1)));
-        for(double slice:new double[]{5,.1}) {
-            var run=integrate(c,slice,slice>=1?40:400,defaultModel);
-            System.out.println("OPEN DEFECT "+run.line());
-            assertEquals(0,run.completed,c.name()+" at "+slice+" s: expected to hold on its first interval (open defect); it now integrates "
-                    +run.completed+" intervals, so set FULL_CASES_OPEN_DEFECT=false: "+run.line());
-            assertTrue(run.failure.startsWith("interval 1 ")&&run.failure.contains("Nonconvergence")&&run.failure.contains("active-set pass=0"),
-                    c.name()+" at "+slice+" s: a different failure than the recorded pass-0 hold: "+run.failure);
-        }
+    void theFullCasesIntegrateAtTheDefaultCap(Geometry geometry) {
+        assertIntegrates(Case.full(geometry),defaultModel,"");
     }
 
     /** The mechanism check: the full fixtures and pressures integrate every interval, with every oracle, when the velocity

@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * headspace pressure plus {@code g * condensed mass * H / V} with {@code H} = {@link PassiveStepSolver#LEVEL_HEAD_HEIGHT}
  * (1 m) and {@code V} the vessel's inventory volume, in both directions, read by every static driving pressure the solver
  * states ({@link PassiveStepSolver#endPressure}). The fixtures of the review's section 5, items 1 to 5 (item 6, the
- * physical-topology face test, waits for WP5's face-to-port compile), and the two start-of-solve decisions the head must
+ * physical-topology face test, is {@code PhysicalFluidTopologyTest}'s tank over a void), and the two start-of-solve decisions the head must
  * reach ({@code closeDeadHeads} and the boundary-reopen test {@code reopenable}).
  *
  * <p>Every slice is a job as the island runtime runs it ({@link PassiveIntervalSolver#replayStart} from the committed

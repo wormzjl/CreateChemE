@@ -184,10 +184,11 @@ class PhasePortTest {
      * outlet carries its port's phase.
      *
      * <p>Each junction is seeded with the fluid its port delivers (the headspace gas, humid, and the liquid), flashed at
-     * 150 kPa. A junction seeded without water carries no water unknown ({@code PhaseLayout}), and one that is then fed
-     * an unsaturated water-bearing gas fails the reconstruction's equation gate at every step size: a defect of the base
-     * (reproduced on 6e1c5b6 with a humid nitrogen vessel drawn through a BULK end), not of the ports, reported in
-     * documentation/2026-09-26-phase-ports-and-compressor/PHASE_PORTS_REVIEW.md (WP1, open defect).
+     * 150 kPa. When this test was written a junction seeded without water carried no water unknown ({@code PhaseLayout})
+     * and one then fed an unsaturated water-bearing gas failed the reconstruction's equation gate at every step size (a
+     * base defect, reproduced on 6e1c5b6 through a BULK end; PHASE_PORTS_REVIEW.md WP1 section 8), so the gas junction is
+     * seeded humid. Decision D10 has since fixed that defect with a water trace in the junction's seed
+     * ({@link JunctionWaterTraceTest} runs the dry-seeded case); the seeding here is kept as written.
      */
     @Test void phasePortsFeedJunctionsAndCloseTheLedger() {
         for(double interval:new double[]{.1,5}) {

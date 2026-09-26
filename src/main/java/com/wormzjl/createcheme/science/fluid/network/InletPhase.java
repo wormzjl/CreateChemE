@@ -12,8 +12,8 @@ import static com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics.W
  * documentation/2026-09-26-phase-ports-and-compressor; plan 3.6 and 3.7): what the device's suction line delivers,
  * measured on a committed state, and whether the device is refused ({@link FlowControl.Mode#INLET_WRONG_PHASE}) for the
  * slice that starts there. Every method is a pure function of the graph (its connections and node states), the slice
- * duration and, for the decision, the committed endpoint modes: the solver decides with it, and a view (WP5) formats
- * the same {@link #reason} from the committed graph.
+ * duration and, for the decision, the committed endpoint modes: the solver decides with it, and the device view
+ * ({@code FluidWorldAuthority}) formats the same {@link #reason} from the committed graph.
  *
  * <p><b>The supply walk.</b> From the device edge's first node: a vessel, generator, void or port there supplies the
  * stream of that end. A junction is walked through: the device's own junction, if it has exactly one other connection
@@ -170,7 +170,7 @@ public final class InletPhase {
     }
 
     /**
-     * The reason a refused mover shows (decision D6), for WP5's view to show as it stands: "ERROR: pump inlet not liquid
+     * The reason a refused mover shows (decision D6), which the device view shows with the node named as a device: "ERROR: pump inlet not liquid
      * (vapour 34.0 % by volume, from node 12)", "ERROR: compressor inlet not gas (condensed 2.5 % by mass, from node 12)"
      * or, for solids, "ERROR: compressor inlet not gas (solids 1.0e-03 by volume, from node 12)"; {@code node} is the id of
      * the node the supply walk ended at.

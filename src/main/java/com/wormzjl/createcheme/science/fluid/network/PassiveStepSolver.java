@@ -1240,7 +1240,8 @@ public final class PassiveStepSolver {
         return Math.min((lo+hi)/2,Math.min(massFlowLimit(pipe,a.state(),pipe.firstPort()),pump.targetVolumeFlow()*rho));
     }
     /**
-     * A pump's pressure-rise limit on what it withdraws: the setting, which is the rise for water at 298.15 K and 1 atm
+     * A mover's pressure-rise limit ({@link FlowControl.Mover#riseLimit}); a compressor's is {@code (r_max - 1) P_s} on its
+     * suction pressure (decision D7 of the phase-ports batch). A pump's is the setting, which is the rise for water at 298.15 K and 1 atm
      * ({@link FluidThermodynamics#pumpReferenceDensity()}), scaled by the suction's density over water's - a head, the
      * one quantity a real pump fixes. On water the limit is the setting within water's compressibility; on nitrogen at
      * 1 atm it is about 1/870 of it, so a pump moving gas between closed vessels reaches its limit, and then its shutoff,
@@ -1978,7 +1979,7 @@ public final class PassiveStepSolver {
          * it by the static rule ({@link #boundaryAllowed}: not blocked, not into a generator; start-of-solve closures do not
          * change it, so it is a constant of the solve), an equal share of what the vessel holds, and {@code dt} this solve's
          * step - the backward-Euler step the interval solver attempts, the interval's remainder when that is shorter, halved
-         * with every retry - never the slice (WP2's throttle's {@code dt}). A rate solve has no step: every capacity is
+         * with every retry - never the slice. A rate solve has no step: every capacity is
          * infinite, and a port draws the first phase of its order its vessel holds.
          */
         final double[][] capacities;
@@ -2534,7 +2535,7 @@ public final class PassiveStepSolver {
             }
             // Exact structural zeros: phase allocation/T/P cannot change bulk component flow at
             // fixed total amounts and kg/s. Suppress cancellation-noise derivatives, not small physics.
-            // Only for a bulk withdrawal: what a phase port carries is the phase split itself, which the
+            // Only for a BULK end: what a phase port carries is the phase split itself, which the
             // node's phase allocation, temperature and pressure move, so a node any end of which draws a
             // phase keeps every entry of its columns (plan 3.3 item 1).
             BitSet materialRows=new BitSet(size);
