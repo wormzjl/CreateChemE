@@ -1,0 +1,11 @@
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -219,7 +219,7 @@
+             var a=states.get(start);var b=states.get(finish);
+             // Each end of the run stands in what its own end port draws, at its own end's driving pressure.
+             var startPort=graph.pipes().get(chain.getFirst()).portAt(start);var finishPort=graph.pipes().get(chain.getLast()).portAt(finish);
+-            double pa=endPressure(graph.reservoirs().get(start),startPort,a),pb=endPressure(graph.reservoirs().get(finish),finishPort,b);
++            double pa=a.pressure(),pb=b.pressure();
+             double dz=graph.reservoirs().get(finish).elevation()-graph.reservoirs().get(start).elevation(),difference=pa-pb;
+             double band=reopenBand(pa,pb);
+             double forwardDrive=difference-endDensity(a,startPort)*GRAVITY*dz,reverseDrive=difference-endDensity(b,finishPort)*GRAVITY*dz;

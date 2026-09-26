@@ -1,0 +1,41 @@
+PHASE_PORT_CLOSURE_RUN dry-0.1 slices=1450 accepted=1450 rejected=0 worstRejectedPerSlice=0 reopens=0 reasons={} worstComponentLedger=9.99903484817115E-16 worstEnergyLedger=1.101921230191538E-15
+PHASE_PORT_CLOSURE_RUN dry-5.0 slices=40 accepted=154 rejected=4 worstRejectedPerSlice=2 reopens=0 reasons={Backward-Euler state change #=4} worstComponentLedger=3.3330116160570493E-16 worstEnergyLedger=1.2243569224350423E-16
+PHASE_PORT_CLOSURE_RUN early-0.1 slices=120 accepted=148 rejected=20 worstRejectedPerSlice=2 reopens=0 reasons={Backward-Euler state change #=20} worstComponentLedger=8.377326749155716E-16 worstEnergyLedger=6.813818183255201E-16
+PHASE_PORT_CLOSURE_RUN inflow-0.1 slices=600 accepted=612 rejected=19 worstRejectedPerSlice=19 reopens=7 reasons={Backward-Euler boundary reopened=7, Newton line search stalled at residual #; active-set pass=#=12} worstComponentLedger=2.2737367544323206E-13 worstEnergyLedger=6.181590147165086E-15
+PHASE_PORT_CLOSURE_RUN inflow-5.0 slices=12 accepted=65 rejected=27 worstRejectedPerSlice=25 reopens=11 reasons={Backward-Euler boundary reopened=11, Backward-Euler state change #=2, Newton iteration limit at residual #; active-set pass=#=1, Newton line search stalled at residual #; active-set pass=#=13} worstComponentLedger=5.684341886080802E-14 worstEnergyLedger=1.2363180294330172E-14
+PHASE_PORT_CLOSURE_RUN junction-0.1 slices=1000 accepted=1028 rejected=20 worstRejectedPerSlice=2 reopens=0 reasons={Backward-Euler state change #=20} worstComponentLedger=8.712419819121944E-14 worstEnergyLedger=6.298996364964808E-14
+PHASE_PORT_CLOSURE_RUN junction-5.0 slices=40 accepted=217 rejected=11 worstRejectedPerSlice=7 reopens=0 reasons={Backward-Euler state change #=11} worstComponentLedger=5.361489119459658E-14 worstEnergyLedger=1.9381527276814792E-14
+PHASE_PORT_CLOSURE_RUN refusal-0.1 slices=600 accepted=600 rejected=1 worstRejectedPerSlice=1 reopens=1 reasons={Backward-Euler boundary reopened=1} worstComponentLedger=3.7496795479051435E-15 worstEnergyLedger=9.779920923269515E-16
+PHASE_PORT_CLOSURE_RUN refusal-5.0 slices=24 accepted=72 rejected=1 worstRejectedPerSlice=1 reopens=1 reasons={Backward-Euler boundary reopened=1} worstComponentLedger=6.521181822443727E-16 worstEnergyLedger=3.883450589600159E-16
+PHASE_PORT_CLOSURE_RUN squeeze-0.1 slices=900 accepted=900 rejected=1 worstRejectedPerSlice=1 reopens=1 reasons={Backward-Euler boundary reopened=1} worstComponentLedger=1.8603043740077272E-15 worstEnergyLedger=2.9201295908298774E-15
+PHASE_PORT_CLOSURE_RUN squeeze-5.0 slices=40 accepted=151 rejected=8 worstRejectedPerSlice=5 reopens=1 reasons={Backward-Euler boundary reopened=1, Backward-Euler state change #=5, Conservative reconstruction fails equation gate: #=2} worstComponentLedger=1.5310883172744094E-15 worstEnergyLedger=6.691963645651802E-16
+PHASE_PORT_CLOSURE_RUN vanish-0.1 slices=300 accepted=347 rejected=10 worstRejectedPerSlice=10 reopens=0 reasons={Backward-Euler state change #=10} worstComponentLedger=6.061820276984874E-16 worstEnergyLedger=2.066402908713844E-16
+PHASE_PORT_CLOSURE_RUN vanish-5.0 slices=24 accepted=129 rejected=17 worstRejectedPerSlice=17 reopens=0 reasons={Backward-Euler state change #=17} worstComponentLedger=7.79137010670632E-16 worstEnergyLedger=2.3143712577595055E-16
+PHASE_PORT_DRY interval=0.1 closedAtSlice=423 landed=0.009901226157602 final=0.009901226157602 closedSlices=1027
+PHASE_PORT_DRY interval=5.0 closedAtSlice=9 landed=0.009934488833801991 final=0.009934488833801991 closedSlices=31
+PHASE_PORT_EARLY waterShareKept=0.004216519488303762 tank=103641.38777250693 junction=101324.99995877709
+PHASE_PORT_INFLOW interval=0.1 firstInflowSlice=342 reopensThere=7 rejectedThere=19 waterShareAtEnd=0.0027286930549096995
+PHASE_PORT_INFLOW interval=5.0 firstInflowSlice=6 reopensThere=11 rejectedThere=25 waterShareAtEnd=0.002668826833079403
+PHASE_PORT_INTEGRATION PENTANE_UNDER_METHANE interval=0.1 slices=100 accepted=100 rejected=0 worstComponentLedger=1.8285507101863053E-15 worstEnergyLedger=8.750093654917208E-16 worstCompositionGap=2.220446049250313E-16 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION PENTANE_UNDER_METHANE interval=5.0 slices=2 accepted=6 rejected=0 worstComponentLedger=4.696238881801654E-16 worstEnergyLedger=1.714373344610355E-16 worstCompositionGap=0.0012918128926803496 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION WATER_UNDER_NITROGEN interval=0.1 slices=100 accepted=100 rejected=0 worstComponentLedger=1.6093722205357047E-15 worstEnergyLedger=7.040838001790465E-16 worstCompositionGap=2.220446049250313E-16 worstGapBeyondDrift=0.0
+PHASE_PORT_INTEGRATION WATER_UNDER_NITROGEN interval=5.0 slices=2 accepted=6 rejected=0 worstComponentLedger=3.884691566810322E-16 worstEnergyLedger=8.86765002387664E-17 worstCompositionGap=2.3453063553746656E-4 worstGapBeyondDrift=0.0
+PHASE_PORT_JUNCTION interval=0.1 waterShareWhenLowered=0.0831302371227705 tankPressureWhenLowered=113637.53161444255 drainedFirstSlice=0.006241647895480357 waterShareAtEnd=0.07940821859234469
+PHASE_PORT_JUNCTION interval=5.0 waterShareWhenLowered=0.08311154122331013 tankPressureWhenLowered=113635.2601619873 drainedFirstSlice=0.3117012023084664 waterShareAtEnd=0.07335598455494496
+PHASE_PORT_JUNCTIONS interval=0.1 worstComponentLedger=3.2445950689328524E-16 worstEnergyLedger=4.0814091193249716E-16 gasLineNitrogenFraction=0.9839924664656855 liquidLineWaterFraction=1.0
+PHASE_PORT_JUNCTIONS interval=5.0 worstComponentLedger=1.6638949071450526E-16 worstEnergyLedger=1.4526888270040895E-16 gasLineNitrogenFraction=0.983428663376299 liquidLineWaterFraction=1.0
+PHASE_PORT_REFUSAL interval=0.1 firstInflowSlice=321 reopensThere=1 reopensTotal=1
+PHASE_PORT_REFUSAL interval=5.0 firstInflowSlice=6 reopensThere=1 reopensTotal=1
+PHASE_PORT_SOLIDS vessel=90.28351961288169 captured=9.71648038711831 boundary=0.0 initial=100.0
+PHASE_PORT_SQUEEZE interval=0.1 closedAtSlice=617 gasAtClosingStart=0.009865262445855132 pressureAtClosingStart=101641.79626184473 finalGas=0.003270980114107365 finalPressure=300000.00085072103
+PHASE_PORT_SQUEEZE interval=5.0 closedAtSlice=13 gasAtClosingStart=0.0019141377570939264 pressureAtClosingStart=299089.7030826204 finalGas=0.0019082630298594909 finalPressure=300000.0000433895
+PHASE_PORT_STEP PENTANE_UNDER_METHANE composition=0.0 booked-vs-sampled=8.185589691246138E-15 flows=[0.01722762134007646, 0.22354471770322368, 0.17394179278825106]
+PHASE_PORT_STEP WATER_UNDER_NITROGEN composition=1.6620303323428683E-16 booked-vs-sampled=4.960121773085748E-16 flows=[0.009303229617138939, 0.1902556070558613, 0.13610261353256595]
+PHASE_PORT_THROTTLE ports=1 phiStart=0.02001552463035145 throttle=2.996802216998662 flows=[2.996802216998662] landed=0.0049998129337422955 modes=[PASSIVE]
+PHASE_PORT_THROTTLE ports=2 phiStart=0.02001552463035145 throttle=1.498401108499331 flows=[1.498401108499331, 1.498401108499331] landed=0.004999812933742296 modes=[PASSIVE, PASSIVE]
+PHASE_PORT_THROTTLE_NEXT ports=1 flows=[0.0] modes=[CLOSED]
+PHASE_PORT_THROTTLE_NEXT ports=2 flows=[0.0, 0.0] modes=[CLOSED, CLOSED]
+PHASE_PORT_VANISH phiV 0.014999999999999906 -> 0.0 P 200000.0 -> 888149.4163714116 flows=[1.8971719336763502, -1.4693679385278594E-39] modes=[PASSIVE, PASSIVE]
+PHASE_PORT_VANISH_NEXT flows=[0.007329257748195935, 0.0] modes=[PASSIVE, CLOSED]
+PHASE_PORT_VANISH_RUN interval=0.1 closedAtSlice=7 finalPressure=1000000.000000031
+PHASE_PORT_VANISH_RUN interval=5.0 closedAtSlice=1 finalPressure=1000000.2067538882

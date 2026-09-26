@@ -1,0 +1,11 @@
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -1451,7 +1451,7 @@
+             var a=graph.reservoirs().get(start);var b=graph.reservoirs().get(finish);
+             // Each direction in the column of what its donor end port draws, at the ends' driving pressures.
+             var startPort=graph.pipes().get(chain.getFirst()).portAt(start);var finishPort=graph.pipes().get(chain.getLast()).portAt(finish);
+-            double dz=b.elevation()-a.elevation(),difference=endPressure(a,startPort,a.state())-endPressure(b,finishPort,b.state());
++            double dz=b.elevation()-a.elevation(),difference=a.state().pressure()-b.state().pressure();
+             boolean forward=forwardAllowed&&difference-endDensity(a.state(),startPort)*GRAVITY*dz>0;
+             boolean reverse=reverseAllowed&&difference-endDensity(b.state(),finishPort)*GRAVITY*dz<0;
+             if(keep!=null){boolean kept=false;for(int link:chain)kept|=keep[link];if(kept)continue;}

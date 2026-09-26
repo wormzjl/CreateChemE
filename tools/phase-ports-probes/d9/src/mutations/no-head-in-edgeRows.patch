@@ -1,0 +1,11 @@
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -2255,7 +2255,7 @@
+             // never the destination's (owner rule, decision D6 of the mixed-gas junction batch): the stream its suction end
+             // draws, which is the suction's bulk density at a BULK end.
+             double column=pipe.control() instanceof FlowControl.Pump?suction.density:headDensities[edge];
+-            double driving=endPressure(graph.reservoirs().get(a),pipe.firstPort(),st[a])-endPressure(graph.reservoirs().get(b),pipe.secondPort(),st[b])-column*GRAVITY*dz+signedHead;
++            double driving=st[a].pressure()-st[b].pressure()-column*GRAVITY*dz+signedHead;
+             // Every pressure-dimensioned row of this edge is stated in the island's own pressure,
+             // never in a fixed 1e5 Pa unit; see {@link #pressureScales}. The throttled-inlet row
+             // below and the closed-edge row are mass flows and keep their own flow scale, and the

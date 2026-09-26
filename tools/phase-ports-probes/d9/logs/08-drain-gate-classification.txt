@@ -1,0 +1,27 @@
+# DrainProbe args: tankPressure voidPressure interval count drainLength drainDiameter; base = WP2 tree with the head emulated by a void 950 Pa lower
+== new 101275 101325
+slice 0 share 0.097267 -> 0.083657 P 101323.405 head 817.118 flows [2.7111936784989785, 0.003121043391871637] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 1 share 0.083657 -> 0.071097 P 101323.637 head 694.437 flows [2.5019433731582716, 0.0027899694032100936] modes [PASSIVE, PASSIVE] acc 9 rej 5 {Conservative reconstruction fails equation gate: #=5}
+slice 2 share 0.071097 -> 0.059651 P 101323.929 head 582.641 flows [2.2799529902528213, 0.0025430409016214536] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 3 share 0.059651 -> 0.049275 P 101324.215 head 481.293 flows [2.066871797163279, 0.0023059396104599273] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 4 share 0.049275 -> 0.039959 P 101324.443 head 390.304 flows [1.8556248497422831, 0.0020708077522064872] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 5 share 0.039959 -> 0.031686 P 101324.598 head 309.493 flows [1.6480397979895518, 0.0018397621570253827] modes [PASSIVE, PASSIVE] acc 6 rej 0 {}
+slice 6 share 0.031686 -> 0.024441 P 101324.688 head 238.730 flows [1.4431233290470686, 0.0016117646910833634] modes [PASSIVE, PASSIVE] acc 6 rej 0 {}
+slice 7 share 0.024441 -> 0.018169 P 101324.738 head 177.463 flows [1.2494832204014412, 0.0013965443870899792] modes [PASSIVE, PASSIVE] acc 16 rej 10 {Conservative reconstruction fails equation gate: #=9, Backward-Euler state change #=1}
+slice 8 share 0.018169 -> 0.012906 P 101324.782 head 126.065 flows [1.0482044699512987, 0.001172903573165309] modes [PASSIVE, PASSIVE] acc 13 rej 5 {Conservative reconstruction fails equation gate: #=4, Backward-Euler state change #=1}
+slice 9 share 0.012906 -> 0.009930 P 101325.000 head 96.992 flows [0.5929107690951605, 6.647933984902635E-4] modes [CLOSED, PASSIVE] acc 8 rej 1 {Backward-Euler state change #=1}
+slice 10 share 0.009930 -> 0.009930 P 101325.001 head 96.992 flows [0.0, 1.5384247653571493E-9] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+slice 11 share 0.009930 -> 0.009930 P 101325.001 head 96.992 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+== base 101275 100375 (emulated head)
+slice 0 share 0.097267 -> 0.082978 P 101323.172 head 810.491 flows [2.846349513574675, 0.003271238066382762] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 1 share 0.082978 -> 0.068688 P 101323.172 head 670.914 flows [2.846502994589719, 0.003173679250954066] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 2 share 0.068688 -> 0.054398 P 101323.171 head 531.338 flows [2.846492339839028, 0.0031743795569964114] modes [PASSIVE, PASSIVE] acc 6 rej 0 {}
+slice 3 share 0.054398 -> 0.040109 P 101323.170 head 391.763 flows [2.8464787407252308, 0.0031755122102251855] modes [PASSIVE, PASSIVE] acc 9 rej 2 {Backward-Euler state change #=1, Conservative reconstruction fails equation gate: #=1}
+slice 4 share 0.040109 -> 0.025819 P 101323.167 head 252.189 flows [2.846459269570323, 0.0031776014175143004] modes [PASSIVE, PASSIVE] acc 15 rej 6 {Backward-Euler state change #=1, Conservative reconstruction fails equation gate: #=5}
+slice 5 share 0.025819 -> 0.011530 P 101323.157 head 112.616 flows [2.8464251126878515, 0.003182857764096065] modes [PASSIVE, PASSIVE] acc 19 rej 3 {Backward-Euler state change #=1, Conservative reconstruction fails equation gate: #=2}
+slice 6 share 0.011530 -> 0.009811 P 101325.001 head 95.827 flows [0.3423997772106297, 3.8784399815491025E-4] modes [CLOSED, CLOSED] acc 9 rej 3 {Backward-Euler state change #=3}
+slice 7 share 0.009811 -> 0.009811 P 101325.001 head 95.827 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+slice 8 share 0.009811 -> 0.009811 P 101325.001 head 95.827 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+slice 9 share 0.009811 -> 0.009811 P 101325.001 head 95.827 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+slice 10 share 0.009811 -> 0.009811 P 101325.001 head 95.827 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+slice 11 share 0.009811 -> 0.009811 P 101325.001 head 95.827 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}
