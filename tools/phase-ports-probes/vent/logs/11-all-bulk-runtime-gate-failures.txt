@@ -1,0 +1,7 @@
+# instrumented solver, harness select DeadHeadedLineIslandTest + FilterBlockLineIslandTest (all-BULK runtime fixtures) on HEAD: every gate failure, compact
+GATE FAIL dt=5.0000e+00 max=3.2474e-07 row=4 node=1 local=4 newton=5.691e-10 n1[RESERVOIR worst c19 rel 3.24e-07 n_c/n_tot 1.03e-03 gasVol 0.28 vol -9.14e-08 maxRow 3.25e-07]
+GATE FAIL dt=5.0000e+00 max=3.6171e-07 row=4 node=1 local=4 newton=6.742e-10 n1[RESERVOIR worst c19 rel 3.61e-07 n_c/n_tot 1.12e-03 gasVol 0.34 vol -1.23e-07 maxRow 3.62e-07]
+GATE FAIL dt=5.0000e+00 max=3.6171e-07 row=4 node=1 local=4 newton=6.742e-10 n1[RESERVOIR worst c19 rel 3.61e-07 n_c/n_tot 1.12e-03 gasVol 0.34 vol -1.23e-07 maxRow 3.62e-07]
+GATE FAIL dt=5.0000e+00 max=3.6171e-07 row=4 node=1 local=4 newton=6.742e-10 n1[RESERVOIR worst c19 rel 3.61e-07 n_c/n_tot 1.12e-03 gasVol 0.34 vol -1.23e-07 maxRow 3.62e-07]
+[        15 tests successful      ]
+[         0 tests failed          ]

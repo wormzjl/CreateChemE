@@ -1,0 +1,48 @@
+# DrainProbe 101275 101325 5 12 2 0.05 (the LevelHeadTest head drain at 5 s): HEAD
+slice 0 share 0.097267 -> 0.083657 P 101323.405 head 817.118 flows [2.7111936784989785, 0.003121043391871637] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 1 share 0.083657 -> 0.071097 P 101323.637 head 694.437 flows [2.5019433731582716, 0.0027899694032100936] modes [PASSIVE, PASSIVE] acc 9 rej 5 {Conservative reconstruction fails equation gate: #=5}
+slice 2 share 0.071097 -> 0.059651 P 101323.929 head 582.641 flows [2.2799529902528213, 0.0025430409016214536] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 3 share 0.059651 -> 0.049275 P 101324.215 head 481.293 flows [2.066871797163279, 0.0023059396104599273] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 4 share 0.049275 -> 0.039959 P 101324.443 head 390.304 flows [1.8556248497422831, 0.0020708077522064872] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 5 share 0.039959 -> 0.031686 P 101324.598 head 309.493 flows [1.6480397979895518, 0.0018397621570253827] modes [PASSIVE, PASSIVE] acc 6 rej 0 {}
+slice 6 share 0.031686 -> 0.024441 P 101324.688 head 238.730 flows [1.4431233290470686, 0.0016117646910833634] modes [PASSIVE, PASSIVE] acc 6 rej 0 {}
+slice 7 share 0.024441 -> 0.018169 P 101324.738 head 177.463 flows [1.2494832204014412, 0.0013965443870899792] modes [PASSIVE, PASSIVE] acc 16 rej 10 {Backward-Euler state change #=1, Conservative reconstruction fails equation gate: #=9}
+slice 8 share 0.018169 -> 0.012906 P 101324.782 head 126.065 flows [1.0482044699512987, 0.001172903573165309] modes [PASSIVE, PASSIVE] acc 13 rej 5 {Backward-Euler state change #=1, Conservative reconstruction fails equation gate: #=4}
+slice 9 share 0.012906 -> 0.009930 P 101325.000 head 96.992 flows [0.5929107690951605, 6.647933984902635E-4] modes [CLOSED, PASSIVE] acc 8 rej 1 {Backward-Euler state change #=1}
+slice 10 share 0.009930 -> 0.009930 P 101325.001 head 96.992 flows [0.0, 1.5384247653571493E-9] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+slice 11 share 0.009930 -> 0.009930 P 101325.001 head 96.992 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+== instrumented, gate failures only (compact)
+GATE FAIL dt=1.2268e+00 max=5.6744e-08 row=4 node=0 local=4 newton=8.938e-10 n0[RESERVOIR worst c19 rel 5.74e-08 n_c/n_tot 8.75e-03 gasVol 0.92 vol -5.32e-08 maxRow 5.67e-08]
+GATE FAIL dt=6.1342e-01 max=1.5537e-08 row=4 node=0 local=4 newton=3.408e-10 n0[RESERVOIR worst c19 rel 1.59e-08 n_c/n_tot 8.56e-03 gasVol 0.92 vol -1.47e-08 maxRow 1.55e-08]
+GATE FAIL dt=1.0470e+00 max=1.5503e-08 row=4 node=0 local=4 newton=8.214e-10 n0[RESERVOIR worst c19 rel 1.57e-08 n_c/n_tot 9.27e-03 gasVol 0.93 vol 1.46e-08 maxRow 1.55e-08]
+GATE FAIL dt=5.2350e-01 max=2.9834e-08 row=4 node=0 local=4 newton=9.254e-10 n0[RESERVOIR worst c19 rel 3.08e-08 n_c/n_tot 9.10e-03 gasVol 0.93 vol -2.86e-08 maxRow 2.98e-08]
+GATE FAIL dt=2.6175e-01 max=2.9986e-08 row=4 node=0 local=4 newton=9.956e-10 n0[RESERVOIR worst c19 rel 3.10e-08 n_c/n_tot 9.27e-03 gasVol 0.93 vol -2.89e-08 maxRow 3.00e-08]
+GATE FAIL dt=6.2090e-01 max=1.0686e-08 row=3 node=0 local=3 newton=5.068e-10 n0[RESERVOIR worst c19 rel 1.09e-08 n_c/n_tot 2.96e-02 gasVol 0.98 vol 1.07e-08 maxRow 1.07e-08]
+GATE FAIL dt=3.1045e-01 max=2.1587e-08 row=3 node=0 local=3 newton=7.604e-10 n0[RESERVOIR worst c19 rel 2.21e-08 n_c/n_tot 2.91e-02 gasVol 0.98 vol -2.16e-08 maxRow 2.16e-08]
+GATE FAIL dt=6.0422e-01 max=1.3069e-08 row=3 node=0 local=3 newton=6.036e-10 n0[RESERVOIR worst c19 rel 1.33e-08 n_c/n_tot 3.12e-02 gasVol 0.98 vol 1.31e-08 maxRow 1.31e-08]
+GATE FAIL dt=3.0211e-01 max=2.1410e-08 row=3 node=0 local=3 newton=7.128e-10 n0[RESERVOIR worst c19 rel 2.19e-08 n_c/n_tot 3.07e-02 gasVol 0.98 vol -2.14e-08 maxRow 2.14e-08]
+GATE FAIL dt=5.9028e-01 max=1.4500e-08 row=3 node=0 local=3 newton=5.755e-10 n0[RESERVOIR worst c19 rel 1.48e-08 n_c/n_tot 3.29e-02 gasVol 0.98 vol 1.45e-08 maxRow 1.45e-08]
+GATE FAIL dt=2.9514e-01 max=2.2224e-08 row=3 node=0 local=3 newton=7.264e-10 n0[RESERVOIR worst c19 rel 2.27e-08 n_c/n_tot 3.23e-02 gasVol 0.98 vol -2.22e-08 maxRow 2.22e-08]
+GATE FAIL dt=5.7730e-01 max=1.5596e-08 row=3 node=0 local=3 newton=5.569e-10 n0[RESERVOIR worst c19 rel 1.59e-08 n_c/n_tot 3.47e-02 gasVol 0.98 vol 1.56e-08 maxRow 1.56e-08]
+GATE FAIL dt=2.8865e-01 max=2.3308e-08 row=3 node=0 local=3 newton=8.975e-10 n0[RESERVOIR worst c19 rel 2.38e-08 n_c/n_tot 3.41e-02 gasVol 0.98 vol -2.33e-08 maxRow 2.33e-08]
+GATE FAIL dt=5.6482e-01 max=1.6571e-08 row=3 node=0 local=3 newton=6.409e-10 n0[RESERVOIR worst c19 rel 1.69e-08 n_c/n_tot 3.66e-02 gasVol 0.98 vol 1.66e-08 maxRow 1.66e-08]
+GATE FAIL dt=5.8544e-01 max=1.0641e-08 row=3 node=0 local=3 newton=4.354e-10 n0[RESERVOIR worst c19 rel 1.08e-08 n_c/n_tot 3.99e-02 gasVol 0.98 vol -1.06e-08 maxRow 1.06e-08]
+GATE FAIL dt=5.4550e-01 max=1.1793e-08 row=3 node=0 local=3 newton=5.383e-10 n0[RESERVOIR worst c19 rel 1.20e-08 n_c/n_tot 4.17e-02 gasVol 0.98 vol 1.18e-08 maxRow 1.18e-08]
+GATE FAIL dt=5.2841e-01 max=1.8195e-08 row=3 node=0 local=3 newton=8.431e-10 n0[RESERVOIR worst c19 rel 1.85e-08 n_c/n_tot 4.36e-02 gasVol 0.98 vol 1.82e-08 maxRow 1.82e-08]
+GATE FAIL dt=5.1721e-01 max=2.1152e-08 row=3 node=0 local=3 newton=9.451e-10 n0[RESERVOIR worst c19 rel 2.15e-08 n_c/n_tot 4.56e-02 gasVol 0.99 vol 2.12e-08 maxRow 2.12e-08]
+== option A prototype
+slice 0 share 0.097267 -> 0.083657 P 101323.405 head 817.118 flows [2.7111936784989785, 0.003121043391871637] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+VENT_POLISH ? dt=1.2268321101511708 gate 5.674433028998989E-8 -> 5.513079933342312E-12 iterations 1
+slice 1 share 0.083657 -> 0.071130 P 101323.636 head 694.764 flows [2.4952656568854654, 0.0027825098230977088] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 2 share 0.071130 -> 0.059681 P 101323.929 head 582.939 flows [2.2805513931788783, 0.0025437063486009777] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 3 share 0.059681 -> 0.049302 P 101324.214 head 481.562 flows [2.0674654070981355, 0.0023066001320388263] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 4 share 0.049302 -> 0.039984 P 101324.443 head 390.544 flows [1.8562129171348318, 0.0020714622546841492] modes [PASSIVE, PASSIVE] acc 5 rej 0 {}
+slice 5 share 0.039984 -> 0.031708 P 101324.598 head 309.705 flows [1.648615838159182, 0.0018404031082708927] modes [PASSIVE, PASSIVE] acc 6 rej 0 {}
+slice 6 share 0.031708 -> 0.024460 P 101324.688 head 238.914 flows [1.4436930264352335, 0.0016123983203676679] modes [PASSIVE, PASSIVE] acc 6 rej 0 {}
+VENT_POLISH ? dt=0.6209990490013636 gate 1.0724694909924892E-8 -> 7.356260674346527E-13 iterations 1
+slice 7 share 0.024460 -> 0.018212 P 101324.738 head 177.883 flows [1.2446702819753481, 0.0013911229257220414] modes [PASSIVE, PASSIVE] acc 8 rej 1 {Backward-Euler state change #=1}
+VENT_POLISH ? dt=0.5857122723196789 gate 1.0766636360237669E-8 -> 2.2204460492503107E-15 iterations 1
+slice 8 share 0.018212 -> 0.012958 P 101324.782 head 126.569 flows [1.046493777361203, 0.0011709461694308207] modes [PASSIVE, PASSIVE] acc 9 rej 1 {Backward-Euler state change #=1}
+slice 9 share 0.012958 -> 0.009972 P 101325.000 head 97.401 flows [0.5948510999239772, 6.669539833184912E-4] modes [CLOSED, PASSIVE] acc 8 rej 1 {Backward-Euler state change #=1}
+slice 10 share 0.009972 -> 0.009972 P 101325.001 head 97.401 flows [0.0, 1.5459224123048897E-9] modes [CLOSED, CLOSED] acc 3 rej 0 {}
+slice 11 share 0.009972 -> 0.009972 P 101325.001 head 97.401 flows [0.0, 0.0] modes [CLOSED, CLOSED] acc 3 rej 0 {}

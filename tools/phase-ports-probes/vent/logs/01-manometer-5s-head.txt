@@ -1,0 +1,3 @@
+# ManometerProbe 5 4 LIQUID 104325 101325 0.3 0.3 0.05 VAPOR VAPOR on HEAD fdc7571 (tracked solver, no instrumentation)
+slice 0 PA 104320.4826 PB 101329.6064 bottomDiff 2508.013415 mA 267.927 mB 317.165 yWA 3.037e-02 flows [4.9431535156826225, 0.005668529250080192, 0.0056135465831283335] modes [PASSIVE, PASSIVE, PASSIVE] acc 497 rej 503 {Backward-Euler boundary reopened=1, Conservative reconstruction fails equation gate: #=502}
+slice 1 FAILED Interval substep limit; no partial interval may commit: advanced=4.225608120768087 of 5.0 s, accepted=509, rejected=515, reasons={Conservative reconstruction fails equation gate: #=515}, last=Conservative reconstruction fails equation gate: 1.0083460016084983E-8

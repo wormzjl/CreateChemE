@@ -1,0 +1,110 @@
+# Newton iterations (f0 = row 0 = tank A's N2 balance, f6 = row 6 = tank B's N2 balance), link LIQUID vent VAPOR, then link BULK vent VAPOR; chord as on HEAD
+NEWTON it=0 norm=1.782e-02 refresh=true f0=0.000e+00 f6=0.000e+00
+NEWTON it=1 norm=1.210e-03 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=2 norm=2.016e-04 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=3 norm=3.511e-05 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=4 norm=6.150e-06 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=5 norm=1.079e-06 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=6 norm=1.893e-07 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=7 norm=3.321e-08 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=8 norm=5.827e-09 refresh=true f0=0.000e+00 f6=0.000e+00
+NEWTON it=9 norm=2.938e-15 refresh=false f0=0.000e+00 f6=0.000e+00
+GATE pass dt=1.0000e+00 max=2.9379e-15 row=12 node=-1 local=-1 newton=2.938e-15 n0[RESERVOIR worst c20 rel 1.14e-16 n_c/n_tot 9.98e-01 gasVol 0.71 vol -2.22e-16 maxRow 1.78e-15] n1[RESERVOIR worst c20 rel 2.21e-16 n_c/n_tot 9.98e-01 gasVol 0.70 vol 1.11e-16 maxRow 8.57e-16]
+NEWTON it=0 norm=1.362e-02 refresh=true f0=0.000e+00 f6=0.000e+00
+NEWTON it=1 norm=1.587e-03 refresh=false f0=1.066e-15 f6=3.079e-12
+NEWTON it=2 norm=4.521e-04 refresh=false f0=-4.628e-17 f6=1.071e-11
+NEWTON it=3 norm=1.167e-04 refresh=false f0=1.135e-17 f6=-8.175e-13
+NEWTON it=4 norm=3.066e-05 refresh=false f0=-2.838e-18 f6=1.884e-13
+NEWTON it=5 norm=8.020e-06 refresh=false f0=8.732e-19 f6=-4.807e-14
+NEWTON it=6 norm=2.100e-06 refresh=false f0=-2.183e-19 f6=1.261e-14
+NEWTON it=7 norm=5.498e-07 refresh=false f0=0.000e+00 f6=-3.299e-15
+NEWTON it=8 norm=1.439e-07 refresh=true f0=0.000e+00 f6=8.642e-16
+NEWTON it=9 norm=1.892e-13 refresh=false f0=0.000e+00 f6=-2.185e-19
+GATE pass dt=1.0000e+00 max=1.8925e-13 row=14 node=-1 local=-1 newton=1.892e-13 n0[RESERVOIR worst c20 rel 2.28e-16 n_c/n_tot 9.98e-01 gasVol 0.71 vol -1.11e-16 maxRow 7.99e-15] n1[RESERVOIR worst c19 rel 1.28e-16 n_c/n_tot 1.68e-03 gasVol 0.70 vol 1.11e-16 maxRow 5.77e-15]
+NEWTON it=0 norm=2.711e-02 refresh=false f0=-1.984e-05 f6=1.860e-05
+NEWTON it=1 norm=2.615e-04 refresh=false f0=1.178e-07 f6=-9.644e-08
+NEWTON it=2 norm=1.180e-06 refresh=false f0=3.728e-08 f6=-3.888e-08
+NEWTON it=3 norm=1.042e-07 refresh=false f0=-2.010e-08 f6=1.900e-08
+NEWTON it=4 norm=4.666e-08 refresh=false f0=1.098e-08 f6=-9.359e-09
+NEWTON it=5 norm=2.432e-08 refresh=false f0=-5.994e-09 f6=4.608e-09
+NEWTON it=6 norm=1.267e-08 refresh=false f0=3.273e-09 f6=-2.269e-09
+NEWTON it=7 norm=6.612e-09 refresh=false f0=-1.787e-09 f6=1.117e-09
+NEWTON it=8 norm=3.461e-09 refresh=true f0=9.755e-10 f6=-5.499e-10
+NEWTON it=9 norm=2.164e-12 refresh=false f0=0.000e+00 f6=2.147e-19
+GATE pass dt=1.5254e+00 max=2.1639e-12 row=13 node=-1 local=-1 newton=2.164e-12 n0[RESERVOIR worst c20 rel 1.17e-16 n_c/n_tot 9.98e-01 gasVol 0.72 vol 2.00e-15 maxRow 4.32e-15] n1[RESERVOIR worst c19 rel 1.29e-16 n_c/n_tot 1.62e-03 gasVol 0.69 vol -9.99e-16 maxRow 2.73e-15]
+NEWTON it=0 norm=3.363e-02 refresh=false f0=-2.479e-05 f6=2.207e-05
+NEWTON it=1 norm=2.493e-04 refresh=false f0=1.853e-07 f6=-1.286e-07
+NEWTON it=2 norm=3.078e-06 refresh=false f0=-2.951e-09 f6=-3.636e-09
+NEWTON it=3 norm=1.169e-07 refresh=false f0=1.131e-09 f6=6.024e-10
+NEWTON it=4 norm=4.266e-09 refresh=false f0=-2.992e-10 f6=-1.347e-10
+NEWTON it=5 norm=3.689e-10 refresh=false f0=8.196e-11 f6=2.801e-11
+GATE FAIL dt=1.8940e+00 max=4.3064e-08 row=4 node=0 local=4 newton=3.689e-10 n0[RESERVOIR worst c19 rel 4.29e-08 n_c/n_tot 1.97e-03 gasVol 0.73 vol -3.13e-08 maxRow 4.31e-08] n1[RESERVOIR worst c19 rel 1.75e-08 n_c/n_tot 1.55e-03 gasVol 0.68 vol -1.20e-08 maxRow 1.77e-08]
+NEWTON it=0 norm=1.682e-02 refresh=false f0=-1.240e-05 f6=1.104e-05
+NEWTON it=1 norm=1.720e-04 refresh=false f0=-1.220e-07 f6=1.203e-07
+NEWTON it=2 norm=2.939e-06 refresh=false f0=-5.096e-10 f6=3.191e-09
+NEWTON it=3 norm=7.851e-08 refresh=false f0=5.966e-10 f6=4.407e-10
+NEWTON it=4 norm=2.268e-09 refresh=false f0=2.356e-10 f6=1.536e-10
+NEWTON it=5 norm=1.469e-10 refresh=false f0=8.524e-11 f6=5.959e-11
+GATE FAIL dt=9.4700e-01 max=4.4863e-08 row=4 node=0 local=4 newton=1.469e-10 n0[RESERVOIR worst c19 rel 4.49e-08 n_c/n_tot 1.93e-03 gasVol 0.72 vol -3.25e-08 maxRow 4.49e-08] n1[RESERVOIR worst c19 rel 3.70e-08 n_c/n_tot 1.58e-03 gasVol 0.69 vol -2.55e-08 maxRow 3.72e-08]
+NEWTON it=0 norm=8.408e-03 refresh=false f0=-6.198e-06 f6=5.519e-06
+NEWTON it=1 norm=1.526e-04 refresh=false f0=-1.147e-07 f6=1.063e-07
+NEWTON it=2 norm=3.315e-06 refresh=false f0=-1.632e-09 f6=2.727e-09
+NEWTON it=3 norm=8.932e-08 refresh=false f0=5.881e-10 f6=3.013e-10
+NEWTON it=4 norm=2.963e-09 refresh=false f0=4.434e-10 f6=1.677e-10
+NEWTON it=5 norm=4.589e-10 refresh=false f0=3.008e-10 f6=1.149e-10
+GATE FAIL dt=4.7350e-01 max=1.5862e-07 row=4 node=0 local=4 newton=4.589e-10 n0[RESERVOIR worst c19 rel 1.59e-07 n_c/n_tot 1.91e-03 gasVol 0.72 vol -1.15e-07 maxRow 1.59e-07] n1[RESERVOIR worst c19 rel 7.12e-08 n_c/n_tot 1.60e-03 gasVol 0.69 vol -4.91e-08 maxRow 7.17e-08]
+NEWTON it=0 norm=4.204e-03 refresh=false f0=-3.099e-06 f6=2.759e-06
+NEWTON it=1 norm=9.416e-05 refresh=false f0=-7.075e-08 f6=6.468e-08
+NEWTON it=2 norm=2.262e-06 refresh=false f0=-1.362e-09 f6=1.631e-09
+NEWTON it=3 norm=6.127e-08 refresh=false f0=2.783e-10 f6=7.567e-11
+NEWTON it=4 norm=2.162e-09 refresh=false f0=2.707e-10 f6=2.972e-11
+NEWTON it=5 norm=4.873e-10 refresh=false f0=2.268e-10 f6=2.409e-11
+GATE FAIL dt=2.3675e-01 max=1.1962e-07 row=4 node=0 local=4 newton=4.873e-10 n0[RESERVOIR worst c19 rel 1.20e-07 n_c/n_tot 1.90e-03 gasVol 0.72 vol -8.66e-08 maxRow 1.20e-07] n1[RESERVOIR worst c19 rel 1.49e-08 n_c/n_tot 1.61e-03 gasVol 0.69 vol -1.02e-08 maxRow 1.54e-08]
+NEWTON it=0 norm=2.102e-03 refresh=false f0=-1.550e-06 f6=1.380e-06
+NEWTON it=1 norm=5.154e-05 refresh=false f0=-3.873e-08 f6=3.523e-08
+NEWTON it=2 norm=1.298e-06 refresh=false f0=-8.432e-10 f6=8.806e-10
+NEWTON it=3 norm=3.525e-08 refresh=false f0=1.165e-10 f6=8.829e-13
+NEWTON it=4 norm=1.279e-09 refresh=false f0=1.306e-10 f6=-2.048e-11
+NEWTON it=5 norm=3.361e-10 refresh=false f0=1.199e-10 f6=-1.937e-11
+GATE FAIL dt=1.1837e-01 max=6.3210e-08 row=4 node=0 local=4 newton=3.361e-10 n0[RESERVOIR worst c19 rel 6.36e-08 n_c/n_tot 1.89e-03 gasVol 0.72 vol -4.58e-08 maxRow 6.32e-08] n1[RESERVOIR worst c19 rel 1.20e-08 n_c/n_tot 1.61e-03 gasVol 0.69 vol 8.40e-09 maxRow 1.17e-08]
+NEWTON it=0 norm=1.051e-03 refresh=false f0=-7.748e-07 f6=6.898e-07
+NEWTON it=1 norm=2.689e-05 refresh=false f0=-2.020e-08 f6=1.833e-08
+== link BULK
+NEWTON it=0 norm=9.825e-03 refresh=true f0=1.739e-05 f6=-1.740e-05
+NEWTON it=1 norm=2.786e-03 refresh=false f0=1.578e-13 f6=-1.592e-13
+NEWTON it=2 norm=6.200e-04 refresh=false f0=-6.927e-16 f6=6.165e-16
+NEWTON it=3 norm=1.466e-04 refresh=false f0=-2.676e-16 f6=2.508e-16
+NEWTON it=4 norm=3.510e-05 refresh=false f0=-6.353e-17 f6=5.964e-17
+NEWTON it=5 norm=8.432e-06 refresh=false f0=-1.528e-17 f6=1.420e-17
+NEWTON it=6 norm=2.027e-06 refresh=false f0=-3.711e-18 f6=3.714e-18
+NEWTON it=7 norm=4.874e-07 refresh=false f0=-8.732e-19 f6=6.554e-19
+NEWTON it=8 norm=1.172e-07 refresh=true f0=-2.183e-19 f6=4.369e-19
+NEWTON it=9 norm=1.520e-13 refresh=false f0=-2.183e-19 f6=2.185e-19
+GATE pass dt=1.0000e+00 max=1.5201e-13 row=12 node=-1 local=-1 newton=1.520e-13 n0[RESERVOIR worst c19 rel 1.24e-16 n_c/n_tot 1.77e-03 gasVol 0.71 vol -9.33e-15 maxRow 2.64e-14] n1[RESERVOIR worst c20 rel 2.23e-16 n_c/n_tot 9.98e-01 gasVol 0.70 vol 8.99e-15 maxRow 2.63e-14]
+NEWTON it=0 norm=1.700e-02 refresh=true f0=1.097e-05 f6=-1.097e-05
+NEWTON it=1 norm=6.177e-03 refresh=false f0=1.269e-07 f6=-1.270e-07
+NEWTON it=2 norm=3.821e-03 refresh=false f0=-6.233e-08 f6=6.246e-08
+NEWTON it=3 norm=2.083e-03 refresh=false f0=3.510e-08 f6=-3.514e-08
+NEWTON it=4 norm=1.219e-03 refresh=false f0=-1.992e-08 f6=1.994e-08
+NEWTON it=5 norm=6.882e-04 refresh=false f0=1.141e-08 f6=-1.143e-08
+NEWTON it=6 norm=3.970e-04 refresh=false f0=-6.525e-09 f6=6.533e-09
+NEWTON it=7 norm=2.264e-04 refresh=false f0=3.739e-09 f6=-3.743e-09
+NEWTON it=8 norm=1.300e-04 refresh=true f0=-2.140e-09 f6=2.143e-09
+NEWTON it=9 norm=1.543e-07 refresh=false f0=1.417e-12 f6=-1.419e-12
+NEWTON it=10 norm=3.598e-10 refresh=false f0=-3.249e-15 f6=3.253e-15
+GATE pass dt=1.0000e+00 max=3.5974e-10 row=12 node=-1 local=-1 newton=3.598e-10 n0[RESERVOIR worst c19 rel 1.83e-12 n_c/n_tot 1.80e-03 gasVol 0.71 vol 1.29e-12 maxRow 1.83e-12] n1[RESERVOIR worst c19 rel 1.90e-12 n_c/n_tot 1.70e-03 gasVol 0.70 vol -1.31e-12 maxRow 1.88e-12]
+NEWTON it=0 norm=1.962e-02 refresh=false f0=-1.391e-05 f6=1.319e-05
+NEWTON it=1 norm=9.928e-05 refresh=false f0=-4.775e-07 f6=4.857e-07
+NEWTON it=2 norm=2.880e-06 refresh=false f0=5.458e-07 f6=-5.323e-07
+NEWTON it=3 norm=2.153e-06 refresh=false f0=-5.467e-07 f6=5.118e-07
+NEWTON it=4 norm=2.106e-06 refresh=true f0=5.470e-07 f6=-4.917e-07
+NEWTON it=5 norm=1.447e-07 refresh=false f0=1.051e-14 f6=1.996e-14
+NEWTON it=6 norm=2.517e-11 refresh=false f0=1.426e-16 f6=-2.142e-17
+GATE pass dt=2.0000e+00 max=2.5170e-11 row=13 node=-1 local=-1 newton=2.517e-11 n0[RESERVOIR worst c19 rel 7.88e-14 n_c/n_tot 1.85e-03 gasVol 0.71 vol -8.53e-14 maxRow 1.32e-13] n1[RESERVOIR worst c19 rel 1.27e-14 n_c/n_tot 1.65e-03 gasVol 0.70 vol -3.08e-14 maxRow 3.11e-14]
+NEWTON it=0 norm=1.982e-02 refresh=false f0=-1.460e-05 f6=1.338e-05
+NEWTON it=1 norm=7.911e-06 refresh=false f0=-7.194e-09 f6=1.178e-08
+NEWTON it=2 norm=9.322e-07 refresh=false f0=1.988e-10 f6=8.307e-11
+NEWTON it=3 norm=2.485e-08 refresh=false f0=-8.397e-12 f6=1.716e-12
+NEWTON it=4 norm=6.709e-10 refresh=false f0=1.329e-13 f6=5.050e-14
+GATE pass dt=2.0000e+00 max=7.3561e-10 row=4 node=0 local=4 newton=6.709e-10 n0[RESERVOIR worst c19 rel 7.15e-11 n_c/n_tot 1.90e-03 gasVol 0.72 vol -7.17e-11 maxRow 7.36e-10] n1[RESERVOIR worst c19 rel 3.08e-11 n_c/n_tot 1.61e-03 gasVol 0.69 vol -6.88e-12 maxRow 5.86e-10]
+slice 0 PA 104308.2493 PB 101342.7625 bottomDiff 2691.751912 mA 278.589 mB 306.502 yWA 3.038e-02 flows [2.8188793207292884, 0.011328450232989897, 0.011462937158393614] modes [PASSIVE, PASSIVE, PASSIVE] acc 3 rej 1 {Backward-Euler boundary reopened=1}

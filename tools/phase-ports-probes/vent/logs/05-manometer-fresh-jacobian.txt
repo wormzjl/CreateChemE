@@ -1,0 +1,53 @@
+# same, with a Jacobian built at every solve start (newton.freshStart: this step's own dt and state; chord afterwards)
+NEWTON it=0 norm=1.782e-02 refresh=true f0=0.000e+00 f6=0.000e+00
+NEWTON it=1 norm=1.210e-03 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=2 norm=2.016e-04 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=3 norm=3.511e-05 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=4 norm=6.150e-06 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=5 norm=1.079e-06 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=6 norm=1.893e-07 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=7 norm=3.321e-08 refresh=false f0=0.000e+00 f6=0.000e+00
+NEWTON it=8 norm=5.827e-09 refresh=true f0=0.000e+00 f6=0.000e+00
+NEWTON it=9 norm=2.938e-15 refresh=false f0=0.000e+00 f6=0.000e+00
+GATE pass dt=1.0000e+00 max=2.9379e-15 row=12 node=-1 local=-1 newton=2.938e-15 n0[RESERVOIR worst c20 rel 1.14e-16 n_c/n_tot 9.98e-01 gasVol 0.71 vol -2.22e-16 maxRow 1.78e-15] n1[RESERVOIR worst c20 rel 2.21e-16 n_c/n_tot 9.98e-01 gasVol 0.70 vol 1.11e-16 maxRow 8.57e-16]
+NEWTON it=0 norm=1.362e-02 refresh=true f0=0.000e+00 f6=0.000e+00
+NEWTON it=1 norm=1.587e-03 refresh=false f0=1.066e-15 f6=3.079e-12
+NEWTON it=2 norm=4.521e-04 refresh=false f0=-4.628e-17 f6=1.071e-11
+NEWTON it=3 norm=1.167e-04 refresh=false f0=1.135e-17 f6=-8.175e-13
+NEWTON it=4 norm=3.066e-05 refresh=false f0=-2.838e-18 f6=1.884e-13
+NEWTON it=5 norm=8.020e-06 refresh=false f0=8.732e-19 f6=-4.807e-14
+NEWTON it=6 norm=2.100e-06 refresh=false f0=-2.183e-19 f6=1.261e-14
+NEWTON it=7 norm=5.498e-07 refresh=false f0=0.000e+00 f6=-3.299e-15
+NEWTON it=8 norm=1.439e-07 refresh=true f0=0.000e+00 f6=8.642e-16
+NEWTON it=9 norm=1.892e-13 refresh=false f0=0.000e+00 f6=-2.185e-19
+GATE pass dt=1.0000e+00 max=1.8925e-13 row=14 node=-1 local=-1 newton=1.892e-13 n0[RESERVOIR worst c20 rel 2.28e-16 n_c/n_tot 9.98e-01 gasVol 0.71 vol -1.11e-16 maxRow 7.99e-15] n1[RESERVOIR worst c19 rel 1.28e-16 n_c/n_tot 1.68e-03 gasVol 0.70 vol 1.11e-16 maxRow 5.77e-15]
+NEWTON it=0 norm=2.711e-02 refresh=true f0=-1.984e-05 f6=1.860e-05
+NEWTON it=1 norm=1.801e-05 refresh=false f0=6.756e-16 f6=3.983e-15
+NEWTON it=2 norm=4.455e-07 refresh=false f0=0.000e+00 f6=2.383e-16
+NEWTON it=3 norm=1.110e-08 refresh=false f0=0.000e+00 f6=7.730e-18
+NEWTON it=4 norm=2.764e-10 refresh=false f0=0.000e+00 f6=0.000e+00
+GATE pass dt=1.5254e+00 max=2.7644e-10 row=12 node=-1 local=-1 newton=2.764e-10 n0[RESERVOIR worst c20 rel 1.17e-16 n_c/n_tot 9.98e-01 gasVol 0.72 vol -2.75e-13 maxRow 6.60e-12] n1[RESERVOIR worst c-1 rel 0.00e+00 n_c/n_tot 0.00e+00 gasVol 0.69 vol -5.01e-14 maxRow 5.01e-14]
+NEWTON it=0 norm=3.363e-02 refresh=true f0=-2.479e-05 f6=2.207e-05
+NEWTON it=1 norm=2.724e-05 refresh=false f0=1.261e-15 f6=1.480e-14
+NEWTON it=2 norm=8.470e-07 refresh=false f0=-1.141e-18 f6=6.119e-16
+NEWTON it=3 norm=2.655e-08 refresh=false f0=0.000e+00 f6=1.612e-17
+NEWTON it=4 norm=8.322e-10 refresh=false f0=0.000e+00 f6=8.376e-19
+GATE pass dt=1.8940e+00 max=8.3216e-10 row=12 node=-1 local=-1 newton=8.322e-10 n0[RESERVOIR worst c20 rel 1.21e-16 n_c/n_tot 9.98e-01 gasVol 0.73 vol -6.62e-13 maxRow 1.71e-11] n1[RESERVOIR worst c19 rel 5.24e-16 n_c/n_tot 1.55e-03 gasVol 0.68 vol -6.05e-14 maxRow 3.84e-13]
+NEWTON it=0 norm=1.029e-02 refresh=true f0=-7.586e-06 f6=6.347e-06
+NEWTON it=1 norm=2.673e-06 refresh=false f0=-2.568e-16 f6=1.047e-16
+NEWTON it=2 norm=2.741e-08 refresh=false f0=0.000e+00 f6=7.321e-18
+NEWTON it=3 norm=2.818e-10 refresh=false f0=-2.358e-19 f6=4.067e-19
+GATE pass dt=5.8063e-01 max=2.8182e-10 row=12 node=-1 local=-1 newton=2.818e-10 n0[RESERVOIR worst c20 rel 1.22e-16 n_c/n_tot 9.98e-01 gasVol 0.73 vol -2.10e-13 maxRow 5.00e-12] n1[RESERVOIR worst c20 rel 4.13e-16 n_c/n_tot 9.98e-01 gasVol 0.68 vol -1.39e-14 maxRow 9.36e-14]
+slice 0 PA 104320.4771 PB 101329.6121 bottomDiff 2511.363611 mA 268.098 mB 316.994 yWA 3.037e-02 flows [4.9088786254434345, 0.00562915964976012, 0.005574556043026328] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 1 {Backward-Euler boundary reopened=1}
+== 4 slices, freshStart
+slice 0 PA 104320.4771 PB 101329.6121 bottomDiff 2511.363611 mA 268.098 mB 316.994 yWA 3.037e-02 flows [4.9088786254434345, 0.00562915964976012, 0.005574556043026328] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 1 {Backward-Euler boundary reopened=1}
+slice 1 PA 104321.1962 PB 101328.8782 bottomDiff 2075.666886 mA 245.809 mB 339.282 yWA 3.037e-02 flows [4.457634885701111, 0.005119632706566653, 0.00507000193680575] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}
+slice 2 PA 104321.8544 PB 101328.2066 bottomDiff 1683.810990 mA 225.762 mB 359.328 yWA 3.037e-02 flows [4.009331404725517, 0.004604973323334951, 0.0045600249586164095] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}
+slice 3 PA 104322.4511 PB 101327.5980 bottomDiff 1335.464461 mA 207.940 mB 377.150 yWA 3.037e-02 flows [3.56439573994198, 0.004094136067000916, 0.004053913414695785] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}
+== 6 slices, fresh Jacobian at every iteration
+slice 0 PA 104320.4771 PB 101329.6121 bottomDiff 2511.363616 mA 268.098 mB 316.994 yWA 3.037e-02 flows [4.908878584552993, 0.005629159603022711, 0.005574555996563466] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 1 {Backward-Euler boundary reopened=1}
+slice 1 PA 104321.1962 PB 101328.8782 bottomDiff 2075.666890 mA 245.809 mB 339.282 yWA 3.037e-02 flows [4.4576348858436425, 0.005119632706697772, 0.0050700019369682575] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}
+slice 2 PA 104321.8544 PB 101328.2066 bottomDiff 1683.810994 mA 225.762 mB 359.328 yWA 3.037e-02 flows [4.0093314025154205, 0.00460497332073966, 0.0045600249561067565] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}
+slice 3 PA 104322.4511 PB 101327.5980 bottomDiff 1335.464466 mA 207.940 mB 377.150 yWA 3.037e-02 flows [3.5643957327088023, 0.004094136058628321, 0.0040539134064509035] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}
+slice 4 PA 104322.9856 PB 101327.0530 bottomDiff 1030.242210 mA 192.323 mB 392.767 yWA 3.037e-02 flows [3.123372675528171, 0.00358774479514144, 0.0035522790741556384] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}
+slice 5 PA 104323.4569 PB 101326.5723 bottomDiff 767.699856 mA 178.888 mB 406.202 yWA 3.036e-02 flows [2.686863680569709, 0.0030864887776747576, 0.0030558001177395286] modes [PASSIVE, PASSIVE, PASSIVE] acc 4 rej 0 {}

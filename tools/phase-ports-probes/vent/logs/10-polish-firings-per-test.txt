@@ -1,0 +1,70 @@
+# VENT_POLISH firings per test in the harness all run of the option A prototype (science, runtime, adjacent suites; each line one gate failure the prototype turned into an accepted step)
+      4 DeadHeadedLineIslandTest.run
+      2 ElevatedBlockLineIslandTest.run
+     18 FilterBlockLineIslandTest.run
+     40 LevelHeadTest.drive
+
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.617119737918657E-7 -> 1.317945752533392E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.6074171228794737E-7 -> 1.323385845352311E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 4.267884180867589E-7 -> 1.5603074388069777E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.617119737918657E-7 -> 1.317945752533392E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.6074171228794737E-7 -> 1.323385845352311E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 4.267884180867589E-7 -> 1.5603074388069777E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.617119737918657E-7 -> 1.317945752533392E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.6074171228794737E-7 -> 1.323385845352311E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 4.267884180867589E-7 -> 1.5603074388069777E-12 iterations 1
+VENT_POLISH DeadHeadedLineIslandTest.run dt=5.0 gate 3.247432894879965E-7 -> 1.611932809454564E-12 iterations 1
+VENT_POLISH DeadHeadedLineIslandTest.run dt=5.0 gate 3.250971045672912E-7 -> 1.616040634643072E-12 iterations 1
+VENT_POLISH ElevatedBlockLineIslandTest.run dt=5.0 gate 3.2473336920440373E-7 -> 1.612265876361952E-12 iterations 1
+VENT_POLISH ElevatedBlockLineIslandTest.run dt=5.0 gate 3.2509708547144894E-7 -> 1.6135981439889008E-12 iterations 1
+VENT_POLISH DeadHeadedLineIslandTest.run dt=5.0 gate 3.247432894879965E-7 -> 1.611932809454564E-12 iterations 1
+VENT_POLISH DeadHeadedLineIslandTest.run dt=5.0 gate 3.250971045672912E-7 -> 1.616040634643072E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.617119737918657E-7 -> 1.317945752533392E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.6074171228794737E-7 -> 1.323385845352311E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 4.267884180867589E-7 -> 1.5603074388069777E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.617119737918657E-7 -> 1.317945752533392E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.6074171228794737E-7 -> 1.323385845352311E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 4.267884180867589E-7 -> 1.5603074388069777E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.617119737918657E-7 -> 1.317945752533392E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 3.6074171228794737E-7 -> 1.323385845352311E-12 iterations 1
+VENT_POLISH FilterBlockLineIslandTest.run dt=5.0 gate 4.267884180867589E-7 -> 1.5603074388069777E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.3458274488778184 gate 4.7021540989519455E-8 -> 1.0323821994965111E-13 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.8326678895273928E-8 -> 1.083688758392118E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.554349172573025E-8 -> 1.894654398759775E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7452355379946333E-8 -> 2.1261502073412537E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7488512790977106E-8 -> 2.130597704720434E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.75284482910282E-8 -> 2.1338314651639647E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7568202824724694E-8 -> 2.1392585832590207E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.760864980453542E-8 -> 2.1454905295034668E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7649106776355184E-8 -> 2.1504255225248038E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7689305399274184E-8 -> 2.155607557437962E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.772999995882869E-8 -> 2.1610784786956667E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7770006291119657E-8 -> 2.168481047729571E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7811225431065928E-8 -> 2.1719410946943977E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.554349172573025E-8 -> 1.894654398759775E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7452355379946333E-8 -> 2.1261502073412537E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7488512790977106E-8 -> 2.130597704720434E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.75284482910282E-8 -> 2.1338314651639647E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7568202824724694E-8 -> 2.1392585832590207E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.760864980453542E-8 -> 2.1454905295034668E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7649106776355184E-8 -> 2.1504255225248038E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7689305399274184E-8 -> 2.155607557437962E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.772999995882869E-8 -> 2.1610784786956667E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7770006291119657E-8 -> 2.168481047729571E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7811225431065928E-8 -> 2.1719410946943977E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.75284482910282E-8 -> 2.1338314651639647E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7568202824724694E-8 -> 2.1392585832590207E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.760864980453542E-8 -> 2.1454905295034668E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7649106776355184E-8 -> 2.1504255225248038E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7689305399274184E-8 -> 2.155607557437962E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.772999995882869E-8 -> 2.1610784786956667E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7770006291119657E-8 -> 2.168481047729571E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7811225431065928E-8 -> 2.1719410946943977E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7689305399274184E-8 -> 2.155607557437962E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.772999995882869E-8 -> 2.1610784786956667E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7770006291119657E-8 -> 2.168481047729571E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=2.0 gate 1.7811225431065928E-8 -> 2.1719410946943977E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=0.1 gate 1.5017818657061398E-8 -> 4.0786383731063914E-13 iterations 2
+VENT_POLISH LevelHeadTest.drive dt=1.2268321101511708 gate 5.674433028998989E-8 -> 5.513079933342312E-12 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=0.6209990490013636 gate 1.0724694909924892E-8 -> 7.356260674346527E-13 iterations 1
+VENT_POLISH LevelHeadTest.drive dt=0.5857122723196789 gate 1.0766636360237669E-8 -> 2.2204460492503107E-15 iterations 1
