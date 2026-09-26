@@ -112,6 +112,8 @@ Why the pentane vessel's closed-line comparison runs on the step solver: an isla
 
 ### 8. Open defect found (base, not WP1): unsaturated water vapour into a junction seeded dry
 
+*Fixed 2026-09-26 by decision D10 (owner: option 1, a water trace in the junction seed), a separate commit after WP2; see the section "D10" below.*
+
 - *Measured.* A 1 m3 nitrogen vessel with 0.5 % or 1 % water (no liquid water: unsaturated) drawn through a **BULK** end into a junction seeded as dry nitrogen, then to a void, fails every interval at 0.1 s and 5 s: "Substep refinement exhausted: Conservative reconstruction fails equation gate: 1.3058e-8" (0.5 %) and 2.6151e-8 (1 %), 20 rejections each. Identical on HEAD 6e1c5b6 and on WP1 (scratch driver `hprobe/HumidJunctionProbe.java`, both builds).
 - *Mechanism (instrumented scratch copy of the gate).* A junction's `PhaseLayout` carries water only if its seed holds water (`PhaseLayout` :69). The Newton ignores the arriving water, the reconstruction books it into the junction, and the gate sees the junction's amount-normalisation row off by the booked water fraction (row local 2 of a 3-row junction block, residual proportional to dt: -4.149e-8 at dt 1.9e-7 s). `phaseCorrection` does not reseed the junction, because unsaturated water vapour does not change the junction's phase code. A saturated or bulk-liquid feed does change it, which is why ordinary wet lines work.
 - *Why it matters now.* A VAPOR port on a wet tank always delivers water vapour, which is unsaturated at a lower-pressure junction, so any compiled junction seeded dry downstream of a top outlet hits it (WP5 compiles faces to ports; junction seeds come from the island's first boundary state). Fixture 1's junction test seeds the gas junction with the humid gas to exercise the port booking instead.
@@ -245,3 +247,44 @@ The `PHASE_PORT_RESERVE` javadoc was corrected to the measured behaviour (sectio
 ### 12. Scratch material and commit
 
 Code commit `d836cf2`. Drivers and logs: `tools/phase-ports-probes/wp2/` (`src/PhasePortDutyCycleProbe.java` the R1 probe, `src/SqueezeGateProbe.java` the gate classification probe, `logs/` the gate logs above). The counterfactual runs (reopen test with no mask; the gate instrumentation) were temporary edits of `PassiveStepSolver.java`, reverted; their outputs are in `logs/`.
+
+## D10: water trace seed in junctions with water reachable (2026-09-26)
+
+- Author: Claude (Opus 5.5), same worktree and branch. Base: `9c723e0` (WP2 `d836cf2` plus its tools commit). Commit: `WIP phase-ports D10: water trace seed in junctions with water reachable` (hash recorded in the following commit).
+- Decision: D10 (owner, 2026-09-26): the base defect of WP1 section 8 is fixed by option 1, a water trace seeded into junctions, chosen over the recommended option 2.
+
+### 1. What changed
+
+| file | change |
+|---|---|
+| `science/fluid/network/PassiveStepSolver.java` | `initialPhaseSeeds`: a junction whose reachable set holds water (`reachable[node][water]`, from `reachableComponents` on the connections the start closures leave open) while its own state holds none (`waterLiquid + waterVapor == 0`) is seeded with `waterTraceSeed(state)`: its state's total amounts plus a water entry of `1e-12` of their sum, flashed at the junction's own temperature and pressure (`flashTP`), solids carried over; if that flash leaves the property domain the junction keeps its state. Every other node is seeded exactly as before. |
+| `src/test/.../science/fluid/network/JunctionWaterTraceTest.java` | new, 2 tests: a humid (unsaturated, 0.5 % and 1 % water) nitrogen vessel on a BULK line, and a wet two-phase vessel's VAPOR port, each into a junction seeded as dry nitrogen and on to a void, at 0.1 s (40 slices) and 5 s (4 slices). |
+
+### 2. The mechanism (why this reaches the layout)
+
+A node's `PhaseLayout` carries water - the water unknown(s), the water balance row, the junction's water mixing row and the vapour's water partial-pressure row - exactly when its **seed** holds water (`PhaseLayout` constructor: `water=seed.waterLiquid()>0||seed.waterVapor()>0`); hydrocarbons reach a layout through the reachable mask, water has no mask entry. A vessel lacking a reachable component already gets a `1e-12` entry trace in `initialPhaseSeeds`; a junction was seeded with its own state only. The trace is therefore planted in the same place and the same size, and it reaches the junction's layout through its seed: flashed at the junction's (T, P), `1e-12` of water is unsaturated vapour, so the seed holds `waterVapor > 0` and the layout gains the water vapour unknown and its rows. Once the first step is accepted the junction's state carries the water it received (or its retained trace), so the trace fires only on a junction's first dry solve (measured: once per case of the new test; see 4). The junction's owned inventory is untouched - the seed is a starting point and a basis, the accumulation rows start from the stock - so the ledgers are unchanged by construction (the new test checks the junction starts with zero water and closes the ledger over vessel plus holdup).
+
+### 3. Verification
+
+- `tools/phase-ports-probes/wp1/src/HumidJunctionProbe.java` (the WP1 reproduction), on the D10 tree: humidity 0, 0.5 %, 1 % at 0.1 s (20 slices) and 5 s (2 slices): all six integrate, 20 / 6 accepted, 0 rejected. On the WP2 tree (`d836cf2`), unchanged: 0.5 % and 1 % fail every interval ("Substep refinement exhausted: Conservative reconstruction fails equation gate: 1.3058e-8" / 1.3058e-7 at 5 s; 2.6151e-8 / 2.6151e-7), as WP1 recorded. Logs `tools/phase-ports-probes/d10/logs/06-humid-probe-*.txt`.
+- `JunctionWaterTraceTest` (measured, Gradle run): 0.5 % BULK: 40/0 accepted/rejected at 0.1 s, 12/0 at 5 s, component ledger 8.4e-16 / 4.2e-16, energy 2.6e-16 / 1.3e-16, junction water fraction 0.005, water to the void 0.0043 / 0.0207 mol; 1 % BULK: 40/0, 12/0, 1.1e-15 / 4.6e-16, 2.4e-16 / 1.2e-16, fraction 0.010; VAPOR port of the half-water tank: 40/0, 12/0, 4.3e-16 / 2.8e-16, 2.6e-16 / 2.4e-16, junction water fraction 0.0162 / 0.0175 (the headspace's humidity, diluted by the dry holdup), water to the void 0.0136 / 0.0674 mol.
+
+### 4. Gates, and the re-baseline (none needed)
+
+The brief allowed a recorded re-baseline where a junction gains the trace. Measured: **no existing fixture's junction gains it**, so nothing moved.
+- Where the trace fires (temporary print in `waterTraceSeed`, harness science + runtime + adjacent, reverted): only `JunctionWaterTraceTest` (6 times, once per case and cadence). Every other junction in the suites either has no water reachable (the mixed-gas methane/nitrogen matrices) or is seeded wet (liquid lines and filter blocks seed their junctions from a water boundary; `PhasePortTest`'s junction test seeds the gas junction humid on purpose, a comment there still names the WP1 workaround). chain-100 has no junction.
+- WP1's bitwise probe (`tools/phase-ports-probes/wp1/src/BitwiseProbe.java`: chain-100 plus 14 all-BULK scenarios in hex, among them mixed-gas junctions at 5 s and 0.1 s, water lines, a pumped line, the wet-crude drain, a slurry filter) on the WP2 and D10 trees: `scenarios.txt` and `chain-100.json` byte-identical, and `chain-100.json` byte-identical to `src/test/resources/fluid/regression/chain-100.json`.
+
+| # | command | result |
+|---|---|---|
+| G0 | `harness.sh all` (log `d10-01-harness-all.log`, 84 s) | science 205/205, runtime 227/227 with the 33 junction lines identical to its reference, adjacent 38/38, chain-100 0.000e+00 |
+| G1 | the fluid suites (WP2 G1 command; log `d10-02-gradle-fluid-suite.log`, XML `d10-02-xml/`, 52 s) | **430/430** in 97 classes, 0 skipped (WP2's 428 plus the 2 new); the 33 MIXED_GAS_*/LIQUID_JUNCTION lines character-identical to `tools/phase-ports-probes/wp1/logs/02-junction-lines-base.txt` (ms/bytes/allocatedMB masked): every ledger value and Newton solve count unchanged, MIXED_GAS_COST 286 Newton solves (580 ms, 135.3 MB) |
+| G2 | exact regression (log `d10-03-gradle-regression-exact.log`) | **0.000e+00**, 3 / 0, 4 Newton solves, 29 iterations |
+| G3 | the 38 adjacent (log `d10-04-gradle-adjacent.log`) | **38/38** in 7 classes |
+| G4 | GameTest and mcpCompat compile, both with `--rerun` (log `d10-05-...`) | **BUILD SUCCESSFUL**, both executed |
+
+**Base for WP3:** the junction lines of this commit are captured in `tools/phase-ports-probes/d10/logs/02-junction-lines-d10.txt` (identical to the WP1 base capture, so WP3 may compare against either); the test names in `02-test-names-d10.txt` (430).
+
+### 5. Not run
+
+GameTests and in-game scenarios (no runtime change; runtime graphs carry no phase port until WP5); the Windows lane.
