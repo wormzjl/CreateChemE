@@ -4,12 +4,13 @@ Local, git-ignored offline tooling: training and evaluation harnesses, benchmark
 
 Keep the paths below stable: `build.gradle` applies `tools/development.gradle` when it exists, `tools/development.gradle` compiles `tools/neural` as a source directory, a tracked test cites `tools/neural/methane-qualification.md`, and many scripts address sibling folders by relative path. Add a new tool as its own folder, with a README or protocol, and add a row here.
 
-Last updated: 2026-09-24.
+Last updated: 2026-09-26.
 
 ## Folders
 
 | Folder | Purpose | Batch | Status | Entry points |
 |---|---|---|---|---|
+| [cloud-science-harness/](cloud-science-harness/) | Minecraft-free javac + JUnit console runner for the fluid gates (`fluidScienceTest`, `fluidRuntimeTest`, the 38 adjacent, chain-100 exact via the real `FluidSolverRegressionTest`) against 57 Minecraft/NeoForge and project stand-ins (functional NBT, verbatim `CreateChemE` config defaults); `REPO=` selects the working tree. A fallback for containers without Minecraft; the Gradle gates remain the gates of record | 2026-09-26-phase-ports-and-compressor | Concluded 2026-09-26 (at `6e1c5b6`: 181 + 227 + 38 + 1 green, chain-100 0.000e+00; superseded as a gate once Gradle resolved in the container) | `README.md`, `harness.sh`, `stubs/`, `reference/` |
 | [column-gui-mcp/](column-gui-mcp/) | Detached MCP drag/framebuffer fixes and scale-3 window configuration | 2026-09-24-column-gui | Detached in 43bf7c5 (2026-09-24) | README.md, client.init.gradle, reattach.patch, src/ |
 | [pipe-junction-probe/](pipe-junction-probe/) | Mixed-feed startup and finite-tank transient reproductions, Newton trace and alternative initializer patches | 2026-09-24-column-gui; 2026-09-24-mixed-gas-junction | Concluded 2026-09-25 (investigation); full fix pending | README.md, probe.init.gradle, *Probe.java, candidate-*.patch, XML/text results |
 | [coolprop-parity/](coolprop-parity/) | Generates the CoolProp 8.0.0 parity fixtures (`src/test/resources/science/thermo/coolprop/parity-*.json`) for the Java Helmholtz reference oracle in `src/test/java/.../science/thermo/reference` (commit `6ded7c7`); throw-away `uv venv` with CoolProp, no system install | 2026-09-24-coolprop-low-temperature | In progress since 2026-09-24 (P1 item 1 done; fixtures regenerate byte-identically) | `README.md`, `generate_parity.py` |
