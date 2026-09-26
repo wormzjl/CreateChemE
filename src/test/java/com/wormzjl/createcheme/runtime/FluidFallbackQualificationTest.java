@@ -26,8 +26,15 @@ class FluidFallbackQualificationTest {
         if(name.equals("nitrogen"))n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
         else{n=Arrays.copyOf(V3PengRobinsonThermo.fromRegisteredPackage("createcheme:tjl20_methane_nitrogen").crudeFeed("createcheme:tia_juana_light_methane").moleFractions(),com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1);n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=.1;n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=.2;}
         boolean pump=name.equals("wet crude pump");
-        var graph=new PassiveNetwork(List.of(node(1,pump?149000:150000,n,PassiveNetwork.NodeKind.GENERATOR),node(2,pump?150000:149000,n,PassiveNetwork.NodeKind.RESERVOIR)),List.of(
-                new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(100,name.equals("nitrogen")?.01:.03,.000045,0),pump?new FlowControl.Pump(.0001,500000,1):new FlowControl.Passive())));
+        // The pump is liquid-only (decision D1 of the phase-ports batch): the wet crude with nitrogen is three-phase at
+        // 350 K and 149 kPa, so the pump case draws water from its generator (a liquid at 350 K and 149 kPa) into the
+        // three-phase wet-crude tank; re-baselined from a wet-crude generator, which the pump would refuse. Its target falls
+        // from 1e-4 to 2e-6 m3/s: water is not the tank's composition, and the three approximate intervals must stay inside
+        // the anchor's 1 % composition trust region (about 300 mol in the tank; 15 s at 1e-4 m3/s would add 80 mol).
+        double[] supply=n;
+        if(pump){supply=new double[n.length];supply[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK]=1;}
+        var graph=new PassiveNetwork(List.of(node(1,pump?149000:150000,supply,PassiveNetwork.NodeKind.GENERATOR),node(2,pump?150000:149000,n,PassiveNetwork.NodeKind.RESERVOIR)),List.of(
+                new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(100,name.equals("nitrogen")?.01:.03,.000045,0),pump?new FlowControl.Pump(2e-6,500000,1):new FlowControl.Passive())));
         return new PassiveIntervalSolver(model).solve(graph,.05,PassiveIntervalSolver.Settings.defaults(),()->{});
     }
     private ProcessSolveServices.FluidIslandSolveResult approximate(PassiveNetwork graph,ApproximationAnchor anchor,FallbackAllowance allowance,int cadence,double duration) {

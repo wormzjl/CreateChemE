@@ -351,6 +351,7 @@ public final class IslandCertificate {
             switch(pipe.control()) {
                 case FlowControl.Passive ignored->d.text("passive");
                 case FlowControl.Pump pump->{d.text("pump");d.real(pump.targetVolumeFlow());d.real(pump.maximumAddedPressure());d.real(pump.efficiency());}
+                case FlowControl.Compressor compressor->{d.text("compressor");d.real(compressor.targetVolumeFlow());d.real(compressor.maximumPressureRatio());d.real(compressor.efficiency());}
                 case FlowControl.PressureValve valve->{d.text("valve");d.real(valve.targetPressure());}
             }
             d.integer(pipe.blockedDirections());

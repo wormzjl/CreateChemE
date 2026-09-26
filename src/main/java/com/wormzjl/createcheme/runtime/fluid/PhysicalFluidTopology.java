@@ -21,11 +21,11 @@ public final class PhysicalFluidTopology {
         public Device {
             if(id<=0)throw new IllegalArgumentException("Physical identities must be positive");
             Objects.requireNonNull(position);Objects.requireNonNull(kind);Objects.requireNonNull(facing);Objects.requireNonNull(geometry);Objects.requireNonNull(control);
-            boolean valid=switch(kind) {case PUMP->control instanceof FlowControl.Pump;case VALVE->control instanceof FlowControl.PressureValve;default->control instanceof FlowControl.Passive;};
+            boolean valid=switch(kind) {case PUMP->control instanceof FlowControl.Pump;case COMPRESSOR->control instanceof FlowControl.Compressor;case VALVE->control instanceof FlowControl.PressureValve;default->control instanceof FlowControl.Passive;};
             if(!valid)throw new IllegalArgumentException("Device/control mismatch");
         }
         boolean boundary(){return kind==TopologyCompiler.Kind.RESERVOIR||kind==TopologyCompiler.Kind.GENERATOR||kind==TopologyCompiler.Kind.VOID;}
-        boolean actuator(){return kind==TopologyCompiler.Kind.PUMP||kind==TopologyCompiler.Kind.VALVE;}
+        boolean actuator(){return kind==TopologyCompiler.Kind.PUMP||kind==TopologyCompiler.Kind.COMPRESSOR||kind==TopologyCompiler.Kind.VALVE;}
         boolean connects(Direction direction){return !actuator()&&kind!=TopologyCompiler.Kind.FILTER||direction.x*facing.x+direction.y*facing.y+direction.z*facing.z!=0;}
     }
     public record View(int islandIndex,long pipeId,boolean forward) {}
@@ -153,6 +153,7 @@ public final class PhysicalFluidTopology {
     }
     private static FlowControl control(Device device,Set<Long> invalidPumps) {
         if(device.control instanceof FlowControl.Pump pump&&invalidPumps.contains(device.id))return new FlowControl.Pump(0,pump.maximumAddedPressure(),pump.efficiency());
+        if(device.control instanceof FlowControl.Compressor compressor&&invalidPumps.contains(device.id))return new FlowControl.Compressor(0,compressor.maximumPressureRatio(),compressor.efficiency());
         return device.control;
     }
     private static boolean positiveSide(Device device,Point neighbor){var p=device.position;var d=device.facing;return (neighbor.x-p.x)*d.x+(neighbor.y-p.y)*d.y+(neighbor.z-p.z)*d.z>0;}

@@ -53,7 +53,8 @@ class IslandCertificateTest {
     /** A line of blocks along x: the kinds in order, pipes between. */
     private List<PhysicalFluidTopology.Device> line(Kind... kinds) {
         var devices=new ArrayList<PhysicalFluidTopology.Device>();
-        for(int i=0;i<kinds.length;i++)devices.add(device(i+1,i,0,kinds[i],kinds[i]==Kind.PUMP?new FlowControl.Pump(.001,100000,1):new FlowControl.Passive()));
+        for(int i=0;i<kinds.length;i++)devices.add(device(i+1,i,0,kinds[i],kinds[i]==Kind.PUMP?new FlowControl.Pump(.001,100000,1)
+                :kinds[i]==Kind.COMPRESSOR?new FlowControl.Compressor(.001,3,1):new FlowControl.Passive()));
         return devices;
     }
     /** A water generator at 1 atm against a nitrogen tank charged at 2 bar: the line cannot flow at all. */
@@ -61,9 +62,11 @@ class IslandCertificateTest {
         var devices=line(Kind.GENERATOR,Kind.PIPE,Kind.PIPE,Kind.PIPE,Kind.RESERVOIR);
         return island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,101325,pure(water)),5L,new FluidDeviceSpec(1,298.15,200000,pure(nitrogen))));
     }
-    /** A pump limited to 100 kPa between a tank at 1 atm and a tank at 8 bar: dead-headed at its shutoff. */
+    /** A compressor of ratio 3 between a nitrogen tank at 1 atm and one at 8 bar: dead-headed at its shutoff (304 kPa
+     * against 800 kPa). A compressor since the phase-ports batch (decision D2): a liquid-only pump refuses nitrogen, which
+     * would also certify, but as a refusal rather than a shutoff. */
     private PassiveNetwork deadHeadedPump() {
-        var devices=line(Kind.RESERVOIR,Kind.PIPE,Kind.PUMP,Kind.PIPE,Kind.RESERVOIR);
+        var devices=line(Kind.RESERVOIR,Kind.PIPE,Kind.COMPRESSOR,Kind.PIPE,Kind.RESERVOIR);
         return island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,101325,pure(nitrogen)),5L,new FluidDeviceSpec(1,298.15,800000,pure(nitrogen))));
     }
     /** Two nitrogen tanks a kilopascal apart, three pipes between: they settle into a closed pair. */
@@ -88,10 +91,11 @@ class IslandCertificateTest {
         return island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,125000,feed),3L,new FluidDeviceSpec(10,298.15,113000,charge),
                 5L,new FluidDeviceSpec(1,298.15,101325,feed),7L,new FluidDeviceSpec(1,298.15,101325,feed)));
     }
-    /** Two nitrogen tanks in a loop driven by a pump: flow is steady and the pump heats the gas. */
+    /** Two nitrogen tanks in a loop driven by a compressor (decision D2): flow is steady and its shaft work heats the gas
+     * (decision D8). */
     private PassiveNetwork pumpedLoop() {
         var devices=new ArrayList<PhysicalFluidTopology.Device>(List.of(device(1,0,0,Kind.RESERVOIR),device(2,1,0,Kind.PIPE),
-                device(3,2,0,Kind.PUMP,new FlowControl.Pump(.005,500000,1)),device(4,3,0,Kind.PIPE),device(5,4,0,Kind.RESERVOIR)));
+                device(3,2,0,Kind.COMPRESSOR,new FlowControl.Compressor(.005,3,1)),device(4,3,0,Kind.PIPE),device(5,4,0,Kind.RESERVOIR)));
         long id=6;for(int[] at:new int[][]{{4,1},{4,2},{3,2},{2,2},{1,2},{0,2},{0,1}})devices.add(device(id++,at[0],at[1],Kind.PIPE));
         return island(devices,Map.of(1L,new FluidDeviceSpec(1,298.15,101325,pure(nitrogen)),5L,new FluidDeviceSpec(1,298.15,101325,pure(nitrogen))));
     }
@@ -156,6 +160,9 @@ class IslandCertificateTest {
             assertTrue(at>0,fixture.getKey()+" did not certify: "+rig.coordinator.certificationRefusal(1));
             var certified=rig.stored(1).certificate().orElseThrow();
             assertEquals(0.0,certified.drift(),fixture.getKey());
+            // The compressor rests at its shutoff (CLOSED), not refused for its inlet phase: its supply is a gas.
+            if(fixture.getKey().equals("dead-headed pump")){var g=rig.stored(1).graph();var modes=rig.stored(1).lastResult().orElseThrow().endpointModes();
+                for(int e=0;e<g.pipes().size();e++)if(g.pipes().get(e).control() instanceof FlowControl.Compressor)assertEquals(FlowControl.Mode.CLOSED,modes.get(e),"dead-headed at its ratio limit");}
             assertEquals(Long.MAX_VALUE,certified.horizonTick(),"exact rest is never rechecked by default");
             assertTrue(rig.stored(1).status().startsWith("STEADY: no flow since"),rig.stored(1).status());
             assertFalse(rig.coordinator.retainsSolver(1),"a certified island releases its solver caches");

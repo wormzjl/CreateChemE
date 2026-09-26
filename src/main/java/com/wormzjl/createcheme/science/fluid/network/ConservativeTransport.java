@@ -390,11 +390,18 @@ public final class ConservativeTransport {
                 filters.put(pipe.id(),pipe.filter().add(movedSolids,capturedEnergy));deliveredEnergy-=capturedEnergy;deliveredMass-=movedSolids.massKg();}
             energy[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*graph.reservoirs().get(receiver).elevation();
             double work=0;
-            if(pipe.control() instanceof FlowControl.Pump pump&&flows[edge]>0){var suction=states.get(pipe.first());
-                // Metered on the suction stream's specific volume (the suction's bulk at a BULK end).
-                if(rates==null)work=dt*flows[edge]*suction.volume()/suction.mass()*Math.max(0,heads[edge])/pump.efficiency();
-                else{double specificVolume=0;for(int k:phases){var state=at(k,suction,graph.reservoirs().get(pipe.first()).state());specificVolume+=weight(rates,phases,k)*(FluidThermodynamics.phaseVolume(state,k%3)/model.phaseMass(state,k%3));}
-                    work=dt*flows[edge]*specificVolume*Math.max(0,heads[edge])/pump.efficiency();}
+            if(pipe.control() instanceof FlowControl.Mover mover&&flows[edge]>0){var suction=states.get(pipe.first());
+                // Metered on the suction stream's specific volume (the suction's bulk at a BULK end) and, for a compressor,
+                // the suction node's pressure (decision D8: ideal isothermal work on suction properties); the Newton's
+                // energy rows book the same power (PassiveStepSolver.Equations.nodeAccumulate).
+                double specificVolume;
+                if(rates==null)specificVolume=suction.volume()/suction.mass();
+                else{specificVolume=0;for(int k:phases){var state=at(k,suction,graph.reservoirs().get(pipe.first()).state());specificVolume+=weight(rates,phases,k)*(FluidThermodynamics.phaseVolume(state,k%3)/model.phaseMass(state,k%3));}}
+                work=switch(mover) {
+                    case FlowControl.Pump pump->rates==null?dt*flows[edge]*suction.volume()/suction.mass()*Math.max(0,heads[edge])/pump.efficiency()
+                            :dt*flows[edge]*specificVolume*Math.max(0,heads[edge])/pump.efficiency();
+                    case FlowControl.Compressor compressor->dt*compressor.power(flows[edge],heads[edge],1/specificVolume,suction.pressure());
+                };
                 energy[receiver]+=work;pumpWork+=work;}
             if(frozen) {
                 var species=new double[components];for(int c=0;c<components;c++)species[c]=moved*w[c]/molecularWeight[c];

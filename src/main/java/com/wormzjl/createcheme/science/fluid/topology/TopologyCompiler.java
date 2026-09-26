@@ -6,7 +6,7 @@ import java.util.*;
 /** Deterministic compilation of persistent block identities; no Minecraft reads or loaded-chunk dependency. */
 public final class TopologyCompiler {
     private TopologyCompiler() {}
-    public enum Kind { RESERVOIR, PIPE, PUMP, VALVE, GENERATOR, VOID, FILTER }
+    public enum Kind { RESERVOIR, PIPE, PUMP, VALVE, GENERATOR, VOID, FILTER, COMPRESSOR }
     public record Node(long id,Kind kind,double elevation) {
         public Node{Objects.requireNonNull(kind);if(!Double.isFinite(elevation))throw new IllegalArgumentException("Invalid elevation");}
     }
@@ -72,10 +72,11 @@ public final class TopologyCompiler {
         }
         return new Compiled(new ArrayList<>(retained.values()),runs,views,dead,unanchored,invalidPumps(nodes,links,adjacent),islands);
     }
-    /** Reservoir and boundary ports are disconnected for this structural test; valves remain traversable. */
+    /** Reservoir and boundary ports are disconnected for this structural test; valves remain traversable. A compressor is a
+     * mover like the pump and is held to the same rule (plan 3.7). */
     private static Set<Long> invalidPumps(Map<Long,Node> nodes,Map<Long,Link> links,Map<Long,List<Long>> adjacent) {
         var invalid=new TreeSet<Long>();
-        for(var pump:nodes.values())if(pump.kind==Kind.PUMP) {
+        for(var pump:nodes.values())if(pump.kind==Kind.PUMP||pump.kind==Kind.COMPRESSOR) {
             var edges=adjacent.get(pump.id);if(edges.size()!=2){invalid.add(pump.id);continue;}
             long start=links.get(edges.get(0)).other(pump.id),target=links.get(edges.get(1)).other(pump.id);
             // Separate ports on one tank are still distinct and permit a tank-buffered recycle.

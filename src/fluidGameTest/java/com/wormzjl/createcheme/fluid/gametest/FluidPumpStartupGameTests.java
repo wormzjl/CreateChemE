@@ -26,7 +26,10 @@ public final class FluidPumpStartupGameTests {
         long sourceId=((FluidDeviceBlockEntity)level.getBlockEntity(source)).fluidIdentity(),tankId=((FluidDeviceBlockEntity)level.getBlockEntity(tank)).fluidIdentity();
         if(crude) {
             var feed=world.presets().stream().filter(p->p.id().equals("createcheme:tia_juana_light_methane")).findFirst().orElseThrow();
-            var old=world.registrations().get(sourceId);world.edit(sourceId,old.revision(),old.device(),new FluidDeviceSpec(1,350,101325,feed.moleFractions()));
+            // A liquid-only pump (decision D1 of the phase-ports batch) refuses the crude at 350 K and 1 atm, which is 76 %
+            // vapour by volume; its bubble point at 350 K is 226 kPa (one flashTP, PHASE_PORTS_REVIEW.md WP3), so the
+            // generator stands at 1 MPa and supplies a liquid (re-baselined from 101325 Pa).
+            var old=world.registrations().get(sourceId);world.edit(sourceId,old.revision(),old.device(),new FluidDeviceSpec(1,350,1e6,feed.moleFractions()));
             long id=((FluidDeviceBlockEntity)level.getBlockEntity(pump)).fluidIdentity();old=world.registrations().get(id);var d=old.device();
             world.edit(id,old.revision(),new PhysicalFluidTopology.Device(d.id(),d.position(),d.kind(),d.facing(),d.geometry(),new FlowControl.Pump(.0001,500000,1)),old.spec());
         }

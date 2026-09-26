@@ -73,15 +73,15 @@ class NetworkRegimeTest {
     }
     @Test void pumpShutoffUsesAddedPressureAndTankRecycleIsAllowed() {
         var source=gas(1,350,1e6,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR);
-        // A pump's setting is its rise for water (F4, P1): the setting that is 500 kPa on this generator's nitrogen.
-        double setting=500000*model.pumpReferenceDensity()/(source.state().mass()/source.state().volume());
+        // Nitrogen is moved by a compressor (decision D2; a liquid-only pump refuses gas, decision D1). Its limit is a
+        // pressure ratio (decision D7): r_max = 1.5 on the 1 MPa generator adds 500 kPa, the bracket this test always had.
         for(double p:new double[]{1.49e6,1.51e6}) {
-            var graph=new PassiveNetwork(List.of(source,gas(2,350,p,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.Pump(.001,setting,1))));
+            var graph=new PassiveNetwork(List.of(source,gas(2,350,p,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.Compressor(.001,1.5,1))));
             var result=new PassiveStepSolver(model).solve(graph,1,()->{});
             if(p<1.5e6)assertTrue(result.massFlows()[0]>0);else assertEquals(0,result.massFlows()[0],1e-9);
         }
         var recycle=new PassiveNetwork(List.of(gas(1,350,150000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),gas(2,350,150000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR)),List.of(
-                new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.Pump(.001,500000,1)),new PassiveNetwork.Pipe(2,1,0,geometry)));
+                new PassiveNetwork.Pipe(1,0,1,geometry,new FlowControl.Compressor(.001,1.5,1)),new PassiveNetwork.Pipe(2,1,0,geometry)));
         var result=new PassiveIntervalSolver(model).solve(recycle,1,PassiveIntervalSolver.Settings.defaults(),()->{});
         assertTrue(result.averageMassFlows()[0]>0&&result.averageMassFlows()[1]>0);assertTrue(result.pumpWorkJoule()>0);
     }
@@ -109,8 +109,6 @@ class NetworkRegimeTest {
         for(int i=0;i<6;i++) {var result=new PassiveIntervalSolver(model).solve(graph,20,PassiveIntervalSolver.Settings.defaults(),()->{});graph=result.graph();for(var entry:result.boundaries())if(entry.nodeId()==3)removed-=entry.moles()[pentane];}
         var end=graph.reservoirs().get(1);assertEquals(0,end.state().liquidVolume(),1e-12);assertEquals(n[pentane],end.inventory().moles()[pentane]+removed,1e-8);
     }
-    /** The sonic case's generator state; its pump is given the setting that is 500 kPa on this gas (F4, P1). */
-    private FluidThermodynamics.State sonicSource(){return gas(1,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR).state();}
     @Test void cancellationCannotLeavePartialTransfersAndExcessVelocityIsConservativelyLimited() {
         var graph=new PassiveNetwork(List.of(gas(1,350,200000,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR),gas(2,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.RESERVOIR)),List.of(new PassiveNetwork.Pipe(1,0,1,geometry)));
         var solver=new PassiveIntervalSolver(model);var count=new AtomicInteger();
@@ -119,7 +117,8 @@ class NetworkRegimeTest {
         var fresh=new PassiveIntervalSolver(model).solve(graph,1,new PassiveIntervalSolver.Settings(.1,.1,1024),()->{});
         assertArrayEquals(fresh.averageMassFlows(),retry.averageMassFlows(),1e-8);
         var sonic=new PassiveNetwork(List.of(gas(1,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.GENERATOR),gas(2,350,101325,com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN,PassiveNetwork.NodeKind.VOID)),List.of(
-                new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(.1,.01,0,0),new FlowControl.Pump(1,500000*model.pumpReferenceDensity()/(sonicSource().mass()/sonicSource().volume()),1))));
+                // A compressor (decision D2) whose ratio adds about 500 kPa on the 1 atm generator, the rise the pump had.
+                new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(.1,.01,0,0),new FlowControl.Compressor(1,6,1))));
         var capped=new PassiveStepSolver(model).solve(sonic,1,()->{});var upstream=sonic.reservoirs().getFirst().state();
         double expected=upstream.mass()/upstream.volume()*sonic.pipes().getFirst().minimumArea()*model.velocityLimit(upstream);
         assertEquals(expected,capped.massFlows()[0],1e-10+expected*1e-8);assertEquals(FlowControl.Mode.PUMP_VELOCITY_LIMIT,capped.modes().getFirst());

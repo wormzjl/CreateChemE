@@ -72,7 +72,8 @@ class TransientQualificationTest {
         for(String name:List.of("liquid-full compression","small gas headspace","wet crude equalization","wet crude reversed direction","pump against pressure")) {
             var composition=name.startsWith("liquid")?water:name.startsWith("small")?smallHeadspace:name.startsWith("pump")?gas:wet;
             double pa=name.contains("reversed")?150000:151000,pb=name.contains("reversed")?151000:150000;
-            FlowControl control=name.startsWith("pump")?new FlowControl.Pump(.001,500000,.8):new FlowControl.Passive();
+            // The gas case's device is a compressor (decision D2; a liquid-only pump refuses nitrogen); case name kept.
+            FlowControl control=name.startsWith("pump")?new FlowControl.Compressor(.001,3,.8):new FlowControl.Passive();
             if(name.startsWith("pump")){pa=101325;pb=200000;}
             var graph=new PassiveNetwork(List.of(tank(1,pa,composition),tank(2,pb,composition)),List.of(new PassiveNetwork.Pipe(1,0,1,new PipeResistance.Geometry(100,.05,.000045,0),control)));
             var row=new LinkedHashMap<String,Object>();rows.add(row);row.put("case",name);double duration=.5;

@@ -37,6 +37,14 @@ class VelocityClampTest {
         var model=model(.2);
         for(FlowControl control:List.of(new FlowControl.Passive(),new FlowControl.Pump(1,500000,1),new FlowControl.PressureValve(150000))) {
             var graph=graph(model,false,true,control,false);var result=new PassiveStepSolver(model).solve(graph,.1,()->{});bounded(model,graph,result);
+            if(control instanceof FlowControl.Pump) {
+                // The liquid-only pump (decisions D1, D6 of the phase-ports batch) refuses the three-phase supply: closed with
+                // its typed mode, carrying exactly nothing and doing no work; the island still solves.
+                assertEquals(FlowControl.Mode.INLET_WRONG_PHASE,result.modes().getFirst());assertEquals(0,result.massFlows()[0]);assertEquals(0,result.pumpWorkJoule());
+                assertTrue(InletPhase.supply(model,graph,0,1,.1).vapourVolumeShare()>FlowControl.Pump.VAPOUR_REFUSE);
+                assertArrayEquals(new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1],result.externalMoles(),1e-9);assertEquals(0,result.externalEnergyJoule(),1e-4);
+                continue;
+            }
             var stream=result.pipeTransfers().getFirst().forward();for(double volume:stream.phaseVolumes())assertTrue(volume>0);
             double[] moved=stream.componentMoles();var donor=graph.reservoirs().getFirst();var n=donor.inventory().moles();
             for(int c=0;c<n.length;c++)assertEquals(stream.massKg()*n[c]/donor.state().mass(),moved[c],1e-10+1e-8*Math.abs(moved[c]));

@@ -29,6 +29,13 @@ class TopologyCompilerTest {
         var valve=TopologyCompiler.compile(List.of(node(1,VALVE),node(2,PIPE),node(3,RESERVOIR),node(4,PIPE)),edges);
         assertTrue(valve.invalidPumpCycles().isEmpty());assertEquals(1,valve.islands().size());
     }
+    /** A compressor is a mover like the pump (plan 3.7): a compressor-only bypass is rejected, a tank-buffered recycle kept. */
+    @Test void compressorOnlyBypassIsRejectedLikeAPumpsButATankBufferedRecycleIsAllowed() {
+        var edges=List.of(edge(10,1,2),edge(11,2,3),edge(12,3,4),edge(13,4,1));
+        assertEquals(Set.of(1L),TopologyCompiler.compile(List.of(node(1,COMPRESSOR),node(2,PIPE),node(3,VALVE),node(4,PIPE)),edges).invalidPumpCycles());
+        assertTrue(TopologyCompiler.compile(List.of(node(1,COMPRESSOR),node(2,PIPE),node(3,RESERVOIR),node(4,PIPE)),edges).invalidPumpCycles().isEmpty());
+        assertEquals(Set.of(1L,3L),TopologyCompiler.compile(List.of(node(1,COMPRESSOR),node(2,PIPE),node(3,PUMP),node(4,PIPE)),edges).invalidPumpCycles());
+    }
     @Test void pipeOnlyRingIsExplicitlyUnanchoredAndCompilationIgnoresInputOrder() {
         var nodes=List.of(node(1,PIPE),node(2,PIPE),node(3,PIPE));var links=List.of(edge(10,1,2),edge(11,2,3),edge(12,3,1));
         var result=TopologyCompiler.compile(nodes,links);assertEquals(Set.of(10L,11L,12L),result.unanchoredLinks());assertTrue(result.runs().isEmpty());

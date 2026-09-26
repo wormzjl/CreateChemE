@@ -221,6 +221,8 @@ public final class FluidCheckpointCodec {
             case FlowControl.Passive ignored->w.u8(0);
             case FlowControl.Pump pump->{w.u8(1);w.f64(pump.targetVolumeFlow());w.f64(pump.maximumAddedPressure());w.f64(pump.efficiency());}
             case FlowControl.PressureValve valve->{w.u8(2);w.f64(valve.targetPressure());}
+            // The compressor's control tag and the format bump are WP5's (plan 4.4); no runtime path builds one before it.
+            case FlowControl.Compressor compressor->throw new IllegalArgumentException("Compressor controls are not persisted before checkpoint format 6");
         }
         var s=r.spec();w.f64(s.volume());w.f64(s.temperature());w.f64(s.pressure());w.varint(tables.composition(s.composition()));
         w.f64(s.solids().volumeFraction());w.varint(s.solids().grades().size());
@@ -378,6 +380,7 @@ public final class FluidCheckpointCodec {
                 case FlowControl.Passive ignored->w.u8(0);
                 case FlowControl.Pump pump->{w.u8(1);w.f64(pump.targetVolumeFlow());w.f64(pump.maximumAddedPressure());w.f64(pump.efficiency());}
                 case FlowControl.PressureValve valve->{w.u8(2);w.f64(valve.targetPressure());}
+                case FlowControl.Compressor compressor->throw new IllegalArgumentException("Compressor controls are not persisted before checkpoint format 6");
             }
         }
     }

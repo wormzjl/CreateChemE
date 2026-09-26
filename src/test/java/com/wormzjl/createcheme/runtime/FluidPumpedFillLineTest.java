@@ -32,14 +32,18 @@ class FluidPumpedFillLineTest {
     private final FluidThermodynamics model=FluidTestSupport.networkModel();
 
     private double[] pure(int component){double[] n=new double[MaterialTestBasis.NETWORK+1];n[component]=1;return n;}
-    /** A line of blocks along +x, every block facing east, in the WP5 rig's letters: G generator, U pump, P pipe, R tank, V void. */
+    /** The compressor of the gas transfer (decision D2): the pump's 0.01 m3/s, ratio 1.01 (the lowest the plan's GUI bounds
+     * allow; a 1013 Pa rise on 1 atm suction, near the pump's 575 Pa density-scaled limit this test was written for). */
+    private static final double COMPRESSOR_RATIO=1.01;
+    /** A line of blocks along +x, every block facing east, in the WP5 rig's letters: G generator, U pump, P pipe, R tank, V void;
+     * and C, a compressor (phase-ports batch, decision D2). */
     private PassiveNetwork line(String layout) {
         var devices=new ArrayList<PhysicalFluidTopology.Device>();var boundaries=new LinkedHashMap<Long,PassiveNetwork.Reservoir>();
         for(int i=0;i<layout.length();i++) {
-            var kind=switch(layout.charAt(i)){case 'G'->TopologyCompiler.Kind.GENERATOR;case 'U'->TopologyCompiler.Kind.PUMP;case 'P'->TopologyCompiler.Kind.PIPE;
+            var kind=switch(layout.charAt(i)){case 'G'->TopologyCompiler.Kind.GENERATOR;case 'U'->TopologyCompiler.Kind.PUMP;case 'C'->TopologyCompiler.Kind.COMPRESSOR;case 'P'->TopologyCompiler.Kind.PIPE;
                 case 'R'->TopologyCompiler.Kind.RESERVOIR;case 'V'->TopologyCompiler.Kind.VOID;default->throw new IllegalArgumentException(layout);};
             var device=new PhysicalFluidTopology.Device(i+1,new PhysicalFluidTopology.Position("minecraft:overworld",i,64,0),kind,PhysicalFluidTopology.Direction.EAST,BLOCK,
-                    kind==TopologyCompiler.Kind.PUMP?new FlowControl.Pump(.01,500000,1):new FlowControl.Passive());
+                    kind==TopologyCompiler.Kind.PUMP?new FlowControl.Pump(.01,500000,1):kind==TopologyCompiler.Kind.COMPRESSOR?new FlowControl.Compressor(.01,COMPRESSOR_RATIO,1):new FlowControl.Passive());
             devices.add(device);
             if(kind==TopologyCompiler.Kind.GENERATOR)boundaries.put(device.id(),new FluidDeviceSpec(1,298.15,101325,pure(MaterialTestBasis.NETWORK)).initialize(device,model,()->{}));
             else if(kind==TopologyCompiler.Kind.RESERVOIR||kind==TopologyCompiler.Kind.VOID)boundaries.put(device.id(),new FluidDeviceSpec(1,298.15,101325,pure(MaterialTestBasis.NITROGEN)).initialize(device,model,()->{}));
@@ -157,21 +161,23 @@ class FluidPumpedFillLineTest {
     }
 
     /**
-     * A pump moving nitrogen from one closed tank to another. Its "max pressure rise" is the rise for water; on nitrogen at
-     * 1 atm its limit is that times 1.145/996, about 575 Pa, so it reaches the limit and then its shutoff within a
-     * fraction of a second, the suction tank a quarter of a kelvin cooler, and the island certifies (F4, pump option P1).
-     * Before P1 the pump evacuated the suction tank adiabatically until it reached the model's 273.16 K floor after 21.9 s
-     * and stayed held there (F1 review, section 2.6); the extended nitrogen domain would only have moved that end to 63 K.
+     * A compressor moving nitrogen from one closed tank to another (decision D2: a liquid-only pump refuses the gas, D1). Its
+     * limit is a pressure ratio (decision D7): it reaches the discharge at {@code r_max} times the suction and then its
+     * shutoff within a few seconds, the suction tank a fraction of a kelvin cooler by its expansion, and the island
+     * certifies. (Test
+     * name kept from the pump it was: the pump held its density-scaled limit, 575 Pa on this gas, with the suction a
+     * quarter of a kelvin cooler. Before that, option P1 of the F1 review, the pump evacuated the suction tank until it
+     * reached the model's 273.16 K floor after 21.9 s.)
      */
     @Test void aGasTransferClosesAtThePumpsScaledLimitAndCertifies() {
-        var rig=new Rig("RUPR");
+        var rig=new Rig("RCPR");
         rig.run(20*120,s->s.certificate().isPresent());
-        System.out.println("gas transfer: "+rig.describe());
+        System.out.println("gas transfer (compressor): "+rig.describe());
         var island=rig.island();var suction=tanks(island.graph()).getFirst().state();var discharge=tanks(island.graph()).getLast().state();
         assertTrue(island.certificate().isPresent(),"the closed transfer certifies: "+rig.describe());
-        assertEquals(FlowControl.Mode.CLOSED,island.lastResult().orElseThrow().endpointModes().get(1),"the pump is closed at its shutoff");
+        assertEquals(FlowControl.Mode.CLOSED,island.lastResult().orElseThrow().endpointModes().get(1),"the compressor is closed at its shutoff");
         assertTrue(suction.temperature()<298.15&&suction.temperature()>297.5,"a fraction of a kelvin cooler: "+rig.describe());
-        assertEquals(500000*1.145/model.pumpReferenceDensity(),discharge.pressure()-suction.pressure(),3,"the pump holds its scaled limit: "+rig.describe());
+        assertEquals(COMPRESSOR_RATIO*suction.pressure(),discharge.pressure(),3,"the compressor holds its ratio limit: "+rig.describe());
         assertTrue(rig.jobs<=20,"a handful of solves: "+rig.describe());
     }
 }
