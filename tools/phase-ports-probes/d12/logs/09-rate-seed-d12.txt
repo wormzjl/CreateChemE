@@ -1,0 +1,46 @@
+## grid
+== rate solve converged
+  gen 1 P=110000  junction 11 P=164796.2  out=0.00000  mode=CLOSED
+  gen 2 P=140000  junction 12 P=165593.4  out=0.00000  mode=CLOSED
+  gen 3 P=170000  junction 13 P=168552.9  out=0.30135  mode=PASSIVE
+  gen 4 P=200000  junction 14 P=168886.9  out=0.37797  mode=VELOCITY_LIMITED
+  gen 5 P=130000  junction 15 P=168584.5  out=0.00000  mode=CLOSED
+  gen 6 P=160000  junction 16 P=168731.6  out=0.00000  mode=CLOSED
+  gen 7 P=190000  junction 17 P=168858.3  out=0.35907  mode=VELOCITY_LIMITED
+  gen 8 P=120000  junction 18 P=168468.2  out=0.00000  mode=CLOSED
+  gen 9 P=150000  junction 19 P=168612.1  out=0.00000  mode=CLOSED
+  gen 10 P=180000  junction 20 P=170199.4  out=0.34018  mode=VELOCITY_LIMITED
+## alternating
+== rate solve converged
+  gen 1 P=110000  junction 22 P=140094.6  out=0.00000  mode=CLOSED
+  gen 3 P=140000  junction 23 P=140283.6  out=0.00000  mode=CLOSED
+  gen 5 P=170000  junction 25 P=175578.1  out=0.00000  mode=CLOSED
+  gen 7 P=200000  junction 27 P=179029.3  out=0.37797  mode=VELOCITY_LIMITED
+  gen 9 P=130000  junction 29 P=176022.1  out=0.00000  mode=CLOSED
+  gen 11 P=160000  junction 31 P=184753.0  out=0.00000  mode=CLOSED
+  gen 13 P=190000  junction 33 P=188240.4  out=0.35235  mode=PASSIVE
+  gen 15 P=120000  junction 35 P=157744.2  out=0.00000  mode=CLOSED
+  gen 17 P=150000  junction 37 P=155337.7  out=0.00000  mode=CLOSED
+  gen 19 P=180000  junction 39 P=170023.0  out=0.34018  mode=VELOCITY_LIMITED
+## both
+== rate solve converged
+  gen 1 P=110000  junction 42 P=140094.6  out=0.00000  mode=CLOSED
+  gen 1 P=110000  junction 22 P=140094.6  out=0.00000  mode=CLOSED
+  gen 3 P=140000  junction 43 P=140283.6  out=0.00000  mode=CLOSED
+  gen 3 P=140000  junction 23 P=140283.6  out=0.00000  mode=CLOSED
+  gen 5 P=170000  junction 45 P=175578.1  out=0.00000  mode=CLOSED
+  gen 5 P=170000  junction 25 P=175578.1  out=0.00000  mode=CLOSED
+  gen 7 P=200000  junction 47 P=179029.3  out=0.37797  mode=VELOCITY_LIMITED
+  gen 7 P=200000  junction 27 P=179029.3  out=0.37797  mode=VELOCITY_LIMITED
+  gen 9 P=130000  junction 49 P=176022.1  out=0.00000  mode=CLOSED
+  gen 9 P=130000  junction 29 P=176022.1  out=0.00000  mode=CLOSED
+  gen 11 P=160000  junction 51 P=184753.0  out=0.00000  mode=CLOSED
+  gen 11 P=160000  junction 31 P=184753.0  out=0.00000  mode=CLOSED
+  gen 13 P=190000  junction 53 P=188240.4  out=0.35235  mode=PASSIVE
+  gen 13 P=190000  junction 33 P=188240.4  out=0.35235  mode=PASSIVE
+  gen 15 P=120000  junction 55 P=157744.2  out=0.00000  mode=CLOSED
+  gen 15 P=120000  junction 35 P=157744.2  out=0.00000  mode=CLOSED
+  gen 17 P=150000  junction 57 P=155337.7  out=0.00000  mode=CLOSED
+  gen 17 P=150000  junction 37 P=155337.7  out=0.00000  mode=CLOSED
+  gen 19 P=180000  junction 59 P=170023.0  out=0.34018  mode=VELOCITY_LIMITED
+  gen 19 P=180000  junction 39 P=170023.0  out=0.34018  mode=VELOCITY_LIMITED

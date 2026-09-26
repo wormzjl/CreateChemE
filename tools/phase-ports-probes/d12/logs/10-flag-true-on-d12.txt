@@ -1,0 +1,32 @@
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=grid-10@1.00 interval=5 intervals=40/40 newtonSolves=154 accepted=143 rejected=5 worstMoles=1.03e-15 worstEnergy=8.88e-17 ms=1615 monotoneTanks=10/10 directionsJudged=351
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=grid-10@1.00 interval=0.1 intervals=400/400 newtonSolves=430 accepted=412 rejected=8 worstMoles=6.75e-15 worstEnergy=1.73e-15 ms=2065 monotoneTanks=7/10 directionsJudged=3736
+[maximumVelocity=100000] EXTREME_TOPOLOGY_CADENCE case=grid-10@1.00 pressure=1.06e-05 temperature=0.00595 K moles=2.33e-05 supplied=3.14e-05 generatorSplit=0.00814
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating-10@1.00 interval=5 intervals=40/40 newtonSolves=158 accepted=144 rejected=5 worstMoles=1.59e-15 worstEnergy=1.28e-15 ms=529 monotoneTanks=10/10 directionsJudged=351
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating-10@1.00 interval=0.1 intervals=400/400 newtonSolves=426 accepted=412 rejected=8 worstMoles=2.62e-15 worstEnergy=1.37e-15 ms=1627 monotoneTanks=7/10 directionsJudged=3744
+[maximumVelocity=100000] EXTREME_TOPOLOGY_CADENCE case=alternating-10@1.00 pressure=0.00351 temperature=0.326 K moles=0.00289 supplied=0.00694 generatorSplit=0.00386
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=5 intervals=40/40 newtonSolves=165 accepted=145 rejected=6 worstMoles=9.98e-16 worstEnergy=2.00e-15 ms=1185 monotoneTanks=10/10 directionsJudged=702
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=0.1 intervals=400/400 newtonSolves=433 accepted=414 rejected=8 worstMoles=3.83e-15 worstEnergy=3.34e-15 ms=2732 monotoneTanks=8/10 directionsJudged=7320
+[maximumVelocity=100000] EXTREME_TOPOLOGY_CADENCE case=alternating_both_sides-10@1.00 pressure=1.16e-05 temperature=0.00357 K moles=1.06e-05 supplied=2.25e-05 generatorSplit=0.00179
+EXTREME_TOPOLOGY case=grid-10@0.20 interval=5 intervals=40/40 newtonSolves=139 accepted=127 rejected=3 worstMoles=2.69e-15 worstEnergy=1.74e-15 ms=609 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY case=grid-10@0.20 interval=0.1 intervals=400/400 newtonSolves=407 accepted=400 rejected=0 worstMoles=4.10e-15 worstEnergy=4.28e-15 ms=1756 monotoneTanks=8/10 directionsJudged=3653
+EXTREME_TOPOLOGY_CADENCE case=grid-10@0.20 pressure=5.68e-07 temperature=0.000555 K moles=1.46e-06 supplied=2.62e-06 generatorSplit=0.0320
+EXTREME_TOPOLOGY case=alternating-10@0.20 interval=5 intervals=40/40 newtonSolves=142 accepted=127 rejected=3 worstMoles=8.83e-16 worstEnergy=1.67e-15 ms=566 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY case=alternating-10@0.20 interval=0.1 intervals=400/400 newtonSolves=409 accepted=400 rejected=0 worstMoles=7.33e-15 worstEnergy=1.78e-15 ms=1445 monotoneTanks=10/10 directionsJudged=3647
+EXTREME_TOPOLOGY_CADENCE case=alternating-10@0.20 pressure=0.000101 temperature=0.00968 K moles=7.48e-05 supplied=0.000469 generatorSplit=0.0198
+EXTREME_TOPOLOGY case=alternating_both_sides-10@0.20 interval=5 intervals=40/40 newtonSolves=155 accepted=128 rejected=4 worstMoles=2.88e-15 worstEnergy=4.86e-15 ms=822 monotoneTanks=10/10 directionsJudged=702
+EXTREME_TOPOLOGY case=alternating_both_sides-10@0.20 interval=0.1 intervals=400/400 newtonSolves=425 accepted=402 rejected=2 worstMoles=1.63e-15 worstEnergy=3.17e-15 ms=2292 monotoneTanks=10/10 directionsJudged=7218
+EXTREME_TOPOLOGY_CADENCE case=alternating_both_sides-10@0.20 pressure=3.33e-07 temperature=4.12e-05 K moles=2.59e-07 supplied=1.04e-06 generatorSplit=0.00998
+EXTREME_TOPOLOGY_STRUCTURE case=grid-10@1.00 blocks=40 nodes=40 junctions=20 connections=48
+EXTREME_TOPOLOGY_STRUCTURE case=alternating-10@1.00 blocks=40 nodes=38 junctions=18 connections=37
+EXTREME_TOPOLOGY_STRUCTURE case=alternating_both_sides-10@1.00 blocks=60 nodes=56 junctions=36 connections=74
+EXTREME_TOPOLOGY_CAP nitrogen 350 K 150 kPa: saturates at 1455 Pa over a half-block stub, 2910 Pa over a one-block run
+OPEN DEFECT EXTREME_TOPOLOGY case=grid-10@1.00 interval=5 intervals=40/40 newtonSolves=149 accepted=140 rejected=4 worstMoles=3.93e-16 worstEnergy=1.24e-15 ms=563 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY_CAP nitrogen 350 K 150 kPa: saturates at 1455 Pa over a half-block stub, 2910 Pa over a one-block run
+OPEN DEFECT EXTREME_TOPOLOGY case=alternating-10@1.00 interval=5 intervals=40/40 newtonSolves=153 accepted=141 rejected=6 worstMoles=2.87e-15 worstEnergy=5.55e-16 ms=527 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY_CAP nitrogen 350 K 150 kPa: saturates at 1455 Pa over a half-block stub, 2910 Pa over a one-block run
+OPEN DEFECT EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=5 intervals=40/40 newtonSolves=162 accepted=144 rejected=7 worstMoles=4.44e-15 worstEnergy=1.47e-15 ms=936 monotoneTanks=10/10 directionsJudged=702
+    => org.opentest4j.AssertionFailedError: grid-10@1.00 at 5.0 s: expected to hold on its first interval (open defect); it now integrates 40 intervals, so set FULL_CASES_OPEN_DEFECT=false: EXTREME_TOPOLOGY case=grid-10@1.00 interval=5 intervals=40/40 newtonSolves=149 accepted=140 rejected=4 worstMoles=3.93e-16 worstEnergy=1.24e-15 ms=563 monotoneTanks=10/10 directionsJudged=351 ==> expected: <0> but was: <40>
+    => org.opentest4j.AssertionFailedError: alternating-10@1.00 at 5.0 s: expected to hold on its first interval (open defect); it now integrates 40 intervals, so set FULL_CASES_OPEN_DEFECT=false: EXTREME_TOPOLOGY case=alternating-10@1.00 interval=5 intervals=40/40 newtonSolves=153 accepted=141 rejected=6 worstMoles=2.87e-15 worstEnergy=5.55e-16 ms=527 monotoneTanks=10/10 directionsJudged=351 ==> expected: <0> but was: <40>
+    => org.opentest4j.AssertionFailedError: alternating_both_sides-10@1.00 at 5.0 s: expected to hold on its first interval (open defect); it now integrates 40 intervals, so set FULL_CASES_OPEN_DEFECT=false: EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=5 intervals=40/40 newtonSolves=162 accepted=144 rejected=7 worstMoles=4.44e-15 worstEnergy=1.47e-15 ms=936 monotoneTanks=10/10 directionsJudged=702 ==> expected: <0> but was: <40>
+[         7 tests successful      ]
+[         3 tests failed          ]

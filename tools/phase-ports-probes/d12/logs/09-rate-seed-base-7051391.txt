@@ -1,0 +1,6 @@
+## grid
+rate solve FAILED: Newton iteration limit at residual 0.5401641189095386; active-set pass=0
+## alternating
+rate solve FAILED: Newton iteration limit at residual 2.5263057678881053; active-set pass=0
+## both
+rate solve FAILED: Newton iteration limit at residual 2.526305857045348; active-set pass=0

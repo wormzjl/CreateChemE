@@ -1,0 +1,24 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 52f0267..e0fda93 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -1556,8 +1556,9 @@ public final class PassiveStepSolver {
+             if(usable&&at!=g&&graph.reservoirs().get(at).junction()){runs.add(chain);ends.add(new int[]{g,at});}
+         }
+         if(runs.isEmpty())return graph;
+-        double[] pressures=oneWayPressures(graph,boundaryClosed,closedPorts,nodeEdges,checkpoint);
+-        if(pressures==null)return graph;
++        long d12t0=System.nanoTime();double[] pressures=oneWayPressures(graph,boundaryClosed,closedPorts,nodeEdges,checkpoint);
++        if(Boolean.getBoolean("d12.time"))System.out.printf(java.util.Locale.ROOT,"D12TIME estimate %.2f ms nodes=%d%n",(System.nanoTime()-d12t0)/1e6,nodes);
++        if(pressures==null){if(Boolean.getBoolean("d12.sites"))System.out.println("D12SITE estimateFailed "+StackWalker.getInstance().walk(f->f.map(x->x.getClassName()+"."+x.getMethodName()).filter(x->x.contains("Test")).findFirst().orElse("?")));return graph;}
+         boolean closed=false;
+         for(int r=0;r<runs.size();r++) {
+             var chain=runs.get(r);int g=ends.get(r)[0],far=ends.get(r)[1];
+@@ -1566,6 +1567,7 @@ public final class PassiveStepSolver {
+             double drive=pg-pf-endDensity(generator.state(),port)*GRAVITY*(graph.reservoirs().get(far).elevation()-generator.elevation());
+             if(drive<-reopenBand(pg,pf)){for(int link:chain)boundaryClosed[link]=true;closed=true;}
+         }
++        if(Boolean.getBoolean("d12.sites"))System.out.println("D12SITE "+(closed?"closed":"none")+" "+StackWalker.getInstance().walk(f->f.map(x->x.getClassName()+"."+x.getMethodName()).filter(x->x.contains("Test")).findFirst().orElse("?")));
+         if(!closed)return graph;
+         var seeded=new ArrayList<>(graph.reservoirs());
+         for(int i=0;i<nodes;i++) {

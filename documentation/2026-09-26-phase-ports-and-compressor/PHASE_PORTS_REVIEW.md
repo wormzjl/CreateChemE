@@ -425,7 +425,7 @@ The javadoc of `PassiveNetwork.PhasePort` and `PassiveStepSolver.endPressure` wa
 
 ## D12: one-way generators from the cold start (2026-09-26)
 
-- Author: Claude (Opus 5.5), worktree `wt-coldstart` (session scratchpad), branch `claude/cold-start-generators-wip`. Base: `7051391` (D9 `fdf3574`, its tools commit, the decision-log commit with D11/D12). Code commit: `WIP phase-ports D12: one-way generators from the cold start` (hash recorded in section 9); not merged, not pushed.
+- Author: Claude (Opus 5.5), worktree `wt-coldstart` (session scratchpad), branch `claude/cold-start-generators-wip`. Base: `7051391` (D9 `fdf3574`, its tools commit, the decision-log commit with D11/D12). Code commit: `418ca7e` (`WIP phase-ports D12: one-way generators from the cold start`); not merged, not pushed.
 - Decision: D12 (owner, 2026-09-26): a generator only pushes when its pressure allows and never receives, from the cold start's first pass; fix order O2, then O1, O3-O5 only as options (`EXTREME_TOPOLOGY_TESTS.md` section 6). D11 is not implemented here.
 - **Gates: the Minecraft-free harness only. The Gradle gates were not run in this worktree (another agent held the single Gradle lane) and must be run after the merge** (the fluid suites with the junction lines, the exact regression, the 38 adjacent, GameTest and mcpCompat compile).
 
@@ -522,4 +522,4 @@ JDK OpenJDK 21.0.10 (container). Log `tools/phase-ports-probes/d12/logs/01-harne
 
 ### 9. Commits and material
 
-Code commit: see the tools commit, which records its hash here. Material: `tools/phase-ports-probes/d12/`.
+Code commit `418ca7e` (`WIP phase-ports D12: one-way generators from the cold start`, on `7051391`); tools commit after it (this line). Material: `tools/phase-ports-probes/d12/` (`src/` the drivers `D12Probe`, `D12Estimate`, `D12StaticCompare`, `D12Scan` with `run.sh`, the site-instrumentation and O1-variant patches; `logs/` the harness run, the class outputs on both trees, the scans, the static comparison, the bitwise-probe hashes, the rate-seed outputs). H1 was re-run on the committed tree `418ca7e` (`logs/01-harness-all-d12.log`): the same results.
