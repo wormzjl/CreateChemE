@@ -1,0 +1,9 @@
+# WP1/D9 BitwiseProbe outputs, base 7051391 (bwout-base) and D12 (bwout-wt-coldstart); identical hashes = byte-identical
+0afc85c5789294979afb27fd2ece06d361d23b5abc5b4cde9e02234400497761  bwout-base/liquid-ports.txt
+0afc85c5789294979afb27fd2ece06d361d23b5abc5b4cde9e02234400497761  bwout-wt-coldstart/liquid-ports.txt
+7cb85a9bbe9fc9e48fc49a7968b49a7df905f13b2470d33895228747402046fc  bwout-base/chain-100.json
+7cb85a9bbe9fc9e48fc49a7968b49a7df905f13b2470d33895228747402046fc  bwout-wt-coldstart/chain-100.json
+b8f87fb3b0c86410eeee06165c8690a0e528019542e7cdb5b21eef3d6f235bf8  bwout-base/gas-ports.txt
+b8f87fb3b0c86410eeee06165c8690a0e528019542e7cdb5b21eef3d6f235bf8  bwout-wt-coldstart/gas-ports.txt
+c1e61648da2ba9b326aba91f157d6151576ecbdd41999b519433f57690e69785  bwout-base/scenarios.txt
+c1e61648da2ba9b326aba91f157d6151576ecbdd41999b519433f57690e69785  bwout-wt-coldstart/scenarios.txt

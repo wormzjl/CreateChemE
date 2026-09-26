@@ -1,0 +1,46 @@
+=== harness select (repo /tmp/claude-0/-home-user-CreateChemE/cfcc6b94-4f24-5f12-ba62-46e9aaaec421/scratchpad/wt-coldstart, 7051391 + uncommitted src changes)
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=grid-10@1.00 interval=5 intervals=40/40 newtonSolves=154 accepted=143 rejected=5 worstMoles=1.03e-15 worstEnergy=8.88e-17 ms=1700 monotoneTanks=10/10 directionsJudged=351
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=grid-10@1.00 interval=0.1 intervals=400/400 newtonSolves=430 accepted=412 rejected=8 worstMoles=6.75e-15 worstEnergy=1.73e-15 ms=2352 monotoneTanks=7/10 directionsJudged=3736
+[maximumVelocity=100000] EXTREME_TOPOLOGY_CADENCE case=grid-10@1.00 pressure=1.06e-05 temperature=0.00595 K moles=2.33e-05 supplied=3.14e-05 generatorSplit=0.00814
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating-10@1.00 interval=5 intervals=40/40 newtonSolves=158 accepted=144 rejected=5 worstMoles=1.59e-15 worstEnergy=1.28e-15 ms=653 monotoneTanks=10/10 directionsJudged=351
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating-10@1.00 interval=0.1 intervals=400/400 newtonSolves=426 accepted=412 rejected=8 worstMoles=2.62e-15 worstEnergy=1.37e-15 ms=2424 monotoneTanks=7/10 directionsJudged=3744
+[maximumVelocity=100000] EXTREME_TOPOLOGY_CADENCE case=alternating-10@1.00 pressure=0.00351 temperature=0.326 K moles=0.00289 supplied=0.00694 generatorSplit=0.00386
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=5 intervals=40/40 newtonSolves=165 accepted=145 rejected=6 worstMoles=9.98e-16 worstEnergy=2.00e-15 ms=1410 monotoneTanks=10/10 directionsJudged=702
+[maximumVelocity=100000] EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=0.1 intervals=400/400 newtonSolves=433 accepted=414 rejected=8 worstMoles=3.83e-15 worstEnergy=3.34e-15 ms=3903 monotoneTanks=8/10 directionsJudged=7320
+[maximumVelocity=100000] EXTREME_TOPOLOGY_CADENCE case=alternating_both_sides-10@1.00 pressure=1.16e-05 temperature=0.00357 K moles=1.06e-05 supplied=2.25e-05 generatorSplit=0.00179
+EXTREME_TOPOLOGY case=grid-10@0.20 interval=5 intervals=40/40 newtonSolves=139 accepted=127 rejected=3 worstMoles=2.69e-15 worstEnergy=1.74e-15 ms=982 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY case=grid-10@0.20 interval=0.1 intervals=400/400 newtonSolves=407 accepted=400 rejected=0 worstMoles=4.10e-15 worstEnergy=4.28e-15 ms=1642 monotoneTanks=8/10 directionsJudged=3653
+EXTREME_TOPOLOGY_CADENCE case=grid-10@0.20 pressure=5.68e-07 temperature=0.000555 K moles=1.46e-06 supplied=2.62e-06 generatorSplit=0.0320
+EXTREME_TOPOLOGY case=alternating-10@0.20 interval=5 intervals=40/40 newtonSolves=142 accepted=127 rejected=3 worstMoles=8.83e-16 worstEnergy=1.67e-15 ms=511 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY case=alternating-10@0.20 interval=0.1 intervals=400/400 newtonSolves=409 accepted=400 rejected=0 worstMoles=7.33e-15 worstEnergy=1.78e-15 ms=1268 monotoneTanks=10/10 directionsJudged=3647
+EXTREME_TOPOLOGY_CADENCE case=alternating-10@0.20 pressure=0.000101 temperature=0.00968 K moles=7.48e-05 supplied=0.000469 generatorSplit=0.0198
+EXTREME_TOPOLOGY case=alternating_both_sides-10@0.20 interval=5 intervals=40/40 newtonSolves=155 accepted=128 rejected=4 worstMoles=2.88e-15 worstEnergy=4.86e-15 ms=936 monotoneTanks=10/10 directionsJudged=702
+EXTREME_TOPOLOGY case=alternating_both_sides-10@0.20 interval=0.1 intervals=400/400 newtonSolves=425 accepted=402 rejected=2 worstMoles=1.63e-15 worstEnergy=3.17e-15 ms=2242 monotoneTanks=10/10 directionsJudged=7218
+EXTREME_TOPOLOGY_CADENCE case=alternating_both_sides-10@0.20 pressure=3.33e-07 temperature=4.12e-05 K moles=2.59e-07 supplied=1.04e-06 generatorSplit=0.00998
+EXTREME_TOPOLOGY_STRUCTURE case=grid-10@1.00 blocks=40 nodes=40 junctions=20 connections=48
+EXTREME_TOPOLOGY_STRUCTURE case=alternating-10@1.00 blocks=40 nodes=38 junctions=18 connections=37
+EXTREME_TOPOLOGY_STRUCTURE case=alternating_both_sides-10@1.00 blocks=60 nodes=56 junctions=36 connections=74
+EXTREME_TOPOLOGY case=grid-10@1.00 interval=5 intervals=40/40 newtonSolves=149 accepted=140 rejected=4 worstMoles=3.93e-16 worstEnergy=1.24e-15 ms=600 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY case=grid-10@1.00 interval=0.1 intervals=400/400 newtonSolves=404 accepted=400 rejected=0 worstMoles=1.96e-14 worstEnergy=2.18e-15 ms=1503 monotoneTanks=6/10 directionsJudged=3746
+EXTREME_TOPOLOGY_CADENCE case=grid-10@1.00 pressure=0.00371 temperature=0.346 K moles=0.00308 supplied=0.0116 generatorSplit=0.0124
+EXTREME_TOPOLOGY case=alternating-10@1.00 interval=5 intervals=40/40 newtonSolves=153 accepted=141 rejected=6 worstMoles=2.87e-15 worstEnergy=5.55e-16 ms=507 monotoneTanks=10/10 directionsJudged=351
+EXTREME_TOPOLOGY case=alternating-10@1.00 interval=0.1 intervals=400/400 newtonSolves=405 accepted=400 rejected=1 worstMoles=1.58e-14 worstEnergy=6.87e-15 ms=1427 monotoneTanks=8/10 directionsJudged=3780
+EXTREME_TOPOLOGY_CADENCE case=alternating-10@1.00 pressure=0.00288 temperature=0.298 K moles=0.00233 supplied=0.00977 generatorSplit=0.00911
+EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=5 intervals=40/40 newtonSolves=162 accepted=144 rejected=7 worstMoles=4.44e-15 worstEnergy=1.47e-15 ms=1024 monotoneTanks=10/10 directionsJudged=702
+EXTREME_TOPOLOGY case=alternating_both_sides-10@1.00 interval=0.1 intervals=400/400 newtonSolves=430 accepted=409 rejected=10 worstMoles=5.28e-15 worstEnergy=1.62e-15 ms=4118 monotoneTanks=8/10 directionsJudged=7342
+EXTREME_TOPOLOGY_CADENCE case=alternating_both_sides-10@1.00 pressure=2.50e-05 temperature=0.0167 K moles=5.24e-05 supplied=4.97e-05 generatorSplit=0.00508
+
+Test run finished after 30875 ms
+[         7 containers found      ]
+[         0 containers skipped    ]
+[         7 containers started    ]
+[         0 containers aborted    ]
+[         7 containers successful ]
+[         0 containers failed     ]
+[        10 tests found           ]
+[         0 tests skipped         ]
+[        10 tests started         ]
+[         0 tests aborted         ]
+[        10 tests successful      ]
+[         0 tests failed          ]
+

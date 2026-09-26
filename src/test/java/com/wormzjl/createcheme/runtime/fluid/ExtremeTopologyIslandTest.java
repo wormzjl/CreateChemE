@@ -75,13 +75,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * receives (a generator is closed).</li>
  * </ul>
  *
- * <h2>Open defect: the full cases hold on their first interval</h2>
- * With the default 100 m/s velocity cap all three full fixtures fail their first interval at 5 s and at 0.1 s: pass 0 of
- * the first step never converges ("Newton iteration limit" or "line search stalled", "active-set pass=0", Newton iterates
+ * <h2>Formerly an open defect: the full cases held on their first interval (fixed by decision D12)</h2>
+ * With the default 100 m/s velocity cap all three full fixtures failed their first interval at 5 s and at 0.1 s: pass 0 of
+ * the first step never converged ("Newton iteration limit" or "line search stalled", "active-set pass=0", Newton iterates
  * outside the nitrogen domain above 2 MPa and below 100 Pa, a singular Jacobian on the alternating rows), and halving the
- * step does not help because the junction rows are algebraic. Mechanism, as far as the solver shows it: on a first solve
+ * step did not help because the junction rows are algebraic. Mechanism, as far as the solver shows it: on a first solve
  * the start-of-solve closures do not reach a generator edge ({@code closeDeadHeads} skips runs ending at a junction, and
- * {@code closeIllegalStarts} waits for an accepted solve on the structure), so pass 0 solves every generator as a two-way
+ * {@code closeIllegalStarts} waits for an accepted solve on the structure), so pass 0 solved every generator as a two-way
  * fixed-pressure boundary, a through-flow network between generators 10 to 90 kPa apart. At 100 m/s a half block of 50 mm
  * nitrogen saturates at a few kilopascals of driving pressure ({@link #capDrop}), so most of that network is on the cap's
  * branch, whose row does not depend on the end pressures; a junction whose connections are all capped has a (near) empty
@@ -89,15 +89,23 @@ import static org.junit.jupiter.api.Assertions.*;
  * active set would close the low generators. Evidence: equal generator pressures pass whatever the tanks hold; the same
  * fixtures at the configurable maximum velocity (100000 m/s, where the acoustic bound caps instead) integrate every
  * interval ({@link #theFullCasesIntegrateWhenTheVelocityCapDoesNotSaturate}); the pressures scaled to a fifth of their
- * spread integrate at the default cap ({@link #theCasesAtAFifthOfTheSpreadIntegrate}). The boundary is irregular, as a
- * Newton basin is: the grid passes at 2 columns and fails at 3, the alternating rows pass at 3 pairs and fail at 4, and at
- * spread 0.22 to 0.26 the alternating rows fail while 0.28 passes. {@link #FULL_CASES_OPEN_DEFECT} makes
- * {@link #theFullCasesHoldOnTheirFirstIntervalOpenDefect} reproduce the failure; once the solver integrates them, set it
- * false and the same test runs every oracle of the passing cases on the full fixtures.
+ * spread integrate at the default cap ({@link #theCasesAtAFifthOfTheSpreadIntegrate}). The boundary was irregular, as a
+ * Newton basin is: the grid passed at 2 columns and failed at 3, the alternating rows passed at 3 pairs and failed at 4, and
+ * at spread 0.22 to 0.26 the alternating rows failed while 0.28 passed. The cold rate seed failed the same way (checked:
+ * "active-set pass=0" on the port graph), so the steps started from the compiler's junction guess.
+ *
+ * <p>Owner decision D12 (a generator only pushes when its pressure allows and never receives, from the cold start's first
+ * pass): the cold start's rate seed now closes before its pass 0 the generator runs that a one-way pressure estimate of the
+ * island shows receiving, and starts its junctions from that estimate ({@code PassiveStepSolver.closeColdReceivingGenerators}),
+ * so the seed converges and the first step's {@code closeIllegalStarts} starts it with one-way generators. With
+ * {@link #FULL_CASES_OPEN_DEFECT} now false, {@link #theFullCasesHoldOnTheirFirstIntervalOpenDefect} is the regression: the
+ * full fixtures at the default cap run every oracle of the passing cases.
  */
 class ExtremeTopologyIslandTest {
-    /** True while the full fixtures reproduce the first-interval hold described in the class comment. */
-    static final boolean FULL_CASES_OPEN_DEFECT=true;
+    /** True while the full fixtures reproduced the first-interval hold described in the class comment; false since
+     * decision D12 (the flagged test then runs every oracle on them). Setting it true on a tree without D12 reproduces the
+     * recorded failure. */
+    static final boolean FULL_CASES_OPEN_DEFECT=false;
     private static final String DIMENSION="minecraft:overworld";
     private static final int Y=64;
     /** The world's default block; see FluidWorldAuthority.place. */
@@ -387,9 +395,14 @@ class ExtremeTopologyIslandTest {
     }
 
     /**
-     * The full fixtures at the default cap. While {@link #FULL_CASES_OPEN_DEFECT} holds, this reproduces the open defect of
-     * the class comment exactly: the first interval, at both slice lengths, fails in pass 0 of the step's active set. Once
-     * the solver integrates them this assertion fails; set the flag false and the test runs every oracle instead.
+     * The full fixtures at the default cap: the regression of decision D12. Forty 5 s and four hundred 0.1 s intervals of
+     * each, every interval a full accepted interval, with every oracle of {@link #assertIntegrates} (ledgers, no generator
+     * receiving, the tank bounds and the monotone lowest tank, directions, rest, cadence).
+     *
+     * <p>History: written while the defect was open. With {@link #FULL_CASES_OPEN_DEFECT} true it reproduced the open
+     * defect of the class comment exactly - the first interval, at both slice lengths, failing in pass 0 of the step's
+     * active set - and was to fail once the solver integrated them; decision D12 made it fail as intended, and the flag was
+     * set false, so the same test runs every oracle instead. The reproduction branch is kept for a tree without D12.
      */
     @ParameterizedTest @EnumSource(Geometry.class)
     void theFullCasesHoldOnTheirFirstIntervalOpenDefect(Geometry geometry) {

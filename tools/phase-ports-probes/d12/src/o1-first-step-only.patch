@@ -1,0 +1,26 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
+index f847d31..c39d3b1 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveIntervalSolver.java
+@@ -287,7 +287,7 @@ public final class PassiveIntervalSolver {
+      * at every step size (review 8.6 (b), run 88d).
+      */
+     private PassiveNetwork coldRateSeed(PassiveNetwork graph,Runnable checkpoint,PassiveStepSolver.Acceptance acceptance) {
+-        if(graph.pipes().isEmpty()||graph.reservoirs().stream().noneMatch(PassiveNetwork.Reservoir::junction))return graph;
++        if(true)return graph; // D12 probe: no cold rate seed, the closure on the first step solve (O1 alone)
+         var rate=portRate(graph,checkpoint,acceptance);
+         if(rate==null)return graph;
+         var nodes=new ArrayList<PassiveNetwork.Reservoir>();
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 52f0267..9c32ff8 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -1533,7 +1533,7 @@ public final class PassiveStepSolver {
+      * leave actuated runs (the device-first rule).
+      */
+     private PassiveNetwork closeColdReceivingGenerators(PassiveNetwork graph,boolean[] boundaryClosed,boolean[] keep,byte[] closedPorts,Runnable checkpoint) {
+-        if(!rateOnly||acceptedPipes.equals(identities(graph))&&Arrays.equals(acceptedNodeIds,nodeIds(graph)))return graph;
++        if(acceptedPipes.equals(identities(graph))&&Arrays.equals(acceptedNodeIds,nodeIds(graph)))return graph;
+         if(graph.reservoirs().stream().noneMatch(node->node.kind()==PassiveNetwork.NodeKind.GENERATOR)||hasSolids(graph))return graph;
+         for(var pipe:graph.pipes())if(!(pipe.control() instanceof FlowControl.Passive)||pipe.filter()!=null)return graph;
+         int edges=graph.pipes().size(),nodes=graph.reservoirs().size();

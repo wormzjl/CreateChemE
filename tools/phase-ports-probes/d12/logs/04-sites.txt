@@ -1,0 +1,8 @@
+# D12SITE counts (sites-instrumentation.patch on 418ca7e, harness science+runtime+adjacent+regression with -Dd12.sites=true)
+     30 D12SITE none com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionStaticTest.runCase
+     18 D12SITE closed com.wormzjl.createcheme.runtime.fluid.ExtremeTopologyIslandTest.integrate
+      6 D12SITE none com.wormzjl.createcheme.runtime.fluid.PipePresentationTest.fourFiveAndSixEquipmentConnectionsBalanceWithoutDuplicatingDisplayedThroughput
+      4 D12SITE none com.wormzjl.createcheme.runtime.fluid.LiquidJunctionTransientTest.run
+      3 D12SITE none com.wormzjl.createcheme.science.fluid.network.PhasePortClosureTest.drive
+      2 D12SITE closed com.wormzjl.createcheme.runtime.fluid.MixedGasJunctionStaticTest.runCase
+      1 D12SITE none com.wormzjl.createcheme.runtime.fluid.PhysicalRegistryTest$World.run
