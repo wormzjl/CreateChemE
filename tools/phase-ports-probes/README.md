@@ -24,3 +24,7 @@ How to run a probe: compile the science sources (or use `tools/cloud-science-har
 - `src/trace-sites.patch` (against `07e7426`): prints the calling test each time a junction gets the water trace; applied to the harness science, runtime and adjacent runs it fires only in `JunctionWaterTraceTest` (`logs/07-trace-sites.txt`). Apply with `git apply`, run, `git checkout` the file; never commit it.
 - The humid-junction reproduction is `wp1/src/HumidJunctionProbe.java` (compile it against the harness's main classes plus `src/main/resources`, gson and EJML): `logs/06-humid-probe-d10.txt` all six cases integrate, `logs/06-humid-probe-wp2.txt` the 0.5 % and 1 % cases fail as before.
 - `logs/`: `01` cloud harness all, `02` Gradle fluid suites (430 tests; **`02-junction-lines-d10.txt` is the junction-line base for WP3**, identical to `wp1/logs/02-junction-lines-base.txt`), `03` exact regression 0.000e+00, `04` the 38 adjacent, `05` GameTest and mcpCompat compile, `08` the WP1 bitwise probe's scenario dumps on the WP2 and D10 trees (byte-identical).
+
+## extreme/ (commit `55508e4`, `documentation/2026-09-26-phase-ports-and-compressor/EXTREME_TOPOLOGY_TESTS.md`)
+
+- `src/ExtremeTopologyScanProbe.java`: the temporary scan test method (kept out of `src/test`) that located the pass/fail boundary of the owner's two extreme block layouts (`ExtremeTopologyIslandTest`): column count, pressure spread and velocity cap, plus the water variant. Paste it into the test class to rerun; it needs the same builders.
