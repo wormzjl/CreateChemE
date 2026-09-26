@@ -11,9 +11,11 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
     public enum NodeKind { RESERVOIR, JUNCTION, GENERATOR, VOID, PORT }
     /**
      * What one end of a connection draws from its node when the flow leaves the node through it: the whole state
-     * ({@code BULK}, every connection before phase-selective outlets), the vapour ({@code VAPOR}: hydrocarbon vapour
-     * and water vapour, a tank's top face) or the condensed phases ({@code LIQUID}: hydrocarbon liquid, free water and
-     * every mobile solid, a tank's bottom face; decision A2 of documentation/2026-09-26-phase-ports-and-compressor). A
+     * ({@code BULK}, every connection before phase-selective outlets, a tank's side), or its phases by priority
+     * (decision D11 of documentation/2026-09-26-phase-ports-and-compressor, {@code PhaseDraw}): a {@code LIQUID} port (a
+     * tank's bottom face) the heavier liquid, then the lighter, then the gas, a {@code VAPOR} port (its top face) the gas,
+     * then the lighter liquid, then the heavier, each phase up to what the vessel held of it at the step start and the
+     * next phase beyond that, a liquid with its volume share of the solids. A port never closes for want of a phase. A
      * port acts on outflow only: inflow through any port is delivered to the vessel as through a bulk end (D3). The
      * port's driving pressure is the node's pressure plus a per-end offset ({@code PassiveStepSolver.endPressure}), in
      * both directions: the level head {@code g * condensed mass * 1 m / V} at a LIQUID port (decision D9), zero

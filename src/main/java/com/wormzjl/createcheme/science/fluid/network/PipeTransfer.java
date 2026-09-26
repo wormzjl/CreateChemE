@@ -31,39 +31,48 @@ public record PipeTransfer(long pipeId, Stream forward, Stream reverse) {
      * out, so sharing it is invisible. */
     private static final java.util.concurrent.ConcurrentHashMap<Integer,Stream> ZERO=new java.util.concurrent.ConcurrentHashMap<>();
     private static Stream zero(int count){return ZERO.computeIfAbsent(count,c->new Stream(0,new double[3][c],new double[3]));}
-    /** {@link #sample(FluidThermodynamics,PassiveNetwork,List,double[],double)} of a graph whose every end is BULK, which
-     * needs no model. */
+    /** {@link #sample(FluidThermodynamics,PassiveNetwork,List,double[],double,double[][])} of a graph none of whose
+     * connections drew phases, which needs no model. */
     static List<PipeTransfer> sample(PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] rates,double duration) {
-        return sample(null,graph,states,rates,duration);
+        return sample(null,graph,states,rates,duration,null);
     }
     /**
      * What each connection moved over {@code duration} at the given rates, in the phase split of the stream it drew: the
-     * donor's whole state at a BULK end (every phase in proportion, solids included), only the vapour and water vapour
-     * through a VAPOR port, only the hydrocarbon liquid, free water and solids through a LIQUID port, each scaled by the
-     * moved mass over that stream's mass. A phase port whose phase is absent draws as a BULK end (decision A8). A graph
-     * with a phase port needs the model for the stream masses.
+     * donor's whole state where it drew the bulk (every phase in proportion, solids included), and where a phase port drew
+     * phases (decision D11: {@code draws[i]}, the mass flow each phase supplied, adding up to the rate) each drawn phase
+     * scaled by its moved mass over its stream's mass: the vapour and water vapour, the hydrocarbon liquid, the free water,
+     * a liquid with its share of the solids. {@code draws} (null: every connection drew the bulk) needs the model for the
+     * stream masses.
      */
-    static List<PipeTransfer> sample(FluidThermodynamics model,PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] rates,double duration) {
+    static List<PipeTransfer> sample(FluidThermodynamics model,PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] rates,double duration,double[][] draws) {
+        if(draws!=null&&model==null)throw new IllegalArgumentException("A phase port's transfer needs the model");
         var result=new ArrayList<PipeTransfer>();
         for(int i=0;i<rates.length;i++) {
             var pipe=graph.pipes().get(i);var state=states.get(rates[i]>=0?pipe.first():pipe.second());
-            var port=pipe.drawPort(rates[i]);
-            boolean vapor=port==PassiveNetwork.PhasePort.VAPOR&&FluidThermodynamics.holdsVapor(state);
-            boolean liquidOnly=port==PassiveNetwork.PhasePort.LIQUID&&FluidThermodynamics.holdsLiquid(state);
-            if((vapor||liquidOnly)&&model==null)throw new IllegalArgumentException("A phase port's transfer needs the model");
-            double mass=Math.abs(rates[i])*duration,fraction=mass/(vapor?model.vaporMass(state):liquidOnly?model.liquidMass(state):state.mass());
+            double[] drawn=draws==null?null:draws[i];var start=graph.reservoirs().get(rates[i]>=0?pipe.first():pipe.second()).state();
+            // Entries 0-2 are drawn at the step's end state (these states), 3-5 at its start state (the graph's): a phase
+            // pinned at its capacity (PhaseDraw).
+            if(drawn!=null)for(int k=0;k<drawn.length;k++)if(drawn[k]>0&&!FluidThermodynamics.holdsPhase(k<3?state:start,k%3))drawn=null;
+            double mass=Math.abs(rates[i])*duration;
             var liquid=state.liquid();var vapour=state.vapor();int count=liquid.length+1;
             double[][] n=new double[3][count];
             Stream moved;
-            if(vapor) {
-                for(int c=0;c<liquid.length;c++)n[2][c]=fraction*vapour[c];
-                n[2][count-1]=fraction*state.waterVapor();
-                moved=new Stream(mass,n,new double[]{0,0,fraction*state.vaporVolume()},SolidInventory.EMPTY);
-            } else if(liquidOnly) {
-                for(int c=0;c<liquid.length;c++)n[0][c]=fraction*liquid[c];
-                n[1][count-1]=fraction*state.waterLiquid();
-                moved=new Stream(mass,n,new double[]{fraction*state.liquidVolume(),fraction*state.waterVolume(),0},state.solids().scale(fraction));
+            if(drawn!=null) {
+                double[] volumes=new double[3];var solids=SolidInventory.EMPTY;
+                for(int k=0;k<drawn.length;k++) {
+                    if(!(drawn[k]>0))continue;
+                    int phase=k%3;var from=k<3?state:start;var fromLiquid=k<3?liquid:from.liquidView();var fromVapour=k<3?vapour:from.vaporView();
+                    double fraction=drawn[k]*duration/model.phaseMass(from,phase);
+                    switch(phase) {
+                        case FluidThermodynamics.GAS->{for(int c=0;c<liquid.length;c++)n[2][c]+=fraction*fromVapour[c];n[2][count-1]+=fraction*from.waterVapor();volumes[2]+=fraction*from.vaporVolume();}
+                        case FluidThermodynamics.OIL->{for(int c=0;c<liquid.length;c++)n[0][c]+=fraction*fromLiquid[c];volumes[0]+=fraction*from.liquidVolume();}
+                        default->{n[1][count-1]+=fraction*from.waterLiquid();volumes[1]+=fraction*from.waterVolume();}
+                    }
+                    if(phase!=FluidThermodynamics.GAS){var carried=from.solids().scale(fraction*FluidThermodynamics.phaseSolidShare(from,phase));solids=solids.empty()?carried:solids.plus(carried);}
+                }
+                moved=new Stream(mass,n,volumes,solids);
             } else {
+                double fraction=mass/state.mass();
                 for(int c=0;c<liquid.length;c++){n[0][c]=fraction*liquid[c];n[2][c]=fraction*vapour[c];}
                 n[1][count-1]=fraction*state.waterLiquid();n[2][count-1]=fraction*state.waterVapor();
                 moved=new Stream(mass,n,new double[]{fraction*state.liquidVolume(),fraction*state.waterVolume(),fraction*state.vaporVolume()},state.solids().scale(fraction));

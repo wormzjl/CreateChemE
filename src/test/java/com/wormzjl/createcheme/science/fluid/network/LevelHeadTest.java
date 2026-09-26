@@ -29,7 +29,6 @@ class LevelHeadTest {
     private final double[] mw=model.molecularWeights();
     private final int water=index("Water"),nitrogen=index("Nitrogen");
     private static final double COMPONENT_LEDGER=1e-12,ENERGY_LEDGER=1e-10;
-    private static final double OPEN=PassiveStepSolver.PHASE_PORT_OPEN,RESERVE=PassiveStepSolver.PHASE_PORT_RESERVE,FLASH_DRIFT=1e-5;
     private static final double G=PassiveStepSolver.GRAVITY,H=PassiveStepSolver.LEVEL_HEAD_HEIGHT;
     private static final String REOPEN="Backward-Euler boundary reopened";
     private static PipeResistance.Geometry line(double length,double diameter){return new PipeResistance.Geometry(length,diameter,PipeResistance.DEFAULT_ROUGHNESS_METRES,0);}
@@ -52,7 +51,8 @@ class LevelHeadTest {
     private double head(PassiveNetwork.Reservoir vessel){return G*model.liquidMass(vessel.state())*H/vessel.inventory().volume();}
     /** The bottom (LIQUID) port's driving pressure of a vessel. */
     private double bottom(PassiveNetwork.Reservoir vessel){return vessel.state().pressure()+head(vessel);}
-    private static double liquidShare(PassiveNetwork.Reservoir vessel){return PassiveStepSolver.portPhaseShare(vessel.state(),PhasePort.LIQUID);}
+    /** The share of the vessel's volume its liquids fill (hydrocarbon liquid and free water). */
+    private static double liquidShare(PassiveNetwork.Reservoir vessel){var s=vessel.state();return (s.liquidVolume()+s.waterVolume())/s.volume();}
 
     /** Committed slices of one run and the solver counters over it. */
     private record Run(List<PassiveIntervalSolver.Result> slices,List<PassiveNetwork> graphs,Map<String,Integer> reasons,long newtonSolves,long newtonIterations,
@@ -125,38 +125,51 @@ class LevelHeadTest {
      * The drain opens at the first step: {@code closeDeadHeads} reads the head (a drive of about 900 Pa where the pressures
      * alone give -50 Pa), so the run is never closed at a step start while the bottom stands above the void, and the
      * boundary-reopen retry is never needed (zero reopens: a bottled drain would show up as reopens or as a drain that
-     * never starts). The port then closes as WP2's availability closes it - at the first step start below
-     * {@code phi_open}, the water left in [{@code phi_reserve} - flash drift, {@code phi_open}) - and stays closed. The
-     * same tank with a BULK drain end (no head) carries nothing beyond roundoff: the vent lifts its headspace to the void's
-     * pressure and no further.
+     * never starts). The port drains every slice whose bottom stands above the void, and - decision D11, ports carry mixed
+     * phases by priority - it goes on draining below 1 % instead of closing there (WP2's availability band, which D11
+     * removed): the head, the only drive, shrinks with the water, so the drain slows as the tank empties and takes the
+     * water below a millionth of the vessel and on towards the trace the vanishing head can no longer lift; the drain then
+     * carries no more than the trace of water the tank still holds, give or take a microgram per second of condensate (the vent holds the headspace at the void's pressure,
+     * so the gas has no drive) and the tank stays dry. The same tank with a BULK drain end (no head) carries nothing beyond roundoff: the vent lifts
+     * its headspace to the void's pressure and no further.
+     *
+     * <p>Restated under D11 (PHASE_PORTS_REVIEW.md, D11): before, the port closed at the first step start below 1 % of
+     * water (slice 10, 0.99300 % at 5 s; slice 479, 0.99716 % at 0.1 s), with one open-to-closed transition and the
+     * closed vessel keeping its water; the head physics (the drain starts on the head alone, no reopen, the BULK control)
+     * is asserted as before.
      */
     private void drainOnTheHead(double interval,int count) {
         String label="drain-"+interval;
         var start=headDrain(PhasePort.LIQUID,line(2,.05));
         System.out.println("LEVEL_HEAD_DRAIN_START interval="+interval+" head="+head(start.reservoirs().getFirst())+" P="+start.reservoirs().getFirst().state().pressure());
         var run=drive(label,start,interval,count);
-        int closedAt=-1,transitions=0;boolean wasOpen=true;
+        int dryAt=-1;
         for(int i=0;i<count;i++) {
-            var before=i==0?start:run.graphs().get(i-1);boolean open=liquidShare(before.reservoirs().getFirst())>=OPEN;
-            if(open!=wasOpen)transitions++;wasOpen=open;
-            double out=outOf(run.slices().get(i),90,true);
-            if(open)assertTrue(out>0,label+" slice "+i+": the open port drains on the head");
-            else{if(closedAt<0)closedAt=i;assertEquals(0,out,label+" slice "+i+": the closed port carries nothing");
-                assertEquals(FlowControl.Mode.CLOSED,run.slices().get(i).endpointModes().get(edge(start,90)),label+" slice "+i);}
+            var before=i==0?start:run.graphs().get(i-1);var after=run.graphs().get(i);var tank=before.reservoirs().getFirst();
+            var transfer=run.slices().get(i).pipeTransfers().stream().filter(t->t.pipeId()==90).findFirst().orElseThrow().forward();
+            double out=transfer.massKg(),liquidOut=transfer.phaseVolumes()[0]+transfer.phaseVolumes()[1];
+            boolean driven=bottom(tank)>101325+PassiveStepSolver.reopenBand(bottom(tank),101325);
+            if(driven) {
+                assertTrue(out>0&&liquidOut>0,label+" slice "+i+": the port drains the water while the head lifts the bottom above the void");
+                assertNotEquals(FlowControl.Mode.CLOSED,run.slices().get(i).endpointModes().get(edge(start,90)),label+" slice "+i+": never closed while driven");
+            }
+            if(dryAt>=0) {
+                double held=model.liquidMass(tank.state());
+                assertTrue(liquidShare(after.reservoirs().getFirst())<=1e-6,label+" slice "+i+": the drained tank stays dry");
+                // Beyond the trace it held, at most what condenses within the slice (a microgram per second, roundoff scale).
+                assertTrue(out<=held+1e-6*interval,label+" slice "+i+": the drained tank passes no more than the trace of water it held: "+out+" kg of "+held);
+            }
+            if(dryAt<0&&liquidShare(after.reservoirs().getFirst())<=1e-6)dryAt=i;
         }
         assertTrue(outOf(run.slices().getFirst(),90,true)>0,label+": the drain starts in the first slice");
         assertEquals(0,run.reopens(),label+": no boundary reopen (a drain the start closure bottled would need one)");
-        assertTrue(closedAt>0,label+": the port closes");
-        assertEquals(1,transitions,label+": one open-to-closed transition");
-        double landed=liquidShare(run.graphs().get(closedAt-1).reservoirs().getFirst());
+        assertTrue(dryAt>0,label+": the water drains below a millionth of the vessel");
         double finalShare=liquidShare(run.last().reservoirs().getFirst());
-        assertTrue(landed>=RESERVE-FLASH_DRIFT&&landed<OPEN,label+": the water left, "+landed);
-        assertEquals(landed,finalShare,FLASH_DRIFT,label+": the closed vessel keeps its water");
         var control=drive(label+"-bulk",headDrain(PhasePort.BULK,line(2,.05)),interval,Math.min(count,40));
         double controlOut=0;for(var s:control.slices())controlOut+=outOf(s,90,true);
         assertTrue(controlOut<1e-4,label+": a BULK drain end has no drive out of the tank: "+controlOut+" kg");
-        System.out.println("LEVEL_HEAD_RUN drain interval="+interval+" closedAtSlice="+closedAt+" closedAtSeconds="+closedAt*interval+" landed="+landed+" final="+finalShare
-                +" firstSliceOut="+outOf(run.slices().getFirst(),90,true)+" bulkControlOut="+controlOut+" "+run.counters());
+        System.out.println("LEVEL_HEAD_RUN drain interval="+interval+" dryAtSlice="+dryAt+" dryAtSeconds="+(dryAt+1)*interval+" final="+finalShare
+                +" firstSliceOut="+outOf(run.slices().getFirst(),90,true)+" lastSliceOut="+outOf(run.slices().getLast(),90,true)+" bulkControlOut="+controlOut+" "+run.counters());
     }
 
     // ---- 1b, 1c. The start closure and the reopen test read the head ----------------------------------------------

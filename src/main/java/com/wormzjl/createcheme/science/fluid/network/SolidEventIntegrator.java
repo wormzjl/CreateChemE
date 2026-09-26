@@ -84,13 +84,17 @@ final class SolidEventIntegrator {
             if((pipe.blockedDirections()&direction)!=0)continue;
             int upstream=flow>=0?pipe.first():pipe.second();var donor=states.get(upstream);
             if(prepared[upstream]==null)prepared[upstream]=SolidMobility.donor(model,donor);
-            // What the end draws decides the outlet (plan 3.8): a vapour port carries no solid and is always mobile, a
-            // liquid port carries every solid over the condensed stream's mass, a bulk end over the donor's (and a phase port
-            // whose phase is absent draws as a bulk end, decision A8).
-            var port=pipe.drawPort(flow);
-            boolean vapor=port==PassiveNetwork.PhasePort.VAPOR&&FluidThermodynamics.holdsVapor(donor);
-            double drawnMass=port==PassiveNetwork.PhasePort.LIQUID&&FluidThermodynamics.holdsLiquid(donor)?model.liquidMass(donor):donor.mass();
-            var check=SolidMobility.check(prepared[upstream],donor,pipe,flow,vapor?SolidMobility.Outlet.GAS:SolidMobility.Outlet.MIXED,drawnMass);
+            // What the end draws decides the outlet (plan 3.8; decision D11): a phase port is checked on the phase it draws
+            // first (PhaseDraw.leading, the priority stream at a vanishing flow; this check sees no step and so no capacity):
+            // the gas carries no solid and is always mobile; the hydrocarbon liquid or the free water carries its volume share
+            // of the solids, checked for its own carrier (ORGANIC_LIQUID, WATER) over its stream's mass per the whole liquid
+            // it carries the solids in; a bulk end, and a phase port on a vessel holding none of the phases, the donor's mix.
+            int phase=PhaseDraw.leading(model,donor,pipe.drawPort(flow));
+            SolidMobility.Outlet outlet;double drawnMass;
+            if(phase<0){outlet=SolidMobility.Outlet.MIXED;drawnMass=donor.mass();}
+            else if(phase==FluidThermodynamics.GAS){outlet=SolidMobility.Outlet.GAS;drawnMass=donor.mass();}
+            else{outlet=phase==FluidThermodynamics.OIL?SolidMobility.Outlet.ORGANIC_LIQUID:SolidMobility.Outlet.WATER;drawnMass=model.phaseMass(donor,phase)/FluidThermodynamics.phaseSolidShare(donor,phase);}
+            var check=SolidMobility.check(prepared[upstream],donor,pipe,flow,outlet,drawnMass);
             if(check.allowed()&&reach!=null&&flow!=0&&overPopulated(graph,pipe,flow,reach)) {
                 check=new SolidMobility.Check(SolidMobility.Reason.POPULATION_LIMIT,check.velocity(),check.minimumVelocity());
                 // A node receiver can be fed by several connections at once, and every one of them

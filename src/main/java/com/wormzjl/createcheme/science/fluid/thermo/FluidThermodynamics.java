@@ -182,8 +182,9 @@ public final class FluidThermodynamics {
      * <li>The vapour stream is the hydrocarbon vapour and the water vapour: {@code moles} are {@code vapor} with the
      * water vapour in the last slot, its volume is the gas volume, its enthalpy {@code n_v h_v + n_wv h_wv(T)}, and it
      * carries no solid.</li>
-     * <li>The condensed ("liquid") stream is the hydrocarbon liquid, the free water and every solid (decision A2: no
-     * decant): {@code moles} are {@code liquid} with the free water last, its volume is the two liquid volumes plus the
+     * <li>The condensed ("liquid") stream is the hydrocarbon liquid, the free water and every solid (the whole condensed
+     * phase; a port draws its two liquids one after the other, {@link #phaseStream}, decision D11): {@code moles} are
+     * {@code liquid} with the free water last, its volume is the two liquid volumes plus the
      * solid volume, its enthalpy {@code n_l h_l + n_wl h_wl(T,P) + H_solids(T,P)}.</li>
      * </ul>
      * The two streams partition the state: their moles, masses, volumes and enthalpies add up to the state's own. The
@@ -195,8 +196,8 @@ public final class FluidThermodynamics {
      * average the step solver states for the bulk (the slurry correction over the condensed stream's liquids).
      *
      * <p>A stream whose phase the state does not hold (no gas volume; no liquid and no free water) is not built: the
-     * builders return {@code null}, and what an absent stream means is the reader's rule (the step solver's: the
-     * bulk, with a zero velocity limit; decision A8).
+     * builders return {@code null}, and what an absent stream means is the reader's rule (the step solver's: a port
+     * draws the next phase of its priority order, decision D11).
      */
     public record PhaseStream(double[] moles,double mass,double volume,double viscosity,double specificEnthalpy,double velocityLimit,
                               SolidInventory.Moments solidMoments) {
@@ -295,6 +296,111 @@ public final class FluidThermodynamics {
         var l=state.liquidView();double[] n=Arrays.copyOf(l,l.length+1);n[l.length]=state.waterLiquid();
         return new PhaseStream(n,liquidMass(state),liquidStreamVolume(state),liquidViscosity(state,prepared),
                 liquidSpecificEnthalpy(state,prepared),liquidVelocityLimit(state),state.solidMoments());
+    }
+    /*
+     * The three phases a vessel port can draw one after another (decision D11 of
+     * documentation/2026-09-26-phase-ports-and-compressor: ports carry mixed phases by priority). GAS is the vapour stream
+     * above. The condensed stream splits into the hydrocarbon liquid (OIL) and the free water (WATER), each carrying its
+     * volume share of every solid population: the solids are held as a uniform suspension in the combined liquid, the
+     * carrier the solid mobility check already reads (volume-averaged density and viscosity of both liquids), so a phase
+     * of the liquid draws its share of them. The OIL and WATER streams partition the condensed stream (moles, mass,
+     * volume, enthalpy and solids add up to liquidStream's), and with one liquid present its stream is the condensed
+     * stream to the bit (a share of exactly 1.0). All read the state's own amounts and molar properties: no flash.
+     */
+    public static final int GAS=0,OIL=1,WATER=2;
+    /** Whether {@code state} holds {@code phase} ({@link #GAS}, {@link #OIL} or {@link #WATER}) to draw: a positive
+     * volume of it. */
+    public static boolean holdsPhase(State state,int phase) {
+        return switch(phase){case GAS->state.vaporVolume()>0;case OIL->state.liquidVolume()>0;case WATER->state.waterVolume()>0;default->throw new IllegalArgumentException("phase "+phase);};
+    }
+    /** The share of the state's solids a phase stream carries: none in the gas, the liquids' in proportion to their
+     * volumes ({@code 1.0} exactly for the only liquid held). */
+    public static double phaseSolidShare(State state,int phase) {
+        if(phase==GAS)return 0;
+        double oil=state.liquidVolume(),water=state.waterVolume();
+        return phase==OIL?oil/(oil+water):water/(oil+water);
+    }
+    /** The own density (no solids) of a liquid phase the state holds: its fluid mass over its volume. */
+    public double liquidPhaseDensity(State state,int phase) {
+        if(phase==WATER)return state.waterLiquid()*waterMolecularWeight/state.waterVolume();
+        double mass=0;var l=state.liquidView();for(int i=0;i<l.length;i++)mass+=l[i]*hydrocarbon.molecularWeight(i);
+        return mass/state.liquidVolume();
+    }
+    /** The heavier of the state's two liquids by their own densities: {@link #OIL} only when both are held and the
+     * hydrocarbon liquid is the denser, {@link #WATER} otherwise (which one is named when at most one is held does not
+     * matter to a priority order: an absent phase is skipped). */
+    public int heavierLiquid(State state) {
+        return state.liquidVolume()>0&&state.waterVolume()>0&&liquidPhaseDensity(state,OIL)>liquidPhaseDensity(state,WATER)?OIL:WATER;
+    }
+    /** Mass of a phase stream, its solid share included; {@link #vaporMass} for the gas. */
+    public double phaseMass(State state,int phase) {
+        if(phase==GAS)return vaporMass(state);
+        double mass=0;
+        if(phase==OIL){var l=state.liquidView();for(int i=0;i<l.length;i++)mass+=l[i]*hydrocarbon.molecularWeight(i);}
+        else mass=state.waterLiquid()*waterMolecularWeight;
+        return mass+phaseSolidShare(state,phase)*state.solidMoments().mass();
+    }
+    /** Volume of a phase stream: the gas volume, or the liquid's volume plus its share of the solid volume. */
+    public static double phaseVolume(State state,int phase) {
+        if(phase==GAS)return state.vaporVolume();
+        return (phase==OIL?state.liquidVolume():state.waterVolume())+phaseSolidShare(state,phase)*state.solidMoments().volume();
+    }
+    /** The conserved amounts (water last) of a phase stream. */
+    public static double[] phaseMoles(State state,int phase) {
+        var view=phase==GAS?state.vaporView():state.liquidView();double[] n=new double[view.length+1];
+        switch(phase) {
+            case GAS->{System.arraycopy(view,0,n,0,view.length);n[view.length]=state.waterVapor();}
+            case OIL->System.arraycopy(view,0,n,0,view.length);
+            default->n[view.length]=state.waterLiquid();
+        }
+        return n;
+    }
+    /** The solid moments a phase stream carries: its share of the state's. */
+    public static SolidInventory.Moments phaseSolidMoments(State state,int phase) {
+        double share=phaseSolidShare(state,phase);if(share==0)return SolidInventory.Moments.ZERO;
+        var m=state.solidMoments();return new SolidInventory.Moments(share*m.mass(),share*m.volume(),share*m.heatCapacity());
+    }
+    /** A phase stream's specific enthalpy (J/kg), its solid share included; {@code prepared} as for {@link #state}. */
+    public double phaseSpecificEnthalpy(State state,int phase,Prepared prepared) {
+        if(phase==GAS)return vaporSpecificEnthalpy(state,prepared);
+        double h=0,t=state.temperature(),p=state.pressure();
+        if(phase==OIL){if(state.liquidProperties()!=null)h+=total(state.liquidView())*state.liquidProperties().molarEnthalpy();}
+        else if(state.waterLiquid()>0)h+=state.waterLiquid()*waterLiquid(t,p,prepared).molarEnthalpy;
+        h+=phaseSolidShare(state,phase)*state.solidMoments().enthalpy(t,p);
+        return h/phaseMass(state,phase);
+    }
+    /** A phase stream's velocity limit: {@link #vaporVelocityLimit} for the gas, {@code min(maximum, V/sqrt(M V_liquid
+     * kappa))} for a liquid with its solids (incompressible). */
+    public double phaseVelocityLimit(State state,int phase) {
+        if(phase==GAS)return vaporVelocityLimit(state);
+        double liquid=phase==OIL?state.liquidVolume():state.waterVolume();
+        return Math.min(maximumVelocity,acoustic(phaseVolume(state,phase),phaseMass(state,phase),liquid*liquidResponse.compressibilityPerPascal()));
+    }
+    /** A phase stream's viscosity: {@link #vaporViscosity} for the gas; a liquid's own viscosity with the slurry
+     * correction for its share of the solids, over the stream's volume. */
+    public double phaseViscosity(State state,int phase,MixtureViscosity.Workspace scratch,Prepared prepared) {
+        if(phase==GAS)return vaporViscosity(state,scratch,prepared);
+        var terms=prepared==null?null:match(prepared,state.temperature()).viscosities();
+        double t=state.temperature(),liquid,value;
+        if(phase==OIL){liquid=state.liquidVolume();value=liquid*viscosity.liquid(t,state.liquidView(),terms).pascalSeconds();}
+        else{liquid=state.waterVolume();value=liquid*viscosity.waterLiquid(t,terms);}
+        double solid=phaseSolidShare(state,phase)*state.solidMoments().volume();
+        if(solid>0){double phi=solid/(liquid+solid);value=com.wormzjl.createcheme.science.fluid.transport.SlurryTransport.effectiveViscosity(value/liquid,Math.min(phi,0.62-1e-9))*(liquid+solid);}
+        return value/(liquid+solid);
+    }
+    /** The carrier viscosity of a phase stream (no slurry correction), which an inline filter's cake resistance scales
+     * with: the gas's own, or the liquid's own. */
+    public double phaseCarrierViscosity(State state,int phase,MixtureViscosity.Workspace scratch) {
+        if(phase==GAS)return vaporViscosity(state,scratch,null);
+        return phase==OIL?viscosity.liquid(state.temperature(),state.liquidView()).pascalSeconds():viscosity.waterLiquid(state.temperature());
+    }
+    /** The stream of one phase of {@code state}, or null when it does not hold that phase; {@link #vaporStream} for the
+     * gas. */
+    public PhaseStream phaseStream(State state,int phase,Prepared prepared,MixtureViscosity.Workspace scratch) {
+        if(!holdsPhase(state,phase))return null;
+        if(phase==GAS)return vaporStream(state,prepared,scratch);
+        return new PhaseStream(phaseMoles(state,phase),phaseMass(state,phase),phaseVolume(state,phase),phaseViscosity(state,phase,scratch,prepared),
+                phaseSpecificEnthalpy(state,phase,prepared),phaseVelocityLimit(state,phase),phaseSolidMoments(state,phase));
     }
     /** The amount sum {@link #state} forms ({@code sum}), without its validation: a state's own amounts are valid. */
     private static double total(double[] values){double total=0;for(double value:values)total+=value;return total;}

@@ -4,8 +4,9 @@ import com.wormzjl.createcheme.science.fluid.network.PassiveNetwork;
 import com.wormzjl.createcheme.science.fluid.state.SolidInventory;
 import com.wormzjl.createcheme.science.fluid.thermo.FluidThermodynamics;
 
-/** Outlet-specific transport eligibility. A bulk end and a liquid phase port request MIXED, a vapour phase port GAS
- * ({@code SolidEventIntegrator}); nothing requests ORGANIC_LIQUID or WATER yet (no decant). */
+/** Outlet-specific transport eligibility. A bulk end requests MIXED; a phase port requests the outlet of the phase it
+ * draws first ({@code SolidEventIntegrator}; decision D11 of the phase-ports batch, the bottom port a decant): GAS,
+ * ORGANIC_LIQUID or WATER. */
 public final class SolidMobility {
     public enum Outlet { MIXED, ORGANIC_LIQUID, WATER, GAS }
     /**
@@ -91,8 +92,9 @@ public final class SolidMobility {
     }
     /**
      * {@link #check} of a connection that draws {@code drawnMass} kilograms of stream per the donor's whole liquid and
-     * solid content: the donor's own mass for a bulk withdrawal, the condensed stream's mass for a liquid phase port
-     * (which carries all of the donor's liquid and solids over less mass than the whole donor). The liquid velocity is
+     * solid content: the donor's own mass for a bulk withdrawal, and for a phase port drawing one liquid that liquid's
+     * stream mass over its share of the liquid (it carries its volume share of the donor's liquid and solids). The liquid
+     * velocity is
      * {@code |q| / drawnMass * liquidVolume / area}.
      */
     public static Check check(Donor prepared, FluidThermodynamics.State donor,
