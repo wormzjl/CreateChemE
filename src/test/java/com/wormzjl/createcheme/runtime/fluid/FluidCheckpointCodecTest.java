@@ -9,7 +9,7 @@ import java.util.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Checkpoint format 5, one island: round trip, field refusals, a changed basis, energy datum or velocity limit. */
+/** Checkpoint format 6, one island: round trip, field refusals, a changed basis, energy datum or velocity limit. */
 class FluidCheckpointCodecTest {
     private static final String PACKAGE="createcheme:tjl20_methane_nitrogen";
     private final FluidThermodynamics model=FluidThermodynamics.forNetwork(MaterialCatalog.bundled(),PACKAGE,1e-9);
@@ -137,5 +137,83 @@ class FluidCheckpointCodecTest {
         var restored=FluidCheckpointCodec.decode(thermodynamicOnly,key->model).islands().getFirst().snapshot();
         assertEquals(a.clock(),restored.clock());assertEquals(a.allowance(),restored.allowance());assertEquals(a.graph().reservoirs().getFirst().inventory(),restored.graph().reservoirs().getFirst().inventory());
         assertThrows(ApproximationRejected.class,()->restored.anchor().orElseThrow().guard(model,restored.graph()));
+    }
+
+    // ---------------- format 6: pipe ports and the compressor (phase-ports WP5, plan 4.4) ----------------
+
+    private int component(String name){int i=model.components().indexOf(name);assertTrue(i>=0,name);return i;}
+    private FluidThermodynamics.State waterUnderNitrogen(double waterVolume,double pressure) {
+        double t=298.15;double[] mw=model.molecularWeights();double[] n=new double[mw.length];int water=component("Water");
+        n[water]=waterVolume*997/mw[water];n[component("Nitrogen")]=pressure*(1-waterVolume)/(FluidThermodynamics.R*t);
+        var unit=model.flashTP(t,pressure,n,()->{});for(int c=0;c<n.length;c++)n[c]/=unit.volume();
+        return model.flashTP(t,pressure,n,()->{});
+    }
+    /**
+     * An island whose pipes have every port kind and a compressor, solved for one interval in which the compressor, fed
+     * the bulk of a half-water tank, is refused ({@code INLET_WRONG_PHASE}): graph, ports, controls, the last interval's
+     * endpoint modes and the anchor come back exactly, and the reloaded checkpoint re-encodes to the same bytes.
+     */
+    @Test void portsACompressorAndARefusedMoverRoundTripExactly() {
+        var block=new PipeResistance.Geometry(1,.05,.000045,0);
+        var nodes=List.of(new PassiveNetwork.Reservoir(1,0,waterUnderNitrogen(.5,150000)),new PassiveNetwork.Reservoir(2,0,model.initialNitrogenCharge(1,298.15,150000,()->{}),PassiveNetwork.NodeKind.JUNCTION),
+                new PassiveNetwork.Reservoir(3,0,model.initialNitrogenCharge(1,298.15,101325,()->{}),PassiveNetwork.NodeKind.VOID));
+        var pipes=List.of(new PassiveNetwork.Pipe(10,0,2,List.of(block),new FlowControl.Passive(),0,null,PassiveNetwork.PhasePort.LIQUID,PassiveNetwork.PhasePort.BULK),
+                new PassiveNetwork.Pipe(11,0,1,List.of(block),new FlowControl.Passive(),0,null,PassiveNetwork.PhasePort.BULK,PassiveNetwork.PhasePort.BULK),
+                new PassiveNetwork.Pipe(12,1,2,List.of(block),new FlowControl.Compressor(.01,2.5,.9),0,null,PassiveNetwork.PhasePort.BULK,PassiveNetwork.PhasePort.BULK),
+                new PassiveNetwork.Pipe(13,0,2,List.of(block),new FlowControl.Passive(),0,null,PassiveNetwork.PhasePort.VAPOR,PassiveNetwork.PhasePort.BULK));
+        var full=new PassiveIntervalSolver(model).solve(new PassiveNetwork(nodes,pipes),5,PassiveIntervalSolver.Settings.defaults(),()->{});
+        assertEquals(FlowControl.Mode.INLET_WRONG_PHASE,full.endpointModes().get(2),"the compressor on the tank's bulk is refused");
+        var state=new IslandCoordinator.Snapshot(1,4,full.graph(),new IslandClock.Snapshot(350,200,400,100),new FallbackAllowance(2,100,100),Optional.of(ApproximationAnchor.fromFull(model,full)),Optional.of(full),"FULL");
+        var before=new FluidCheckpointCodec.Checkpoint(List.of(new FluidCheckpointCodec.IslandEntry("minecraft:overworld",PACKAGE,1e-9,state)),new BufferedTransfers.Snapshot(0,Map.of(),Map.of()));
+        var image=FluidCheckpointCodec.encode(before,key->model);assertEquals(6,image.core().getInt("FluidFormat"));
+        var after=FluidCheckpointCodec.decode(image,key->model).islands().getFirst().snapshot();
+        assertEquals(full.graph().pipes(),after.graph().pipes(),"ends, sections, controls, blocked masks and the ports of every pipe");
+        assertEquals(PassiveNetwork.PhasePort.LIQUID,after.graph().pipes().get(0).firstPort());assertEquals(PassiveNetwork.PhasePort.VAPOR,after.graph().pipes().get(3).firstPort());
+        assertEquals(new FlowControl.Compressor(.01,2.5,.9),after.graph().pipes().get(2).control());
+        assertEquals(full.endpointModes(),after.lastResult().orElseThrow().endpointModes(),"the refused mover's committed mode, the hysteresis input of the next slice (A38)");
+        assertArrayEquals(full.averageMassFlows(),after.lastResult().orElseThrow().averageMassFlows());
+        assertEquals(full.graph().pipes(),after.anchor().orElseThrow().graph().pipes());
+        assertSameImage(image,FluidCheckpointCodec.encode(FluidCheckpointCodec.decode(image,key->model),key->model),"a reloaded format-6 checkpoint re-encodes to the same bytes");
+    }
+    /** The world ledger's compressor registration (control tag 3) comes back exactly; an unknown control tag is refused. */
+    @Test void aCompressorRegistrationRoundTripsInTheTopologyUnit() {
+        var empty=WorldTopologyLedger.Snapshot.empty(MaterialCatalog.bundled());int count=empty.basis().components().size();
+        var nitrogen=new double[count];nitrogen[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
+        var device=new PhysicalFluidTopology.Device(4,new PhysicalFluidTopology.Position("minecraft:overworld",3,64,-3),com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.COMPRESSOR,
+                PhysicalFluidTopology.Direction.UP,new PipeResistance.Geometry(1,.05,.000045,0),new FlowControl.Compressor(.05,3,1));
+        var world=new WorldTopologyLedger.Snapshot(12,9,Map.of(4L,new WorldTopologyLedger.Registration(device,new FluidDeviceSpec(1,298.15,101325,nitrogen),2)),List.of(),
+                WorldTopologyLedger.MaterialTotal.empty(count),WorldTopologyLedger.MaterialTotal.empty(count),empty.basis(),Map.of());
+        var bytes=FluidCheckpointCodec.encodeTopology(world);var decoded=FluidCheckpointCodec.decodeTopology(bytes,12);
+        assertEquals(world.active(),decoded.active());assertArrayEquals(bytes,FluidCheckpointCodec.encodeTopology(decoded));
+        // The control tag follows the facing byte and the geometry reference; find the one byte 3 whose change to 4 is refused.
+        boolean refused=false;
+        for(int i=0;i<bytes.length&&!refused;i++)if(bytes[i]==3){var corrupt=bytes.clone();corrupt[i]=4;
+            try{FluidCheckpointCodec.decodeTopology(corrupt,12);}catch(IllegalArgumentException e){refused=e.getMessage().contains("unknown control");}}
+        assertTrue(refused,"an unknown control tag is refused");
+    }
+    /**
+     * The JSON graph shape (archived gameplay captures) with the format-6 fields: every pipe names its two ports, and a
+     * "compressor" control reads target, limit (the ratio) and efficiency. A pipe without its ports is refused (no absent-field
+     * default), and so is a phase port on a node that is not a tank.
+     */
+    @Test void theJsonGraphShapeReadsPortsAndACompressorAndRefusesAPipeWithoutPorts() throws Exception {
+        com.google.gson.JsonObject graph;
+        try(var input=Objects.requireNonNull(getClass().getResourceAsStream("/fluid/mcp-held-drain-checkpoint.json"))) {
+            graph=com.google.gson.JsonParser.parseString(new String(input.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("islands").get(0).getAsJsonObject().getAsJsonObject("graph");
+        }
+        for(var node:graph.getAsJsonArray("nodes")){var empty=new com.google.gson.JsonObject();empty.add("populations",new com.google.gson.JsonArray());node.getAsJsonObject().getAsJsonObject("inventory").add("solids",empty);}
+        var pipes=graph.getAsJsonArray("pipes");
+        for(var pipe:pipes){var p=pipe.getAsJsonObject();p.addProperty("blockedDirections",0);p.add("filter",com.google.gson.JsonNull.INSTANCE);p.addProperty("firstPort","BULK");p.addProperty("secondPort","BULK");}
+        // Pipe 0 runs from the tank (node 0) to the void, pipe 1 from the tank to the generator.
+        pipes.get(0).getAsJsonObject().addProperty("firstPort","LIQUID");
+        var compressor=new com.google.gson.JsonObject();compressor.addProperty("kind","compressor");compressor.addProperty("target",.02);compressor.addProperty("limit",2.5);compressor.addProperty("efficiency",.9);
+        pipes.get(1).getAsJsonObject().add("control",compressor);pipes.get(1).getAsJsonObject().addProperty("firstPort","VAPOR");
+        var decoded=FluidCheckpointCodec.decodeGraph(graph,model);
+        assertEquals(PassiveNetwork.PhasePort.LIQUID,decoded.pipes().get(0).firstPort());assertEquals(PassiveNetwork.PhasePort.BULK,decoded.pipes().get(0).secondPort());
+        assertEquals(PassiveNetwork.PhasePort.VAPOR,decoded.pipes().get(1).firstPort());assertEquals(new FlowControl.Compressor(.02,2.5,.9),decoded.pipes().get(1).control());
+        var generatorPort=graph.deepCopy();generatorPort.getAsJsonArray("pipes").get(1).getAsJsonObject().addProperty("secondPort","LIQUID");
+        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decodeGraph(generatorPort,model),"a phase port on the generator's end");
+        var withoutPorts=graph.deepCopy();withoutPorts.getAsJsonArray("pipes").get(0).getAsJsonObject().remove("secondPort");
+        assertThrows(IllegalArgumentException.class,()->FluidCheckpointCodec.decodeGraph(withoutPorts,model),"a pipe without its ports");
     }
 }

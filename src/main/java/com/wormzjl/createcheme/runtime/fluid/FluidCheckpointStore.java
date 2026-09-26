@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
- * Where checkpoint format 5 lives, and what a save writes. The owner's decision (F3): per-island storage with the
+ * Where checkpoint format 6 lives, and what a save writes. The owner's decision (F3): per-island storage with the
  * mod's own dirty tracking, no world-wide size bound, a small core record in the world's saved data.
  *
  * <p><b>Layout.</b> The core record ({@link FluidCheckpointCodec#coreTag}) is the world's saved data file

@@ -18,7 +18,8 @@ class McpGameplayRegressionTest {
             return com.google.gson.JsonParser.parseString(new String(input.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("islands").get(0).getAsJsonObject();
         }
     }
-    /** The capture predates solids, blocked masks and filters and holds none of them, so they are empty here. */
+    /** The capture predates solids, blocked masks, filters and phase ports (checkpoint format 6) and holds none of them,
+     * so they are empty here and every pipe end is a BULK end. */
     private static PassiveNetwork archivedGraph(com.google.gson.JsonObject island,FluidThermodynamics model) {
         var graph=island.getAsJsonObject("graph").deepCopy();
         for(var node:graph.getAsJsonArray("nodes")) {
@@ -26,8 +27,8 @@ class McpGameplayRegressionTest {
             var empty=new com.google.gson.JsonObject();empty.add("populations",new com.google.gson.JsonArray());inventory.add("solids",empty);
         }
         for(var pipe:graph.getAsJsonArray("pipes")) {
-            var p=pipe.getAsJsonObject();assertFalse(p.has("blockedDirections")||p.has("filter"));
-            p.addProperty("blockedDirections",0);p.add("filter",com.google.gson.JsonNull.INSTANCE);
+            var p=pipe.getAsJsonObject();assertFalse(p.has("blockedDirections")||p.has("filter")||p.has("firstPort")||p.has("secondPort"));
+            p.addProperty("blockedDirections",0);p.add("filter",com.google.gson.JsonNull.INSTANCE);p.addProperty("firstPort","BULK");p.addProperty("secondPort","BULK");
         }
         return FluidCheckpointCodec.decodeGraph(graph,model);
     }

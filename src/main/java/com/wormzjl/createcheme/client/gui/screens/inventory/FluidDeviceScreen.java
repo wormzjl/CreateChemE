@@ -69,6 +69,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         fields.clear();fields.put("temperature",new NumericDraft(temperatureUnit.display(c.temperature())));
         fields.put("pressure",new NumericDraft(c.pressure()));fields.put("diameter",new NumericDraft(c.diameter()));
         fields.put("volumeFlow",new NumericDraft(c.volumeFlow()));fields.put("maximumAddedPressure",new NumericDraft(c.maximumAddedPressure()));
+        fields.put("maximumPressureRatio",new NumericDraft(c.maximumPressureRatio()));
         composition=new RelativeComposition(data.components(),data.molecularWeights(),c.composition());
         if(mass)composition.toggleBasis();
         loadSolids(c.solids());if(data.kind()==TopologyCompiler.Kind.FILTER)phase=3;
@@ -138,6 +139,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         if(canEdit())switch(data.kind()){
             case GENERATOR->{field("pressure",tr("pressure_input"),12,y,rail()-4);field("temperature",tr("temperature_input",temperatureUnit.symbol()),12,y+42,rail()-4);}
             case PUMP->{field("volumeFlow",tr("flow_input"),12,y,rail()-4);field("maximumAddedPressure",tr("head_input"),12,y+42,rail()-4);}
+            case COMPRESSOR->{field("volumeFlow",tr("flow_input"),12,y,rail()-4);field("maximumPressureRatio",tr("ratio_input"),12,y+42,rail()-4);}
             case VALVE,VOID->field("pressure",tr("pressure_input"),12,y,rail()-4);
             case PIPE->field("diameter",tr("diameter_input"),12,y,rail()-4);
             default->{}
@@ -231,7 +233,7 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         try{
             var controls=new FluidNetwork.Controls(temperatureUnit.kelvin(fields.get("temperature").value()),fields.get("pressure").value(),
                 fields.get("diameter").value(),PipeResistance.DEFAULT_ROUGHNESS_METRES,fields.get("volumeFlow").value(),
-                fields.get("maximumAddedPressure").value(),composition.moleFractions(),solids());
+                fields.get("maximumAddedPressure").value(),composition.moleFractions(),solids(),fields.get("maximumPressureRatio").value());
             FluidNetwork.sendEdit(menu,revision,controls);message=tr("waiting");
         }catch(IllegalArgumentException e){message=tr("invalid_input");}
     }
@@ -286,7 +288,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         text(g,title.getString(),10,10,TEXT,imageWidth-20);
         var data=menu.clientData();
         if(data==null){text(g,tr("waiting"),10,62,MUTED,imageWidth-20);return;}
-        var view=data.view();if(!pipe())text(g,view.status(),10,59,MUTED,imageWidth-20);
+        // A refused mover's reason ("ERROR: pump inlet not liquid ...") and a hold read in the warning colour.
+        var view=data.view();if(!pipe())text(g,view.status(),10,59,warning(view.status())?WARN:MUTED,imageWidth-20);
         g.vLine(rail()+14,pipe()?60:78,imageHeight-52,LINE);g.hLine(8,imageWidth-8,imageHeight-49,LINE);
         text(g,tr("operating"),12,pipe()?62:77,ACCENT,rail());
         for(var label:labels)text(g,label.text(),label.x(),label.y(),MUTED,label.width());
@@ -302,7 +305,8 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
                 railLine(g,"mass",number(state.mass())+" kg",y);y+=30;
             }
         }
-        if(data.kind()==TopologyCompiler.Kind.PIPE||data.kind()==TopologyCompiler.Kind.PUMP||data.kind()==TopologyCompiler.Kind.VOID||generator()){
+        if(data.kind()==TopologyCompiler.Kind.RESERVOIR)y=renderOutlets(g,view,y,mouseX-leftPos,mouseY-topPos);
+        if(data.kind()==TopologyCompiler.Kind.PIPE||data.kind()==TopologyCompiler.Kind.PUMP||data.kind()==TopologyCompiler.Kind.COMPRESSOR||data.kind()==TopologyCompiler.Kind.VOID||generator()){
             double flow=displayedFlow();
             railLine(g,"last_flow",(Double.isFinite(flow)?number(flow):"—")+(mass?" kg/h":" kmol/h"),y);y+=30;
         }
@@ -311,6 +315,9 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
             railLine(g,"captured",number(view.filter().captured().massKg())+" kg",y);y+=30;
         }
         if(view.devicePressureChange()!=null&&y+30<imageHeight-55){railLine(g,"pressure_change",number(view.devicePressureChange()/1000)+" kPa",y);y+=30;}
+        // The compressor's rise over its suction (its own junction, the state this rail shows): the quantity its ratio limits.
+        if(data.kind()==TopologyCompiler.Kind.COMPRESSOR&&view.devicePressureChange()!=null&&view.state()!=null&&view.state().pressure()>0&&y+30<imageHeight-55){
+            railLine(g,"pressure_ratio",number((view.state().pressure()+view.devicePressureChange())/view.state().pressure()),y);y+=30;}
         }
         if(page==0)renderContents(g,mouseX-leftPos,mouseY-topPos);
         else if(page==1)renderComposition(g,mouseX-leftPos,mouseY-topPos);
@@ -323,6 +330,35 @@ public final class FluidDeviceScreen extends AbstractContainerScreen<FluidDevice
         text(g,status,10,imageHeight-42,WARN,imageWidth-20);
         // Scrollbar stores screen coordinates because all mouse events arrive there.
         g.pose().pushPose();g.pose().translate(-leftPos,-topPos,0);scroll.draw(g);g.pose().popPose();
+    }
+    private static boolean warning(String status){return status.contains("HELD")||status.contains("ERROR");}
+    /** A tank's connections by face (plan 4.3): what each outlet is, what it drew over the last interval and its flow. */
+    private int renderOutlets(GuiGraphics g,com.wormzjl.createcheme.runtime.fluid.FluidView view,int y,int mx,int my){
+        var outlets=view.outlets();if(outlets.isEmpty()||y+38>imageHeight-55)return y;
+        text(g,tr("outlets"),12,y,ACCENT,rail()-2);int top=y;y+=14;int shown=0;
+        for(var outlet:outlets){
+            if(y+24>imageHeight-55){text(g,tr("outlet.more",outlets.size()-shown),12,y,MUTED,rail()-2);y+=12;break;}
+            text(g,outletName(outlet),12,y,MUTED,rail()-2);text(g,outletState(outlet),12,y+11,TEXT,rail()-2);y+=24;shown++;
+        }
+        if(mx>=12&&mx<rail()+10&&my>=top&&my<y)hovered=tr("outlets.hint");
+        return y+6;
+    }
+    private String outletName(com.wormzjl.createcheme.runtime.fluid.FluidView.Outlet outlet){
+        return switch(outlet.port()){
+            case VAPOR->tr("outlet.top");
+            case BULK->tr("outlet.side");
+            case LIQUID->outlet.head()>0?tr("outlet.bottom_head",number(outlet.head()/1000)):tr("outlet.bottom");
+        };
+    }
+    private String outletState(com.wormzjl.createcheme.runtime.fluid.FluidView.Outlet outlet){
+        double flow=mass?outlet.massFlow()*3600:outlet.moleFlow()*3.6;String unit=mass?" kg/h":" kmol/h";
+        if(outlet.massFlow()<0)return tr("outlet.receiving")+" · "+number(-flow)+unit;
+        if(!(outlet.massFlow()>0))return tr("outlet.idle");
+        String drawing=outlet.port()==com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.BULK?tr("outlet.drawing_all")
+            :outlet.drawn()==2?tr("outlet.drawing_gas")
+            :outlet.port()==com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.VAPOR?tr("outlet.drawing_overflow")
+            :outlet.drawn()==1?tr("outlet.drawing_water"):outlet.drawn()==0?tr("outlet.drawing_oil"):"—";
+        return drawing+" · "+number(flow)+unit;
     }
     private void renderPipeRail(GuiGraphics g,int mx,int my){
         var view=menu.clientData().view();var info=view.pipeInfo();int y=124;

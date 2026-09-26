@@ -14,6 +14,7 @@ public final class ModBlocks {
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_RESERVOIR=fluid("fluid_reservoir",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.RESERVOIR);
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_PIPE=fluid("fluid_pipe",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.PIPE);
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_PUMP=fluid("fluid_pump",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.PUMP);
+    public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_COMPRESSOR=fluid("fluid_compressor",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.COMPRESSOR);
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> PRESSURE_CONTROL_VALVE=fluid("pressure_control_valve",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.VALVE);
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_GENERATOR=fluid("fluid_generator",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.GENERATOR);
     public static final DeferredBlock<com.wormzjl.createcheme.world.level.block.FluidDeviceBlock> FLUID_VOID=fluid("fluid_void",com.wormzjl.createcheme.science.fluid.topology.TopologyCompiler.Kind.VOID);

@@ -49,7 +49,7 @@ public final class FluidPacketGameTests {
     @GameTest(template="empty",timeoutTicks=100,batch="fluid-movement")
     public static void createAndVanillaMovementRejectEveryFluidBlock(GameTestHelper helper) {
         var level=helper.getLevel();var pos=helper.absolutePos(new BlockPos(0,1,0));
-        for(var block:java.util.List.of(ModBlocks.FLUID_RESERVOIR.get(),ModBlocks.FLUID_PIPE.get(),ModBlocks.FLUID_PUMP.get(),ModBlocks.PRESSURE_CONTROL_VALVE.get(),ModBlocks.FLUID_GENERATOR.get(),ModBlocks.FLUID_VOID.get())) {
+        for(var block:java.util.List.of(ModBlocks.FLUID_RESERVOIR.get(),ModBlocks.FLUID_PIPE.get(),ModBlocks.FLUID_PUMP.get(),ModBlocks.FLUID_COMPRESSOR.get(),ModBlocks.PRESSURE_CONTROL_VALVE.get(),ModBlocks.FLUID_GENERATOR.get(),ModBlocks.FLUID_VOID.get())) {
             var state=block.defaultBlockState();
             helper.assertTrue(!com.simibubi.create.api.contraption.BlockMovementChecks.isMovementAllowed(state,level,pos),"Create allowed moving "+block);
             helper.assertTrue(state.getPistonPushReaction()==net.minecraft.world.level.material.PushReaction.BLOCK,"Vanilla piston allowed moving "+block);

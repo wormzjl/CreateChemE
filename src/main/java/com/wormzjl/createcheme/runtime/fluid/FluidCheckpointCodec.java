@@ -19,12 +19,12 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
- * Checkpoint format 5 of committed science and runtime state: what one storage unit holds and what the core record
+ * Checkpoint format 6 of committed science and runtime state: what one storage unit holds and what the core record
  * holds. Rebuilds properties through the immutable model; it never deserializes implementation caches or creates a
  * nitrogen charge. Where the units live - pack files beside the world's saved data, dirty tracking, atomic writes and
  * orphan cleanup - is {@link FluidCheckpointStore}'s business.
  *
- * <p><b>Core record</b> (one NBT compound, the world's saved data): {@code FluidFormat = 5}; the world {@code Epoch};
+ * <p><b>Core record</b> (one NBT compound, the world's saved data): {@code FluidFormat = 6}; the world {@code Epoch};
  * the {@code Ledger} of buffered transfers, pending material and module states as checksummed JSON; {@code Strings},
  * an append-only table of the long texts units refer to (dimensions, packages, property revisions, certificate
  * policies); {@code Packages}, one entry per property package with the thermodynamic revision and energy reference
@@ -37,7 +37,8 @@ import java.util.function.UnaryOperator;
  *
  * <p><b>Island unit</b> (binary, {@link FluidUnitIO}): a header naming the island, its revision and the unit's
  * generation (all three must match the index), then its dimension and package, status, fallback allowance and fences;
- * the graph's topology once - node identities, elevations, kinds and volumes, pipe ends, sections and controls - and
+ * the graph's topology once - node identities, elevations, kinds and volumes, pipe ends, sections, controls (tag 0
+ * passive, 1 pump, 2 valve, 3 compressor) and, since format 6, the two ends' phase ports - and
  * its state; the approximation anchor, stored as "the same graph" when it is (always, in every fixture measured) or
  * as a state over the same topology; the last solved interval; and, for a certified island, its certificate
  * signature and the graph its certified interval started from, again as a state over the shared topology. Nothing
@@ -45,11 +46,11 @@ import java.util.function.UnaryOperator;
  * certified island's unit records its certificate base, not its materialised state, so while it stays certified its
  * unit never changes; a load materialises it from the base to the committed tick without a solve.
  *
- * <p>No other format is read: format 4 and older are refused with the instruction to create a fresh world (the
- * owner's standing rule on save compatibility).
+ * <p>No other format is read: format 5 and older are refused with the instruction to create a fresh world (the
+ * owner's standing rule on save compatibility; format 6 added the ports and the compressor of the phase-ports batch).
  */
 public final class FluidCheckpointCodec {
-    public static final int VERSION=5;
+    public static final int VERSION=6;
     /** The {@code Base} of an awake island: it carries no certificate. */
     public static final long AWAKE=-1;
     static final int UNIT_MAGIC=0x43434655,UNIT_FORMAT=1;
@@ -67,6 +68,7 @@ public final class FluidCheckpointCodec {
     private static final PassiveStepSolver.Acceptance[] ACCEPTANCES=PassiveStepSolver.Acceptance.values();
     private static final FlowControl.Mode[] MODES=FlowControl.Mode.values();
     private static final PassiveNetwork.NodeKind[] NODE_KINDS=PassiveNetwork.NodeKind.values();
+    private static final PassiveNetwork.PhasePort[] PHASE_PORTS=PassiveNetwork.PhasePort.values();
     private FluidCheckpointCodec() {}
 
     public record IslandEntry(String dimension,String packageId,double compressibility,IslandCoordinator.Snapshot snapshot) {
@@ -221,8 +223,7 @@ public final class FluidCheckpointCodec {
             case FlowControl.Passive ignored->w.u8(0);
             case FlowControl.Pump pump->{w.u8(1);w.f64(pump.targetVolumeFlow());w.f64(pump.maximumAddedPressure());w.f64(pump.efficiency());}
             case FlowControl.PressureValve valve->{w.u8(2);w.f64(valve.targetPressure());}
-            // The compressor's control tag and the format bump are WP5's (plan 4.4); no runtime path builds one before it.
-            case FlowControl.Compressor compressor->throw new IllegalArgumentException("Compressor controls are not persisted before checkpoint format 6");
+            case FlowControl.Compressor compressor->{w.u8(3);w.f64(compressor.targetVolumeFlow());w.f64(compressor.maximumPressureRatio());w.f64(compressor.efficiency());}
         }
         var s=r.spec();w.f64(s.volume());w.f64(s.temperature());w.f64(s.pressure());w.varint(tables.composition(s.composition()));
         w.f64(s.solids().volumeFraction());w.varint(s.solids().grades().size());
@@ -234,7 +235,8 @@ public final class FluidCheckpointCodec {
         long id=r.varlong();var position=position(r,texts);int kind=r.u8();if(kind>=DEVICE_KINDS.length)throw r.invalid("unknown device kind "+kind);
         int facing=r.u8();if(facing>=DIRECTIONS.length)throw r.invalid("unknown facing "+facing);
         var geometry=geometries[r.varint(geometries.length-1)];
-        FlowControl control=switch(r.u8()){case 0->new FlowControl.Passive();case 1->new FlowControl.Pump(r.f64(),r.f64(),r.f64());case 2->new FlowControl.PressureValve(r.f64());default->throw r.invalid("unknown control");};
+        FlowControl control=switch(r.u8()){case 0->new FlowControl.Passive();case 1->new FlowControl.Pump(r.f64(),r.f64(),r.f64());case 2->new FlowControl.PressureValve(r.f64());
+            case 3->new FlowControl.Compressor(r.f64(),r.f64(),r.f64());default->throw r.invalid("unknown control");};
         var device=new PhysicalFluidTopology.Device(id,position,DEVICE_KINDS[kind],DIRECTIONS[facing],geometry,control);
         double volume=r.f64(),temperature=r.f64(),pressure=r.f64();var composition=compositions[r.varint(compositions.length-1)];
         double fraction=r.f64();int gradeCount=r.varint(64);var grades=new ArrayList<SlurryFeed.Grade>(gradeCount);
@@ -380,8 +382,10 @@ public final class FluidCheckpointCodec {
                 case FlowControl.Passive ignored->w.u8(0);
                 case FlowControl.Pump pump->{w.u8(1);w.f64(pump.targetVolumeFlow());w.f64(pump.maximumAddedPressure());w.f64(pump.efficiency());}
                 case FlowControl.PressureValve valve->{w.u8(2);w.f64(valve.targetPressure());}
-                case FlowControl.Compressor compressor->throw new IllegalArgumentException("Compressor controls are not persisted before checkpoint format 6");
+                case FlowControl.Compressor compressor->{w.u8(3);w.f64(compressor.targetVolumeFlow());w.f64(compressor.maximumPressureRatio());w.f64(compressor.efficiency());}
             }
+            // Format 6: the port of each end (PassiveNetwork.PhasePort ordinal), after the control.
+            w.u8(p.firstPort().ordinal());w.u8(p.secondPort().ordinal());
         }
     }
     private static void state(FluidUnitIO.Writer w,PassiveNetwork graph) {
@@ -415,7 +419,8 @@ public final class FluidCheckpointCodec {
     /** Where a unit lies: its pack, offset, length and SHA-256. */
     record UnitRef(long pack,long offset,int length,byte[] sha256) {}
     private record Topology(long[] ids,double[] elevations,PassiveNetwork.NodeKind[] kinds,double[] volumes,long[] pipeIds,int[] first,int[] second,
-                            List<List<PipeResistance.Geometry>> sections,List<FlowControl> controls) {}
+                            List<List<PipeResistance.Geometry>> sections,List<FlowControl> controls,PassiveNetwork.PhasePort[] firstPorts,PassiveNetwork.PhasePort[] secondPorts) {}
+    private static PassiveNetwork.PhasePort port(FluidUnitIO.Reader r){int port=r.u8();if(port>=PHASE_PORTS.length)throw r.invalid("unknown pipe port "+port);return PHASE_PORTS[port];}
 
     /**
      * Reads one island unit and validates it against its index row, as format 3 validated its island compound and
@@ -499,13 +504,16 @@ public final class FluidCheckpointCodec {
         }
         int pipes=r.varint(MAXIMUM_PIPES);var pipeIds=new long[pipes];var first=new int[pipes];var second=new int[pipes];
         var sections=new ArrayList<List<PipeResistance.Geometry>>(pipes);var controls=new ArrayList<FlowControl>(pipes);
+        var firstPorts=new PassiveNetwork.PhasePort[pipes];var secondPorts=new PassiveNetwork.PhasePort[pipes];
         for(int p=0;p<pipes;p++) {
             pipeIds[p]=r.i64();first[p]=r.varint(nodes);second[p]=r.varint(nodes);int count=r.varint(MAXIMUM_SECTIONS);
             var list=new ArrayList<PipeResistance.Geometry>(count);for(int s=0;s<count;s++)list.add(new PipeResistance.Geometry(r.f64(),r.f64(),r.f64(),r.f64()));
             sections.add(List.copyOf(list));
-            controls.add(switch(r.u8()){case 0->new FlowControl.Passive();case 1->new FlowControl.Pump(r.f64(),r.f64(),r.f64());case 2->new FlowControl.PressureValve(r.f64());default->throw new IllegalArgumentException("Unknown saved control");});
+            controls.add(switch(r.u8()){case 0->new FlowControl.Passive();case 1->new FlowControl.Pump(r.f64(),r.f64(),r.f64());case 2->new FlowControl.PressureValve(r.f64());
+                case 3->new FlowControl.Compressor(r.f64(),r.f64(),r.f64());default->throw new IllegalArgumentException("Unknown saved control");});
+            firstPorts[p]=port(r);secondPorts[p]=port(r);
         }
-        return new Topology(ids,elevations,kinds,volumes,pipeIds,first,second,sections,controls);
+        return new Topology(ids,elevations,kinds,volumes,pipeIds,first,second,sections,controls,firstPorts,secondPorts);
     }
     private static PassiveNetwork state(FluidUnitIO.Reader r,Topology t,FluidThermodynamics model) {
         var nodes=new ArrayList<PassiveNetwork.Reservoir>(t.ids.length);
@@ -520,7 +528,7 @@ public final class FluidCheckpointCodec {
         for(int p=0;p<t.pipeIds.length;p++) {
             int blocked=r.varint(3);InlineFilter filter=null;
             if(r.bool()){double capacity=r.f64();var captured=solids(r,model);double energy=r.f64();boolean stopped=r.bool();filter=currentFilter(capacity,captured,energy,stopped,model);}
-            pipes.add(new PassiveNetwork.Pipe(t.pipeIds[p],t.first[p],t.second[p],t.sections.get(p),t.controls.get(p),blocked,filter));
+            pipes.add(new PassiveNetwork.Pipe(t.pipeIds[p],t.first[p],t.second[p],t.sections.get(p),t.controls.get(p),blocked,filter,t.firstPorts[p],t.secondPorts[p]));
         }
         return new PassiveNetwork(nodes,pipes);
     }
@@ -603,7 +611,7 @@ public final class FluidCheckpointCodec {
     }
     private static final List<String> LONG_COLUMNS=List.of("Id","Revision","Generation","Online","Committed","Retry","Base","Since","Start","Horizon","Pack","Offset");
     /**
-     * Reads and validates a core record: format 5 only (older formats are refused with the instruction to create a
+     * Reads and validates a core record: format 6 only (older formats are refused with the instruction to create a
      * fresh world), every field present and typed, the envelope and ledger digests, the string and package tables,
      * the pack list, and every index row's unit reference lying inside a listed pack. The units themselves are read by
      * {@link #island} and {@link #topology}.
@@ -831,9 +839,13 @@ public final class FluidCheckpointCodec {
     private record Phase(double temperature,double pressure,double[] liquid,double[] vapor,double waterLiquid,double waterVapor,double hydrocarbonPressure) {}
     private record Node(long id,double elevation,String kind,PassiveNetwork.Inventory inventory,Phase phase) {}
     private record Control(String kind,double target,double limit,double efficiency) {}
-    private record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,Control control,int blockedDirections,InlineFilter filter) {}
+    /** A pipe; {@code firstPort}/{@code secondPort} name its ends' {@link PassiveNetwork.PhasePort} (checkpoint format 6). */
+    private record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,Control control,int blockedDirections,InlineFilter filter,String firstPort,String secondPort) {}
     private record Graph(List<Node> nodes,List<Pipe> pipes) {}
-    /** A graph in the format-3 payload's JSON shape, for the archived gameplay states that keep one. */
+    /** A graph in the format-3 payload's JSON shape, for the archived gameplay states that keep one, extended with the
+     * format-6 fields: every pipe names its two ports ({@code "BULK"}, {@code "VAPOR"}, {@code "LIQUID"}), and a control of
+     * kind {@code "compressor"} reads {@code target} as its suction volume flow, {@code limit} as its maximum pressure ratio
+     * and {@code efficiency} as its efficiency. A missing field is refused like every other. */
     static PassiveNetwork decodeGraph(JsonElement json,FluidThermodynamics model) {
         strictShape(json,Graph.class,0,new int[]{0},LEDGER_ELEMENTS);var saved=GSON.fromJson(json,Graph.class);
         if(saved.nodes.isEmpty()||saved.nodes.size()>MAXIMUM_NODES||saved.pipes.size()>MAXIMUM_PIPES)throw new IllegalArgumentException("Invalid saved graph size");
@@ -846,8 +858,10 @@ public final class FluidCheckpointCodec {
         }
         for(var pipe:saved.pipes)if(pipe.filter!=null)model.solids.validate(pipe.filter.captured());
         return new PassiveNetwork(nodes,saved.pipes.stream().map(p->new PassiveNetwork.Pipe(p.id,p.first,p.second,p.sections,switch(p.control.kind) {
-            case "passive"->new FlowControl.Passive();case "pump"->new FlowControl.Pump(p.control.target,p.control.limit,p.control.efficiency);case "valve"->new FlowControl.PressureValve(p.control.target);default->throw new IllegalArgumentException("Unknown saved control");
-        },p.blockedDirections,p.filter==null?null:currentFilter(p.filter.capacity(),p.filter.captured(),p.filter.energyJoule(),p.filter.stoppedAtCapacity(),model))).toList());
+            case "passive"->new FlowControl.Passive();case "pump"->new FlowControl.Pump(p.control.target,p.control.limit,p.control.efficiency);case "valve"->new FlowControl.PressureValve(p.control.target);
+            case "compressor"->new FlowControl.Compressor(p.control.target,p.control.limit,p.control.efficiency);default->throw new IllegalArgumentException("Unknown saved control");
+        },p.blockedDirections,p.filter==null?null:currentFilter(p.filter.capacity(),p.filter.captured(),p.filter.energyJoule(),p.filter.stoppedAtCapacity(),model),
+                PassiveNetwork.PhasePort.valueOf(p.firstPort),PassiveNetwork.PhasePort.valueOf(p.secondPort))).toList());
     }
 
     /** Reject missing fields and fractional integer stamps instead of allowing Gson's zero/coercion defaults. */

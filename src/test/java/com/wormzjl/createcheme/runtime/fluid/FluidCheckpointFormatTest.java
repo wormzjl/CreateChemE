@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Checkpoint format 5 (F3's format 4, which replaced format 3 of plan section 3.5, less its kind column): clocks, material, fences, pending events, modules
+ * Checkpoint format 6 (format 5 plus the pipe ports and the compressor control of the phase-ports batch; format 5 was F3's format 4, which replaced format 3 of plan section 3.5, less its kind column): clocks, material, fences, pending events, modules
  * and certificates round-trip exactly through the core record and the island units; every index and certificate
  * field is validated; certificates are discarded, keeping inventory, when certificates are off or their signature
  * changed; a certified island's unit is reused in place, never re-encoded, while it stays certified; a thousand
@@ -185,10 +185,10 @@ class FluidCheckpointFormatTest {
         var world=topology.snapshot();assertEquals(1,world.events().size());
 
         var data=new FluidSavedData(checkpoint,world,key->model);var tag=data.save(new CompoundTag(),null);
-        assertEquals(5,tag.getInt("FluidFormat"));assertEquals(1_234,tag.getLong("Epoch"));
+        assertEquals(6,tag.getInt("FluidFormat"));assertEquals(1_234,tag.getLong("Epoch"));
         assertEquals(FluidCheckpointCodec.AWAKE,index(tag,4,"Base"));
         assertEquals(checkpoint.islands().get(1).snapshot().certificate().orElseThrow().baseTick(),index(tag,2,"Base"));
-        assertFalse(tag.getCompound("Islands").contains("Kind"),"format 5 has one certificate kind and no kind column");
+        assertFalse(tag.getCompound("Islands").contains("Kind"),"format 6, like 5, has one certificate kind and no kind column");
         assertEquals(0.0,checkpoint.islands().get(1).snapshot().certificate().orElseThrow().drift(),"the closed pair's certificate is the identity map, drift 0");
         var loaded=FluidSavedData.load(tag,key->model,data.store().reopen());
         for(int i=0;i<4;i++) {

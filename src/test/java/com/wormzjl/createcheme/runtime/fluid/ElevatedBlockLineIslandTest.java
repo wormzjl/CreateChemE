@@ -127,13 +127,19 @@ class ElevatedBlockLineIslandTest {
         return state.mass()/state.volume();
     }
     private double head(double pressure,int lift){return waterDensity(pressure)*PassiveStepSolver.GRAVITY*lift;}
+    /** The level head of a tank's bottom (LIQUID) port on its final state (decision D9 of the phase-ports batch):
+     * {@code g m_c H / V}, the condensed mass over a fixed 1 m height. */
+    private double levelHead(Run run) {
+        var tank=run.tankNode();return PassiveStepSolver.GRAVITY*model.liquidMass(tank.state())*PassiveStepSolver.LEVEL_HEAD_HEIGHT/tank.inventory().volume();
+    }
 
     /** How far a line got, why it stopped if it did, and the graph it finished on. */
     private record Run(int survived,String detail,PassiveNetwork finished) {
-        FluidThermodynamics.State tank() {
+        FluidThermodynamics.State tank(){return tankNode().state();}
+        PassiveNetwork.Reservoir tankNode() {
             for(int i=finished.reservoirs().size()-1;i>=0;i--) {
                 var node=finished.reservoirs().get(i);
-                if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR)return node.state();
+                if(node.kind()==PassiveNetwork.NodeKind.RESERVOIR)return node;
             }
             throw new AssertionError("No reservoir in this island");
         }
@@ -197,6 +203,10 @@ class ElevatedBlockLineIslandTest {
      * block up, so its shutoff pressure is the generator's plus the pump's head less one block of
      * column, and only three blocks of column stand between that and the tank - which is the same
      * total {@link #LIFT} of head, because the column is continuous.
+     *
+     * <p>Since the phase-ports batch (WP5) a rising line enters its tank through the tank's DOWN face, its bottom port,
+     * whose pressure is the headspace's plus the level head of the tank's water (decision D9): there {@code P_tank} is that
+     * bottom pressure, and the headspace rests one level head (about 7 kPa here) lower.
      */
     @Test void elevatedLinesIntegrateFortyIntervalsLikeTheirFlatControl() {
         double pressure=400000;
@@ -211,13 +221,23 @@ class ElevatedBlockLineIslandTest {
         lines.put("rising  generator->pump->2 pipes->tank",run(risingPumpLine(pressure),40));
         lines.forEach((name,line)->System.out.println("("+name+") "+line.detail()
                 +(line.ok()?"\n   tank P="+line.tank().pressure()+" mass="+line.tank().mass()
-                +" offset vs flat="+(line.tank().pressure()-flat.tank().pressure())+" Pa":"")));
+                +" offset vs flat="+(line.tank().pressure()-flat.tank().pressure())+" Pa level head="+levelHead(line)+" liquid="+model.liquidMass(line.tank())
+                +" T="+line.tank().temperature()+" bottom="+(line.tank().pressure()+levelHead(line)):"")));
         lines.forEach((name,line)->assertTrue(line.ok(),name+": "+line.detail()));
-        assertEquals(pressure-head(pressure,LIFT),lines.get("rising  generator->3 pipes up->tank").tank().pressure(),1e-5*pressure,
-                "A tank above its generator must settle one water column below it");
+        // The rising lines reach their tank through its DOWN face, which compiles to its bottom (LIQUID) port (phase-ports
+        // WP5, default A1), where the level head of the water it holds adds to the headspace pressure (decision D9, H = 1 m).
+        // So it is the tank's bottom, P + g m_c H / V, that settles one water column below the generator: the headspace
+        // rests about one level head lower (re-baselined in WP5: headspace 360918.3081 Pa before, 353969.4046 Pa now, level
+        // head 6948.90 Pa of 708.6 kg of water, bottom 360918.3068 Pa; PHASE_PORTS_REVIEW.md WP5). The falling line enters
+        // through the tank's UP face, its top (VAPOR) port, which has no head: unchanged.
+        var rising=lines.get("rising  generator->3 pipes up->tank");
+        assertEquals(pressure-head(pressure,LIFT),rising.tank().pressure()+levelHead(rising),1e-5*pressure,
+                "A tank above its generator must settle with its bottom one water column below it");
         assertEquals(pressure+head(pressure,LIFT),lines.get("falling generator->3 pipes down->tank").tank().pressure(),1e-5*pressure,
                 "A tank below its generator must settle one water column above it");
-        assertEquals(pressure-head(pressure,LIFT),lines.get("rising  generator->pipe->filter->pipe->tank").tank().pressure(),1e-5*pressure,
+        // Re-baselined in WP5 like the plain rising line: headspace 360918.3787 Pa before, 353969.7255 Pa now, bottom 360918.6286 Pa.
+        var risingFilter=lines.get("rising  generator->pipe->filter->pipe->tank");
+        assertEquals(pressure-head(pressure,LIFT),risingFilter.tank().pressure()+levelHead(risingFilter),1e-5*pressure,
                 "A filter block may not change where the column settles");
         // The pump's shutoff is its rise limit, the setting scaled by its suction's density over the pump reference
         // density (the suction is the junction one block above the generator), less the column: the model's exact
@@ -225,9 +245,11 @@ class ElevatedBlockLineIslandTest {
         // while its pump row stood on the discharge column (HANDOFF_REVIEW.md 8.9 (e) of the mixed-gas junction batch,
         // decision D6). A hundred pascals rather than the four the passive lines hold to, because the pump does work on
         // the water in the middle of the column.
-        double suctionDensity=waterDensity(pressure-head(pressure,1));
-        assertEquals(pressure+PUMP_HEAD*suctionDensity/model.pumpReferenceDensity()-head(pressure,LIFT),lines.get("rising  generator->pump->2 pipes->tank").tank().pressure(),
-                1e-4*(pressure+PUMP_HEAD),"A pumped tank must settle one water column below its own shutoff pressure");
+        // Re-baselined in WP5: the pump discharges into the tank's bottom port, so its bottom (headspace plus level head)
+        // closes the pump: headspace 861062.9819 Pa before, 852452.8285 Pa now, level head 8610.21 Pa, bottom 861063.0384 Pa.
+        double suctionDensity=waterDensity(pressure-head(pressure,1));var pumped=lines.get("rising  generator->pump->2 pipes->tank");
+        assertEquals(pressure+PUMP_HEAD*suctionDensity/model.pumpReferenceDensity()-head(pressure,LIFT),pumped.tank().pressure()+levelHead(pumped),
+                1e-4*(pressure+PUMP_HEAD),"A pumped tank must settle with its bottom one water column below its own shutoff pressure");
     }
 
     /**

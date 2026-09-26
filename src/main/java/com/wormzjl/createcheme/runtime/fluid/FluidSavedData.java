@@ -15,7 +15,7 @@ import java.util.function.Function;
 
 /**
  * The world's fluid checkpoint as overworld saved data, independent of chunk residency: the core record of checkpoint
- * format 5 ({@link FluidCheckpointCodec}) is this saved data's file, and its island and topology units live in pack
+ * format 6 ({@link FluidCheckpointCodec}) is this saved data's file, and its island and topology units live in pack
  * files beside it ({@link FluidCheckpointStore}). A save is prepared on the server thread - the live authority is
  * captured (certified islands are materialised) and only the units whose island changed since they were written are
  * encoded - and committed on Minecraft's IO worker: the new pack, then the core record, each written atomically. The
@@ -105,7 +105,7 @@ public final class FluidSavedData extends SavedData {
         return tag.merge(plan.core().copy());
     }
     /**
-     * Reads format 5: the core record and the units of {@code store}. Any other format is refused with the instruction
+     * Reads format 6: the core record and the units of {@code store}. Any other format is refused with the instruction
      * to create a fresh world: there is no upgrade from format 4 or older.
      */
     public static FluidSavedData load(CompoundTag core,Function<FluidCheckpointCodec.PackageKey,FluidThermodynamics> models,FluidCheckpointStore store) {

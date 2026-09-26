@@ -29,16 +29,20 @@ import java.util.*;
  * the next bucket.
  */
 public final class FluidNetwork {
-    public static final String PROTOCOL="fluid-6";
+    public static final String PROTOCOL="fluid-7";
     private static final Gson JSON=new Gson();
     public static final int MAX_JSON=262144;
     public static final int MAX_EDIT_JSON=4096;
     private FluidNetwork() {}
-    public record Controls(double temperature,double pressure,double diameter,double roughness,double volumeFlow,double maximumAddedPressure,double[] composition,SlurryFeed solids) {
+    /** The compressor's pressure-ratio bounds (plan Appendix B): at least 1 % over the suction, at most tenfold. */
+    public static final double MINIMUM_PRESSURE_RATIO=1.01,MAXIMUM_PRESSURE_RATIO=10,DEFAULT_PRESSURE_RATIO=3.0;
+    public record Controls(double temperature,double pressure,double diameter,double roughness,double volumeFlow,double maximumAddedPressure,double[] composition,SlurryFeed solids,double maximumPressureRatio) {
+        public Controls(double temperature,double pressure,double diameter,double roughness,double volumeFlow,double maximumAddedPressure,double[] composition,SlurryFeed solids){this(temperature,pressure,diameter,roughness,volumeFlow,maximumAddedPressure,composition,solids,DEFAULT_PRESSURE_RATIO);}
         public Controls(double temperature,double pressure,double diameter,double roughness,double volumeFlow,double maximumAddedPressure,double[] composition){this(temperature,pressure,diameter,roughness,volumeFlow,maximumAddedPressure,composition,SlurryFeed.NONE);}
         public Controls {
             Objects.requireNonNull(solids);composition=composition.clone();
-            for(double value:new double[]{temperature,pressure,diameter,roughness,volumeFlow,maximumAddedPressure})if(!Double.isFinite(value))throw new IllegalArgumentException("All controls must be finite numbers");
+            for(double value:new double[]{temperature,pressure,diameter,roughness,volumeFlow,maximumAddedPressure,maximumPressureRatio})if(!Double.isFinite(value))throw new IllegalArgumentException("All controls must be finite numbers");
+            if(maximumPressureRatio<MINIMUM_PRESSURE_RATIO||maximumPressureRatio>MAXIMUM_PRESSURE_RATIO)throw new IllegalArgumentException("The pressure ratio must lie between "+MINIMUM_PRESSURE_RATIO+" and "+MAXIMUM_PRESSURE_RATIO);
             // Temperature and pressure are only required to be physical here: the range the fluid model can evaluate
             // is the property package's and depends on the composition, so the server checks it against the model when
             // the edit arrives and refuses it with the thermo-domain error (see edit below).
@@ -47,10 +51,11 @@ public final class FluidNetwork {
         }
         @Override public double[] composition(){return composition.clone();}
         public static Controls from(WorldTopologyLedger.Registration record) {
-            var d=record.device();double flow=d.control() instanceof FlowControl.Pump p?p.targetVolumeFlow():.01;
+            var d=record.device();double flow=d.control() instanceof FlowControl.Mover m?m.targetVolumeFlow():.01;
             double head=d.control() instanceof FlowControl.Pump p?p.maximumAddedPressure():500000;
+            double ratio=d.control() instanceof FlowControl.Compressor c?c.maximumPressureRatio():DEFAULT_PRESSURE_RATIO;
             double pressure=d.control() instanceof FlowControl.PressureValve v?v.targetPressure():record.spec().pressure();
-            return new Controls(record.spec().temperature(),pressure,d.geometry().diameter(),d.geometry().roughness(),flow,head,record.spec().composition(),record.spec().solids());
+            return new Controls(record.spec().temperature(),pressure,d.geometry().diameter(),d.geometry().roughness(),flow,head,record.spec().composition(),record.spec().solids(),ratio);
         }
     }
     /**
@@ -66,6 +71,7 @@ public final class FluidNetwork {
                     ||presets.stream().map(FluidPresetCatalog.Preset::id).distinct().count()!=presets.size()||materialNames.size()>components.size()
                     ||!components.containsAll(materialNames.keySet()))throw new IllegalArgumentException("Invalid bounded fluid menu state");
             if(view.pipeHistory().size()>12||view.pipeRoutes().size()>12||view.status().length()>2048)throw new IllegalArgumentException("Fluid view exceeds display bounds");
+            if(kind!=TopologyCompiler.Kind.RESERVOIR&&!view.outlets().isEmpty())throw new IllegalArgumentException("Only a tank lists outlets");
             if((kind==TopologyCompiler.Kind.PIPE||kind==TopologyCompiler.Kind.FILTER)&&view.pipeInfo()==null)
                 throw new IllegalArgumentException("Missing pipe inspection");
             if(view.pipeInfo()!=null){
@@ -211,6 +217,7 @@ public final class FluidNetwork {
                 switch(d.kind()) {
                     case PIPE,FILTER->geometry=new PipeResistance.Geometry(geometry.length(),controls.diameter,PipeResistance.DEFAULT_ROUGHNESS_METRES,geometry.minorLoss());
                     case PUMP->control=new FlowControl.Pump(controls.volumeFlow,controls.maximumAddedPressure,1);
+                    case COMPRESSOR->control=new FlowControl.Compressor(controls.volumeFlow,controls.maximumPressureRatio,1);
                     case VALVE->control=new FlowControl.PressureValve(controls.pressure);
                     case GENERATOR->spec=new FluidDeviceSpec(spec.volume(),controls.temperature,controls.pressure,controls.composition,controls.solids);
                     case VOID->spec=new FluidDeviceSpec(spec.volume(),spec.temperature(),controls.pressure,spec.composition());

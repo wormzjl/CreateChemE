@@ -148,6 +148,10 @@ class DeadHeadedLineIslandTest {
         return state.mass()/state.volume();
     }
     private double column(double pressure){return waterDensity(pressure)*PassiveStepSolver.GRAVITY*LIFT;}
+    /** The level head of the tank's bottom (LIQUID) port on a run's final state (decision D9 of the phase-ports batch). */
+    private double levelHead(Run run) {
+        var tank=tankOf(run.finished());return PassiveStepSolver.GRAVITY*model.liquidMass(tank.state())*PassiveStepSolver.LEVEL_HEAD_HEIGHT/tank.inventory().volume();
+    }
 
     /**
      * Every connection of a dead-headed line is closed and carries <em>exactly</em> zero; the tank
@@ -238,11 +242,15 @@ class DeadHeadedLineIslandTest {
 
         var raised=raiseGenerator(held.finished(),blocks,400000);
         var filled=run(raised,40);
-        System.out.println("(reopened at 400 kPa) "+filled.detail()+" tank P="+filled.tank().pressure()+" mass="+filled.tank().mass());
+        System.out.println("(reopened at 400 kPa) "+filled.detail()+" tank P="+filled.tank().pressure()+" mass="+filled.tank().mass()+" level head="+levelHead(filled)
+                +" bottom="+(filled.tank().pressure()+levelHead(filled)));
         assertTrue(filled.ok(),"raising the generator must re-open the line: "+filled.detail());
+        // The line enters the tank through its DOWN face, its bottom (LIQUID) port (phase-ports WP5, default A1), where the
+        // level head of its water adds to the headspace (decision D9): the bottom settles one water column below the
+        // generator. Re-baselined in WP5: headspace 360918.3081 Pa before, 353969.4046 Pa now (PHASE_PORTS_REVIEW.md WP5).
         double expected=400000-column(400000);
-        assertEquals(expected,filled.tank().pressure(),1e-5*expected,
-                "a tank four blocks above a 400 kPa generator must settle one water column below it");
+        assertEquals(expected,filled.tank().pressure()+levelHead(filled),1e-5*expected,
+                "a tank four blocks above a 400 kPa generator must settle with its bottom one water column below it");
         assertTrue(filled.tank().mass()>700,"the tank must actually have filled with water: "+filled.tank().mass()+" kg");
         // And once it is full it is dead-headed again, at its own hydrostatic balance rather than
         // against an adverse charge, so the same closure holds it there. That is the end state a

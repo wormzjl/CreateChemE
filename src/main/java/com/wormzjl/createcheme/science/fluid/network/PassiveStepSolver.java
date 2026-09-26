@@ -1300,7 +1300,7 @@ public final class PassiveStepSolver {
      * height at the default 1 m3 volume. A constant, not a setting: a prismatic tank of this height over the footprint
      * {@code V/H}. Multi-block tanks, when they exist, state their structure's height here instead.
      */
-    static final double LEVEL_HEAD_HEIGHT=1;
+    public static final double LEVEL_HEAD_HEIGHT=1;
     /**
      * The static head of a port over its node's pressure: the level head of a bottom outlet (decision D9, option B), zero
      * everywhere else. At a LIQUID port of a vessel (RESERVOIR, or its rate-solve copy PORT) the node's pressure is the

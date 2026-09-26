@@ -95,9 +95,10 @@ class FluidPacketCodecTest {
         var view=new FluidView(9,4,1200,1300,"RESTING: no flow since 55.0 s",null,0,List.of());
         return new FluidNetwork.MenuData(TopologyCompiler.Kind.GENERATOR,view,new FluidNetwork.Controls(298.15,150000,.05,.000045,.01,500000,amounts),names,presets,message,Map.of("component_0",descriptor),weights(names.size()));
     }
-    /** The protocol is fluid-6 and every payload has its own wire identity. */
+    /** The protocol is fluid-7 (fluid-6 plus the compressor's ratio control and a tank's outlets, phase-ports WP5) and
+     * every payload has its own wire identity. Test name kept. */
     @Test void theProtocolIsFluidSixWithDistinctStaticAndLivePayloads() {
-        assertEquals("fluid-6",FluidNetwork.PROTOCOL);
+        assertEquals("fluid-7",FluidNetwork.PROTOCOL);
         var ids=java.util.Set.of(FluidNetwork.EditPayload.TYPE.id(),FluidNetwork.RecoverPayload.TYPE.id(),FluidNetwork.StaticPayload.TYPE.id(),FluidNetwork.LivePayload.TYPE.id());
         assertEquals(4,ids.size());
     }
@@ -162,6 +163,41 @@ class FluidPacketCodecTest {
             assertNotNull(FluidNetwork.lastDelivered(1),"the most recently read device stays");assertNull(FluidNetwork.lastDelivered(2),"the least recently used device goes");
             FluidNetwork.forgetDelivered();assertNull(FluidNetwork.lastDelivered(1));
         } finally {FluidNetwork.forgetDelivered();}
+    }
+    /** The compressor's ratio control (phase-ports WP5): bounded to 1.01-10, read back from a compressor's registration,
+     * and required on the wire (a payload without it is refused, not defaulted). */
+    @Test void theCompressorRatioIsBoundedReadFromItsRegistrationAndRequiredOnTheWire() {
+        double[] n=new double[com.wormzjl.createcheme.science.material.MaterialTestBasis.NETWORK+1];n[com.wormzjl.createcheme.science.material.MaterialTestBasis.NITROGEN]=1;
+        for(double ratio:new double[]{1.01,3,10})assertEquals(ratio,new FluidNetwork.Controls(298.15,101325,.05,.000045,.05,500000,n,com.wormzjl.createcheme.runtime.fluid.SlurryFeed.NONE,ratio).maximumPressureRatio());
+        for(double ratio:new double[]{1.009,10.01,Double.NaN,0})
+            assertThrows(IllegalArgumentException.class,()->new FluidNetwork.Controls(298.15,101325,.05,.000045,.05,500000,n,com.wormzjl.createcheme.runtime.fluid.SlurryFeed.NONE,ratio),"ratio "+ratio);
+        assertEquals(3.0,new FluidNetwork.Controls(298.15,101325,.05,.000045,.01,500000,n).maximumPressureRatio(),"the placement default of plan Appendix B");
+        var device=new PhysicalFluidTopology.Device(7,new PhysicalFluidTopology.Position("minecraft:overworld",0,64,0),TopologyCompiler.Kind.COMPRESSOR,PhysicalFluidTopology.Direction.EAST,
+                new com.wormzjl.createcheme.science.fluid.network.PipeResistance.Geometry(1,.05,.000045,0),new com.wormzjl.createcheme.science.fluid.network.FlowControl.Compressor(.05,2.5,1));
+        var controls=FluidNetwork.Controls.from(new WorldTopologyLedger.Registration(device,FluidDeviceSpec.nitrogen(),3));
+        assertEquals(.05,controls.volumeFlow());assertEquals(2.5,controls.maximumPressureRatio());
+        var gson=new Gson();var object=com.google.gson.JsonParser.parseString(gson.toJson(controls)).getAsJsonObject();
+        assertEquals(controls.maximumPressureRatio(),gson.fromJson(object.toString(),FluidNetwork.Controls.class).maximumPressureRatio());
+        object.remove("maximumPressureRatio");
+        assertThrows(RuntimeException.class,()->gson.fromJson(object.toString(),FluidNetwork.Controls.class),"an absent ratio is refused");
+    }
+    /** A tank's outlet lines round-trip on the live payload; only a tank lists outlets, at most six, with finite values. */
+    @Test void aTanksOutletsRoundTripAndAreBounded() {
+        var base=generatorMenu("");
+        var outlets=List.of(new FluidView.Outlet(11,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.VAPOR,.002,.07,2,0),
+                new FluidView.Outlet(12,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.BULK,-.5,-27,FluidView.Outlet.NONE,0),
+                new FluidView.Outlet(13,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.LIQUID,1.25,69.4,1,2931.5));
+        var view=base.view().withOutlets(outlets);
+        var data=new FluidNetwork.MenuData(TopologyCompiler.Kind.RESERVOIR,view,base.controls(),base.components(),base.presets(),"",base.materialNames(),base.molecularWeights());
+        var copy=FluidNetwork.MenuData.of(data.staticData(0),FluidNetwork.decodeLive(new Gson().toJson(data.liveData())));
+        assertEquals(outlets,copy.view().outlets());
+        assertThrows(IllegalArgumentException.class,()->new FluidNetwork.MenuData(TopologyCompiler.Kind.GENERATOR,view,base.controls(),base.components(),base.presets(),"",base.materialNames(),base.molecularWeights()));
+        assertThrows(IllegalArgumentException.class,()->base.view().withOutlets(java.util.Collections.nCopies(7,outlets.getFirst())));
+        assertThrows(IllegalArgumentException.class,()->new FluidView.Outlet(1,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.LIQUID,Double.NaN,0,1,0));
+        assertThrows(IllegalArgumentException.class,()->new FluidView.Outlet(1,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.LIQUID,1,1,3,0));
+        assertThrows(IllegalArgumentException.class,()->new FluidView.Outlet(1,com.wormzjl.createcheme.science.fluid.network.PassiveNetwork.PhasePort.LIQUID,1,1,1,-1));
+        var json=com.google.gson.JsonParser.parseString(new Gson().toJson(data.liveData())).getAsJsonObject();json.getAsJsonObject("view").remove("outlets");
+        assertThrows(RuntimeException.class,()->FluidNetwork.decodeLive(json.toString()),"a live view without its outlet list is refused");
     }
     /** A refused control reaches the handler wrapped by the JSON reader; the player reads the control's own reason, not the wrapper. */
     @Test void aRefusedControlIsRepliedWithItsOwnReason() {

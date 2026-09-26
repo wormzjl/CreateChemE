@@ -4,6 +4,7 @@
     "createcheme:fluid_reservoir",
     "createcheme:fluid_pipe",
     "createcheme:fluid_pump",
+    "createcheme:fluid_compressor",
     "createcheme:pressure_control_valve",
     "createcheme:fluid_generator",
     "createcheme:fluid_void",
