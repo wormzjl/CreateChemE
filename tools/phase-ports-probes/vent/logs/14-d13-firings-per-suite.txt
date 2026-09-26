@@ -1,0 +1,24 @@
+# D13 polish firings per suite: harness all on a copy of 4a71629 with a print at the entry of polishRefusedPoint (D13_POLISH) and at its acceptance (D13_ACCEPTED), attributed to the calling test; same pass counts and junction-line comparison as 13
+harness: 33 junction lines identical to reference/junction-lines.txt (6e1c5b6; wall ms, bytes and allocatedMB ignored)
+science    PASS   216 tests found , 216 tests successful , 0 tests failed 
+runtime    PASS   237 tests found , 237 tests successful , 0 tests failed 
+adjacent   PASS   38 tests found , 38 tests successful , 0 tests failed 
+regression PASS   1 tests found , 1 tests successful , 0 tests failed 
+== science
+     55 D13_ACCEPTED LevelHeadTest.drive
+     20 D13_ACCEPTED VentGatePolishTest.run
+     55 D13_POLISH LevelHeadTest.drive
+     20 D13_POLISH VentGatePolishTest.run
+== runtime
+      2 D13_ACCEPTED DeadHeadedLineIslandTest.run
+      2 D13_ACCEPTED ElevatedBlockLineIslandTest.run
+      9 D13_ACCEPTED FilterBlockLineIslandTest.run
+      2 D13_POLISH DeadHeadedLineIslandTest.run
+      2 D13_POLISH ElevatedBlockLineIslandTest.run
+      9 D13_POLISH FilterBlockLineIslandTest.run
+== adjacent
+      2 D13_ACCEPTED DeadHeadedLineIslandTest.run
+      9 D13_ACCEPTED FilterBlockLineIslandTest.run
+      2 D13_POLISH DeadHeadedLineIslandTest.run
+      9 D13_POLISH FilterBlockLineIslandTest.run
+== regression
