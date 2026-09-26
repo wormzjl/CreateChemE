@@ -138,7 +138,7 @@ Measurement drivers written for this package live in the session scratchpad, not
 ## WP2: the "outlet phase absent" state (2026-09-26)
 
 - Author: Claude (Opus 5.5), worktree `/home/user/CreateChemE` (cloud container), branch `claude/phase-ports-compressor`.
-- Base: `3dbd9b8` (WP1 `35e354d`, its review `3097e60`, the WP1 tools commit). Commit: see section 12 (the commit line is recorded there after committing).
+- Base: `3dbd9b8` (WP1 `35e354d`, its review `3097e60`, the WP1 tools commit). Commit: `d836cf2` (`WIP phase-ports WP2: absent-phase closure, throttle, reopen allowance`), on `3dbd9b8`; not merged, not pushed. Tools and this line: the following commit.
 - Scope: plan 3.4 exactly: availability on the step's start state through `boundaryAllowed` with a start-state mask, the outflow throttle in `edgeRows`, the mask in the workspace and cycle key, the port refusal as a per-link allowance of the boundary-reopen retry, and the phase-vanishing case verified. Not in it: the level head (D9), the pump (WP3), the compressor (WP4), runtime (WP5). The base defect of WP1 section 8 is untouched (owner decision; since taken as D10, a separate commit after this one).
 
 ### 1. What changed, per file
@@ -244,4 +244,4 @@ The `PHASE_PORT_RESERVE` javadoc was corrected to the measured behaviour (sectio
 
 ### 12. Scratch material and commit
 
-Drivers and logs: `tools/phase-ports-probes/wp2/` (`src/PhasePortDutyCycleProbe.java` the R1 probe, `src/SqueezeGateProbe.java` the gate classification probe, `logs/` the gate logs above). The counterfactual runs (reopen test with no mask; the gate instrumentation) were temporary edits of `PassiveStepSolver.java`, reverted; their outputs are in `logs/`.
+Code commit `d836cf2`. Drivers and logs: `tools/phase-ports-probes/wp2/` (`src/PhasePortDutyCycleProbe.java` the R1 probe, `src/SqueezeGateProbe.java` the gate classification probe, `logs/` the gate logs above). The counterfactual runs (reopen test with no mask; the gate instrumentation) were temporary edits of `PassiveStepSolver.java`, reverted; their outputs are in `logs/`.

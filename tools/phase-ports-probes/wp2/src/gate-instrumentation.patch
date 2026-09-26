@@ -1,0 +1,15 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 708a2a5..9dbbff2 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -548,7 +548,9 @@ public final class PassiveStepSolver {
+             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
+             SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
+             double maximumResidual=0;for(double residual:equations.residual(reconstructed))maximumResidual=Math.max(maximumResidual,Math.abs(residual));
+-            if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6))throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);
++            if(maximumResidual>(acceptance==Acceptance.FULL?1e-8:1e-6)){double[] rr=equations.residual(reconstructed);int arg=0;for(int r=0;r<rr.length;r++)if(Math.abs(rr[r])>Math.abs(rr[arg]))arg=r;int nodeAt=-1;for(int nn=0;nn<equations.offsets.length;nn++)if(equations.layout[nn]!=null&&arg>=equations.offsets[nn]&&arg<equations.offsets[nn]+equations.layout[nn].size())nodeAt=nn;
++                System.out.println("GATEPROBE dt="+dt+" residual="+maximumResidual+" row="+arg+" node="+nodeAt+" local="+(nodeAt>=0?arg-equations.offsets[nodeAt]:-1)+" edgeOffset="+equations.edgeOffset+" flows="+Arrays.toString(flows)+" newtonMax="+numerical.residualNorm());
++                throw new SparseNewton.Nonconvergence("Conservative reconstruction fails equation gate: "+maximumResidual);}
+             if(acceptance==Acceptance.APPROXIMATE)checkApproximation(equations,reconstructed,projection.states(),flows,workspace,checkpoint,tolerance);
+             checkConservation(graph,projection);
+             previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousInputStates=inputStates;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);

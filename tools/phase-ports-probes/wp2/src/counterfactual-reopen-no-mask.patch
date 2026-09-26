@@ -1,0 +1,13 @@
+diff --git a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+index 708a2a5..61c7687 100644
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -190,7 +190,7 @@ public final class PassiveStepSolver {
+         // The step's start-state availability, the mask the solve itself refused its directions on: a port closed for
+         // outflow is one more link that refuses a direction, so a run is reopened only in a direction every link, port
+         // included, allows (inflow through a closed port reopens as any one-way run does; plan 3.4).
+-        byte[] closedPorts=closedPorts(graph);
++        byte[] closedPorts=new byte[graph.reservoirs().size()];
+         for(int edge=0;edge<edges;edge++) {
+             if(taken[edge]||!closed[edge])continue;
+             var pipe=graph.pipes().get(edge);
