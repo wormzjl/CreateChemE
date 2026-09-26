@@ -174,6 +174,130 @@ public final class FluidThermodynamics {
         if(!Double.isFinite(speed)||speed<=0)throw new IllegalArgumentException("Invalid acoustic flow-domain bound");
         return speed;
     }
+    /**
+     * The fluid a phase-selective vessel outlet draws, read off the vessel's own state with no flash and no extra
+     * equation-of-state root: every term below is a sum over the phase amounts, volumes and molar properties
+     * {@link #state} already computed (plan table 3.2 of documentation/2026-09-26-phase-ports-and-compressor).
+     * <ul>
+     * <li>The vapour stream is the hydrocarbon vapour and the water vapour: {@code moles} are {@code vapor} with the
+     * water vapour in the last slot, its volume is the gas volume, its enthalpy {@code n_v h_v + n_wv h_wv(T)}, and it
+     * carries no solid.</li>
+     * <li>The condensed ("liquid") stream is the hydrocarbon liquid, the free water and every solid (decision A2: no
+     * decant): {@code moles} are {@code liquid} with the free water last, its volume is the two liquid volumes plus the
+     * solid volume, its enthalpy {@code n_l h_l + n_wl h_wl(T,P) + H_solids(T,P)}.</li>
+     * </ul>
+     * The two streams partition the state: their moles, masses, volumes and enthalpies add up to the state's own. The
+     * velocity limit is {@link #isothermalAcousticBound}'s formula restricted to the stream's phases,
+     * {@code V_s / sqrt(M_s * compliance_s)}, i.e. {@code sqrt(stiffness/rho_v)} for the vapour and
+     * {@code sqrt(1/(kappa rho))} (solids incompressible) for the condensed stream, capped by the configured maximum as
+     * {@link #velocityLimit} caps the bulk: a vapour drawn off a wet tank is limited by the vapour's own acoustic bound,
+     * not by the far lower bound of the two-phase mixture. The viscosity is the stream's own terms of the volume
+     * average the step solver states for the bulk (the slurry correction over the condensed stream's liquids).
+     *
+     * <p>A stream whose phase the state does not hold (no gas volume; no liquid and no free water) is not built: the
+     * builders return {@code null}, and what an absent stream means is the reader's rule (the step solver's: the
+     * bulk, with a zero velocity limit; decision A8).
+     */
+    public record PhaseStream(double[] moles,double mass,double volume,double viscosity,double specificEnthalpy,double velocityLimit,
+                              SolidInventory.Moments solidMoments) {
+        public PhaseStream {Objects.requireNonNull(moles);Objects.requireNonNull(solidMoments);}
+        /** The moles themselves, for the solver packages. The caller must not mutate them. */
+        public double[] molesView(){return moles;}
+        @Override public double[] moles(){return moles.clone();}
+    }
+    /** Whether the state holds a gas phase to draw. */
+    public static boolean holdsVapor(State state){return state.vaporVolume()>0;}
+    /** Whether the state holds a hydrocarbon liquid or free water to draw (solids alone do not flow as a liquid). */
+    public static boolean holdsLiquid(State state){return state.liquidVolume()+state.waterVolume()>0;}
+    /** Mass of the vapour stream: hydrocarbon vapour then water vapour, summed in the order {@link #state} sums the whole. */
+    public double vaporMass(State state) {
+        double mass=0;var v=state.vaporView();
+        for(int i=0;i<v.length;i++)mass+=v[i]*hydrocarbon.molecularWeight(i);
+        return mass+state.waterVapor()*waterMolecularWeight;
+    }
+    /** Mass of the condensed stream: hydrocarbon liquid, free water, then every solid. */
+    public double liquidMass(State state) {
+        double mass=0;var l=state.liquidView();
+        for(int i=0;i<l.length;i++)mass+=l[i]*hydrocarbon.molecularWeight(i);
+        return mass+state.waterLiquid()*waterMolecularWeight+state.solidMoments().mass();
+    }
+    /** Volume of the condensed stream: the two liquid volumes and the solid volume. */
+    public static double liquidStreamVolume(State state){return state.liquidVolume()+state.waterVolume()+state.solidMoments().volume();}
+    /** The vapour stream's density, for a state that {@link #holdsVapor}. */
+    public double vaporDensity(State state){return vaporMass(state)/state.vaporVolume();}
+    /** The condensed stream's density, for a state that {@link #holdsLiquid}. */
+    public double liquidDensity(State state){return liquidMass(state)/liquidStreamVolume(state);}
+    /** The vapour stream's specific enthalpy (J/kg); {@code prepared} as for {@link #state}, or null. */
+    public double vaporSpecificEnthalpy(State state,Prepared prepared) {
+        double h=0;
+        if(state.vaporProperties()!=null)h+=total(state.vaporView())*state.vaporProperties().molarEnthalpy();
+        if(state.waterVapor()>0)h+=state.waterVapor()*(prepared==null?vaporWaterEnthalpy(state.temperature()):match(prepared,state.temperature()).vaporEnthalpy());
+        return h/vaporMass(state);
+    }
+    /** The condensed stream's specific enthalpy (J/kg), solids included; {@code prepared} as for {@link #state}, or null. */
+    public double liquidSpecificEnthalpy(State state,Prepared prepared) {
+        double h=0,t=state.temperature(),p=state.pressure();
+        if(state.liquidProperties()!=null)h+=total(state.liquidView())*state.liquidProperties().molarEnthalpy();
+        if(state.waterLiquid()>0)h+=state.waterLiquid()*waterLiquid(t,p,prepared).molarEnthalpy;
+        h+=state.solidMoments().enthalpy(t,p);
+        return h/liquidMass(state);
+    }
+    /** The vapour stream's velocity limit: {@code min(maximum, V_v/sqrt(M_v V_v/stiffness))}. */
+    public double vaporVelocityLimit(State state) {
+        double stiffness=state.waterPartialPressure();
+        if(state.vaporProperties()!=null){var gas=state.vaporProperties();stiffness+=-gas.molarVolume()/gas.volumePressureDerivative();}
+        return Math.min(maximumVelocity,acoustic(state.vaporVolume(),vaporMass(state),state.vaporVolume()/stiffness));
+    }
+    /** The condensed stream's velocity limit: {@code min(maximum, V/sqrt(M (V_l+V_w) kappa))}, solids incompressible. */
+    public double liquidVelocityLimit(State state) {
+        return Math.min(maximumVelocity,acoustic(liquidStreamVolume(state),liquidMass(state),
+                (state.liquidVolume()+state.waterVolume())*liquidResponse.compressibilityPerPascal()));
+    }
+    private static double acoustic(double volume,double mass,double compliance) {
+        double speed=volume/Math.sqrt(mass*compliance);
+        if(!Double.isFinite(speed)||speed<=0)throw new IllegalArgumentException("Invalid acoustic flow-domain bound");
+        return speed;
+    }
+    /** The vapour stream's viscosity: the vapour term of the solver's volume average, over the gas volume. */
+    public double vaporViscosity(State state,MixtureViscosity.Workspace scratch,Prepared prepared) {
+        var terms=prepared==null?null:match(prepared,state.temperature()).viscosities();
+        return viscosity.vapor(state.temperature(),state.vaporView(),state.waterVapor(),scratch,terms);
+    }
+    /** The condensed stream's viscosity: the liquid and free-water terms of the solver's volume average, with the slurry
+     * correction for the solids they carry, over the condensed stream's volume. */
+    public double liquidViscosity(State state,Prepared prepared) {
+        var terms=prepared==null?null:match(prepared,state.temperature()).viscosities();
+        double value=0,t=state.temperature();
+        if(state.liquidVolume()>0)value+=state.liquidVolume()*viscosity.liquid(t,state.liquidView(),terms).pascalSeconds();
+        if(state.waterVolume()>0)value+=state.waterVolume()*viscosity.waterLiquid(t,terms);
+        double liquidVolume=state.liquidVolume()+state.waterVolume(),solidVolume=state.solidMoments().volume();
+        if(solidVolume>0){double phi=solidVolume/(liquidVolume+solidVolume);value=com.wormzjl.createcheme.science.fluid.transport.SlurryTransport.effectiveViscosity(value/liquidVolume,Math.min(phi,0.62-1e-9))*(liquidVolume+solidVolume);}
+        return value/(liquidVolume+solidVolume);
+    }
+    /** The carrier viscosity of the condensed stream (the liquids' volume average, no slurry correction), which an inline
+     * filter's cake resistance scales with. */
+    public double liquidCarrierViscosity(State state) {
+        double value=0,t=state.temperature();
+        if(state.liquidVolume()>0)value+=state.liquidVolume()*viscosity.liquid(t,state.liquidView()).pascalSeconds();
+        if(state.waterVolume()>0)value+=state.waterVolume()*viscosity.waterLiquid(t);
+        return value/(state.liquidVolume()+state.waterVolume());
+    }
+    /** The vapour stream of {@code state}, or null when it holds no gas. */
+    public PhaseStream vaporStream(State state,Prepared prepared,MixtureViscosity.Workspace scratch) {
+        if(!holdsVapor(state))return null;
+        var v=state.vaporView();double[] n=Arrays.copyOf(v,v.length+1);n[v.length]=state.waterVapor();
+        return new PhaseStream(n,vaporMass(state),state.vaporVolume(),vaporViscosity(state,scratch,prepared),
+                vaporSpecificEnthalpy(state,prepared),vaporVelocityLimit(state),SolidInventory.Moments.ZERO);
+    }
+    /** The condensed stream of {@code state}, or null when it holds no liquid and no free water. */
+    public PhaseStream liquidStream(State state,Prepared prepared) {
+        if(!holdsLiquid(state))return null;
+        var l=state.liquidView();double[] n=Arrays.copyOf(l,l.length+1);n[l.length]=state.waterLiquid();
+        return new PhaseStream(n,liquidMass(state),liquidStreamVolume(state),liquidViscosity(state,prepared),
+                liquidSpecificEnthalpy(state,prepared),liquidVelocityLimit(state),state.solidMoments());
+    }
+    /** The amount sum {@link #state} forms ({@code sum}), without its validation: a state's own amounts are valid. */
+    private static double total(double[] values){double total=0;for(double value:values)total+=value;return total;}
     public static double waterVaporPressureLimit(double t) {
         if(t>=900)return 2e6;if(t>=750)return 1.5e6;if(t>=600)return .8e6;
         if(t>=500)return .4e6;if(t>=450)return .25e6;if(t>=400)return .15e6;return .125e6;

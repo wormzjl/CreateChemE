@@ -31,16 +31,43 @@ public record PipeTransfer(long pipeId, Stream forward, Stream reverse) {
      * out, so sharing it is invisible. */
     private static final java.util.concurrent.ConcurrentHashMap<Integer,Stream> ZERO=new java.util.concurrent.ConcurrentHashMap<>();
     private static Stream zero(int count){return ZERO.computeIfAbsent(count,c->new Stream(0,new double[3][c],new double[3]));}
+    /** {@link #sample(FluidThermodynamics,PassiveNetwork,List,double[],double)} of a graph whose every end is BULK, which
+     * needs no model. */
     static List<PipeTransfer> sample(PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] rates,double duration) {
+        return sample(null,graph,states,rates,duration);
+    }
+    /**
+     * What each connection moved over {@code duration} at the given rates, in the phase split of the stream it drew: the
+     * donor's whole state at a BULK end (every phase in proportion, solids included), only the vapour and water vapour
+     * through a VAPOR port, only the hydrocarbon liquid, free water and solids through a LIQUID port, each scaled by the
+     * moved mass over that stream's mass. A phase port whose phase is absent draws as a BULK end (decision A8). A graph
+     * with a phase port needs the model for the stream masses.
+     */
+    static List<PipeTransfer> sample(FluidThermodynamics model,PassiveNetwork graph,List<FluidThermodynamics.State> states,double[] rates,double duration) {
         var result=new ArrayList<PipeTransfer>();
         for(int i=0;i<rates.length;i++) {
             var pipe=graph.pipes().get(i);var state=states.get(rates[i]>=0?pipe.first():pipe.second());
-            double mass=Math.abs(rates[i])*duration,fraction=mass/state.mass();
-            var liquid=state.liquid();var vapor=state.vapor();int count=liquid.length+1;
+            var port=pipe.drawPort(rates[i]);
+            boolean vapor=port==PassiveNetwork.PhasePort.VAPOR&&FluidThermodynamics.holdsVapor(state);
+            boolean liquidOnly=port==PassiveNetwork.PhasePort.LIQUID&&FluidThermodynamics.holdsLiquid(state);
+            if((vapor||liquidOnly)&&model==null)throw new IllegalArgumentException("A phase port's transfer needs the model");
+            double mass=Math.abs(rates[i])*duration,fraction=mass/(vapor?model.vaporMass(state):liquidOnly?model.liquidMass(state):state.mass());
+            var liquid=state.liquid();var vapour=state.vapor();int count=liquid.length+1;
             double[][] n=new double[3][count];
-            for(int c=0;c<liquid.length;c++){n[0][c]=fraction*liquid[c];n[2][c]=fraction*vapor[c];}
-            n[1][count-1]=fraction*state.waterLiquid();n[2][count-1]=fraction*state.waterVapor();
-            var moved=new Stream(mass,n,new double[]{fraction*state.liquidVolume(),fraction*state.waterVolume(),fraction*state.vaporVolume()},state.solids().scale(fraction));
+            Stream moved;
+            if(vapor) {
+                for(int c=0;c<liquid.length;c++)n[2][c]=fraction*vapour[c];
+                n[2][count-1]=fraction*state.waterVapor();
+                moved=new Stream(mass,n,new double[]{0,0,fraction*state.vaporVolume()},SolidInventory.EMPTY);
+            } else if(liquidOnly) {
+                for(int c=0;c<liquid.length;c++)n[0][c]=fraction*liquid[c];
+                n[1][count-1]=fraction*state.waterLiquid();
+                moved=new Stream(mass,n,new double[]{fraction*state.liquidVolume(),fraction*state.waterVolume(),0},state.solids().scale(fraction));
+            } else {
+                for(int c=0;c<liquid.length;c++){n[0][c]=fraction*liquid[c];n[2][c]=fraction*vapour[c];}
+                n[1][count-1]=fraction*state.waterLiquid();n[2][count-1]=fraction*state.waterVapor();
+                moved=new Stream(mass,n,new double[]{fraction*state.liquidVolume(),fraction*state.waterVolume(),fraction*state.vaporVolume()},state.solids().scale(fraction));
+            }
             var zero=zero(count);
             result.add(new PipeTransfer(pipe.id(),rates[i]>=0?moved:zero,rates[i]>=0?zero:moved));
         }

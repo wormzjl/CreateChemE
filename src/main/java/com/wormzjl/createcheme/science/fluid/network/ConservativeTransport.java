@@ -127,13 +127,54 @@ public final class ConservativeTransport {
         double scale=storedMass>0?state.solidMoments().mass()/storedMass:0;
         for(int c=0;c<populationKeys.size();c++)result[components+c]=scale*stored.mass(populationKeys.get(c))/state.mass();
     }
+    /**
+     * Whether {@code pipe}, carrying {@code flow}, draws a phase out of its donor: its donor end has a phase port and
+     * the donor's candidate state holds that phase. Such an outflow is booked as a fixed donor with frozen stream
+     * fractions; every other one (a BULK end, or a phase port whose phase is absent, whose Newton stream is the bulk:
+     * decision A8) is booked implicitly at the donor's own end composition, as every outflow always was.
+     */
+    private static boolean drawsPhase(PassiveNetwork.Pipe pipe,double flow,FluidThermodynamics.State donor) {
+        return switch(pipe.drawPort(flow)) {
+            case BULK->false;
+            case VAPOR->FluidThermodynamics.holdsVapor(donor);
+            case LIQUID->FluidThermodynamics.holdsLiquid(donor);
+        };
+    }
+    /** The mass share of solids in what {@code pipe} draws out of {@code donor} for a flow of this sign: the bulk share
+     * {@code solids/mass} at a BULK end (the double it always was), none through a vapour port, all solids over the
+     * condensed stream's mass through a liquid port. */
+    private static double drawnSolidShare(FluidThermodynamics model,PassiveNetwork.Pipe pipe,double flow,FluidThermodynamics.State donor) {
+        if(!drawsPhase(pipe,flow,donor))return donor.solidMoments().mass()/donor.mass();
+        return pipe.drawPort(flow)==PassiveNetwork.PhasePort.VAPOR?0:donor.solidMoments().mass()/model.liquidMass(donor);
+    }
+    /**
+     * The mass fractions of the stream a phase port draws out of {@code donor} (fluid components, then solid populations in
+     * {@code populationKeys} order), frozen from the Newton's converged candidate: the vapour's (no solid) or the condensed
+     * phases' with every solid, each over the stream's own mass. The solid split across populations is the stored
+     * inventory's, scaled to the candidate's aggregate solid mass, exactly as {@link #storedFractions} splits a fixed
+     * node's. The entries sum to 1 to rounding, so booking {@code dt q w_stream} at both ends conserves mass.
+     */
+    private static double[] streamFractions(FluidThermodynamics model,PassiveNetwork.PhasePort port,FluidThermodynamics.State donor,
+                                            PassiveNetwork.Reservoir reservoir,List<SolidInventory.Key> populationKeys,double[] molecularWeight,int components) {
+        var result=new double[components+populationKeys.size()];
+        boolean vapor=port==PassiveNetwork.PhasePort.VAPOR;
+        double[] phase=vapor?donor.vaporView():donor.liquidView();double mass=vapor?model.vaporMass(donor):model.liquidMass(donor);
+        for(int c=0;c<phase.length;c++)result[c]=phase[c]*molecularWeight[c]/mass;
+        result[components-1]=(vapor?donor.waterVapor():donor.waterLiquid())*molecularWeight[components-1]/mass;
+        if(!vapor) {
+            var stored=reservoir.inventory().solids();double storedMass=stored.massKg();
+            double scale=storedMass>0?donor.solidMoments().mass()/storedMass:0;
+            for(int c=0;c<populationKeys.size();c++)result[components+c]=scale*stored.mass(populationKeys.get(c))/mass;
+        }
+        return result;
+    }
     private static Projection reconstruct0(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] solvedFlows,double[] heads,
                                          double dt,FluidThermodynamics model,Runnable checkpoint,Workspace workspace,boolean frozen) {
         int nodes=graph.reservoirs().size(),components=model.hydrocarbon.componentCount()+1;
         if(candidate.size()!=nodes||solvedFlows.length!=graph.pipes().size()||heads.length!=solvedFlows.length||!Double.isFinite(dt)||dt<=0)throw new IllegalArgumentException("Invalid transport reconstruction");
         for(double q:solvedFlows)if(!Double.isFinite(q))throw new IllegalArgumentException("Nonfinite candidate flow/head");
         // The flows this reconstruction books: the solved flows with every junction's mass held; see pinnedFlows.
-        final double[] flows=pinnedFlows(graph,candidate,solvedFlows);
+        final double[] flows=pinnedFlows(graph,candidate,solvedFlows,model);
         var populationBasis=new TreeMap<SolidInventory.Key,SolidInventory.Population>();
         for(var node:graph.reservoirs())for(var population:node.inventory().solids().populations())populationBasis.merge(population.key(),population,(a,b)->{if(!a.material().equals(b.material()))throw new IllegalArgumentException("Conflicting solid material definitions");return a;});
         for(var transfer:graph.scheduledTransfers())if(transfer instanceof ScheduledTransfer.Injection in)for(var population:in.solidsPerSecond().populations())populationBasis.merge(population.key(),population,(a,b)->{if(!a.material().equals(b.material()))throw new IllegalArgumentException("Conflicting solid material definitions");return a;});
@@ -155,11 +196,19 @@ public final class ConservativeTransport {
             else if(!reservoir.fixed())index[node]=count++;
             else storedFractions(fractions[node],candidate.get(node),reservoir,populationKeys,molecularWeight,components);
         }
+        // A phase-port outflow (drawsPhase) is booked as a fixed donor with its stream fractions frozen from the candidate
+        // (plan 3.3 item 2): it leaves its donor's diagonal (outgoing) and enters the donor's right-hand side as
+        // -dt q w_stream and the receiver's as +dt q w_stream, on the pinned flow like every other booking. The matrix stays
+        // one matrix for every component, so one factorization still serves them all.
+        double[][] drawn=new double[flows.length][];
         for(int edge=0;edge<flows.length;edge++) {
             if(!Double.isFinite(flows[edge])||!Double.isFinite(heads[edge]))throw new IllegalArgumentException("Nonfinite candidate flow/head");
             var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();double massRate=Math.abs(flows[edge]);
-            double deliveredRate=pipe.filter()==null?massRate:massRate*(1-candidate.get(donor).solidMoments().mass()/candidate.get(donor).mass());
-            outgoing[donor]+=massRate;incoming[receiver]+=deliveredRate;endMass[donor]-=dt*massRate;endMass[receiver]+=dt*deliveredRate;
+            boolean phase=drawsPhase(pipe,flows[edge],candidate.get(donor));
+            if(phase)drawn[edge]=streamFractions(model,pipe.drawPort(flows[edge]),candidate.get(donor),graph.reservoirs().get(donor),populationKeys,molecularWeight,components);
+            double deliveredRate=pipe.filter()==null?massRate:massRate*(1-drawnSolidShare(model,pipe,flows[edge],candidate.get(donor)));
+            if(!phase)outgoing[donor]+=massRate;
+            incoming[receiver]+=deliveredRate;endMass[donor]-=dt*massRate;endMass[receiver]+=dt*deliveredRate;
         }
         for(var transfer:graph.scheduledTransfers()) {
             int node=transfer.node();
@@ -181,6 +230,13 @@ public final class ConservativeTransport {
         var solidColumns=new ArrayList<TreeMap<Integer,Double>>();for(var column:columns)solidColumns.add(new TreeMap<>(column));
         for(int edge=0;edge<flows.length;edge++) {
             var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
+            if(drawn[edge]!=null&&flows[edge]!=0) {
+                double weight=dt*Math.abs(flows[edge]);var w=drawn[edge];
+                // The donor loses the stream, solids included whether or not a filter then captures them.
+                if(index[donor]>=0)for(int c=0;c<conserved;c++)rhs[c][index[donor]]-=weight*w[c];
+                if(index[receiver]>=0)for(int c=0;c<conserved;c++)if(c<components||pipe.filter()==null)rhs[c][index[receiver]]+=weight*w[c];
+                continue;
+            }
             if(index[receiver]<0||flows[edge]==0)continue;
             double weight=dt*Math.abs(flows[edge]);
             if(index[donor]>=0){add(columns,index[donor],index[receiver],-weight);if(pipe.filter()==null)add(solidColumns,index[donor],index[receiver],-weight);}
@@ -254,23 +310,41 @@ public final class ConservativeTransport {
         for(int edge=0;edge<flows.length;edge++) {
             checkpoint.run();var pipe=graph.pipes().get(edge);int donor=flows[edge]>=0?pipe.first():pipe.second(),receiver=flows[edge]>=0?pipe.second():pipe.first();
             var upstream=states.get(donor);double moved=dt*Math.abs(flows[edge]),upstreamZ=graph.reservoirs().get(donor).elevation();
-            double movedEnergy=moved*(upstream.enthalpy()/upstream.mass()+PassiveStepSolver.GRAVITY*upstreamZ);
+            // A phase-port outflow carries the frozen stream fractions booked above, and the stream's specific enthalpy on
+            // the reconstructed donor (whatever number is booked leaves the donor and reaches the receiver, so the energy
+            // ledger closes exactly either way); a bulk one its donor's end composition and enthalpy, as always.
+            var w=drawn[edge]!=null?drawn[edge]:fractions[donor];boolean vapor=pipe.drawPort(flows[edge])==PassiveNetwork.PhasePort.VAPOR;
+            double specificEnthalpy=drawn[edge]==null?upstream.enthalpy()/upstream.mass():vapor?model.vaporSpecificEnthalpy(upstream,null):model.liquidSpecificEnthalpy(upstream,null);
+            double movedEnergy=moved*(specificEnthalpy+PassiveStepSolver.GRAVITY*upstreamZ);
             energy[donor]-=movedEnergy-moved*PassiveStepSolver.GRAVITY*upstreamZ;
-            double deliveredEnergy=movedEnergy,deliveredMass=moved;SolidInventory movedSolids=upstream.solids().scale(moved/upstream.mass());
-            if(pipe.filter()!=null){double capturedEnergy=moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+upstream.solidMoments().mass()/upstream.mass()*PassiveStepSolver.GRAVITY*upstreamZ);
+            SolidInventory movedSolids;
+            if(drawn[edge]==null)movedSolids=upstream.solids().scale(moved/upstream.mass());
+            else{var moving=new ArrayList<SolidInventory.Population>();
+                if(!vapor)for(int c=0;c<populationKeys.size();c++){var source=populationBasis.get(populationKeys.get(c));moving.add(new SolidInventory.Population(source.material(),source.size(),moved*w[components+c]));}
+                movedSolids=new SolidInventory(moving);}
+            double deliveredEnergy=movedEnergy,deliveredMass=moved;
+            if(pipe.filter()!=null){
+                double capturedEnergy;
+                if(drawn[edge]==null)capturedEnergy=moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/upstream.mass()+upstream.solidMoments().mass()/upstream.mass()*PassiveStepSolver.GRAVITY*upstreamZ);
+                else if(vapor)capturedEnergy=0;
+                else{double streamMass=model.liquidMass(upstream);capturedEnergy=moved*(upstream.solidMoments().enthalpy(upstream.temperature(),upstream.pressure())/streamMass+upstream.solidMoments().mass()/streamMass*PassiveStepSolver.GRAVITY*upstreamZ);}
                 filters.put(pipe.id(),pipe.filter().add(movedSolids,capturedEnergy));deliveredEnergy-=capturedEnergy;deliveredMass-=movedSolids.massKg();}
             energy[receiver]+=deliveredEnergy-deliveredMass*PassiveStepSolver.GRAVITY*graph.reservoirs().get(receiver).elevation();
             double work=0;
-            if(pipe.control() instanceof FlowControl.Pump pump&&flows[edge]>0){var suction=states.get(pipe.first());work=dt*flows[edge]*suction.volume()/suction.mass()*Math.max(0,heads[edge])/pump.efficiency();energy[receiver]+=work;pumpWork+=work;}
+            if(pipe.control() instanceof FlowControl.Pump pump&&flows[edge]>0){var suction=states.get(pipe.first());
+                // Metered on the suction stream's specific volume (the suction's bulk at a BULK end).
+                double volume=drawn[edge]==null?suction.volume():vapor?suction.vaporVolume():FluidThermodynamics.liquidStreamVolume(suction);
+                double mass=drawn[edge]==null?suction.mass():vapor?model.vaporMass(suction):model.liquidMass(suction);
+                work=dt*flows[edge]*volume/mass*Math.max(0,heads[edge])/pump.efficiency();energy[receiver]+=work;pumpWork+=work;}
             if(frozen) {
-                var species=new double[components];for(int c=0;c<components;c++)species[c]=moved*fractions[donor][c]/molecularWeight[c];
+                var species=new double[components];for(int c=0;c<components;c++)species[c]=moved*w[c]/molecularWeight[c];
                 var delivered=pipe.filter()==null?movedSolids:SolidInventory.EMPTY;
                 if(graph.reservoirs().get(receiver).junction()){for(int c=0;c<components;c++)accMoles[receiver][c]+=species[c];accSolids[receiver].add(delivered,1);}
                 if(graph.reservoirs().get(donor).junction()){for(int c=0;c<components;c++)accMoles[donor][c]-=species[c];accSolids[donor].add(movedSolids,-1);}
             }
             if(graph.reservoirs().get(donor).fixed()||graph.reservoirs().get(receiver).fixed()) {
-                var transferred=new double[components];for(int c=0;c<components;c++)transferred[c]=moved*fractions[donor][c]/molecularWeight[c];
-                if(graph.reservoirs().get(donor).fixed()){boundaries.add(new BoundaryTransfer(graph.reservoirs().get(donor).id(),transferred,movedEnergy,upstream.solids().scale(moved/upstream.mass()),1));for(int c=0;c<components;c++)external[c]+=transferred[c];externalEnergy+=movedEnergy;}
+                var transferred=new double[components];for(int c=0;c<components;c++)transferred[c]=moved*w[c]/molecularWeight[c];
+                if(graph.reservoirs().get(donor).fixed()){boundaries.add(new BoundaryTransfer(graph.reservoirs().get(donor).id(),transferred,movedEnergy,drawn[edge]==null?upstream.solids().scale(moved/upstream.mass()):movedSolids,1));for(int c=0;c<components;c++)external[c]+=transferred[c];externalEnergy+=movedEnergy;}
                 if(graph.reservoirs().get(receiver).fixed()){var removed=transferred.clone();for(int c=0;c<components;c++){removed[c]=-removed[c];external[c]+=removed[c];}boundaries.add(new BoundaryTransfer(graph.reservoirs().get(receiver).id(),removed,-deliveredEnergy-work,pipe.filter()==null?movedSolids:SolidInventory.EMPTY,-1));externalEnergy-=deliveredEnergy+work;}
             }
         }
@@ -324,7 +398,7 @@ public final class ConservativeTransport {
      * states and pipe histories the Newton produced are unchanged. The total mass (fluid and solids, as minted) is
      * pinned.
      */
-    private static double[] pinnedFlows(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows) {
+    private static double[] pinnedFlows(PassiveNetwork graph,List<FluidThermodynamics.State> candidate,double[] flows,FluidThermodynamics model) {
         int nodes=graph.reservoirs().size();boolean[] junction=new boolean[nodes];boolean any=false;
         for(int node=0;node<nodes;node++)any|=junction[node]=graph.reservoirs().get(node).junction();
         if(!any)return flows;
@@ -337,7 +411,7 @@ public final class ConservativeTransport {
             for(int edge=0;edge<flows.length;edge++) {
                 if(flows[edge]==0)continue;var pipe=graph.pipes().get(edge);int donor=flows[edge]>0?pipe.first():pipe.second(),receiver=flows[edge]>0?pipe.second():pipe.first();
                 double rate=Math.abs(flows[edge]);
-                if(receiver==node){double delivered=rate*factor[edge];if(pipe.filter()!=null)delivered*=1-candidate.get(donor).solidMoments().mass()/candidate.get(donor).mass();if(junction[donor])fromJunctions+=delivered;else fromOthers+=delivered;}
+                if(receiver==node){double delivered=rate*factor[edge];if(pipe.filter()!=null)delivered*=1-drawnSolidShare(model,pipe,flows[edge],candidate.get(donor));if(junction[donor])fromJunctions+=delivered;else fromOthers+=delivered;}
                 if(donor==node)out+=rate;
             }
             double outflow=fromJunctions+fromOthers,inflow=out-fromJunctions;

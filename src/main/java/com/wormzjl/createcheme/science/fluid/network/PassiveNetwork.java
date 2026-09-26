@@ -9,6 +9,18 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
     public PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes){this(reservoirs,pipes,List.of());}
     /** PORT is an internal, bidirectional fixed state for instantaneous rate evaluation; never a world object. */
     public enum NodeKind { RESERVOIR, JUNCTION, GENERATOR, VOID, PORT }
+    /**
+     * What one end of a connection draws from its node when the flow leaves the node through it: the whole state
+     * ({@code BULK}, every connection before phase-selective outlets), the vapour ({@code VAPOR}: hydrocarbon vapour and
+     * water vapour, a tank's top face) or the condensed phases ({@code LIQUID}: hydrocarbon liquid, free water and every
+     * mobile solid, a tank's bottom face; decision A2 of documentation/2026-09-26-phase-ports-and-compressor). A port
+     * acts on outflow only: inflow through any port is delivered to the vessel as through a bulk end (D3). The port's
+     * driving pressure is the node's pressure plus a per-end offset ({@code PassiveStepSolver.endPressure}), zero until
+     * the level head (D9), in both directions. Only a finite vessel has phases to select from, so a non-BULK port is valid
+     * only on an end whose node is a {@link NodeKind#RESERVOIR} or its rate-solve copy, a {@link NodeKind#PORT}. Named
+     * {@code PhasePort} rather than {@code Port} because {@link NodeKind#PORT} is a node kind.
+     */
+    public enum PhasePort { BULK, VAPOR, LIQUID }
     public PassiveNetwork {
         reservoirs=List.copyOf(reservoirs);pipes=List.copyOf(pipes);scheduledTransfers=List.copyOf(scheduledTransfers);
         if(reservoirs.isEmpty())throw new IllegalArgumentException("Empty island");
@@ -16,6 +28,8 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
         var edges=new HashSet<Long>();for(var pipe:pipes) {
             if(pipe.first<0||pipe.second<0||pipe.first>=reservoirs.size()||pipe.second>=reservoirs.size()
                     ||pipe.first==pipe.second||!edges.add(pipe.id))throw new IllegalArgumentException("Invalid pipe endpoint/identity");
+            if(!phaseSelectable(reservoirs.get(pipe.first),pipe.firstPort)||!phaseSelectable(reservoirs.get(pipe.second),pipe.secondPort))
+                throw new IllegalArgumentException("A phase port needs a vessel end (reservoir or its port copy)");
         }
         var transfers=new HashSet<Long>();
         for(var transfer:scheduledTransfers) {
@@ -24,6 +38,10 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
             if(node.kind()!=NodeKind.RESERVOIR&&node.kind()!=NodeKind.PORT)throw new IllegalArgumentException("Scheduled material needs a finite reservoir");
             if(transfer instanceof ScheduledTransfer.Injection input&&input.molesPerSecond().length!=node.inventory().moles().length)throw new IllegalArgumentException("Injection basis mismatch");
         }
+    }
+    /** Whether this end may carry {@code port}: BULK anywhere, a phase port only on a vessel or its rate-solve copy. */
+    private static boolean phaseSelectable(Reservoir node,PhasePort port) {
+        return port==PhasePort.BULK||node.kind==NodeKind.RESERVOIR||node.kind==NodeKind.PORT;
     }
     /**
      * The inventory a junction is built with from a property state: nothing yet. A junction owns a holdup sized to its
@@ -108,8 +126,14 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
      * machinery makes produces 3: a settled bed and a filter at capacity are both properties of the
      * connection rather than of one end of it. A saved checkpoint may still carry 1 or 2, and a
      * caller may still impose one.
+     *
+     * <p>{@code firstPort} and {@code secondPort} are what the connection draws from its first and second node when
+     * the flow leaves that node through it ({@link PhasePort}). Every constructor but the canonical one passes
+     * {@link PhasePort#BULK} at both ends, so every graph built without naming a port is the graph it always was.
      */
-    public record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections,InlineFilter filter) {
+    public record Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections,InlineFilter filter,
+                       PhasePort firstPort,PhasePort secondPort) {
+        public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections,InlineFilter filter){this(id,first,second,sections,control,blockedDirections,filter,PhasePort.BULK,PhasePort.BULK);}
         public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,int blockedDirections){this(id,first,second,sections,control,blockedDirections,null);}
         public Pipe(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control){this(id,first,second,sections,control,0);}
         /**
@@ -121,22 +145,35 @@ public record PassiveNetwork(List<Reservoir> reservoirs,List<Pipe> pipes,List<Sc
          * fill-reducing ordering or warm flow keyed on the whole {@link Pipe} record would miss on
          * every step of any island that has a filter in it - a fresh factorization per step, no
          * preconditioner to fork, and the previous step's flows thrown away. The filter's own
-         * settings do belong here, because its clean resistance and capacity are coefficients.
+         * settings do belong here, because its clean resistance and capacity are coefficients. So do the two ports: they
+         * decide which phase an outflow's donor terms read, and so the coefficients of every row the donor reaches.
          */
         public record Identity(long id,int first,int second,List<PipeResistance.Geometry> sections,FlowControl control,
-                               int blockedDirections,FilterSettings filter) {}
+                               int blockedDirections,FilterSettings filter,PhasePort firstPort,PhasePort secondPort) {}
         /** The immutable half of an {@link InlineFilter}; the cake and its energy are the mutable half. */
         public record FilterSettings(double capacity,double cleanResistance) {}
         public Identity identity() {
             return new Identity(id,first,second,sections,control,blockedDirections,
-                    filter==null?null:new FilterSettings(filter.capacity(),filter.cleanResistance()));
+                    filter==null?null:new FilterSettings(filter.capacity(),filter.cleanResistance()),firstPort,secondPort);
         }
-        public Pipe withBlockedDirections(int directions){return new Pipe(id,first,second,sections,control,directions,filter);}
-        public Pipe withFilter(InlineFilter value){return new Pipe(id,first,second,sections,control,blockedDirections,value);}
+        public Pipe withBlockedDirections(int directions){return new Pipe(id,first,second,sections,control,directions,filter,firstPort,secondPort);}
+        public Pipe withFilter(InlineFilter value){return new Pipe(id,first,second,sections,control,blockedDirections,value,firstPort,secondPort);}
+        /** This connection with the given ports at its first and second end. */
+        public Pipe withPorts(PhasePort atFirst,PhasePort atSecond){return new Pipe(id,first,second,sections,control,blockedDirections,filter,atFirst,atSecond);}
+        /** The port of the end at {@code node}, which must be one of this connection's two nodes. */
+        public PhasePort portAt(int node) {
+            if(node==first)return firstPort;
+            if(node==second)return secondPort;
+            throw new IllegalArgumentException("Node "+node+" is not an end of pipe "+id);
+        }
+        /** The port a flow of this sign leaves through: the first end's for a forward (nonnegative) flow, else the second's. */
+        public PhasePort drawPort(double flow){return flow>=0?firstPort:secondPort;}
+        /** Whether both ends draw their node's whole state. */
+        public boolean bulk(){return firstPort==PhasePort.BULK&&secondPort==PhasePort.BULK;}
         public boolean blocked(double flow){return (blockedDirections&(flow>=0?1:2))!=0;}
         public Pipe(long id,int first,int second,PipeResistance.Geometry geometry){this(id,first,second,List.of(geometry),new FlowControl.Passive());}
         public Pipe(long id,int first,int second,PipeResistance.Geometry geometry,FlowControl control){this(id,first,second,List.of(geometry),control);}
-        public Pipe {if(filter!=null&&!(control instanceof FlowControl.Passive))throw new IllegalArgumentException("Filter must be passive");if(blockedDirections<0||blockedDirections>3)throw new IllegalArgumentException("Invalid pipe closure");sections=coalesce(sections);Objects.requireNonNull(control);if(sections.isEmpty())throw new IllegalArgumentException("Empty hydraulic run");}
+        public Pipe {Objects.requireNonNull(firstPort);Objects.requireNonNull(secondPort);if(filter!=null&&!(control instanceof FlowControl.Passive))throw new IllegalArgumentException("Filter must be passive");if(blockedDirections<0||blockedDirections>3)throw new IllegalArgumentException("Invalid pipe closure");sections=coalesce(sections);Objects.requireNonNull(control);if(sections.isEmpty())throw new IllegalArgumentException("Empty hydraulic run");}
         private record SectionShape(double diameter,double roughness) {}
         private static List<PipeResistance.Geometry> coalesce(List<PipeResistance.Geometry> sections) {
             sections=List.copyOf(sections);if(sections.size()<2)return sections;

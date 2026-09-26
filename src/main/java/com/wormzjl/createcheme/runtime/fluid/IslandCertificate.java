@@ -303,8 +303,8 @@ public final class IslandCertificate {
      * The validity signature of a certificate: the model's full property revision ({@link ApproximationAnchor#revision},
      * which also carries the velocity clamp, the trace cutoff and the solid settings), the six certificate policy values
      * it was issued under, and a SHA-256 digest of its island's graph identity - node ids, kinds, elevations and finite
-     * volumes, fixed-node inventories and states, and pipe identities with their sections, controls, blocked masks and
-     * filters. Replay repeats one solved interval of one graph under one model and one policy, so a certificate holds
+     * volumes, fixed-node inventories and states, and pipe identities with their sections, controls, blocked masks, end
+     * ports and filters. Replay repeats one solved interval of one graph under one model and one policy, so a certificate holds
      * only under the signature it was issued with; a saved one whose signature is not its island's current one is
      * discarded on load and the island keeps its inventory.
      */
@@ -334,7 +334,7 @@ public final class IslandCertificate {
     }
     /** The digest of what replay takes to be fixed about an island: everything but its finite inventories and states. */
     static String graphIdentity(PassiveNetwork graph) {
-        var d=new Digest();d.text("createcheme-certificate-graph-identity-1");d.integer(graph.reservoirs().size());
+        var d=new Digest();d.text("createcheme-certificate-graph-identity-2");d.integer(graph.reservoirs().size());
         for(var node:graph.reservoirs()) {
             d.number(node.id());d.text(node.kind().name());d.real(node.elevation());
             // A junction's volume is a numerical placeholder that a solve may move; a vessel's is its identity.
@@ -354,6 +354,8 @@ public final class IslandCertificate {
                 case FlowControl.PressureValve valve->{d.text("valve");d.real(valve.targetPressure());}
             }
             d.integer(pipe.blockedDirections());
+            // What each end draws (PassiveNetwork.PhasePort): it changes the equations, so a replay holds only under it.
+            d.integer(pipe.firstPort().ordinal());d.integer(pipe.secondPort().ordinal());
             var filter=pipe.filter();
             if(filter==null)d.text("no filter");
             else{d.text("filter");d.real(filter.capacity());d.real(filter.cleanResistance());d.integer(filter.stoppedAtCapacity()?1:0);d.solids(filter.captured());d.real(filter.energyJoule());}

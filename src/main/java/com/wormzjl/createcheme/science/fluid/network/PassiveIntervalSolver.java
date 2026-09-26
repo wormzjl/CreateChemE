@@ -188,7 +188,7 @@ public final class PassiveIntervalSolver {
                 }
                 var result=implicit.solve(start,step,checkpoint,acceptance);
                 if(elapsed!=reopenElapsed||step!=reopenStep){reopened.clear();reopenElapsed=elapsed;reopenStep=step;}
-                var candidates=new LinkedHashSet<>(PassiveStepSolver.reopenable(start,result));candidates.removeAll(reopened);
+                var candidates=new LinkedHashSet<>(implicit.reopenable(start,result));candidates.removeAll(reopened);
                 if(!candidates.isEmpty()) {
                     reopened.addAll(candidates);implicit.reopenNext(candidates);rejectedCount++;
                     SolverDiagnostics.attempt(attempt,step,false,"be-reopen",candidates.size());

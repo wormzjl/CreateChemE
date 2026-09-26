@@ -84,7 +84,13 @@ final class SolidEventIntegrator {
             if((pipe.blockedDirections()&direction)!=0)continue;
             int upstream=flow>=0?pipe.first():pipe.second();var donor=states.get(upstream);
             if(prepared[upstream]==null)prepared[upstream]=SolidMobility.donor(model,donor);
-            var check=SolidMobility.check(prepared[upstream],donor,pipe,flow,SolidMobility.Outlet.MIXED);
+            // What the end draws decides the outlet (plan 3.8): a vapour port carries no solid and is always mobile, a
+            // liquid port carries every solid over the condensed stream's mass, a bulk end over the donor's (and a phase port
+            // whose phase is absent draws as a bulk end, decision A8).
+            var port=pipe.drawPort(flow);
+            boolean vapor=port==PassiveNetwork.PhasePort.VAPOR&&FluidThermodynamics.holdsVapor(donor);
+            double drawnMass=port==PassiveNetwork.PhasePort.LIQUID&&FluidThermodynamics.holdsLiquid(donor)?model.liquidMass(donor):donor.mass();
+            var check=SolidMobility.check(prepared[upstream],donor,pipe,flow,vapor?SolidMobility.Outlet.GAS:SolidMobility.Outlet.MIXED,drawnMass);
             if(check.allowed()&&reach!=null&&flow!=0&&overPopulated(graph,pipe,flow,reach)) {
                 check=new SolidMobility.Check(SolidMobility.Reason.POPULATION_LIMIT,check.velocity(),check.minimumVelocity());
                 // A node receiver can be fed by several connections at once, and every one of them
