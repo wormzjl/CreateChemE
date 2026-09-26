@@ -1,0 +1,24 @@
+scenarios.txt IDENTICAL mixed 0.05:4
+scenarios.txt IDENTICAL mixed 0.05:6
+scenarios.txt IDENTICAL mixed 0.02:4
+scenarios.txt IDENTICAL mixed 0.02:6
+scenarios.txt IDENTICAL mixed 0.02:4 at 0.1
+scenarios.txt IDENTICAL rising water line
+scenarios.txt IDENTICAL falling water line
+scenarios.txt IDENTICAL rising water line 0.1
+scenarios.txt IDENTICAL pumped water line
+scenarios.txt IDENTICAL pumped water line 0.1
+scenarios.txt IDENTICAL wet crude drain
+scenarios.txt IDENTICAL wet crude drain 0.1
+scenarios.txt IDENTICAL slurry filter
+scenarios.txt IDENTICAL valve
+gas-ports.txt IDENTICAL gas generator into a LIQUID port 5
+gas-ports.txt IDENTICAL gas generator into a LIQUID port 0.1
+gas-ports.txt DIFFERS   gas tank pair VAPOR to LIQUID 5
+gas-ports.txt DIFFERS   gas tank pair VAPOR to LIQUID 0.1
+gas-ports.txt DIFFERS   mixed gas junction with LIQUID ports 5
+gas-ports.txt DIFFERS   mixed gas junction with LIQUID ports 0.1
+gas-ports.txt IDENTICAL dead-headed rising LIQUID port 5
+gas-ports.txt DIFFERS   dry LIQUID drain refused 5
+liquid-ports.txt DIFFERS   rising water line into a LIQUID port 5
+liquid-ports.txt IDENTICAL water drain through a LIQUID port 5

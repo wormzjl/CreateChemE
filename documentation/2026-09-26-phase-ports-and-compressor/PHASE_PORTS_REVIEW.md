@@ -482,7 +482,7 @@ If A is taken: port the prototype without the trace line, add the regression tes
 
 ## D11: priority streams at ports (replaces the "outlet phase absent" closure) (2026-09-26)
 
-- Author: Claude (Opus 5.5), same worktree and branch. Base: `0795215` (the vent investigation's tools commit; the owner's decision-log commit `99f5312`, D13, landed on the branch during the work and touches only `DECISION_LOG.md`). Code commit: see section 12 (`WIP phase-ports D11: priority streams at ports (replaces the absent-phase closure)`); tools commit after it. Not merged, not pushed.
+- Author: Claude (Opus 5.5), same worktree and branch. Base: `0795215` (the vent investigation's tools commit; the owner's decision-log commit `99f5312`, D13, landed on the branch during the work and touches only `DECISION_LOG.md`). Code commit: `548a9bf` (`WIP phase-ports D11: priority streams at ports (replaces the absent-phase closure)`), on `99f5312`; tools commit after it. Not merged, not pushed.
 - Decision: D11 (owner, 2026-09-26): every non-BULK port draws its vessel's phases by priority, each up to what the vessel held of it at the step start, the next phase with the rest ("priority stream"); no port closes for want of a phase. It supersedes WP2 (availability mask, band, port refusal, reopen allowance, throttle as a landing device), A9 (the absent stream), A2 (no decant) and plan 3.4's "liquid-full vessels may increase in pressure".
 - Not touched: the vent-gate defect (D13, another package), the cold-start path beyond one mechanical signature change listed in section 11, the D9 head, WP1's reconstruction booking scheme (extended, not replaced), inflow through ports (D3), the structural-zero exemption, all-BULK islands (bitwise, section 8), D10.
 

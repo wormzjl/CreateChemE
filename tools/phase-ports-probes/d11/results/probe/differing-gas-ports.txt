@@ -1,0 +1,18 @@
+gas-ports.txt gas tank pair VAPOR to LIQUID 5
+  first interval flows HEAD ['0.0398797', '0']  D11 ['0.0404079', '0.00424994']
+  last  interval flows HEAD ['0.000304359', '0']  D11 ['0.00467955', '0.00571865']
+gas-ports.txt gas tank pair VAPOR to LIQUID 0.1
+  first interval flows HEAD ['0.0527089', '0']  D11 ['0.0527219', '0.00309313']
+  last  interval flows HEAD ['0.0435561', '0']  D11 ['0.0438757', '0.003996']
+gas-ports.txt mixed gas junction with LIQUID ports 5
+  first interval flows HEAD ['0.0237597', '-0.0122498', '0.0115099']  D11 ['0.0237597', '-0.0122498', '0.0115099']
+  last  interval flows HEAD ['0.0021328', '0', '0.0021328']  D11 ['0.0027623', '0.00264361', '0.0054059']
+gas-ports.txt mixed gas junction with LIQUID ports 0.1
+  first interval flows HEAD ['0.0259415', '-0.0177343', '0.00820722']  D11 ['0.0259415', '-0.0177343', '0.00820722']
+  last  interval flows HEAD ['0.0244406', '-0.0173962', '0.00704447']  D11 ['0.0244406', '-0.0173962', '0.00704447']
+gas-ports.txt dry LIQUID drain refused 5
+  first interval flows HEAD ['0']  D11 ['0.0299439']
+  last  interval flows HEAD ['0']  D11 ['0.0152924']
+liquid-ports.txt rising water line into a LIQUID port 5
+  first interval flows HEAD ['30.7975']  D11 ['30.7975']
+  last  interval flows HEAD ['0']  D11 ['0']

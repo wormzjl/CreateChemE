@@ -1,0 +1,53 @@
+--- a/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
++++ b/src/main/java/com/wormzjl/createcheme/science/fluid/network/PassiveStepSolver.java
+@@ -87,6 +87,8 @@
+      * decision D2 of that batch's DECISION_LOG.md.
+      */
+     static final double HOLDUP_TAU=.05;
++    /** D11 probe instrumentation (tools/phase-ports-probes/d11): prints each active-set pass. Never commit. */
++    static boolean D11TRACE=Boolean.getBoolean("d11.trace");
+     /** Connections the next step solve may not close at its start; set by {@link #reopenNext}, consumed by that solve. */
+     private Set<PassiveNetwork.Pipe.Identity> keepOpen=Set.of();
+     /** Exempts these connections from the start-of-solve closures ({@link #closeDeadHeads}, {@link #closeIllegalStarts})
+@@ -371,6 +373,7 @@
+             // which equations this pass states, and the pass loop revises them. So do the phase-port segments, which the
+             // cycle key carries beside the structure (see {@link PassKey}).
+             var structure=new WorkspaceKey(0,nodeIds,kinds,pipeIdentities,phases,componentMask,supportCodes(supports),modeCodes,boundaryClosed.clone(),equations.junctionDonorFirst);
++            if(D11TRACE)System.out.println("D11 pass="+pass+" dt="+dt+" start="+Arrays.toString(equations.startFlows())+" segs="+Arrays.toString(equations.segmentCodes())+" phases="+Arrays.toString(phases)+" modes="+modes+" closed="+Arrays.toString(boundaryClosed)+" caps="+Arrays.deepToString(equations.capacities));
+             if(!seen.add(new PassKey(structure,equations.segmentCodes())))throw new SparseNewton.Nonconvergence("Phase/device active-set cycle");
+             var key=new WorkspaceKey(Double.doubleToLongBits(dt),nodeIds,kinds,pipeIdentities,phases,componentMask,structure.supports,modeCodes,structure.boundaryClosed,structure.junctionDonors);
+             var workspace=workspaces.get(key);
+@@ -403,6 +406,7 @@
+             double tolerance=acceptance==Acceptance.APPROXIMATE?1e-6:smallHeadspace?1e-10:1e-9;
+             try{numerical=SparseNewton.solve(equations,equations.initial(),new SparseNewton.Settings(20,tolerance,1e-6,24),checkpoint,workspace);}
+             catch(SparseNewton.Nonconvergence failure) {
++                if(D11TRACE)System.out.println("D11   newton failed: "+failure.getMessage());
+                 if(failure.lastVariables()==null)throw failure;
+                 double[] trialFlows=Arrays.copyOfRange(failure.lastVariables(),equations.edgeOffset,equations.edgeOffset+graph.pipes().size());
+                 // A point the Newton never reached is deliberately not read as evidence about this
+@@ -431,6 +435,7 @@
+             // The same outer stability question the phase correction above answers for a whole phase,
+             // asked per component of the frozen trace support: this converged point's own fugacity
+             // coefficients decide whether an omitted phase is still a trace.
++            if(D11TRACE)System.out.println("D11   converged flows="+Arrays.toString(Arrays.copyOfRange(x,equations.edgeOffset,equations.edgeOffset+graph.pipes().size())));
+             if(reactivate(equations,states,promoted)>0){seeds=states;continue;}
+             boolean changed=false;double work=0;int illegalDirection=-1;
+             for(int i=0;i<flows.length;i++) {
+@@ -488,7 +493,7 @@
+             // (which phases a port draws at its capacity and which one carries the rest); otherwise the pass is solved
+             // again, starting from these flows, under the segments they decide (see PhaseDraw). Like an active-set change,
+             // and the cycle key carries the segments, so the sequence stays finite. An island without a phase port has none.
+-            if(equations.segmentsMoved(flows)){seeds=states;previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousInputStates=inputStates;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);continue;}
++            if(equations.segmentsMoved(flows)){if(D11TRACE)System.out.println("D11   segments moved");seeds=states;previousPipes=pipeIdentities;previousNodeIds=nodeIds;previousInputStates=inputStates;previousFlows=flows.clone();previousHeads=heads.clone();previousModes=List.copyOf(modes);continue;}
+             for(int edge=0;edge<flows.length;edge++) {
+                 var pipe=graph.pipes().get(edge);var upstream=states.get(flows[edge]>=0?pipe.first():pipe.second());
+                 double cap=pipe.drawPort(flows[edge])==PassiveNetwork.PhasePort.BULK?massFlowLimit(pipe,upstream,PassiveNetwork.PhasePort.BULK)
+@@ -499,7 +504,7 @@
+             // and the transfer samples it (decision D11).
+             var draws=equations.draws(flows,states);
+             var projection=ConservativeTransport.reconstruct(graph,states,flows,heads,dt,model,checkpoint,transport,rateOnly,draws);
+-            var changedSeeds=phaseCorrection(graph,projection.states(),checkpoint,true,equations.cachedPrepared);if(changedSeeds!=null){seeds=changedSeeds;continue;}
++            var changedSeeds=phaseCorrection(graph,projection.states(),checkpoint,true,equations.cachedPrepared);if(changedSeeds!=null){if(D11TRACE)System.out.println("D11   phase correction");seeds=changedSeeds;continue;}
+             var reconstructed=x.clone();
+             for(int node=0;node<projection.states().size();node++)if(equations.layout[node]!=null){var encoded=equations.layout[node].encode(projection.states().get(node));System.arraycopy(encoded,0,reconstructed,equations.offsets[node],encoded.length);}
+             SolverDiagnostics.count(SolverDiagnostics.verificationResiduals);
